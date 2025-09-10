@@ -327,7 +327,7 @@ export function AdminClient({ username }: AdminClientProps) {
         <div className="bg-background border border-border rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <CheckSquare className="h-5 w-5" />
-            Shared Checklists
+            Shared With Me Checklists
           </h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {sharedItems.sharedWithMe?.checklists?.length > 0 ? (
@@ -355,7 +355,7 @@ export function AdminClient({ username }: AdminClientProps) {
         <div className="bg-background border border-border rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Shared Documents
+            Shared With Me Documents
           </h3>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {sharedItems.sharedWithMe?.documents?.length > 0 ? (
