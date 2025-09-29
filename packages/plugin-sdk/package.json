@@ -1,0 +1,18 @@
+{
+  "name": "@rwmarkable/plugin-sdk",
+  "version": "1.0.0",
+  "description": "SDK for developing Rwmarkable plugins",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  }
+}

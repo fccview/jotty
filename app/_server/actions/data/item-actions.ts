@@ -33,11 +33,27 @@ export const updateItemAction = async (
       throw new Error("List not found");
     }
 
+    // Get plugin data if provided
+    const pluginDataStr = formData.get("pluginData") as string;
+    let pluginData;
+    if (pluginDataStr) {
+      try {
+        pluginData = JSON.parse(pluginDataStr);
+      } catch (e) {
+        console.error("Failed to parse plugin data:", e);
+      }
+    }
+
     const updatedList = {
       ...list,
       items: list.items.map((item) =>
         item.id === itemId
-          ? { ...item, completed, ...(text && { text }) }
+          ? {
+            ...item,
+            completed,
+            ...(text && { text }),
+            ...(pluginData && { pluginData })
+          }
           : item
       ),
       updatedAt: new Date().toISOString(),
@@ -118,6 +134,17 @@ export const createItemAction = async (
       }
     }
 
+    // Get plugin data if provided
+    const pluginDataStr = formData.get("pluginData") as string;
+    let pluginData;
+    if (pluginDataStr) {
+      try {
+        pluginData = JSON.parse(pluginDataStr);
+      } catch (e) {
+        console.error("Failed to parse plugin data:", e);
+      }
+    }
+
     const newItem = {
       id: `${listId}-${Date.now()}`,
       text,
@@ -128,6 +155,7 @@ export const createItemAction = async (
           (status as "todo" | "in_progress" | "completed" | "paused") || "todo",
         timeEntries,
       }),
+      ...(pluginData && { pluginData }),
     };
 
     const updatedList = {

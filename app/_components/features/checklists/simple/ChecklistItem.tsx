@@ -8,12 +8,14 @@ import { CSS } from "@dnd-kit/utilities";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_components/hooks/useEmojiCache";
 import { useState, useEffect, useRef } from "react";
+import { usePlugins } from "@/app/_components/providers/PluginProvider";
 
 interface Item {
   id: string;
   text: string;
   completed: boolean;
   order: number;
+  pluginData?: Record<string, any>;
 }
 
 interface ChecklistItemProps {
@@ -25,7 +27,8 @@ interface ChecklistItemProps {
   completed?: boolean;
 }
 
-export function ChecklistItem({
+// The base component with your original styling
+function BaseChecklistItem({
   item,
   index,
   onToggle,
@@ -185,3 +188,21 @@ export function ChecklistItem({
     </div>
   );
 }
+
+// The exported component that handles plugin wrapping
+export function ChecklistItem(props: ChecklistItemProps) {
+  const { wrapComponent } = usePlugins();
+  console.log('ChecklistItem: Applying plugins to item:', {
+    id: props.item.id,
+    text: props.item.text,
+    pluginData: props.item.pluginData
+  });
+
+  const WrappedComponent = wrapComponent('ChecklistItem', BaseChecklistItem, props);
+  console.log('ChecklistItem: Plugin wrapping complete, component:', WrappedComponent.displayName);
+
+  return <WrappedComponent {...props} />;
+}
+
+// Add display name for debugging
+BaseChecklistItem.displayName = 'BaseChecklistItem';

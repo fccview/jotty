@@ -1,0 +1,15 @@
+{
+  "name": "subtasks-and-labels",
+  "displayName": "Subtasks & Labels",
+  "version": "1.0.0",
+  "description": "Add subtasks and custom labels to checklist items",
+  "author": "IGOLz",
+  "tags": ["organization", "productivity", "tasks"],
+  "previewImage": "preview.png",
+  "main": "src/index.ts",
+  "hooks": [
+    "data.transform.item",
+    "ui.replace.ChecklistItem",
+    "ui.modify.props"
+  ]
+}

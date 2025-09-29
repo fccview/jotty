@@ -1,0 +1,16 @@
+{
+  "name": "rwmarkable-plugin-subtasks",
+  "version": "1.0.0",
+  "description": "Add subtasks and custom labels to checklist items",
+  "main": "src/index.ts",
+  "author": "IGOLz",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0",
+    "@rwmarkable/plugin-sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  }
+}

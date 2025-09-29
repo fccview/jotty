@@ -8,6 +8,7 @@ import { ToastProvider } from "@/app/_providers/ToastProvider";
 import { NavigationGuardProvider } from "@/app/_providers/NavigationGuardProvider";
 import { InstallPrompt } from "@/app/_components/ui/pwa/InstallPrompt";
 import { getSettings } from "@/app/_server/actions/data/file-actions";
+import { PluginProvider } from "@/app/_components/providers/PluginProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -82,10 +83,12 @@ export default async function RootLayout({
             <ChecklistProvider>
               <NavigationGuardProvider>
                 <ToastProvider>
-                  <div className="min-h-screen bg-background text-foreground transition-colors">
-                    {children}
-                    <InstallPrompt />
-                  </div>
+                  <PluginProvider>
+                    <div className="min-h-screen bg-background text-foreground transition-colors">
+                      {children}
+                      <InstallPrompt />
+                    </div>
+                  </PluginProvider>
                 </ToastProvider>
               </NavigationGuardProvider>
             </ChecklistProvider>

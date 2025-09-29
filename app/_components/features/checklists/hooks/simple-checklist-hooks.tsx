@@ -59,18 +59,25 @@ export function useChecklist({ list, onUpdate, onDelete }: UseChecklistProps) {
     }
   };
 
-  const handleEditItem = async (itemId: string, text: string) => {
+  const handleEditItem = async (itemId: string, text: string, pluginData?: Record<string, any>) => {
     const formData = new FormData();
     formData.append("listId", localList.id);
     formData.append("itemId", itemId);
     formData.append("text", text);
+    if (pluginData) {
+      formData.append("pluginData", JSON.stringify(pluginData));
+    }
     const result = await updateItemAction(formData);
 
     if (result.success) {
       const updatedList = {
         ...localList,
         items: localList.items.map((item) =>
-          item.id === itemId ? { ...item, text } : item
+          item.id === itemId ? {
+            ...item,
+            text,
+            pluginData: pluginData || item.pluginData
+          } : item
         ),
       };
       setLocalList(updatedList);
@@ -257,13 +264,28 @@ export function useChecklist({ list, onUpdate, onDelete }: UseChecklistProps) {
     const formData = new FormData();
     formData.append("listId", localList.id);
     formData.append("text", text);
+
+    // Add initial plugin data
+    const pluginData = {
+      'subtasks-and-labels': {
+        subtasks: [],
+        labels: [],
+        expanded: false
+      }
+    };
+    formData.append("pluginData", JSON.stringify(pluginData));
+
     const result = await createItemAction(formData);
     setIsLoading(false);
 
     if (result.success && result.data) {
+      const newItem = {
+        ...result.data,
+        pluginData
+      };
       const updatedList = {
         ...localList,
-        items: [...localList.items, result.data],
+        items: [...localList.items, newItem],
       };
       setLocalList(updatedList);
       onUpdate(updatedList);

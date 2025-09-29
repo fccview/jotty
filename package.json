@@ -48,7 +48,6 @@
         "@types/bcryptjs": "^3.0.0",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/marked": "^6.0.0",
-        "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
         "@types/turndown": "^5.0.5",
@@ -58,6 +57,8 @@
         "eslint-config-next": "14.0.4",
         "postcss": "^8",
         "tailwindcss": "^3.3.0",
-        "typescript": "^5"
+        "typescript": "^5",
+        "esbuild": "^0.20.0",
+        "@types/node": "^20"
     }
 }

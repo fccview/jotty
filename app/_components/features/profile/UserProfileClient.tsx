@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Settings, Monitor, ArrowLeft } from "lucide-react";
+import { User, Settings, Monitor, ArrowLeft, Puzzle } from "lucide-react";
 import { Button } from "@/app/_components/ui/elements/button";
 import { User as UserType } from "@/app/_types";
 import { getUserProfileAction } from "@/app/_server/actions/users/get-user-profile";
@@ -13,6 +13,7 @@ import { PrivacySettingsModal } from "@/app/_components/ui/modals/user/PrivacySe
 import { ProfileTab } from "./components/ProfileTab";
 import { SessionsTab } from "./components/SessionsTab";
 import { SettingsTab } from "./components/SettingsTab";
+import { PluginsTab } from "./components/PluginsTab";
 
 interface UserProfileClientProps {
   username: string;
@@ -35,7 +36,7 @@ export function UserProfileClient({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "profile" | "sessions" | "settings"
+    "profile" | "sessions" | "settings" | "plugins"
   >("profile");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -134,6 +135,7 @@ export function UserProfileClient({
             { id: "profile", label: "Profile", icon: User },
             { id: "sessions", label: "Sessions", icon: Monitor },
             { id: "settings", label: "Settings", icon: Settings },
+            { id: "plugins", label: "Plugins", icon: Puzzle },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -182,6 +184,12 @@ export function UserProfileClient({
           <SettingsTab
             setShowDeleteModal={setShowDeleteModal}
             setShowPrivacyModal={setShowPrivacyModal}
+          />
+        )}
+        {activeTab === "plugins" && (
+          <PluginsTab
+            username={username}
+            isAdmin={isAdmin}
           />
         )}
       </div>

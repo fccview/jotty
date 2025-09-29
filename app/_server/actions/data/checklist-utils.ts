@@ -81,11 +81,23 @@ const parseMarkdown = (
           targetDate,
         };
       } else {
+        // Check for plugin data
+        const pluginMatch = text.match(/\|\s*plugins:(.*?)(?=\||$)/);
+        let pluginData;
+        if (pluginMatch) {
+          try {
+            pluginData = JSON.parse(pluginMatch[1].trim());
+          } catch (e) {
+            console.error('Failed to parse plugin data:', e);
+          }
+        }
+
         return {
           id: `${id}-${index}`,
-          text: text.replace(/∣/g, "|"),
+          text: text.replace(/∣/g, "|").replace(/\|\s*plugins:.*?(?=\||$)/, '').trim(),
           completed,
           order: index,
+          ...(pluginData && { pluginData }),
         };
       }
     });
@@ -138,12 +150,13 @@ const listToMarkdown = (list: Checklist): string => {
           metadata.push(`target:${item.targetDate}`);
         }
 
-        return `- [${
-          item.completed ? "x" : " "
-        }] ${escapedText} | ${metadata.join(" | ")}`;
+        return `- [${item.completed ? "x" : " "
+          }] ${escapedText} | ${metadata.join(" | ")}`;
       }
 
-      return `- [${item.completed ? "x" : " "}] ${escapedText}`;
+      // Add plugin data if present
+      const pluginData = item.pluginData ? ` | plugins:${JSON.stringify(item.pluginData)}` : '';
+      return `- [${item.completed ? "x" : " "}] ${escapedText}${pluginData}`;
     })
     .join("\n");
   return `${header}\n${items}`;
