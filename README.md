@@ -1,7 +1,7 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/fccview/rwMarkable/f2967cdd6a0c7d87bcbe7e1c6a9a78317df45190/public/app-icons/legacy/rwmarkable.svg" alt="rwmarkable Logo" width="150"/>
-  &nbsp; &nbsp; → &nbsp; &nbsp;
-  <img src="https://raw.githubusercontent.com/fccview/rwMarkable/f2967cdd6a0c7d87bcbe7e1c6a9a78317df45190/public/app-icons/logos/logo.svg" alt="Jotty Logo" width="150"/>
+  <img src="https://raw.githubusercontent.com/fccview/rwMarkable/f2967cdd6a0c7d87bcbe7e1c6a9a78317df45190/public/app-icons/legacy/rwmarkable.svg" alt="rwmarkable Logo" width="150" style="vertical-align:middle"/>
+  <span style="font-size:2.5em; vertical-align:middle; margin:0 15px;">→</span>
+  <img src="https://raw.githubusercontent.com/fccview/rwMarkable/f2967cdd6a0c7d87bcbe7e1c6a9a78317df45190/public/app-icons/logos/logo.svg" alt="Jotty Logo" width="150" style="vertical-align:middle"/>
 </p>
 
 # This Project Has Moved
