@@ -8,7 +8,9 @@
 
 This repository is archived and will not receive further updates. Please find the active project at the new location:
 
-### **https://github.com/fccview/jotty**
+<br />
+<h3 align="center">https://github.com/fccview/jotty</h3>
+<br />
 
 ---
 
