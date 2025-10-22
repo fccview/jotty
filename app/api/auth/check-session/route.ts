@@ -4,6 +4,8 @@ import { readSessions } from "@/app/_server/actions/session";
 
 type Session = Record<string, string>;
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const cookieStore = cookies();

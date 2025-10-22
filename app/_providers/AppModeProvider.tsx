@@ -7,7 +7,7 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { AppMode } from "@/app/_types";
+import { AppMode, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 
 interface AppModeContextType {
@@ -18,6 +18,8 @@ interface AppModeContextType {
   isInitialized: boolean;
   isDemoMode: boolean;
   isRwMarkable: boolean;
+  user: User | null;
+  setUser: (user: User | null) => void;
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
@@ -25,18 +27,25 @@ const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 export const AppModeProvider = ({
   children,
   isDemoMode = false,
-  isRwMarkable = false
+  isRwMarkable = false,
+  user: initialUser,
 }: {
   children: ReactNode;
   isDemoMode?: boolean;
   isRwMarkable?: boolean;
+  user?: User | null;
 }) => {
   const [mode, setMode] = useState<AppMode>(Modes.CHECKLISTS);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [user, setUser] = useState<User | null>(initialUser || null);
 
   useEffect(() => {
-    const savedMode = localStorage.getItem("app-mode");
+    const savedMode =
+      user?.landingPage === "last-visited"
+        ? localStorage.getItem("app-mode")
+        : user?.landingPage;
+
     if (savedMode === Modes.CHECKLISTS || savedMode === Modes.NOTES) {
       setMode(savedMode);
     }
@@ -58,6 +67,8 @@ export const AppModeProvider = ({
         isInitialized,
         isDemoMode,
         isRwMarkable,
+        user,
+        setUser,
       }}
     >
       {children}

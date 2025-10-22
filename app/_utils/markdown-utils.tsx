@@ -9,6 +9,7 @@ import { visit } from "unist-util-visit";
 import { Element } from "hast";
 import { addCustomHtmlTurndownRules } from "@/app/_utils/custom-html-utils";
 import { html as beautifyHtml } from "js-beautify";
+import { TableSyntax } from "@/app/_types";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
@@ -16,7 +17,7 @@ const turndownPluginGfm = require("turndown-plugin-gfm");
 // --- NOTE TO SELF OR I'LL GO ABSOLUTELY FUCKING INSANE NEXT TIME I DEBUG ---
 // --- HTML-TO-MARKDOWN CONVERSION (Tiptap HTML -> Markdown string) ---
 // ========================================================================
-export const createTurndownService = () => {
+export const createTurndownService = (tableSyntax?: TableSyntax) => {
   const service = new TurndownService({
     headingStyle: "atx",
     codeBlockStyle: "fenced",
@@ -75,17 +76,104 @@ export const createTurndownService = () => {
 
   addCustomHtmlTurndownRules(service);
 
-  service.addRule("keepHtmlTables", {
-    filter: "table",
-    replacement: function (content, node) {
-      const unformattedHtml = (node as HTMLElement).outerHTML;
-      const formattedHtml = beautifyHtml(unformattedHtml, {
-        indent_size: 2,
-        unformatted: [],
-      });
-      return `\n\n${formattedHtml}\n\n`;
-    },
-  });
+  if (tableSyntax === "html") {
+    // Override all table-related elements to keep HTML
+    service.addRule("table", {
+      filter: "table",
+      replacement: function (content, node) {
+        const unformattedHtml = (node as HTMLElement).outerHTML;
+        const formattedHtml = beautifyHtml(unformattedHtml, {
+          indent_size: 2,
+          unformatted: [],
+        });
+        return `\n\n${formattedHtml}\n\n`;
+      },
+    });
+
+    service.addRule("thead", {
+      filter: "thead",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+
+    service.addRule("tbody", {
+      filter: "tbody",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+
+    service.addRule("tr", {
+      filter: "tr",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+
+    service.addRule("th", {
+      filter: "th",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+
+    service.addRule("td", {
+      filter: "td",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+  } else if (tableSyntax === "markdown") {
+    service.addRule("table", {
+      filter: "table",
+      replacement: function (content, node) {
+        const table = node as HTMLElement;
+        let markdown = "";
+        const rows: string[][] = [];
+
+        table.querySelectorAll("tr").forEach((rowNode) => {
+          const row: string[] = [];
+          rowNode.querySelectorAll("th, td").forEach((cellNode) => {
+            row.push(service.turndown(cellNode.innerHTML).trim());
+          });
+          rows.push(row);
+        });
+
+        if (rows.length === 0) return "";
+
+        const header = rows[0];
+        const body = rows.slice(1);
+
+        const columnWidths = header.map((h) => Math.max(h.length, 1));
+        body.forEach((row) => {
+          row.forEach((cell, i) => {
+            columnWidths[i] = Math.max(columnWidths[i], cell.length, 1);
+          });
+        });
+
+        markdown += "| ";
+        markdown += header.map((h, i) => h.padEnd(columnWidths[i])).join(" | ");
+        markdown += " |\n";
+
+        markdown += "| ";
+        markdown += columnWidths
+          .map((w) => "-".repeat(Math.max(w, 3)))
+          .join(" | ");
+        markdown += " |\n";
+
+        body.forEach((row) => {
+          markdown += "| ";
+          markdown += row
+            .map((cell, i) => cell.padEnd(columnWidths[i]))
+            .join(" | ");
+          markdown += " |\n";
+        });
+
+        return `\n${markdown}\n`;
+      },
+    });
+  }
 
   service.addRule("details", {
     filter: "details",
@@ -216,8 +304,11 @@ export const convertMarkdownToHtml = (markdown: string): string => {
   return String(file);
 };
 
-export const convertHtmlToMarkdown = (html: string): string => {
-  const turndownService = createTurndownService();
+export const convertHtmlToMarkdown = (
+  html: string,
+  tableSyntax?: TableSyntax
+): string => {
+  const turndownService = createTurndownService(tableSyntax);
   return turndownService.turndown(html);
 };
 
@@ -226,9 +317,12 @@ export const processMarkdownContent = (content: string): string => {
   return content;
 };
 
-export const convertHtmlToMarkdownUnified = (html: string): string => {
+export const convertHtmlToMarkdownUnified = (
+  html: string,
+  tableSyntax?: TableSyntax
+): string => {
   if (!html || typeof html !== "string") return "";
-  return convertHtmlToMarkdown(html);
+  return convertHtmlToMarkdown(html, tableSyntax);
 };
 
 export const getMarkdownPreviewContent = (

@@ -122,7 +122,7 @@ The recommended way to run `jotty·page` is with Docker.
           #- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>
           #- APP_URL=https://your-jotty-domain.com
           #- OIDC_CLIENT_SECRET=your_client_secret
-          #- SSO_FALLBACK_LOCAL=true
+          #- SSO_FALLBACK_LOCAL=yes
           #- OIDC_ADMIN_GROUPS=admins
     ```
 

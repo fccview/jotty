@@ -87,7 +87,7 @@ environment:
   - OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>
   - APP_URL=https://your-jotty-domain.com
   - OIDC_CLIENT_SECRET=your_client_secret
-  - SSO_FALLBACK_LOCAL=true
+  - SSO_FALLBACK_LOCAL=yes
   - OIDC_ADMIN_GROUPS=admins
 ```
 
@@ -103,7 +103,7 @@ environment:
 - `- OIDC_ISSUER=<YOUR_SSO_ISSUER>` URL of your OIDC provider (e.g., Authentik, Auth0, Keycloak).
 - `- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>` Client ID from your OIDC provider configuration.
 - `- OIDC_CLIENT_SECRET=your_client_secret` Optional. Client secret for confidential OIDC client authentication.
-- `- SSO_FALLBACK_LOCAL=true` Optional. Allows both SSO and local authentication methods.
+- `- SSO_FALLBACK_LOCAL=yes` Optional. Allows both SSO and local authentication methods.
 - `- OIDC_ADMIN_GROUPS=admins` Optional. Comma-separated list of OIDC groups that should have admin privileges.
 
 ## Platform Configuration

@@ -4,13 +4,23 @@ import { useEffect, useState } from "react";
 import { useSettings } from "@/app/_utils/settings-store";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
+import { User } from "../_types";
 
 const themeIDs = BUILT_IN_THEMES.map((theme) => theme.id);
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+export const ThemeProvider = ({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: Partial<User>;
+}) => {
   const { isRwMarkable } = useAppMode();
-  const { theme, getResolvedTheme } = useSettings();
-  const [resolvedTheme, setResolvedTheme] = useState<string>('system');
+  const { theme: localStorageTheme, getResolvedTheme } = useSettings();
+  const [resolvedTheme, setResolvedTheme] = useState<string>(() =>
+    getResolvedTheme(isRwMarkable, user.preferredTheme)
+  );
+
   const [customThemeColors, setCustomThemeColors] = useState<{
     [key: string]: any;
   }>({});
@@ -30,20 +40,23 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const updateResolvedTheme = () => {
-      const resolved = getResolvedTheme(isRwMarkable);
+      const resolved = getResolvedTheme(isRwMarkable, user.preferredTheme);
       setResolvedTheme(resolved);
     };
 
     updateResolvedTheme();
 
-    if (theme === 'system' && typeof window !== 'undefined') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    if (
+      (localStorageTheme === "system" || user.preferredTheme === "system") &&
+      typeof window !== "undefined"
+    ) {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = () => updateResolvedTheme();
 
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
     }
-  }, [theme, getResolvedTheme]);
+  }, [localStorageTheme, user.preferredTheme, getResolvedTheme]);
 
   useEffect(() => {
     const allThemes = [...themeIDs, ...Object.keys(customThemeColors)];

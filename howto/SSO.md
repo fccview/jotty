@@ -31,7 +31,7 @@ services:
       - APP_URL=https://your-jotty-domain.com # if not set defaults to http://localhost:<port>
       # Optional security enhancements:
       - OIDC_CLIENT_SECRET=your_client_secret # Enable confidential client mode (if your provider requires it)
-      - SSO_FALLBACK_LOCAL=true # Allow both SSO and local login
+      - SSO_FALLBACK_LOCAL=yes # Allow both SSO and local login
       - OIDC_ADMIN_GROUPS=admins # Map provider groups to admin role
 
 Note: When OIDC_CLIENT_SECRET is set, jotty·page switches to confidential client mode using client authentication instead of PKCE. This is more secure but requires provider support.

@@ -5,6 +5,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { AppMode } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface SidebarNavigationProps {
   mode: AppMode;
@@ -21,6 +22,7 @@ export const SidebarNavigation = ({
   mode,
   onModeChange,
 }: SidebarNavigationProps) => {
+  const { user } = useAppMode();
   const modes: ModeOption[] = [
     {
       id: Modes.CHECKLISTS,
@@ -34,9 +36,18 @@ export const SidebarNavigation = ({
     },
   ];
 
+  const orderNote = user?.landingPage === Modes.NOTES ? -1 : 1;
+  const orderChecklist = user?.landingPage === Modes.CHECKLISTS ? 0 : 1;
+
+  const orderedModes = modes.sort((a, b) => {
+    if (a.id === Modes.NOTES) return orderNote;
+    if (a.id === Modes.CHECKLISTS) return orderChecklist;
+    return 0;
+  });
+
   return (
     <div className="flex gap-1 p-2 border-b border-border">
-      {modes.map((modeOption: ModeOption) => {
+      {orderedModes.map((modeOption: ModeOption) => {
         const Icon = modeOption.icon;
         return (
           <Button

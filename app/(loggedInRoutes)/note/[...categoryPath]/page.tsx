@@ -116,7 +116,6 @@ export default async function NotePage({ params }: NotePageProps) {
       docs={docsResult.data}
       categories={docsCategories}
       sharingStatuses={sharingStatuses}
-      user={user}
     />
   );
 }

@@ -9,7 +9,6 @@ import { NavigationGuardProvider } from "@/app/_providers/NavigationGuardProvide
 import { InstallPrompt } from "@/app/_components/GlobalComponents/Pwa/InstallPrompt";
 import { getSettings } from "@/app/_server/actions/config";
 import { DynamicFavicon } from "@/app/_components/GlobalComponents/Layout/Logo/DynamicFavicon";
-import { redirectGuards } from "./_server/actions/guards";
 import { ShortcutProvider } from "@/app/_providers/ShortcutsProvider";
 import { getCategories } from "@/app/_server/actions/category";
 import { Modes } from "./_types/enums";
@@ -19,9 +18,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
-  const ogName = settings?.isRwMarkable
-    ? "rwMarkable"
-    : "jotty·page";
+  const ogName = settings?.isRwMarkable ? "rwMarkable" : "jotty·page";
   const appName = settings?.appName || ogName;
   const appDescription =
     settings?.appDescription ||
@@ -94,8 +91,12 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={inter.className}>
-        <AppModeProvider isDemoMode={settings?.isDemo || false} isRwMarkable={settings?.rwmarkable || false}>
-          <ThemeProvider>
+        <AppModeProvider
+          isDemoMode={settings?.isDemo || false}
+          isRwMarkable={settings?.rwmarkable || false}
+          user={user}
+        >
+          <ThemeProvider user={user || {}}>
             <ChecklistProvider>
               <NavigationGuardProvider>
                 <ToastProvider>

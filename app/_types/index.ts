@@ -1,4 +1,4 @@
-import { TaskStatus } from "./enums";
+import { TaskStatus, Modes } from "./enums";
 
 export type ChecklistType = "simple" | "task";
 
@@ -100,7 +100,15 @@ export interface User {
   lastLogin?: string;
   apiKey?: string;
   avatarUrl?: string;
+  preferredTheme?: string;
+  imageSyntax?: ImageSyntax;
+  tableSyntax?: TableSyntax;
+  landingPage?: LandingPage;
 }
+
+export type ImageSyntax = "html" | "markdown";
+export type TableSyntax = "html" | "markdown";
+export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
 
 export interface SharedItem {
   id: string;

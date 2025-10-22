@@ -10,6 +10,7 @@ import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface UseNoteEditorProps {
   note: Note;
@@ -40,6 +41,7 @@ export const useNoteEditor = ({
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
 
   const { autosaveNotes } = useSettings();
+  const { user } = useAppMode();
   const {
     registerNavigationGuard,
     unregisterNavigationGuard,
@@ -51,8 +53,8 @@ export const useNoteEditor = ({
     () =>
       isMarkdownMode
         ? processMarkdownContent(editorContent)
-        : convertHtmlToMarkdownUnified(editorContent),
-    [editorContent, isMarkdownMode]
+        : convertHtmlToMarkdownUnified(editorContent, user?.tableSyntax),
+    [editorContent, isMarkdownMode, user?.tableSyntax]
   );
 
   useEffect(() => {

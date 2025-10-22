@@ -1,5 +1,7 @@
 import { TiptapEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useSettings } from "@/app/_utils/settings-store";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -13,14 +15,27 @@ export const NoteEditorContent = ({
   noteContent,
   editorContent,
   onEditorContentChange,
-}: NoteEditorContentProps) => (
-  <div className="flex-1 h-full pb-14 lg:pb-0">
-    {isEditing ? (
-      <TiptapEditor content={editorContent} onChange={onEditorContentChange} />
-    ) : (
-      <div className="px-6 pt-6 pb-12">
-        <UnifiedMarkdownRenderer content={noteContent || ""} />
-      </div>
-    )}
-  </div>
-);
+}: NoteEditorContentProps) => {
+  const { user } = useAppMode();
+  const { compactMode } = useSettings();
+
+  return (
+    <div className="flex-1 h-full pb-14 lg:pb-0">
+      {isEditing ? (
+        <TiptapEditor
+          content={editorContent}
+          onChange={onEditorContentChange}
+          tableSyntax={user?.tableSyntax}
+        />
+      ) : (
+        <div
+          className={`px-6 pt-6 pb-12 ${
+            compactMode ? "max-w-[900px] mx-auto" : ""
+          }`}
+        >
+          <UnifiedMarkdownRenderer content={noteContent || ""} />
+        </div>
+      )}
+    </div>
+  );
+};

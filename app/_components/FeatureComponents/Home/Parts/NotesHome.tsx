@@ -95,7 +95,7 @@ export const NotesHome = ({
             columnClassName="pl-6 bg-clip-padding"
           >
             {recentDocs.map((doc) => (
-              <div key={doc.id} className="mb-6">
+              <div key={`${doc.category}-${doc.id}`} className="mb-6">
                 <NoteCard note={doc} onSelect={onSelectNote} />
               </div>
             ))}

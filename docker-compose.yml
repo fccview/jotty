@@ -24,5 +24,5 @@ services:
       #- OIDC_ISSUER=<YOUR_SSO_ISSUER>
       #- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>
       #- OIDC_CLIENT_SECRET=your_client_secret
-      #- SSO_FALLBACK_LOCAL=true
+      #- SSO_FALLBACK_LOCAL=yes
       #- OIDC_ADMIN_GROUPS=admins

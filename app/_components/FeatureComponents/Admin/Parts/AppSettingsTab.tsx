@@ -91,9 +91,7 @@ export const AppSettingsTab = () => {
       id: "appName",
       label: "Application Name",
       description: "Appears in the browser tab and PWA name.",
-      placeholder: isRwMarkable
-        ? "rwMarkable"
-        : "jotty·page",
+      placeholder: isRwMarkable ? "rwMarkable" : "jotty·page",
     },
     {
       id: "appDescription",
