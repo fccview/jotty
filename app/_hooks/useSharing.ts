@@ -5,6 +5,7 @@ import { ItemType, User } from "@/app/_types";
 import { shareItem, getItemSharingStatus } from "@/app/_server/actions/sharing";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 
 interface SharingStatus {
   isShared: boolean;
@@ -139,7 +140,13 @@ export const useSharing = ({
         if (isPublic) {
           const publicPath =
             itemType === "checklist" ? "public/checklist" : "public/note";
-          setPublicUrl(`${window.location.origin}/${publicPath}/${itemId}`);
+          const categoryPath = buildCategoryPath(
+            itemCategory || "Uncategorized",
+            itemId
+          );
+          setPublicUrl(
+            `${window.location.origin}/${publicPath}/${categoryPath}`
+          );
         }
       }
     } catch (error) {
@@ -186,13 +193,18 @@ export const useSharing = ({
       setIsPubliclyShared(newPublicState);
       setStatus((prev) => ({
         ...prev,
-        success: `Item is now ${newPublicState ? "publicly" : "no longer"
-          } accessible!`,
+        success: `Item is now ${
+          newPublicState ? "publicly" : "no longer"
+        } accessible!`,
       }));
       if (newPublicState) {
         const publicPath =
           itemType === "checklist" ? "public/checklist" : "public/note";
-        setPublicUrl(`${window.location.origin}/${publicPath}/${itemId}`);
+        const categoryPath = buildCategoryPath(
+          itemCategory || "Uncategorized",
+          itemId
+        );
+        setPublicUrl(`${window.location.origin}/${publicPath}/${categoryPath}`);
       } else {
         setPublicUrl("");
       }

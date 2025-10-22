@@ -13,6 +13,8 @@ import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
 import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { Modes } from "@/app/_types/enums";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -135,7 +137,11 @@ export const AdminContent = ({
               >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
-                    <UserAvatar size="lg" username={user.username} avatarUrl={user.avatarUrl} />
+                    <UserAvatar
+                      size="lg"
+                      username={user.username}
+                      avatarUrl={user.avatarUrl}
+                    />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -174,7 +180,10 @@ export const AdminContent = ({
                         icon={<CheckSquare className="h-4 w-4" />}
                         items={checklists.map((list) => ({
                           ...list,
-                          link: `/checklist/${list.id}`,
+                          link: `/checklist/${buildCategoryPath(
+                            list.category || "Uncategorized",
+                            list.id
+                          )}`,
                           details: `${list.category} • ${list.items.length} items`,
                         }))}
                       />
@@ -183,7 +192,10 @@ export const AdminContent = ({
                         icon={<FileText className="h-4 w-4" />}
                         items={notes.map((doc) => ({
                           ...doc,
-                          link: `/note/${doc.id}`,
+                          link: `/note/${buildCategoryPath(
+                            doc.category || "Uncategorized",
+                            doc.id
+                          )}`,
                           details: `${doc.category} • ${doc.content.length} characters`,
                         }))}
                       />

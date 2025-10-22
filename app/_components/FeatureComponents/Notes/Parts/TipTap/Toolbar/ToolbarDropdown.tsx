@@ -37,7 +37,9 @@ export const ToolbarDropdown = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (
         triggerRef.current &&
-        !triggerRef.current.contains(event.target as Node)
+        !triggerRef.current.contains(event.target as Node) &&
+        event.target instanceof HTMLElement &&
+        event.target.nodeName !== "INPUT"
       ) {
         setIsOpen(false);
       }
@@ -55,7 +57,7 @@ export const ToolbarDropdown = ({
     <>
       {isOpen && (
         <div
-          className="fixed bg-background border border-border rounded-md shadow-lg min-w-[200px] max-h-[400px] overflow-hidden flex flex-col"
+          className="fixed bg-background border border-border rounded-md shadow-lg min-w-[200px] max-w-[200px] max-h-[300px] overflow-hidden flex flex-col"
           style={{
             top: `${
               (triggerRef.current?.getBoundingClientRect().bottom || 0) + 4
@@ -67,7 +69,17 @@ export const ToolbarDropdown = ({
             e.stopPropagation();
             e.preventDefault();
           }}
-          onClick={() => setIsOpen(false)}
+          onClick={(e) => {
+            if (
+              e.target instanceof HTMLElement &&
+              (e.target as HTMLElement).nodeName !== "INPUT"
+            ) {
+              setIsOpen(false);
+            } else {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }}
         >
           {children}
         </div>

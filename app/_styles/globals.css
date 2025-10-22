@@ -2,9 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 @import 'highlight.js/styles/github-dark-dimmed.css';
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 @layer base {
     :root {
+        --background: 255 255 255;
+        --background-secondary: 249 248 252;
+        --foreground: 20 20 20;
+        --card: 255 255 255;
+        --card-foreground: 20 20 20;
+        --popover: 255 255 255;
+        --popover-foreground: 20 20 20;
+        --primary: 139 59 208;
+        --primary-foreground: 255 255 255;
+        --secondary: 243 240 249;
+        --secondary-foreground: 20 20 20;
+        --muted: 243 240 249;
+        --muted-foreground: 107 99 139;
+        --accent: 243 240 249;
+        --accent-foreground: 20 20 20;
+        --destructive: 239 68 68;
+        --destructive-foreground: 255 255 255;
+        --border: 228 223 240;
+        --input: 228 223 240;
+        --ring: 139 59 208;
+    }
+
+    .dark {
+        --background: 12 20 53;
+        --background-secondary: 47 14 91;
+        --foreground: 243 244 246;
+        --card: 12 20 53;
+        --card-foreground: 243 244 246;
+        --popover: 12 20 53;
+        --popover-foreground: 243 244 246;
+        --primary: 139 59 208;
+        --primary-foreground: 243 244 246;
+        --secondary: 47 14 91;
+        --secondary-foreground: 243 244 246;
+        --muted: 47 14 91;
+        --muted-foreground: 163 156 175;
+        --accent: 47 14 91;
+        --accent-foreground: 243 244 246;
+        --destructive: 239 68 68;
+        --destructive-foreground: 243 244 246;
+        --border: 38 47 63;
+        --input: 38 47 63;
+        --ring: 139 59 208;
+    }
+
+    .rwmarkable-light {
         --background: 255 255 255;
         --background-secondary: 249 250 251;
         --foreground: 20 20 20;
@@ -27,7 +74,7 @@
         --ring: 37 99 235;
     }
 
-    .dark {
+    .rwmarkable-dark {
         --background: 17 24 39;
         --background-secondary: 31 41 55;
         --foreground: 243 244 246;
@@ -48,6 +95,52 @@
         --border: 38 47 63;
         --input: 38 47 63;
         --ring: 59 130 246;
+    }
+
+    .fccview {
+        --background: 12 20 53;
+        --background-secondary: 21 14 60;
+        --foreground: 243 244 246;
+        --card: 12 20 53;
+        --card-foreground: 243 244 246;
+        --popover: 12 20 53;
+        --popover-foreground: 243 244 246;
+        --primary: 205 6 157;
+        --primary-foreground: 243 244 246;
+        --secondary: 21 14 60;
+        --secondary-foreground: 243 244 246;
+        --muted: 21 14 60;
+        --muted-foreground: 163 156 175;
+        --accent: 21 14 60;
+        --accent-foreground: 243 244 246;
+        --destructive: 239 68 68;
+        --destructive-foreground: 243 244 246;
+        --border: 38 47 63;
+        --input: 38 47 63;
+        --ring: 205 6 157;
+    }
+
+    .black-white {
+        --background: 10 10 10;
+        --background-secondary: 29 29 33;
+        --foreground: 255 255 255;
+        --card: 10 10 10;
+        --card-foreground: 255 255 255;
+        --popover: 10 10 10;
+        --popover-foreground: 255 255 255;
+        --primary: 90 90 90; /* Medium-dark gray for buttons/accents—the middle ground */
+        --primary-foreground: 255 255 255; /* White text for perfect contrast on the dark button */
+        --secondary: 49 51 57;
+        --secondary-foreground: 255 255 255;
+        --muted: 49 51 57;
+        --muted-foreground: 180 180 180;
+        --accent: 49 51 57;
+        --accent-foreground: 255 255 255;
+        --destructive: 239 68 68;
+        --destructive-foreground: 255 255 255;
+        --border: 49 51 57;
+        --input: 49 51 57;
+        --ring: 90 90 90;
     }
 
     .sunset {
@@ -331,8 +424,20 @@
     stroke: rgb(var(--primary-foreground));
 }
 
+.fill-alternate {
+    fill: rgb(var(--primary-foreground));
+}
+
 .fill-current {
     fill: rgb(var(--primary));
+}
+
+.fill-rwmarkable {
+    fill: rgb(var(--foreground));
+}
+
+.stroke-rwmarkable {
+    stroke: rgb(var(--background));
 }
 
 @layer base {
@@ -353,6 +458,14 @@
     input:focus, textarea:focus {
       scroll-margin-bottom: 20px;
     }
+}
+
+body {
+    font-family: "Inter", sans-serif;
+}
+
+a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
+    font-family: "Inter", sans-serif;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -454,7 +567,6 @@ p > code {
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
-/* This rule provides a consistent background for code blocks in the editor */
 .ProseMirror .hljs {
   color: #abb2bf;
   background: #282c34;

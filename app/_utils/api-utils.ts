@@ -85,14 +85,17 @@ export const getNotesForUser = async (username: string) => {
 export const findItemByIndex = async (
   listId: string,
   itemIndex: number,
-  username: string
+  username: string,
+  category?: string
 ) => {
   const lists = await getLists(username);
   if (!lists.success || !lists.data) {
     throw new Error(lists.error || "Failed to fetch lists");
   }
 
-  const list = lists.data.find((l) => l.id === listId);
+  const list = lists.data.find(
+    (l) => l.id === listId && (!category || l.category === category)
+  );
   if (!list) {
     throw new Error("List not found");
   }

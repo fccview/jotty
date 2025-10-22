@@ -1,6 +1,6 @@
 {
-  "name": "rwMarkable",
-  "short_name": "rwMarkable",
+  "name": "jotty.page",
+  "short_name": "jotty",
   "description": "A simple, fast, and lightweight checklist application",
   "start_url": "/",
   "display": "standalone",

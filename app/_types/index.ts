@@ -13,6 +13,7 @@ export type ItemType = "checklist" | "note";
 
 export interface Item {
   id: string;
+  category?: string;
   text: string;
   completed: boolean;
   order: number;
@@ -167,7 +168,7 @@ export interface Session {
   ipAddress: string;
   lastActivity: string;
   isCurrent: boolean;
-  loginType?: 'local' | 'sso';
+  loginType?: "local" | "sso";
 }
 
 export interface ExportProgress {

@@ -8,8 +8,9 @@ import { Tabs } from "@/app/_components/GlobalComponents/Tabs/Tabs";
 import { readFile } from "@/app/_server/actions/file";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
-import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
+import path from "path";
+import { HOWTO_DIR } from "@/app/_consts/files";
 
 interface TabItem {
   id: string;
@@ -22,37 +23,37 @@ const helpFiles: TabItem[] = [
   {
     id: "shortcuts",
     name: "Shortcuts",
-    filename: "howto/SHORTCUTS.md",
+    filename: path.join(HOWTO_DIR, "SHORTCUTS.md"),
     icon: <kbd className="text-xs bg-muted px-1 py-0.5 rounded">⌘K</kbd>,
   },
   {
     id: "markdown",
     name: "Markdown Guide",
-    filename: "howto/MARKDOWN.md",
+    filename: path.join(HOWTO_DIR, "MARKDOWN.md"),
     icon: <span className="text-xs font-mono">#</span>,
   },
   {
     id: "api",
     name: "API",
-    filename: "howto/API.md",
+    filename: path.join(HOWTO_DIR, "API.md"),
     icon: <span className="text-xs font-mono">API</span>,
   },
   {
     id: "customisations",
     name: "Customisations",
-    filename: "howto/CUSTOMISATIONS.md",
+    filename: path.join(HOWTO_DIR, "CUSTOMISATIONS.md"),
     icon: <Palette className="h-4 w-4" />,
   },
   {
     id: "docker",
     name: "Docker",
-    filename: "howto/DOCKER.md",
+    filename: path.join(HOWTO_DIR, "DOCKER.md"),
     icon: <Terminal className="h-4 w-4" />,
   },
   {
     id: "sso",
     name: "SSO",
-    filename: "howto/SSO.md",
+    filename: path.join(HOWTO_DIR, "SSO.md"),
     icon: <Lock className="h-4 w-4" />,
   },
 ];

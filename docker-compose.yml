@@ -1,10 +1,10 @@
 # For more information about how the docker compose file works and what these
-# variables do, please read https://github.com/fccview/rwMarkable/blob/main/howto/DOCKER.md
+# variables do, please read https://github.com/fccview/jotty/blob/main/howto/DOCKER.md
 
 services:
-  rwmarkable:
-    image: ghcr.io/fccview/rwmarkable:latest
-    container_name: rwmarkable
+  jotty:
+    image: ghcr.io/fccview/jotty:latest
+    container_name: jotty
     user: "1000:1000"
     ports:
       - "1122:3000"
@@ -17,12 +17,12 @@ services:
     environment:
       - NODE_ENV=production
       #- HTTPS=true
+      #- APP_URL=https://your-jotty-domain.com
       #- SERVE_PUBLIC_IMAGES=yes
       #- SERVE_PUBLIC_FILES=yes
       #- SSO_MODE=oidc
       #- OIDC_ISSUER=<YOUR_SSO_ISSUER>
       #- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>
-      #- APP_URL=https://your-rwmarkable-domain.com
       #- OIDC_CLIENT_SECRET=your_client_secret
       #- SSO_FALLBACK_LOCAL=true
       #- OIDC_ADMIN_GROUPS=admins

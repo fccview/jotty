@@ -267,7 +267,7 @@ export const popularCodeBlockLanguages: CodeBlockLanguage[] = [
     category: "Hardware",
   },
   {
-    value: "text",
+    value: "plaintext",
     label: "Plain Text",
     icon: <FileText className="h-4 w-4" />,
     category: "Other",

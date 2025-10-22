@@ -63,6 +63,7 @@ export const useChecklist = ({
       const formData = new FormData();
       formData.append("listId", list.id);
       formData.append("itemIds", JSON.stringify(idsToProcess));
+      formData.append("category", list.category || "Uncategorized");
 
       try {
         const result = await bulkDeleteItems(formData);
@@ -111,6 +112,7 @@ export const useChecklist = ({
     formData.append("listId", localList.id);
     formData.append("itemId", itemId);
     formData.append("completed", String(completed));
+    formData.append("category", localList.category || "Uncategorized");
     const result = await updateItem(formData);
 
     if (result.success && result.data) {
@@ -123,6 +125,7 @@ export const useChecklist = ({
     formData.append("listId", localList.id);
     formData.append("itemId", itemId);
     formData.append("text", text);
+    formData.append("category", localList.category || "Uncategorized");
     const result = await updateItem(formData);
 
     if (result.success) {
@@ -187,6 +190,7 @@ export const useChecklist = ({
         formData.append("listId", localList.id);
         formData.append("itemIds", JSON.stringify(itemIds));
         formData.append("currentItems", JSON.stringify(newItems));
+        formData.append("category", localList.category || "Uncategorized");
         const result = await reorderItems(formData);
 
         if (!result.success) {
@@ -201,6 +205,7 @@ export const useChecklist = ({
     const formData = new FormData();
     formData.append("listId", localList.id);
     formData.append("itemsText", itemsText);
+    formData.append("category", localList.category || "Uncategorized");
     const result = await createBulkItems(formData);
     setIsLoading(false);
 
@@ -223,6 +228,7 @@ export const useChecklist = ({
     const formData = new FormData();
     formData.append("listId", localList.id);
     formData.append("newType", newType);
+    formData.append("category", localList.category || "Uncategorized");
     const result = await convertChecklistType(formData);
     setIsLoading(false);
 
@@ -245,6 +251,7 @@ export const useChecklist = ({
       "itemIds",
       JSON.stringify(targetItems.map((item) => item.id))
     );
+    formData.append("category", localList.category || "Uncategorized");
 
     const result = await bulkToggleItems(formData);
     setIsLoading(false);
@@ -260,6 +267,7 @@ export const useChecklist = ({
     const formData = new FormData();
     formData.append("listId", localList.id);
     formData.append("text", text);
+    formData.append("category", localList.category || "Uncategorized");
     const result = await createItem(formData);
     setIsLoading(false);
 

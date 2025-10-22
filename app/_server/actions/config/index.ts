@@ -4,9 +4,13 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import path from "path";
 import fs from "fs/promises";
-import { Result } from "@/app/_types";
-import { isAdmin } from "../users";
+import { Checklist, Note, Result } from "@/app/_types";
+import { getCurrentUser, isAdmin } from "../users";
 import { revalidatePath } from "next/cache";
+import { getAllLists, getListById, getLists } from "../checklist";
+import { Metadata, ResolvingMetadata } from "next";
+import { Modes } from "@/app/_types/enums";
+import { getNoteById, getNotes } from "../note";
 
 interface AppSettings {
   appName: string;
@@ -140,12 +144,13 @@ export const getSettings = async () => {
     }
   } catch (error) {
     return {
-      appName: "rwMarkable",
-      appDescription:
-        "A simple, fast, and lightweight checklist and notes application",
-      "16x16Icon": "/app-icons/favicon-16x16.png",
-      "32x32Icon": "/app-icons/favicon-32x32.png",
-      "180x180Icon": "/app-icons/apple-touch-icon.png",
+      appName: "",
+      appDescription: "",
+      "16x16Icon": "",
+      "32x32Icon": "",
+      "180x180Icon": "",
+      isRwMarkable: false,
+      isDemo: false,
     };
   }
 };
@@ -282,4 +287,26 @@ export const uploadAppIcon = async (
     console.error("Error uploading app icon:", error);
     return { success: false, error: "Failed to upload icon" };
   }
+};
+
+export const getMedatadaTitle = async (
+  appMode: Modes,
+  id: string,
+  category?: string
+): Promise<Metadata> => {
+  const user = await getCurrentUser();
+  const settings = await getSettings();
+  const defaultTitle = appMode === Modes.CHECKLISTS ? "Checklist" : "Note";
+
+  const ogName = settings?.isRwMarkable ? "rwMarkable" : "jotty·page";
+  const appName = settings?.appName || ogName;
+
+  const item =
+    appMode === Modes.CHECKLISTS
+      ? await getListById(id, undefined, category)
+      : await getNoteById(id, category);
+
+  return {
+    title: `${item?.title || defaultTitle} - ${appName}`,
+  };
 };

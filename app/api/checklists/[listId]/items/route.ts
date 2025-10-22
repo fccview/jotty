@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { createItem } from "@/app/_server/actions/checklist-item";
+import { getListById } from "@/app/_server/actions/checklist";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +21,15 @@ export async function POST(
         );
       }
 
+      const list = await getListById(params.listId, user.username);
+      if (!list) {
+        return NextResponse.json({ error: "List not found" }, { status: 404 });
+      }
+
       const formData = new FormData();
       formData.append("listId", params.listId);
       formData.append("text", text);
+      formData.append("category", list.category || "Uncategorized");
 
       if (status) {
         formData.append("status", status);

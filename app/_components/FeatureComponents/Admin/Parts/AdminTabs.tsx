@@ -52,10 +52,7 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
               size="sm"
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex items-center gap-2 flex-shrink-0",
-                activeTab === tab.id
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                "flex items-center gap-2 flex-shrink-0"
               )}
             >
               <Icon className="h-4 w-4" />

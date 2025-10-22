@@ -119,6 +119,30 @@ async function runTests() {
     };
   });
 
+  await test('GET /api/summary', async () => {
+    const response = await makeRequest('GET', '/api/summary');
+    return {
+      success: response.status === 200 && response.body.summary,
+      error: response.status !== 200 ? `Status ${response.status}` : 'No summary returned'
+    };
+  });
+
+  await test(`GET /api/summary?username=${testUsername}`, async () => {
+    const response = await makeRequest('GET', `/api/summary?username=${testUsername}`);
+    if (response.status === 200 && response.body.summary) {
+      const summary = response.body.summary;
+      console.log(`  📊 Summary for ${testUsername}:`);
+      console.log(`    Notes: ${summary.notes.total}`);
+      console.log(`    Checklists: ${summary.checklists.total}`);
+      console.log(`    Items: ${summary.items.total} (${summary.items.completed} completed)`);
+      console.log(`    Tasks: ${summary.tasks.total} (${summary.tasks.completed} completed)`);
+    }
+    return {
+      success: response.status === 200 && response.body.summary,
+      error: response.status !== 200 ? `Status ${response.status}` : 'No summary returned'
+    };
+  });
+
   await test(`POST /api/checklists/${testChecklistId}/items (regular)`, async () => {
     if (!testChecklistId) {
       return { success: false, error: 'No simple checklist found for testing' };

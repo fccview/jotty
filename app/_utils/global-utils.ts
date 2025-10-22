@@ -55,3 +55,28 @@ export const copyTextToClipboard = async (text: string): Promise<boolean> => {
     return false;
   }
 };
+
+export function encodeCategoryPath(categoryPath: string): string {
+  if (!categoryPath || categoryPath === "Uncategorized") {
+    return "";
+  }
+  return categoryPath
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+export function decodeCategoryPath(encodedPath: string): string {
+  if (!encodedPath) {
+    return "Uncategorized";
+  }
+  return encodedPath
+    .split("/")
+    .map((segment) => decodeURIComponent(segment))
+    .join("/");
+}
+
+export function buildCategoryPath(category: string, id: string): string {
+  const encodedCategory = encodeCategoryPath(category);
+  return encodedCategory ? `${encodedCategory}/${id}` : id;
+}

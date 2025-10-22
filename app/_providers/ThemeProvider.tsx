@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useSettings } from "@/app/_utils/settings-store";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
+import { useAppMode } from "./AppModeProvider";
 
 const themeIDs = BUILT_IN_THEMES.map((theme) => theme.id);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const { isRwMarkable } = useAppMode();
   const { theme, getResolvedTheme } = useSettings();
-  const [resolvedTheme, setResolvedTheme] = useState<string>('light');
+  const [resolvedTheme, setResolvedTheme] = useState<string>('system');
   const [customThemeColors, setCustomThemeColors] = useState<{
     [key: string]: any;
   }>({});
@@ -28,7 +30,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const updateResolvedTheme = () => {
-      const resolved = getResolvedTheme();
+      const resolved = getResolvedTheme(isRwMarkable);
       setResolvedTheme(resolved);
     };
 

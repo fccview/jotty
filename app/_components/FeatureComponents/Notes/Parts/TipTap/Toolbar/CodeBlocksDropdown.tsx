@@ -59,6 +59,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
             placeholder="Search languages..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onMouseDown={(e) => e.stopPropagation()}
             className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-sm focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>

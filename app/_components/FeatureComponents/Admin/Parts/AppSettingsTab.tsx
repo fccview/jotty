@@ -13,6 +13,7 @@ import { ImageUpload } from "@/app/_components/GlobalComponents/FormElements/Ima
 import { LoadingSpinner } from "@/app/_components/GlobalComponents/Layout/LoadingSpinner";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { AppSettings } from "@/app/_types";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 export const AppSettingsTab = () => {
   const { showToast } = useToast();
@@ -20,6 +21,7 @@ export const AppSettingsTab = () => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const { isRwMarkable } = useAppMode();
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -89,7 +91,9 @@ export const AppSettingsTab = () => {
       id: "appName",
       label: "Application Name",
       description: "Appears in the browser tab and PWA name.",
-      placeholder: "rwMarkable",
+      placeholder: isRwMarkable
+        ? "rwMarkable"
+        : "jotty·page",
     },
     {
       id: "appDescription",
@@ -131,6 +135,7 @@ export const AppSettingsTab = () => {
           {formFields.map((field) => (
             <Input
               key={field.id}
+              defaultValue={settings[field.id]}
               {...field}
               type="text"
               value={settings[field.id]}
@@ -147,7 +152,9 @@ export const AppSettingsTab = () => {
                 key={field.iconType}
                 {...field}
                 currentUrl={settings[field.iconType]}
-                onUpload={(iconType, url) => handleInputChange(iconType || "", url)}
+                onUpload={(iconType, url) =>
+                  handleInputChange(iconType || "", url)
+                }
               />
             ))}
           </div>

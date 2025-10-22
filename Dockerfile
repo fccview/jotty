@@ -48,6 +48,9 @@ RUN mkdir -p /app/.next/cache && \
 # Copy public directory
 COPY --from=builder /app/public ./public
 
+# Copy the howto directory
+COPY --from=builder /app/howto ./howto
+
 # Copy the entire .next directory
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 

@@ -48,7 +48,9 @@ function TimeEntriesAccordion({
       >
         <span className="flex items-center gap-1.5">
           <Clock className="h-3 w-3" />
-          <span className="font-medium text-left">{timeEntries.length} sessions</span>
+          <span className="font-medium text-left">
+            {timeEntries.length} sessions
+          </span>
           <span className="text-muted-foreground/60">•</span>
           <span className="font-semibold text-foreground">
             {formatTimerTime(totalTime)}
@@ -94,6 +96,7 @@ interface KanbanItemProps {
   item: Item;
   isDragging?: boolean;
   checklistId: string;
+  category: string;
   onUpdate?: () => void;
 }
 
@@ -101,6 +104,7 @@ export const KanbanItem = ({
   item,
   isDragging,
   checklistId,
+  category,
   onUpdate,
 }: KanbanItemProps) => {
   const [isRunning, setIsRunning] = useState(false);
@@ -173,6 +177,7 @@ export const KanbanItem = ({
         formData.append("listId", checklistId);
         formData.append("itemId", item.id);
         formData.append("timeEntries", JSON.stringify(updatedTimeEntries));
+        formData.append("category", category);
         await updateItemStatus(formData);
 
         setTotalTime(
@@ -207,6 +212,7 @@ export const KanbanItem = ({
         formData.append("listId", checklistId);
         formData.append("itemId", item.id);
         formData.append("timeEntries", JSON.stringify(updatedTimeEntries));
+        formData.append("category", category);
         await updateItemStatus(formData);
 
         setTotalTime(
@@ -229,6 +235,7 @@ export const KanbanItem = ({
     formData.append("listId", checklistId);
     formData.append("itemId", item.id);
     formData.append("timeEntries", JSON.stringify([]));
+    formData.append("category", item.category || "Uncategorized");
     await updateItemStatus(formData);
     setTotalTime(0);
     onUpdate?.();
@@ -239,6 +246,7 @@ export const KanbanItem = ({
     formData.append("listId", checklistId);
     formData.append("itemId", item.id);
     formData.append("status", newStatus);
+    formData.append("category", item.category || "Uncategorized");
     await updateItemStatus(formData);
     onUpdate?.();
   };
@@ -255,6 +263,7 @@ export const KanbanItem = ({
       formData.append("listId", checklistId);
       formData.append("itemId", item.id);
       formData.append("text", editText.trim());
+      formData.append("category", item.category || "Uncategorized");
       await updateItem(formData);
       onUpdate?.();
     }
@@ -270,6 +279,7 @@ export const KanbanItem = ({
       const formData = new FormData();
       formData.append("listId", checklistId);
       formData.append("itemId", item.id);
+      formData.append("category", item.category || "Uncategorized");
       await deleteItem(formData);
       onUpdate?.();
     }
@@ -367,7 +377,7 @@ export const KanbanItem = ({
         "group relative bg-background border rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
         getStatusColor(item.status),
         (isDragging || isSortableDragging) &&
-        "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+          "opacity-50 scale-95 rotate-1 shadow-lg z-50"
       )}
     >
       <div className="space-y-2">
@@ -434,7 +444,10 @@ export const KanbanItem = ({
             <div className="text-xs text-muted-foreground">
               {formatTimerTime(totalTime + currentTime)}
             </div>
-            <div className="flex gap-1" onPointerDown={(e) => e.stopPropagation()}>
+            <div
+              className="flex gap-1"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               <Button
                 variant={isRunning ? "default" : "ghost"}
                 size="sm"
@@ -466,7 +479,10 @@ export const KanbanItem = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-1" onPointerDown={(e) => e.stopPropagation()}>
+          <div
+            className="flex items-center gap-1"
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             {!isEditing && (
               <Button
                 variant="ghost"
@@ -493,7 +509,10 @@ export const KanbanItem = ({
             </Button>
           </div>
         </div>
-        <div className="sm:hidden w-full" onPointerDown={(e) => e.stopPropagation()}>
+        <div
+          className="sm:hidden w-full"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <Dropdown
             value={item.status || TaskStatus.TODO}
             options={statusOptions}

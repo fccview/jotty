@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { Download, X } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 export const InstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const { isRwMarkable } = useAppMode();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -65,12 +67,20 @@ export const InstallPrompt = () => {
   return (
     <div className="fixed bottom-4 left-[2vw] lg:left-auto lg:right-4 z-50 bg-background border border-border rounded-lg shadow-lg p-4 w-[96vw] lg:w-[300px]">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={handleInstallClick}>
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={handleInstallClick}
+        >
           <div className="p-2 bg-primary rounded-lg flex items-center justify-center">
             <Download className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h3 className="font-medium text-foreground hover:underline">Install rwMarkable</h3>
+            <h3 className="font-medium text-foreground hover:underline">
+              Install{" "}
+              {isRwMarkable
+                ? "rwMarkable"
+                : "jotty·page"}
+            </h3>
             <p className="text-sm text-muted-foreground">
               Add to your home screen for quick access
             </p>

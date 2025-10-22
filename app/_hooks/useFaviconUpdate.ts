@@ -2,11 +2,23 @@
 
 import { useCallback } from "react";
 import { getSettings } from "@/app/_server/actions/config";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 export const useFaviconUpdate = () => {
+  const { isRwMarkable } = useAppMode();
   const updateFavicons = useCallback(async () => {
     try {
       const settings = await getSettings();
+
+      if (isRwMarkable) {
+        let mainFavicon = document.querySelector(
+          'link[rel="icon"]:not([sizes])'
+        ) as HTMLLinkElement;
+
+        if (mainFavicon) {
+          mainFavicon.href = "/app-icons/legacy/favicon.ico";
+        }
+      }
 
       if (settings["16x16Icon"]) {
         let favicon16 = document.querySelector(
@@ -20,6 +32,17 @@ export const useFaviconUpdate = () => {
           document.head.appendChild(favicon16);
         }
         favicon16.href = settings["16x16Icon"];
+
+        let mainFavicon = document.querySelector(
+          'link[rel="icon"]:not([sizes])'
+        ) as HTMLLinkElement;
+        if (!mainFavicon) {
+          mainFavicon = document.createElement("link");
+          mainFavicon.rel = "icon";
+          mainFavicon.type = "image/png";
+          document.head.appendChild(mainFavicon);
+        }
+        mainFavicon.href = settings["16x16Icon"];
       }
 
       if (settings["32x32Icon"]) {

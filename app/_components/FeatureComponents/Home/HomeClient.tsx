@@ -8,6 +8,7 @@ import { Checklist, Category, Note, User } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { Modes } from "@/app/_types/enums";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 
 interface SharingStatus {
   isShared: boolean;
@@ -68,7 +69,13 @@ export const HomeClient = ({
         <ChecklistHome
           lists={initialLists}
           onCreateModal={openCreateChecklistModal}
-          onSelectChecklist={(id) => router.push(`/checklist/${id}`)}
+          onSelectChecklist={(list) => {
+            const categoryPath = buildCategoryPath(
+              list.category || "Uncategorized",
+              list.id
+            );
+            router.push(`/checklist/${categoryPath}`);
+          }}
         />
       )}
 
@@ -77,7 +84,13 @@ export const HomeClient = ({
           notes={initialDocs}
           categories={initialDocsCategories}
           onCreateModal={openCreateNoteModal}
-          onSelectNote={(id) => router.push(`/note/${id}`)}
+          onSelectNote={(note) => {
+            const categoryPath = buildCategoryPath(
+              note.category || "Uncategorized",
+              note.id
+            );
+            router.push(`/note/${categoryPath}`);
+          }}
         />
       )}
     </Layout>

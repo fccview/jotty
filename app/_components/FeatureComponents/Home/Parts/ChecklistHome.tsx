@@ -20,7 +20,7 @@ import { TaskStatusLabels } from "@/app/_types/enums";
 interface ChecklistHomeProps {
   lists: Checklist[];
   onCreateModal: () => void;
-  onSelectChecklist?: (id: string) => void;
+  onSelectChecklist?: (list: Checklist) => void;
 }
 
 export const ChecklistHome = ({
@@ -74,7 +74,7 @@ export const ChecklistHome = ({
           title="No checklists yet"
           description="Create your first checklist to get started. You can organize your tasks, track progress, and more."
           buttonText="Create New Checklist"
-          onButtonClick={onCreateModal}
+          onButtonClick={() => onCreateModal()}
         />
       </div>
     );
@@ -92,7 +92,7 @@ export const ChecklistHome = ({
               Your most recently updated checklists
             </p>
           </div>
-          <Button onClick={onCreateModal} size="lg">
+          <Button onClick={() => onCreateModal()} size="lg">
             <Plus className="h-5 w-5 mr-2" />
             New Checklist
           </Button>

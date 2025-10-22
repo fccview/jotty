@@ -22,6 +22,7 @@ import {
 } from "@/app/_utils/markdown-utils";
 import { lowlight } from "@/app/_utils/lowlight-utils";
 import Underline from "@tiptap/extension-underline";
+import HardBreak from "@tiptap/extension-hard-break";
 import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/KeyboardShortcuts";
 import { DetailsExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DetailsExtension";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
@@ -70,11 +71,13 @@ export const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
         link: false,
         listItem: false,
         bulletList: false,
+        hardBreak: false,
       }),
       ...generateCustomHtmlExtensions(),
       DetailsExtension,
       KeyboardShortcuts,
       Underline,
+      HardBreak,
       CodeBlockLowlight.configure({
         lowlight,
         defaultLanguage: "plaintext",
@@ -116,18 +119,31 @@ export const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
           class: "file-attachment",
         },
       }),
-      Table.configure({
+      Table.extend({
+        content: "tableRow+",
+      }).configure({
         resizable: true,
       }),
-      TableRow,
-      TableCell,
-      TableHeader,
-      ListItem,
-      TaskList,
-      TaskItem.configure({
-        nested: true,
+      TableRow.extend({
+        content: "(tableHeader | tableCell)*",
       }),
-      BulletList,
+      TableHeader.extend({
+        content: "block+",
+      }),
+      TableCell.extend({
+        content: "block+",
+      }),
+      ListItem.extend({
+        content: "block+",
+      }),
+      TaskList,
+      TaskItem.extend({
+        nested: true,
+        content: "block+",
+      }),
+      BulletList.extend({
+        content: "listItem+",
+      }),
     ],
     content: "",
     onUpdate: ({ editor }) => {

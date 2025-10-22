@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
   const ssoMode = process.env.SSO_MODE;
   const appUrl = process.env.APP_URL || request.nextUrl.origin;
 
-  if (ssoMode !== "oidc") {
+  if (ssoMode && ssoMode?.toLowerCase() !== "oidc") {
+    if (process.env.DEBUGGER) {
+      console.log("SSO LOGIN - ssoMode is not oidc");
+    }
+
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
@@ -26,15 +30,25 @@ export async function GET(request: NextRequest) {
     issuer = `${issuer}/`;
   }
   const clientId = process.env.OIDC_CLIENT_ID || "";
+
   if (!issuer || !clientId) {
+    if (process.env.DEBUGGER) {
+      console.log("SSO LOGIN - issuer or clientId is not set");
+    }
+
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
   const discoveryUrl = issuer.endsWith("/")
     ? `${issuer}.well-known/openid-configuration`
     : `${issuer}/.well-known/openid-configuration`;
+
   const discoveryRes = await fetch(discoveryUrl, { cache: "no-store" });
   if (!discoveryRes.ok) {
+    if (process.env.DEBUGGER) {
+      console.log("SSO LOGIN - discoveryUrl is not ok", discoveryRes);
+    }
+
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
   const discovery = (await discoveryRes.json()) as {
@@ -59,24 +73,31 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("state", state);
   url.searchParams.set("nonce", nonce);
 
+  if (process.env.DEBUGGER) {
+    console.log("SSO LOGIN - url", url);
+  }
+
   const response = NextResponse.redirect(url);
   response.cookies.set("oidc_verifier", verifier, {
     httpOnly: true,
-    secure: true,
+    secure:
+      process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
     sameSite: "lax",
     path: "/",
     maxAge: 600,
   });
   response.cookies.set("oidc_state", state, {
     httpOnly: true,
-    secure: true,
+    secure:
+      process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
     sameSite: "lax",
     path: "/",
     maxAge: 600,
   });
   response.cookies.set("oidc_nonce", nonce, {
     httpOnly: true,
-    secure: true,
+    secure:
+      process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
     sameSite: "lax",
     path: "/",
     maxAge: 600,

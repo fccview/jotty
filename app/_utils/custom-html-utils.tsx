@@ -34,6 +34,12 @@ export const customHtmlMarks: CustomHtmlMarkDefinition[] = [
     classes: "underline decoration-dotted cursor-help",
     attributesToPreserve: ["title"],
   },
+  {
+    name: "fontFamily",
+    tag: "span",
+    classes: "",
+    attributesToPreserve: ["style"],
+  },
 ];
 
 export const generateCustomHtmlExtensions = (): Mark[] => {
@@ -42,6 +48,24 @@ export const generateCustomHtmlExtensions = (): Mark[] => {
       name: markDef.name,
 
       addAttributes() {
+        if (markDef.name === "fontFamily") {
+          return {
+            style: {
+              default: null,
+              parseHTML: (element: HTMLElement) => {
+                const fontFamily = element.style.fontFamily;
+                return fontFamily ? `font-family: ${fontFamily}` : null;
+              },
+              renderHTML: (attributes: Record<string, any>) => {
+                if (!attributes.style) return {};
+                return {
+                  style: attributes.style,
+                };
+              },
+            },
+          };
+        }
+
         if (!markDef.attributesToPreserve) return {};
         const attrs: Record<string, { default: null }> = {};
         markDef.attributesToPreserve.forEach((attr) => {
@@ -51,6 +75,19 @@ export const generateCustomHtmlExtensions = (): Mark[] => {
       },
 
       parseHTML() {
+        if (markDef.name === "fontFamily") {
+          return [
+            {
+              tag: "span[style*='font-family']",
+              getAttrs: (node) => {
+                if (typeof node === "string") return false;
+                const fontFamily = (node as HTMLElement).style.fontFamily;
+                return fontFamily ? {} : false;
+              },
+            },
+          ];
+        }
+
         return [
           {
             tag: markDef.tag,
@@ -84,9 +121,25 @@ export const generateCustomHtmlExtensions = (): Mark[] => {
 export const addCustomHtmlTurndownRules = (service: TurndownService) => {
   customHtmlMarks.forEach((markDef) => {
     service.addRule(markDef.name, {
-      filter: (node) => node.nodeName.toLowerCase() === markDef.tag,
+      filter: (node) => {
+        if (markDef.name === "fontFamily") {
+          return (
+            node.nodeName.toLowerCase() === "span" &&
+            (node as HTMLElement).style.fontFamily !== ""
+          );
+        }
+        return node.nodeName.toLowerCase() === markDef.tag;
+      },
       replacement: (content, node) => {
         const element = node as HTMLElement;
+
+        if (markDef.name === "fontFamily") {
+          const fontFamily = element.style.fontFamily;
+          if (!fontFamily) return content;
+          const normalizedFont = fontFamily.replace(/"/g, "'");
+          return `<span style="font-family: ${normalizedFont}">${content}</span>`;
+        }
+
         let attrsString = "";
 
         if (markDef.attributesToPreserve) {

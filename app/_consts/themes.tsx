@@ -15,13 +15,26 @@ import {
   Palmtree,
   Building,
   Laptop,
+  Sparkles,
+  LucideIcon,
 } from "lucide-react";
 import {
   loadCustomThemes,
   processCustomThemes,
 } from "@/app/_utils/config-loader";
+import { LegacyLogo } from "@/app/_components/GlobalComponents/Layout/Logo/LegacyLogo";
 
-const ICON_MAP = {
+const LegacyLogoBlue = (props: any) => (
+  <LegacyLogo
+    {...props}
+    fillClass="fill-rwmarkable"
+    strokeClass="stroke-rwmarkable"
+  />
+);
+
+type IconComponent = LucideIcon | typeof LegacyLogo;
+
+const ICON_MAP: Record<string, IconComponent> = {
   Sun,
   Moon,
   Sunset,
@@ -38,12 +51,30 @@ const ICON_MAP = {
   Palmtree,
   Building,
   Laptop,
+  Sparkles,
+  LegacyLogo,
 };
 
-export const BUILT_IN_THEMES = [
+export const BUILT_IN_THEMES: Array<{
+  id: string;
+  name: string;
+  icon: IconComponent;
+}> = [
   { id: "system" as const, name: "System", icon: Laptop },
   { id: "light" as const, name: "Light", icon: Sun },
   { id: "dark" as const, name: "Dark", icon: Moon },
+  {
+    id: "rwmarkable-light" as const,
+    name: "RWMarkable Light",
+    icon: LegacyLogoBlue,
+  },
+  {
+    id: "rwmarkable-dark" as const,
+    name: "RWMarkable Dark",
+    icon: LegacyLogoBlue,
+  },
+  { id: "fccview" as const, name: "fccview", icon: Sparkles },
+  { id: "black-white" as const, name: "Black & White", icon: Palette },
   { id: "sunset" as const, name: "Sunset", icon: Sunset },
   { id: "ocean" as const, name: "Ocean", icon: Waves },
   { id: "forest" as const, name: "Forest", icon: Trees },

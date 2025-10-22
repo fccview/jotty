@@ -28,7 +28,7 @@ async function ensureUser(username: string, isAdmin: boolean) {
       if (content) {
         users = JSON.parse(content);
       }
-    } catch { }
+    } catch {}
 
     if (users.length === 0) {
       users.push({
@@ -161,6 +161,11 @@ export async function GET(request: NextRequest) {
   const sub = claims.sub as string | undefined;
   let username =
     preferred || (email ? email.split("@")[0] : undefined) || sub || "";
+
+  if (process.env.DEBUGGER) {
+    console.log("SSO CALLBACK - claims", claims);
+  }
+
   if (!username) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
@@ -176,10 +181,15 @@ export async function GET(request: NextRequest) {
   await ensureUser(username, isAdmin);
 
   const sessionId = base64UrlEncode(crypto.randomBytes(32));
+  const cookieName =
+    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      ? "__Host-session"
+      : "session";
   const response = NextResponse.redirect(`${appUrl}/`);
-  response.cookies.set("session", sessionId, {
+  response.cookies.set(cookieName, sessionId, {
     httpOnly: true,
-    secure: true,
+    secure:
+      process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
     sameSite: "lax",
     path: "/",
     maxAge: 30 * 24 * 60 * 60,
@@ -201,14 +211,14 @@ export async function GET(request: NextRequest) {
       if (content) {
         sessions = JSON.parse(content);
       }
-    } catch { }
+    } catch {}
     sessions[sessionId] = username;
     await fs.writeFile(sessionsFile, JSON.stringify(sessions, null, 2));
   } finally {
     await unlock(sessionsFile);
   }
 
-  await createSession(sessionId, username, 'sso');
+  await createSession(sessionId, username, "sso");
 
   response.cookies.delete("oidc_verifier");
   response.cookies.delete("oidc_state");

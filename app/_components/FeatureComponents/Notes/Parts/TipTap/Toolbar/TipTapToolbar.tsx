@@ -16,6 +16,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
 import { CodeBlockDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/CodeBlocksDropdown";
 import { TableInsertModal } from "@/app/_components/FeatureComponents/Notes/Parts/Table/TableInsertModal";
+import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
 import { useState } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ExtraItemsDropdown";
@@ -82,7 +83,7 @@ export const TiptapToolbar = ({
 
   return (
     <>
-      <div className="bg-background flex w-full items-center lg:gap-4 px-0 lg:px-2 lg:py-2 md:justify-between">
+      <div className={cn("bg-background flex w-full items-center lg:gap-4 px-0 lg:px-2 lg:py-2", isMarkdownMode ? "md:justify-end" : "md:justify-between")}>
         <div className="flex-shrink-0 md:order-last">
           <Button
             variant="ghost"
@@ -134,7 +135,8 @@ export const TiptapToolbar = ({
         <div
           className={cn(
             "flex flex-1 min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap md:flex-wrap md:whitespace-normal",
-            "hide-scrollbar scroll-fade-right"
+            "hide-scrollbar scroll-fade-right",
+            isMarkdownMode ? "hidden" : ""
           )}
         >
           <Button
@@ -193,6 +195,8 @@ export const TiptapToolbar = ({
           >
             <Code className="h-4 w-4" />
           </Button>
+          <div className="w-px h-6 bg-border mx-2" />
+          <FontFamilyDropdown editor={editor} />
           <div className="w-px h-6 bg-border mx-2" />
           <Button
             variant={

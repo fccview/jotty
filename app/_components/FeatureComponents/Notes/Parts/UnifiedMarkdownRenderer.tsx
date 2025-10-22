@@ -85,7 +85,7 @@ export const UnifiedMarkdownRenderer = ({
 
         let highlightedHtml: string;
 
-        if (language === "plaintext" || !lowlight.registered(language)) {
+        if (!lowlight.registered(language)) {
           highlightedHtml = rawCode;
         } else {
           const highlightedTree = lowlight.highlight(language, rawCode);
@@ -103,7 +103,7 @@ export const UnifiedMarkdownRenderer = ({
 
         return (
           <CodeBlockRenderer code={rawCode} language={language}>
-            {newCodeElement as ReactElement}
+            {lowlight.registered(language) ? (newCodeElement as any) : children}
           </CodeBlockRenderer>
         );
       }

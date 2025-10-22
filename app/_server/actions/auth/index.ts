@@ -12,7 +12,12 @@ import {
   writeSessionData,
   writeSessions,
 } from "../session";
-import { ensureCorDirsAndFiles, ensureDir, readJsonFile, writeJsonFile } from "../file";
+import {
+  ensureCorDirsAndFiles,
+  ensureDir,
+  readJsonFile,
+  writeJsonFile,
+} from "../file";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import fs from "fs/promises";
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
@@ -43,12 +48,16 @@ export const register = async (formData: FormData) => {
     return { error: "Passwords do not match" };
   }
 
-  const users = await readJsonFile(USERS_FILE) || [];
+  const users = (await readJsonFile(USERS_FILE)) || [];
 
   const isFirstUser = users.length === 0;
 
   if (users.length > 0) {
-    if (users.some((u: User) => u.username === username)) {
+    if (
+      users.some(
+        (u: User) => u.username.toLowerCase() === username.toLowerCase()
+      )
+    ) {
       return { error: "Username already exists" };
     }
   } else {
@@ -81,7 +90,12 @@ export const register = async (formData: FormData) => {
 
   await writeSessions(sessions);
 
-  cookies().set("session", sessionId, {
+  const cookieName =
+    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      ? "__Host-session"
+      : "session";
+
+  cookies().set(cookieName, sessionId, {
     httpOnly: true,
     secure:
       process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
@@ -113,13 +127,17 @@ export const login = async (formData: FormData) => {
   }
 
   const users = await readJsonFile(USERS_FILE);
-  const user = users.find((u: User) => u.username === username);
+  const user = users.find(
+    (u: User) => u.username.toLowerCase() === username.toLowerCase()
+  );
 
   if (!user || user.passwordHash !== hashPassword(password)) {
     return { error: "Invalid username or password" };
   }
 
-  const userIndex = users.findIndex((u: User) => u.username === username);
+  const userIndex = users.findIndex(
+    (u: User) => u.username.toLowerCase() === username.toLowerCase()
+  );
   if (userIndex !== -1) {
     users[userIndex].lastLogin = new Date().toISOString();
     await writeJsonFile(users, USERS_FILE);
@@ -129,13 +147,18 @@ export const login = async (formData: FormData) => {
     .update(Math.random().toString())
     .digest("hex");
   const sessions = await readSessions();
-  sessions[sessionId] = username;
+  sessions[sessionId] = user.username;
 
   await writeSessions(sessions);
 
-  await createSession(sessionId, username, "local");
+  await createSession(sessionId, user.username, "local");
 
-  cookies().set("session", sessionId, {
+  const cookieName =
+    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      ? "__Host-session"
+      : "session";
+
+  cookies().set(cookieName, sessionId, {
     httpOnly: true,
     secure:
       process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
@@ -148,7 +171,12 @@ export const login = async (formData: FormData) => {
 };
 
 export const logout = async () => {
-  const sessionId = cookies().get("session")?.value;
+  const cookieName =
+    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      ? "__Host-session"
+      : "session";
+
+  const sessionId = cookies().get(cookieName)?.value;
 
   if (sessionId) {
     const sessions = await readSessionData();
@@ -159,9 +187,9 @@ export const logout = async () => {
       await writeSessionData(sessions);
       await removeSession(sessionId);
 
-      cookies().delete("session");
+      cookies().delete(cookieName);
     } catch (error) {
-      cookies().delete("session");
+      cookies().delete(cookieName);
     }
   }
 

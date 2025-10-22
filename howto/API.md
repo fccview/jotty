@@ -23,7 +23,17 @@ x-api-key: ck_your_api_key_here
 
 **Note**: Replace `ck_your_api_key_here` with your actual API key.
 
-## Checklist Types
+## Organization Features
+
+### Categories
+
+All checklists and notes support categorization for better organization:
+
+- **Default Category**: Items without a specified category are automatically assigned to "Uncategorized"
+- **Category Filtering**: You can organize your content by categories like "Work", "Personal", "Shopping", etc.
+- **Category Breakdown**: The API provides category statistics in summary endpoints
+
+### Checklist Types
 
 The API supports two types of checklists:
 
@@ -108,6 +118,8 @@ Retrieves all checklists for the authenticated user.
   ]
 }
 ```
+
+**Note**: All checklists include a `category` field for organization. If no category is specified when creating a checklist, it defaults to "Uncategorized".
 
 ### 2. Create Checklist Item
 
@@ -198,6 +210,77 @@ Retrieves all notes/documents for the authenticated user.
 }
 ```
 
+**Note**: All notes include a `category` field for organization. If no category is specified when creating a note, it defaults to "Uncategorized".
+
+### 6. Get User Summary Statistics
+
+**GET** `/api/summary`
+
+Retrieves comprehensive statistics about the authenticated user's content, including notes, checklists, items, and tasks with category breakdowns.
+
+**Query Parameters:**
+
+- `username` (optional): Username to get summary for. If not provided, uses the authenticated user. **Note**: Only administrators can query other users' data.
+
+**Response:**
+
+```json
+{
+  "summary": {
+    "username": "fccview",
+    "notes": {
+      "total": 4,
+      "categories": {
+        "Personal": 2,
+        "Work": 2
+      }
+    },
+    "checklists": {
+      "total": 6,
+      "categories": {
+        "Work": 3,
+        "Personal": 2,
+        "Uncategorized": 1
+      },
+      "types": {
+        "simple": 4,
+        "task": 2
+      }
+    },
+    "items": {
+      "total": 27,
+      "completed": 3,
+      "pending": 24,
+      "completionRate": 11
+    },
+    "tasks": {
+      "total": 14,
+      "completed": 0,
+      "inProgress": 8,
+      "todo": 6,
+      "completionRate": 0
+    }
+  }
+}
+```
+
+**Response Fields:**
+
+- `notes.total`: Total number of notes
+- `notes.categories`: Breakdown of notes by category
+- `checklists.total`: Total number of checklists
+- `checklists.categories`: Breakdown of checklists by category
+- `checklists.types`: Breakdown of checklists by type (simple/task)
+- `items.total`: Total number of checklist items
+- `items.completed`: Number of completed items
+- `items.pending`: Number of pending items
+- `items.completionRate`: Percentage of completed items (0-100)
+- `tasks.total`: Total number of tasks (from task-type checklists)
+- `tasks.completed`: Number of completed tasks
+- `tasks.inProgress`: Number of in-progress tasks
+- `tasks.todo`: Number of todo tasks
+- `tasks.completionRate`: Percentage of completed tasks (0-100)
+
 ## Error Responses
 
 All endpoints return appropriate HTTP status codes:
@@ -205,6 +288,7 @@ All endpoints return appropriate HTTP status codes:
 - `200` - Success
 - `400` - Bad Request (invalid parameters)
 - `401` - Unauthorized (invalid or missing API key)
+- `403` - Forbidden (admin access required for certain operations)
 - `404` - Not Found (checklist/item not found)
 - `500` - Internal Server Error
 
@@ -316,6 +400,18 @@ curl -H "x-api-key: ck_your_api_key_here" \
      https://your-checklist-app.com/api/notes
 ```
 
+### Get user summary statistics
+
+```bash
+# Get summary for current user
+curl -H "x-api-key: ck_your_api_key_here" \
+     https://your-checklist-app.com/api/summary
+
+# Get summary for specific user (admin only)
+curl -H "x-api-key: ck_admin_api_key_here" \
+     "https://your-checklist-app.com/api/summary?username=testuser"
+```
+
 ### Export all checklists and notes
 
 ```bash
@@ -348,7 +444,11 @@ curl -H "x-api-key: ck_your_api_key_here" \
 - Item indices are 0-based (first item is index 0)
 - All timestamps are in ISO 8601 format
 - API keys are permanent and do not expire
-- Only items owned by the authenticated user are accessible
+- Only items owned by the authenticated user are accessible (unless you're an admin)
+- All checklists and notes support categorization for better organization
 - For task checklists, the `status` and `time` parameters are optional when creating items
 - Time tracking data is stored as JSON arrays with `id`, `startTime`, `endTime`, and `duration` fields
+- The summary endpoint provides comprehensive statistics including category breakdowns
+- Admin users can query summary data for any user using the `username` parameter
+- Non-admin users can only query their own summary data
 - This is a beta implementation - additional features will be added in future updates

@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { logout } from "@/app/_server/actions/auth";
 import { useRouter } from "next/navigation";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface ProfileTabProps {
   user: UserType | null;
@@ -34,8 +35,11 @@ export const ProfileTab = ({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(user?.avatarUrl);
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(
+    user?.avatarUrl
+  );
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const { isDemoMode } = useAppMode();
 
   useEffect(() => {
     setEditedUsername(user?.username || "");
@@ -74,7 +78,9 @@ export const ProfileTab = ({
       if (result.success) {
         setSuccess("Profile updated successfully!");
         setUser((prev: UserType | null) =>
-          prev ? { ...prev, username: editedUsername, avatarUrl: avatarUrl } : null
+          prev
+            ? { ...prev, username: editedUsername, avatarUrl: avatarUrl }
+            : null
         );
         setNewPassword("");
         setConfirmPassword("");
@@ -94,7 +100,10 @@ export const ProfileTab = ({
     }
   };
 
-  const handleAvatarUpload = async (_iconType: keyof AppSettings | undefined, url: string) => {
+  const handleAvatarUpload = async (
+    _iconType: keyof AppSettings | undefined,
+    url: string
+  ) => {
     setIsUploadingAvatar(true);
     try {
       setAvatarUrl(url);
@@ -138,6 +147,13 @@ export const ProfileTab = ({
     }
   };
 
+  const isUsernameDisabled = isLoading || isSsoUser || isDemoMode;
+  const isSaveButtonDisabled = isLoading || isUploadingAvatar || isDemoMode;
+  const isAvatarDisabled = isUploadingAvatar || isLoading || isDemoMode;
+  const isCurrentPasswordDisabled = isLoading || isDemoMode;
+  const isNewPasswordDisabled = isLoading || isDemoMode;
+  const isConfirmPasswordDisabled = isLoading || isDemoMode;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -161,19 +177,26 @@ export const ProfileTab = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
           <div className="flex flex-col items-center gap-4 p-4 border border-border rounded-lg">
-            <UserAvatar username={editedUsername} avatarUrl={avatarUrl} size="lg" className="w-24 h-24 text-5xl" />
-            <ImageUpload
-              label="Avatar"
-              description="Upload a profile picture (PNG, JPG, WebP up to 5MB)"
-              currentUrl={avatarUrl || ""}
-              onUpload={handleAvatarUpload}
-              customUploadAction={uploadUserAvatar}
+            <UserAvatar
+              username={editedUsername}
+              avatarUrl={avatarUrl}
+              size="lg"
+              className="w-24 h-24 text-5xl"
             />
+            {!isDemoMode && (
+              <ImageUpload
+                label="Avatar"
+                description="Upload a profile picture (PNG, JPG, WebP up to 5MB)"
+                currentUrl={avatarUrl || ""}
+                onUpload={handleAvatarUpload}
+                customUploadAction={uploadUserAvatar}
+              />
+            )}
             {avatarUrl && (
               <Button
                 variant="ghost"
                 onClick={handleRemoveAvatar}
-                disabled={isUploadingAvatar || isLoading}
+                disabled={isAvatarDisabled}
                 className="text-destructive hover:bg-destructive/10"
               >
                 Remove Avatar
@@ -184,7 +207,9 @@ export const ProfileTab = ({
         <div className="md:col-span-2 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm font-medium text-foreground">Member Since</p>
+              <p className="text-sm font-medium text-foreground">
+                Member Since
+              </p>
               <p className="text-sm text-muted-foreground">
                 {user?.createdAt
                   ? new Date(user.createdAt).toLocaleDateString()
@@ -208,7 +233,7 @@ export const ProfileTab = ({
               onChange={(e) => setEditedUsername(e.target.value)}
               placeholder="Your username"
               defaultValue={user?.username}
-              disabled={isLoading || isSsoUser}
+              disabled={isUsernameDisabled}
               className="mt-1"
             />
           </div>
@@ -225,6 +250,7 @@ export const ProfileTab = ({
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter current password"
                 className="mt-1"
+                disabled={isCurrentPasswordDisabled}
               />
             </div>
 
@@ -237,6 +263,7 @@ export const ProfileTab = ({
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Enter new password (optional)"
                 className="mt-1"
+                disabled={isNewPasswordDisabled}
               />
             </div>
 
@@ -249,18 +276,19 @@ export const ProfileTab = ({
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
                 className="mt-1"
+                disabled={isConfirmPasswordDisabled}
               />
             </div>
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button onClick={handleSaveProfile} disabled={isLoading || isUploadingAvatar}>
-              {isLoading || isUploadingAvatar ? (
+            <Button onClick={handleSaveProfile} disabled={isSaveButtonDisabled}>
+              {isLoading ? (
                 "Saving..."
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                  {isDemoMode ? "Disabled in demo mode" : "Save Changes"}
                 </>
               )}
             </Button>

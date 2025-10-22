@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Checklist } from "@/app/_types";
-import { createItem, updateItemStatus, createBulkItems, reorderItems } from "@/app/_server/actions/checklist-item";
+import {
+  createItem,
+  updateItemStatus,
+  createBulkItems,
+  reorderItems,
+} from "@/app/_server/actions/checklist-item";
 import { getLists } from "@/app/_server/actions/checklist";
 import { TaskStatus } from "@/app/_types/enums";
 
@@ -89,7 +94,9 @@ export const useKanbanBoard = ({
       const itemsWithStatus = localChecklist.items.filter(
         (item) => item.status === newStatus
       );
-      const oldIndex = itemsWithStatus.findIndex((item) => item.id === activeId);
+      const oldIndex = itemsWithStatus.findIndex(
+        (item) => item.id === activeId
+      );
       const newIndex = itemsWithStatus.findIndex((item) => item.id === overId);
 
       if (oldIndex === -1 || newIndex === -1) return;
@@ -111,8 +118,12 @@ export const useKanbanBoard = ({
 
       const formData = new FormData();
       formData.append("listId", localChecklist.id);
-      formData.append("itemIds", JSON.stringify(allItems.map(item => item.id)));
+      formData.append(
+        "itemIds",
+        JSON.stringify(allItems.map((item) => item.id))
+      );
       formData.append("currentItems", JSON.stringify(allItems));
+      formData.append("category", localChecklist.category || "Uncategorized");
 
       const result = await reorderItems(formData);
 
@@ -126,6 +137,7 @@ export const useKanbanBoard = ({
       formData.append("listId", localChecklist.id);
       formData.append("itemId", activeId);
       formData.append("status", newStatus);
+      formData.append("category", localChecklist.category || "Uncategorized");
 
       const result = await updateItemStatus(formData);
 
@@ -141,6 +153,7 @@ export const useKanbanBoard = ({
     const formData = new FormData();
     formData.append("listId", localChecklist.id);
     formData.append("text", text);
+    formData.append("category", localChecklist.category || "Uncategorized");
 
     const result = await createItem(formData);
     setIsLoading(false);
@@ -162,6 +175,7 @@ export const useKanbanBoard = ({
     const formData = new FormData();
     formData.append("listId", localChecklist.id);
     formData.append("itemsText", itemsText);
+    formData.append("category", localChecklist.category || "Uncategorized");
     const result = await createBulkItems(formData);
     setIsLoading(false);
 

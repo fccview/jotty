@@ -10,7 +10,7 @@ interface AppNameProps {
 
 export const AppName = ({
   className,
-  fallback = "rwMarkable",
+  fallback = "jotty·page",
 }: AppNameProps) => {
   const [appName, setAppName] = useState<string>(fallback);
   const [loading, setLoading] = useState(true);
@@ -42,11 +42,12 @@ export const AppName = ({
         <>
           <span className="text-primary">rw</span>Markable
         </>
-      ) : (
+      ) : appName === "jotty·page" ? (
         <>
-          <span className="text-primary">{appName.slice(0, 2)}</span>
-          {appName.slice(2)}
+          <span className="text-primary">jotty</span>·page
         </>
+      ) : (
+        appName
       )}
     </span>
   );

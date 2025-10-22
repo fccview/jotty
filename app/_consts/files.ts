@@ -6,6 +6,7 @@ import { NOTES_FOLDER } from "./notes";
 export const SHARING_DIR = path.join("data", "sharing");
 export const USERS_DIR = path.join("data", "users");
 export const DATA_DIR = path.join("data");
+export const HOWTO_DIR = path.join("howto");
 
 export const CHECKLISTS_DIR = (username: string) =>
   path.join(DATA_DIR, CHECKLISTS_FOLDER, username);

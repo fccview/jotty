@@ -14,6 +14,7 @@ import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/C
 import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/SettingsModals/Settings";
 import { Category, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "./AppModeProvider";
 import { useNavigationGuard } from "./NavigationGuardProvider";
@@ -180,7 +181,13 @@ export const ShortcutProvider = ({
         <CreateNoteModal
           onClose={() => setShowCreateNoteModal(false)}
           onCreated={(newNote) => {
-            if (newNote) router.push(`/note/${newNote.id}`);
+            if (newNote) {
+              const categoryPath = buildCategoryPath(
+                newNote.category || "Uncategorized",
+                newNote.id
+              );
+              router.push(`/note/${categoryPath}`);
+            }
             setShowCreateNoteModal(false);
             router.refresh();
           }}
@@ -193,7 +200,11 @@ export const ShortcutProvider = ({
           onClose={() => setShowCreateChecklistModal(false)}
           onCreated={(newChecklist) => {
             if (newChecklist) {
-              router.push(`/checklist/${newChecklist.id}`);
+              const categoryPath = buildCategoryPath(
+                newChecklist.category || "Uncategorized",
+                newChecklist.id
+              );
+              router.push(`/checklist/${categoryPath}`);
             }
             setShowCreateChecklistModal(false);
             router.refresh();

@@ -295,7 +295,7 @@ For more advanced formatting, you can use the following HTML tags directly in th
             <p><strong>Image</strong></p>
          </td>
          <td colspan="1" rowspan="1">
-            <p><img src="https://raw.githubusercontent.com/fccview/rwMarkable/refs/heads/main/public/app-icons/favicon-32x32.png" alt="rwMarkable Icon" width="32"></p>
+            <p><img src="https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-icons/favicon-32x32.png" alt="jotty Icon" width="32"></p>
          </td>
          <td colspan="1" rowspan="1">
             <p><code>![Alt Text](/path/to/image.jpg)</code></p>

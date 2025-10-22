@@ -28,17 +28,19 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.token }}
-          
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.repo.outputs.name }}
+          images: |
+            ghcr.io/${{ steps.repo.outputs.name }}
+            ghcr.io/fccview/rwmarkable
           tags: |
             type=ref,event=branch,suffix=${{ inputs.suffix }}
             type=ref,event=tag,suffix=${{ inputs.suffix }}
             type=raw,value=latest,suffix=${{ inputs.suffix }}
-            
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:

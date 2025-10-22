@@ -14,7 +14,7 @@ export interface SessionData {
   ipAddress: string;
   createdAt: string;
   lastActivity: string;
-  loginType?: 'local' | 'sso';
+  loginType?: "local" | "sso";
 }
 
 export interface Session {
@@ -46,7 +46,7 @@ export const readSessions = async (): Promise<Session> => {
 export const createSession = async (
   sessionId: string,
   username: string,
-  loginType: 'local' | 'sso',
+  loginType: "local" | "sso"
 ): Promise<void> => {
   const headersList = headers();
   const userAgent = headersList.get("user-agent") || "Unknown";
@@ -101,10 +101,14 @@ export const getSessionsForUser = async (
 };
 
 export const getSessionId = async (): Promise<string> => {
-  return cookies().get("session")?.value || "";
+  const cookieName =
+    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      ? "__Host-session"
+      : "session";
+  return cookies().get(cookieName)?.value || "";
 };
 
-export const getLoginType = async (): Promise<'local' | 'sso' | undefined> => {
+export const getLoginType = async (): Promise<"local" | "sso" | undefined> => {
   const sessionId = await getSessionId();
   if (!sessionId) return undefined;
 
@@ -198,7 +202,11 @@ export const terminateAllOtherSessions = async (): Promise<Result<null>> => {
       };
     }
 
-    const sessionId = cookies().get("session")?.value;
+    const cookieName =
+      process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+        ? "__Host-session"
+        : "session";
+    const sessionId = cookies().get(cookieName)?.value;
 
     await removeAllSessionsForUser(currentUser.username, sessionId);
 

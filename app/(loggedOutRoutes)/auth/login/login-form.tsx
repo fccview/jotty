@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { login } from "@/app/_server/actions/auth";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 export default function LoginForm() {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const { isDemoMode } = useAppMode();
+  const { isRwMarkable } = useAppMode();
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
     setError("");
@@ -28,8 +30,18 @@ export default function LoginForm() {
           Welcome back
         </h1>
         <p className="text-sm text-muted-foreground">
-          Enter your credentials to access your checklists
+          Enter your credentials to access{" "}
+          {isRwMarkable
+            ? "rwMarkable"
+            : "jotty·page"}
         </p>
+
+        {isDemoMode && (
+          <div className="bg-muted p-4">
+            <strong>username: </strong>demo <br />
+            <strong>password: </strong>demodemo
+          </div>
+        )}
       </div>
 
       <form action={handleSubmit} className="space-y-4">

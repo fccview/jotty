@@ -88,6 +88,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                     items={items}
                     status={column.status}
                     checklistId={localChecklist.id}
+                    category={localChecklist.category || "Uncategorized"}
                     onUpdate={refreshChecklist}
                   />
                 );
@@ -100,6 +101,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   item={activeItem}
                   isDragging
                   checklistId={localChecklist.id}
+                  category={localChecklist.category || "Uncategorized"}
                   onUpdate={refreshChecklist}
                 />
               ) : null}
@@ -117,6 +119,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   items={items}
                   status={column.status}
                   checklistId={localChecklist.id}
+                  category={localChecklist.category || "Uncategorized"}
                   onUpdate={refreshChecklist}
                 />
               );

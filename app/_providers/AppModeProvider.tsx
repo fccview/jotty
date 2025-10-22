@@ -16,11 +16,21 @@ interface AppModeContextType {
   selectedNote: string | null;
   setSelectedNote: (id: string | null) => void;
   isInitialized: boolean;
+  isDemoMode: boolean;
+  isRwMarkable: boolean;
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
-export const AppModeProvider = ({ children }: { children: ReactNode }) => {
+export const AppModeProvider = ({
+  children,
+  isDemoMode = false,
+  isRwMarkable = false
+}: {
+  children: ReactNode;
+  isDemoMode?: boolean;
+  isRwMarkable?: boolean;
+}) => {
   const [mode, setMode] = useState<AppMode>(Modes.CHECKLISTS);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -46,6 +56,8 @@ export const AppModeProvider = ({ children }: { children: ReactNode }) => {
         selectedNote,
         setSelectedNote,
         isInitialized,
+        isDemoMode,
+        isRwMarkable,
       }}
     >
       {children}

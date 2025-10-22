@@ -5,6 +5,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useSessionManager } from "@/app/_hooks/useSessionManager";
 import { SessionCard } from "@/app/_components/GlobalComponents/Cards/SessionCard";
 import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/FeedbackMessage";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 export const SessionManager = () => {
   const {
@@ -16,6 +17,8 @@ export const SessionManager = () => {
     handleTerminateSession,
     handleTerminateAllOtherSessions,
   } = useSessionManager();
+
+  const { isDemoMode } = useAppMode();
 
   if (isLoading) {
     return (
@@ -36,7 +39,7 @@ export const SessionManager = () => {
             {sessions.length} active session{sessions.length !== 1 && "s"}
           </p>
         </div>
-        {sessions.some((s) => !s.isCurrent) && (
+        {sessions.some((s) => !s.isCurrent) && !isDemoMode && (
           <Button
             variant="outline"
             onClick={handleTerminateAllOtherSessions}

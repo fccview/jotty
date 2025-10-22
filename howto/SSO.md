@@ -1,6 +1,6 @@
-# Single Sign-On (SSO) with OIDC
+# SSO with OIDC
 
-`rwMarkable` supports any OIDC provider (Authentik, Auth0, Keycloak, Okta, etc.) with these requirements:
+`jotty·page` supports any OIDC provider (Authentik, Auth0, Keycloak, Okta, etc.) with these requirements:
 
 - Supports PKCE (most modern providers do)
 - Can be configured as a public client (no client secret needed)
@@ -23,18 +23,18 @@
 
 ```yaml
 services:
-  rwmarkable:
+  jotty:
     environment:
       - SSO_MODE=oidc
       - OIDC_ISSUER=https://YOUR_SSO_HOST/issuer/path
       - OIDC_CLIENT_ID=your_client_id
-      - APP_URL=https://your-rwmarkable-domain.com # if not set defaults to http://localhost:<port>
+      - APP_URL=https://your-jotty-domain.com # if not set defaults to http://localhost:<port>
       # Optional security enhancements:
       - OIDC_CLIENT_SECRET=your_client_secret # Enable confidential client mode (if your provider requires it)
       - SSO_FALLBACK_LOCAL=true # Allow both SSO and local login
       - OIDC_ADMIN_GROUPS=admins # Map provider groups to admin role
 
-Note: When OIDC_CLIENT_SECRET is set, rwMarkable switches to confidential client mode using client authentication instead of PKCE. This is more secure but requires provider support.
+Note: When OIDC_CLIENT_SECRET is set, jotty·page switches to confidential client mode using client authentication instead of PKCE. This is more secure but requires provider support.
 ```
 
 Dev verified Providers:

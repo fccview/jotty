@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Logo } from "./Logo";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { getSettings } from "@/app/_server/actions/config";
+import { LegacyLogo } from "@/app/_components/GlobalComponents/Layout/Logo/LegacyLogo";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface DynamicLogoProps {
   className?: string;
@@ -15,6 +17,7 @@ export const DynamicLogo = ({
 }: DynamicLogoProps) => {
   const [customIcon, setCustomIcon] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isRwMarkable } = useAppMode();
 
   useEffect(() => {
     const loadCustomIcon = async () => {
@@ -24,8 +27,8 @@ export const DynamicLogo = ({
           size === "16x16"
             ? "16x16Icon"
             : size === "32x32"
-            ? "32x32Icon"
-            : "180x180Icon";
+              ? "32x32Icon"
+              : "180x180Icon";
         const iconUrl = settings[iconKey];
 
         if (iconUrl) {
@@ -58,5 +61,9 @@ export const DynamicLogo = ({
     );
   }
 
-  return <Logo className={className} />;
+  return isRwMarkable ? (
+    <LegacyLogo className={className} />
+  ) : (
+    <Logo className={className} />
+  );
 };

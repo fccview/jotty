@@ -16,6 +16,7 @@ interface KanbanColumnProps {
   items: Item[];
   status: TaskStatus;
   checklistId: string;
+  category: string;
   onUpdate?: () => void;
 }
 
@@ -25,6 +26,7 @@ export const KanbanColumn = ({
   items,
   status,
   checklistId,
+  category,
   onUpdate,
 }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({
@@ -90,6 +92,7 @@ export const KanbanColumn = ({
                 key={item.id}
                 item={item}
                 checklistId={checklistId}
+                category={category}
                 onUpdate={onUpdate}
               />
             ))}

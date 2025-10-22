@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Checklist, Category, Note, AppMode, User } from "../_types";
 import { Modes } from "../_types/enums";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
+import { buildCategoryPath } from "../_utils/global-utils";
 
 interface SharingStatus {
   isShared: boolean;
@@ -35,7 +36,7 @@ export const useSidebar = (props: SidebarProps) => {
     sharingStatuses = {},
     onCategoryDeleted,
     onCategoryRenamed,
-    onClose
+    onClose,
   } = props;
 
   const router = useRouter();
@@ -209,7 +210,13 @@ export const useSidebar = (props: SidebarProps) => {
     });
   const handleItemClick = (item: Checklist | Note) =>
     checkNavigation(() => {
-      router.push(`/${mode === Modes.NOTES ? "note" : "checklist"}/${item.id}`);
+      const categoryPath = buildCategoryPath(
+        item.category || "Uncategorized",
+        item.id
+      );
+      router.push(
+        `/${mode === Modes.NOTES ? "note" : "checklist"}/${categoryPath}`
+      );
       onClose();
     });
   const handleEditItem = (item: Checklist | Note) =>
@@ -224,8 +231,16 @@ export const useSidebar = (props: SidebarProps) => {
     });
   };
 
-  const isItemSelected = (item: Checklist | Note) =>
-    pathname === `/${mode === Modes.NOTES ? "note" : "checklist"}/${item.id}`;
+  const isItemSelected = (item: Checklist | Note) => {
+    const expectedPath = buildCategoryPath(
+      item.category || "Uncategorized",
+      item.id
+    );
+    return (
+      pathname ===
+      `/${mode === Modes.NOTES ? "note" : "checklist"}/${expectedPath}`
+    );
+  };
   const getSharingStatus = (itemId: string) => sharingStatuses[itemId] || null;
 
   const expandCategoryPath = useCallback(

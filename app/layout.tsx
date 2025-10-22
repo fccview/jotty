@@ -19,7 +19,10 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
-  const appName = settings?.appName || "rwMarkable";
+  const ogName = settings?.isRwMarkable
+    ? "rwMarkable"
+    : "jotty·page";
+  const appName = settings?.appName || ogName;
   const appDescription =
     settings?.appDescription ||
     "A simple, fast, and lightweight checklist and notes application";
@@ -33,7 +36,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
   return {
     title: appName,
     description: appDescription,
-    manifest: "/app-icons/site.webmanifest",
+    manifest: "/site.webmanifest",
     icons: {
       icon: [
         {
@@ -81,8 +84,6 @@ export default async function RootLayout({
   const checklistCategories = await getCategories(Modes.CHECKLISTS);
   const user = await getCurrentUser();
 
-  redirectGuards();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -93,8 +94,8 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={inter.className}>
-        <ThemeProvider>
-          <AppModeProvider>
+        <AppModeProvider isDemoMode={settings?.isDemo || false} isRwMarkable={settings?.rwmarkable || false}>
+          <ThemeProvider>
             <ChecklistProvider>
               <NavigationGuardProvider>
                 <ToastProvider>
@@ -112,8 +113,8 @@ export default async function RootLayout({
                 </ToastProvider>
               </NavigationGuardProvider>
             </ChecklistProvider>
-          </AppModeProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AppModeProvider>
       </body>
     </html>
   );

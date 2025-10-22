@@ -6,7 +6,7 @@ import { TaskSpecificDetails } from "@/app/_components/GlobalComponents/Cards/Ta
 
 interface ChecklistCardProps {
   list: Checklist;
-  onSelect: (id: string) => void;
+  onSelect: (list: Checklist) => void;
 }
 
 export const ChecklistCard = ({ list, onSelect }: ChecklistCardProps) => {
@@ -19,7 +19,7 @@ export const ChecklistCard = ({ list, onSelect }: ChecklistCardProps) => {
 
   return (
     <div
-      onClick={() => onSelect(list.id)}
+      onClick={() => onSelect(list)}
       className="bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group"
     >
       <div className="flex items-start justify-between mb-3">

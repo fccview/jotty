@@ -4,7 +4,11 @@ import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
 import { Result } from "@/app/_types";
 import { User } from "@/app/_types";
-import { readSessions, removeAllSessionsForUser } from "../session";
+import {
+  getSessionId,
+  readSessions,
+  removeAllSessionsForUser,
+} from "../session";
 import fs from "fs/promises";
 import { cookies } from "next/headers";
 import { createHash } from "crypto";
@@ -54,7 +58,9 @@ async function _deleteUserCore(username: string): Promise<Result<null>> {
   return { success: true, data: null };
 }
 
-export const getUserByUsername = async (username: string): Promise<User | null> => {
+export const getUserByUsername = async (
+  username: string
+): Promise<User | null> => {
   const allUsers = await readJsonFile(USERS_FILE);
   return allUsers.find((user: User) => user.username === username) || null;
 };
@@ -89,7 +95,10 @@ async function _updateUserCore(
       const newChecklistsPath = CHECKLISTS_DIR(updates.username);
       await fs.rename(oldChecklistsPath, newChecklistsPath);
     } catch (error) {
-      console.warn(`Could not rename checklists directory for ${targetUsername}:`, error);
+      console.warn(
+        `Could not rename checklists directory for ${targetUsername}:`,
+        error
+      );
     }
 
     try {
@@ -97,7 +106,10 @@ async function _updateUserCore(
       const newNotesPath = NOTES_DIR(updates.username);
       await fs.rename(oldNotesPath, newNotesPath);
     } catch (error) {
-      console.warn(`Could not rename notes directory for ${targetUsername}:`, error);
+      console.warn(
+        `Could not rename notes directory for ${targetUsername}:`,
+        error
+      );
     }
   }
 
@@ -194,7 +206,7 @@ export const createUser = async (
 export const getCurrentUser = async (): Promise<User | null> => {
   const users = await readJsonFile(USERS_FILE);
 
-  const sessionId = cookies().get("session")?.value;
+  const sessionId = await getSessionId();
   const sessions = await readSessions();
   const username = sessions[sessionId || ""];
 
@@ -293,7 +305,7 @@ export const updateProfile = async (
     }
 
     if (avatarUrl !== undefined) {
-      updates.avatarUrl = avatarUrl === '' ? undefined : avatarUrl;
+      updates.avatarUrl = avatarUrl === "" ? undefined : avatarUrl;
     }
 
     if (newPassword) {

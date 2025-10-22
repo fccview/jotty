@@ -1,6 +1,6 @@
-# ⌨️ Keyboard Shortcuts
+# Shortcuts
 
-rwMarkable supports a wide range of keyboard shortcuts to help you navigate and edit more efficiently without leaving the keyboard. They are divided into two main categories: global shortcuts that work anywhere in the app, and editor-specific shortcuts that work when you are writing a note.
+jotty·page supports a wide range of keyboard shortcuts to help you navigate and edit more efficiently without leaving the keyboard. They are divided into two main categories: global shortcuts that work anywhere in the app, and editor-specific shortcuts that work when you are writing a note.
 
 ### Global App Shortcuts
 

@@ -45,18 +45,33 @@ export const SidebarItem = ({
         className={cn(
           "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors flex-1 text-left truncate",
           isSelected
-            ? "bg-primary/10 text-primary"
+            ? "bg-primary/60 text-primary-foreground"
             : "hover:bg-muted/50 text-foreground"
         )}
       >
         {mode === Modes.NOTES ? (
-          <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <FileText
+            className={cn(
+              "h-4 w-4 text-foreground flex-shrink-0",
+              isSelected ? "text-primary-foreground" : "text-foreground"
+            )}
+          />
         ) : (
           <>
             {"type" in item && item.type === "task" ? (
-              <BarChart3 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <BarChart3
+                className={cn(
+                  "h-4 w-4 text-foreground flex-shrink-0",
+                  isSelected ? "text-primary-foreground" : "text-foreground"
+                )}
+              />
             ) : (
-              <CheckSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <CheckSquare
+                className={cn(
+                  "h-4 w-4 text-foreground flex-shrink-0",
+                  isSelected ? "text-primary-foreground" : "text-foreground"
+                )}
+              />
             )}
           </>
         )}
@@ -64,10 +79,20 @@ export const SidebarItem = ({
 
         <div className="flex items-center gap-1 flex-shrink-0">
           {sharingStatus?.isPubliclyShared && (
-            <Globe className="h-3 w-3 text-primary" />
+            <Globe
+              className={cn(
+                "h-3 w-3 text-primary",
+                isSelected ? "text-primary-foreground" : "text-foreground"
+              )}
+            />
           )}
           {sharingStatus?.isShared && !sharingStatus.isPubliclyShared && (
-            <Users className="h-3 w-3 text-primary" />
+            <Users
+              className={cn(
+                "h-3 w-3 text-primary",
+                isSelected ? "text-primary-foreground" : "text-foreground"
+              )}
+            />
           )}
         </div>
       </button>

@@ -4,6 +4,7 @@ import typescript from "highlight.js/lib/languages/typescript";
 import python from "highlight.js/lib/languages/python";
 import css from "highlight.js/lib/languages/css";
 import html from "highlight.js/lib/languages/xml";
+import xml from "highlight.js/lib/languages/xml";
 import sql from "highlight.js/lib/languages/sql";
 import bash from "highlight.js/lib/languages/bash";
 import json from "highlight.js/lib/languages/json";
@@ -38,6 +39,7 @@ import verilog from "highlight.js/lib/languages/verilog";
 import scss from "highlight.js/lib/languages/scss";
 import less from "highlight.js/lib/languages/less";
 import shell from "highlight.js/lib/languages/shell";
+import plaintext from "highlight.js/lib/languages/plaintext";
 
 export const lowlight = createLowlight();
 
@@ -87,3 +89,5 @@ lowlight.register("verilog", verilog);
 lowlight.register("scss", scss);
 lowlight.register("less", less);
 lowlight.register("shell", shell);
+lowlight.register("xml", xml);
+lowlight.register("plaintext", plaintext);

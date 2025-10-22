@@ -2,7 +2,7 @@ name: Build and Publish Multi-Platform Docker Image
 
 on:
   push:
-    branches: ["main", "develop"]
+    branches: ["main", "develop", "feature/rebranding"]
     tags: ["*"]
 
 jobs:
@@ -33,11 +33,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.repo.outputs.name }}
+          images: |
+            ghcr.io/${{ steps.repo.outputs.name }}
+            ghcr.io/fccview/rwmarkable
           tags: |
             type=ref,event=branch,suffix=-amd64
             type=ref,event=tag,suffix=-amd64
-            type=raw,value=latest,suffix=-amd64
+            type=raw,value=latest,suffix=-amd64,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
 
       - name: Build and push AMD64 Docker image
         uses: docker/build-push-action@v5
@@ -80,11 +82,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.repo.outputs.name }}
+          images: |
+            ghcr.io/${{ steps.repo.outputs.name }}
+            ghcr.io/fccview/rwmarkable
           tags: |
             type=ref,event=branch,suffix=-arm64
             type=ref,event=tag,suffix=-arm64
-            type=raw,value=latest,suffix=-arm64
+            type=raw,value=latest,suffix=-arm64,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
 
       - name: Build and push ARM64 Docker image
         uses: docker/build-push-action@v5
@@ -120,11 +124,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.repo.outputs.name }}
+          images: |
+            ghcr.io/${{ steps.repo.outputs.name }}
+            ghcr.io/fccview/rwmarkable
           tags: |
             type=ref,event=branch
             type=ref,event=tag
-            type=raw,value=latest,enable=true
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
 
       - name: Create and push manifest list
         run: |

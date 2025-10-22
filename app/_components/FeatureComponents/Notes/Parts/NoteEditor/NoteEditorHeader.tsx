@@ -80,7 +80,7 @@ export const NoteEditorHeader = ({
     <>
       <div className="bg-background border-b border-border px-4 py-3 sticky top-0 z-20">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0 focus-within:min-w-[90%] transition-all duration-100">
+          <div className="flex items-center gap-3 flex-1 min-w-0 focus-within:min-w-[90%] lg:focus-within:min-w-[20%] transition-all duration-100">
             <Button
               variant="ghost"
               size="icon"
