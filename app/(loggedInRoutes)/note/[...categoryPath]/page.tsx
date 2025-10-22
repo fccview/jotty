@@ -11,7 +11,7 @@ import { Modes } from "@/app/_types/enums";
 import { getCategories } from "@/app/_server/actions/category";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
-import { decodeCategoryPath } from "@/app/_utils/global-utils";
+import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 
 interface NotePageProps {
   params: {
@@ -25,7 +25,7 @@ export async function generateMetadata({
   params,
 }: NotePageProps): Promise<Metadata> {
   const { categoryPath } = params;
-  const id = categoryPath[categoryPath.length - 1];
+  const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
   const category =
     categoryPath.length === 1
@@ -37,7 +37,7 @@ export async function generateMetadata({
 
 export default async function NotePage({ params }: NotePageProps) {
   const { categoryPath } = params;
-  const id = categoryPath[categoryPath.length - 1];
+  const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
   const category =
     categoryPath.length === 1

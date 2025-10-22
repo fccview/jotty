@@ -132,9 +132,9 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
         let markdown = "";
         const rows: string[][] = [];
 
-        table.querySelectorAll("tr").forEach((rowNode) => {
+        Array.from(table.querySelectorAll("tr")).forEach((rowNode) => {
           const row: string[] = [];
-          rowNode.querySelectorAll("th, td").forEach((cellNode) => {
+          Array.from(rowNode.querySelectorAll("th, td")).forEach((cellNode) => {
             row.push(service.turndown(cellNode.innerHTML).trim());
           });
           rows.push(row);

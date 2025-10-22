@@ -80,3 +80,10 @@ export function buildCategoryPath(category: string, id: string): string {
   const encodedCategory = encodeCategoryPath(category);
   return encodedCategory ? `${encodedCategory}/${id}` : id;
 }
+
+export function decodeId(encodedId: string): string {
+  if (!encodedId) {
+    return encodedId;
+  }
+  return decodeURIComponent(encodedId);
+}

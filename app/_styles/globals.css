@@ -461,11 +461,12 @@
 }
 
 body {
-    font-family: "Inter", sans-serif;
+    font-family: "Inter", sans-serif;    
 }
 
 a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     font-family: "Inter", sans-serif;
+    overflow-wrap: break-word;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
