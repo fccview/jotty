@@ -266,7 +266,7 @@ I would like to thank the following members for raising issues and help test/deb
   <tbody>
     <tr>
       <td align="center" valign="top" width="20%">
-        <a href="https://github.com/fruiz1972"><img width="100" height="100" alt="fruiz1972" src="https://avatars.githubusercontent.com/u/183622648?v=4&size=100"><br/>fruiz1972</a>
+        <a href="https://github.com/davehope"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/5435716?s=96&v=4&size=100"><br />davehope</a>
       </td>
       <td align="center" valign="top" width="20%">
         <a href="https://github.com/seigel"><img width="100" height="100"  src="https://avatars.githubusercontent.com/u/15181?v=4&size=100"><br />seigel</a>
@@ -289,7 +289,7 @@ I would like to thank the following members for raising issues and help test/deb
         <a href="https://github.com/floqui-nl"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/73650390?s=96&v=4&size=100"><br />floqui-nl</a>
       </td>
       <td align="center" valign="top" width="20%">
-        <a href="https://github.com/davehope"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/5435716?s=96&v=4&size=100"><br />davehope</a>
+        <a href="https://github.com/fruiz1972"><img width="100" height="100" alt="fruiz1972" src="https://avatars.githubusercontent.com/u/183622648?v=4&size=100"><br/>fruiz1972</a>
       </td>
       <td align="center" valign="top" width="20%">
         <a href="https://github.com/Sku1ly"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/45756272?s=96&v=4&size=100"><br />Sku1ly</a>
@@ -327,6 +327,9 @@ I would like to thank the following members for raising issues and help test/deb
       </td>
       <td align="center" valign="top" width="20%">
         <a href="https://github.com/Justus0405"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/143542687?s=100"><br />Justus0405</a>
+      </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/mgrimace"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/55518507?s=100"><br />mgrimace</a>
       </td>
     </tr>
   </tbody>

@@ -495,6 +495,14 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     line-height: 1.7;
 }
 
+.prose p {
+    padding-bottom: 1rem;
+}
+
+.prose li p {
+    padding-bottom: 0.3em;
+}
+
 .prose h1,
 .prose h2,
 .prose h3,
@@ -549,6 +557,40 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
 
 .prose a {
     @apply text-primary underline;
+}
+
+.prose .contains-task-list {
+    list-style: none;
+}
+
+.prose .contains-task-list ul {
+    padding-left: 1.5rem!important;
+}
+
+.prose .contains-task-list p,
+.prose [data-type="taskList"] p {
+    margin-top: -4px;
+}
+
+.prose ul p + ul .task-list-item {
+    display: flex;
+    align-items: center;
+    padding-bottom: 0;
+}
+
+.prose .task-list-item p {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.prose .task-list-item p > input {
+    margin-right: 0.5em;
+}
+
+.prose p + ul .task-list-item input {
+    margin-right: 0.5em;
 }
 
 .prose a:hover {
@@ -681,7 +723,7 @@ p > code {
     display: flex;
     padding: 0;
     column-gap: 5px;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .ProseMirror li[data-checked=false] label, 

@@ -19,7 +19,6 @@ export async function PUT(
         );
       }
 
-      // Get the list to determine its category
       const lists = await getLists(user.username);
       if (!lists.success || !lists.data) {
         return NextResponse.json(

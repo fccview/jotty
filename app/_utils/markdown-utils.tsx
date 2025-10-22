@@ -13,16 +13,15 @@ import { TableSyntax } from "@/app/_types";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
-// ========================================================================
-// --- NOTE TO SELF OR I'LL GO ABSOLUTELY FUCKING INSANE NEXT TIME I DEBUG ---
-// --- HTML-TO-MARKDOWN CONVERSION (Tiptap HTML -> Markdown string) ---
-// ========================================================================
 export const createTurndownService = (tableSyntax?: TableSyntax) => {
   const service = new TurndownService({
     headingStyle: "atx",
     codeBlockStyle: "fenced",
     emDelimiter: "*",
     bulletListMarker: "-",
+    blankReplacement: function (content, node) {
+      return node.nodeName === 'P' ? '\u200b' : content;
+    }
   });
 
   service.addRule("taskItem", {
@@ -31,7 +30,20 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
 
     replacement: function (content, node) {
       const element = node as HTMLElement;
-      const isChecked = element.getAttribute("data-checked") === "true";
+      const parent = element.parentElement;
+
+      if (!parent || parent.getAttribute("data-type") !== "taskList") return content;
+
+      let isChecked = false;
+      const dataChecked = element.getAttribute("data-checked");
+
+      if (dataChecked !== null) {
+        isChecked = dataChecked === "true";
+      } else {
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        isChecked = checkbox ? checkbox.hasAttribute('checked') : false;
+      }
+
       const prefix = isChecked ? "- [x] " : "- [ ] ";
       let markdownContent = content.trim();
       markdownContent = markdownContent.replace(/\n/g, "\n    ");
@@ -77,7 +89,6 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
   addCustomHtmlTurndownRules(service);
 
   if (tableSyntax === "html") {
-    // Override all table-related elements to keep HTML
     service.addRule("table", {
       filter: "table",
       replacement: function (content, node) {
@@ -235,10 +246,6 @@ const hasClass = (node: Element, className: string) => {
   return false;
 };
 
-// ==========================================================================
-// --- NOTE TO SELF OR I'LL GO ABSOLUTELY FUCKING INSANE NEXT TIME I DEBUG ---
-// --- MARKDOWN-TO-HTML CONVERSION (Markdown string -> Tiptap HTML) ---
-// ==========================================================================
 const markdownProcessor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -247,13 +254,6 @@ const markdownProcessor = unified()
   .use(() => {
     return (tree) => {
       visit(tree, "element", (node: Element) => {
-        if (node.tagName === "br") {
-          node.type = "element";
-          node.tagName = "p";
-          node.properties = node.properties || {};
-          node.children = [{ type: "text", value: "  \n" }];
-        }
-
         if (node.tagName === "ul" && hasClass(node, "contains-task-list")) {
           node.properties = node.properties || {};
           node.properties["data-type"] = "taskList";
@@ -262,35 +262,63 @@ const markdownProcessor = unified()
         if (node.tagName === "li" && hasClass(node, "task-list-item")) {
           node.properties = node.properties || {};
           node.properties["data-type"] = "taskItem";
-          const checkbox = node.children[0];
+
+          let checkboxIndex = 0;
+          let checkbox = node.children[checkboxIndex];
+
+          while (checkbox && checkbox.type === 'text' && checkboxIndex < node.children.length) {
+            checkboxIndex++;
+            checkbox = node.children[checkboxIndex];
+          }
+
+          let isInsideP = false;
+
+          if (checkbox?.type === "element" && checkbox.tagName === "p" && checkbox.children?.[0]) {
+            isInsideP = true;
+            checkbox = checkbox.children[0];
+          }
 
           if (
             checkbox?.type === "element" &&
             checkbox.tagName === "input" &&
             checkbox.properties?.type === "checkbox"
           ) {
-            node.properties["data-checked"] =
+            node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-              checkbox.properties.checked !== false;
+              checkbox.properties.checked !== false
+            );
 
-            node.children.shift();
+            if (isInsideP) {
+              const pTag = node.children[checkboxIndex];
+              if (pTag.type === "element" && pTag.tagName === "p") {
+                pTag.children.shift();
+                if (
+                  pTag.children[0]?.type === "text" &&
+                  pTag.children[0].value.startsWith("\n")
+                ) {
+                  pTag.children[0].value = pTag.children[0].value.trimStart();
+                }
+              }
+            } else {
+              node.children.splice(checkboxIndex, 1);
 
-            if (
-              node.children[0]?.type === "text" &&
-              node.children[0].value.startsWith("\n")
-            ) {
-              node.children[0].value = node.children[0].value.trimStart();
+              if (
+                node.children[0]?.type === "text" &&
+                node.children[0].value.startsWith("\n")
+              ) {
+                node.children[0].value = node.children[0].value.trimStart();
+              }
+
+              const contentNodes = [...node.children];
+              node.children = [
+                {
+                  type: "element",
+                  tagName: "p",
+                  properties: {},
+                  children: contentNodes,
+                },
+              ];
             }
-
-            const contentNodes = [...node.children];
-            node.children = [
-              {
-                type: "element",
-                tagName: "p",
-                properties: {},
-                children: contentNodes,
-              },
-            ];
           }
         }
       });
@@ -300,7 +328,9 @@ const markdownProcessor = unified()
 
 export const convertMarkdownToHtml = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
+
   const file = markdownProcessor.processSync(markdown);
+
   return String(file);
 };
 
@@ -340,5 +370,6 @@ export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
   const sanitizedHtml = convertMarkdownToHtml(markdown);
+
   return convertHtmlToMarkdown(sanitizedHtml);
 };

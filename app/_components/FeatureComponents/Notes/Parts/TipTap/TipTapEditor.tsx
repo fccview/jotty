@@ -148,6 +148,21 @@ export const TiptapEditor = ({
       TaskItem.extend({
         nested: true,
         content: "block+",
+        parseHTML() {
+          return [
+            {
+              tag: 'li[data-type="taskItem"]',
+              priority: 51,
+              getAttrs: (element: HTMLElement) => {
+                if (typeof element === 'string') return false;
+                const dataChecked = element.getAttribute('data-checked');
+                return {
+                  checked: dataChecked === 'true',
+                };
+              },
+            },
+          ];
+        },
       }),
       BulletList.extend({
         content: "listItem+",
@@ -161,9 +176,8 @@ export const TiptapEditor = ({
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${
-          compactMode ? "!max-w-[900px] mx-auto" : ""
-        }`,
+        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
+          }`,
       },
       handleKeyDown: (view, event) => {
         if (!editor) {
@@ -212,8 +226,8 @@ export const TiptapEditor = ({
                     line.startsWith("    ")
                       ? line.substring(4)
                       : line.startsWith("\t")
-                      ? line.substring(1)
-                      : line
+                        ? line.substring(1)
+                        : line
                   )
                   .join("\n");
                 editor
