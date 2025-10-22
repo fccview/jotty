@@ -96,7 +96,7 @@ The recommended way to run `jotty·page` is with Docker.
 
 1.  Create a `docker-compose.yml` file:
 
-    **📖 For more information about how the docker compose file works and what these variables do, please read [howto/DOCKER.md](howto/DOCKER.md)**
+    **📖 For advanced settings and more information about how the docker compose file works and what these variables do, please read [howto/DOCKER.md](howto/DOCKER.md)**
 
     ```yaml
     services:

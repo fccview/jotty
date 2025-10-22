@@ -1,5 +1,5 @@
-# For more information about how the docker compose file works and what these
-# variables do, please read https://github.com/fccview/jotty/blob/main/howto/DOCKER.md
+# For more advanced settings and more information about the env variables,
+# please read https://github.com/fccview/jotty/blob/main/howto/DOCKER.md
 
 services:
   jotty:

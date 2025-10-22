@@ -33,14 +33,20 @@ services:
       - OIDC_CLIENT_SECRET=your_client_secret # Enable confidential client mode (if your provider requires it)
       - SSO_FALLBACK_LOCAL=yes # Allow both SSO and local login
       - OIDC_ADMIN_GROUPS=admins # Map provider groups to admin role
-
-Note: When OIDC_CLIENT_SECRET is set, jotty·page switches to confidential client mode using client authentication instead of PKCE. This is more secure but requires provider support.
 ```
+
+**Note**: When OIDC_CLIENT_SECRET is set, jotty·page switches to confidential client mode using client authentication instead of PKCE. This is more secure but requires provider support.
 
 Dev verified Providers:
 
 - Auth0 (`OIDC_ISSUER=https://YOUR_TENANT.REGION.auth0.com`)
 - Authentik (`OIDC_ISSUER=https://YOUR_DOMAIN/application/o/APP_SLUG/`)
+
+Community verified Providers:
+
+- [Pocket ID](https://github.com/fccview/jotty/issues/6#issuecomment-3350380435)
+- [Authelia](https://github.com/fccview/jotty/issues/6#issuecomment-3369291122) (`OIDC_ISSUER: https://my-pocket-id.domain.com`)
+
 
 Other providers will likely work, but I can at least guarantee these do as I have test them both locally.
 
