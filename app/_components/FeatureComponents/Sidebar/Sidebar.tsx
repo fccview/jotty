@@ -268,7 +268,7 @@ export const Sidebar = (props: SidebarProps) => {
             note={sidebar.modalState.data as Note}
             categories={categories}
             onClose={sidebar.closeModal}
-            onUpdated={(customFunction: () => void = () => { }) => {
+            onUpdated={(customFunction: () => void = () => {}) => {
               sidebar.closeModal();
               sidebar.router.refresh();
               customFunction?.();

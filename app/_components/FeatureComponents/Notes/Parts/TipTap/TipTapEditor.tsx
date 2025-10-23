@@ -29,6 +29,53 @@ import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { TableSyntax } from "@/app/_types";
 import { useSettings } from "@/app/_utils/settings-store";
+import { uploadFile } from "@/app/_server/actions/upload";
+import { MAX_FILE_SIZE } from "@/app/_consts/files";
+
+const getImageFromClipboard = (items: DataTransferItemList): File | null => {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.type.startsWith("image/")) {
+      return item.getAsFile();
+    }
+  }
+  return null;
+};
+
+const getFileFromClipboard = (items: DataTransferItemList): File | null => {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.kind === "file") {
+      return item.getAsFile();
+    }
+  }
+  return null;
+};
+
+const handleFileUpload = async (
+  file: File,
+  editor: any,
+  insertCallback: (data: any) => void
+): Promise<void> => {
+  if (file.size > MAX_FILE_SIZE) {
+    console.error("File is too large. Maximum size is 10MB.");
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadFile(formData);
+    if (result.success && result.data) {
+      insertCallback(result.data);
+    } else {
+      console.error("Upload failed:", result.error);
+    }
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
 
 type TiptapEditorProps = {
   content: string;
@@ -154,10 +201,10 @@ export const TiptapEditor = ({
               tag: 'li[data-type="taskItem"]',
               priority: 51,
               getAttrs: (element: HTMLElement) => {
-                if (typeof element === 'string') return false;
-                const dataChecked = element.getAttribute('data-checked');
+                if (typeof element === "string") return false;
+                const dataChecked = element.getAttribute("data-checked");
                 return {
-                  checked: dataChecked === 'true',
+                  checked: dataChecked === "true",
                 };
               },
             },
@@ -176,8 +223,9 @@ export const TiptapEditor = ({
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
-          }`,
+        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${
+          compactMode ? "!max-w-[900px] mx-auto" : ""
+        }`,
       },
       handleKeyDown: (view, event) => {
         if (!editor) {
@@ -226,8 +274,8 @@ export const TiptapEditor = ({
                     line.startsWith("    ")
                       ? line.substring(4)
                       : line.startsWith("\t")
-                        ? line.substring(1)
-                        : line
+                      ? line.substring(1)
+                      : line
                   )
                   .join("\n");
                 editor
@@ -265,6 +313,61 @@ export const TiptapEditor = ({
               view.dispatch(tr);
               return true;
             }
+          }
+        }
+
+        return false;
+      },
+      handlePaste: (view, event) => {
+        const { clipboardData } = event;
+        if (!clipboardData || !editor) return false;
+
+        const items = clipboardData.items;
+        if (items) {
+          // Check for images first
+          const imageFile = getImageFromClipboard(items);
+          if (imageFile) {
+            event.preventDefault();
+            handleFileUpload(imageFile, editor, (data) => {
+              if (data.type === "image") {
+                editor?.chain().focus().setImage({ src: data.url }).run();
+              } else {
+                editor
+                  ?.chain()
+                  .focus()
+                  .setFileAttachment({
+                    url: data.url,
+                    fileName: data.fileName,
+                    mimeType: data.mimeType,
+                    type: data.type,
+                  })
+                  .run();
+              }
+            });
+            return true;
+          }
+
+          // Check for other files
+          const file = getFileFromClipboard(items);
+          if (file) {
+            event.preventDefault();
+            handleFileUpload(file, editor, (data) => {
+              if (data.type === "image") {
+                editor?.chain().focus().setImage({ src: data.url }).run();
+              } else {
+                editor
+                  ?.chain()
+                  .focus()
+                  .setFileAttachment({
+                    url: data.url,
+                    fileName: data.fileName,
+                    mimeType: data.mimeType,
+                    type: data.type,
+                  })
+                  .run();
+              }
+            });
+            return true;
           }
         }
 
@@ -332,16 +435,126 @@ export const TiptapEditor = ({
       </div>
 
       {isMarkdownMode ? (
-        <div className="flex-1 p-4 overflow-y-auto h-full">
+        <div
+          className="flex-1 p-4 overflow-y-auto h-full"
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const files = Array.from(e.dataTransfer.files) as File[];
+            const validFiles = files.filter(
+              (file) => file.size <= MAX_FILE_SIZE
+            );
+
+            if (validFiles.length > 0) {
+              validFiles.forEach((file) => {
+                handleFileUpload(file, editor, (data) => {
+                  if (data.type === "image") {
+                    const markdownImage = `![${data.fileName}](${data.url})`;
+                    const newContent = markdownContent + "\n" + markdownImage;
+                    setMarkdownContent(newContent);
+                    debouncedOnChange(newContent, true);
+                  } else {
+                    const markdownLink = `[📎 ${data.fileName}](${data.url})`;
+                    const newContent = markdownContent + "\n" + markdownLink;
+                    setMarkdownContent(newContent);
+                    debouncedOnChange(newContent, true);
+                  }
+                });
+              });
+            }
+          }}
+        >
           <textarea
             value={markdownContent}
             onChange={handleMarkdownChange}
+            onPaste={(e) => {
+              const items = e.clipboardData.items;
+              if (items) {
+                const imageFile = getImageFromClipboard(items);
+                if (imageFile) {
+                  e.preventDefault();
+                  handleFileUpload(imageFile, editor, (data) => {
+                    if (data.type === "image") {
+                      const markdownImage = `![${data.fileName}](${data.url})`;
+                      const newContent = markdownContent + "\n" + markdownImage;
+                      setMarkdownContent(newContent);
+                      debouncedOnChange(newContent, true);
+                    } else {
+                      const markdownLink = `[📎 ${data.fileName}](${data.url})`;
+                      const newContent = markdownContent + "\n" + markdownLink;
+                      setMarkdownContent(newContent);
+                      debouncedOnChange(newContent, true);
+                    }
+                  });
+                  return;
+                }
+
+                const file = getFileFromClipboard(items);
+                if (file) {
+                  e.preventDefault();
+                  handleFileUpload(file, editor, (data) => {
+                    if (data.type === "image") {
+                      const markdownImage = `![${data.fileName}](${data.url})`;
+                      const newContent = markdownContent + "\n" + markdownImage;
+                      setMarkdownContent(newContent);
+                      debouncedOnChange(newContent, true);
+                    } else {
+                      const markdownLink = `[📎 ${data.fileName}](${data.url})`;
+                      const newContent = markdownContent + "\n" + markdownLink;
+                      setMarkdownContent(newContent);
+                      debouncedOnChange(newContent, true);
+                    }
+                  });
+                }
+              }
+            }}
             className="w-full h-full bg-background text-foreground resize-none focus:outline-none focus:ring-none p-2"
             placeholder="Write your markdown here..."
           />
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto">
+        <div
+          className="flex-1 overflow-y-auto"
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const files = Array.from(e.dataTransfer.files) as File[];
+            const validFiles = files.filter(
+              (file) => file.size <= MAX_FILE_SIZE
+            );
+
+            if (validFiles.length > 0) {
+              validFiles.forEach((file) => {
+                handleFileUpload(file, editor, (data) => {
+                  if (data.type === "image") {
+                    editor?.chain().focus().setImage({ src: data.url }).run();
+                  } else {
+                    editor
+                      ?.chain()
+                      .focus()
+                      .setFileAttachment({
+                        url: data.url,
+                        fileName: data.fileName,
+                        mimeType: data.mimeType,
+                        type: data.type,
+                      })
+                      .run();
+                  }
+                });
+              });
+            }
+          }}
+        >
           <EditorContent editor={editor} className="w-full h-full" />
         </div>
       )}

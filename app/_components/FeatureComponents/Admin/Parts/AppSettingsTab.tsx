@@ -14,6 +14,7 @@ import { LoadingSpinner } from "@/app/_components/GlobalComponents/Layout/Loadin
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { AppSettings } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 
 export const AppSettingsTab = () => {
   const { showToast } = useToast();
@@ -129,6 +130,22 @@ export const AppSettingsTab = () => {
       </div>
 
       <div className="bg-background border border-border rounded-lg p-6 space-y-8">
+        <div>
+          <label
+            className="text-sm font-medium leading-none block mb-3"
+            htmlFor="notifyNewUpdates"
+          >
+            Notify me of new updates
+          </label>
+          <Dropdown
+            value={settings?.notifyNewUpdates || "yes"}
+            onChange={(value) => handleInputChange("notifyNewUpdates", value)}
+            options={[
+              { id: "yes", name: "Yes" },
+              { id: "no", name: "No" },
+            ]}
+          />
+        </div>
         <div className="grid gap-6 md:grid-cols-2">
           {formFields.map((field) => (
             <Input

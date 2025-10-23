@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { HelpCircle, Lock, Palette, Terminal } from "lucide-react";
+import { HelpCircle, Key, Lock, Palette, Terminal } from "lucide-react";
 import { NavigationGlobalIcon } from "./NavigationGlobalIcon";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Tabs } from "@/app/_components/GlobalComponents/Tabs/Tabs";
@@ -49,6 +49,12 @@ const helpFiles: TabItem[] = [
     name: "Docker",
     filename: path.join(HOWTO_DIR, "DOCKER.md"),
     icon: <Terminal className="h-4 w-4" />,
+  },
+  {
+    id: "env-variables",
+    name: "Env Variables",
+    filename: path.join(HOWTO_DIR, "ENV-VARIABLES.md"),
+    icon: <Key className="h-4 w-4" />,
   },
   {
     id: "sso",
