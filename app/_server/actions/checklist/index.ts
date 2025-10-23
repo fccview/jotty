@@ -44,11 +44,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-      ...order.categories.filter((n) => dirNames.includes(n)),
-      ...dirNames
-        .filter((n) => !order.categories!.includes(n))
-        .sort((a, b) => a.localeCompare(b)),
-    ]
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -63,11 +63,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -79,9 +79,9 @@ const readListsRecursively = async (
           lists.push(
             parseMarkdown(content, id, categoryPath, owner, false, stats)
           );
-        } catch { }
+        } catch {}
       }
-    } catch { }
+    } catch {}
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -117,19 +117,19 @@ export const getLists = async (username?: string) => {
       try {
         const sharedFilePath = sharedItem.filePath
           ? path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.filePath
-          )
+              process.cwd(),
+              "data",
+              CHECKLISTS_FOLDER,
+              sharedItem.filePath
+            )
           : path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.owner,
-            sharedItem.category || "Uncategorized",
-            `${sharedItem.id}.md`
-          );
+              process.cwd(),
+              "data",
+              CHECKLISTS_FOLDER,
+              sharedItem.owner,
+              sharedItem.category || "Uncategorized",
+              `${sharedItem.id}.md`
+            );
 
         const content = await fs.readFile(sharedFilePath, "utf-8");
         const stats = await fs.stat(sharedFilePath);
@@ -238,7 +238,8 @@ export const updateList = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
     const title = formData.get("title") as string;
-    const category = (formData.get("category") as string) || "Uncategorized";
+    const category = formData.get("category") as string;
+    const originalCategory = formData.get("originalCategory") as string;
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getLists());
@@ -246,14 +247,8 @@ export const updateList = async (formData: FormData) => {
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
-    const legacyList = lists.data.find((list) => list.id === id);
-    if (!legacyList) {
-      throw new Error("List not found");
-    }
-
-    const currentCategory = legacyList.category || "Uncategorized";
     const currentList = lists.data.find(
-      (list) => list.id === id && list.category === currentCategory
+      (list) => list.id === id && list.category === originalCategory
     );
     if (!currentList) {
       throw new Error("List not found");
@@ -325,8 +320,9 @@ export const updateList = async (formData: FormData) => {
     );
 
     if (sharingMetadata) {
-      const newFilePath = `${currentList.owner}/${updatedList.category || "Uncategorized"
-        }/${updatedList.id}.md`;
+      const newFilePath = `${currentList.owner}/${
+        updatedList.category || "Uncategorized"
+      }/${updatedList.id}.md`;
 
       if (newId !== id) {
         const { removeSharedItem, addSharedItem } = await import(
@@ -408,13 +404,7 @@ export const deleteList = async (formData: FormData) => {
       return { error: "Failed to fetch lists" };
     }
 
-    const legacyList = lists.data.find((l) => l.id === id);
-    if (!legacyList) {
-      return { error: "List not found" };
-    }
-
-    const currentCategory = legacyList.category || "Uncategorized";
-    const list = lists.data.find((l) => l.id === id && l.category === currentCategory);
+    const list = lists.data.find((l) => l.id === id && l.category === category);
     if (!list) {
       return { error: "List not found" };
     }
@@ -467,7 +457,7 @@ export const convertChecklistType = async (formData: FormData) => {
   try {
     const listId = formData.get("listId") as string;
     const newType = formData.get("newType") as ChecklistType;
-    const category = (formData.get("category") as string) || "Uncategorized";
+    const category = formData.get("category") as string;
 
     if (!listId || !newType) {
       return { error: "List ID and type are required" };
@@ -478,14 +468,8 @@ export const convertChecklistType = async (formData: FormData) => {
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
-    const legacyList = lists.data.find((l) => l.id === listId);
-    if (!legacyList) {
-      throw new Error("List not found");
-    }
-
-    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && l.category === currentCategory
+      (l) => l.id === listId && l.category === category
     );
     if (!list) {
       throw new Error("List not found");

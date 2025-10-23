@@ -56,6 +56,8 @@ export const EditChecklistModal = ({
     const formData = new FormData();
     formData.append("id", checklist.id);
     formData.append("title", title.trim());
+    formData.append("originalCategory", checklist.category || "Uncategorized");
+
     if (isOwner) {
       formData.append("category", category || "");
     }

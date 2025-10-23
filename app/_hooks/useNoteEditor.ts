@@ -85,6 +85,7 @@ export const useNoteEditor = ({
       formData.append("title", title);
       formData.append("content", derivedMarkdownContent);
       formData.append("category", category);
+      formData.append("originalCategory", note.category || "Uncategorized");
 
       const result = await updateNote(formData, useAutosave);
 
