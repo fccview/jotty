@@ -1,6 +1,15 @@
 "use client";
 
-import { Save, AlertCircle, Check, Shield } from "lucide-react";
+import {
+  Save,
+  AlertCircle,
+  Check,
+  Key,
+  Copy,
+  Eye,
+  EyeOff,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { User as UserType, AppSettings } from "@/app/_types";
 import { updateProfile } from "@/app/_server/actions/users";
@@ -12,19 +21,19 @@ import { logout } from "@/app/_server/actions/auth";
 import { useRouter } from "next/navigation";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { generateApiKey, getApiKey } from "@/app/_server/actions/api";
+import { User as UserData } from "@/app/_types";
 
 interface ProfileTabProps {
-  user: UserType | null;
+  user: UserData | null;
   isAdmin: boolean;
-  isLoading: boolean;
-  setUser: React.Dispatch<React.SetStateAction<UserType | null>>;
+  setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
   isSsoUser: boolean;
 }
 
 export const ProfileTab = ({
   user,
   isAdmin,
-  isLoading,
   setUser,
   isSsoUser,
 }: ProfileTabProps) => {
@@ -39,12 +48,65 @@ export const ProfileTab = ({
     user?.avatarUrl
   );
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const { isDemoMode } = useAppMode();
 
   useEffect(() => {
     setEditedUsername(user?.username || "");
     setAvatarUrl(user?.avatarUrl);
   }, [user]);
+
+  useEffect(() => {
+    loadApiKey();
+  }, []);
+
+  const loadApiKey = async () => {
+    try {
+      const result = await getApiKey();
+      if (result.success) {
+        setApiKey(result.data || null);
+      }
+    } catch (error) {
+      console.error("Error loading API key:", error);
+    }
+  };
+
+  const handleGenerateApiKey = async () => {
+    setIsGenerating(true);
+    try {
+      const result = await generateApiKey();
+      if (result.success && result.data) {
+        setApiKey(result.data);
+        setShowApiKey(true);
+      }
+    } catch (error) {
+      console.error("Error generating API key:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCopyApiKey = async () => {
+    if (apiKey) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(apiKey);
+        } else {
+          const textArea = document.createElement("textarea");
+          textArea.value = apiKey;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+        }
+      } catch (error) {
+        console.error("Failed to copy API key:", error);
+      }
+    }
+  };
 
   const handleSaveProfile = async () => {
     if (!editedUsername.trim()) {
@@ -147,17 +209,17 @@ export const ProfileTab = ({
     }
   };
 
-  const isUsernameDisabled = isLoading || isSsoUser || isDemoMode;
-  const isSaveButtonDisabled = isLoading || isUploadingAvatar || isDemoMode;
-  const isAvatarDisabled = isUploadingAvatar || isLoading || isDemoMode;
-  const isCurrentPasswordDisabled = isLoading || isDemoMode;
-  const isNewPasswordDisabled = isLoading || isDemoMode;
-  const isConfirmPasswordDisabled = isLoading || isDemoMode;
+  const isUsernameDisabled = isSsoUser || isDemoMode;
+  const isSaveButtonDisabled = isUploadingAvatar || isDemoMode;
+  const isAvatarDisabled = isUploadingAvatar || isDemoMode;
+  const isCurrentPasswordDisabled = isDemoMode;
+  const isNewPasswordDisabled = isDemoMode;
+  const isConfirmPasswordDisabled = isDemoMode;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Profile Information</h2>
+        <h2 className="text-2xl font-bold">{user?.username}&apos;s profile</h2>
       </div>
 
       {error && (
@@ -205,6 +267,67 @@ export const ProfileTab = ({
           </div>
         </div>
         <div className="md:col-span-2 space-y-4">
+          <div className="space-y-4">
+            <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-lg">
+              <div>
+                <h3 className="font-medium">API Key</h3>
+                <p className="text-sm text-muted-foreground">
+                  Generate an API key for programmatic access to your checklists
+                  and notes
+                </p>
+              </div>
+              <div className="flex items-center justify-between gap-2 mt-2 md:mt-0">
+                {apiKey && (
+                  <div className="flex items-center gap-2">
+                    <div className="font-mono text-sm bg-muted px-2 py-1 rounded">
+                      {showApiKey ? apiKey : "••••••••••••••••"}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="h-8 w-8 p-0"
+                      title={showApiKey ? "Hide API Key" : "Show API Key"}
+                    >
+                      {showApiKey ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCopyApiKey}
+                      className="h-8 w-8 p-0"
+                      title="Copy API Key"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+                {isDemoMode ? (
+                  <span className="text-sm text-muted-foreground">
+                    disabled in demo mode
+                  </span>
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={handleGenerateApiKey}
+                    disabled={isGenerating}
+                    title={apiKey ? "Regenerate API Key" : "Generate API Key"}
+                  >
+                    {apiKey ? (
+                      <RefreshCw className="h-4 w-4" />
+                    ) : (
+                      <Key className="h-4 w-4 mr-2" />
+                    )}
+                    {isGenerating ? "Generating..." : apiKey ? "" : "Generate"}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-foreground">
@@ -283,14 +406,8 @@ export const ProfileTab = ({
 
           <div className="flex justify-end pt-4">
             <Button onClick={handleSaveProfile} disabled={isSaveButtonDisabled}>
-              {isLoading ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  {isDemoMode ? "Disabled in demo mode" : "Save Changes"}
-                </>
-              )}
+              <Save className="h-4 w-4 mr-2" />
+              {isDemoMode ? "Disabled in demo mode" : "Save Changes"}
             </Button>
           </div>
         </div>

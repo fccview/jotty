@@ -248,7 +248,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                 <div className="space-y-0.5 ml-2 border-l border-border/30 pl-2">
                   {categoryItems.map((item) => (
                     <Draggable
-                      key={item.id}
+                      key={`${category.path}-${item.id}`}
                       id={item.id}
                       data={{ type: "item", category: category.path }}
                     >

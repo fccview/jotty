@@ -8,7 +8,7 @@ import { ChecklistClient } from "@/app/_components/FeatureComponents/Checklists/
 import { Modes } from "@/app/_types/enums";
 import type { Metadata, ResolvingMetadata } from "next";
 import { getMedatadaTitle, getSettings } from "@/app/_server/actions/config";
-import { decodeCategoryPath } from "@/app/_utils/global-utils";
+import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 
 interface ChecklistPageProps {
   params: {
@@ -22,7 +22,7 @@ export async function generateMetadata({
   params,
 }: ChecklistPageProps): Promise<Metadata> {
   const { categoryPath } = params;
-  const id = categoryPath[categoryPath.length - 1];
+  const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
   const category =
     categoryPath.length === 1
@@ -34,7 +34,7 @@ export async function generateMetadata({
 
 export default async function ChecklistPage({ params }: ChecklistPageProps) {
   const { categoryPath } = params;
-  const id = categoryPath[categoryPath.length - 1];
+  const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
   const category =
     categoryPath.length === 1

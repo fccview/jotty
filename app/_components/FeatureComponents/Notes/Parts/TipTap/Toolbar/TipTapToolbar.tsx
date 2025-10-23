@@ -83,7 +83,12 @@ export const TiptapToolbar = ({
 
   return (
     <>
-      <div className={cn("bg-background flex w-full items-center lg:gap-4 px-0 lg:px-2 lg:py-2", isMarkdownMode ? "md:justify-end" : "md:justify-between")}>
+      <div
+        className={cn(
+          "bg-background flex w-full items-center lg:gap-4 px-0 lg:px-2 lg:py-2",
+          isMarkdownMode ? "md:justify-end" : "md:justify-between"
+        )}
+      >
         <div className="flex-shrink-0 md:order-last">
           <Button
             variant="ghost"

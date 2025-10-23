@@ -9,6 +9,7 @@ import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface SharingStatus {
   isShared: boolean;
@@ -21,7 +22,6 @@ interface NoteClientProps {
   docs: Note[];
   categories: Category[];
   sharingStatuses?: Record<string, SharingStatus>;
-  user: User | null;
 }
 
 export const NoteClient = ({
@@ -29,12 +29,12 @@ export const NoteClient = ({
   docs,
   categories,
   sharingStatuses,
-  user,
 }: NoteClientProps) => {
   const router = useRouter();
   const { checkNavigation } = useNavigationGuard();
   const { openCreateNoteModal, openCreateCategoryModal, openSettings } =
     useShortcut();
+  const { user } = useAppMode();
   const [localNote, setLocalNote] = useState<Note>(note);
   const prevNoteId = useRef(note.id);
 

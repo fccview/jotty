@@ -9,19 +9,19 @@ import { visit } from "unist-util-visit";
 import { Element } from "hast";
 import { addCustomHtmlTurndownRules } from "@/app/_utils/custom-html-utils";
 import { html as beautifyHtml } from "js-beautify";
+import { TableSyntax } from "@/app/_types";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
-// ========================================================================
-// --- NOTE TO SELF OR I'LL GO ABSOLUTELY FUCKING INSANE NEXT TIME I DEBUG ---
-// --- HTML-TO-MARKDOWN CONVERSION (Tiptap HTML -> Markdown string) ---
-// ========================================================================
-export const createTurndownService = () => {
+export const createTurndownService = (tableSyntax?: TableSyntax) => {
   const service = new TurndownService({
     headingStyle: "atx",
     codeBlockStyle: "fenced",
     emDelimiter: "*",
     bulletListMarker: "-",
+    blankReplacement: function (content, node) {
+      return node.nodeName === 'P' ? '\u200b' : content;
+    }
   });
 
   service.addRule("taskItem", {
@@ -30,7 +30,20 @@ export const createTurndownService = () => {
 
     replacement: function (content, node) {
       const element = node as HTMLElement;
-      const isChecked = element.getAttribute("data-checked") === "true";
+      const parent = element.parentElement;
+
+      if (!parent || parent.getAttribute("data-type") !== "taskList") return content;
+
+      let isChecked = false;
+      const dataChecked = element.getAttribute("data-checked");
+
+      if (dataChecked !== null) {
+        isChecked = dataChecked === "true";
+      } else {
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        isChecked = checkbox ? checkbox.hasAttribute('checked') : false;
+      }
+
       const prefix = isChecked ? "- [x] " : "- [ ] ";
       let markdownContent = content.trim();
       markdownContent = markdownContent.replace(/\n/g, "\n    ");
@@ -75,17 +88,103 @@ export const createTurndownService = () => {
 
   addCustomHtmlTurndownRules(service);
 
-  service.addRule("keepHtmlTables", {
-    filter: "table",
-    replacement: function (content, node) {
-      const unformattedHtml = (node as HTMLElement).outerHTML;
-      const formattedHtml = beautifyHtml(unformattedHtml, {
-        indent_size: 2,
-        unformatted: [],
-      });
-      return `\n\n${formattedHtml}\n\n`;
-    },
-  });
+  if (tableSyntax === "html") {
+    service.addRule("table", {
+      filter: "table",
+      replacement: function (content, node) {
+        const unformattedHtml = (node as HTMLElement).outerHTML;
+        const formattedHtml = beautifyHtml(unformattedHtml, {
+          indent_size: 2,
+          unformatted: [],
+        });
+        return `\n\n${formattedHtml}\n\n`;
+      },
+    });
+
+    service.addRule("thead", {
+      filter: "thead",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+
+    service.addRule("tbody", {
+      filter: "tbody",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+
+    service.addRule("tr", {
+      filter: "tr",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+
+    service.addRule("th", {
+      filter: "th",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+
+    service.addRule("td", {
+      filter: "td",
+      replacement: function (content, node) {
+        return (node as HTMLElement).outerHTML;
+      },
+    });
+  } else if (tableSyntax === "markdown") {
+    service.addRule("table", {
+      filter: "table",
+      replacement: function (content, node) {
+        const table = node as HTMLElement;
+        let markdown = "";
+        const rows: string[][] = [];
+
+        Array.from(table.querySelectorAll("tr")).forEach((rowNode) => {
+          const row: string[] = [];
+          Array.from(rowNode.querySelectorAll("th, td")).forEach((cellNode) => {
+            row.push(service.turndown(cellNode.innerHTML).trim());
+          });
+          rows.push(row);
+        });
+
+        if (rows.length === 0) return "";
+
+        const header = rows[0];
+        const body = rows.slice(1);
+
+        const columnWidths = header.map((h) => Math.max(h.length, 1));
+        body.forEach((row) => {
+          row.forEach((cell, i) => {
+            columnWidths[i] = Math.max(columnWidths[i], cell.length, 1);
+          });
+        });
+
+        markdown += "| ";
+        markdown += header.map((h, i) => h.padEnd(columnWidths[i])).join(" | ");
+        markdown += " |\n";
+
+        markdown += "| ";
+        markdown += columnWidths
+          .map((w) => "-".repeat(Math.max(w, 3)))
+          .join(" | ");
+        markdown += " |\n";
+
+        body.forEach((row) => {
+          markdown += "| ";
+          markdown += row
+            .map((cell, i) => cell.padEnd(columnWidths[i]))
+            .join(" | ");
+          markdown += " |\n";
+        });
+
+        return `\n${markdown}\n`;
+      },
+    });
+  }
 
   service.addRule("details", {
     filter: "details",
@@ -147,10 +246,6 @@ const hasClass = (node: Element, className: string) => {
   return false;
 };
 
-// ==========================================================================
-// --- NOTE TO SELF OR I'LL GO ABSOLUTELY FUCKING INSANE NEXT TIME I DEBUG ---
-// --- MARKDOWN-TO-HTML CONVERSION (Markdown string -> Tiptap HTML) ---
-// ==========================================================================
 const markdownProcessor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -159,13 +254,6 @@ const markdownProcessor = unified()
   .use(() => {
     return (tree) => {
       visit(tree, "element", (node: Element) => {
-        if (node.tagName === "br") {
-          node.type = "element";
-          node.tagName = "p";
-          node.properties = node.properties || {};
-          node.children = [{ type: "text", value: "  \n" }];
-        }
-
         if (node.tagName === "ul" && hasClass(node, "contains-task-list")) {
           node.properties = node.properties || {};
           node.properties["data-type"] = "taskList";
@@ -174,35 +262,63 @@ const markdownProcessor = unified()
         if (node.tagName === "li" && hasClass(node, "task-list-item")) {
           node.properties = node.properties || {};
           node.properties["data-type"] = "taskItem";
-          const checkbox = node.children[0];
+
+          let checkboxIndex = 0;
+          let checkbox = node.children[checkboxIndex];
+
+          while (checkbox && checkbox.type === 'text' && checkboxIndex < node.children.length) {
+            checkboxIndex++;
+            checkbox = node.children[checkboxIndex];
+          }
+
+          let isInsideP = false;
+
+          if (checkbox?.type === "element" && checkbox.tagName === "p" && checkbox.children?.[0]) {
+            isInsideP = true;
+            checkbox = checkbox.children[0];
+          }
 
           if (
             checkbox?.type === "element" &&
             checkbox.tagName === "input" &&
             checkbox.properties?.type === "checkbox"
           ) {
-            node.properties["data-checked"] =
+            node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-              checkbox.properties.checked !== false;
+              checkbox.properties.checked !== false
+            );
 
-            node.children.shift();
+            if (isInsideP) {
+              const pTag = node.children[checkboxIndex];
+              if (pTag.type === "element" && pTag.tagName === "p") {
+                pTag.children.shift();
+                if (
+                  pTag.children[0]?.type === "text" &&
+                  pTag.children[0].value.startsWith("\n")
+                ) {
+                  pTag.children[0].value = pTag.children[0].value.trimStart();
+                }
+              }
+            } else {
+              node.children.splice(checkboxIndex, 1);
 
-            if (
-              node.children[0]?.type === "text" &&
-              node.children[0].value.startsWith("\n")
-            ) {
-              node.children[0].value = node.children[0].value.trimStart();
+              if (
+                node.children[0]?.type === "text" &&
+                node.children[0].value.startsWith("\n")
+              ) {
+                node.children[0].value = node.children[0].value.trimStart();
+              }
+
+              const contentNodes = [...node.children];
+              node.children = [
+                {
+                  type: "element",
+                  tagName: "p",
+                  properties: {},
+                  children: contentNodes,
+                },
+              ];
             }
-
-            const contentNodes = [...node.children];
-            node.children = [
-              {
-                type: "element",
-                tagName: "p",
-                properties: {},
-                children: contentNodes,
-              },
-            ];
           }
         }
       });
@@ -212,12 +328,17 @@ const markdownProcessor = unified()
 
 export const convertMarkdownToHtml = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
+
   const file = markdownProcessor.processSync(markdown);
+
   return String(file);
 };
 
-export const convertHtmlToMarkdown = (html: string): string => {
-  const turndownService = createTurndownService();
+export const convertHtmlToMarkdown = (
+  html: string,
+  tableSyntax?: TableSyntax
+): string => {
+  const turndownService = createTurndownService(tableSyntax);
   return turndownService.turndown(html);
 };
 
@@ -226,9 +347,12 @@ export const processMarkdownContent = (content: string): string => {
   return content;
 };
 
-export const convertHtmlToMarkdownUnified = (html: string): string => {
+export const convertHtmlToMarkdownUnified = (
+  html: string,
+  tableSyntax?: TableSyntax
+): string => {
   if (!html || typeof html !== "string") return "";
-  return convertHtmlToMarkdown(html);
+  return convertHtmlToMarkdown(html, tableSyntax);
 };
 
 export const getMarkdownPreviewContent = (
@@ -246,5 +370,6 @@ export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
   const sanitizedHtml = convertMarkdownToHtml(markdown);
+
   return convertHtmlToMarkdown(sanitizedHtml);
 };

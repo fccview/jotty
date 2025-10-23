@@ -130,7 +130,7 @@ export const ChecklistHome = ({
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {taskLists.map((list) => (
                 <ChecklistCard
-                  key={list.id}
+                  key={`${list.category}-${list.id}`}
                   list={list}
                   onSelect={onSelectChecklist!}
                 />

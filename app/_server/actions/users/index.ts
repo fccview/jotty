@@ -2,7 +2,7 @@
 
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import { Result } from "@/app/_types";
+import { ImageSyntax, LandingPage, Result, TableSyntax } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
   getSessionId,
@@ -452,4 +452,48 @@ export const toggleAdmin = async (formData: FormData) => {
   await writeJsonFile(users, USERS_FILE);
 
   return { success: true };
+};
+
+export const updateUserSettings = async ({
+  preferredTheme,
+  imageSyntax,
+  tableSyntax,
+  landingPage,
+}: {
+  preferredTheme?: string;
+  imageSyntax?: ImageSyntax;
+  tableSyntax?: TableSyntax;
+  landingPage?: LandingPage;
+}): Promise<Result<{ user: User }>> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === currentUser.username
+    );
+
+    if (userIndex === -1) {
+      return { success: false, error: "User not found" };
+    }
+
+    const updatedUser: User = {
+      ...allUsers[userIndex],
+      preferredTheme,
+      imageSyntax,
+      tableSyntax,
+      landingPage,
+    };
+
+    allUsers[userIndex] = updatedUser;
+    await writeJsonFile(allUsers, USERS_FILE);
+
+    return { success: true, data: { user: updatedUser } };
+  } catch (error) {
+    console.error("Error updating user settings:", error);
+    return { success: false, error: "Failed to update user settings" };
+  }
 };

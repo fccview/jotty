@@ -183,7 +183,7 @@ export const UnifiedMarkdownRenderer = ({
       if (isTaskItem) {
         return (
           <li
-            className={`flex items-center gap-1 ${className || ""}`}
+            className={`${className || ""}`}
             {...props}
           >
             {children}

@@ -22,6 +22,8 @@ services:
     # platform: linux/arm64
 ```
 
+**note**: Scroll down if you are running this with podman or via rootless docker
+
 ## Container Configuration
 
 ```yaml
@@ -41,6 +43,19 @@ user: "1000:1000"
 ```
 
 Runs the container with the specified user and group ID. This should match your host system user for proper file permissions.
+
+```yaml
+userns_mode: keep-id
+```
+
+**Required for Podman and rootless Docker environments.** This option preserves the user namespace when mounting volumes, ensuring the container user (1000:1000) can properly access mounted directories.
+
+**When you need this option:**
+- Running with Podman instead of Docker
+- Running Docker in rootless mode
+- Getting permission denied errors when writing to mounted volumes (e.g., `EACCES: permission denied, open '/app/data/users/session-data.json'`)
+
+**Why it's needed:** In rootless environments, the container user cannot become root to access mounted volumes. The `userns_mode: keep-id` option maps the container user's UID/GID directly to the host's UID/GID, allowing proper file access. More info [here](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md#using-volumes)
 
 ## Network Configuration
 
@@ -87,7 +102,7 @@ environment:
   - OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>
   - APP_URL=https://your-jotty-domain.com
   - OIDC_CLIENT_SECRET=your_client_secret
-  - SSO_FALLBACK_LOCAL=true
+  - SSO_FALLBACK_LOCAL=yes
   - OIDC_ADMIN_GROUPS=admins
 ```
 
@@ -103,7 +118,7 @@ environment:
 - `- OIDC_ISSUER=<YOUR_SSO_ISSUER>` URL of your OIDC provider (e.g., Authentik, Auth0, Keycloak).
 - `- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>` Client ID from your OIDC provider configuration.
 - `- OIDC_CLIENT_SECRET=your_client_secret` Optional. Client secret for confidential OIDC client authentication.
-- `- SSO_FALLBACK_LOCAL=true` Optional. Allows both SSO and local authentication methods.
+- `- SSO_FALLBACK_LOCAL=yes` Optional. Allows both SSO and local authentication methods.
 - `- OIDC_ADMIN_GROUPS=admins` Optional. Comma-separated list of OIDC groups that should have admin privileges.
 
 ## Platform Configuration

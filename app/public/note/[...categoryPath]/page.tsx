@@ -6,7 +6,7 @@ import { getUserByUsername } from "@/app/_server/actions/users";
 import type { Metadata, ResolvingMetadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { Modes } from "@/app/_types/enums";
-import { decodeCategoryPath } from "@/app/_utils/global-utils";
+import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 
 interface PublicNotePageProps {
   params: {
@@ -20,7 +20,7 @@ export async function generateMetadata({
   params,
 }: PublicNotePageProps): Promise<Metadata> {
   const { categoryPath } = params;
-  const id = categoryPath[categoryPath.length - 1];
+  const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
   const category =
     categoryPath.length === 1
@@ -32,7 +32,7 @@ export async function generateMetadata({
 
 export default async function PublicNotePage({ params }: PublicNotePageProps) {
   const { categoryPath } = params;
-  const id = categoryPath[categoryPath.length - 1];
+  const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
   const category =
     categoryPath.length === 1

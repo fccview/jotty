@@ -51,7 +51,10 @@ export const EditNoteModal = ({
     if (isOwner) {
       formData.append("category", category || "");
     }
+    formData.append("originalCategory", note.category || "Uncategorized");
+
     const result = await updateNote(formData, false);
+
     setIsLoading(false);
 
     if (result.success) {

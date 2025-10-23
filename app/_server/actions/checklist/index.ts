@@ -239,6 +239,7 @@ export const updateList = async (formData: FormData) => {
     const id = formData.get("id") as string;
     const title = formData.get("title") as string;
     const category = formData.get("category") as string;
+    const originalCategory = formData.get("originalCategory") as string;
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getLists());
@@ -247,7 +248,7 @@ export const updateList = async (formData: FormData) => {
     }
 
     const currentList = lists.data.find(
-      (list) => list.id === id && list.category === category
+      (list) => list.id === id && list.category === originalCategory
     );
     if (!currentList) {
       throw new Error("List not found");

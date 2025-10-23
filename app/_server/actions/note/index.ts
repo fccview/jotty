@@ -35,17 +35,31 @@ import { buildCategoryPath } from "@/app/_utils/global-utils";
 const USER_NOTES_DIR = (username: string) =>
   path.join(process.cwd(), "data", NOTES_FOLDER, username);
 
+const formatFileName = (fileName: string): string => {
+  return (
+    fileName
+      ?.replace(/^[.-]+|[.-]+$/g, "")
+      ?.replace(/\.+/g, ".")
+      ?.charAt(0)
+      .toUpperCase() + fileName.slice(1).toLowerCase()
+  );
+};
+
 const _parseMarkdownNote = (
   content: string,
   id: string,
   category: string,
   owner?: string,
   isShared?: boolean,
-  fileStats?: { birthtime: Date; mtime: Date }
+  fileStats?: { birthtime: Date; mtime: Date },
+  fileName?: string
 ): Note => {
   const lines = content.split("\n");
   const titleLine = lines.find((line) => line.startsWith("# "));
-  const title = titleLine?.replace(/^#\s*/, "") || "Untitled Note";
+  const titleFallback = fileName
+    ? formatFileName(path.basename(fileName, ".md"))
+    : "Untitled Note";
+  const title = titleLine?.replace(/^#\s*/, "") || titleFallback;
 
   const contentWithoutTitle = lines
     .filter((line) => !line.startsWith("# ") || line !== titleLine)
@@ -122,7 +136,15 @@ const _readNotesRecursively = async (
           const content = await serverReadFile(filePath);
           const stats = await fs.stat(filePath);
           docs.push(
-            _parseMarkdownNote(content, id, categoryPath, owner, false, stats)
+            _parseMarkdownNote(
+              content,
+              id,
+              categoryPath,
+              owner,
+              false,
+              stats,
+              fileName
+            )
           );
         } catch {}
       }
@@ -183,6 +205,7 @@ export const getNotes = async (username?: string) => {
 
     const sharedItems = await getItemsSharedWithUser(currentUser.username);
     for (const sharedItem of sharedItems.notes) {
+      const fileName = `${sharedItem.id}.md`;
       const sharedFilePath = sharedItem.filePath
         ? path.join(process.cwd(), "data", NOTES_FOLDER, sharedItem.filePath)
         : path.join(
@@ -204,7 +227,8 @@ export const getNotes = async (username?: string) => {
             sharedItem.category || "Uncategorized",
             sharedItem.owner,
             true,
-            stats
+            stats,
+            fileName
           )
         );
       } catch (error) {
@@ -266,6 +290,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const title = formData.get("title") as string;
     const rawContent = formData.get("content") as string;
     const category = formData.get("category") as string;
+    const originalCategory = formData.get("originalCategory") as string;
 
     const content = sanitizeMarkdown(rawContent);
 
@@ -275,7 +300,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       throw new Error(docs.error || "Failed to fetch notes");
     }
 
-    const doc = docs.data.find((d) => d.id === id && d.category === category);
+    const doc = docs.data.find(
+      (d) => d.id === id && d.category === originalCategory
+    );
     if (!doc) {
       throw new Error("Note not found");
     }

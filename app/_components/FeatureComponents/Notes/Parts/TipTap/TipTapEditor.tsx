@@ -27,17 +27,25 @@ import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Par
 import { DetailsExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DetailsExtension";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
+import { TableSyntax } from "@/app/_types";
+import { useSettings } from "@/app/_utils/settings-store";
 
 type TiptapEditorProps = {
   content: string;
   onChange: (content: string, isMarkdownMode: boolean) => void;
+  tableSyntax?: TableSyntax;
 };
 
-export const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
+export const TiptapEditor = ({
+  content,
+  onChange,
+  tableSyntax,
+}: TiptapEditorProps) => {
   const [isMarkdownMode, setIsMarkdownMode] = useState(false);
   const [markdownContent, setMarkdownContent] = useState(content);
   const isInitialized = useRef(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
+  const { compactMode } = useSettings();
 
   useShortcuts([
     {
@@ -140,6 +148,21 @@ export const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
       TaskItem.extend({
         nested: true,
         content: "block+",
+        parseHTML() {
+          return [
+            {
+              tag: 'li[data-type="taskItem"]',
+              priority: 51,
+              getAttrs: (element: HTMLElement) => {
+                if (typeof element === 'string') return false;
+                const dataChecked = element.getAttribute('data-checked');
+                return {
+                  checked: dataChecked === 'true',
+                };
+              },
+            },
+          ];
+        },
       }),
       BulletList.extend({
         content: "listItem+",
@@ -153,8 +176,8 @@ export const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
     },
     editorProps: {
       attributes: {
-        class:
-          "prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none",
+        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
+          }`,
       },
       handleKeyDown: (view, event) => {
         if (!editor) {
@@ -203,8 +226,8 @@ export const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
                     line.startsWith("    ")
                       ? line.substring(4)
                       : line.startsWith("\t")
-                      ? line.substring(1)
-                      : line
+                        ? line.substring(1)
+                        : line
                   )
                   .join("\n");
                 editor
@@ -287,7 +310,10 @@ export const TiptapEditor = ({ content, onChange }: TiptapEditorProps) => {
       setTimeout(() => {
         if (editor) {
           const htmlContent = editor.getHTML();
-          const markdownOutput = convertHtmlToMarkdownUnified(htmlContent);
+          const markdownOutput = convertHtmlToMarkdownUnified(
+            htmlContent,
+            tableSyntax
+          );
           setMarkdownContent(markdownOutput);
           setIsMarkdownMode(true);
         }
