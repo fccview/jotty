@@ -24,7 +24,7 @@ export const updateItem = async (
     const itemId = formData.get("itemId") as string;
     const completed = formData.get("completed") === "true";
     const text = formData.get("text") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getLists(username));
@@ -32,8 +32,14 @@ export const updateItem = async (
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
+    const legacyList = lists.data.find((l) => l.id === listId);
+    if (!legacyList) {
+      throw new Error("List not found");
+    }
+
+    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && l.category === currentCategory
     );
     if (!list) {
       throw new Error("List not found");
@@ -102,7 +108,7 @@ export const createItem = async (
     const text = formData.get("text") as string;
     const status = formData.get("status") as string;
     const timeStr = formData.get("time") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getLists(username));
@@ -110,8 +116,14 @@ export const createItem = async (
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
+    const legacyList = lists.data.find((l) => l.id === listId);
+    if (!legacyList) {
+      throw new Error("List not found");
+    }
+
+    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && l.category === currentCategory
     );
     if (!list) {
       throw new Error("List not found");
@@ -188,15 +200,21 @@ export const deleteItem = async (formData: FormData) => {
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     const lists = await getLists();
     if (!lists.success || !lists.data) {
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
+    const legacyList = lists.data.find((l) => l.id === listId);
+    if (!legacyList) {
+      throw new Error("List not found");
+    }
+
+    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && l.category === currentCategory
     );
     if (!list) {
       throw new Error("List not found");
@@ -261,7 +279,6 @@ export const reorderItems = async (formData: FormData) => {
     const currentItems = JSON.parse(
       formData.get("currentItems") as string
     ) as any[];
-    const category = formData.get("category") as string;
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getLists());
@@ -269,8 +286,14 @@ export const reorderItems = async (formData: FormData) => {
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
+    const legacyList = lists.data.find((l) => l.id === listId);
+    if (!legacyList) {
+      throw new Error("List not found");
+    }
+
+    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && l.category === currentCategory
     );
     if (!list) {
       throw new Error("List not found");
@@ -329,7 +352,7 @@ export const updateItemStatus = async (formData: FormData) => {
     const itemId = formData.get("itemId") as string;
     const status = formData.get("status") as TaskStatus;
     const timeEntriesStr = formData.get("timeEntries") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     if (!listId || !itemId) {
       return { error: "List ID and item ID are required" };
@@ -345,8 +368,14 @@ export const updateItemStatus = async (formData: FormData) => {
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
+    const legacyList = lists.data.find((l) => l.id === listId);
+    if (!legacyList) {
+      throw new Error("List not found");
+    }
+
+    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && l.category === currentCategory
     );
     if (!list) {
       throw new Error("List not found");
@@ -405,15 +434,21 @@ export const createBulkItems = async (formData: FormData) => {
   try {
     const listId = formData.get("listId") as string;
     const itemsText = formData.get("itemsText") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     const lists = await getLists();
     if (!lists.success || !lists.data) {
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
+    const legacyList = lists.data.find((l) => l.id === listId);
+    if (!legacyList) {
+      throw new Error("List not found");
+    }
+
+    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && l.category === currentCategory
     );
     if (!list) {
       throw new Error("List not found");
@@ -482,7 +517,7 @@ export const bulkToggleItems = async (formData: FormData) => {
     const listId = formData.get("listId") as string;
     const completed = formData.get("completed") === "true";
     const itemIdsStr = formData.get("itemIds") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     if (!listId || !itemIdsStr) {
       return { error: "List ID and item IDs are required" };
@@ -495,8 +530,14 @@ export const bulkToggleItems = async (formData: FormData) => {
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
+    const legacyList = lists.data.find((l) => l.id === listId);
+    if (!legacyList) {
+      throw new Error("List not found");
+    }
+
+    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && l.category === currentCategory
     );
     if (!list) {
       throw new Error("List not found");
@@ -555,7 +596,7 @@ export const bulkDeleteItems = async (formData: FormData) => {
     const listId = formData.get("listId") as string;
     const itemIdsStr = formData.get("itemIds") as string;
     const itemIdsToDelete = JSON.parse(itemIdsStr) as string[];
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     if (!listId || !itemIdsToDelete || itemIdsToDelete.length === 0) {
       return { success: true };
@@ -566,8 +607,14 @@ export const bulkDeleteItems = async (formData: FormData) => {
       throw new Error(lists.error || "Failed to fetch lists");
     }
 
+    const legacyList = lists.data.find((l) => l.id === listId);
+    if (!legacyList) {
+      throw new Error("List not found");
+    }
+
+    const currentCategory = legacyList.category || "Uncategorized";
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && l.category === currentCategory
     );
     if (!list) {
       throw new Error("List not found");

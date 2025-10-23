@@ -9,6 +9,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Category } from "@/app/_types";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 
 interface EditChecklistModalProps {
   checklist: {
@@ -64,10 +65,11 @@ export const EditChecklistModal = ({
     if (result.success && result.data) {
       const updatedChecklist = result.data;
 
-      if (updatedChecklist.id !== checklist.id) {
-        router.push(`/checklist/${updatedChecklist.id}`);
-        return;
-      }
+      const categoryPath = buildCategoryPath(
+        updatedChecklist.category || "Uncategorized",
+        updatedChecklist.id
+      );
+      router.push(`/checklist/${categoryPath}`);
 
       onUpdated();
     }

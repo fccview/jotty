@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Plus, ClipboardList, Users, Hash, Check, Globe } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
-import { isMobileDevice } from "@/app/_utils/global-utils";
+import { buildCategoryPath, isMobileDevice } from "@/app/_utils/global-utils";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
 import { useSharing } from "@/app/_hooks/useSharing";
 import { useRouter } from "next/navigation";
@@ -36,13 +36,13 @@ export const ChecklistHeading = ({
 
   const { handleCopyId, copied } = useChecklist({
     list: checklist,
-    onUpdate: () => {},
+    onUpdate: () => { },
   });
   const { sharingStatus } = useSharing({
     itemId: checklist.id,
     itemType: "checklist",
     itemOwner: checklist.owner || "",
-    onClose: () => {},
+    onClose: () => { },
     enabled: true,
     itemTitle: checklist.title,
     itemCategory: checklist.category,
@@ -55,7 +55,6 @@ export const ChecklistHeading = ({
 
     onSubmit(newItemText.trim());
     setNewItemText("");
-    router.refresh();
   };
 
   useEffect(() => {

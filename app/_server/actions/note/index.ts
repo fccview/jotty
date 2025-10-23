@@ -276,7 +276,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const id = formData.get("id") as string;
     const title = formData.get("title") as string;
     const rawContent = formData.get("content") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     const content = sanitizeMarkdown(rawContent);
 
@@ -286,20 +286,27 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       throw new Error(docs.error || "Failed to fetch notes");
     }
 
-    const doc = docs.data.find((d) => d.id === id && d.category === category);
-    if (!doc) {
+    const legacyNote = docs.data.find((d) => d.id === id);
+    if (!legacyNote) {
+      throw new Error("Note not found");
+    }
+
+    const currentCategory = legacyNote.category || "Uncategorized";
+    const note = docs.data.find((d) => d.id === id && d.category === currentCategory);
+
+    if (!note) {
       throw new Error("Note not found");
     }
 
     const updatedDoc = {
-      ...doc,
+      ...note,
       title,
       content,
-      category: category || doc.category,
+      category: category || note.category,
       updatedAt: new Date().toISOString(),
     };
 
-    const ownerDir = USER_NOTES_DIR(doc.owner!);
+    const ownerDir = USER_NOTES_DIR(note.owner!);
     const categoryDir = path.join(
       ownerDir,
       updatedDoc.category || "Uncategorized"
@@ -313,7 +320,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const currentFilename = `${id}.md`;
     const expectedFilename = `${sanitizedTitle || id}.md`;
 
-    if (title !== doc.title || currentFilename !== expectedFilename) {
+    if (title !== note.title || currentFilename !== expectedFilename) {
       newFilename = await generateUniqueFilename(categoryDir, title);
       newId = path.basename(newFilename, ".md");
     } else {
@@ -327,16 +334,16 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const filePath = path.join(categoryDir, newFilename);
 
     let oldFilePath: string | null = null;
-    if (category && category !== doc.category) {
+    if (category && category !== note.category) {
       oldFilePath = path.join(
         ownerDir,
-        doc.category || "Uncategorized",
+        note.category || "Uncategorized",
         `${id}.md`
       );
     } else if (newId !== id) {
       oldFilePath = path.join(
         ownerDir,
-        doc.category || "Uncategorized",
+        note.category || "Uncategorized",
         `${id}.md`
       );
     }
@@ -349,11 +356,11 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const sharingMetadata = await getItemSharingMetadata(
       id,
       "note",
-      doc.owner!
+      note.owner!
     );
 
     if (sharingMetadata) {
-      const newFilePath = `${doc.owner}/${updatedDoc.category || "Uncategorized"
+      const newFilePath = `${note.owner!}/${updatedDoc.category || "Uncategorized"
         }/${updatedDoc.id}.md`;
 
       if (newId !== id) {
@@ -361,20 +368,20 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
           "@/app/_server/actions/sharing"
         );
 
-        await removeSharedItem(id, "note", doc.owner!);
+        await removeSharedItem(id, "note", note.owner!);
 
         await addSharedItem(
           updatedDoc.id,
           "note",
           updatedDoc.title,
-          doc.owner!,
+          note.owner!,
           sharingMetadata.sharedWith,
           updatedDoc.category,
           newFilePath,
           sharingMetadata.isPubliclyShared
         );
       } else {
-        await updateSharedItem(updatedDoc.id, "note", doc.owner!, {
+        await updateSharedItem(updatedDoc.id, "note", note.owner!, {
           filePath: newFilePath,
           category: updatedDoc.category,
           title: updatedDoc.title,
@@ -390,7 +397,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       if (!autosaveNotes) {
         revalidatePath("/");
         const oldCategoryPath = buildCategoryPath(
-          doc.category || "Uncategorized",
+          note.category || "Uncategorized",
           id
         );
         const newCategoryPath = buildCategoryPath(
@@ -400,7 +407,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
         revalidatePath(`/note/${oldCategoryPath}`);
 
-        if (newId !== id || doc.category !== updatedDoc.category) {
+        if (newId !== id || note.category !== updatedDoc.category) {
           revalidatePath(`/note/${newCategoryPath}`);
         }
       }
@@ -420,7 +427,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 export const deleteNote = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
 
     const currentUser = await getCurrentUser();
     if (!currentUser) {

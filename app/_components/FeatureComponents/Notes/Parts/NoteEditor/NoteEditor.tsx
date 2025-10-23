@@ -27,7 +27,6 @@ export const NoteEditor = ({
   isAdmin = false,
 }: NoteEditorProps) => {
   const isOwner = note.owner === currentUsername;
-  const { compactMode } = useSettings();
   const [showTOC, setShowTOC] = useState(false);
 
   return (

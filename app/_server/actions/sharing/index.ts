@@ -88,7 +88,7 @@ export const shareItem = async (formData: FormData): Promise<Result<null>> => {
     const itemId = formData.get("itemId") as string;
     const type = formData.get("type") as ItemType;
     const title = formData.get("title") as string;
-    const category = formData.get("category") as string;
+    const category = (formData.get("category") as string) || "Uncategorized";
     const action = formData.get("action") as
       | "share"
       | "unshare"

@@ -97,13 +97,12 @@ export const useNoteEditor = ({
       if (result.success && result.data) {
         onUpdate(result.data);
         setIsEditing(false);
-        if (result.data.id !== note.id) {
-          const categoryPath = buildCategoryPath(
-            category || "Uncategorized",
-            result.data.id
-          );
-          router.push(`/note/${categoryPath}`);
-        }
+
+        const categoryPath = buildCategoryPath(
+          category || "Uncategorized",
+          result.data.id
+        );
+        router.push(`/note/${categoryPath}`);
       }
     },
     [note.id, title, derivedMarkdownContent, category, onUpdate, router]

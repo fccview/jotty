@@ -17,6 +17,7 @@ import {
   bulkDeleteItems,
 } from "@/app/_server/actions/checklist-item";
 import { useRouter } from "next/navigation";
+import { buildCategoryPath } from "../_utils/global-utils";
 
 interface UseChecklistProps {
   list: Checklist;
