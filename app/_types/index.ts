@@ -168,6 +168,7 @@ export interface AppSettings {
   "16x16Icon": string;
   "32x32Icon": string;
   "180x180Icon": string;
+  notifyNewUpdates: "yes" | "no";
 }
 
 export interface Session {

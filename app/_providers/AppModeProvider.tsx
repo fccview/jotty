@@ -20,6 +20,7 @@ interface AppModeContextType {
   isRwMarkable: boolean;
   user: User | null;
   setUser: (user: User | null) => void;
+  appVersion: string;
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
@@ -29,11 +30,13 @@ export const AppModeProvider = ({
   isDemoMode = false,
   isRwMarkable = false,
   user: initialUser,
+  appVersion,
 }: {
   children: ReactNode;
   isDemoMode?: boolean;
   isRwMarkable?: boolean;
   user?: User | null;
+  appVersion?: string;
 }) => {
   const [mode, setMode] = useState<AppMode>(Modes.CHECKLISTS);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
@@ -69,6 +72,7 @@ export const AppModeProvider = ({
         isRwMarkable,
         user,
         setUser,
+        appVersion: appVersion || "",
       }}
     >
       {children}
