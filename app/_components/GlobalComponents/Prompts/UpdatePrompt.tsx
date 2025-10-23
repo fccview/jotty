@@ -45,10 +45,6 @@ export const UpdatePrompt = () => {
         ""
       );
 
-      console.log("Dismissed Version:", dismissedVersion);
-      console.log("Current App Version:", currentVersion);
-      console.log("Latest GitHub Version:", latestGithubVersion);
-
       if (
         compareVersions(dismissedVersion || "0.0.0", currentVersion) < 0 &&
         compareVersions(currentVersion, latestGithubVersion) < 0
@@ -140,7 +136,7 @@ export const UpdatePrompt = () => {
             </div>
             <div>
               <h3 className="font-medium text-foreground hover:underline">
-                New version available: {latestVersion}
+                New version: {latestVersion}
               </h3>
               <p className="text-sm text-muted-foreground">
                 Click to see release notes{" "}

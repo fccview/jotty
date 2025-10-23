@@ -83,6 +83,17 @@ export default async function RootLayout({
   const checklistCategories = await getCategories(Modes.CHECKLISTS);
   const user = await getCurrentUser();
   const appVersion = await readPackageVersion();
+  const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
+  let serveUpdates = true;
+
+  if (
+    stopCheckUpdates &&
+    (stopCheckUpdates.toLowerCase() !== "no" ||
+      stopCheckUpdates.toLowerCase() !== "false") ||
+    settings?.notifyNewUpdates === "no"
+  ) {
+    serveUpdates = false;
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -113,7 +124,10 @@ export default async function RootLayout({
                       <DynamicFavicon />
                       {children}
                       <InstallPrompt />
-                      <UpdatePrompt />
+
+                      {serveUpdates && (
+                        <UpdatePrompt />
+                      )}
                     </div>
                   </ShortcutProvider>
                 </ToastProvider>
