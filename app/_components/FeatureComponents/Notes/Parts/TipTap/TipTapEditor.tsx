@@ -154,8 +154,7 @@ export const TiptapEditor = ({
         },
       }),
       Link.configure({
-        openOnClick: false,
-        autolink: true,
+        openOnClick: false
       }).extend({
         addInputRules() {
           return [

@@ -106,6 +106,7 @@ export interface User {
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
   notesDefaultEditor?: NotesDefaultEditor;
+  notesDefaultMode?: NotesDefaultMode;
   pinnedLists?: string[];
   pinnedNotes?: string[];
 }
@@ -114,6 +115,7 @@ export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";
 export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
+export type NotesDefaultMode = "edit" | "view";
 
 export interface SharedItem {
   id: string;

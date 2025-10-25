@@ -2,7 +2,7 @@
 
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import { ImageSyntax, LandingPage, NotesDefaultEditor, Result, TableSyntax } from "@/app/_types";
+import { ImageSyntax, LandingPage, NotesDefaultEditor, NotesDefaultMode, Result, TableSyntax } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
   getSessionId,
@@ -460,12 +460,14 @@ export const updateUserSettings = async ({
   tableSyntax,
   landingPage,
   notesDefaultEditor,
+  notesDefaultMode,
 }: {
   preferredTheme?: string;
   imageSyntax?: ImageSyntax;
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
   notesDefaultEditor?: NotesDefaultEditor;
+  notesDefaultMode?: NotesDefaultMode;
 }): Promise<Result<{ user: User }>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -482,13 +484,18 @@ export const updateUserSettings = async ({
       return { success: false, error: "User not found" };
     }
 
+    const updates: Partial<User> = {};
+
+    if (preferredTheme !== undefined) updates.preferredTheme = preferredTheme;
+    if (imageSyntax !== undefined) updates.imageSyntax = imageSyntax;
+    if (tableSyntax !== undefined) updates.tableSyntax = tableSyntax;
+    if (landingPage !== undefined) updates.landingPage = landingPage;
+    if (notesDefaultEditor !== undefined) updates.notesDefaultEditor = notesDefaultEditor;
+    if (notesDefaultMode !== undefined) updates.notesDefaultMode = notesDefaultMode;
+
     const updatedUser: User = {
       ...allUsers[userIndex],
-      preferredTheme,
-      imageSyntax,
-      tableSyntax,
-      landingPage,
-      notesDefaultEditor,
+      ...updates,
     };
 
     allUsers[userIndex] = updatedUser;
