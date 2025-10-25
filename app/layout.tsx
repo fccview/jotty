@@ -126,9 +126,12 @@ export default async function RootLayout({
                     <div className="min-h-screen bg-background text-foreground transition-colors">
                       <DynamicFavicon />
                       {children}
-                      <InstallPrompt />
 
-                      {serveUpdates && (
+                      {!pathname?.includes('/public') && (
+                        <InstallPrompt />
+                      )}
+
+                      {serveUpdates && !pathname?.includes('/public') && (
                         <UpdatePrompt />
                       )}
                     </div>
