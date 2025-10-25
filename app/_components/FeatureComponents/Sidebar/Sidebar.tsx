@@ -126,6 +126,7 @@ export const Sidebar = (props: SidebarProps) => {
               isItemSelected={sidebar.isItemSelected}
               mode={sidebar.mode}
               getSharingStatus={sidebar.getSharingStatus}
+              user={user}
             />
             <CategoryList
               categories={categories}
@@ -145,6 +146,7 @@ export const Sidebar = (props: SidebarProps) => {
               isItemSelected={sidebar.isItemSelected}
               mode={sidebar.mode}
               getSharingStatus={sidebar.getSharingStatus}
+              user={user}
             />
           </div>
           <SidebarActions

@@ -4,21 +4,14 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import path from "path";
 import fs from "fs/promises";
-import { Checklist, Note, Result } from "@/app/_types";
+import { Result } from "@/app/_types";
 import { getCurrentUser, isAdmin } from "../users";
 import { revalidatePath } from "next/cache";
-import { getAllLists, getListById, getLists } from "../checklist";
-import { Metadata, ResolvingMetadata } from "next";
+import { getListById } from "../checklist";
+import { Metadata } from "next";
 import { Modes } from "@/app/_types/enums";
-import { getNoteById, getNotes } from "../note";
-
-interface AppSettings {
-  appName: string;
-  appDescription: string;
-  "16x16Icon": string;
-  "32x32Icon": string;
-  "180x180Icon": string;
-}
+import { getNoteById } from "../note";
+import { AppSettings } from "@/app/_types";
 
 const DATA_SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
 const CONFIG_SETTINGS_PATH = path.join(
@@ -180,6 +173,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
           "16x16Icon": "",
           "32x32Icon": "",
           "180x180Icon": "",
+          notifyNewUpdates: "yes",
         };
       }
     }
@@ -205,6 +199,8 @@ export const updateAppSettings = async (
     const icon16x16 = (formData.get("16x16Icon") as string) || "";
     const icon32x32 = (formData.get("32x32Icon") as string) || "";
     const icon180x180 = (formData.get("180x180Icon") as string) || "";
+    const notifyNewUpdates =
+      (formData.get("notifyNewUpdates") as "yes" | "no") || "yes";
 
     const settings: AppSettings = {
       appName,
@@ -212,6 +208,7 @@ export const updateAppSettings = async (
       "16x16Icon": icon16x16,
       "32x32Icon": icon32x32,
       "180x180Icon": icon180x180,
+      notifyNewUpdates: notifyNewUpdates,
     };
 
     const dataDir = path.dirname(DATA_SETTINGS_PATH);
@@ -309,4 +306,16 @@ export const getMedatadaTitle = async (
   return {
     title: `${item?.title || defaultTitle} - ${appName}`,
   };
+};
+
+export const readPackageVersion = async (): Promise<Result<string>> => {
+  try {
+    const packageJsonPath = path.join(process.cwd(), "package.json");
+    const packageJsonContent = await fs.readFile(packageJsonPath, "utf-8");
+    const packageJson = JSON.parse(packageJsonContent);
+    return { success: true, data: packageJson.version };
+  } catch (error) {
+    console.error("Error reading package.json version:", error);
+    return { success: false, error: "Failed to read package version" };
+  }
 };

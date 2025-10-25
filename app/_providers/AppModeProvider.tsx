@@ -20,6 +20,7 @@ interface AppModeContextType {
   isRwMarkable: boolean;
   user: User | null;
   setUser: (user: User | null) => void;
+  appVersion: string;
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
@@ -29,26 +30,31 @@ export const AppModeProvider = ({
   isDemoMode = false,
   isRwMarkable = false,
   user: initialUser,
+  pathname,
+  appVersion,
 }: {
   children: ReactNode;
   isDemoMode?: boolean;
   isRwMarkable?: boolean;
   user?: User | null;
+  pathname?: string;
+  appVersion?: string;
 }) => {
-  const [mode, setMode] = useState<AppMode>(Modes.CHECKLISTS);
+  const isNoteOrChecklistPage = pathname?.includes("/checklist") || pathname?.includes("/note");
+  let modeToSet: AppMode = Modes.CHECKLISTS;
+  if (isNoteOrChecklistPage) {
+    modeToSet = pathname?.includes("/checklist") ? Modes.CHECKLISTS : Modes.NOTES;
+  }
+  if (!isNoteOrChecklistPage) {
+    modeToSet = initialUser?.landingPage === Modes.CHECKLISTS ? Modes.CHECKLISTS : Modes.NOTES || Modes.CHECKLISTS;
+  }
+
+  const [mode, setMode] = useState<AppMode>(modeToSet);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<User | null>(initialUser || null);
 
   useEffect(() => {
-    const savedMode =
-      user?.landingPage === "last-visited"
-        ? localStorage.getItem("app-mode")
-        : user?.landingPage;
-
-    if (savedMode === Modes.CHECKLISTS || savedMode === Modes.NOTES) {
-      setMode(savedMode);
-    }
     setIsInitialized(true);
   }, []);
 
@@ -69,6 +75,7 @@ export const AppModeProvider = ({
         isRwMarkable,
         user,
         setUser,
+        appVersion: appVersion || "",
       }}
     >
       {children}

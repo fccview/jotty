@@ -254,10 +254,13 @@ const generateSharingId = async (
 export const readSharingMetadata = async (): Promise<SharingMetadata> => {
   await ensureDir(SHARING_DIR);
 
-  const content = await serverReadFile(SHARED_ITEMS_FILE, JSON.stringify({
-    checklists: {},
-    notes: {},
-  }));
+  const content = await serverReadFile(
+    SHARED_ITEMS_FILE,
+    JSON.stringify({
+      checklists: {},
+      notes: {},
+    })
+  );
 
   try {
     return JSON.parse(content);

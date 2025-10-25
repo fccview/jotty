@@ -29,7 +29,7 @@ export const ChecklistHeader = ({
   onConvertType,
 }: ChecklistHeaderProps) => {
   return (
-    <div className="bg-background border-b border-border px-3 py-4 lg:px-6 lg:py-1.5">
+    <div className="bg-background border-b border-border px-3 py-4 lg:px-6 lg:py-[12px]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 lg:gap-4">
           <Button

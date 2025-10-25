@@ -38,8 +38,8 @@ export default async function HomePage() {
       "type" in item && item.type === "task"
         ? ("checklist" as const)
         : "type" in item
-          ? ("checklist" as const)
-          : ("note" as const),
+        ? ("checklist" as const)
+        : ("note" as const),
     owner: item.owner || "",
   }));
 

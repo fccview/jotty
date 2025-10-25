@@ -84,14 +84,12 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
         <div
           className="fixed bg-background border border-border rounded-md shadow-lg min-w-[250px] max-h-[400px] overflow-hidden flex flex-col"
           style={{
-            top: `${
-              dropdownRef.current?.getBoundingClientRect().bottom || 0
-            }px`,
+            top: `${dropdownRef.current?.getBoundingClientRect().bottom || 0
+              }px`,
             left: `${dropdownRef.current?.getBoundingClientRect().left || 0}px`,
             pointerEvents: "auto",
           }}
         >
-          {/* Search Input */}
           <div className="p-2 border-b border-border">
             <div className="relative">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -106,7 +104,6 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
             </div>
           </div>
 
-          {/* Language List */}
           <div className="flex-1 overflow-y-auto max-h-[300px]">
             {filteredLanguages.length > 0 ? (
               filteredLanguages.map((lang) => (

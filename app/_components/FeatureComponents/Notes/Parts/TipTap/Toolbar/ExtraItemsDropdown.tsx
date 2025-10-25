@@ -164,14 +164,13 @@ export const ExtraItemsDropdown = ({
   );
 
   return (
-    <ToolbarDropdown trigger={trigger}>
+    <ToolbarDropdown trigger={trigger} direction="right">
       <div className="flex flex-col py-1">
         {items.map((item, index) => (
           <button
             key={index}
-            className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-sm ${
-              item.isActive ? "bg-accent" : ""
-            }`}
+            className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-sm ${item.isActive ? "bg-accent" : ""
+              }`}
             onClick={item.command}
           >
             <div className="flex items-center gap-2">

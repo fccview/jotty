@@ -1,8 +1,16 @@
 "use client";
 
-import { Users, FileText, CheckSquare, Shield, Share2 } from "lucide-react";
+import {
+  Users,
+  FileText,
+  CheckSquare,
+  Shield,
+  Share2,
+  Package,
+} from "lucide-react";
 import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import { ReactNode } from "react";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface AdminStats {
   totalUsers: number;
@@ -19,7 +27,14 @@ interface AdminOverviewProps {
 }
 
 export const AdminOverview = ({ stats }: AdminOverviewProps) => {
+  const { appVersion } = useAppMode();
+
   const statCards = [
+    {
+      title: "App Version",
+      value: appVersion || "",
+      icon: <Package className="h-6 w-6 text-primary" />,
+    },
     {
       title: "Total Users",
       value: stats.totalUsers,
@@ -70,7 +85,11 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map(
-          (card: { title: string; value: number; icon: ReactNode }) => (
+          (card: {
+            title: string;
+            value: string | number;
+            icon: ReactNode;
+          }) => (
             <StatCard
               key={card.title}
               title={card.title}

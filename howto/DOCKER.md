@@ -51,6 +51,7 @@ userns_mode: keep-id
 **Required for Podman and rootless Docker environments.** This option preserves the user namespace when mounting volumes, ensuring the container user (1000:1000) can properly access mounted directories.
 
 **When you need this option:**
+
 - Running with Podman instead of Docker
 - Running Docker in rootless mode
 - Getting permission denied errors when writing to mounted volumes (e.g., `EACCES: permission denied, open '/app/data/users/session-data.json'`)
@@ -97,6 +98,7 @@ environment:
   - HTTPS=true
   - SERVE_PUBLIC_IMAGES=yes
   - SERVE_PUBLIC_FILES=yes
+  - STOP_CHECK_UPDATES=no
   - SSO_MODE=oidc
   - OIDC_ISSUER=<YOUR_SSO_ISSUER>
   - OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>
@@ -111,6 +113,7 @@ environment:
 - `- APP_URL=https://your-jotty-domain.com` Base URL of your jotty·page instance. Required for secure session (https) and SSO.
 - `- SERVE_PUBLIC_IMAGES=yes` Optional. Allows public access to uploaded images via direct URLs.
 - `- SERVE_PUBLIC_FILES=yes` Optional. Allows public access to uploaded files via direct URLs.
+- `- STOP_CHECK_UPDATES=no` Optional. If set to yes stops the github api call and won't give you a toast when a new update is available.
 
 ### SSO Configuration (Optional)
 

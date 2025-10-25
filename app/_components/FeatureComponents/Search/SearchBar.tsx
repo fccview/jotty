@@ -14,6 +14,7 @@ interface SearchBarProps {
   onModeChange?: (mode: AppMode) => void;
   className?: string;
   autoFocus?: boolean;
+  onResultSelect?: () => void;
 }
 
 export const SearchBar = ({
@@ -23,6 +24,7 @@ export const SearchBar = ({
   onModeChange,
   className,
   autoFocus = false,
+  onResultSelect,
 }: SearchBarProps) => {
   const {
     isOpen,
@@ -34,7 +36,7 @@ export const SearchBar = ({
     handleSelectResult,
     inputRef,
     containerRef,
-  } = useSearch({ mode, checklists, notes, onModeChange });
+  } = useSearch({ mode, checklists, notes, onModeChange, onResultSelect });
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {

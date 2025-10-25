@@ -5,15 +5,7 @@ import fs from "fs/promises";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
 import { getUserModeDir } from "../file";
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "image/webp",
-  "image/svg+xml",
-];
+import { MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES } from "@/app/_consts/files";
 
 export interface FileItem {
   fileName: string;
@@ -84,7 +76,10 @@ export const uploadUserAvatar = async (formData: FormData) => {
     }
 
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      return { success: false, error: "Invalid file type. Only images are allowed." };
+      return {
+        success: false,
+        error: "Invalid file type. Only images are allowed.",
+      };
     }
 
     const userDir = await getUserModeDir(Modes.NOTES);
@@ -111,7 +106,9 @@ export const uploadUserAvatar = async (formData: FormData) => {
     const buffer = Buffer.from(await file.arrayBuffer());
     await fs.writeFile(filePath, buffer);
 
-    const fileUrl = `/api/image/${user.username}/${encodeURIComponent(fileName)}`;
+    const fileUrl = `/api/image/${user.username}/${encodeURIComponent(
+      fileName
+    )}`;
 
     return {
       success: true,
@@ -178,8 +175,9 @@ export const uploadFile = async (formData: FormData) => {
     const buffer = Buffer.from(await file.arrayBuffer());
     await fs.writeFile(filePath, buffer);
 
-    const fileUrl = `/${fileType === "image" ? "api/image" : "api/file"}/${user.username
-      }/${encodeURIComponent(fileName)}`;
+    const fileUrl = `/${fileType === "image" ? "api/image" : "api/file"}/${
+      user.username
+    }/${encodeURIComponent(fileName)}`;
 
     return {
       success: true,

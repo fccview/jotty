@@ -1,15 +1,37 @@
-import { CheckCircle, Clock, Timer } from "lucide-react";
+import { CheckCircle, Clock, Timer, Pin, PinOff } from "lucide-react";
 import { Checklist } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { isItemCompleted, formatTime } from "@/app/_utils/checklist-utils";
 import { TaskSpecificDetails } from "@/app/_components/GlobalComponents/Cards/TaskSpecificDetails";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface ChecklistCardProps {
   list: Checklist;
   onSelect: (list: Checklist) => void;
+  isPinned?: boolean;
+  onTogglePin?: (list: Checklist) => void;
+  isDraggable?: boolean;
 }
 
-export const ChecklistCard = ({ list, onSelect }: ChecklistCardProps) => {
+export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, isDraggable = false }: ChecklistCardProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: list.id,
+    disabled: !isDraggable
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   const totalItems = list.items.length;
   const completedItems = list.items.filter((item) =>
     isItemCompleted(item, list.type)
@@ -19,18 +41,42 @@ export const ChecklistCard = ({ list, onSelect }: ChecklistCardProps) => {
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
+      {...(isDraggable ? { ...attributes, ...listeners } : {})}
       onClick={() => onSelect(list)}
-      className="bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group"
+      className={`bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${isDragging ? 'opacity-50' : ''
+        }`}
     >
       <div className="flex items-start justify-between mb-3">
-        <h3 className="font-medium text-foreground group-hover:text-primary transition-colors flex-1 truncate pr-2">
-          {list.title}
-        </h3>
-        {list.category && (
-          <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full flex-shrink-0">
-            {list.category.split("/").pop()}
-          </span>
-        )}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+            {list.title}
+          </h3>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {onTogglePin && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePin(list);
+              }}
+              className={`${isPinned ? "opacity-100" : "opacity-0"} group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              title={isPinned ? "Unpin" : "Pin"}
+            >
+              {isPinned ? (
+                <PinOff className="h-3 w-3 text-muted-foreground hover:text-primary" />
+              ) : (
+                <Pin className="h-3 w-3 text-muted-foreground hover:text-primary" />
+              )}
+            </button>
+          )}
+          {list.category && (
+            <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+              {list.category.split("/").pop()}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="mb-3">

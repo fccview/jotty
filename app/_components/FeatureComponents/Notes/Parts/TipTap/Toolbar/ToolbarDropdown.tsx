@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 interface ToolbarDropdownProps {
   trigger: ReactNode;
   children: ReactNode;
+  direction?: "left" | "right";
 }
 
 const PORTAL_ID = "toolbar-dropdown-portal-root";
@@ -13,6 +14,7 @@ const PORTAL_ID = "toolbar-dropdown-portal-root";
 export const ToolbarDropdown = ({
   trigger,
   children,
+  direction = "left"
 }: ToolbarDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -26,7 +28,7 @@ export const ToolbarDropdown = ({
       portalRoot.style.position = "fixed";
       portalRoot.style.top = "0";
       portalRoot.style.left = "0";
-      portalRoot.style.zIndex = "9999";
+      portalRoot.style.zIndex = "10";
       portalRoot.style.pointerEvents = "none";
       document.body.appendChild(portalRoot);
     }
@@ -59,11 +61,17 @@ export const ToolbarDropdown = ({
         <div
           className="fixed bg-background border border-border rounded-md shadow-lg min-w-[200px] max-w-[200px] max-h-[300px] overflow-hidden flex flex-col"
           style={{
-            top: `${
-              (triggerRef.current?.getBoundingClientRect().bottom || 0) + 4
-            }px`,
-            left: `${triggerRef.current?.getBoundingClientRect().left || 0}px`,
+            top: `${(triggerRef.current?.getBoundingClientRect().bottom || 0) + 4
+              }px`,
             pointerEvents: "auto",
+            ...(direction === "right"
+              ? {
+                right: `${window.innerWidth - (triggerRef.current?.getBoundingClientRect().right || 0)}px`,
+              }
+              : {
+                left: `${triggerRef.current?.getBoundingClientRect().left || 0}px`,
+              }
+            ),
           }}
           onMouseDown={(e) => {
             e.stopPropagation();

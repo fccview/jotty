@@ -10,6 +10,7 @@ import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllNotes } from "@/app/_server/actions/note";
 import { readJsonFile, ensureDir } from "@/app/_server/actions/file";
 import { User } from "@/app/_types";
+import { Modes } from "@/app/_types/enums";
 
 let exportProgress: ExportProgress = {
   progress: 0,
@@ -96,7 +97,7 @@ export const exportAllChecklistsNotes = async (): Promise<ExportResult> => {
     for (const list of allListsResult.data!) {
       const userDir = path.join(
         tempContentDir,
-        "checklists",
+        Modes.CHECKLISTS,
         list.owner || "unknown_user",
         list.category || "Uncategorized"
       );
@@ -111,7 +112,7 @@ export const exportAllChecklistsNotes = async (): Promise<ExportResult> => {
     for (const note of allNotesResult.data!) {
       const userDir = path.join(
         tempContentDir,
-        "notes",
+        Modes.NOTES,
         note.owner || "unknown_user",
         note.category || "Uncategorized"
       );
@@ -179,7 +180,7 @@ export const exportUserChecklistsNotes = async (
     for (const list of userLists) {
       const userDir = path.join(
         tempUserContentDir,
-        "checklists",
+        Modes.CHECKLISTS,
         list.category || "Uncategorized"
       );
       await ensureDir(userDir);
@@ -193,7 +194,7 @@ export const exportUserChecklistsNotes = async (
     for (const note of userNotes) {
       const userDir = path.join(
         tempUserContentDir,
-        "notes",
+        Modes.NOTES,
         note.category || "Uncategorized"
       );
       await ensureDir(userDir);

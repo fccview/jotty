@@ -7,8 +7,8 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 export default function LoginForm() {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const { isDemoMode } = useAppMode();
-  const { isRwMarkable } = useAppMode();
+  const { isDemoMode, appVersion, isRwMarkable } = useAppMode();
+
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
     setError("");
@@ -31,9 +31,7 @@ export default function LoginForm() {
         </h1>
         <p className="text-sm text-muted-foreground">
           Enter your credentials to access{" "}
-          {isRwMarkable
-            ? "rwMarkable"
-            : "jotty·page"}
+          {isRwMarkable ? "rwMarkable" : "jotty·page"}
         </p>
 
         {isDemoMode && (
@@ -95,6 +93,12 @@ export default function LoginForm() {
           {isLoading ? "Signing In..." : "Sign In"}
         </button>
       </form>
+
+      {appVersion && (
+        <div className="text-center text-xs text-muted-foreground">
+          Version {appVersion}
+        </div>
+      )}
     </div>
   );
 }

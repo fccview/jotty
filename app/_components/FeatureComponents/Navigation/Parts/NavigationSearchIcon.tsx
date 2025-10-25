@@ -37,6 +37,7 @@ export const NavigationSearchIcon = ({
           notes={notes}
           className="w-full max-w-md"
           autoFocus={isSearchOpen}
+          onResultSelect={closeSearch}
           onModeChange={
             onModeChange
               ? (mode) => checkNavigation(() => onModeChange(mode))
@@ -57,6 +58,7 @@ export const NavigationSearchIcon = ({
           className="w-full"
           notes={notes}
           autoFocus={isSearchOpen}
+          onResultSelect={closeSearch}
           onModeChange={
             onModeChange
               ? (mode) => checkNavigation(() => onModeChange(mode))

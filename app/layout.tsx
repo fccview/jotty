@@ -6,13 +6,16 @@ import { ChecklistProvider } from "@/app/_providers/ChecklistProvider";
 import { AppModeProvider } from "@/app/_providers/AppModeProvider";
 import { ToastProvider } from "@/app/_providers/ToastProvider";
 import { NavigationGuardProvider } from "@/app/_providers/NavigationGuardProvider";
-import { InstallPrompt } from "@/app/_components/GlobalComponents/Pwa/InstallPrompt";
+import { InstallPrompt } from "@/app/_components/GlobalComponents/Prompts/InstallPrompt";
+import { UpdatePrompt } from "@/app/_components/GlobalComponents/Pwa/UpdatePrompt";
 import { getSettings } from "@/app/_server/actions/config";
 import { DynamicFavicon } from "@/app/_components/GlobalComponents/Layout/Logo/DynamicFavicon";
 import { ShortcutProvider } from "@/app/_providers/ShortcutsProvider";
 import { getCategories } from "@/app/_server/actions/category";
 import { Modes } from "./_types/enums";
 import { getCurrentUser } from "./_server/actions/users";
+import { readPackageVersion } from "@/app/_server/actions/config";
+import { headers } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -75,11 +78,24 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = headers().get("x-pathname");
   const settings = await getSettings();
   const appName = settings.appName || "rwMarkable";
   const noteCategories = await getCategories(Modes.NOTES);
   const checklistCategories = await getCategories(Modes.CHECKLISTS);
   const user = await getCurrentUser();
+  const appVersion = await readPackageVersion();
+  const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
+  let serveUpdates = true;
+
+  if (
+    stopCheckUpdates &&
+    (stopCheckUpdates.toLowerCase() !== "no" ||
+      stopCheckUpdates.toLowerCase() !== "false") ||
+    settings?.notifyNewUpdates === "no"
+  ) {
+    serveUpdates = false;
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -95,6 +111,8 @@ export default async function RootLayout({
           isDemoMode={settings?.isDemo || false}
           isRwMarkable={settings?.rwmarkable || false}
           user={user}
+          appVersion={appVersion.data || ""}
+          pathname={pathname || ""}
         >
           <ThemeProvider user={user || {}}>
             <ChecklistProvider>
@@ -108,7 +126,14 @@ export default async function RootLayout({
                     <div className="min-h-screen bg-background text-foreground transition-colors">
                       <DynamicFavicon />
                       {children}
-                      <InstallPrompt />
+
+                      {!pathname?.includes('/public') && (
+                        <InstallPrompt />
+                      )}
+
+                      {serveUpdates && !pathname?.includes('/public') && (
+                        <UpdatePrompt />
+                      )}
                     </div>
                   </ShortcutProvider>
                 </ToastProvider>

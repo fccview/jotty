@@ -186,7 +186,7 @@ export const ShortcutProvider = ({
                 newNote.category || "Uncategorized",
                 newNote.id
               );
-              router.push(`/note/${categoryPath}`);
+              router.push(`/note/${categoryPath}?editor=true`);
             }
             setShowCreateNoteModal(false);
             router.refresh();

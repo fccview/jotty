@@ -51,6 +51,7 @@ export const ChecklistView = ({
     handleDeleteList,
     focusKey,
     handleCreateItem,
+    handleAddSubItem,
     setShowBulkPasteModal,
     isLoading,
     deletingItemsCount,
@@ -111,7 +112,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 
@@ -135,6 +136,7 @@ export const ChecklistView = ({
           sensors={sensors}
           isLoading={isLoading}
           isDeletingItem={deletingItemsCount > 0}
+          handleAddSubItem={handleAddSubItem}
         />
       ) : (
         <div className="flex-1 overflow-hidden p-4">
