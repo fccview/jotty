@@ -40,6 +40,7 @@ interface CategoryListProps {
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
   getSharingStatus: (itemId: string) => SharingStatus | null;
+  user?: any;
 }
 
 export const CategoryList = (props: CategoryListProps) => {

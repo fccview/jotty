@@ -588,3 +588,93 @@ export const canUserEditItem = async (
     return false;
   }
 };
+
+export const togglePin = async (
+  itemId: string,
+  category: string,
+  type: "list" | "note"
+): Promise<Result<null>> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === currentUser.username
+    );
+
+    if (userIndex === -1) {
+      return { success: false, error: "User not found" };
+    }
+
+    const user = allUsers[userIndex];
+    const itemPath = `${category}/${itemId}`;
+
+    if (type === "list") {
+      const pinnedLists = user.pinnedLists || [];
+      const isPinned = pinnedLists.includes(itemPath);
+
+      if (isPinned) {
+        user.pinnedLists = pinnedLists.filter((path: string) => path !== itemPath);
+      } else {
+        user.pinnedLists = [...pinnedLists, itemPath];
+      }
+    } else {
+      const pinnedNotes = user.pinnedNotes || [];
+      const isPinned = pinnedNotes.includes(itemPath);
+
+      if (isPinned) {
+        user.pinnedNotes = pinnedNotes.filter((path: string) => path !== itemPath);
+      } else {
+        user.pinnedNotes = [...pinnedNotes, itemPath];
+      }
+    }
+
+    allUsers[userIndex] = user;
+    await writeJsonFile(allUsers, USERS_FILE);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error(`Error toggling pin for ${type}:`, error);
+    return { success: false, error: "Failed to toggle pin" };
+  }
+};
+
+export const updatePinnedOrder = async (
+  newOrder: string[],
+  type: "list" | "note"
+): Promise<Result<null>> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === currentUser.username
+    );
+
+    if (userIndex === -1) {
+      return { success: false, error: "User not found" };
+    }
+
+    const user = allUsers[userIndex];
+
+    if (type === "list") {
+      user.pinnedLists = newOrder;
+    } else {
+      user.pinnedNotes = newOrder;
+    }
+
+    allUsers[userIndex] = user;
+    await writeJsonFile(allUsers, USERS_FILE);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error(`Error updating pinned order for ${type}:`, error);
+    return { success: false, error: "Failed to update pinned order" };
+  }
+};

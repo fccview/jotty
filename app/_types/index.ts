@@ -106,6 +106,8 @@ export interface User {
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
   notesDefaultEditor?: NotesDefaultEditor;
+  pinnedLists?: string[];
+  pinnedNotes?: string[];
 }
 
 export type ImageSyntax = "html" | "markdown";

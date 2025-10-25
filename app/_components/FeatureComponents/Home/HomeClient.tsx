@@ -9,6 +9,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { Modes } from "@/app/_types/enums";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHeader";
 
 interface SharingStatus {
   isShared: boolean;
@@ -65,9 +66,13 @@ export const HomeClient = ({
       onCategoryDeleted={() => router.refresh()}
       onCategoryRenamed={() => router.refresh()}
     >
+
+      <MobileHeader />
+
       {mode === Modes.CHECKLISTS && (
         <ChecklistHome
           lists={initialLists}
+          user={user}
           onCreateModal={openCreateChecklistModal}
           onSelectChecklist={(list) => {
             const categoryPath = buildCategoryPath(
@@ -83,6 +88,7 @@ export const HomeClient = ({
         <NotesHome
           notes={initialDocs}
           categories={initialDocsCategories}
+          user={user}
           onCreateModal={openCreateNoteModal}
           onSelectNote={(note) => {
             const categoryPath = buildCategoryPath(
