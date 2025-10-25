@@ -8,7 +8,6 @@ interface ChecklistProgressProps {
   checklist: Checklist;
 }
 
-// Helper function to recursively count items and completed items
 const countItems = (items: any[]): { total: number; completed: number } => {
   let total = 0;
   let completed = 0;

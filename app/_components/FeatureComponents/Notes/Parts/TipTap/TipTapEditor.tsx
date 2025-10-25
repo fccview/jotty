@@ -154,8 +154,7 @@ export const TiptapEditor = ({
         },
       }),
       Link.configure({
-        openOnClick: false,
-        autolink: true,
+        openOnClick: false
       }).extend({
         addInputRules() {
           return [
@@ -335,7 +334,6 @@ export const TiptapEditor = ({
 
         const items = clipboardData.items;
         if (items) {
-          // Check for images first
           const imageFile = getImageFromClipboard(items);
           if (imageFile) {
             event.preventDefault();
@@ -358,7 +356,6 @@ export const TiptapEditor = ({
             return true;
           }
 
-          // Check for other files
           const file = getFileFromClipboard(items);
           if (file) {
             event.preventDefault();

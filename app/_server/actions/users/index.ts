@@ -2,7 +2,7 @@
 
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import { ImageSyntax, LandingPage, NotesDefaultEditor, Result, TableSyntax } from "@/app/_types";
+import { ImageSyntax, LandingPage, NotesDefaultEditor, NotesDefaultMode, Result, TableSyntax } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
   getSessionId,
@@ -460,12 +460,14 @@ export const updateUserSettings = async ({
   tableSyntax,
   landingPage,
   notesDefaultEditor,
+  notesDefaultMode,
 }: {
   preferredTheme?: string;
   imageSyntax?: ImageSyntax;
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
   notesDefaultEditor?: NotesDefaultEditor;
+  notesDefaultMode?: NotesDefaultMode;
 }): Promise<Result<{ user: User }>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -482,13 +484,18 @@ export const updateUserSettings = async ({
       return { success: false, error: "User not found" };
     }
 
+    const updates: Partial<User> = {};
+
+    if (preferredTheme !== undefined) updates.preferredTheme = preferredTheme;
+    if (imageSyntax !== undefined) updates.imageSyntax = imageSyntax;
+    if (tableSyntax !== undefined) updates.tableSyntax = tableSyntax;
+    if (landingPage !== undefined) updates.landingPage = landingPage;
+    if (notesDefaultEditor !== undefined) updates.notesDefaultEditor = notesDefaultEditor;
+    if (notesDefaultMode !== undefined) updates.notesDefaultMode = notesDefaultMode;
+
     const updatedUser: User = {
       ...allUsers[userIndex],
-      preferredTheme,
-      imageSyntax,
-      tableSyntax,
-      landingPage,
-      notesDefaultEditor,
+      ...updates,
     };
 
     allUsers[userIndex] = updatedUser;
@@ -586,5 +593,95 @@ export const canUserEditItem = async (
   } catch (error) {
     console.error("Error in canUserEditItem:", error);
     return false;
+  }
+};
+
+export const togglePin = async (
+  itemId: string,
+  category: string,
+  type: "list" | "note"
+): Promise<Result<null>> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === currentUser.username
+    );
+
+    if (userIndex === -1) {
+      return { success: false, error: "User not found" };
+    }
+
+    const user = allUsers[userIndex];
+    const itemPath = `${category}/${itemId}`;
+
+    if (type === "list") {
+      const pinnedLists = user.pinnedLists || [];
+      const isPinned = pinnedLists.includes(itemPath);
+
+      if (isPinned) {
+        user.pinnedLists = pinnedLists.filter((path: string) => path !== itemPath);
+      } else {
+        user.pinnedLists = [...pinnedLists, itemPath];
+      }
+    } else {
+      const pinnedNotes = user.pinnedNotes || [];
+      const isPinned = pinnedNotes.includes(itemPath);
+
+      if (isPinned) {
+        user.pinnedNotes = pinnedNotes.filter((path: string) => path !== itemPath);
+      } else {
+        user.pinnedNotes = [...pinnedNotes, itemPath];
+      }
+    }
+
+    allUsers[userIndex] = user;
+    await writeJsonFile(allUsers, USERS_FILE);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error(`Error toggling pin for ${type}:`, error);
+    return { success: false, error: "Failed to toggle pin" };
+  }
+};
+
+export const updatePinnedOrder = async (
+  newOrder: string[],
+  type: "list" | "note"
+): Promise<Result<null>> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === currentUser.username
+    );
+
+    if (userIndex === -1) {
+      return { success: false, error: "User not found" };
+    }
+
+    const user = allUsers[userIndex];
+
+    if (type === "list") {
+      user.pinnedLists = newOrder;
+    } else {
+      user.pinnedNotes = newOrder;
+    }
+
+    allUsers[userIndex] = user;
+    await writeJsonFile(allUsers, USERS_FILE);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error(`Error updating pinned order for ${type}:`, error);
+    return { success: false, error: "Failed to update pinned order" };
   }
 };

@@ -7,11 +7,18 @@ import {
   Edit,
   Users,
   Globe,
+  Pin,
+  PinOff,
+  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
+import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
+import { togglePin } from "@/app/_server/actions/users";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface SharingStatus {
   isShared: boolean;
@@ -27,6 +34,7 @@ interface SidebarItemProps {
   onEditItem?: (item: Checklist | Note) => void;
   sharingStatus?: SharingStatus | null;
   style?: React.CSSProperties;
+  user?: any;
 }
 
 export const SidebarItem = ({
@@ -37,7 +45,54 @@ export const SidebarItem = ({
   onEditItem,
   sharingStatus,
   style,
+  user,
 }: SidebarItemProps) => {
+  const router = useRouter();
+  const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+
+  const handleTogglePin = async () => {
+    if (!user || isTogglingPin) return;
+
+    setIsTogglingPin(item.id);
+    try {
+      const result = await togglePin(
+        item.id,
+        item.category || "Uncategorized",
+        mode === Modes.CHECKLISTS ? "list" : "note"
+      );
+      if (result.success) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to toggle pin:", error);
+    } finally {
+      setIsTogglingPin(null);
+    }
+  };
+
+  const isItemPinned = () => {
+    if (!user) return false;
+    const pinnedItems = mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
+    if (!pinnedItems) return false;
+
+    const itemPath = `${item.category || "Uncategorized"}/${item.id}`;
+    return pinnedItems.includes(itemPath);
+  };
+
+  const dropdownItems = [
+    ...(onEditItem ? [{
+      label: "Edit",
+      onClick: () => onEditItem(item),
+      icon: <Edit className="h-4 w-4" />,
+    }] : []),
+    ...(onEditItem ? [{ type: "divider" as const }] : []),
+    {
+      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
+      onClick: handleTogglePin,
+      icon: isItemPinned() ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />,
+      disabled: isTogglingPin === item.id,
+    },
+  ];
   return (
     <div className="flex items-center group/item" style={style}>
       <button
@@ -97,18 +152,20 @@ export const SidebarItem = ({
         </div>
       </button>
 
-      {onEditItem && !isSelected && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEditItem(item);
-          }}
-          className="h-8 w-8 p-0 opacity-40 lg:opacity-0 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
+      {!isSelected && (
+        <DropdownMenu
+          align="right"
+          items={dropdownItems}
+          trigger={
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 opacity-40 lg:opacity-0 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          }
+        />
       )}
     </div>
   );
