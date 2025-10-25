@@ -282,7 +282,6 @@ export const NestedChecklistItem = ({
         <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
           <span className="text-xs text-muted-foreground mr-1">#{index}</span>
 
-          {/* Desktop buttons - hidden on mobile */}
           <div className="hidden lg:flex items-center gap-1">
             {!isEditing && !isPublicView && (
               <Button
