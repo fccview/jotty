@@ -32,7 +32,6 @@ export const ChecklistHeading = ({
 }: ChecklistHeadingProps) => {
   const [newItemText, setNewItemText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
 
   const { handleCopyId, copied } = useChecklist({
     list: checklist,

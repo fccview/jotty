@@ -5,7 +5,7 @@ import {
 } from "@dnd-kit/sortable";
 import { ChecklistProgress } from "./ChecklistProgress";
 import { ChecklistItemsWrapper } from "./ChecklistItemsWrapper";
-import { ChecklistItem } from "./ChecklistItem";
+import { NestedChecklistItem } from "./NestedChecklistItem";
 import { Checklist, Item } from "@/app/_types";
 import { TaskStatusLabels } from "@/app/_types/enums";
 
@@ -16,6 +16,7 @@ interface ChecklistBodyProps {
   handleToggleItem: (itemId: string, completed: boolean) => void;
   handleDeleteItem: (itemId: string) => void;
   handleEditItem: (itemId: string, text: string) => void;
+  handleAddSubItem: (parentId: string, text: string) => void;
   handleBulkToggle: (completed: boolean) => void;
   handleDragEnd: (event: DragEndEvent) => void;
   sensors: any;
@@ -30,6 +31,7 @@ export const ChecklistBody = ({
   handleToggleItem,
   handleDeleteItem,
   handleEditItem,
+  handleAddSubItem,
   handleBulkToggle,
   handleDragEnd,
   sensors,
@@ -61,7 +63,7 @@ export const ChecklistBody = ({
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={localList.items.map((i) => i.id)}
+            items={localList.items.flatMap(item => [item.id, ...(item.children?.map(child => child.id) || [])])}
             strategy={verticalListSortingStrategy}
           >
             <div className="w-full space-y-4">
@@ -73,14 +75,17 @@ export const ChecklistBody = ({
                   isLoading={isLoading}
                 >
                   {incompleteItems.map((item, index) => (
-                    <ChecklistItem
+                    <NestedChecklistItem
                       key={item.id}
                       item={item}
                       index={index}
+                      level={0}
                       onToggle={handleToggleItem}
                       onDelete={handleDeleteItem}
                       isDeletingItem={isDeletingItem}
                       onEdit={handleEditItem}
+                      onAddSubItem={handleAddSubItem}
+                      isDragDisabled={false}
                     />
                   ))}
                 </ChecklistItemsWrapper>
@@ -94,15 +99,18 @@ export const ChecklistBody = ({
                   isCompleted
                 >
                   {completedItems.map((item, index) => (
-                    <ChecklistItem
+                    <NestedChecklistItem
                       key={item.id}
                       item={item}
                       index={incompleteItems.length + index}
+                      level={0}
                       onToggle={handleToggleItem}
                       onDelete={handleDeleteItem}
                       isDeletingItem={isDeletingItem}
                       onEdit={handleEditItem}
+                      onAddSubItem={handleAddSubItem}
                       completed
+                      isDragDisabled={false}
                     />
                   ))}
                 </ChecklistItemsWrapper>

@@ -15,6 +15,7 @@ import { getCategories } from "@/app/_server/actions/category";
 import { Modes } from "./_types/enums";
 import { getCurrentUser } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
+import { headers } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -77,6 +78,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = headers().get("x-pathname");
   const settings = await getSettings();
   const appName = settings.appName || "rwMarkable";
   const noteCategories = await getCategories(Modes.NOTES);
@@ -110,6 +112,7 @@ export default async function RootLayout({
           isRwMarkable={settings?.rwmarkable || false}
           user={user}
           appVersion={appVersion.data || ""}
+          pathname={pathname || ""}
         >
           <ThemeProvider user={user || {}}>
             <ChecklistProvider>

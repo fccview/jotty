@@ -490,6 +490,49 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     @apply bg-accent bg-opacity-50;
 }
 
+
+.checklist-item input {
+    padding: 0;
+    height: initial;
+    width: initial;
+    margin-bottom: 0;
+    display: none;
+    cursor: pointer;
+  }
+  
+  .checklist-item label {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .checklist-item label:before {
+    content:'';
+    -webkit-appearance: none;
+    background-color: transparent;
+    border: 1px solid rgb(var(--primary) / var(--tw-bg-opacity, 1));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0px -15px 10px -12px rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-right: 10px;
+    border-radius: 5px;
+  }
+  
+  .checklist-item label.checked:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 3px;
+    left: 8px;
+    width: 7px;
+    height: 12px;
+    border: solid rgb(var(--primary) / var(--tw-bg-opacity, 1));
+    border-width: 0 1px 1px 0;
+    transform: rotate(45deg);
+  }
+
 .prose {
     @apply text-foreground;
     line-height: 1.7;

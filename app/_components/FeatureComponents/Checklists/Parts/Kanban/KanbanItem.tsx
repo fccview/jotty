@@ -235,7 +235,7 @@ export const KanbanItem = ({
     formData.append("listId", checklistId);
     formData.append("itemId", item.id);
     formData.append("timeEntries", JSON.stringify([]));
-    formData.append("category", item.category || "Uncategorized");
+    formData.append("category", category || "Uncategorized");
     await updateItemStatus(formData);
     setTotalTime(0);
     onUpdate?.();
@@ -246,7 +246,7 @@ export const KanbanItem = ({
     formData.append("listId", checklistId);
     formData.append("itemId", item.id);
     formData.append("status", newStatus);
-    formData.append("category", item.category || "Uncategorized");
+    formData.append("category", category || "Uncategorized");
     await updateItemStatus(formData);
     onUpdate?.();
   };
@@ -263,7 +263,7 @@ export const KanbanItem = ({
       formData.append("listId", checklistId);
       formData.append("itemId", item.id);
       formData.append("text", editText.trim());
-      formData.append("category", item.category || "Uncategorized");
+      formData.append("category", category || "Uncategorized");
       await updateItem(formData);
       onUpdate?.();
     }
@@ -279,7 +279,8 @@ export const KanbanItem = ({
       const formData = new FormData();
       formData.append("listId", checklistId);
       formData.append("itemId", item.id);
-      formData.append("category", item.category || "Uncategorized");
+      formData.append("category", category || "Uncategorized");
+
       await deleteItem(formData);
       onUpdate?.();
     }

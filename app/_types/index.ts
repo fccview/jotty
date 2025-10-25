@@ -21,6 +21,7 @@ export interface Item {
   timeEntries?: TimeEntry[];
   estimatedTime?: number;
   targetDate?: string;
+  children?: Item[];
 }
 
 export interface List {
@@ -104,10 +105,12 @@ export interface User {
   imageSyntax?: ImageSyntax;
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
+  notesDefaultEditor?: NotesDefaultEditor;
 }
 
 export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
+export type NotesDefaultEditor = "wysiwyg" | "markdown";
 export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
 
 export interface SharedItem {

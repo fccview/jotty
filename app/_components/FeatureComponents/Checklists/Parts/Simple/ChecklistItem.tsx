@@ -125,7 +125,7 @@ export const ChecklistItem = ({
             "h-5 w-5 rounded border-input focus:ring-2 focus:ring-offset-2 focus:ring-ring",
             "bg-background transition-colors duration-200",
             (item.completed || status === TaskStatus.COMPLETED) &&
-              "bg-primary border-primary"
+            "bg-primary border-primary"
           )}
         />
       </div>
@@ -141,19 +141,19 @@ export const ChecklistItem = ({
             className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <Button
-            variant="ghost"
+            variant="default"
             size="sm"
             onClick={handleSave}
-            className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+            className="h-6 w-6 p-0"
           >
             <Check className="h-3 w-3" />
           </Button>
           {!isDeletingItem && (
             <Button
-              variant="ghost"
+              variant="destructive"
               size="sm"
               onClick={handleCancel}
-              className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="h-6 w-6 p-0"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -180,17 +180,17 @@ export const ChecklistItem = ({
             variant="ghost"
             size="sm"
             onClick={handleEdit}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-blue-600 hover:bg-blue-50"
+            className="h-8 w-8 p-0"
           >
             <Edit2 className="h-4 w-4" />
           </Button>
         )}
         {!isPublicView && (
           <Button
-            variant="ghost"
+            variant="default"
             size="sm"
             onClick={() => onDelete(item.id)}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-red-50"
+            className="h-8 w-8 p-0 hover:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

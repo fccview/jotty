@@ -139,7 +139,7 @@ The recommended way to run `jotty·page` is with Docker.
 3.  Start the container:
 
     ```bash
-    docker-compose up -d
+    docker compose up -d
     ```
 
 The application will be available at `http://localhost:1122`.
@@ -196,8 +196,8 @@ If you want to run the app locally for development:
 Pull the latest image and restart your container.
 
 ```bash
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```
 
 <a id="manual"></a>

@@ -2,7 +2,7 @@
 
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import { ImageSyntax, LandingPage, Result, TableSyntax } from "@/app/_types";
+import { ImageSyntax, LandingPage, NotesDefaultEditor, Result, TableSyntax } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
   getSessionId,
@@ -10,8 +10,8 @@ import {
   removeAllSessionsForUser,
 } from "../session";
 import fs from "fs/promises";
-import { cookies } from "next/headers";
 import { createHash } from "crypto";
+import path from "path";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -459,11 +459,13 @@ export const updateUserSettings = async ({
   imageSyntax,
   tableSyntax,
   landingPage,
+  notesDefaultEditor,
 }: {
   preferredTheme?: string;
   imageSyntax?: ImageSyntax;
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
+  notesDefaultEditor?: NotesDefaultEditor;
 }): Promise<Result<{ user: User }>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -486,6 +488,7 @@ export const updateUserSettings = async ({
       imageSyntax,
       tableSyntax,
       landingPage,
+      notesDefaultEditor,
     };
 
     allUsers[userIndex] = updatedUser;
@@ -495,5 +498,93 @@ export const updateUserSettings = async ({
   } catch (error) {
     console.error("Error updating user settings:", error);
     return { success: false, error: "Failed to update user settings" };
+  }
+};
+
+export const getUserByChecklist = async (
+  checklistID: string,
+  checklistCategory: string
+): Promise<Result<User>> => {
+  try {
+    const allUsers = await readJsonFile(USERS_FILE);
+
+    for (const user of allUsers) {
+      const userChecklistsDir = CHECKLISTS_DIR(user.username);
+      const categoryPath = path.join(userChecklistsDir, checklistCategory);
+      const filePath = path.join(categoryPath, `${checklistID}.md`);
+
+      try {
+        await fs.access(filePath);
+        return { success: true, data: user };
+      } catch (error) {
+        continue;
+      }
+    }
+
+    return { success: false, error: "Checklist not found" };
+  } catch (error) {
+    console.error("Error in getUserByChecklist:", error);
+    return { success: false, error: "Failed to find checklist owner" };
+  }
+};
+
+export const getUserByNote = async (
+  noteID: string,
+  noteCategory: string
+): Promise<Result<User>> => {
+  try {
+    const allUsers = await readJsonFile(USERS_FILE);
+
+    for (const user of allUsers) {
+      const userNotesDir = NOTES_DIR(user.username);
+      const categoryPath = path.join(userNotesDir, noteCategory);
+      const filePath = path.join(categoryPath, `${noteID}.md`);
+
+      try {
+        await fs.access(filePath);
+        return { success: true, data: user };
+      } catch (error) {
+        continue;
+      }
+    }
+
+    return { success: false, error: "Note not found" };
+  } catch (error) {
+    console.error("Error in getUserByNote:", error);
+    return { success: false, error: "Failed to find note owner" };
+  }
+};
+
+export const canUserEditItem = async (
+  itemId: string,
+  itemCategory: string,
+  itemType: "checklist" | "note",
+  currentUsername: string
+): Promise<boolean> => {
+  try {
+    const isAdminUser = await isAdmin();
+    if (isAdminUser) return true;
+
+    const ownerResult =
+      itemType === "checklist"
+        ? await getUserByChecklist(itemId, itemCategory)
+        : await getUserByNote(itemId, itemCategory);
+
+    if (!ownerResult.success) return false;
+
+    const owner = ownerResult.data;
+    if (owner?.username === currentUsername) return true;
+
+    const { getItemsSharedWithUser } = await import("../sharing");
+    const sharedItems = await getItemsSharedWithUser(currentUsername);
+
+    const sharedItemsList =
+      itemType === "checklist" ? sharedItems.checklists : sharedItems.notes;
+    return sharedItemsList.some(
+      (item) => item.id === itemId && item.owner === owner?.username
+    );
+  } catch (error) {
+    console.error("Error in canUserEditItem:", error);
+    return false;
   }
 };

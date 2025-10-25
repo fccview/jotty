@@ -65,7 +65,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       <p className="text-sm text-muted-foreground mb-6">
         These options only apply to the current browser session. Please check
         your{" "}
-        <Link href="/profile/settings" className="text-primary hover:underline">
+        <Link href="/profile" className="text-primary hover:underline">
           account settings
         </Link>{" "}
         for permanent settings.

@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { getAllThemes } from "@/app/_consts/themes";
 import { updateUserSettings } from "@/app/_server/actions/users";
-import { User, ImageSyntax, TableSyntax, LandingPage } from "@/app/_types";
+import { User, TableSyntax, LandingPage, NotesDefaultEditor } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useSettings } from "@/app/_utils/settings-store";
+import { BUILT_IN_THEMES } from "@/app/_consts/themes";
 
 interface SettingsTabProps {
   setShowDeleteModal: (show: boolean) => void;
@@ -19,46 +20,25 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
   const { showToast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const [allThemes, setAllThemes] = useState<
-    Array<{ id: string; name: string; icon: any }>
-  >([]);
-  const [preferredTheme, setPreferredTheme] = useState<string>("");
-  const [imageSyntax, setImageSyntax] = useState<ImageSyntax>("markdown");
-  const [tableSyntax, setTableSyntax] = useState<TableSyntax>("html");
-  const [landingPage, setLandingPage] = useState<LandingPage>(Modes.CHECKLISTS);
-  const [initialSettings, setInitialSettings] = useState<Partial<User>>({});
+  const allThemes = BUILT_IN_THEMES;
+  const [preferredTheme, setPreferredTheme] = useState<string>(user?.preferredTheme || "system");
+  const [notesDefaultEditor, setNotesDefaultEditor] = useState<NotesDefaultEditor>(user?.notesDefaultEditor || "wysiwyg");
+  const [tableSyntax, setTableSyntax] = useState<TableSyntax>(user?.tableSyntax || "html");
+  const [landingPage, setLandingPage] = useState<LandingPage>(user?.landingPage || Modes.CHECKLISTS);
+  const [initialSettings, setInitialSettings] = useState<Partial<User>>({
+    preferredTheme: user?.preferredTheme || "system",
+    tableSyntax: user?.tableSyntax || "html",
+    landingPage: user?.landingPage || Modes.CHECKLISTS,
+    notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
+  });
   const [hasChanges, setHasChanges] = useState(false);
-
-  useEffect(() => {
-    const loadSettings = async () => {
-      setIsLoading(true);
-      const themes = await getAllThemes();
-      setAllThemes(themes);
-
-      if (user) {
-        setPreferredTheme(user.preferredTheme || "system");
-        setImageSyntax(user.imageSyntax || "markdown");
-        setTableSyntax(user.tableSyntax || "html");
-        setLandingPage(user.landingPage || Modes.CHECKLISTS);
-        setInitialSettings({
-          preferredTheme: user.preferredTheme || "system",
-          imageSyntax: user.imageSyntax || "markdown",
-          tableSyntax: user.tableSyntax || "html",
-          landingPage: user.landingPage || Modes.CHECKLISTS,
-        });
-      }
-      setIsLoading(false);
-    };
-    loadSettings();
-  }, [user]);
 
   useEffect(() => {
     const currentSettings = {
       preferredTheme,
-      imageSyntax,
       tableSyntax,
       landingPage,
+      notesDefaultEditor,
     };
 
     const changed = Object.keys(currentSettings).some(
@@ -67,21 +47,21 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         initialSettings[key as keyof typeof initialSettings]
     );
     setHasChanges(changed);
-  }, [preferredTheme, imageSyntax, tableSyntax, landingPage, initialSettings]);
+  }, [preferredTheme, tableSyntax, landingPage, notesDefaultEditor, initialSettings]);
 
   const handleSaveSettings = async () => {
     const result = await updateUserSettings({
       preferredTheme,
-      imageSyntax,
       tableSyntax,
       landingPage,
+      notesDefaultEditor,
     });
     if (result.success) {
       setInitialSettings({
         preferredTheme,
-        imageSyntax,
         tableSyntax,
         landingPage,
+        notesDefaultEditor,
       });
       setHasChanges(false);
       router.refresh();
@@ -103,25 +83,14 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     router.refresh();
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading settings...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const imageSyntaxOptions = [
-    { id: "markdown", name: "Markdown (e.g., ![alt](url))" },
-    { id: "html", name: 'HTML (e.g., <img src="url" alt="alt">)' },
-  ];
-
   const tableSyntaxOptions = [
     { id: "markdown", name: "Markdown (e.g., | Header |)" },
     { id: "html", name: "HTML (e.g., <table><tr><td>)" },
+  ];
+
+  const notesDefaultEditorOptions = [
+    { id: "wysiwyg", name: "Rich Text Editor" },
+    { id: "markdown", name: "Markdown" },
   ];
 
   const landingPageOptions = [
@@ -153,6 +122,20 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             />
             <p className="text-sm text-muted-foreground">
               Choose your preferred theme across all devices.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="table-syntax">Notes default editor</Label>
+            <Dropdown
+              value={notesDefaultEditor}
+              onChange={(value) => setNotesDefaultEditor(value as NotesDefaultEditor)}
+              options={notesDefaultEditorOptions}
+              placeholder="Select notes default editor"
+              className="w-full"
+            />
+            <p className="text-sm text-muted-foreground">
+              Choose the default editor for your notes - (you can always switch by clicking on the {notesDefaultEditorOptions.find(option => option.id !== notesDefaultEditor)?.name} button in the note editor).
             </p>
           </div>
 

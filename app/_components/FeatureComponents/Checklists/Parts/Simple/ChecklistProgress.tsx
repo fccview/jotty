@@ -8,11 +8,29 @@ interface ChecklistProgressProps {
   checklist: Checklist;
 }
 
+// Helper function to recursively count items and completed items
+const countItems = (items: any[]): { total: number; completed: number } => {
+  let total = 0;
+  let completed = 0;
+
+  items.forEach((item) => {
+    total++;
+    if (item.completed) {
+      completed++;
+    }
+
+    if (item.children && item.children.length > 0) {
+      const childCounts = countItems(item.children);
+      total += childCounts.total;
+      completed += childCounts.completed;
+    }
+  });
+
+  return { total, completed };
+};
+
 export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
-  const completedCount = checklist.items.filter(
-    (item) => item.completed
-  ).length;
-  const totalCount = checklist.items.length;
+  const { total: totalCount, completed: completedCount } = countItems(checklist.items);
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (

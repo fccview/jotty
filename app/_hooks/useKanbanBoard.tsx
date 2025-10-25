@@ -10,8 +10,9 @@ import {
   createBulkItems,
   reorderItems,
 } from "@/app/_server/actions/checklist-item";
-import { getLists } from "@/app/_server/actions/checklist";
+import { getListById, getLists } from "@/app/_server/actions/checklist";
 import { TaskStatus } from "@/app/_types/enums";
+import { getCurrentUser, getUserByChecklist } from "../_server/actions/users";
 
 interface UseKanbanBoardProps {
   checklist: Checklist;
@@ -155,18 +156,28 @@ export const useKanbanBoard = ({
     formData.append("text", text);
     formData.append("category", localChecklist.category || "Uncategorized");
 
-    const result = await createItem(formData);
+    const currentUser = await getCurrentUser();
+    const result = await createItem(formData, currentUser?.username);
+
+    const checklistOwner = await getUserByChecklist(
+      localChecklist.id,
+      localChecklist.category || "Uncategorized"
+    );
+
+    const updatedList = await getListById(
+      localChecklist.id,
+      checklistOwner?.data?.username,
+      localChecklist.category
+    );
+    if (updatedList) {
+      setLocalChecklist(updatedList);
+    }
     setIsLoading(false);
 
     if (result.success && result.data) {
-      const updatedList = {
-        ...localChecklist,
-        items: [...localChecklist.items, result.data],
-        updatedAt: new Date().toISOString(),
-      };
-      setLocalChecklist(updatedList as Checklist);
-      onUpdate(updatedList as Checklist);
       setFocusKey((prev) => prev + 1);
+    } else {
+      console.error("Failed to create item:", result.error);
     }
   };
 

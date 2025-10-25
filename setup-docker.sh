@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Setup script for Docker data directory permissions
-
 echo "Setting up data directory permissions for Docker..."
 
 # Create data directories if they don't exist
@@ -21,4 +20,4 @@ chown -R 1000:1000 cache
 
 echo "Data and cache directory setup complete!"
 echo "Note: Cache directory is optional. If you don't want cache persistence, comment out the cache volume in docker-compose.yml"
-echo "You can now run: docker-compose up -d" 
+echo "You can now run: docker compose up -d" 
