@@ -81,9 +81,18 @@ export const ChecklistHome = ({
           </div>
           <div className="flex gap-2">
             <Button
+              variant="outline"
+              onClick={() => (window.location.href = "/checklists")}
+              size="sm"
+              className="flex-1 sm:size-lg"
+            >
+              <span className="hidden sm:inline">All Lists</span>
+              <span className="sm:hidden">All</span>
+            </Button>
+            <Button
               onClick={() => onCreateModal()}
               size="sm"
-              className="sm:size-lg"
+              className="flex-1 sm:size-lg"
             >
               <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">New Checklist</span>

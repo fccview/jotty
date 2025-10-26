@@ -12,6 +12,7 @@ import { FilterSidebar } from "@/app/_components/GlobalComponents/Layout/FilterS
 import { usePagination } from "@/app/_hooks/usePagination";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -34,9 +35,11 @@ export const ChecklistsPageClient = ({
 }: ChecklistsPageClientProps) => {
   const router = useRouter();
   const { openCreateChecklistModal } = useShortcut();
+  const { isInitialized } = useAppMode();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [checklistFilter, setChecklistFilter] =
     useState<ChecklistFilter>("all");
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
   const filterOptions = [
     { id: "all", name: "All Checklists" },
@@ -86,9 +89,10 @@ export const ChecklistsPageClient = ({
     );
   }, [initialLists, checklistFilter, selectedCategories, user?.pinnedLists]);
 
-  const { currentPage, totalPages, paginatedItems, goToPage } = usePagination({
+  const { currentPage, totalPages, paginatedItems, goToPage, totalItems, handleItemsPerPageChange } = usePagination({
     items: filteredLists,
-    itemsPerPage: 12,
+    itemsPerPage,
+    onItemsPerPageChange: setItemsPerPage,
   });
 
   const handleCategoryToggle = (category: string) => {
@@ -120,6 +124,16 @@ export const ChecklistsPageClient = ({
 
     return { totalLists, completedItems, totalItems, completionRate };
   }, [initialLists]);
+
+  if (!isInitialized) {
+    return (
+      <div className="flex h-screen bg-background w-full">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (initialLists.length === 0) {
     return (
@@ -213,6 +227,16 @@ export const ChecklistsPageClient = ({
               selectedCategories={selectedCategories}
               onCategoryToggle={handleCategoryToggle}
               onClearAllCategories={handleClearAllCategories}
+              pagination={
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={goToPage}
+                  itemsPerPage={itemsPerPage}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                  totalItems={totalItems}
+                />
+              }
             />
           </div>
 
@@ -235,28 +259,18 @@ export const ChecklistsPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${
-                          list.category || "Uncategorized"
-                        }/${list.id}`;
+                        const categoryPath = `${list.category || "Uncategorized"
+                          }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(
                         `${list.category || "Uncategorized"}/${list.id}`
                       )}
-                      onTogglePin={() => {}}
+                      onTogglePin={() => { }}
                     />
                   ))}
                 </div>
 
-                {totalPages > 1 && (
-                  <div className="mt-8">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={goToPage}
-                    />
-                  </div>
-                )}
               </>
             )}
           </div>

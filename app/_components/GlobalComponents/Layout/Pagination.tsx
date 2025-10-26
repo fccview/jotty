@@ -2,11 +2,16 @@
 
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  itemsPerPage?: number;
+  onItemsPerPageChange?: (itemsPerPage: number) => void;
+  totalItems?: number;
+  variant?: "default" | "compact";
   className?: string;
 }
 
@@ -14,9 +19,12 @@ export const Pagination = ({
   currentPage,
   totalPages,
   onPageChange,
+  itemsPerPage,
+  onItemsPerPageChange,
+  totalItems,
+  variant = "default",
   className = "",
 }: PaginationProps) => {
-  if (totalPages <= 1) return null;
 
   const getVisiblePages = () => {
     const delta = 2;
@@ -50,55 +58,58 @@ export const Pagination = ({
 
   const visiblePages = getVisiblePages();
 
+  const itemsPerPageOptions = [
+    { id: "10", name: "10 per page" },
+    { id: "30", name: "30 per page" },
+    { id: "50", name: "50 per page" },
+    { id: "100", name: "100 per page" },
+  ];
+
   return (
-    <div className={`flex items-center justify-center gap-2 ${className}`}>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="h-8 w-8 p-0"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
+    <div className={`bg-card border border-border rounded-lg p-4 ${className}`}>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground">Page</span>
+          <span className="text-xs text-muted-foreground">
+            {currentPage} of {totalPages}
+          </span>
+        </div>
 
-      {visiblePages.map((page, index) => {
-        if (page === "...") {
-          return (
-            <div
-              key={index}
-              className="flex items-center justify-center h-8 w-8"
-            >
-              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-            </div>
-          );
-        }
+        {itemsPerPage && onItemsPerPageChange && (
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Items per page</label>
+            <Dropdown
+              value={itemsPerPage.toString()}
+              options={itemsPerPageOptions}
+              onChange={(value) => onItemsPerPageChange(parseInt(value))}
+              className="w-full"
+            />
+          </div>
+        )}
 
-        const pageNumber = page as number;
-        const isActive = pageNumber === currentPage;
-
-        return (
+        <div className="flex gap-1">
           <Button
-            key={index}
-            variant={isActive ? "default" : "outline"}
+            variant="outline"
             size="sm"
-            onClick={() => onPageChange(pageNumber)}
-            className="h-8 w-8 p-0"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="flex-1 h-8 text-xs"
           >
-            {pageNumber}
+            <ChevronLeft className="h-3 w-3 mr-1" />
+            Prev
           </Button>
-        );
-      })}
-
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="h-8 w-8 p-0"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="flex-1 h-8 text-xs"
+          >
+            Next
+            <ChevronRight className="h-3 w-3 ml-1" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

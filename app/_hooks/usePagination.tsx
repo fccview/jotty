@@ -6,12 +6,14 @@ interface UsePaginationProps<T> {
   items: T[];
   itemsPerPage: number;
   initialPage?: number;
+  onItemsPerPageChange?: (itemsPerPage: number) => void;
 }
 
 export const usePagination = <T,>({
   items,
   itemsPerPage,
   initialPage = 1,
+  onItemsPerPageChange,
 }: UsePaginationProps<T>) => {
   const [currentPage, setCurrentPage] = useState(initialPage);
 
@@ -53,6 +55,11 @@ export const usePagination = <T,>({
     setCurrentPage(1);
   };
 
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setCurrentPage(1);
+    onItemsPerPageChange?.(newItemsPerPage);
+  };
+
   return {
     currentPage,
     totalPages,
@@ -63,6 +70,7 @@ export const usePagination = <T,>({
     goToFirstPage,
     goToLastPage,
     resetPagination,
+    handleItemsPerPageChange,
     hasNextPage: currentPage < totalPages,
     hasPreviousPage: currentPage > 1,
     totalItems: items.length,

@@ -24,7 +24,7 @@ export const SiteHeader = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between fixed top-0 left-0 right-0 z-50 p-4 w-full bg-background">
+      <div className="flex items-center justify-between fixed top-0 left-0 right-0 z-50 p-4 w-full bg-background max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
           {showBackButton && (
             <Button

@@ -11,6 +11,7 @@ import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader
 import { FilterSidebar } from "@/app/_components/GlobalComponents/Layout/FilterSidebar";
 import { usePagination } from "@/app/_hooks/usePagination";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 import Masonry from "react-masonry-css";
 
 interface NotesPageClientProps {
@@ -28,8 +29,10 @@ export const NotesPageClient = ({
 }: NotesPageClientProps) => {
   const router = useRouter();
   const { openCreateNoteModal } = useShortcut();
+  const { isInitialized } = useAppMode();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [noteFilter, setNoteFilter] = useState<NoteFilter>("all");
+  const [itemsPerPage, setItemsPerPage] = useState(3);
 
   const filterOptions = [
     { id: "all", name: "All Notes" },
@@ -70,11 +73,11 @@ export const NotesPageClient = ({
     paginatedItems,
     goToPage,
     totalItems,
-    startIndex,
-    endIndex,
+    handleItemsPerPageChange,
   } = usePagination({
     items: filteredNotes,
-    itemsPerPage: 12,
+    itemsPerPage,
+    onItemsPerPageChange: setItemsPerPage,
   });
 
   const handleCategoryToggle = (category: string) => {
@@ -91,12 +94,19 @@ export const NotesPageClient = ({
 
   const breakpointColumnsObj = {
     default: 3,
-    1600: 4,
-    1400: 3,
-    1200: 3,
     900: 2,
     600: 1,
   };
+
+  if (!isInitialized) {
+    return (
+      <div className="flex h-screen bg-background w-full">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (initialNotes.length === 0) {
     return (
@@ -133,6 +143,16 @@ export const NotesPageClient = ({
             selectedCategories={selectedCategories}
             onCategoryToggle={handleCategoryToggle}
             onClearAllCategories={handleClearAllCategories}
+            pagination={
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={handleItemsPerPageChange}
+                totalItems={totalItems}
+              />
+            }
           />
         </div>
 
@@ -159,29 +179,19 @@ export const NotesPageClient = ({
                     <NoteCard
                       note={note}
                       onSelect={(note) => {
-                        const categoryPath = `${
-                          note.category || "Uncategorized"
-                        }/${note.id}`;
+                        const categoryPath = `${note.category || "Uncategorized"
+                          }/${note.id}`;
                         router.push(`/note/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedNotes?.includes(
                         `${note.category || "Uncategorized"}/${note.id}`
                       )}
-                      onTogglePin={() => {}}
+                      onTogglePin={() => { }}
                     />
                   </div>
                 ))}
               </Masonry>
 
-              {totalPages > 1 && (
-                <div className="mt-8">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={goToPage}
-                  />
-                </div>
-              )}
             </>
           )}
         </div>

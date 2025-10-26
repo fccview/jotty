@@ -14,6 +14,7 @@ interface FilterSidebarProps {
   selectedCategories: string[];
   onCategoryToggle: (category: string) => void;
   onClearAllCategories: () => void;
+  pagination?: React.ReactNode;
   className?: string;
 }
 
@@ -26,6 +27,7 @@ export const FilterSidebar = ({
   selectedCategories,
   onCategoryToggle,
   onClearAllCategories,
+  pagination,
   className = "",
 }: FilterSidebarProps) => {
   return (
@@ -57,6 +59,8 @@ export const FilterSidebar = ({
           />
         </div>
       </div>
+
+      {pagination}
     </div>
   );
 };
