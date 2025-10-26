@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Settings, Monitor, ArrowLeft } from "lucide-react";
-import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { User, Settings, Monitor } from "lucide-react";
+import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
 import { User as UserType } from "@/app/_types";
 import { useRouter } from "next/navigation";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
@@ -11,6 +11,7 @@ import { ProfileTab } from "./Parts/ProfileTab";
 import { SessionsTab } from "./Parts/SessionsTab";
 import { SettingsTab } from "./Parts/SettingsTab";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { Button } from "../../GlobalComponents/Buttons/Button";
 
 interface UserProfileClientProps {
   isSsoUser: boolean;
@@ -33,24 +34,10 @@ export const UserProfileClient = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => checkNavigation(() => router.push("/"))}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">User Profile</h1>
-            <p className="text-muted-foreground">
-              Manage your account settings and preferences
-            </p>
-          </div>
-        </div>
-      </div>
+      <SiteHeader
+        title="User Profile"
+        description="Manage your account settings and preferences"
+      />
 
       <div className="bg-muted p-1 rounded-lg">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">

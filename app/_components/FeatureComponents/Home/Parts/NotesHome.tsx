@@ -1,15 +1,19 @@
 "use client";
 
-import { Plus, FileText, FolderOpen, Pin, Clock } from "lucide-react";
+import {
+  Plus,
+  FileText,
+  FolderOpen,
+  Pin,
+  Clock,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Note, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import Masonry from "react-masonry-css";
-import {
-  DndContext,
-  closestCenter,
-} from "@dnd-kit/core";
+import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -61,14 +65,24 @@ export const NotesHome = ({
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">Notes</h1>
-            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">Your knowledge workspace</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
+              Notes
+            </h1>
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
+              Your knowledge workspace
+            </p>
           </div>
-          <Button onClick={() => onCreateModal()} size="sm" className="sm:size-lg">
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">New Note</span>
-            <span className="sm:hidden">New</span>
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => onCreateModal()}
+              size="sm"
+              className="sm:size-lg"
+            >
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">New Note</span>
+              <span className="sm:hidden">New</span>
+            </Button>
+          </div>
         </div>
 
         {pinned.length > 0 && (
@@ -77,7 +91,9 @@ export const NotesHome = ({
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Pin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Pinned Notes</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                Pinned Notes
+              </h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
             <DndContext
@@ -86,7 +102,7 @@ export const NotesHome = ({
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={pinned.map(note => note.id)}
+                items={pinned.map((note) => note.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <Masonry
@@ -95,7 +111,10 @@ export const NotesHome = ({
                   columnClassName="pl-6 bg-clip-padding"
                 >
                   {pinned.map((note) => (
-                    <div key={`pinned-${note.category}-${note.id}`} className="mb-6">
+                    <div
+                      key={`pinned-${note.category}-${note.id}`}
+                      className="mb-6"
+                    >
                       <NoteCard
                         note={note}
                         onSelect={onSelectNote}
@@ -117,8 +136,20 @@ export const NotesHome = ({
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Recent Notes</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                Recent Notes
+              </h2>
               <div className="flex-1 h-px bg-border"></div>
+              <Button
+                variant="outline"
+                onClick={() => (window.location.href = "/notes")}
+                size="sm"
+                className="ml-2"
+              >
+                <span className="hidden sm:inline">Show All</span>
+                <span className="sm:hidden">All</span>
+                <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
+              </Button>
             </div>
             <Masonry
               breakpointCols={breakpointColumnsObj}
@@ -126,7 +157,10 @@ export const NotesHome = ({
               columnClassName="pl-6 bg-clip-padding"
             >
               {recent.map((note) => (
-                <div key={`recent-${note.category}-${note.id}`} className="mb-6">
+                <div
+                  key={`recent-${note.category}-${note.id}`}
+                  className="mb-6"
+                >
                   <NoteCard
                     note={note}
                     onSelect={onSelectNote}
@@ -142,8 +176,8 @@ export const NotesHome = ({
         {notes.length > 12 && (
           <div className="text-center mt-8">
             <p className="text-sm text-muted-foreground">
-              Showing {recent.length} of {notes.length} notes. Use the
-              sidebar to browse all or search above.
+              Showing {recent.length} of {notes.length} notes. Use the sidebar
+              to browse all or search above.
             </p>
           </div>
         )}

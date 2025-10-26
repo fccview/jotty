@@ -38,8 +38,12 @@ export const TiptapToolbar = ({
   const [showTableModal, setShowTableModal] = useState(false);
   const [showImageSizeModal, setShowImageSizeModal] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
-  const [selectedImageWidth, setSelectedImageWidth] = useState<number | undefined>();
-  const [selectedImageHeight, setSelectedImageHeight] = useState<number | undefined>();
+  const [selectedImageWidth, setSelectedImageWidth] = useState<
+    number | undefined
+  >();
+  const [selectedImageHeight, setSelectedImageHeight] = useState<
+    number | undefined
+  >();
 
   if (!editor) {
     return null;
@@ -84,7 +88,10 @@ export const TiptapToolbar = ({
     }
   };
 
-  const handleImageSizeConfirm = (width: number | null, height: number | null) => {
+  const handleImageSizeConfirm = (
+    width: number | null,
+    height: number | null
+  ) => {
     if (selectedImageUrl) {
       const imageAttrs: any = { src: selectedImageUrl };
 
@@ -102,7 +109,6 @@ export const TiptapToolbar = ({
     setSelectedImageHeight(undefined);
   };
 
-  // Add a button to edit selected image if one is selected
   const isImageSelected = editor.isActive("image");
   const selectedImageAttrs = editor.getAttributes("image");
 
