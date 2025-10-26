@@ -20,8 +20,8 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     emDelimiter: "*",
     bulletListMarker: "-",
     blankReplacement: function (content, node) {
-      return node.nodeName === 'P' ? '\u200b' : content;
-    }
+      return node.nodeName === "P" ? "\u200b" : content;
+    },
   });
 
   service.addRule("taskItem", {
@@ -32,7 +32,8 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const element = node as HTMLElement;
       const parent = element.parentElement;
 
-      if (!parent || parent.getAttribute("data-type") !== "taskList") return content;
+      if (!parent || parent.getAttribute("data-type") !== "taskList")
+        return content;
 
       let isChecked = false;
       const dataChecked = element.getAttribute("data-checked");
@@ -41,7 +42,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
         isChecked = dataChecked === "true";
       } else {
         const checkbox = element.querySelector('input[type="checkbox"]');
-        isChecked = checkbox ? checkbox.hasAttribute('checked') : false;
+        isChecked = checkbox ? checkbox.hasAttribute("checked") : false;
       }
 
       const prefix = isChecked ? "- [x] " : "- [ ] ";
@@ -247,16 +248,21 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
 
       if (!src) return "";
 
-      // Only use HTML if dimensions are actually specified and not empty
-      if ((width && width !== "0" && width.trim() !== "") || (height && height !== "0" && height.trim() !== "")) {
+      if (
+        (width && width !== "0" && width.trim() !== "") ||
+        (height && height !== "0" && height.trim() !== "")
+      ) {
         const style = [];
-        if (width && width !== "0" && width.trim() !== "") style.push(`width: ${width}px`);
-        if (height && height !== "0" && height.trim() !== "") style.push(`height: ${height}px`);
+        if (width && width !== "0" && width.trim() !== "")
+          style.push(`width: ${width}px`);
+        if (height && height !== "0" && height.trim() !== "")
+          style.push(`height: ${height}px`);
 
-        return `\n<img src="${src}" alt="${alt}" style="${style.join('; ')}" />\n`;
+        return `\n<img src="${src}" alt="${alt}" style="${style.join(
+          "; "
+        )}" />\n`;
       }
 
-      // Default markdown for images without custom sizing
       return `![${alt}](${src})`;
     },
   });
@@ -308,14 +314,22 @@ const markdownProcessor = unified()
           let checkboxIndex = 0;
           let checkbox = node.children[checkboxIndex];
 
-          while (checkbox && checkbox.type === 'text' && checkboxIndex < node.children.length) {
+          while (
+            checkbox &&
+            checkbox.type === "text" &&
+            checkboxIndex < node.children.length
+          ) {
             checkboxIndex++;
             checkbox = node.children[checkboxIndex];
           }
 
           let isInsideP = false;
 
-          if (checkbox?.type === "element" && checkbox.tagName === "p" && checkbox.children?.[0]) {
+          if (
+            checkbox?.type === "element" &&
+            checkbox.tagName === "p" &&
+            checkbox.children?.[0]
+          ) {
             isInsideP = true;
             checkbox = checkbox.children[0];
           }
@@ -327,7 +341,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-              checkbox.properties.checked !== false
+                checkbox.properties.checked !== false
             );
 
             if (isInsideP) {
