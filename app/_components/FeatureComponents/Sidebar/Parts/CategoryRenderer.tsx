@@ -168,7 +168,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   ];
 
   return (
-    <div className="space-y-1 overflow-hidden">
+    <div className="space-y-1">
       <div className="flex items-center justify-between group">
         <button
           onClick={() => onToggleCategory(category.path)}

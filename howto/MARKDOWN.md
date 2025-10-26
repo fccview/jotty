@@ -281,6 +281,17 @@ For more advanced formatting, you can use the following HTML tags directly in th
       </tr>
       <tr>
          <td colspan="1" rowspan="1">
+            <p><strong>Colored text</strong></p>
+         </td>
+         <td colspan="1" rowspan="1">
+            <span style="color: magenta">Magenta text</span>
+         </td>
+         <td colspan="1" rowspan="1">
+            <pre><code class="language-html">&lt;span style="color: magenta"&gt;Magenta text&lt;/span&gt;</code></pre>
+         </td>
+      </tr>
+      <tr>
+         <td colspan="1" rowspan="1">
             <p><strong>File Attachment</strong></p>
          </td>
          <td colspan="1" rowspan="1">
@@ -288,6 +299,17 @@ For more advanced formatting, you can use the following HTML tags directly in th
          </td>
          <td colspan="1" rowspan="1">
             <p><code>[📎 report.pdf](/path/to/file)</code></p>
+         </td>
+      </tr>
+      <tr>
+         <td colspan="1" rowspan="1">
+            <p><strong>Video</strong></p>
+         </td>
+         <td colspan="1" rowspan="1">
+            <p>Adds an embedded video to the note.</p>
+         </td>
+         <td colspan="1" rowspan="1">
+            <p><code>[🎥 video.mp4](/path/to/video)</code></p>
          </td>
       </tr>
       <tr>

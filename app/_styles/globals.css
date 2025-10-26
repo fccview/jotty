@@ -820,3 +820,38 @@ p > code {
 .file-attachment-wrapper .file-attachment {
     margin: 0;
 }
+
+
+@media print {
+    .no-print {
+      display: none !important;
+    }
+  
+    body {
+      background: #fff !important;
+    }
+  
+    .prose {
+      font-size: 12pt !important;
+      font-family: 'Times New Roman', Times, serif !important;
+      color: #000 !important;
+      max-width: 100% !important;
+    }
+  
+    .prose h1, .prose h2, .prose h3, .prose h4,
+    .prose pre, .prose blockquote {
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+  
+    .prose img {
+      max-width: 100% !important;
+    }
+  
+    .prose a[href^="http"]:after {
+      content: " (" attr(href) ")";
+      font-size: 9pt;
+      font-weight: normal;
+      color: #333;
+    }
+  } 

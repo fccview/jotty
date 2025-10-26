@@ -12,7 +12,7 @@ export async function GET(
 ) {
     try {
         const user = await getCurrentUser();
-        if (!user && !process.env.SERVE_PUBLIC_FILES) {
+        if (!user && !process.env.SERVE_PUBLIC_VIDEOS) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 

@@ -87,3 +87,7 @@ export function decodeId(encodedId: string): string {
   }
   return decodeURIComponent(encodedId);
 }
+
+export function encodeId(id: string): string {
+  return encodeURIComponent(id);
+}

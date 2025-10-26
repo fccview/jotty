@@ -1,13 +1,12 @@
 "use client";
 
-import { Note, Category, TableSyntax } from "@/app/_types";
+import { Note, Category } from "@/app/_types";
 import { UnsavedChangesModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/UnsavedChangesModal";
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { NoteEditorHeader } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorHeader";
 import { NoteEditorContent } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorContent";
 import { useState } from "react";
 import { TableOfContents } from "../TableOfContents";
-import { useSettings } from "@/app/_utils/settings-store";
 
 export interface NoteEditorProps {
   note: Note;

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getAllNotes } from "@/app/_server/actions/note";
 import { getItemSharingMetadata } from "@/app/_server/actions/sharing";
 import { PublicNoteView } from "@/app/_components/FeatureComponents/PublicView/PublicNoteView";
-import { getUserByUsername } from "@/app/_server/actions/users";
+import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
 import type { Metadata, ResolvingMetadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { Modes } from "@/app/_types/enums";
@@ -12,6 +12,7 @@ interface PublicNotePageProps {
   params: {
     categoryPath: string[];
   };
+  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,10 @@ export async function generateMetadata({
   return getMedatadaTitle(Modes.NOTES, id, category);
 }
 
-export default async function PublicNotePage({ params }: PublicNotePageProps) {
+export default async function PublicNotePage({
+  params,
+  searchParams,
+}: PublicNotePageProps) {
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
@@ -70,7 +74,13 @@ export default async function PublicNotePage({ params }: PublicNotePageProps) {
       : undefined;
   }
 
-  if (!sharingMetadata || !sharingMetadata.isPubliclyShared) {
+  const isPubliclyShared = sharingMetadata?.isPubliclyShared || false;
+  const isPrintView = searchParams.view_mode === "print";
+
+  const currentUser = await getCurrentUser();
+  const isOwner = currentUser?.username === note.owner;
+
+  if (!isPubliclyShared && !(isOwner && isPrintView)) {
     redirect("/");
   }
 

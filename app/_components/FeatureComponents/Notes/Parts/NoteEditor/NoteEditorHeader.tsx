@@ -1,3 +1,5 @@
+"use client";
+
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -17,7 +19,6 @@ import {
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
 import { useSharing } from "@/app/_hooks/useSharing";
-import { exportToPDF } from "@/app/_utils/pdf-export";
 import { useState } from "react";
 
 interface NoteEditorHeaderProps {
@@ -54,6 +55,7 @@ export const NoteEditorHeader = ({
     handleCancel,
     handleSave,
     handleDelete,
+    isPrinting,
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
   const { sharingStatus } = useSharing({
@@ -67,18 +69,13 @@ export const NoteEditorHeader = ({
     enabled: true,
   });
 
-  const handleExportPDF = () => {
-    const element = document.querySelector(".prose");
-    if (element) exportToPDF(element as HTMLElement, note.title);
-  };
-
   const canDelete = note.isShared
     ? isAdmin || currentUsername === note.owner
     : true;
 
   return (
     <>
-      <div className="bg-background border-b border-border px-4 py-3 sticky top-0 z-20">
+      <div className="bg-background border-b border-border px-4 py-3 sticky top-0 z-20 no-print">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0 focus-within:min-w-[90%] lg:focus-within:min-w-[20%] transition-all duration-100">
             <Button
@@ -168,14 +165,21 @@ export const NoteEditorHeader = ({
                 >
                   <Share2 className="h-5 w-5" />
                 </Button>
+
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={handleExportPDF}
-                  title="Export as PDF"
+                  onClick={viewModel.handlePrint}
+                  title="Print / Save as PDF"
+                  disabled={isPrinting}
                 >
-                  <Download className="h-5 w-5" />
+                  {isPrinting ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Download className="h-5 w-5" />
+                  )}
                 </Button>
+
                 <Button
                   variant="outline"
                   size="icon"

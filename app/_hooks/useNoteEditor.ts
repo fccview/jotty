@@ -8,7 +8,7 @@ import {
 import { useSettings } from "@/app/_utils/settings-store";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { buildCategoryPath, encodeCategoryPath, encodeId } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
@@ -32,6 +32,7 @@ export const useNoteEditor = ({
     convertMarkdownToHtml(note.content || "")
   );
   const [isMarkdownMode, setIsMarkdownMode] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [status, setStatus] = useState({
     isSaving: false,
@@ -165,6 +166,60 @@ export const useNoteEditor = ({
     handleSave().then(() => executePendingNavigation());
   const handleUnsavedChangesDiscard = () => executePendingNavigation();
 
+  const handlePrint = () => {
+    setIsPrinting(true);
+
+    const categoryUrlPath =
+      note.category && note.category !== "Uncategorized"
+        ? encodeCategoryPath(note.category) + "/"
+        : "";
+
+    const printUrl = `/public/note/${categoryUrlPath}${encodeId(note.id)}?view_mode=print`;
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "none";
+
+    const cleanup = () => {
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+        setIsPrinting(false);
+      }, 100);
+    };
+
+    iframe.onload = () => {
+      const win = iframe.contentWindow;
+      if (!win) {
+        console.error("Failed to get iframe content window.");
+        cleanup();
+        return;
+      }
+      win.addEventListener('afterprint', cleanup);
+      try {
+        win.focus();
+        win.print();
+      } catch (e) {
+        console.error("Failed to call print() on iframe:", e);
+        cleanup();
+      }
+    };
+
+    iframe.onerror = () => {
+      console.error(
+        "Failed to load print iframe. Check URL:",
+        printUrl
+      );
+      cleanup();
+    };
+
+    iframe.src = printUrl;
+    document.body.appendChild(iframe);
+  };
+
   return {
     title,
     setTitle,
@@ -187,5 +242,8 @@ export const useNoteEditor = ({
     handleUnsavedChangesDiscard,
     isMarkdownMode,
     setIsMarkdownMode,
+    handlePrint,
+    isPrinting,
+    setIsPrinting,
   };
 };

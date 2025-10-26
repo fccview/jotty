@@ -76,6 +76,9 @@ export interface NoteEditorViewModel {
   handleUnsavedChangesSave: () => void;
   handleUnsavedChangesDiscard: () => void;
   derivedMarkdownContent: string;
+  handlePrint: () => void;
+  isPrinting: boolean;
+  setIsPrinting: (isPrinting: boolean) => void;
 }
 
 export interface Category {
