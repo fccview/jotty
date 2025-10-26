@@ -59,7 +59,6 @@ export const TiptapEditor = ({
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
 
   const uploadHook = useFileUpload(appSettings?.maximumFileSize);
-  const imageResize = useImageResize(null);
   const tableToolbar = useTableToolbar();
 
   const debouncedOnChange = useCallback(
@@ -74,10 +73,17 @@ export const TiptapEditor = ({
     [onChange]
   );
 
+  // Create a temporary ref to hold image click handler until editor is ready
+  const imageClickRef = useRef<((pos: any) => void) | null>(null);
+
   const editor: Editor | null = useEditor({
     immediatelyRender: false,
     extensions: createEditorExtensions({
-      onImageClick: imageResize.handleImageClick,
+      onImageClick: (pos) => {
+        if (imageClickRef.current) {
+          imageClickRef.current(pos);
+        }
+      },
       onTableSelect: tableToolbar.handleTableSelect,
     }, editorSettings),
     content: "",
@@ -137,11 +143,13 @@ export const TiptapEditor = ({
     },
   ]);
 
+  const imageResize = useImageResize(editor);
+
   useEffect(() => {
     if (editor) {
-      (imageResize as any).editor = editor as Editor;
+      imageClickRef.current = imageResize.handleImageClick;
     }
-  }, [editor, imageResize]);
+  }, [editor, imageResize.handleImageClick]);
 
   useOverlayClickOutside({
     isActive: imageResize.showOverlay || tableToolbar.showToolbar || showBubbleMenu,

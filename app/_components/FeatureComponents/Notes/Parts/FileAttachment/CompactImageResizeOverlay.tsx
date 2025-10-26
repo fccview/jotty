@@ -111,7 +111,7 @@ export const CompactImageResizeOverlay = ({
                         id="width"
                         label="Width (px)"
                         type="number"
-                        value={width}
+                        defaultValue={width}
                         onChange={(e) => handleWidthChange(e.target.value)}
                         placeholder="Auto"
                         className="text-xs"
@@ -120,7 +120,7 @@ export const CompactImageResizeOverlay = ({
                         id="height"
                         label="Height (px)"
                         type="number"
-                        value={height}
+                        defaultValue={height}
                         onChange={(e) => handleHeightChange(e.target.value)}
                         placeholder="Auto"
                         className="text-xs"

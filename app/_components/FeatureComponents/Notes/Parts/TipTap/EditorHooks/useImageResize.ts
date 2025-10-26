@@ -50,13 +50,13 @@ export const useImageResize = (editor: Editor | null) => {
         if (imageNode) {
           const newAttrs = { ...imageNode.attrs };
 
-          if (width && width > 0) {
+          if (width !== null && width > 0) {
             newAttrs.width = width;
           } else {
             delete newAttrs.width;
           }
 
-          if (height && height > 0) {
+          if (height !== null && height > 0) {
             newAttrs.height = height;
           } else {
             delete newAttrs.height;
