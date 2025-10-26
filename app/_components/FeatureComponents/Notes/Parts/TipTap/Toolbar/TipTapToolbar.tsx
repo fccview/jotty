@@ -11,9 +11,11 @@ import {
   FileText,
   Eye,
   Underline,
+  ImageIcon,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
+import { ImageSizeModal } from "@/app/_components/GlobalComponents/Modals/ImageSizeModal";
 import { CodeBlockDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/CodeBlocksDropdown";
 import { TableInsertModal } from "@/app/_components/FeatureComponents/Notes/Parts/Table/TableInsertModal";
 import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
@@ -34,6 +36,10 @@ export const TiptapToolbar = ({
 }: ToolbarProps) => {
   const [showFileModal, setShowFileModal] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
+  const [showImageSizeModal, setShowImageSizeModal] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
+  const [selectedImageWidth, setSelectedImageWidth] = useState<number | undefined>();
+  const [selectedImageHeight, setSelectedImageHeight] = useState<number | undefined>();
 
   if (!editor) {
     return null;
@@ -53,12 +59,15 @@ export const TiptapToolbar = ({
 
   const handleFileSelect = (
     url: string,
-    type: "image" | "file",
+    type: "image" | "video" | "file",
     fileName?: string,
     mimeType?: string
   ) => {
     if (type === "image") {
-      editor.chain().focus().setImage({ src: url }).run();
+      setSelectedImageUrl(url);
+      setSelectedImageWidth(undefined);
+      setSelectedImageHeight(undefined);
+      setShowImageSizeModal(true);
     } else {
       const finalFileName = fileName || url.split("/").pop() || "file";
       const finalMimeType = mimeType || "application/octet-stream";
@@ -69,11 +78,33 @@ export const TiptapToolbar = ({
           url,
           fileName: finalFileName,
           mimeType: finalMimeType,
-          type: "file",
+          type: type === "video" ? "video" : "file",
         })
         .run();
     }
   };
+
+  const handleImageSizeConfirm = (width: number | null, height: number | null) => {
+    if (selectedImageUrl) {
+      const imageAttrs: any = { src: selectedImageUrl };
+
+      if (width && width > 0) imageAttrs.width = width;
+      if (height && height > 0) imageAttrs.height = height;
+
+      editor.chain().focus().setImage(imageAttrs).run();
+    }
+  };
+
+  const handleImageSizeClose = () => {
+    setShowImageSizeModal(false);
+    setSelectedImageUrl("");
+    setSelectedImageWidth(undefined);
+    setSelectedImageHeight(undefined);
+  };
+
+  // Add a button to edit selected image if one is selected
+  const isImageSelected = editor.isActive("image");
+  const selectedImageAttrs = editor.getAttributes("image");
 
   const handleButtonClick = (command: () => void) => {
     const { from, to } = editor.state.selection;
@@ -249,6 +280,22 @@ export const TiptapToolbar = ({
           >
             <LinkIcon className="h-4 w-4" />
           </Button>
+          {isImageSelected && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                setSelectedImageUrl(selectedImageAttrs.src || "");
+                setSelectedImageWidth(selectedImageAttrs.width);
+                setSelectedImageHeight(selectedImageAttrs.height);
+                setShowImageSizeModal(true);
+              }}
+              title="Edit image size"
+            >
+              <ImageIcon className="h-4 w-4" />
+            </Button>
+          )}
           <div className="w-px h-6 bg-border mx-2" />
           <CodeBlockDropdown editor={editor} />
           <div className="w-px h-6 bg-border mx-2" />
@@ -256,6 +303,12 @@ export const TiptapToolbar = ({
             editor={editor}
             onFileModalOpen={() => setShowFileModal(true)}
             onTableModalOpen={() => setShowTableModal(true)}
+            onImageSizeModalOpen={(url) => {
+              setSelectedImageUrl(url);
+              setSelectedImageWidth(undefined);
+              setSelectedImageHeight(undefined);
+              setShowImageSizeModal(true);
+            }}
           />
         </div>
       </div>
@@ -269,6 +322,14 @@ export const TiptapToolbar = ({
         isOpen={showTableModal}
         onClose={() => setShowTableModal(false)}
         editor={editor}
+      />
+      <ImageSizeModal
+        isOpen={showImageSizeModal}
+        onClose={handleImageSizeClose}
+        onConfirm={handleImageSizeConfirm}
+        currentWidth={selectedImageWidth}
+        currentHeight={selectedImageHeight}
+        imageUrl={selectedImageUrl}
       />
     </>
   );

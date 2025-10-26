@@ -764,9 +764,22 @@ export const bulkDeleteItems = async (formData: FormData) => {
     }
 
     const itemIdsSet = new Set(itemIdsToDelete);
+
+    const filterOutItems = (items: any[], itemIds: Set<string>): any[] => {
+      return items
+        .filter((item) => !itemIds.has(item.id))
+        .map((item) => ({
+          ...item,
+          children: item.children
+            ? filterOutItems(item.children, itemIds)
+            : undefined,
+        }))
+        .filter((item) => item.children?.length > 0 || item.id !== undefined);
+    };
+
     const updatedList = {
       ...list,
-      items: list.items.filter((item) => !itemIdsSet.has(item.id)),
+      items: filterOutItems(list.items, itemIdsSet),
       updatedAt: new Date().toISOString(),
     };
 

@@ -142,7 +142,7 @@ export const ChecklistHome = ({
         </div>
 
         {pinned.length > 0 && (
-          <div className="mb-8 lg:mb-12">
+          <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Pin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />

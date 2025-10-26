@@ -176,6 +176,7 @@ export interface AppSettings {
   "32x32Icon": string;
   "180x180Icon": string;
   notifyNewUpdates: "yes" | "no";
+  maximumFileSize: number;
 }
 
 export interface Session {

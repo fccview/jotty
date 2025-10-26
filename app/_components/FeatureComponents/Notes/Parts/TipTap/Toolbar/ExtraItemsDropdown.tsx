@@ -22,12 +22,14 @@ interface ExtraItemsDropdownProps {
   editor: Editor;
   onFileModalOpen: () => void;
   onTableModalOpen: () => void;
+  onImageSizeModalOpen: (url: string) => void;
 }
 
 export const ExtraItemsDropdown = ({
   editor,
   onFileModalOpen,
   onTableModalOpen,
+  onImageSizeModalOpen,
 }: ExtraItemsDropdownProps) => {
   const [isMac, setIsMac] = useState(false);
 
@@ -37,7 +39,7 @@ export const ExtraItemsDropdown = ({
 
   const addImage = () => {
     const url = window.prompt("Image URL");
-    if (url) editor.chain().focus().setImage({ src: url }).run();
+    if (url) onImageSizeModalOpen(url);
   };
 
   const toggleAbbreviation = () => {

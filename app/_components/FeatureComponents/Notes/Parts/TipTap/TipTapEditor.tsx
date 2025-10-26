@@ -14,6 +14,10 @@ import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import { TiptapToolbar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/TipTapToolbar";
 import { FileAttachmentExtension } from "@/app/_components/FeatureComponents/Notes/Parts/FileAttachment/FileAttachmentExtension";
 import { CodeBlockNodeView } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockNodeView";
+import { UploadOverlay } from "@/app/_components/GlobalComponents/FormElements/UploadOverlay";
+import { CompactImageResizeOverlay } from "./CompactImageResizeOverlay";
+import { CompactTableToolbar } from "./CompactTableToolbar";
+import { OverlayExtension } from "./CustomExtensions/OverlayExtension";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { InputRule } from "@tiptap/core";
 import {
@@ -30,8 +34,8 @@ import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { TableSyntax } from "@/app/_types";
 import { useSettings } from "@/app/_utils/settings-store";
 import { uploadFile } from "@/app/_server/actions/upload";
-import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { MAX_FILE_SIZE } from "@/app/_consts/files";
 
 const getImageFromClipboard = (items: DataTransferItemList): File | null => {
   for (let i = 0; i < items.length; i++) {
@@ -53,30 +57,6 @@ const getFileFromClipboard = (items: DataTransferItemList): File | null => {
   return null;
 };
 
-const handleFileUpload = async (
-  file: File,
-  editor: any,
-  insertCallback: (data: any) => void
-): Promise<void> => {
-  if (file.size > MAX_FILE_SIZE) {
-    console.error("File is too large. Maximum size is 10MB.");
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const result = await uploadFile(formData);
-    if (result.success && result.data) {
-      insertCallback(result.data);
-    } else {
-      console.error("Upload failed:", result.error);
-    }
-  } catch (error) {
-    console.error("Error uploading file:", error);
-  }
-};
 
 type TiptapEditorProps = {
   content: string;
@@ -89,7 +69,7 @@ export const TiptapEditor = ({
   onChange,
   tableSyntax,
 }: TiptapEditorProps) => {
-  const { user } = useAppMode();
+  const { user, appSettings } = useAppMode();
 
   let output = content;
   if (user?.notesDefaultEditor === "markdown") {
@@ -102,6 +82,22 @@ export const TiptapEditor = ({
 
   const [isMarkdownMode, setIsMarkdownMode] = useState(user?.notesDefaultEditor === "markdown");
   const [markdownContent, setMarkdownContent] = useState(output);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadingFileName, setUploadingFileName] = useState<string | null>(null);
+  const [fileSizeError, setFileSizeError] = useState<string | null>(null);
+  const [showImageResizeOverlay, setShowImageResizeOverlay] = useState(false);
+  const [imageResizePosition, setImageResizePosition] = useState({ x: 0, y: 0 });
+  const [selectedImageAttrs, setSelectedImageAttrs] = useState<{
+    src?: string;
+    width?: number;
+    height?: number;
+  }>({});
+  const [showTableContextMenu, setShowTableContextMenu] = useState(false);
+  const [tableContextMenuPosition, setTableContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [showCompactImageResize, setShowCompactImageResize] = useState(false);
+  const [showCompactTableToolbar, setShowCompactTableToolbar] = useState(false);
+  const [overlayTargetElement, setOverlayTargetElement] = useState<HTMLElement | null>(null);
   const isInitialized = useRef(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
   const { compactMode } = useSettings();
@@ -129,6 +125,70 @@ export const TiptapEditor = ({
     [onChange]
   );
 
+
+  const handleFileUpload = useCallback(async (
+    file: File,
+    editor: any,
+    insertCallback: (data: any) => void,
+    showProgress: boolean = false
+  ): Promise<void> => {
+
+    if (file.size > (appSettings?.maximumFileSize || MAX_FILE_SIZE)) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      const maxSizeMB = ((appSettings?.maximumFileSize || MAX_FILE_SIZE) / (1024 * 1024)).toFixed(0);
+      const errorMessage = `File is too large. Maximum size is ${maxSizeMB}MB. Your file is ${fileSizeMB}MB.`;
+
+      if (showProgress) {
+        setFileSizeError(errorMessage);
+        setIsUploading(true);
+        setUploadingFileName(file.name);
+        setTimeout(() => {
+          setIsUploading(false);
+          setFileSizeError(null);
+          setUploadingFileName(null);
+        }, 3000);
+      }
+      return;
+    }
+
+    if (showProgress) {
+      setIsUploading(true);
+      setUploadError(null);
+      setFileSizeError(null);
+      setUploadingFileName(file.name);
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const result = await uploadFile(formData);
+
+      if (result.success && result.data) {
+        insertCallback(result.data);
+        if (showProgress) {
+          setTimeout(() => {
+            setIsUploading(false);
+            setUploadingFileName(null);
+          }, 1000);
+        }
+      } else {
+        if (showProgress) {
+          setUploadError(result.error || "Upload failed");
+          setIsUploading(false);
+        } else {
+          console.error("Upload failed:", result.error);
+        }
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      if (showProgress) {
+        setUploadError("Upload failed. Please try again.");
+        setIsUploading(false);
+      }
+    }
+  }, []);
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -143,6 +203,23 @@ export const TiptapEditor = ({
       ...generateCustomHtmlExtensions(),
       DetailsExtension,
       KeyboardShortcuts,
+      OverlayExtension.configure({
+        onImageClick: (position) => {
+          setImageResizePosition({ x: position.x, y: position.y });
+          setSelectedImageAttrs({
+            src: position.element.getAttribute('src') || undefined,
+            width: position.element.getAttribute('width') ? parseInt(position.element.getAttribute('width')!) : undefined,
+            height: position.element.getAttribute('height') ? parseInt(position.element.getAttribute('height')!) : undefined,
+          });
+          setOverlayTargetElement(position.element);
+          setShowCompactImageResize(true);
+        },
+        onTableSelect: (position) => {
+          setTableContextMenuPosition({ x: position.x, y: position.y });
+          setOverlayTargetElement(position.element);
+          setShowCompactTableToolbar(true);
+        },
+      }),
       Underline,
       HardBreak,
       CodeBlockLowlight.configure({
@@ -179,7 +256,9 @@ export const TiptapEditor = ({
           ];
         },
       }),
-      Image.configure(),
+      Image.configure({
+        HTMLAttributes: {},
+      }),
       FileAttachmentExtension.configure({
         HTMLAttributes: {
           class: "file-attachment",
@@ -384,6 +463,80 @@ export const TiptapEditor = ({
     },
   });
 
+  const handleImageResize = useCallback((width: number | null, height: number | null) => {
+    if (editor && selectedImageAttrs.src) {
+      const { state, view } = editor;
+
+      let imagePos = -1;
+      state.doc.descendants((node, pos) => {
+        if (node.type.name === 'image' && node.attrs.src === selectedImageAttrs.src) {
+          imagePos = pos;
+          return false;
+        }
+      });
+
+      if (imagePos !== -1) {
+        const imageNode = state.doc.nodeAt(imagePos);
+        if (imageNode) {
+          const newAttrs = { ...imageNode.attrs };
+
+          if (width && width > 0) {
+            newAttrs.width = width;
+          } else {
+            delete newAttrs.width;
+          }
+
+          if (height && height > 0) {
+            newAttrs.height = height;
+          } else {
+            delete newAttrs.height;
+          }
+
+          const tr = state.tr.setNodeMarkup(imagePos, undefined, newAttrs);
+          view.dispatch(tr);
+        }
+      }
+    }
+    setShowCompactImageResize(false);
+  }, [editor, selectedImageAttrs.src]);
+
+  const handleImageClick = useCallback((event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'IMG') {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const rect = target.getBoundingClientRect();
+      setImageResizePosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+      });
+
+      setSelectedImageAttrs({
+        src: target.getAttribute('src') || undefined,
+        width: target.getAttribute('width') ? parseInt(target.getAttribute('width')!) : undefined,
+        height: target.getAttribute('height') ? parseInt(target.getAttribute('height')!) : undefined,
+      });
+
+      setShowImageResizeOverlay(true);
+    }
+  }, []);
+
+  const handleTableContextMenu = useCallback((event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('table') || target.closest('td') || target.closest('th')) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      setTableContextMenuPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      setShowTableContextMenu(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (editor && !isInitialized.current) {
       isInitialized.current = true;
@@ -393,6 +546,46 @@ export const TiptapEditor = ({
       }, 0);
     }
   }, [editor, content]);
+
+  useEffect(() => {
+    if (editor) {
+      const editorElement = editor.view.dom;
+      editorElement.addEventListener('contextmenu', handleTableContextMenu);
+
+      return () => {
+        editorElement.removeEventListener('contextmenu', handleTableContextMenu);
+      };
+    }
+  }, [editor, handleTableContextMenu]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+
+      if (target.closest('[data-overlay]')) {
+        return;
+      }
+
+      if (target.tagName === 'INPUT' || target.tagName === 'BUTTON') {
+        return;
+      }
+
+      setShowCompactImageResize(false);
+      setShowCompactTableToolbar(false);
+      setShowTableContextMenu(false);
+    };
+
+    if (showCompactImageResize || showCompactTableToolbar || showTableContextMenu) {
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 100);
+
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showCompactImageResize, showCompactTableToolbar, showTableContextMenu]);
 
   useEffect(() => {
     return () => {
@@ -442,6 +635,18 @@ export const TiptapEditor = ({
         />
       </div>
 
+      <UploadOverlay
+        isVisible={isUploading || !!uploadError || !!fileSizeError}
+        isUploading={isUploading}
+        uploadError={uploadError || fileSizeError || undefined}
+        fileName={uploadingFileName || undefined}
+        onRetry={() => {
+          setUploadError(null);
+          setFileSizeError(null);
+          setIsUploading(false);
+        }}
+      />
+
       {isMarkdownMode ? (
         <div
           className="flex-1 p-4 overflow-y-auto h-full"
@@ -454,12 +659,9 @@ export const TiptapEditor = ({
             e.stopPropagation();
 
             const files = Array.from(e.dataTransfer.files) as File[];
-            const validFiles = files.filter(
-              (file) => file.size <= MAX_FILE_SIZE
-            );
 
-            if (validFiles.length > 0) {
-              validFiles.forEach((file) => {
+            if (files.length > 0) {
+              files.forEach((file) => {
                 handleFileUpload(file, editor, (data) => {
                   if (data.type === "image") {
                     const markdownImage = `![${data.fileName}](${data.url})`;
@@ -472,7 +674,7 @@ export const TiptapEditor = ({
                     setMarkdownContent(newContent);
                     debouncedOnChange(newContent, true);
                   }
-                });
+                }, true);
               });
             }
           }}
@@ -480,47 +682,6 @@ export const TiptapEditor = ({
           <textarea
             value={markdownContent}
             onChange={handleMarkdownChange}
-            onPaste={(e) => {
-              const items = e.clipboardData.items;
-              if (items) {
-                const imageFile = getImageFromClipboard(items);
-                if (imageFile) {
-                  e.preventDefault();
-                  handleFileUpload(imageFile, editor, (data) => {
-                    if (data.type === "image") {
-                      const markdownImage = `![${data.fileName}](${data.url})`;
-                      const newContent = markdownContent + "\n" + markdownImage;
-                      setMarkdownContent(newContent);
-                      debouncedOnChange(newContent, true);
-                    } else {
-                      const markdownLink = `[📎 ${data.fileName}](${data.url})`;
-                      const newContent = markdownContent + "\n" + markdownLink;
-                      setMarkdownContent(newContent);
-                      debouncedOnChange(newContent, true);
-                    }
-                  });
-                  return;
-                }
-
-                const file = getFileFromClipboard(items);
-                if (file) {
-                  e.preventDefault();
-                  handleFileUpload(file, editor, (data) => {
-                    if (data.type === "image") {
-                      const markdownImage = `![${data.fileName}](${data.url})`;
-                      const newContent = markdownContent + "\n" + markdownImage;
-                      setMarkdownContent(newContent);
-                      debouncedOnChange(newContent, true);
-                    } else {
-                      const markdownLink = `[📎 ${data.fileName}](${data.url})`;
-                      const newContent = markdownContent + "\n" + markdownLink;
-                      setMarkdownContent(newContent);
-                      debouncedOnChange(newContent, true);
-                    }
-                  });
-                }
-              }
-            }}
             className="w-full h-full bg-background text-foreground resize-none focus:outline-none focus:ring-none p-2"
             placeholder="Write your markdown here..."
           />
@@ -537,12 +698,9 @@ export const TiptapEditor = ({
             e.stopPropagation();
 
             const files = Array.from(e.dataTransfer.files) as File[];
-            const validFiles = files.filter(
-              (file) => file.size <= MAX_FILE_SIZE
-            );
 
-            if (validFiles.length > 0) {
-              validFiles.forEach((file) => {
+            if (files.length > 0) {
+              files.forEach((file) => {
                 handleFileUpload(file, editor, (data) => {
                   if (data.type === "image") {
                     editor?.chain().focus().setImage({ src: data.url }).run();
@@ -558,13 +716,35 @@ export const TiptapEditor = ({
                       })
                       .run();
                   }
-                });
+                }, true);
               });
             }
           }}
         >
           <EditorContent editor={editor} className="w-full h-full" />
         </div>
+      )}
+
+      <CompactImageResizeOverlay
+        isVisible={showCompactImageResize}
+        position={imageResizePosition}
+        onClose={() => setShowCompactImageResize(false)}
+        onResize={handleImageResize}
+        currentWidth={selectedImageAttrs.width}
+        currentHeight={selectedImageAttrs.height}
+        imageUrl={selectedImageAttrs.src}
+        targetElement={overlayTargetElement || undefined}
+      />
+
+      {editor && (
+        <>
+          <CompactTableToolbar
+            editor={editor}
+            isVisible={showCompactTableToolbar}
+            position={tableContextMenuPosition}
+            targetElement={overlayTargetElement || undefined}
+          />
+        </>
       )}
     </div>
   );

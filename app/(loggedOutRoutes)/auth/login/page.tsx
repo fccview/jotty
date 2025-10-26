@@ -23,14 +23,17 @@ export default async function LoginPage() {
         <div className="space-y-6 text-center">
           <div className="space-y-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Sign in
+              Welcome back
             </h1>
+            <p className="text-sm text-muted-foreground">
+              Sign in with your choosen OIDC provider
+            </p>
           </div>
           <a
             className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
             href="/api/oidc/login"
           >
-            Sign in with SSO
+            Sign in
           </a>
         </div>
       </AuthShell>
@@ -40,20 +43,7 @@ export default async function LoginPage() {
   return (
     <AuthShell>
       <div className="space-y-6">
-        {ssoEnabled && (
-          <div className="space-y-3">
-            <a
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
-              href="/api/oidc/login"
-            >
-              Sign in with SSO
-            </a>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
-              <span>or continue with local account</span>
-            </div>
-          </div>
-        )}
-        <LoginForm />
+        <LoginForm ssoEnabled={ssoEnabled} />
       </div>
     </AuthShell>
   );

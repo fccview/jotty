@@ -128,8 +128,8 @@
         --card-foreground: 255 255 255;
         --popover: 10 10 10;
         --popover-foreground: 255 255 255;
-        --primary: 90 90 90; /* Medium-dark gray for buttons/accents—the middle ground */
-        --primary-foreground: 255 255 255; /* White text for perfect contrast on the dark button */
+        --primary: 90 90 90;
+        --primary-foreground: 255 255 255;
         --secondary: 49 51 57;
         --secondary-foreground: 255 255 255;
         --muted: 49 51 57;
@@ -581,7 +581,6 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     font-style: italic;
 }
 
-/* This is the crucial fix: it styles INLINE code but IGNORES code inside blocks */
 .prose :where(:not(pre)) > code {
     @apply bg-muted px-1 py-0.5 rounded text-sm;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;

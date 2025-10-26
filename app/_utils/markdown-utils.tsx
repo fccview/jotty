@@ -135,7 +135,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
         return (node as HTMLElement).outerHTML;
       },
     });
-  } else if (tableSyntax === "markdown") {
+  } else if (tableSyntax === "markdown" || tableSyntax === undefined) {
     service.addRule("table", {
       filter: "table",
       replacement: function (content, node) {
@@ -226,9 +226,38 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
 
       if (type === "image") {
         return `![${fileName}](${url})`;
+      } else if (type === "video") {
+        return `[🎥 ${fileName}](${url})`;
       } else {
         return `[📎 ${fileName}](${url})`;
       }
+    },
+  });
+
+  service.addRule("image", {
+    filter: (node) => {
+      return node.nodeName === "IMG";
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const src = element.getAttribute("src");
+      const alt = element.getAttribute("alt") || "";
+      const width = element.getAttribute("width");
+      const height = element.getAttribute("height");
+
+      if (!src) return "";
+
+      // Only use HTML if dimensions are actually specified and not empty
+      if ((width && width !== "0" && width.trim() !== "") || (height && height !== "0" && height.trim() !== "")) {
+        const style = [];
+        if (width && width !== "0" && width.trim() !== "") style.push(`width: ${width}px`);
+        if (height && height !== "0" && height.trim() !== "") style.push(`height: ${height}px`);
+
+        return `\n<img src="${src}" alt="${alt}" style="${style.join('; ')}" />\n`;
+      }
+
+      // Default markdown for images without custom sizing
+      return `![${alt}](${src})`;
     },
   });
 
@@ -254,6 +283,19 @@ const markdownProcessor = unified()
   .use(() => {
     return (tree) => {
       visit(tree, "element", (node: Element) => {
+        if (node.tagName === "img" && node.properties?.style) {
+          const style = node.properties.style as string;
+          const widthMatch = style.match(/width:\s*(\d+)px/);
+          const heightMatch = style.match(/height:\s*(\d+)px/);
+
+          if (widthMatch) {
+            node.properties.width = widthMatch[1];
+          }
+          if (heightMatch) {
+            node.properties.height = heightMatch[1];
+          }
+        }
+
         if (node.tagName === "ul" && hasClass(node, "contains-task-list")) {
           node.properties = node.properties || {};
           node.properties["data-type"] = "taskList";
@@ -357,12 +399,13 @@ export const convertHtmlToMarkdownUnified = (
 
 export const getMarkdownPreviewContent = (
   content: string,
-  isMarkdownMode: boolean
+  isMarkdownMode: boolean,
+  tableSyntax?: TableSyntax
 ): string => {
   if (isMarkdownMode) {
     return processMarkdownContent(content);
   } else {
-    return convertHtmlToMarkdownUnified(content);
+    return convertHtmlToMarkdownUnified(content, tableSyntax);
   }
 };
 

@@ -12,6 +12,15 @@ export const ALLOWED_IMAGE_TYPES = [
   "image/svg+xml",
 ];
 
+export const ALLOWED_VIDEO_TYPES = [
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/avi",
+  "video/mov",
+  "video/quicktime",
+];
+
 export const SHARING_DIR = path.join("data", "sharing");
 export const USERS_DIR = path.join("data", "users");
 export const DATA_DIR = path.join("data");

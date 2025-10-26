@@ -12,6 +12,7 @@ import { Metadata } from "next";
 import { Modes } from "@/app/_types/enums";
 import { getNoteById } from "../note";
 import { AppSettings } from "@/app/_types";
+import { MAX_FILE_SIZE } from "@/app/_consts/files";
 
 const DATA_SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
 const CONFIG_SETTINGS_PATH = path.join(
@@ -174,6 +175,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
           "32x32Icon": "",
           "180x180Icon": "",
           notifyNewUpdates: "yes",
+          maximumFileSize: MAX_FILE_SIZE,
         };
       }
     }
@@ -201,6 +203,7 @@ export const updateAppSettings = async (
     const icon180x180 = (formData.get("180x180Icon") as string) || "";
     const notifyNewUpdates =
       (formData.get("notifyNewUpdates") as "yes" | "no") || "yes";
+    const maximumFileSize = Number(formData.get("maximumFileSize")) || MAX_FILE_SIZE;
 
     const settings: AppSettings = {
       appName,
@@ -209,6 +212,7 @@ export const updateAppSettings = async (
       "32x32Icon": icon32x32,
       "180x180Icon": icon180x180,
       notifyNewUpdates: notifyNewUpdates,
+      maximumFileSize: maximumFileSize,
     };
 
     const dataDir = path.dirname(DATA_SETTINGS_PATH);

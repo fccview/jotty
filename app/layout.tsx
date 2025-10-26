@@ -113,6 +113,7 @@ export default async function RootLayout({
           user={user}
           appVersion={appVersion.data || ""}
           pathname={pathname || ""}
+          initialSettings={settings}
         >
           <ThemeProvider user={user || {}}>
             <ChecklistProvider>

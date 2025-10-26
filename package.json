@@ -23,6 +23,7 @@
         "@tiptap/extension-table-row": "^3.4.4",
         "@tiptap/extension-task-item": "^3.7.0",
         "@tiptap/extension-task-list": "^3.7.0",
+        "@tiptap/extension-text-align": "^3.8.0",
         "@tiptap/pm": "^3.0.9",
         "@tiptap/react": "^3.0.9",
         "@tiptap/starter-kit": "^3.0.9",

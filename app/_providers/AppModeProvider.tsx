@@ -7,7 +7,7 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { AppMode, User } from "@/app/_types";
+import { AppMode, AppSettings, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 
 interface AppModeContextType {
@@ -21,6 +21,7 @@ interface AppModeContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   appVersion: string;
+  appSettings: AppSettings | null;
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
@@ -32,6 +33,7 @@ export const AppModeProvider = ({
   user: initialUser,
   pathname,
   appVersion,
+  initialSettings,
 }: {
   children: ReactNode;
   isDemoMode?: boolean;
@@ -39,7 +41,9 @@ export const AppModeProvider = ({
   user?: User | null;
   pathname?: string;
   appVersion?: string;
+  initialSettings?: AppSettings;
 }) => {
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(initialSettings || null);
   const isNoteOrChecklistPage = pathname?.includes("/checklist") || pathname?.includes("/note");
   let modeToSet: AppMode = Modes.CHECKLISTS;
   if (isNoteOrChecklistPage) {
@@ -75,6 +79,7 @@ export const AppModeProvider = ({
         isRwMarkable,
         user,
         setUser,
+        appSettings,
         appVersion: appVersion || "",
       }}
     >

@@ -36,6 +36,50 @@ export const KeyboardShortcuts = Extension.create({
       "Mod-Shift-b": () => this.editor.chain().focus().toggleBlockquote().run(),
 
       "Mod-Alt-c": () => this.editor.chain().focus().toggleCodeBlock().run(),
+
+
+      "Tab": () => {
+        if (this.editor.isActive("table")) {
+          return this.editor.chain().focus().goToNextCell().run();
+        }
+        return false;
+      },
+      "Shift-Tab": () => {
+        if (this.editor.isActive("table")) {
+          return this.editor.chain().focus().goToPreviousCell().run();
+        }
+        return false;
+      },
+      "Mod-r": () => {
+        if (this.editor.isActive("table")) {
+          return this.editor.chain().focus().addRowAfter().run();
+        }
+        return false;
+      },
+      "Shift-Mod-r": () => {
+        if (this.editor.isActive("table")) {
+          return this.editor.chain().focus().addRowBefore().run();
+        }
+        return false;
+      },
+      "Shift-Mod-C": () => {
+        if (this.editor.isActive("table")) {
+          return this.editor.chain().focus().addColumnAfter().run();
+        }
+        return false;
+      },
+      "Mod-Backspace": () => {
+        if (this.editor.isActive("table")) {
+          return this.editor.chain().focus().deleteRow().run();
+        }
+        return false;
+      },
+      "Shift-Mod-Backspace": () => {
+        if (this.editor.isActive("table")) {
+          return this.editor.chain().focus().deleteColumn().run();
+        }
+        return false;
+      },
     };
   },
 });

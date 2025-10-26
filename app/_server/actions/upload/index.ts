@@ -5,20 +5,23 @@ import fs from "fs/promises";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
 import { getUserModeDir } from "../file";
-import { MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES } from "@/app/_consts/files";
+import { MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES } from "@/app/_consts/files";
+import { getSettings } from "../config";
 
 export interface FileItem {
   fileName: string;
   name: string;
   url: string;
-  type: "image" | "file";
+  type: "image" | "video" | "file";
   mimeType: string;
   size: number;
   uploadedAt: string;
 }
 
-function _getFileType(mimeType: string): "image" | "file" {
-  return ALLOWED_IMAGE_TYPES.includes(mimeType) ? "image" : "file";
+function _getFileType(mimeType: string): "image" | "video" | "file" {
+  if (ALLOWED_IMAGE_TYPES.includes(mimeType)) return "image";
+  if (ALLOWED_VIDEO_TYPES.includes(mimeType)) return "video";
+  return "file";
 }
 
 function _sanitizeBaseName(name: string): string {
@@ -57,6 +60,8 @@ function _getMimeType(fileName: string): string {
 }
 
 export const uploadUserAvatar = async (formData: FormData) => {
+  const settings = await getSettings();
+
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -68,10 +73,10 @@ export const uploadUserAvatar = async (formData: FormData) => {
       return { success: false, error: "No file provided" };
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > (settings?.maximumFileSize || MAX_FILE_SIZE)) {
       return {
         success: false,
-        error: "File is too large. Maximum size is 10MB.",
+        error: `File is too large. Maximum size is ${((settings?.maximumFileSize || MAX_FILE_SIZE) / (1024 * 1024)).toFixed(0)}MB. Your file is ${((file.size / (1024 * 1024)).toFixed(1))}MB.`,
       };
     }
 
@@ -130,6 +135,7 @@ export const uploadUserAvatar = async (formData: FormData) => {
 
 export const uploadFile = async (formData: FormData) => {
   try {
+    const settings = await getSettings();
     const user = await getCurrentUser();
     if (!user) {
       return { success: false, error: "Not authenticated" };
@@ -140,10 +146,10 @@ export const uploadFile = async (formData: FormData) => {
       return { success: false, error: "No file provided" };
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > (settings?.maximumFileSize || MAX_FILE_SIZE)) {
       return {
         success: false,
-        error: "File is too large. Maximum size is 10MB.",
+        error: `File is too large. Maximum size is ${((settings?.maximumFileSize || MAX_FILE_SIZE) / (1024 * 1024)).toFixed(0)}MB. Your file is ${((file.size / (1024 * 1024)).toFixed(1))}MB.`,
       };
     }
 
@@ -151,7 +157,7 @@ export const uploadFile = async (formData: FormData) => {
     const userDir = await getUserModeDir(Modes.NOTES);
     const targetDir = path.join(
       userDir,
-      fileType === "image" ? "images" : "files"
+      fileType === "image" ? "images" : fileType === "video" ? "videos" : "files"
     );
     await fs.mkdir(targetDir, { recursive: true });
 
@@ -175,9 +181,8 @@ export const uploadFile = async (formData: FormData) => {
     const buffer = Buffer.from(await file.arrayBuffer());
     await fs.writeFile(filePath, buffer);
 
-    const fileUrl = `/${fileType === "image" ? "api/image" : "api/file"}/${
-      user.username
-    }/${encodeURIComponent(fileName)}`;
+    const fileUrl = `/${fileType === "image" ? "api/image" : fileType === "video" ? "api/video" : "api/file"}/${user.username
+      }/${encodeURIComponent(fileName)}`;
 
     return {
       success: true,
@@ -210,6 +215,11 @@ export const getFiles = async () => {
         type: "image" as const,
         path: path.join(userDir, "images"),
         api: "api/image",
+      },
+      {
+        type: "video" as const,
+        path: path.join(userDir, "videos"),
+        api: "api/video",
       },
       {
         type: "file" as const,
@@ -262,7 +272,7 @@ export const deleteFile = async (formData: FormData) => {
     }
 
     const fileName = formData.get("fileName") as string;
-    const fileType = formData.get("fileType") as "image" | "file";
+    const fileType = formData.get("fileType") as "image" | "video" | "file";
 
     if (!fileName || !fileType) {
       return { success: false, error: "File name and type are required" };
@@ -271,7 +281,7 @@ export const deleteFile = async (formData: FormData) => {
     const userDir = await getUserModeDir(Modes.NOTES);
     const targetDir = path.join(
       userDir,
-      fileType === "image" ? "images" : "files"
+      fileType === "image" ? "images" : fileType === "video" ? "videos" : "files"
     );
     const filePath = path.join(targetDir, fileName);
 

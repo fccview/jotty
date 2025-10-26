@@ -165,7 +165,7 @@ export const Sidebar = (props: SidebarProps) => {
             >
               <UserAvatar
                 username={user?.username || ""}
-                avatarUrl={user?.avatarUrl}
+                avatarUrl={user?.avatarUrl || undefined}
                 size="sm"
                 className="mr-1"
               />

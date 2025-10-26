@@ -1,6 +1,7 @@
 import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { FileAttachmentNode } from "./FileAttachmentNode";
+import { InputRule } from "@tiptap/core";
 
 export interface FileAttachmentOptions {
   HTMLAttributes: Record<string, any>;
@@ -13,7 +14,7 @@ declare module "@tiptap/core" {
         url: string;
         fileName: string;
         mimeType: string;
-        type: "image" | "file";
+        type: "image" | "video" | "file";
       }) => ReturnType;
     };
   }
@@ -124,12 +125,51 @@ export const FileAttachmentExtension = Node.create<FileAttachmentOptions>({
     return {
       setFileAttachment:
         (options) =>
-        ({ commands }) => {
-          return commands.insertContent({
+          ({ commands }) => {
+            return commands.insertContent({
+              type: this.name,
+              attrs: options,
+            });
+          },
+    };
+  },
+
+  addInputRules() {
+    return [
+      new InputRule({
+        find: /\[📎\s+([^\]]+)\]\(([^)]+)\)/g,
+        handler: ({ match, commands }) => {
+          const [, fileName, url] = match;
+          const isImage = url.includes("/api/image/");
+          const isVideo = url.includes("/api/video/");
+
+          commands.insertContent({
             type: this.name,
-            attrs: options,
+            attrs: {
+              url,
+              fileName,
+              mimeType: isImage ? "image/jpeg" : isVideo ? "video/mp4" : "application/octet-stream",
+              type: isImage ? "image" : isVideo ? "video" : "file",
+            },
           });
         },
-    };
+      }),
+      new InputRule({
+        find: /\[🎥\s+([^\]]+)\]\(([^)]+)\)/g,
+        handler: ({ match, commands }) => {
+          const [, fileName, url] = match;
+
+          commands.insertContent({
+            type: this.name,
+            attrs: {
+              url,
+              fileName,
+              mimeType: "video/mp4",
+              type: "video",
+            },
+          });
+        },
+      }),
+    ];
   },
 });
