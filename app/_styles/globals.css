@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 @import 'highlight.js/styles/github-dark-dimmed.css';
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 @layer base {
@@ -533,6 +534,18 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     transform: rotate(45deg);
   }
 
+
+mark {
+    background-color: #fef08a;
+    color: inherit;
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  mark[style*="background-color"] {
+    background-color: inherit !important;
+  }
+
 .prose {
     @apply text-foreground;
     line-height: 1.7;
@@ -574,7 +587,7 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
 }
 
 .prose strong {
-    @apply font-semibold text-foreground;
+    @apply font-semibold;
 }
 
 .prose em {

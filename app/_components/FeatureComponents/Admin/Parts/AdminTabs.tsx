@@ -1,10 +1,10 @@
 "use client";
 
-import { Users, FileText, Activity, Shield, Settings } from "lucide-react";
+import { Users, FileText, Activity, Shield, Settings, Edit3 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 
-type AdminTab = "overview" | "users" | "content" | "sharing" | "settings";
+type AdminTab = "overview" | "users" | "content" | "sharing" | "settings" | "editor";
 
 interface AdminTabsProps {
   activeTab: AdminTab;
@@ -34,10 +34,15 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
       icon: Shield,
     },
     {
+      id: "editor" as AdminTab,
+      label: "Editor",
+      icon: Edit3,
+    },
+    {
       id: "settings" as AdminTab,
       label: "Settings",
       icon: Settings,
-    },
+    }
   ];
 
   return (

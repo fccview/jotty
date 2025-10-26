@@ -177,6 +177,11 @@ export interface AppSettings {
   "180x180Icon": string;
   notifyNewUpdates: "yes" | "no";
   maximumFileSize: number;
+  editor: {
+    enableSlashCommands: boolean;
+    enableBubbleMenu: boolean;
+    enableTableToolbar: boolean;
+  };
 }
 
 export interface Session {

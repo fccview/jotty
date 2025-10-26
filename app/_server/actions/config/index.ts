@@ -176,8 +176,21 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
           "180x180Icon": "",
           notifyNewUpdates: "yes",
           maximumFileSize: MAX_FILE_SIZE,
+          editor: {
+            enableSlashCommands: true,
+            enableBubbleMenu: true,
+            enableTableToolbar: true,
+          },
         };
       }
+    }
+
+    if (!settings.editor) {
+      settings.editor = {
+        enableSlashCommands: true,
+        enableBubbleMenu: true,
+        enableTableToolbar: true,
+      };
     }
 
     return { success: true, data: settings };
@@ -205,6 +218,21 @@ export const updateAppSettings = async (
       (formData.get("notifyNewUpdates") as "yes" | "no") || "yes";
     const maximumFileSize = Number(formData.get("maximumFileSize")) || MAX_FILE_SIZE;
 
+    let editorSettings = {
+      enableSlashCommands: true,
+      enableBubbleMenu: true,
+      enableTableToolbar: true,
+    };
+
+    const editorData = formData.get("editor") as string;
+    if (editorData) {
+      try {
+        editorSettings = JSON.parse(editorData);
+      } catch (error) {
+        console.warn("Failed to parse editor settings, using defaults");
+      }
+    }
+
     const settings: AppSettings = {
       appName,
       appDescription,
@@ -213,6 +241,7 @@ export const updateAppSettings = async (
       "180x180Icon": icon180x180,
       notifyNewUpdates: notifyNewUpdates,
       maximumFileSize: maximumFileSize,
+      editor: editorSettings,
     };
 
     const dataDir = path.dirname(DATA_SETTINGS_PATH);

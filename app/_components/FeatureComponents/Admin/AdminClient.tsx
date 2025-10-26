@@ -15,6 +15,7 @@ import { AdminUsers } from "./Parts/AdminUsers";
 import { AdminContent } from "./Parts/AdminContent";
 import { AdminSharing } from "./Parts/AdminSharing";
 import { AppSettingsTab } from "./Parts/AppSettingsTab";
+import { EditorSettingsTab } from "./Parts/EditorSettingsTab";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
 
@@ -23,14 +24,13 @@ interface AdminClientProps {
 }
 
 export const AdminClient = ({ username }: AdminClientProps) => {
-  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [allLists, setAllLists] = useState<Checklist[]>([]);
   const [allDocs, setAllDocs] = useState<Note[]>([]);
   const [globalSharing, setGlobalSharing] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "content" | "sharing" | "settings"
+    "overview" | "users" | "content" | "sharing" | "settings" | "editor"
   >("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
@@ -164,6 +164,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
           <AdminSharing globalSharing={globalSharing} />
         )}
         {activeTab === "settings" && <AppSettingsTab />}
+        {activeTab === "editor" && <EditorSettingsTab />}
       </div>
 
       <UserManagementModal

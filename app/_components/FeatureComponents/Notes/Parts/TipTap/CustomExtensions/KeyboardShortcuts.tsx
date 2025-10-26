@@ -37,7 +37,6 @@ export const KeyboardShortcuts = Extension.create({
 
       "Mod-Alt-c": () => this.editor.chain().focus().toggleCodeBlock().run(),
 
-
       "Tab": () => {
         if (this.editor.isActive("table")) {
           return this.editor.chain().focus().goToNextCell().run();

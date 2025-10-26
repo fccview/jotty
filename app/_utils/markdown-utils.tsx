@@ -267,6 +267,43 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     },
   });
 
+  service.addRule("textColor", {
+    filter: (node) => {
+      return node.nodeName === "SPAN" && (node.getAttribute("style")?.includes("color:") ?? false);
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const style = element.getAttribute("style") || "";
+      const colorMatch = style.match(/color:\s*([^;]+)/);
+
+      if (colorMatch) {
+        const color = colorMatch[1].trim();
+        return `<span style="color: ${color}">${content}</span>`;
+      }
+
+      return content;
+    },
+  });
+
+  service.addRule("highlight", {
+    filter: (node) => {
+      return node.nodeName === "MARK" ||
+        (node.nodeName === "SPAN" && (node.getAttribute("style")?.includes("background-color:") ?? false));
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const style = element.getAttribute("style") || "";
+      const bgColorMatch = style.match(/background-color:\s*([^;]+)/);
+
+      if (bgColorMatch) {
+        const color = bgColorMatch[1].trim();
+        return `<mark style="background-color: ${color}">${content}</mark>`;
+      }
+
+      return `<mark>${content}</mark>`;
+    },
+  });
+
   return service;
 };
 
@@ -341,7 +378,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-                checkbox.properties.checked !== false
+              checkbox.properties.checked !== false
             );
 
             if (isInsideP) {
@@ -375,6 +412,29 @@ const markdownProcessor = unified()
                 },
               ];
             }
+          }
+        }
+
+        if (node.tagName === "span" && node.properties?.style) {
+          const style = node.properties.style as string;
+          const colorMatch = style.match(/color:\s*([^;]+)/);
+          const bgColorMatch = style.match(/background-color:\s*([^;]+)/);
+
+          if (colorMatch) {
+            node.properties["data-color"] = colorMatch[1].trim();
+          }
+
+          if (bgColorMatch) {
+            node.properties["data-highlight"] = bgColorMatch[1].trim();
+          }
+        }
+
+        if (node.tagName === "mark" && node.properties?.style) {
+          const style = node.properties.style as string;
+          const bgColorMatch = style.match(/background-color:\s*([^;]+)/);
+
+          if (bgColorMatch) {
+            node.properties["data-highlight"] = bgColorMatch[1].trim();
           }
         }
       });

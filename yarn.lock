@@ -1105,6 +1105,11 @@
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
+"@popperjs/core@^2.9.0":
+  version "2.11.8"
+  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
+  integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
+
 "@remirror/core-constants@3.0.0":
   version "3.0.0"
   resolved "https://registry.npmjs.org/@remirror/core-constants/-/core-constants-3.0.0.tgz"
@@ -1196,6 +1201,13 @@
   dependencies:
     "@floating-ui/dom" "^1.0.0"
 
+"@tiptap/extension-bubble-menu@^3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-bubble-menu/-/extension-bubble-menu-3.8.0.tgz#42e4f282494c5839cfe9e0a0e1ff58fa99f8e039"
+  integrity sha512-PmZZSAlR9o1zFwz2s/eF9DDI5iS1xsR3S4A47shExQmpF/+T8mTmK/ybnfyVL+Hkf9XxIuQ2Cga6VBhJ0mUc9g==
+  dependencies:
+    "@floating-ui/dom" "^1.0.0"
+
 "@tiptap/extension-bullet-list@^3.1.0":
   version "3.1.0"
   resolved "https://registry.npmjs.org/@tiptap/extension-bullet-list/-/extension-bullet-list-3.1.0.tgz"
@@ -1215,6 +1227,11 @@
   version "3.1.0"
   resolved "https://registry.npmjs.org/@tiptap/extension-code/-/extension-code-3.1.0.tgz"
   integrity sha512-GESYNG11tOm41DH3zhPuWaQU2slK37aC28erkZ1DvUNKlKMhJd+DzbFVNyWqBB2IyeHpgl0eLqZAYB4QApKO1A==
+
+"@tiptap/extension-color@^3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-color/-/extension-color-3.8.0.tgz#6968e386d1708ca611a216262e271bd8894cc6e7"
+  integrity sha512-r9HoY4WUlcnyIeyiGg/mJbitZ8N9v4Pz6jQJDHgLiJ1g33Fc7L7pfNIyri3+QP6axN2LD9CXZYEmyAcLK32Khw==
 
 "@tiptap/extension-document@^3.1.0":
   version "3.1.0"
@@ -1245,6 +1262,11 @@
   version "3.1.0"
   resolved "https://registry.npmjs.org/@tiptap/extension-heading/-/extension-heading-3.1.0.tgz"
   integrity sha512-GQjuwGeb5PIbAEJ4ZdTly9B2emdrkLiVVXZDWjsWX2PXGL/k+ZK8rP+/+NNYI3fLw0+DAZENu2pNh7F9NaiWlg==
+
+"@tiptap/extension-highlight@^3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-highlight/-/extension-highlight-3.8.0.tgz#7755502c5e4e4032cfcbb602da7c0cd9bf034cc7"
+  integrity sha512-qyoZU4pHO+36EnzaQFyGHP17DAt0aiVdTDe88H/Pod1NtMMatfHU04qCeLknyzKM4h0aUGgUVwxqoa6wJriTBA==
 
 "@tiptap/extension-horizontal-rule@^3.1.0":
   version "3.1.0"
@@ -1333,6 +1355,11 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-text-align/-/extension-text-align-3.8.0.tgz#71d8cf6d6c795ce7a97865556fb5636eed511e36"
   integrity sha512-Qw0RsPDfv1kI2La7CIYO4M2LLY8BqJvSuGKo+x1Zi4X2SC2ezbempr7HOu1jmVy0De8Udyym1ji9SlsG84MFmw==
 
+"@tiptap/extension-text-style@^3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-text-style/-/extension-text-style-3.8.0.tgz#8ade75ea1bcb0f6d46b831e9d9e3edea88bec20a"
+  integrity sha512-P0eCsmisyL/1X/IqyEhpUatsT4VLL64XpNOjTGzmCML9olQX3+Wa8OPjbvv/bQrRLBC8BZzz/CsTlcFEjg3Wdw==
+
 "@tiptap/extension-text@^3.1.0":
   version "3.1.0"
   resolved "https://registry.npmjs.org/@tiptap/extension-text/-/extension-text-3.1.0.tgz"
@@ -1413,6 +1440,11 @@
     "@tiptap/extension-underline" "^3.1.0"
     "@tiptap/extensions" "^3.1.0"
     "@tiptap/pm" "^3.1.0"
+
+"@tiptap/suggestion@^3.8.0":
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/suggestion/-/suggestion-3.8.0.tgz#552ece6261c44ad7a6ea0018e6f1b9767ded00be"
+  integrity sha512-vCrwBOD1LRu2XBWHJi4PWNFDx3yi7JLL7ZnxjIG0BZL3u4UPttUpNV5XyIiEuqwpEnC6uWpfJ+zwG6pZOa29Og==
 
 "@tybys/wasm-util@^0.10.0":
   version "0.10.1"
@@ -6609,6 +6641,13 @@ tinyglobby@^0.2.13:
   dependencies:
     fdir "^6.4.4"
     picomatch "^4.0.2"
+
+tippy.js@^6.3.7:
+  version "6.3.7"
+  resolved "https://registry.yarnpkg.com/tippy.js/-/tippy.js-6.3.7.tgz#8ccfb651d642010ed9a32ff29b0e9e19c5b8c61c"
+  integrity sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==
+  dependencies:
+    "@popperjs/core" "^2.9.0"
 
 to-regex-range@^5.0.1:
   version "5.0.1"

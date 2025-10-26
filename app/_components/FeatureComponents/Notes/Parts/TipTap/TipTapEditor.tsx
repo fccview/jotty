@@ -23,6 +23,7 @@ import {
 } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorUtils/editorHandlers";
 import { MarkdownEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MarkdownEditor";
 import { VisualEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/VisualEditor";
+import { BubbleMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/FloatingMenu/BubbleMenu";
 
 type TiptapEditorProps = {
   content: string;
@@ -38,6 +39,12 @@ export const TiptapEditor = ({
   const { user, appSettings } = useAppMode();
   const { compactMode } = useSettings();
 
+  const editorSettings = appSettings?.editor || {
+    enableSlashCommands: true,
+    enableBubbleMenu: true,
+    enableTableToolbar: true,
+  };
+
   const initialOutput =
     user?.notesDefaultEditor === "markdown"
       ? convertHtmlToMarkdownUnified(content, tableSyntax)
@@ -47,6 +54,7 @@ export const TiptapEditor = ({
     user?.notesDefaultEditor === "markdown"
   );
   const [markdownContent, setMarkdownContent] = useState(initialOutput);
+  const [showBubbleMenu, setShowBubbleMenu] = useState(false);
   const isInitialized = useRef(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -71,7 +79,7 @@ export const TiptapEditor = ({
     extensions: createEditorExtensions({
       onImageClick: imageResize.handleImageClick,
       onTableSelect: tableToolbar.handleTableSelect,
-    }),
+    }, editorSettings),
     content: "",
     onUpdate: ({ editor }) => {
       if (!isMarkdownMode) {
@@ -80,9 +88,8 @@ export const TiptapEditor = ({
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${
-          compactMode ? "!max-w-[900px] mx-auto" : ""
-        }`,
+        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
+          }`,
       },
       handleKeyDown: (view, event) => {
         return createKeyDownHandler(editor)(view, event);
@@ -137,10 +144,11 @@ export const TiptapEditor = ({
   }, [editor, imageResize]);
 
   useOverlayClickOutside({
-    isActive: imageResize.showOverlay || tableToolbar.showToolbar,
+    isActive: imageResize.showOverlay || tableToolbar.showToolbar || showBubbleMenu,
     onClose: () => {
       imageResize.closeOverlay();
       tableToolbar.closeToolbar();
+      setShowBubbleMenu(false);
     },
   });
 
@@ -254,7 +262,20 @@ export const TiptapEditor = ({
           onFileDrop={handleMarkdownFileDrop}
         />
       ) : (
-        <VisualEditor editor={editor} onFileDrop={handleVisualFileDrop} />
+        <>
+          <VisualEditor
+            editor={editor}
+            onFileDrop={handleVisualFileDrop}
+            onTextSelection={setShowBubbleMenu}
+          />
+          {editor && editorSettings.enableBubbleMenu && (
+            <BubbleMenu
+              editor={editor}
+              isVisible={showBubbleMenu}
+              onClose={() => setShowBubbleMenu(false)}
+            />
+          )}
+        </>
       )}
 
       <CompactImageResizeOverlay
@@ -268,7 +289,7 @@ export const TiptapEditor = ({
         targetElement={imageResize.targetElement || undefined}
       />
 
-      {editor && (
+      {editor && editorSettings.enableTableToolbar && (
         <CompactTableToolbar
           editor={editor}
           isVisible={tableToolbar.showToolbar}
