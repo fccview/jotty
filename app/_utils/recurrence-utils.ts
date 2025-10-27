@@ -2,6 +2,41 @@ import { RRule, Frequency } from "rrule";
 import { RecurrenceRule, Item } from "@/app/_types";
 
 /**
+ * Convert ISO 8601 date string to RFC 5545 compact format
+ * @param isoDate - ISO date string (e.g., "2025-01-27T19:42:04.991Z")
+ * @returns RFC 5545 format (e.g., "20250127T194204Z")
+ */
+export const isoToRFC5545 = (isoDate: string): string => {
+  const date = new Date(isoDate);
+
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+
+  return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+};
+
+/**
+ * Convert RFC 5545 compact format to ISO 8601 date string
+ * @param rfc5545Date - RFC 5545 format (e.g., "20250127T194204Z")
+ * @returns ISO date string (e.g., "2025-01-27T19:42:04.000Z")
+ */
+export const rfc5545ToISO = (rfc5545Date: string): string => {
+  // Parse YYYYMMDDTHHMMSSZ format
+  const year = rfc5545Date.substring(0, 4);
+  const month = rfc5545Date.substring(4, 6);
+  const day = rfc5545Date.substring(6, 8);
+  const hours = rfc5545Date.substring(9, 11);
+  const minutes = rfc5545Date.substring(11, 13);
+  const seconds = rfc5545Date.substring(13, 15);
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.000Z`;
+};
+
+/**
  * Predefined recurrence patterns for common intervals
  */
 export const RECURRENCE_PRESETS = {
@@ -82,11 +117,11 @@ export const calculateNextOccurrence = (
   after?: Date
 ): string | undefined => {
   try {
-    // Parse the dtstart date
-    const startDate = new Date(dtstart);
+    // Convert ISO dtstart to RFC 5545 format for RRule library
+    const rfc5545Dtstart = isoToRFC5545(dtstart);
 
-    // Create RRule instance
-    const rule = RRule.fromString(`DTSTART:${dtstart}\nRRULE:${rruleString}`);
+    // Create RRule instance with properly formatted DTSTART
+    const rule = RRule.fromString(`DTSTART:${rfc5545Dtstart}\nRRULE:${rruleString}`);
 
     // Get next occurrence after the specified date (or now)
     const afterDate = after || new Date();
@@ -155,7 +190,9 @@ export const refreshRecurringItem = (item: Item): Item => {
  */
 export const getRecurrenceDescription = (recurrence: RecurrenceRule): string => {
   try {
-    const rule = RRule.fromString(`DTSTART:${recurrence.dtstart}\nRRULE:${recurrence.rrule}`);
+    // Convert ISO dtstart to RFC 5545 format
+    const rfc5545Dtstart = isoToRFC5545(recurrence.dtstart);
+    const rule = RRule.fromString(`DTSTART:${rfc5545Dtstart}\nRRULE:${recurrence.rrule}`);
     return rule.toText();
   } catch (error) {
     // Fallback to basic parsing
