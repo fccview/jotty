@@ -38,7 +38,10 @@ interface EditorSettings {
   enableTableToolbar: boolean;
 }
 
-export const createEditorExtensions = (callbacks: OverlayCallbacks, editorSettings?: EditorSettings) => {
+export const createEditorExtensions = (
+  callbacks: OverlayCallbacks,
+  editorSettings?: EditorSettings
+) => {
   const settings = editorSettings || {
     enableSlashCommands: true,
     enableBubbleMenu: true,
@@ -100,7 +103,25 @@ export const createEditorExtensions = (callbacks: OverlayCallbacks, editorSettin
         ];
       },
     }),
-    Image.configure({
+    Image.extend({
+      addAttributes() {
+        return {
+          ...this.parent?.(),
+          style: {
+            default: null,
+            parseHTML: (element) => element.getAttribute("style"),
+            renderHTML: (attributes) => {
+              if (!attributes.style) {
+                return {};
+              }
+              return {
+                style: attributes.style,
+              };
+            },
+          },
+        };
+      },
+    }).configure({
       HTMLAttributes: {},
     }),
     FileAttachmentExtension.configure({

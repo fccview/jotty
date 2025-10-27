@@ -551,6 +551,12 @@ mark {
     line-height: 1.7;
 }
 
+.prose img, 
+.ProseMirror img {
+    max-width: 100%;
+    height: none;
+}
+
 .prose p {
     padding-bottom: 1rem;
 }

@@ -269,7 +269,10 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
 
   service.addRule("textColor", {
     filter: (node) => {
-      return node.nodeName === "SPAN" && (node.getAttribute("style")?.includes("color:") ?? false);
+      return (
+        node.nodeName === "SPAN" &&
+        (node.getAttribute("style")?.includes("color:") ?? false)
+      );
     },
     replacement: function (content, node) {
       const element = node as HTMLElement;
@@ -287,8 +290,11 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
 
   service.addRule("highlight", {
     filter: (node) => {
-      return node.nodeName === "MARK" ||
-        (node.nodeName === "SPAN" && (node.getAttribute("style")?.includes("background-color:") ?? false));
+      return (
+        node.nodeName === "MARK" ||
+        (node.nodeName === "SPAN" &&
+          (node.getAttribute("style")?.includes("background-color:") ?? false))
+      );
     },
     replacement: function (content, node) {
       const element = node as HTMLElement;
@@ -337,6 +343,8 @@ const markdownProcessor = unified()
           if (heightMatch) {
             node.properties.height = heightMatch[1];
           }
+
+          node.properties.style = style;
         }
 
         if (node.tagName === "ul" && hasClass(node, "contains-task-list")) {
@@ -378,7 +386,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-              checkbox.properties.checked !== false
+                checkbox.properties.checked !== false
             );
 
             if (isInsideP) {
@@ -487,6 +495,17 @@ export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
   const sanitizedHtml = convertMarkdownToHtml(markdown);
+  let result = convertHtmlToMarkdown(sanitizedHtml);
 
-  return convertHtmlToMarkdown(sanitizedHtml);
+  result = result.replace(
+    /\\+\[(📎|🎥)\s+([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g,
+    "[$1 $2]($3)"
+  );
+  result = result.replace(
+    /\\+!\\\[([^\]]*?)\\+\]\\+\(([^)]+?)\\+\)/g,
+    "![$1]($2)"
+  );
+  result = result.replace(/\\+\[([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g, "[$1]($2)");
+
+  return result;
 };
