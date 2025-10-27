@@ -11,6 +11,12 @@ export interface TimeEntry {
 
 export type ItemType = "checklist" | "note";
 
+export interface StatusChange {
+  status: TaskStatus;
+  timestamp: string;
+  user: string;
+}
+
 export interface Item {
   id: string;
   category?: string;
@@ -22,6 +28,16 @@ export interface Item {
   estimatedTime?: number;
   targetDate?: string;
   children?: Item[];
+
+  // New optional fields for all items
+  createdBy?: string;
+  createdAt?: string;
+  lastModifiedBy?: string;
+  lastModifiedAt?: string;
+  history?: StatusChange[];
+
+  // Optional description field (supports metadata comments)
+  description?: string;
 }
 
 export interface List {
@@ -41,6 +57,7 @@ export interface Checklist {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  isDeleted?: boolean;
 }
 
 export interface Note {

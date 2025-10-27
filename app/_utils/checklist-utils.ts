@@ -56,8 +56,9 @@ export const parseMarkdown = (
     .slice(1)
     .filter((line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line));
 
-  const generateItemId = (index: number, level: number): string => {
-    return `${id}-${level}-${index}`;
+  let globalItemCounter = 0;
+  const generateItemId = (level: number): string => {
+    return `${id}-${level}-${globalItemCounter++}`;
   };
 
   const buildNestedItems = (
@@ -72,27 +73,48 @@ export const parseMarkdown = (
 
     while (currentIndex < lines.length) {
       const line = lines[currentIndex];
-      if (!line.trim().startsWith("- [") && !/^\s*- \[/.test(line)) {
+
+      if (!line.trim()) {
+        currentIndex++;
+        continue;
+      }
+
+      let metadata: Record<string, any> = {};
+      if (line.trim().startsWith("<!--")) {
+        try {
+          const metadataMatch = line.match(/<!--\s*(.*?)\s*-->/);
+          if (metadataMatch) {
+            metadata = JSON.parse(metadataMatch[1]);
+            currentIndex++;
+            if (currentIndex >= lines.length) break;
+          }
+        } catch (e) {
+          console.warn("Failed to parse metadata comment:", e);
+        }
+      }
+
+      const itemLine = lines[currentIndex];
+      if (!itemLine.trim().startsWith("- [") && !/^\s*- \[/.test(itemLine)) {
         break;
       }
 
-      const indentMatch = line.match(/^(\s*)- \[/);
+      const indentMatch = itemLine.match(/^(\s*)- \[/);
       const indentLevel = indentMatch
         ? Math.floor(indentMatch[1].length / 2)
         : 0;
 
       if (indentLevel === parentLevel) {
-        let cleanLine = line;
+        let cleanLine = itemLine;
         let completed = false;
 
-        const firstCheckboxMatch = line.match(/-\s*\[([x ])\]/);
+        const firstCheckboxMatch = itemLine.match(/-\s*\[([x ])\]/);
         if (firstCheckboxMatch) {
           completed = firstCheckboxMatch[1] === "x";
-          cleanLine = line.replace(/-\s*\[[x ]\]/g, "").trim();
+          cleanLine = itemLine.replace(/-\s*\[[x ]\]/g, "").trim();
           cleanLine = cleanLine.replace(/\s*-\s*\[[x ]\]/g, "").trim();
         }
 
-        const text = cleanLine;
+        let text = cleanLine;
 
         let item: Item;
         if (type === "task" && text.includes(" | ")) {
@@ -104,6 +126,8 @@ export const parseMarkdown = (
           let timeEntries: any[] = [];
           let estimatedTime: number | undefined;
           let targetDate: string | undefined;
+          let description: string | undefined;
+          let itemMetadata: Record<string, any> = {};
 
           metadata.forEach((meta) => {
             if (meta.startsWith("status:")) {
@@ -131,11 +155,19 @@ export const parseMarkdown = (
               estimatedTime = parseInt(meta.substring(10));
             } else if (meta.startsWith("target:")) {
               targetDate = meta.substring(7);
+            } else if (meta.startsWith("description:")) {
+              description = meta.substring(12).replace(/∣/g, "|");
+            } else if (meta.startsWith("metadata:")) {
+              try {
+                itemMetadata = JSON.parse(meta.substring(9));
+              } catch (e) {
+                console.warn("Failed to parse item metadata:", e);
+              }
             }
           });
 
           item = {
-            id: generateItemId(currentItemIndex, parentLevel),
+            id: generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -143,13 +175,40 @@ export const parseMarkdown = (
             timeEntries,
             estimatedTime,
             targetDate,
+            description,
+            ...itemMetadata,
           };
         } else {
+          let itemText = text.replace(/∣/g, "|");
+          let itemMetadata: Record<string, any> = {};
+          let description: string | undefined;
+
+          if (itemText.includes(" | ")) {
+            const parts = itemText.split(" | ");
+            itemText = parts[0];
+
+            parts.slice(1).forEach((part) => {
+              if (part.startsWith("description:")) {
+                description = part.substring(12).replace(/∣/g, "|");
+              } else if (part.startsWith("metadata:")) {
+                try {
+                  const parsedMetadata = JSON.parse(part.substring(9));
+                  Object.assign(itemMetadata, parsedMetadata);
+                } catch (e) {
+                  console.warn("Failed to parse simple item metadata:", e);
+                }
+              }
+            });
+          }
+
           item = {
-            id: generateItemId(currentItemIndex, parentLevel),
-            text: text.replace(/∣/g, "|"),
+            id: generateItemId(parentLevel),
+            text: itemText,
             completed,
             order: currentItemIndex,
+            description,
+            ...metadata,
+            ...itemMetadata,
           };
         }
 
@@ -215,8 +274,23 @@ const generateItemMarkdown = (
       metadata.push(`status:${item.status}`);
     }
 
-    if (item.timeEntries && item.timeEntries.length > 0) {
-      metadata.push(`time:${JSON.stringify(item.timeEntries)}`);
+    const itemMetadata: Record<string, any> = {};
+    if (item.createdBy) {
+      itemMetadata.createdBy = item.createdBy;
+      itemMetadata.createdAt = item.createdAt;
+    }
+    if (item.lastModifiedBy) {
+      itemMetadata.lastModifiedBy = item.lastModifiedBy;
+      itemMetadata.lastModifiedAt = item.lastModifiedAt;
+    }
+    if (item.history?.length) {
+      itemMetadata.history = item.history;
+    }
+
+    const timeEntries = item.timeEntries;
+
+    if (timeEntries && timeEntries.length > 0) {
+      metadata.push(`time:${JSON.stringify(timeEntries)}`);
     } else {
       metadata.push("time:0");
     }
@@ -229,11 +303,44 @@ const generateItemMarkdown = (
       metadata.push(`target:${item.targetDate}`);
     }
 
+    if (item.description) {
+      metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
+    }
+
+    if (Object.keys(itemMetadata).length > 0) {
+      metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
+    }
+
     itemLine = `${indent}- [${
       item.completed ? "x" : " "
     }] ${escapedText} | ${metadata.join(" | ")}`;
   } else {
-    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}`;
+    const itemMetadata: Record<string, any> = {};
+    if (item.createdBy) {
+      itemMetadata.createdBy = item.createdBy;
+      itemMetadata.createdAt = item.createdAt;
+    }
+    if (item.lastModifiedBy) {
+      itemMetadata.lastModifiedBy = item.lastModifiedBy;
+      itemMetadata.lastModifiedAt = item.lastModifiedAt;
+    }
+    if (item.history?.length) {
+      itemMetadata.history = item.history;
+    }
+
+    const metadata: string[] = [];
+
+    if (item.description) {
+      metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
+    }
+
+    if (Object.keys(itemMetadata).length > 0) {
+      metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
+    }
+
+    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${
+      metadata.length ? ` | ${metadata.join(" | ")}` : ""
+    }`;
   }
 
   if (item.children && item.children.length > 0) {

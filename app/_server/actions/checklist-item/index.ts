@@ -9,7 +9,11 @@ import {
 } from "@/app/_server/actions/file";
 import { getLists, getAllLists } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { isAdmin, canUserEditItem } from "@/app/_server/actions/users";
+import {
+  isAdmin,
+  canUserEditItem,
+  getUsername,
+} from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { Checklist } from "@/app/_types";
 import { Modes, TaskStatus } from "@/app/_types/enums";
@@ -24,6 +28,7 @@ export const updateItem = async (
     const itemId = formData.get("itemId") as string;
     const completed = formData.get("completed") === "true";
     const text = formData.get("text") as string;
+    const description = formData.get("description") as string;
     const category = formData.get("category") as string;
 
     const isAdminUser = await isAdmin();
@@ -127,13 +132,20 @@ export const updateItem = async (
       });
     };
 
+    const now = new Date().toISOString();
+    const currentUser = username || (await getUsername());
+
     const updatedList = {
       ...list,
       items: findAndUpdateItem(list.items, itemId, {
         completed,
         ...(text && { text }),
+        ...(description !== null &&
+          description !== undefined && { description }),
+        lastModifiedBy: currentUser,
+        lastModifiedAt: now,
       }),
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
     };
 
     const ownerDir = path.join(
@@ -186,6 +198,8 @@ export const createItem = async (
     const status = formData.get("status") as string;
     const timeStr = formData.get("time") as string;
     const category = formData.get("category") as string;
+    const description = formData.get("description") as string;
+    const currentUser = username || (await getUsername());
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getLists(username));
@@ -220,14 +234,27 @@ export const createItem = async (
       }
     }
 
+    const now = new Date().toISOString();
     const newItem = {
       id: `${listId}-${Date.now()}`,
       text,
       completed: false,
       order: list.items.length,
+      description: description || undefined,
+      createdBy: currentUser,
+      createdAt: now,
+      lastModifiedBy: currentUser,
+      lastModifiedAt: now,
       ...(list.type === "task" && {
         status: (status as TaskStatus) || TaskStatus.TODO,
         timeEntries,
+        history: [
+          {
+            status: (status as TaskStatus) || TaskStatus.TODO,
+            timestamp: now,
+            user: currentUser,
+          },
+        ],
       }),
     };
 
@@ -361,7 +388,7 @@ export const deleteItem = async (formData: FormData) => {
       );
     }
 
-    return { success: true };
+    return { success: true, data: updatedList };
   } catch (error) {
     return { error: "Failed to delete item" };
   }
@@ -443,6 +470,7 @@ export const updateItemStatus = async (formData: FormData) => {
     const status = formData.get("status") as TaskStatus;
     const timeEntriesStr = formData.get("timeEntries") as string;
     const category = formData.get("category") as string;
+    const username = await getUsername();
 
     if (!listId || !itemId) {
       return { error: "List ID and item ID are required" };
@@ -465,15 +493,34 @@ export const updateItemStatus = async (formData: FormData) => {
       throw new Error("List not found");
     }
 
+    const now = new Date().toISOString();
     const updatedList = {
       ...list,
       items: list.items.map((item) => {
         if (item.id === itemId) {
           const updates: any = {};
-          if (status) updates.status = status;
+          if (status) {
+            updates.status = status;
+            updates.lastModifiedBy = username;
+            updates.lastModifiedAt = now;
+
+            if (status !== item.status) {
+              const history = item.history || [];
+              history.push({
+                status,
+                timestamp: now,
+                user: username,
+              });
+              updates.history = history;
+            }
+          }
           if (timeEntriesStr) {
             try {
-              updates.timeEntries = JSON.parse(timeEntriesStr);
+              const timeEntries = JSON.parse(timeEntriesStr);
+              updates.timeEntries = timeEntries.map((entry: any) => ({
+                ...entry,
+                user: entry.user || username,
+              }));
             } catch (e) {
               console.error("Failed to parse timeEntries:", e);
             }
@@ -482,7 +529,7 @@ export const updateItemStatus = async (formData: FormData) => {
         }
         return item;
       }),
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
     };
 
     const ownerDir = path.join(
@@ -532,15 +579,29 @@ export const createBulkItems = async (formData: FormData) => {
       throw new Error("List not found");
     }
 
+    const currentUser = await getUsername();
+    const now = new Date().toISOString();
+
     const lines = itemsText.split("\n").filter((line) => line.trim());
     const newItems = lines.map((text, index) => ({
       id: `${listId}-${Date.now()}-${index}`,
       text: text.trim(),
       completed: false,
       order: list.items.length + index,
+      createdBy: currentUser,
+      createdAt: now,
+      lastModifiedBy: currentUser,
+      lastModifiedAt: now,
       ...(list.type === "task" && {
         status: TaskStatus.TODO,
         timeEntries: [],
+        history: [
+          {
+            status: TaskStatus.TODO,
+            timestamp: now,
+            user: currentUser,
+          },
+        ],
       }),
     }));
 
@@ -615,6 +676,9 @@ export const bulkToggleItems = async (formData: FormData) => {
       throw new Error("List not found");
     }
 
+    const currentUser = await getUsername();
+    const now = new Date().toISOString();
+
     const areAllItemsCompleted = (items: any[]): boolean => {
       if (items.length === 0) return true;
       return items.every((item) => {
@@ -634,12 +698,19 @@ export const bulkToggleItems = async (formData: FormData) => {
       });
     };
 
-    const updateAllChildren = (items: any[], completed: boolean): any[] => {
+    const updateAllChildren = (
+      items: any[],
+      completed: boolean,
+      currentUser: string,
+      now: string
+    ): any[] => {
       return items.map((item) => ({
         ...item,
         completed,
+        lastModifiedBy: currentUser,
+        lastModifiedAt: now,
         children: item.children
-          ? updateAllChildren(item.children, completed)
+          ? updateAllChildren(item.children, completed, currentUser, now)
           : undefined,
       }));
     };
@@ -666,18 +737,32 @@ export const bulkToggleItems = async (formData: FormData) => {
     const bulkUpdateItems = (
       items: any[],
       itemIds: string[],
-      completed: boolean
+      completed: boolean,
+      currentUser: string,
+      now: string
     ): any[] => {
       return items.map((item) => {
         let updatedItem = { ...item };
 
         if (itemIds.includes(item.id)) {
           updatedItem.completed = completed;
+          updatedItem.lastModifiedBy = currentUser;
+          updatedItem.lastModifiedAt = now;
 
           if (completed && item.children && item.children.length > 0) {
-            updatedItem.children = updateAllChildren(item.children, true);
+            updatedItem.children = updateAllChildren(
+              item.children,
+              true,
+              currentUser,
+              now
+            );
           } else if (!completed && item.children && item.children.length > 0) {
-            updatedItem.children = updateAllChildren(item.children, false);
+            updatedItem.children = updateAllChildren(
+              item.children,
+              false,
+              currentUser,
+              now
+            );
           }
         }
 
@@ -685,7 +770,9 @@ export const bulkToggleItems = async (formData: FormData) => {
           updatedItem.children = bulkUpdateItems(
             item.children,
             itemIds,
-            completed
+            completed,
+            currentUser,
+            now
           );
           updatedItem = updateParentBasedOnChildren(updatedItem);
         }
@@ -696,7 +783,7 @@ export const bulkToggleItems = async (formData: FormData) => {
 
     const updatedList = {
       ...list,
-      items: bulkUpdateItems(list.items, itemIds, completed),
+      items: bulkUpdateItems(list.items, itemIds, completed, currentUser, now),
       updatedAt: new Date().toISOString(),
     };
 
@@ -868,12 +955,31 @@ export const createSubItem = async (formData: FormData) => {
       return false;
     };
 
-    const newSubItem = {
+    const currentUser = await getUsername();
+    const now = new Date().toISOString();
+
+    const newSubItem: any = {
       id: `${listId}-sub-${Date.now()}`,
       text,
       completed: false,
       order: 0,
+      createdBy: currentUser,
+      createdAt: now,
+      lastModifiedBy: currentUser,
+      lastModifiedAt: now,
     };
+
+    if (list.type === "task") {
+      newSubItem.status = TaskStatus.TODO;
+      newSubItem.timeEntries = [];
+      newSubItem.history = [
+        {
+          status: TaskStatus.TODO,
+          timestamp: now,
+          user: currentUser,
+        },
+      ];
+    }
 
     if (!addSubItemToParent(list.items, parentId, newSubItem)) {
       throw new Error("Parent item not found");

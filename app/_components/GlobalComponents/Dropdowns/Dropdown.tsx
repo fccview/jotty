@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { cn } from "@/app/_utils/global-utils";
 
 interface DropdownOption {
@@ -17,6 +17,7 @@ interface DropdownProps {
   className?: string;
   disabled?: boolean;
   placeholder?: string;
+  iconDropdown?: boolean;
 }
 
 export const Dropdown = ({
@@ -26,6 +27,7 @@ export const Dropdown = ({
   className = "",
   disabled = false,
   placeholder = "",
+  iconDropdown = false,
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,37 +57,54 @@ export const Dropdown = ({
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          if (!disabled) {
-            setIsOpen(!isOpen);
-          }
-        }}
-        className={cn(
-          "w-full flex items-center justify-between p-3 rounded-lg border border-border transition-colors",
-          disabled
-            ? "bg-muted text-muted-foreground cursor-not-allowed"
-            : "hover:bg-muted/50",
-          isOpen && "bg-muted/50"
-        )}
-        disabled={disabled}
-      >
-        <div className="flex items-center gap-2">
-          {selectedOption?.icon && <selectedOption.icon className="h-4 w-4" />}
-          <span className="text-sm font-medium">
-            {selectedOption?.name || placeholder}
-          </span>
+      {iconDropdown ? (
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <MoreHorizontal
+            className={cn(
+              `h-4 w-4 transition-transform text-muted-foreground`,
+              isOpen ? "rotate-180" : "",
+              disabled && "opacity-50 text-muted-foreground"
+            )}
+          />
         </div>
-        <ChevronDown
+      ) : (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            if (!disabled) {
+              setIsOpen(!isOpen);
+            }
+          }}
           className={cn(
-            `h-4 w-4 transition-transform`,
-            isOpen ? "rotate-180" : "",
-            disabled && "opacity-50"
+            "w-full flex items-center justify-between p-3 rounded-lg border border-border transition-colors",
+            disabled
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "hover:bg-muted/50",
+            isOpen && "bg-muted/50"
           )}
-        />
-      </button>
+          disabled={disabled}
+        >
+          <div className="flex items-center gap-2">
+            {selectedOption?.icon && (
+              <selectedOption.icon className="h-4 w-4" />
+            )}
+            <span className="text-sm font-medium">
+              {selectedOption?.name || placeholder}
+            </span>
+          </div>
+          <ChevronDown
+            className={cn(
+              `h-4 w-4 transition-transform`,
+              isOpen ? "rotate-180" : "",
+              disabled && "opacity-50"
+            )}
+          />
+        </button>
+      )}
 
       {isOpen && !disabled && (
         <div className="absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">

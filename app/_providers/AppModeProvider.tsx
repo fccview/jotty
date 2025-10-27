@@ -22,6 +22,7 @@ interface AppModeContextType {
   setUser: (user: User | null) => void;
   appVersion: string;
   appSettings: AppSettings | null;
+  usersPublicData: Partial<User>[];
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
@@ -30,6 +31,7 @@ export const AppModeProvider = ({
   children,
   isDemoMode = false,
   isRwMarkable = false,
+  usersPublicData = [],
   user: initialUser,
   pathname,
   appVersion,
@@ -38,19 +40,28 @@ export const AppModeProvider = ({
   children: ReactNode;
   isDemoMode?: boolean;
   isRwMarkable?: boolean;
+  usersPublicData?: Partial<User>[];
   user?: User | null;
   pathname?: string;
   appVersion?: string;
   initialSettings?: AppSettings;
 }) => {
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(initialSettings || null);
-  const isNoteOrChecklistPage = pathname?.includes("/checklist") || pathname?.includes("/note");
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(
+    initialSettings || null
+  );
+  const isNoteOrChecklistPage =
+    pathname?.includes("/checklist") || pathname?.includes("/note");
   let modeToSet: AppMode = Modes.CHECKLISTS;
   if (isNoteOrChecklistPage) {
-    modeToSet = pathname?.includes("/checklist") ? Modes.CHECKLISTS : Modes.NOTES;
+    modeToSet = pathname?.includes("/checklist")
+      ? Modes.CHECKLISTS
+      : Modes.NOTES;
   }
   if (!isNoteOrChecklistPage) {
-    modeToSet = initialUser?.landingPage === Modes.CHECKLISTS ? Modes.CHECKLISTS : Modes.NOTES || Modes.CHECKLISTS;
+    modeToSet =
+      initialUser?.landingPage === Modes.CHECKLISTS
+        ? Modes.CHECKLISTS
+        : Modes.NOTES || Modes.CHECKLISTS;
   }
 
   const [mode, setMode] = useState<AppMode>(modeToSet);
@@ -81,6 +92,7 @@ export const AppModeProvider = ({
         setUser,
         appSettings,
         appVersion: appVersion || "",
+        usersPublicData,
       }}
     >
       {children}

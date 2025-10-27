@@ -492,7 +492,7 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
 }
 
 
-.checklist-item input {
+.checklist-item input[type="checkbox"] {
     padding: 0;
     height: initial;
     width: initial;

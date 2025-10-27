@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
-import { Checklist } from "@/app/_types";
+import { Checklist, User } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanItem } from "./KanbanItem";
 import { ChecklistHeading } from "../Common/ChecklistHeading";
@@ -90,6 +90,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                     checklistId={localChecklist.id}
                     category={localChecklist.category || "Uncategorized"}
                     onUpdate={refreshChecklist}
+                    isShared={localChecklist.isShared || false}
                   />
                 );
               })}
@@ -103,6 +104,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   checklistId={localChecklist.id}
                   category={localChecklist.category || "Uncategorized"}
                   onUpdate={refreshChecklist}
+                  isShared={localChecklist.isShared || false}
                 />
               ) : null}
             </DragOverlay>
@@ -121,6 +123,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   checklistId={localChecklist.id}
                   category={localChecklist.category || "Uncategorized"}
                   onUpdate={refreshChecklist}
+                  isShared={localChecklist.isShared || false}
                 />
               );
             })}

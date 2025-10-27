@@ -2,7 +2,14 @@
 
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import { ImageSyntax, LandingPage, NotesDefaultEditor, NotesDefaultMode, Result, TableSyntax } from "@/app/_types";
+import {
+  ImageSyntax,
+  LandingPage,
+  NotesDefaultEditor,
+  NotesDefaultMode,
+  Result,
+  TableSyntax,
+} from "@/app/_types";
 import { User } from "@/app/_types";
 import {
   getSessionId,
@@ -417,16 +424,13 @@ export const getUsername = async (): Promise<string> => {
 };
 
 export const getUsers = async () => {
-  const adminCheck = await isAdmin();
-  if (!adminCheck) {
-    return { error: "Unauthorized" };
-  }
-
   const users = await readJsonFile(USERS_FILE);
-  return users.map(({ username, isAdmin, isSuperAdmin }: User) => ({
+
+  return users.map(({ username, isAdmin, isSuperAdmin, avatarUrl }: User) => ({
     username,
     isAdmin,
     isSuperAdmin,
+    avatarUrl,
   }));
 };
 
@@ -490,8 +494,10 @@ export const updateUserSettings = async ({
     if (imageSyntax !== undefined) updates.imageSyntax = imageSyntax;
     if (tableSyntax !== undefined) updates.tableSyntax = tableSyntax;
     if (landingPage !== undefined) updates.landingPage = landingPage;
-    if (notesDefaultEditor !== undefined) updates.notesDefaultEditor = notesDefaultEditor;
-    if (notesDefaultMode !== undefined) updates.notesDefaultMode = notesDefaultMode;
+    if (notesDefaultEditor !== undefined)
+      updates.notesDefaultEditor = notesDefaultEditor;
+    if (notesDefaultMode !== undefined)
+      updates.notesDefaultMode = notesDefaultMode;
 
     const updatedUser: User = {
       ...allUsers[userIndex],
@@ -624,7 +630,9 @@ export const togglePin = async (
       const isPinned = pinnedLists.includes(itemPath);
 
       if (isPinned) {
-        user.pinnedLists = pinnedLists.filter((path: string) => path !== itemPath);
+        user.pinnedLists = pinnedLists.filter(
+          (path: string) => path !== itemPath
+        );
       } else {
         user.pinnedLists = [...pinnedLists, itemPath];
       }
@@ -633,7 +641,9 @@ export const togglePin = async (
       const isPinned = pinnedNotes.includes(itemPath);
 
       if (isPinned) {
-        user.pinnedNotes = pinnedNotes.filter((path: string) => path !== itemPath);
+        user.pinnedNotes = pinnedNotes.filter(
+          (path: string) => path !== itemPath
+        );
       } else {
         user.pinnedNotes = [...pinnedNotes, itemPath];
       }

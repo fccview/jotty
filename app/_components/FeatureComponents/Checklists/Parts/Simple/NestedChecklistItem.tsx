@@ -11,19 +11,23 @@ import {
   ChevronDown,
   ChevronRight,
   MoreHorizontal,
+  PencilIcon,
+  PlusIcon,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { cn } from "@/app/_utils/global-utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
 import { Item } from "@/app/_types";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface NestedChecklistItemProps {
   item: Item;
-  index: number;
+  index: string | number;
   level: number;
   onToggle: (id: string, completed: boolean) => void;
   onDelete: (id: string) => void;
@@ -33,6 +37,7 @@ interface NestedChecklistItemProps {
   isPublicView?: boolean;
   isDeletingItem: boolean;
   isDragDisabled?: boolean;
+  isShared?: boolean;
 }
 
 export const NestedChecklistItem = ({
@@ -47,7 +52,20 @@ export const NestedChecklistItem = ({
   isPublicView = false,
   isDeletingItem,
   isDragDisabled = false,
+  isShared = false,
 }: NestedChecklistItemProps) => {
+  const { usersPublicData } = useAppMode();
+
+  const getUserAvatarUrl = (username: string) => {
+    if (!usersPublicData) return "";
+
+    return (
+      usersPublicData?.find(
+        (user) => user.username?.toLowerCase() === username?.toLowerCase()
+      )?.avatarUrl || ""
+    );
+  };
+
   const sortableProps = useSortable({ id: item.id });
   const {
     attributes,
@@ -57,7 +75,7 @@ export const NestedChecklistItem = ({
     transition,
     isDragging,
   } = isDragDisabled
-      ? {
+    ? {
         attributes: {},
         listeners: {},
         setNodeRef: null,
@@ -65,8 +83,7 @@ export const NestedChecklistItem = ({
         transition: null,
         isDragging: false,
       }
-      : sortableProps;
-
+    : sortableProps;
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -105,7 +122,7 @@ export const NestedChecklistItem = ({
 
   const handleEdit = () => {
     setIsEditing(true);
-    setEditText(item.text);
+    setEditText(item.text.split(" | metadata:")[0].trim());
   };
 
   const handleSave = () => {
@@ -122,8 +139,10 @@ export const NestedChecklistItem = ({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       handleSave();
     } else if (e.key === "Escape") {
+      e.preventDefault();
       handleCancel();
     }
   };
@@ -158,7 +177,8 @@ export const NestedChecklistItem = ({
     transition,
   };
 
-  const displayText = showEmojis ? `${emoji}  ${item.text}` : item.text;
+  const cleanText = item.text.split(" | metadata:")[0].trim();
+  const displayText = showEmojis ? `${emoji}  ${cleanText}` : cleanText;
   const hasChildren = item.children && item.children.length > 0;
   const isChild = level > 0;
 
@@ -177,13 +197,13 @@ export const NestedChecklistItem = ({
       className={cn(
         "group/item relative my-1",
         hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         !hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         isChild &&
-        "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
+          "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
         "first:mt-0",
         isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50"
       )}
@@ -238,13 +258,13 @@ export const NestedChecklistItem = ({
 
         {isEditing ? (
           <div className="flex-1 flex items-center gap-2">
-            <input
+            <Input
+              id={item.id}
               ref={inputRef}
               type="text"
-              value={editText}
+              defaultValue={editText}
               onChange={(e) => setEditText(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 px-2 py-1 text-sm border border-input rounded focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <Button
               variant="ghost"
@@ -266,89 +286,137 @@ export const NestedChecklistItem = ({
             )}
           </div>
         ) : (
-          <label
-            htmlFor={item.id}
-            className={cn(
-              "flex-1 text-sm transition-all duration-200 cursor-pointer",
-              (item.completed || completed)
-                ? "line-through text-muted-foreground checked"
-                : "text-foreground"
-            )}
-          >
-            {displayText}
-          </label>
-        )}
+          <div className="flex-1 flex items-center justify-between gap-2">
+            <label
+              htmlFor={item.id}
+              className={cn(
+                "text-sm transition-all duration-200 cursor-pointer",
+                item.completed || completed
+                  ? "line-through text-muted-foreground checked"
+                  : "text-foreground"
+              )}
+            >
+              {displayText}
+            </label>
 
-        <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
-          <span className="text-xs text-muted-foreground mr-1">#{index}</span>
-
-          <div className="hidden lg:flex items-center gap-1">
-            {!isEditing && !isPublicView && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAddSubItem(!showAddSubItem)}
-                className="h-8 w-8 p-0"
-                title="Add sub-item"
+            {(item.createdBy || item.lastModifiedBy) && isShared && (
+              <span
+                className={`items-center gap-1.5 group-hover/item:hidden hidden lg:flex text-xs text-muted-foreground absolute right-10 top-[27px] -translate-y-1/2`}
               >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
+                {item.createdBy && (
+                  <span
+                    className="flex items-center gap-1 border border-muted-foreground/50 bg-muted rounded-md p-1"
+                    title={`Created by ${item.createdBy}${
+                      item.createdAt
+                        ? ` on ${new Date(item.createdAt).toLocaleString()}`
+                        : ""
+                    }`}
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                    <UserAvatar
+                      username={item.createdBy}
+                      size="xs"
+                      avatarUrl={getUserAvatarUrl(item.createdBy) || ""}
+                    />
+                  </span>
+                )}
 
-            {!isEditing && onEdit && !isPublicView && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleEdit}
-                className="h-8 w-8 p-0"
-              >
-                <Edit2 className="h-4 w-4" />
-              </Button>
-            )}
-
-            {!isPublicView && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDelete(item.id)}
-                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+                {item.lastModifiedBy && (
+                  <span
+                    className="flex items-center gap-1 border border-muted-foreground/50 bg-muted rounded-md p-1"
+                    title={`Last modified by ${item.lastModifiedBy}${
+                      item.lastModifiedAt
+                        ? ` on ${new Date(
+                            item.lastModifiedAt
+                          ).toLocaleString()}`
+                        : ""
+                    }`}
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                    <UserAvatar
+                      username={item.lastModifiedBy}
+                      size="xs"
+                      avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
+                    />
+                  </span>
+                )}
+              </span>
             )}
           </div>
+        )}
 
-          {!isEditing && !isPublicView && (
-            <div className="lg:hidden relative" ref={dropdownRef}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="h-8 w-8 p-0"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+        {!isEditing && (
+          <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
+            <span className="text-xs text-muted-foreground mr-1">#{index}</span>
 
-              {isDropdownOpen && (
-                <div className="absolute right-0 z-50 w-48 mt-1 bg-card border border-border rounded-lg shadow-lg">
-                  <div className="py-1">
-                    {dropdownOptions.map((option) => (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => handleDropdownAction(option.id)}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
-                      >
-                        {option.icon && <option.icon className="h-4 w-4" />}
-                        <span>{option.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            <div className="hidden lg:flex items-center gap-1">
+              {!isPublicView && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAddSubItem(!showAddSubItem)}
+                  className="h-8 w-8 p-0"
+                  title="Add sub-item"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+
+              {onEdit && !isPublicView && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEdit}
+                  className="h-8 w-8 p-0"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              )}
+
+              {!isPublicView && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(item.id)}
+                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               )}
             </div>
-          )}
-        </div>
+
+            {!isPublicView && (
+              <div className="lg:hidden relative" ref={dropdownRef}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="h-8 w-8 p-0"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 z-50 w-48 mt-1 bg-card border border-border rounded-lg shadow-lg">
+                    <div className="py-1">
+                      {dropdownOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => handleDropdownAction(option.id)}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                        >
+                          {option.icon && <option.icon className="h-4 w-4" />}
+                          <span>{option.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {showAddSubItem && !isPublicView && (
@@ -394,7 +462,7 @@ export const NestedChecklistItem = ({
             <NestedChecklistItem
               key={child.id}
               item={child}
-              index={childIndex}
+              index={`${index}.${childIndex}`}
               level={level + 1}
               onToggle={onToggle}
               onDelete={onDelete}
@@ -402,6 +470,8 @@ export const NestedChecklistItem = ({
               onAddSubItem={onAddSubItem}
               isDeletingItem={isDeletingItem}
               isDragDisabled={isDragDisabled}
+              isPublicView={isPublicView}
+              isShared={isShared}
             />
           ))}
         </div>

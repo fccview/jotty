@@ -2,30 +2,26 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Item } from "@/app/_types";
+import { Item, Checklist } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import {
   Clock,
-  Target,
-  Play,
   Timer,
   Pause,
-  Square,
-  RotateCcw,
-  Circle,
-  CheckCircle2,
-  PauseCircle,
-  Edit2,
-  Trash2,
+  Plus,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
+import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { useState, useEffect, useRef } from "react";
 import { updateItemStatus } from "@/app/_server/actions/checklist-item";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { updateItem, deleteItem } from "@/app/_server/actions/checklist-item";
+import { SubtaskModal } from "./SubtaskModal";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface TimeEntriesAccordionProps {
   timeEntries: any[];
@@ -38,6 +34,18 @@ function TimeEntriesAccordion({
   totalTime,
   formatTimerTime,
 }: TimeEntriesAccordionProps) {
+  const { usersPublicData } = useAppMode();
+
+  const getUserAvatarUrl = (username: string) => {
+    if (!usersPublicData) return "";
+
+    return (
+      usersPublicData.find(
+        (user) => user.username?.toLowerCase() === username?.toLowerCase()
+      )?.avatarUrl || ""
+    );
+  };
+
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -70,10 +78,19 @@ function TimeEntriesAccordion({
               key={entry.id || index}
               className="bg-background/50 border border-border/50 rounded p-2"
             >
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-semibold text-foreground">
-                  {formatTimerTime(entry.duration || 0)}
-                </span>
+              <div className="flex gap-1.5 items-center">
+                {entry.user && (
+                  <UserAvatar
+                    username={entry.user}
+                    size="xs"
+                    avatarUrl={getUserAvatarUrl(entry.user) || ""}
+                  />
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-foreground">
+                    {formatTimerTime(entry.duration || 0)}
+                  </span>
+                </div>
                 <span className="text-xs text-muted-foreground">
                   {new Date(entry.startTime).toLocaleTimeString()}
                 </span>
@@ -97,7 +114,8 @@ interface KanbanItemProps {
   isDragging?: boolean;
   checklistId: string;
   category: string;
-  onUpdate?: () => void;
+  onUpdate: (updatedChecklist: Checklist) => void;
+  isShared: boolean;
 }
 
 export const KanbanItem = ({
@@ -106,13 +124,27 @@ export const KanbanItem = ({
   checklistId,
   category,
   onUpdate,
+  isShared,
 }: KanbanItemProps) => {
+  const { usersPublicData } = useAppMode();
+
+  const getUserAvatarUrl = (username: string) => {
+    if (!usersPublicData) return "";
+
+    return (
+      usersPublicData.find(
+        (user) => user.username?.toLowerCase() === username?.toLowerCase()
+      )?.avatarUrl || ""
+    );
+  };
+
   const [isRunning, setIsRunning] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [totalTime, setTotalTime] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
+  const [showSubtaskModal, setShowSubtaskModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -219,7 +251,10 @@ export const KanbanItem = ({
           (prev) =>
             prev + Math.floor((endTime.getTime() - startTime.getTime()) / 1000)
         );
-        onUpdate?.();
+        const result = await updateItemStatus(formData);
+        if (result.success && result.data) {
+          onUpdate(result.data);
+        }
       }
       setStartTime(null);
       setCurrentTime(0);
@@ -236,9 +271,11 @@ export const KanbanItem = ({
     formData.append("itemId", item.id);
     formData.append("timeEntries", JSON.stringify([]));
     formData.append("category", category || "Uncategorized");
-    await updateItemStatus(formData);
+    const result = await updateItemStatus(formData);
     setTotalTime(0);
-    onUpdate?.();
+    if (result.success && result.data) {
+      onUpdate(result.data);
+    }
   };
 
   const handleStatusChange = async (newStatus: TaskStatus) => {
@@ -247,8 +284,10 @@ export const KanbanItem = ({
     formData.append("itemId", item.id);
     formData.append("status", newStatus);
     formData.append("category", category || "Uncategorized");
-    await updateItemStatus(formData);
-    onUpdate?.();
+    const result = await updateItemStatus(formData);
+    if (result.success && result.data) {
+      onUpdate(result.data);
+    }
   };
 
   const handleEdit = () => {
@@ -264,8 +303,10 @@ export const KanbanItem = ({
       formData.append("itemId", item.id);
       formData.append("text", editText.trim());
       formData.append("category", category || "Uncategorized");
-      await updateItem(formData);
-      onUpdate?.();
+      const result = await updateItem(formData);
+      if (result.success && result.data) {
+        onUpdate(result.data);
+      }
     }
   };
 
@@ -281,8 +322,19 @@ export const KanbanItem = ({
       formData.append("itemId", item.id);
       formData.append("category", category || "Uncategorized");
 
-      await deleteItem(formData);
-      onUpdate?.();
+      const result = await deleteItem(formData);
+      if (result.success) {
+        onUpdate({
+          id: checklistId,
+          title: "",
+          type: "task",
+          items: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          category,
+          isDeleted: true,
+        });
+      }
     }
   };
 
@@ -299,18 +351,10 @@ export const KanbanItem = ({
   };
 
   const statusOptions = [
-    { id: TaskStatus.TODO, name: TaskStatusLabels.TODO, icon: Circle },
-    {
-      id: TaskStatus.IN_PROGRESS,
-      name: TaskStatusLabels.IN_PROGRESS,
-      icon: Play,
-    },
-    {
-      id: TaskStatus.COMPLETED,
-      name: TaskStatusLabels.COMPLETED,
-      icon: CheckCircle2,
-    },
-    { id: TaskStatus.PAUSED, name: TaskStatusLabels.PAUSED, icon: PauseCircle },
+    { id: TaskStatus.TODO, name: TaskStatusLabels.TODO },
+    { id: TaskStatus.IN_PROGRESS, name: TaskStatusLabels.IN_PROGRESS },
+    { id: TaskStatus.COMPLETED, name: TaskStatusLabels.COMPLETED },
+    { id: TaskStatus.PAUSED, name: TaskStatusLabels.PAUSED },
   ];
 
   const formatTimerTime = (seconds: number) => {
@@ -329,7 +373,7 @@ export const KanbanItem = ({
   const getStatusColor = (status?: string) => {
     switch (status) {
       case TaskStatus.TODO:
-        return "bg-muted/50 border-border";
+        return "bg-background/50 border-border";
       case TaskStatus.IN_PROGRESS:
         return "bg-primary/10 border-primary/30";
       case TaskStatus.COMPLETED:
@@ -344,11 +388,9 @@ export const KanbanItem = ({
   const getStatusIcon = (status?: string) => {
     switch (status) {
       case TaskStatus.IN_PROGRESS:
-        return <Play className="h-3 w-3 text-primary" />;
+        return <Timer className="h-3 w-3 text-primary" />;
       case TaskStatus.COMPLETED:
-        return (
-          <Target className="h-3 w-3 text-green-600 dark:text-green-400" />
-        );
+        return <Clock className="h-3 w-3 text-green-600 dark:text-green-400" />;
       case TaskStatus.PAUSED:
         return (
           <Clock className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
@@ -358,172 +400,260 @@ export const KanbanItem = ({
     }
   };
 
-  const formatTime = (minutes?: number) => {
-    if (!minutes) return null;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours > 0) {
-      return `${hours}h ${mins}m`;
-    }
-    return `${mins}m`;
-  };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={cn(
-        "group relative bg-background border rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
-        getStatusColor(item.status),
-        (isDragging || isSortableDragging) &&
-          "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+    <>
+      {showSubtaskModal && (
+        <SubtaskModal
+          item={item}
+          isShared={isShared}
+          isOpen={showSubtaskModal}
+          onClose={() => setShowSubtaskModal(false)}
+          onUpdate={onUpdate}
+          checklistId={checklistId}
+          category={category}
+        />
       )}
-    >
-      <div className="space-y-2">
-        <div className="flex items-start gap-2">
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              type="text"
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              onBlur={handleSave}
-              onKeyDown={handleKeyDown}
+
+      <div className="relative">
+        <div
+          ref={setNodeRef}
+          style={style}
+          {...attributes}
+          {...listeners}
+          className={cn(
+            "group relative bg-background border rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
+            getStatusColor(item.status),
+            (isDragging || isSortableDragging) &&
+              "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+          )}
+        >
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {item.createdBy && isShared && (
+                  <div
+                    className="flex-shrink-0"
+                    title={`Created by ${item.createdBy}`}
+                  >
+                    <UserAvatar
+                      username={item.createdBy}
+                      size="xs"
+                      avatarUrl={getUserAvatarUrl(item.createdBy) || ""}
+                    />
+                  </div>
+                )}
+                {isEditing ? (
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onBlur={handleSave}
+                    onKeyDown={handleKeyDown}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full text-sm font-medium text-foreground leading-tight bg-transparent border-none outline-none resize-none"
+                  />
+                ) : (
+                  <p
+                    className="text-sm font-medium text-foreground leading-tight truncate cursor-pointer"
+                    title={item.text}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => setShowSubtaskModal(true)}
+                    onClick={(e) => setShowSubtaskModal(true)}
+                  >
+                    {item.text}
+                  </p>
+                )}
+              </div>
+
+              <div
+                className="flex items-center"
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <div className="relative">
+                  <Dropdown
+                    value=""
+                    options={[
+                      { id: "view", name: "View Task" },
+                      { id: "add", name: "Add Subtask" },
+                      { id: "rename", name: "Rename Task" },
+                      { id: "delete", name: "Delete Task" },
+                    ]}
+                    onChange={(action) => {
+                      switch (action) {
+                        case "view":
+                          setShowSubtaskModal(true);
+                          break;
+                        case "add":
+                          setShowSubtaskModal(true);
+                          break;
+                        case "rename":
+                          handleEdit();
+                          break;
+                        case "delete":
+                          handleDelete();
+                          break;
+                      }
+                    }}
+                    iconDropdown
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                {getStatusIcon(item.status)}
+                <span>
+                  {item.status === TaskStatus.TODO && TaskStatusLabels.TODO}
+                  {item.status === TaskStatus.IN_PROGRESS &&
+                    TaskStatusLabels.IN_PROGRESS}
+                  {item.status === TaskStatus.COMPLETED &&
+                    TaskStatusLabels.COMPLETED}
+                  {item.status === TaskStatus.PAUSED && TaskStatusLabels.PAUSED}
+                  {!item.status && TaskStatusLabels.TODO}
+                </span>
+              </div>
+              {item.lastModifiedBy && isShared && (
+                <div
+                  className="flex items-center gap-1"
+                  title={`Last modified by ${item.lastModifiedBy}${
+                    item.lastModifiedAt
+                      ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
+                      : ""
+                  }`}
+                >
+                  <UserAvatar
+                    username={item.lastModifiedBy}
+                    size="xs"
+                    avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
+                  />
+                  <span className="text-[10px] text-muted-foreground">
+                    {item.lastModifiedAt
+                      ? new Date(item.lastModifiedAt).toLocaleDateString()
+                      : ""}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {item.children && item.children.length > 0 && (
+              <>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Subtasks</span>
+                  <span>
+                    {item.children.filter((c) => c.completed).length}/
+                    {item.children.length}
+                  </span>
+                </div>
+                <ProgressBar
+                  progress={Math.round(
+                    (item.children.filter((c) => c.completed).length /
+                      item.children.length) *
+                      100
+                  )}
+                />
+              </>
+            )}
+
+            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{formatTimerTime(totalTime + currentTime)}</span>
+                </div>
+                <div
+                  className="flex"
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTimerToggle();
+                    }}
+                  >
+                    {isRunning ? (
+                      <Pause className="h-3 w-3" />
+                    ) : (
+                      <Timer className="h-3 w-3" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const minutes = prompt("Enter time in minutes:");
+                      if (minutes && !isNaN(Number(minutes))) {
+                        const now = new Date();
+                        const start = new Date(
+                          now.getTime() - Number(minutes) * 60000
+                        );
+                        const newTimeEntry = {
+                          id: Date.now().toString(),
+                          startTime: start.toISOString(),
+                          endTime: now.toISOString(),
+                          duration: Number(minutes) * 60,
+                        };
+                        const formData = new FormData();
+                        formData.append("listId", checklistId);
+                        formData.append("itemId", item.id);
+                        formData.append(
+                          "timeEntries",
+                          JSON.stringify([
+                            ...(item.timeEntries || []),
+                            newTimeEntry,
+                          ])
+                        );
+                        formData.append("category", category);
+                        updateItemStatus(formData).then((result) => {
+                          if (result.success && result.data) {
+                            onUpdate(result.data);
+                          }
+                        });
+                      }
+                    }}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {item.timeEntries && item.timeEntries.length > 0 && (
+              <div onPointerDown={(e) => e.stopPropagation()}>
+                <TimeEntriesAccordion
+                  timeEntries={item.timeEntries}
+                  totalTime={totalTime + currentTime}
+                  formatTimerTime={formatTimerTime}
+                />
+              </div>
+            )}
+
+            <div
+              className="lg:hidden"
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
-              className="text-sm font-medium text-foreground leading-tight flex-1 bg-transparent border-none outline-none resize-none w-[70%]"
-            />
-          ) : (
-            <p
-              className="text-sm font-medium text-foreground leading-tight flex-1 hover:bg-muted/50 rounded px-1 -mx-1 w-[70%] cursor-text"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEdit();
-              }}
-              onPointerDown={(e) => e.stopPropagation()}
             >
-              {item.text}
-            </p>
-          )}
-          <div className="flex-shrink-0 mt-0.5">
-            {getStatusIcon(item.status)}
-          </div>
-        </div>
-
-        {(item.estimatedTime || item.targetDate) && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {item.estimatedTime && (
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {formatTime(item.estimatedTime)}
-              </span>
-            )}
-            {item.targetDate && (
-              <span className="flex items-center gap-1">
-                <Target className="h-3 w-3" />
-                {new Date(item.targetDate).toLocaleDateString()}
-              </span>
-            )}
-          </div>
-        )}
-
-        {item.timeEntries && item.timeEntries.length > 0 && (
-          <div onPointerDown={(e) => e.stopPropagation()}>
-            <TimeEntriesAccordion
-              timeEntries={item.timeEntries}
-              totalTime={totalTime + currentTime}
-              formatTimerTime={formatTimerTime}
-            />
-          </div>
-        )}
-
-        <div className="flex items-center justify-between pt-2 border-t border-border/30">
-          <div className="flex items-center gap-2">
-            <div className="text-xs text-muted-foreground">
-              {formatTimerTime(totalTime + currentTime)}
-            </div>
-            <div
-              className="flex gap-1"
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              <Button
-                variant={isRunning ? "default" : "ghost"}
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleTimerToggle();
-                }}
-              >
-                {isRunning ? (
-                  <Pause className="h-3 w-3" />
-                ) : (
-                  <Timer className="h-3 w-3" />
-                )}
-              </Button>
-              {totalTime > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleResetTimer();
-                  }}
-                >
-                  <RotateCcw className="h-3 w-3" />
-                </Button>
-              )}
+              <Dropdown
+                value={item.status || TaskStatus.TODO}
+                options={statusOptions}
+                onChange={(newStatus) =>
+                  handleStatusChange(newStatus as TaskStatus)
+                }
+                className={`w-full text-sm`}
+              />
             </div>
           </div>
-
-          <div
-            className="flex items-center gap-1"
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            {!isEditing && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEdit();
-                }}
-              >
-                <Edit2 className="h-3 w-3" />
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete();
-              }}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-        <div
-          className="sm:hidden w-full"
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          <Dropdown
-            value={item.status || TaskStatus.TODO}
-            options={statusOptions}
-            onChange={(newStatus) => {
-              handleStatusChange(newStatus as TaskStatus);
-            }}
-            className="text-xs"
-          />
         </div>
       </div>
-    </div>
+    </>
   );
 };

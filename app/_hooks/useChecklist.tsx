@@ -67,9 +67,9 @@ export const useChecklist = ({
       const idsToProcess = [...itemsToDelete];
 
       const formData = new FormData();
-      formData.append("listId", list.id);
+      formData.append("listId", localList.id);
       formData.append("itemIds", JSON.stringify(idsToProcess));
-      formData.append("category", list.category || "Uncategorized");
+      formData.append("category", localList.category || "Uncategorized");
 
       try {
         const result = await bulkDeleteItems(formData);
@@ -85,7 +85,7 @@ export const useChecklist = ({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [itemsToDelete, list.id, router]);
+  }, [itemsToDelete, localList.id, localList.category, router]);
 
   const handleDeleteItem = (itemId: string) => {
     setLocalList((currentList) => {

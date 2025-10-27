@@ -63,7 +63,10 @@ export const ChecklistBody = ({
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={localList.items.flatMap(item => [item.id, ...(item.children?.map(child => child.id) || [])])}
+            items={localList.items.flatMap((item) => [
+              item.id,
+              ...(item.children?.map((child) => child.id) || []),
+            ])}
             strategy={verticalListSortingStrategy}
           >
             <div className="w-full space-y-4">
@@ -78,7 +81,7 @@ export const ChecklistBody = ({
                     <NestedChecklistItem
                       key={item.id}
                       item={item}
-                      index={index}
+                      index={index.toString()}
                       level={0}
                       onToggle={handleToggleItem}
                       onDelete={handleDeleteItem}
@@ -86,6 +89,7 @@ export const ChecklistBody = ({
                       onEdit={handleEditItem}
                       onAddSubItem={handleAddSubItem}
                       isDragDisabled={false}
+                      isShared={localList.isShared || false}
                     />
                   ))}
                 </ChecklistItemsWrapper>
@@ -102,7 +106,7 @@ export const ChecklistBody = ({
                     <NestedChecklistItem
                       key={item.id}
                       item={item}
-                      index={incompleteItems.length + index}
+                      index={(incompleteItems.length + index).toString()}
                       level={0}
                       onToggle={handleToggleItem}
                       onDelete={handleDeleteItem}
@@ -111,6 +115,7 @@ export const ChecklistBody = ({
                       onAddSubItem={handleAddSubItem}
                       completed
                       isDragDisabled={false}
+                      isShared={localList.isShared || false}
                     />
                   ))}
                 </ChecklistItemsWrapper>

@@ -13,9 +13,10 @@ import { DynamicFavicon } from "@/app/_components/GlobalComponents/Layout/Logo/D
 import { ShortcutProvider } from "@/app/_providers/ShortcutsProvider";
 import { getCategories } from "@/app/_server/actions/category";
 import { Modes } from "./_types/enums";
-import { getCurrentUser } from "./_server/actions/users";
+import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { headers } from "next/headers";
+import { User } from "./_types";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -86,12 +87,14 @@ export default async function RootLayout({
   const user = await getCurrentUser();
   const appVersion = await readPackageVersion();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
+  const users = await getUsers();
+
   let serveUpdates = true;
 
   if (
-    stopCheckUpdates &&
-    (stopCheckUpdates.toLowerCase() !== "no" ||
-      stopCheckUpdates.toLowerCase() !== "false") ||
+    (stopCheckUpdates &&
+      (stopCheckUpdates.toLowerCase() !== "no" ||
+        stopCheckUpdates.toLowerCase() !== "false")) ||
     settings?.notifyNewUpdates === "no"
   ) {
     serveUpdates = false;
@@ -114,6 +117,7 @@ export default async function RootLayout({
           appVersion={appVersion.data || ""}
           pathname={pathname || ""}
           initialSettings={settings}
+          usersPublicData={users}
         >
           <ThemeProvider user={user || {}}>
             <ChecklistProvider>
@@ -128,11 +132,9 @@ export default async function RootLayout({
                       <DynamicFavicon />
                       {children}
 
-                      {!pathname?.includes('/public') && (
-                        <InstallPrompt />
-                      )}
+                      {!pathname?.includes("/public") && <InstallPrompt />}
 
-                      {serveUpdates && !pathname?.includes('/public') && (
+                      {serveUpdates && !pathname?.includes("/public") && (
                         <UpdatePrompt />
                       )}
                     </div>
