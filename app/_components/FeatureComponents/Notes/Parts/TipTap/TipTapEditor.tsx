@@ -78,14 +78,17 @@ export const TiptapEditor = ({
 
   const editor: Editor | null = useEditor({
     immediatelyRender: false,
-    extensions: createEditorExtensions({
-      onImageClick: (pos) => {
-        if (imageClickRef.current) {
-          imageClickRef.current(pos);
-        }
+    extensions: createEditorExtensions(
+      {
+        onImageClick: (pos) => {
+          if (imageClickRef.current) {
+            imageClickRef.current(pos);
+          }
+        },
+        onTableSelect: tableToolbar.handleTableSelect,
       },
-      onTableSelect: tableToolbar.handleTableSelect,
-    }, editorSettings),
+      editorSettings
+    ),
     content: "",
     onUpdate: ({ editor }) => {
       if (!isMarkdownMode) {
@@ -94,8 +97,9 @@ export const TiptapEditor = ({
     },
     editorProps: {
       attributes: {
-        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
-          }`,
+        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${
+          compactMode ? "!max-w-[900px] mx-auto" : ""
+        }`,
       },
       handleKeyDown: (view, event) => {
         return createKeyDownHandler(editor)(view, event);
@@ -152,7 +156,8 @@ export const TiptapEditor = ({
   }, [editor, imageResize.handleImageClick]);
 
   useOverlayClickOutside({
-    isActive: imageResize.showOverlay || tableToolbar.showToolbar || showBubbleMenu,
+    isActive:
+      imageResize.showOverlay || tableToolbar.showToolbar || showBubbleMenu,
     onClose: () => {
       imageResize.closeOverlay();
       tableToolbar.closeToolbar();
@@ -291,6 +296,9 @@ export const TiptapEditor = ({
         position={imageResize.position}
         onClose={imageResize.closeOverlay}
         onResize={imageResize.handleResize}
+        onPreviewUpdate={(w, h) =>
+          imageResize.updateImageAttrs(w, h, false, true)
+        }
         currentWidth={imageResize.imageAttrs.width}
         currentHeight={imageResize.imageAttrs.height}
         imageUrl={imageResize.imageAttrs.src}
