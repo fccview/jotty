@@ -4,12 +4,14 @@ import { TaskStatusSection } from "./TaskStatusSection";
 import { useMemo } from "react";
 import { TaskStatus } from "@/app/_types/enums";
 import { NestedChecklistItem } from "../../Checklists/Parts/Simple/NestedChecklistItem";
+import { useTranslations } from "next-intl";
 
 export const PublicChecklistBody = ({
   checklist,
 }: {
   checklist: Checklist;
 }) => {
+  const t = useTranslations();
   const { totalCount } = useMemo(() => {
     const total = checklist.items.length;
     if (total === 0) return { totalCount: 0 };
@@ -38,9 +40,9 @@ export const PublicChecklistBody = ({
       <div className="text-center py-12">
         <CheckSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-medium text-foreground mb-2">
-          No items yet
+          {t("checklists.no_items_yet")}
         </h3>
-        <p className="text-muted-foreground">This checklist is empty.</p>
+        <p className="text-muted-foreground">{t("public.checklist_empty")}</p>
       </div>
     );
   }
@@ -59,8 +61,8 @@ export const PublicChecklistBody = ({
           item={item}
           index={index.toString()}
           level={0}
-          onToggle={() => {}}
-          onDelete={() => {}}
+          onToggle={() => { }}
+          onDelete={() => { }}
           isPublicView={true}
           isDeletingItem={false}
           isDragDisabled={true}

@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Users, User } from "lucide-react";
 import { cn } from "@/app/_utils/global-utils";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { SidebarItem } from "./SidebarItem";
+import { useTranslations } from "next-intl";
 
 interface SharingStatus {
   isShared: boolean;
@@ -35,6 +36,7 @@ export const SharedItemsList = ({
   getSharingStatus,
   user,
 }: SharedItemsListProps) => {
+  const t = useTranslations();
   const [collapsedUsers, setCollapsedUsers] = useState<Set<string>>(new Set());
 
   const sharedItems = items.filter((item) => item.isShared);
@@ -81,7 +83,7 @@ export const SharedItemsList = ({
           )}
           <Users className="h-4 w-4 text-primary" />
           <span className="truncate font-medium text-primary">
-            Shared with you
+            {t("sidebar.shared_with_you")}
           </span>
           <span className="text-xs text-muted-foreground ml-auto">
             {sharedItems.length}

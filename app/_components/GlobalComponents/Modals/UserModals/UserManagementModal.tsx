@@ -15,7 +15,7 @@ import {
 import { useUserManagementModal } from "@/app/_hooks/useUserManagementModal";
 import { User as UserType } from "@/app/_types";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
-
+import { useTranslations } from "next-intl";
 interface UserManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,14 +27,14 @@ interface UserManagementModalProps {
 export const UserManagementModal = (props: UserManagementModalProps) => {
   const { isOpen, onClose, mode, user } = props;
   const { state, setters, handlers } = useUserManagementModal(props);
-
+  const t = useTranslations();
   if (!isOpen) return null;
 
   return (
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={mode === "add" ? "Add New User" : "Edit User"}
+      title={mode === "add" ? t("global.add_new_user") : t("global.edit_user")}
       titleIcon={
         mode === "add" ? (
           <Plus className="h-5 w-5 text-primary" />
@@ -51,13 +51,13 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
           </div>
         )}
         <div>
-          <label className="block text-sm font-medium mb-2">Username</label>
+          <label className="block text-sm font-medium mb-2">{t("global.username")}</label>
           <input
             type="text"
             value={state.username}
             onChange={(e) => setters.setUsername(e.target.value)}
             className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Enter username"
+            placeholder={t("global.enter_username")}
             disabled={state.isLoading}
           />
         </div>
@@ -84,7 +84,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             htmlFor="isAdmin"
             className="flex items-center gap-2 text-sm cursor-pointer"
           >
-            <Shield className="h-4 w-4" /> Admin privileges
+            <Shield className="h-4 w-4" /> {t("global.admin_privileges")}
           </label>
         </div>
         {mode === "edit" && (
@@ -102,7 +102,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
                 htmlFor="changePassword"
                 className="flex items-center gap-2 text-sm cursor-pointer"
               >
-                <Lock className="h-4 w-4" /> Change Password
+                <Lock className="h-4 w-4" /> {t("global.change_password")}
               </label>
             </div>
             {state.changePassword && (
@@ -127,7 +127,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
                 disabled={state.isLoading}
                 className="text-destructive hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                <Trash2 className="h-4 w-4 mr-2" /> {t("global.delete")}
               </Button>
             )}
           </div>
@@ -138,18 +138,18 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
               onClick={onClose}
               disabled={state.isLoading}
             >
-              Cancel
+              {t("global.cancel")}
             </Button>
             <Button type="submit" disabled={state.isLoading}>
               {state.isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  {t("global.saving")}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  {mode === "add" ? "Create User" : "Save Changes"}
+                  {mode === "add" ? t("global.create_user") : t("global.save_changes")}
                 </>
               )}
             </Button>

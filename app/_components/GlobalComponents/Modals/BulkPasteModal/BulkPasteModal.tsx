@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ClipboardList } from "lucide-react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface BulkPasteModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const BulkPasteModal = ({
   isLoading = false,
 }: BulkPasteModalProps) => {
   const [itemsText, setItemsText] = useState("");
+  const t = useTranslations();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +43,7 @@ export const BulkPasteModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Bulk Add Items"
+      title={t("modals.bulk_add_items")}
       titleIcon={<ClipboardList className="h-5 w-5" />}
       className="lg:max-w-lg"
     >
@@ -51,7 +53,7 @@ export const BulkPasteModal = ({
             htmlFor="itemsText"
             className="block text-sm font-medium text-foreground mb-2"
           >
-            Paste your list (one item per line)
+            {t("modals.paste_list")}
           </label>
           <textarea
             id="itemsText"
@@ -65,7 +67,7 @@ Item 3...`}
           />
           {itemCount > 0 && (
             <p className="text-xs text-muted-foreground mt-1">
-              {itemCount} item{itemCount !== 1 ? "s" : ""} will be added
+              {itemCount} {itemCount !== 1 ? t("modals.items_will_be_added") : t("modals.item_will_be_added")}
             </p>
           )}
         </div>
@@ -77,12 +79,12 @@ Item 3...`}
             onClick={handleClose}
             disabled={isLoading}
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button type="submit" disabled={isLoading || !itemsText.trim()}>
             {isLoading
-              ? "Adding..."
-              : `Add ${itemCount} Item${itemCount !== 1 ? "s" : ""}`}
+              ? t("modals.adding")
+              : `${t("modals.add_items")} ${itemCount}`}
           </Button>
         </div>
       </form>

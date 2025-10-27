@@ -3,6 +3,7 @@
 import { Download, Eye, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 interface VideoAttachmentProps {
     url: string;
@@ -17,6 +18,7 @@ export const VideoAttachment = ({
     mimeType,
     className = "",
 }: VideoAttachmentProps) => {
+    const t = useTranslations();
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
     const [showControls, setShowControls] = useState(false);
@@ -86,7 +88,7 @@ export const VideoAttachment = ({
                                     className="bg-white/90 hover:bg-white text-black opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                     <Play className="h-6 w-6 mr-2" />
-                                    Play Video
+                                    {t("upload.play_video")}
                                 </Button>
                             )}
                         </span>
@@ -138,7 +140,7 @@ export const VideoAttachment = ({
                                             className="bg-white/90 hover:bg-white text-black"
                                         >
                                             <Eye className="h-4 w-4 mr-1" />
-                                            View
+                                            {t("upload.view")}
                                         </Button>
                                         <Button
                                             variant="secondary"
@@ -153,7 +155,7 @@ export const VideoAttachment = ({
                                             className="bg-white/90 hover:bg-white text-black"
                                         >
                                             <Download className="h-4 w-4 mr-1" />
-                                            Download
+                                            {t("upload.download")}
                                         </Button>
                                     </span>
                                 </span>
@@ -167,7 +169,7 @@ export const VideoAttachment = ({
                                 {displayName}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                                Video
+                                {t("upload.video")}
                             </span>
                         </span>
                     </span>

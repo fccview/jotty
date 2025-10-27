@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { User, Settings, Monitor } from "lucide-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
-import { User as UserType } from "@/app/_types";
-import { useRouter } from "next/navigation";
-import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
 import { ProfileTab } from "./Parts/ProfileTab";
 import { SessionsTab } from "./Parts/SessionsTab";
@@ -24,8 +21,6 @@ export const UserProfileClient = ({
   isAdmin,
   avatarUrl,
 }: UserProfileClientProps) => {
-  const router = useRouter();
-  const { checkNavigation } = useNavigationGuard();
   const { user } = useAppMode();
   const [activeTab, setActiveTab] = useState<
     "profile" | "sessions" | "settings"
@@ -70,7 +65,7 @@ export const UserProfileClient = ({
           <ProfileTab
             user={user}
             isAdmin={isAdmin}
-            setUser={() => {}}
+            setUser={() => { }}
             isSsoUser={isSsoUser}
           />
         )}

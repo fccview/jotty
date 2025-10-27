@@ -19,6 +19,7 @@ import { Modes } from "@/app/_types/enums";
 import { togglePin } from "@/app/_server/actions/users";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface SharingStatus {
   isShared: boolean;
@@ -47,6 +48,7 @@ export const SidebarItem = ({
   style,
   user,
 }: SidebarItemProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
@@ -81,13 +83,13 @@ export const SidebarItem = ({
 
   const dropdownItems = [
     ...(onEditItem ? [{
-      label: "Edit",
+      label: t("global.edit"),
       onClick: () => onEditItem(item),
       icon: <Edit className="h-4 w-4" />,
     }] : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
+      label: isItemPinned() ? t("sidebar.unpin_from_home") : t("sidebar.pin_to_home"),
       onClick: handleTogglePin,
       icon: isItemPinned() ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />,
       disabled: isTogglingPin === item.id,

@@ -10,6 +10,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryInput } from "@/app/_components/GlobalComponents/FormElements/CategoryInput";
 import { ChecklistTypeSelector } from "../../../FeatureComponents/Checklists/Parts/ChecklistTypeSelector";
 import { Modes } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface CreateListModalProps {
   onClose: () => void;
@@ -31,6 +32,7 @@ export const CreateListModal = ({
   const [type, setType] = useState<ChecklistType>("simple");
   const [isLoading, setIsLoading] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations();
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -78,20 +80,20 @@ export const CreateListModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Create New Checklist"
+      title={t("checklists.new_checklist")}
       titleIcon={<ListTodo className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Checklist Name *
+            {t("checklists.checklist_name")} *
           </label>
           <input
             ref={titleInputRef}
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter checklist name..."
+            placeholder={t("modals.enter_checklist_name")}
             className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             required
             disabled={isLoading}
@@ -123,14 +125,14 @@ export const CreateListModal = ({
             disabled={isLoading}
             className="flex-1"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="submit"
             disabled={isLoading || !title.trim()}
             className="flex-1"
           >
-            {isLoading ? "Creating..." : "Create Checklist"}
+            {isLoading ? t("checklists.creating") : t("checklists.create_checklist")}
           </Button>
         </div>
       </form>

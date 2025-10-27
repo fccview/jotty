@@ -8,6 +8,7 @@ import { ChecklistItemsWrapper } from "./ChecklistItemsWrapper";
 import { NestedChecklistItem } from "./NestedChecklistItem";
 import { Checklist, Item } from "@/app/_types";
 import { TaskStatusLabels } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface ChecklistBodyProps {
   localList: Checklist;
@@ -40,14 +41,16 @@ export const ChecklistBody = ({
   isDeletingItem,
   isShared,
 }: ChecklistBodyProps) => {
+  const t = useTranslations();
+
   if (localList.items.length === 0) {
     return (
       <div className="bg-card rounded-lg border border-border m-4 p-8 text-center">
         <h3 className="text-xl font-semibold text-foreground mb-2">
-          No items yet
+          {t("checklists.no_items_yet")}
         </h3>
         <p className="text-muted-foreground">
-          Add your first item to get started!
+          {t("checklists.add_first_item")}
         </p>
       </div>
     );

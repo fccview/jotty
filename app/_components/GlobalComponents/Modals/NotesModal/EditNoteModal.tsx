@@ -8,6 +8,7 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
 import { getCurrentUser } from "@/app/_server/actions/users";
+import { useTranslations } from "next-intl";
 
 interface EditNoteModalProps {
   note: Note;
@@ -26,6 +27,7 @@ export const EditNoteModal = ({
   const [category, setCategory] = useState(note.category || "");
   const [isLoading, setIsLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const t = useTranslations();
 
   useEffect(() => {
     const checkOwnership = async () => {
@@ -66,13 +68,13 @@ export const EditNoteModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Edit Note"
+      title={t("notes.edit_note")}
       titleIcon={<FileText className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Note Name *
+            {t("notes.note_name")} *
           </label>
           <input
             type="text"
@@ -88,7 +90,7 @@ export const EditNoteModal = ({
         {isOwner && (
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Category
+              {t("global.category")}
             </label>
             <CategoryTreeSelector
               categories={categories}
@@ -108,14 +110,14 @@ export const EditNoteModal = ({
             disabled={isLoading}
             className="flex-1"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="submit"
             disabled={isLoading || !title.trim()}
             className="flex-1"
           >
-            {isLoading ? "Updating..." : "Update Note"}
+            {isLoading ? t("global.updating") : t("notes.update_note")}
           </Button>
         </div>
       </form>

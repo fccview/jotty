@@ -20,6 +20,7 @@ import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
 import { useSharing } from "@/app/_hooks/useSharing";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -58,6 +59,7 @@ export const NoteEditorHeader = ({
     isPrinting,
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
+  const t = useTranslations();
   const { sharingStatus } = useSharing({
     itemId: note.id,
     itemType: "note",
@@ -131,7 +133,7 @@ export const NoteEditorHeader = ({
                 )}
 
                 <Button variant="outline" size="sm" onClick={handleCancel}>
-                  Cancel
+                  {t("global.cancel")}
                 </Button>
                 <Button
                   size="sm"
@@ -145,12 +147,12 @@ export const NoteEditorHeader = ({
                   {status.isSaving ? (
                     <>
                       <Loader2 className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2 animate-spin" />
-                      <span className="hidden lg:inline">Saving...</span>
+                      <span className="hidden lg:inline">{t("global.saving")}</span>
                     </>
                   ) : (
                     <>
                       <Save className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2" />
-                      <span className="hidden lg:inline">Save</span>
+                      <span className="hidden lg:inline">{t("global.save")}</span>
                     </>
                   )}
                 </Button>
@@ -161,7 +163,7 @@ export const NoteEditorHeader = ({
                   variant="outline"
                   size="icon"
                   onClick={() => setShowShareModal(true)}
-                  title="Share"
+                  title={t("global.share")}
                 >
                   <Share2 className="h-5 w-5" />
                 </Button>
@@ -170,7 +172,7 @@ export const NoteEditorHeader = ({
                   variant="outline"
                   size="icon"
                   onClick={viewModel.handlePrint}
-                  title="Print / Save as PDF"
+                  title={t("global.print_save_as_pdf")}
                   disabled={isPrinting}
                 >
                   {isPrinting ? (
@@ -185,7 +187,7 @@ export const NoteEditorHeader = ({
                   size="icon"
                   onClick={() => setShowTOC(!showTOC)}
                   className="hidden lg:flex"
-                  title="Table of Contents"
+                  title={t("global.table_of_contents")}
                 >
                   <List className="h-5 w-5" />
                 </Button>
@@ -193,7 +195,7 @@ export const NoteEditorHeader = ({
                   variant="outline"
                   size="icon"
                   onClick={handleEdit}
-                  title="Edit"
+                  title={t("global.edit")}
                 >
                   <Edit3 className="h-5 w-5" />
                 </Button>
@@ -203,7 +205,7 @@ export const NoteEditorHeader = ({
                     size="icon"
                     onClick={handleDelete}
                     className="text-destructive hover:text-destructive"
-                    title="Delete"
+                    title={t("global.delete")}
                   >
                     <Trash2 className="h-5 w-5" />
                   </Button>

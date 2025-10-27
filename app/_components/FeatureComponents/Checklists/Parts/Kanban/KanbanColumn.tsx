@@ -10,6 +10,7 @@ import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface KanbanColumnProps {
   id: string;
@@ -32,6 +33,7 @@ export const KanbanColumn = ({
   isShared,
   onUpdate,
 }: KanbanColumnProps) => {
+  const t = useTranslations();
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -102,7 +104,7 @@ export const KanbanColumn = ({
             ))}
             {items.length === 0 && (
               <div className="text-center text-muted-foreground text-sm py-8">
-                No tasks
+                {t("checklists.no_tasks")}
               </div>
             )}
           </div>

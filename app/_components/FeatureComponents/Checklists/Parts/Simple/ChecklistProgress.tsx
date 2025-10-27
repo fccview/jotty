@@ -3,6 +3,7 @@
 import { CheckCircle } from "lucide-react";
 import { Checklist } from "@/app/_types";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
+import { useTranslations } from "next-intl";
 
 interface ChecklistProgressProps {
   checklist: Checklist;
@@ -29,6 +30,7 @@ const countItems = (items: any[]): { total: number; completed: number } => {
 };
 
 export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
+  const t = useTranslations();
   const { total: totalCount, completed: completedCount } = countItems(checklist.items);
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
@@ -38,7 +40,7 @@ export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
         <div className="flex items-center gap-2">
           <CheckCircle className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium text-foreground">
-            {completedCount} of {totalCount} completed
+            {t("checklists.completed_count", { completed: completedCount, total: totalCount })}
           </span>
         </div>
         <span className="text-sm text-muted-foreground">

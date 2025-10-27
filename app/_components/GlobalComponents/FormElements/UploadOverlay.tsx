@@ -2,6 +2,7 @@
 
 import { Loader2, CheckCircle, AlertCircle, Upload } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface UploadOverlayProps {
     isVisible: boolean;
@@ -20,6 +21,7 @@ export const UploadOverlay = ({
     onCancel,
     onRetry,
 }: UploadOverlayProps) => {
+    const t = useTranslations();
     if (!isVisible) return null;
 
     return (
@@ -36,7 +38,7 @@ export const UploadOverlay = ({
                         )}
                         <div className="text-center">
                             <h3 className="text-lg font-semibold text-foreground">
-                                {isUploading ? "Uploading File" : uploadError ? "Upload Failed" : "Upload Complete"}
+                                {isUploading ? t("upload.uploading_file_title") : uploadError ? t("upload.upload_failed") : t("upload.upload_complete")}
                             </h3>
                             {fileName && (
                                 <p className="text-sm text-muted-foreground truncate max-w-xs">
@@ -49,7 +51,7 @@ export const UploadOverlay = ({
                     {isUploading && (
                         <div className="w-full text-center">
                             <div className="text-sm text-muted-foreground">
-                                Uploading file...
+                                {t("upload.uploading_file")}
                             </div>
                         </div>
                     )}
@@ -68,7 +70,7 @@ export const UploadOverlay = ({
                                 onClick={onCancel}
                                 disabled={!onCancel}
                             >
-                                Cancel
+                                {t("global.cancel")}
                             </Button>
                         )}
                         {uploadError && onRetry && (
@@ -77,7 +79,7 @@ export const UploadOverlay = ({
                                 size="sm"
                                 onClick={onRetry}
                             >
-                                Retry
+                                {t("global.retry")}
                             </Button>
                         )}
                         {!isUploading && !uploadError && (
@@ -85,7 +87,7 @@ export const UploadOverlay = ({
                                 size="sm"
                                 onClick={() => window.location.reload()}
                             >
-                                Close
+                                {t("global.close")}
                             </Button>
                         )}
                     </div>

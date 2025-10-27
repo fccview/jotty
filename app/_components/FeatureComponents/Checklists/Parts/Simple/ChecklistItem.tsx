@@ -10,6 +10,7 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
 import { useState, useEffect, useRef } from "react";
 import { TaskStatus } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface Item {
   id: string;
@@ -45,6 +46,7 @@ export const ChecklistItem = ({
   status,
   isDeletingItem,
 }: ChecklistItemProps) => {
+  const t = useTranslations();
   const {
     attributes,
     listeners,
@@ -119,7 +121,7 @@ export const ChecklistItem = ({
                   {item.createdBy}
                 </div>
                 <div className="text-muted-foreground text-[10px]">
-                  Created{" "}
+                  {t("checklists.created")}{" "}
                   {item.createdAt
                     ? new Date(item.createdAt).toLocaleString()
                     : ""}
@@ -135,7 +137,7 @@ export const ChecklistItem = ({
                   {item.lastModifiedBy}
                 </div>
                 <div className="text-muted-foreground text-[10px]">
-                  Modified{" "}
+                  {t("checklists.modified")}{" "}
                   {item.lastModifiedAt
                     ? new Date(item.lastModifiedAt).toLocaleString()
                     : ""}
@@ -167,7 +169,7 @@ export const ChecklistItem = ({
             "h-5 w-5 rounded border-input focus:ring-2 focus:ring-offset-2 focus:ring-ring",
             "bg-background transition-colors duration-200",
             (item.completed || status === TaskStatus.COMPLETED) &&
-              "bg-primary border-primary"
+            "bg-primary border-primary"
           )}
         />
       </div>

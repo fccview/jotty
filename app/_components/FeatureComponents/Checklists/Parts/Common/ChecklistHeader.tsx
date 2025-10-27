@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
+import { useTranslations } from "next-intl";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -28,6 +29,8 @@ export const ChecklistHeader = ({
   onShare,
   onConvertType,
 }: ChecklistHeaderProps) => {
+  const t = useTranslations();
+
   return (
     <div className="bg-background border-b border-border px-3 py-4 lg:px-6 lg:py-[12px]">
       <div className="flex items-center justify-between">
@@ -51,8 +54,8 @@ export const ChecklistHeader = ({
               className="h-10 w-10 p-0"
               title={
                 checklist.type === "task"
-                  ? "Convert to Simple Checklist"
-                  : "Convert to Task Project"
+                  ? t("modals.convert_to_simple")
+                  : t("modals.convert_to_task")
               }
             >
               {checklist.type === "task" ? (

@@ -1,6 +1,7 @@
 import { Category } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export interface CategoryTreeNodeProps {
   category: Category;
@@ -21,6 +22,7 @@ export const CategoryTreeNode = ({
   onToggleExpanded,
   getSubCategories,
 }: CategoryTreeNodeProps) => {
+  const t = useTranslations();
   const subCategories = getSubCategories(category.path);
   const isExpanded = expandedCategories.has(category.path);
   const hasSubCategories = subCategories.length > 0;
@@ -47,7 +49,7 @@ export const CategoryTreeNode = ({
             hasSubCategories ? "hover:bg-muted" : "cursor-default"
           )}
           aria-label={
-            hasSubCategories ? (isExpanded ? "Collapse" : "Expand") : undefined
+            hasSubCategories ? (isExpanded ? t("global.collapse") : t("global.expand")) : undefined
           }
         >
           {hasSubCategories ? (

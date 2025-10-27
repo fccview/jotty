@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Category } from "@/app/_types";
+import { useTranslations } from "next-intl";
 
 interface CategoryPillsProps {
   categories: Category[];
@@ -19,13 +20,15 @@ export const CategoryPills = ({
   onClearAll,
   className = "",
 }: CategoryPillsProps) => {
+  const t = useTranslations();
+
   if (categories.length === 0) return null;
 
   return (
     <div className={`space-y-3 ${className}`}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-foreground">
-          Filter by Category
+          {t("global.filter_by_type")}
         </h3>
         {selectedCategories.length > 0 && (
           <Button
@@ -34,7 +37,7 @@ export const CategoryPills = ({
             onClick={onClearAll}
             className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
           >
-            Clear all
+            {t("cards.clear_all")}
           </Button>
         )}
       </div>
@@ -49,11 +52,10 @@ export const CategoryPills = ({
               variant={isSelected ? "default" : "outline"}
               size="sm"
               onClick={() => onCategoryToggle(category.name)}
-              className={`h-7 px-3 text-xs transition-all ${
-                isSelected
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "hover:bg-muted"
-              }`}
+              className={`h-7 px-3 text-xs transition-all ${isSelected
+                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                : "hover:bg-muted"
+                }`}
             >
               {category.name}
               {isSelected && <X className="ml-1 h-3 w-3" />}
