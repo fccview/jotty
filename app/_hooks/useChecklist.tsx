@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist } from "@/app/_types";
+import { Checklist, RecurrenceRule } from "@/app/_types";
 import {
   deleteList,
   convertChecklistType,
@@ -263,7 +263,7 @@ export const useChecklist = ({
     }
   };
 
-  const handleCreateItem = async (text: string, recurrence?: import("@/app/_types").RecurrenceRule) => {
+  const handleCreateItem = async (text: string, recurrence?: RecurrenceRule) => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("listId", localList.id);
