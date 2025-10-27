@@ -1,0 +1,53 @@
+{
+    "global": {
+        "checklists": "Liste",
+        "notes": "Note",
+        "all": "Tutte",
+        "new": "Nuova",
+        "completed": "Completate",
+        "progress": "In corso",
+        "incomplete": "Incomplete",
+        "total_items": "Tutte",
+        "pinned": "Pin",
+        "show_all": "Tutte",
+        "categories": "Categorie"
+    },
+    "actions": {
+        "filter_by_completion": "Filtra"
+    },
+    "tasks": {
+        "title": "Attività",
+        "description": "Le tue attività",
+        "task_lists": "Liste delle attività",
+        "all_tasks": "Tutte le attività",
+        "all_tasks_mobile": "Tutte",
+        "new_task": "Nuova Attività"
+    },
+    "checklists": {
+        "title": "Liste",
+        "description": "La tua dashboard",
+        "all_lists": "Tutte le liste",
+        "all_lists_mobile": "Tutte",
+        "new_checklist": "Nuova Lista",
+        "simple_lists": "Liste semplici",
+        "no_checklists_yet": "Nessuna lista",
+        "create_your_first_checklist": "Crea la tua prima lista per iniziare a organizzare le tue attività."
+    },
+    "notes": {
+        "title": "Note",
+        "description": "Il tuo spazio per la creatività",
+        "all_notes": "Tutte le note",
+        "all_notes_mobile": "Tutte",
+        "new_note": "Nuove Note"
+    },
+    "auth": {
+        "title": "Bentornato",
+        "sign_in_with_sso": "Accedi con SSO",
+        "or_continue_with_local_account": "o continua con l'account locale",
+        "login": "Accedi",
+        "register": "Registrati",
+        "password": "Password",
+        "confirm_password": "Conferma Password",
+        "username": "Nome utente"
+    }
+}

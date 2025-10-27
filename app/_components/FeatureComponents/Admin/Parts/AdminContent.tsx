@@ -15,6 +15,7 @@ import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Modes } from "@/app/_types/enums";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -28,6 +29,7 @@ export const AdminContent = ({
   users,
 }: AdminContentProps) => {
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
+  const t = useTranslations();
 
   const sortedUserContent = useMemo(() => {
     const listsByOwner = new Map<string, Checklist[]>();
@@ -176,7 +178,7 @@ export const AdminContent = ({
                   {hasContent ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <AdminContentColumn
-                        title="Checklists"
+                        title={t("checklists.title")}
                         icon={<CheckSquare className="h-4 w-4" />}
                         items={checklists.map((list) => ({
                           ...list,

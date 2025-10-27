@@ -1,0 +1,53 @@
+{
+    "global": {
+        "checklists": "Checklists",
+        "notes": "Notes",
+        "all": "All",
+        "new": "New",
+        "completed": "Completed",
+        "progress": "Progress",
+        "incomplete": "Incomplete",
+        "total_items": "Total Items",
+        "pinned": "Pinned",
+        "show_all": "Show All",
+        "categories": "Categories"
+    },
+    "actions": {
+        "filter_by_completion": "Filter by completion"
+    },
+    "tasks": {
+        "title": "Tasks",
+        "description": "Your tasks",
+        "task_lists": "Task Lists",
+        "all_tasks": "All Tasks",
+        "all_tasks_mobile": "All",
+        "new_task": "New Task"
+    },
+    "checklists": {
+        "title": "Checklists",
+        "description": "Your productivity dashboard",
+        "all_lists": "All Lists",
+        "all_lists_mobile": "All",
+        "new_checklist": "New Checklist",
+        "simple_lists": "Simple Lists",
+        "no_checklists_yet": "No Checklists Yet",
+        "create_your_first_checklist": "Create your first checklist to start organizing your tasks."
+    },
+    "notes": {
+        "title": "Notes",
+        "description": "Your knowledge workspace",
+        "all_notes": "All Notes",
+        "all_notes_mobile": "All",
+        "new_note": "New Note"
+    },
+    "auth": {
+        "title": "Welcome back",
+        "sign_in_with_sso": "Sign in with SSO",
+        "or_continue_with_local_account": "or continue with local account",
+        "login": "Login",
+        "register": "Register",
+        "password": "Password",
+        "confirm_password": "Confirm Password",
+        "username": "Username"
+    }
+}

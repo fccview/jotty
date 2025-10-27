@@ -16,7 +16,9 @@ import { Modes } from "./_types/enums";
 import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { headers } from "next/headers";
-import { User } from "./_types";
+import { NextIntlClientProvider } from "next-intl";
+import { notFound } from "next/navigation";
+import { Locales } from "./_consts/global";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -79,6 +81,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  let locale = process.env.LOCALE || "en";
   const pathname = headers().get("x-pathname");
   const settings = await getSettings();
   const appName = settings.appName || "rwMarkable";
@@ -89,7 +92,14 @@ export default async function RootLayout({
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
   const users = await getUsers();
 
+  let messages;
   let serveUpdates = true;
+
+  if (!Locales.some((item) => item.locale === locale)) {
+    locale = "en";
+  }
+
+  messages = (await import(`./_translations/${locale}.json`)).default;
 
   if (
     (stopCheckUpdates &&
@@ -101,7 +111,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/app-icons/favicon.ico" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -110,40 +120,42 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={inter.className}>
-        <AppModeProvider
-          isDemoMode={settings?.isDemo || false}
-          isRwMarkable={settings?.rwmarkable || false}
-          user={user}
-          appVersion={appVersion.data || ""}
-          pathname={pathname || ""}
-          initialSettings={settings}
-          usersPublicData={users}
-        >
-          <ThemeProvider user={user || {}}>
-            <ChecklistProvider>
-              <NavigationGuardProvider>
-                <ToastProvider>
-                  <ShortcutProvider
-                    user={user}
-                    noteCategories={noteCategories.data || []}
-                    checklistCategories={checklistCategories.data || []}
-                  >
-                    <div className="min-h-screen bg-background text-foreground transition-colors">
-                      <DynamicFavicon />
-                      {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AppModeProvider
+            isDemoMode={settings?.isDemo || false}
+            isRwMarkable={settings?.rwmarkable || false}
+            user={user}
+            appVersion={appVersion.data || ""}
+            pathname={pathname || ""}
+            initialSettings={settings}
+            usersPublicData={users}
+          >
+            <ThemeProvider user={user || {}}>
+              <ChecklistProvider>
+                <NavigationGuardProvider>
+                  <ToastProvider>
+                    <ShortcutProvider
+                      user={user}
+                      noteCategories={noteCategories.data || []}
+                      checklistCategories={checklistCategories.data || []}
+                    >
+                      <div className="min-h-screen bg-background text-foreground transition-colors">
+                        <DynamicFavicon />
+                        {children}
 
-                      {!pathname?.includes("/public") && <InstallPrompt />}
+                        {!pathname?.includes("/public") && <InstallPrompt />}
 
-                      {serveUpdates && !pathname?.includes("/public") && (
-                        <UpdatePrompt />
-                      )}
-                    </div>
-                  </ShortcutProvider>
-                </ToastProvider>
-              </NavigationGuardProvider>
-            </ChecklistProvider>
-          </ThemeProvider>
-        </AppModeProvider>
+                        {serveUpdates && !pathname?.includes("/public") && (
+                          <UpdatePrompt />
+                        )}
+                      </div>
+                    </ShortcutProvider>
+                  </ToastProvider>
+                </NavigationGuardProvider>
+              </ChecklistProvider>
+            </ThemeProvider>
+          </AppModeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

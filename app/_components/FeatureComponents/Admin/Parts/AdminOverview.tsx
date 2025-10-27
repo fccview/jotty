@@ -11,6 +11,7 @@ import {
 import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import { ReactNode } from "react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface AdminStats {
   totalUsers: number;
@@ -28,6 +29,7 @@ interface AdminOverviewProps {
 
 export const AdminOverview = ({ stats }: AdminOverviewProps) => {
   const { appVersion } = useAppMode();
+  const t = useTranslations();
 
   const statCards = [
     {
