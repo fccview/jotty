@@ -3,6 +3,7 @@
 import { Download, Eye } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { getFileIcon, getFileTypeDisplay } from "@/app/_utils/file-icon-utils";
+import { useTranslations } from "next-intl";
 
 interface FileAttachmentProps {
   url: string;
@@ -17,6 +18,7 @@ export const FileAttachment = ({
   mimeType,
   className = "",
 }: FileAttachmentProps) => {
+  const t = useTranslations();
   const displayName = fileName.replace(/ \(\d+\)/, "").replace(/\.\w+$/, "");
 
   return (
@@ -43,7 +45,7 @@ export const FileAttachment = ({
               size="sm"
               onClick={() => window.open(url, "_blank")}
               className="h-8 w-8 p-0 hover:bg-primary/10"
-              title="Open file"
+              title={t("cards.open_file")}
             >
               <Eye className="h-4 w-4" />
             </Button>
@@ -57,7 +59,7 @@ export const FileAttachment = ({
                 link.click();
               }}
               className="h-8 w-8 p-0 hover:bg-primary/10"
-              title="Download file"
+              title={t("cards.download_file")}
             >
               <Download className="h-4 w-4" />
             </Button>

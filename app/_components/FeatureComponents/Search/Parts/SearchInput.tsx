@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface SearchInputProps {
   query: string;
@@ -19,10 +20,13 @@ export const SearchInput = ({
   onQueryChange,
   onClear,
   onFocus,
-  placeholder = "Search checklists and notes...",
+  placeholder,
   className,
   inputRef,
 }: SearchInputProps) => {
+  const t = useTranslations();
+  const defaultPlaceholder = placeholder || t("global.search_placeholder");
+
   return (
     <div className={cn("relative", className)}>
       <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground md:left-3 md:h-4 md:w-4" />
@@ -32,7 +36,7 @@ export const SearchInput = ({
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
         onFocus={onFocus}
-        placeholder={placeholder}
+        placeholder={defaultPlaceholder}
         className="w-full rounded-lg border border-input bg-background py-3 pl-12 pr-12 text-base focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 md:rounded-md md:py-2 md:pl-10 md:pr-10 md:text-sm"
       />
       {query && (

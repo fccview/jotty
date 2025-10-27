@@ -13,7 +13,6 @@ import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
 import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
-import { Modes } from "@/app/_types/enums";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 
@@ -98,27 +97,27 @@ export const AdminContent = ({
 
   return (
     <div className="space-y-6">
-      <Accordion title="Data Export" defaultOpen={false} className="mb-6">
+      <Accordion title={t("admin.data_export")} defaultOpen={false} className="mb-6">
         <ExportContent users={users} />
       </Accordion>
 
       <div className="md:flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">All Content</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t("admin.all_content")}</h2>
           <p className="text-muted-foreground">
-            Content organized by user with sharing status
+            {t("admin.content_by_user")}
           </p>
         </div>
         <div className="flex items-center gap-4 mt-4 md:mt-0">
           <span className="text-sm text-muted-foreground">
-            {allLists.length + allDocs.length} total items across {users.length}{" "}
-            users
+            {allLists.length + allDocs.length} {t("admin.total_items_across")} {users.length}{" "}
+            {t("global.users")}
           </span>
           <button
             onClick={toggleAll}
             className="text-sm text-primary hover:text-primary/80 font-medium"
           >
-            {isAllExpanded ? "Collapse All" : "Expand All"}
+            {isAllExpanded ? t("global.collapse_all") : t("global.expand_all")}
           </button>
         </div>
       </div>
@@ -155,14 +154,14 @@ export const AdminContent = ({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {checklists.length} checklists • {notes.length} notes
+                      {checklists.length} {t("checklists.title")} • {notes.length} {t("notes.title")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-                      {totalItems} items
+                      {totalItems} {t("admin.items")}
                     </span>
                   )}
                   {isExpanded ? (
@@ -183,22 +182,22 @@ export const AdminContent = ({
                         items={checklists.map((list) => ({
                           ...list,
                           link: `/checklist/${buildCategoryPath(
-                            list.category || "Uncategorized",
+                            list.category || t("global.uncategorized"),
                             list.id
                           )}`,
-                          details: `${list.category} • ${list.items.length} items`,
+                          details: `${list.category} • ${list.items.length} ${t("admin.items")}`,
                         }))}
                       />
                       <AdminContentColumn
-                        title="Notes"
+                        title={t("notes.title")}
                         icon={<FileText className="h-4 w-4" />}
                         items={notes.map((doc) => ({
                           ...doc,
                           link: `/note/${buildCategoryPath(
-                            doc.category || "Uncategorized",
+                            doc.category || t("global.uncategorized"),
                             doc.id
                           )}`,
-                          details: `${doc.category} • ${doc.content.length} characters`,
+                          details: `${doc.category} • ${doc.content.length} ${t("admin.characters")}`,
                         }))}
                       />
                     </div>
@@ -208,10 +207,10 @@ export const AdminContent = ({
                         <FileText className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
-                        No content yet
+                        {t("admin.no_content_yet")}
                       </h3>
                       <p className="text-muted-foreground">
-                        This user hasn&apos;t created any checklists or notes.
+                        {t("admin.no_content_message")}
                       </p>
                     </div>
                   )}

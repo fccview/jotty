@@ -5,6 +5,7 @@ import { ChevronDown, Folder } from "lucide-react";
 import { cn } from "@/app/_utils/global-utils";
 import { Category } from "@/app/_types";
 import { CategoryTreeNode } from "./CategoryTreeNode";
+import { useTranslations } from "next-intl";
 
 interface CategoryTreeSelectorProps {
   categories: Category[];
@@ -19,10 +20,11 @@ export const CategoryTreeSelector = ({
   categories,
   selectedCategory,
   onCategorySelect,
-  placeholder = "Select category...",
+  placeholder,
   className,
   isInModal = false,
 }: CategoryTreeSelectorProps) => {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -40,7 +42,7 @@ export const CategoryTreeSelector = ({
   );
 
   const selectedCategoryName = useMemo(() => {
-    if (!selectedCategory) return placeholder;
+    if (!selectedCategory) return placeholder || t("global.select_category");
     const category = categories.find((cat) => cat.path === selectedCategory);
     return category ? category.name : selectedCategory;
   }, [selectedCategory, categories, placeholder]);
@@ -115,7 +117,7 @@ export const CategoryTreeSelector = ({
             >
               <div className="w-5" />
               <Folder className="h-4 w-4 text-muted-foreground" />
-              <span>Uncategorized</span>
+              <span>{t("global.uncategorized")}</span>
             </div>
             {rootCategories.map((category) => (
               <CategoryTreeNode

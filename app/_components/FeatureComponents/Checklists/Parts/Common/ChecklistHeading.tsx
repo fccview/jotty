@@ -8,6 +8,7 @@ import { buildCategoryPath, isMobileDevice } from "@/app/_utils/global-utils";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
 import { useSharing } from "@/app/_hooks/useSharing";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface ChecklistHeadingProps {
   checklist: Checklist;
@@ -30,6 +31,7 @@ export const ChecklistHeading = ({
   placeholder = "Add new item...",
   submitButtonText = "Add Item",
 }: ChecklistHeadingProps) => {
+  const t = useTranslations();
   const [newItemText, setNewItemText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -75,7 +77,7 @@ export const ChecklistHeading = ({
               size="sm"
               onClick={handleCopyId}
               className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              title={`Copy ID: ${checklist.id}`}
+              title={t("checklists.copy_id", { id: checklist.id })}
             >
               {copied ? (
                 <Check className="h-3 w-3 text-green-500" />
@@ -114,11 +116,11 @@ export const ChecklistHeading = ({
                   size="lg"
                   onClick={onBulkSubmit}
                   disabled={isLoading}
-                  title="Bulk add items"
+                  title={t("modals.bulk_add_tooltip")}
                   className="px-3 lg:px-4 shadow-sm"
                 >
                   <ClipboardList className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">Bulk</span>
+                  <span className="hidden lg:inline">{t("modals.bulk")}</span>
                 </Button>
               )}
               <Button

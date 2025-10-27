@@ -5,6 +5,7 @@ import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ImageIcon, X } from "lucide-react";
 import { Input } from "../FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface ImageSizeModalProps {
     isOpen: boolean;
@@ -25,7 +26,7 @@ export const ImageSizeModal = ({
 }: ImageSizeModalProps) => {
     const [width, setWidth] = useState<string>("");
     const [height, setHeight] = useState<string>("");
-
+    const t = useTranslations();
     useEffect(() => {
         if (isOpen) {
             setWidth(currentWidth?.toString() || "");
@@ -57,7 +58,7 @@ export const ImageSizeModal = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Image Size"
+            title={t("global.image_size")}
             titleIcon={<ImageIcon className="h-5 w-5" />}
             className="!max-w-md"
         >
@@ -81,7 +82,7 @@ export const ImageSizeModal = ({
                         <div>
                             <Input
                                 id="width"
-                                label="Width (px)"
+                                label={t("global.width")}
                                 type="number"
                                 value={width}
                                 onChange={(e) => handleWidthChange(e.target.value)}
@@ -94,7 +95,7 @@ export const ImageSizeModal = ({
                         <div>
                             <Input
                                 id="height"
-                                label="Height (px)"
+                                label={t("global.height")}
                                 type="number"
                                 value={height}
                                 onChange={(e) => handleHeightChange(e.target.value)}
@@ -105,7 +106,7 @@ export const ImageSizeModal = ({
                     </div>
 
                     <div className="text-xs text-muted-foreground">
-                        Leave empty for automatic sizing
+                        {t("global.leave_empty_for_auto")}
                     </div>
                 </div>
 
@@ -115,7 +116,7 @@ export const ImageSizeModal = ({
                         onClick={handleReset}
                         className="text-sm"
                     >
-                        Reset
+                        {t("global.reset")}
                     </Button>
                     <div className="space-x-2">
                         <Button
@@ -123,13 +124,13 @@ export const ImageSizeModal = ({
                             onClick={onClose}
                             className="text-sm"
                         >
-                            Cancel
+                            {t("global.cancel")}
                         </Button>
                         <Button
                             onClick={handleConfirm}
                             className="text-sm"
                         >
-                            Apply
+                            {t("global.apply")}
                         </Button>
                     </div>
                 </div>

@@ -13,6 +13,7 @@ APP_URL=https://your-jotty-domain.com
 OIDC_CLIENT_SECRET=your_client_secret
 SSO_FALLBACK_LOCAL=yes
 OIDC_ADMIN_GROUPS=admins
+LOCALE=en
 ```
 
 ### Mandatory (for production instances)
@@ -27,6 +28,7 @@ OIDC_ADMIN_GROUPS=admins
 - `SERVE_PUBLIC_FILES=yes` Optional. Allows public access to uploaded files via direct URLs.
 - `SERVE_PUBLIC_VIDEOS=yes` Optional. Allows public access to uploaded files via direct URLs.
 - `STOP_CHECK_UPDATES=yes` Optional. If set to yes stops the github api call and won't give you a toast when a new update is available.
+- `LOCALE=en` Optional. Add your locale for translations. Please check the `app/_translations` file to see available locales (use everything before `.json` as a valid locale string)
 
 ## SSO Configuration (Optional)
 

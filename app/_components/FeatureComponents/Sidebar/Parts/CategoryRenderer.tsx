@@ -13,6 +13,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Category, Checklist, Note } from "@/app/_types";
+import { useTranslations } from "next-intl";
 import {
   DndContext,
   DragEndEvent,
@@ -60,6 +61,7 @@ interface CategoryRendererProps {
 }
 
 export const CategoryRenderer = (props: CategoryRendererProps) => {
+  const t = useTranslations();
   const {
     category,
     allCategories,
@@ -141,7 +143,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
 
   const dropdownItems = [
     {
-      label: `New ${mode === Modes.CHECKLISTS ? "Checklist" : "Note"}`,
+      label: mode === Modes.CHECKLISTS ? t("checklists.new_checklist") : t("notes.new_note"),
       onClick: () => onQuickCreate(category.path),
       icon:
         mode === Modes.CHECKLISTS ? (
@@ -151,17 +153,17 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
         ),
     },
     {
-      label: "New Category",
+      label: t("sidebar.new_category"),
       onClick: () => onCreateSubcategory(category.path),
       icon: <FolderPlus className="h-4 w-4" />,
     },
     { type: "divider" as const },
     {
-      label: "Rename Category",
+      label: t("modals.rename_category"),
       onClick: () => onRenameCategory(category.path),
     },
     {
-      label: "Delete Category",
+      label: t("modals.delete_category"),
       onClick: () => onDeleteCategory(category.path),
       variant: "destructive" as const,
     },

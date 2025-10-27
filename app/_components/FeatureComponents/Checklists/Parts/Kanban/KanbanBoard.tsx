@@ -17,6 +17,7 @@ import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPa
 import { useKanbanBoard } from "../../../../../_hooks/useKanbanBoard";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { useSharing } from "@/app/_hooks/useSharing";
+import { useTranslations } from "next-intl";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -47,6 +48,7 @@ const columns = [
 ];
 
 export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
+  const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
 
   const {
@@ -103,8 +105,8 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
         isLoading={isLoading}
         autoFocus={true}
         focusKey={focusKey}
-        placeholder="Add new task..."
-        submitButtonText="Add Task"
+        placeholder={t("checklists.add_new_task")}
+        submitButtonText={t("checklists.add_task")}
       />
 
       <div className="flex-1 overflow-hidden pb-[8.5em]">

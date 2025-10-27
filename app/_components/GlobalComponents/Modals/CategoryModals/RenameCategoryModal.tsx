@@ -6,6 +6,7 @@ import { Edit3 } from "lucide-react";
 import { Modal } from "../Modal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface RenameCategoryModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const RenameCategoryModal = ({
   const [isRenaming, setIsRenaming] = useState(false);
   const { showToast } = useToast();
   const router = useRouter();
+  const t = useTranslations();
 
   if (!isOpen) return null;
 
@@ -63,24 +65,24 @@ export const RenameCategoryModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Rename Category"
+      title={t("modals.rename_category")}
       titleIcon={<Edit3 className="h-5 w-5 text-primary" />}
     >
       <p className="text-sm text-muted-foreground mb-4">
-        Enter a new name for &quot;{categoryName}&quot;
+        {t("modals.enter_new_name")} &quot;{categoryName}&quot;
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Category Name
+            {t("modals.category_name")}
           </label>
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:outline-none"
-            placeholder="Enter category name..."
+            placeholder={t("modals.enter_category_name")}
             autoFocus
           />
         </div>
@@ -92,13 +94,13 @@ export const RenameCategoryModal = ({
             onClick={handleClose}
             disabled={isRenaming}
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="submit"
             disabled={!newName.trim() || newName === categoryName || isRenaming}
           >
-            {isRenaming ? "Renaming..." : "Rename"}
+            {isRenaming ? t("modals.renaming") : t("modals.rename")}
           </Button>
         </div>
       </form>

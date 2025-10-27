@@ -3,6 +3,7 @@
 import { Users, FileText, Activity, Shield, Settings, Edit3 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 type AdminTab = "overview" | "users" | "content" | "sharing" | "settings" | "editor";
 
@@ -12,35 +13,37 @@ interface AdminTabsProps {
 }
 
 export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
+  const t = useTranslations();
+
   const tabs = [
     {
       id: "overview" as AdminTab,
-      label: "Overview",
+      label: t("global.overview"),
       icon: Activity,
     },
     {
       id: "users" as AdminTab,
-      label: "Users",
+      label: t("global.users"),
       icon: Users,
     },
     {
       id: "content" as AdminTab,
-      label: "Content",
+      label: t("global.content"),
       icon: FileText,
     },
     {
       id: "sharing" as AdminTab,
-      label: "Sharing",
+      label: t("global.sharing"),
       icon: Shield,
     },
     {
       id: "editor" as AdminTab,
-      label: "Editor",
+      label: t("global.editor"),
       icon: Edit3,
     },
     {
       id: "settings" as AdminTab,
-      label: "Settings",
+      label: t("global.settings"),
       icon: Settings,
     }
   ];

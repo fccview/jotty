@@ -11,11 +11,8 @@ import {
   ChevronDown,
   ChevronRight,
   MoreHorizontal,
-  PencilIcon,
-  PlusIcon,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { cn } from "@/app/_utils/global-utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -25,6 +22,7 @@ import { Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
+import { useTranslations } from "next-intl";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -57,6 +55,7 @@ export const NestedChecklistItem = ({
   isShared = false,
   isSubtask = false,
 }: NestedChecklistItemProps) => {
+  const t = useTranslations();
   const { usersPublicData } = useAppMode();
 
   const getUserAvatarUrl = (username: string) => {
@@ -78,7 +77,7 @@ export const NestedChecklistItem = ({
     transition,
     isDragging,
   } = isDragDisabled
-    ? {
+      ? {
         attributes: {},
         listeners: {},
         setNodeRef: null,
@@ -86,7 +85,7 @@ export const NestedChecklistItem = ({
         transition: null,
         isDragging: false,
       }
-    : sortableProps;
+      : sortableProps;
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -184,11 +183,11 @@ export const NestedChecklistItem = ({
   const isChild = level > 0;
 
   const dropdownOptions = [
-    ...(onEdit ? [{ id: "edit", name: "Edit", icon: Edit2 }] : []),
+    ...(onEdit ? [{ id: "edit", name: t("checklists.edit"), icon: Edit2 }] : []),
     ...(onAddSubItem
-      ? [{ id: "add-sub-item", name: "Add sub-item", icon: Plus }]
+      ? [{ id: "add-sub-item", name: t("checklists.add_sub_item"), icon: Plus }]
       : []),
-    { id: "delete", name: "Delete", icon: Trash2 },
+    { id: "delete", name: t("checklists.delete"), icon: Trash2 },
   ];
 
   return (
@@ -198,13 +197,13 @@ export const NestedChecklistItem = ({
       className={cn(
         "group/item relative my-1",
         hasChildren &&
-          !isChild &&
-          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+        !isChild &&
+        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         !hasChildren &&
-          !isChild &&
-          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+        !isChild &&
+        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         isChild &&
-          "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
+        "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
         "first:mt-0",
         isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50",
         isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
@@ -320,7 +319,7 @@ export const NestedChecklistItem = ({
                   size="sm"
                   onClick={() => setShowAddSubItem(!showAddSubItem)}
                   className="h-8 w-8 p-0"
-                  title="Add sub-item"
+                  title={t("checklists.add_sub_item")}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -392,7 +391,7 @@ export const NestedChecklistItem = ({
                 type="text"
                 value={newSubItemText}
                 onChange={(e) => setNewSubItemText(e.target.value)}
-                placeholder="Add sub-item..."
+                placeholder={t("checklists.add_sub_item_input")}
                 className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-2 focus:ring-ring"
                 autoFocus
               />
@@ -403,7 +402,7 @@ export const NestedChecklistItem = ({
               disabled={!newSubItemText.trim()}
               className="px-3"
             >
-              Add
+              {t("checklists.add")}
             </Button>
             <Button
               type="button"

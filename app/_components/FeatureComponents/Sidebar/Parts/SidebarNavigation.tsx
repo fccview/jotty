@@ -6,6 +6,7 @@ import { cn } from "@/app/_utils/global-utils";
 import { AppMode } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface SidebarNavigationProps {
   mode: AppMode;
@@ -23,15 +24,16 @@ export const SidebarNavigation = ({
   onModeChange,
 }: SidebarNavigationProps) => {
   const { user } = useAppMode();
+  const t = useTranslations();
   const modes: ModeOption[] = [
     {
       id: Modes.CHECKLISTS,
-      label: "Checklists",
+      label: t("checklists.title"),
       icon: CheckSquare,
     },
     {
       id: Modes.NOTES,
-      label: "Notes",
+      label: t("notes.title"),
       icon: FileText,
     },
   ];

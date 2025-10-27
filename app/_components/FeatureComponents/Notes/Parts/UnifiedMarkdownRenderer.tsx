@@ -19,6 +19,7 @@ import { ImageAttachment } from "@/app/_components/GlobalComponents/FormElements
 import { VideoAttachment } from "@/app/_components/GlobalComponents/FormElements/VideoAttachment";
 import { lowlight } from "@/app/_utils/lowlight-utils";
 import { toHtml } from "hast-util-to-html";
+import { useTranslations } from "next-intl";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -43,6 +44,7 @@ export const UnifiedMarkdownRenderer = ({
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
+  const t = useTranslations();
 
   useEffect(() => {
     setIsClient(true);
@@ -67,7 +69,7 @@ export const UnifiedMarkdownRenderer = ({
             &quot;{displayQuote}&quot;
           </p>
           <p className="text-sm text-muted-foreground mt-4">
-            Start writing your note above!
+            {t("notes.start_writing")}
           </p>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown"
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { Item } from "@/app/_types";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface KanbanItemContentProps {
   item: Item;
@@ -37,6 +38,8 @@ export const KanbanItemContent = ({
   onEdit,
   onDelete,
 }: KanbanItemContentProps) => {
+  const t = useTranslations();
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -44,7 +47,7 @@ export const KanbanItemContent = ({
           {item.createdBy && isShared && (
             <div
               className="flex-shrink-0"
-              title={`Created by ${item.createdBy}`}
+              title={t("checklists.created_by", { username: item.createdBy })}
             >
               <UserAvatar
                 username={item.createdBy}
@@ -87,10 +90,10 @@ export const KanbanItemContent = ({
             <Dropdown
               value=""
               options={[
-                { id: "view", name: "View Task" },
-                { id: "add", name: "Add Subtask" },
-                { id: "rename", name: "Rename Task" },
-                { id: "delete", name: "Delete Task" },
+                { id: "view", name: t("checklists.view_task") },
+                { id: "add", name: t("checklists.add_subtask") },
+                { id: "rename", name: t("checklists.rename_task") },
+                { id: "delete", name: t("checklists.delete_task") },
               ]}
               onChange={(action) => {
                 switch (action) {
@@ -129,11 +132,10 @@ export const KanbanItemContent = ({
         {item.lastModifiedBy && isShared && (
           <div
             className="flex items-center gap-1"
-            title={`Last modified by ${item.lastModifiedBy}${
-              item.lastModifiedAt
-                ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
+            title={`${t("checklists.last_modified_by", { username: item.lastModifiedBy })}${item.lastModifiedAt
+                ? t("checklists.last_modified_on", { date: new Date(item.lastModifiedAt).toLocaleString() })
                 : ""
-            }`}
+              }`}
           >
             <UserAvatar
               username={item.lastModifiedBy}
@@ -152,7 +154,7 @@ export const KanbanItemContent = ({
       {item.children && item.children.length > 0 && (
         <>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Subtasks</span>
+            <span>{t("checklists.subtasks")}</span>
             <span>
               {item.children.filter((c) => c.completed).length}/
               {item.children.length}
@@ -162,7 +164,7 @@ export const KanbanItemContent = ({
             progress={Math.round(
               (item.children.filter((c) => c.completed).length /
                 item.children.length) *
-                100
+              100
             )}
           />
         </>

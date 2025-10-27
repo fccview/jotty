@@ -58,11 +58,6 @@ export const NoteCard = ({ note, onSelect, isPinned = false, onTogglePin, isDrag
     };
   }, [note.content]);
 
-  const renderedContent = useMemo(
-    () => convertMarkdownToHtml(note.content || ""),
-    [note.content]
-  );
-
   const categoryName = useMemo(() => {
     return note.category ? note.category.split("/").pop() : null;
   }, [note.category]);

@@ -19,6 +19,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useNotesHome } from "@/app/_hooks/useNotesHome";
+import { useTranslations } from "next-intl";
 
 interface NotesHomeProps {
   notes: Note[];
@@ -40,20 +41,20 @@ export const NotesHome = ({
     handleDragEnd,
     pinned,
     recent,
-    stats,
     breakpointColumnsObj,
     handleTogglePin,
     isNotePinned,
   } = useNotesHome({ notes, categories, user });
+  const t = useTranslations();
 
   if (notes.length === 0) {
     return (
       <div className="flex-1 overflow-auto bg-background h-full">
         <EmptyState
           icon={<FileText className="h-10 w-10 text-muted-foreground" />}
-          title="No notes yet"
-          description="Create your first note to get started with your knowledge base."
-          buttonText="Create New Note"
+          title={t("notes.no_notes_yet")}
+          description={t("notes.create_your_first_note")}
+          buttonText={t("notes.create_note")}
           onButtonClick={() => onCreateModal()}
         />
       </div>
@@ -66,10 +67,10 @@ export const NotesHome = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
-              Notes
+              {t("notes.title")}
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
-              Your knowledge workspace
+              {t("notes.description")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -79,8 +80,8 @@ export const NotesHome = ({
               size="sm"
               className="flex-1 sm:size-lg"
             >
-              <span className="hidden sm:inline">All Notes</span>
-              <span className="sm:hidden">All</span>
+              <span className="hidden sm:inline">{t("notes.all_notes")}</span>
+              <span className="sm:hidden">{t("notes.all_notes_mobile")}</span>
             </Button>
             <Button
               onClick={() => onCreateModal()}
@@ -88,8 +89,8 @@ export const NotesHome = ({
               className="flex-1 sm:size-lg"
             >
               <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">New Note</span>
-              <span className="sm:hidden">New</span>
+              <span className="hidden sm:inline">{t("notes.new_note")}</span>
+              <span className="sm:hidden">{t("global.new")}</span>
             </Button>
           </div>
         </div>
@@ -101,7 +102,7 @@ export const NotesHome = ({
                 <Pin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Pinned Notes
+                {t("global.pinned")}
               </h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
@@ -146,7 +147,7 @@ export const NotesHome = ({
                 <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Recent Notes
+                {t("notes.recent_notes")}
               </h2>
               <div className="flex-1 h-px bg-border"></div>
               <Button
@@ -155,8 +156,8 @@ export const NotesHome = ({
                 size="sm"
                 className="ml-2"
               >
-                <span className="hidden sm:inline">Show All</span>
-                <span className="sm:hidden">All</span>
+                <span className="hidden sm:inline">{t("notes.show_all")}</span>
+                <span className="sm:hidden">{t("global.all")}</span>
                 <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </div>
@@ -185,8 +186,8 @@ export const NotesHome = ({
         {notes.length > 12 && (
           <div className="text-center mt-8">
             <p className="text-sm text-muted-foreground">
-              Showing {recent.length} of {notes.length} notes. Use the sidebar
-              to browse all or search above.
+              {t("notes.showing_notes", { count: recent.length, total: notes.length })}
+              {t("notes.use_sidebar_to_browse_all_or_search_above")}
             </p>
           </div>
         )}

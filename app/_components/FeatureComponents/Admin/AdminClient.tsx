@@ -18,12 +18,14 @@ import { AppSettingsTab } from "./Parts/AppSettingsTab";
 import { EditorSettingsTab } from "./Parts/EditorSettingsTab";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
+import { useTranslations } from "next-intl";
 
 interface AdminClientProps {
   username: string;
 }
 
 export const AdminClient = ({ username }: AdminClientProps) => {
+  const t = useTranslations();
   const [users, setUsers] = useState<User[]>([]);
   const [allLists, setAllLists] = useState<Checklist[]>([]);
   const [allDocs, setAllDocs] = useState<Note[]>([]);
@@ -80,7 +82,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   const handleDeleteUser = async (user: User) => {
     if (
       !confirm(
-        `Are you sure you want to delete user "${user.username}"? This action cannot be undone.`
+        t("admin.delete_user_confirmation_with_name", { username: user.username })
       )
     ) {
       return;
@@ -96,11 +98,11 @@ export const AdminClient = ({ username }: AdminClientProps) => {
       if (result.success) {
         setUsers((prev) => prev.filter((u) => u.username !== user.username));
       } else {
-        alert(result.error || "Failed to delete user");
+        alert(result.error || t("admin.failed_to_delete_user"));
       }
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("Failed to delete user");
+      alert(t("admin.failed_to_delete_user"));
     } finally {
       setDeletingUser(null);
     }
@@ -126,7 +128,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading admin dashboard...</p>
+          <p className="text-muted-foreground">{t("admin.loading_dashboard")}</p>
         </div>
       </div>
     );
@@ -135,8 +137,8 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   return (
     <div className="space-y-6">
       <SiteHeader
-        title="Admin Dashboard"
-        description="Manage users, content, and system settings"
+        title={t("admin.dashboard_title")}
+        description={t("admin.dashboard_description")}
       />
 
       <AdminTabs activeTab={activeTab} onTabChange={setActiveTab} />

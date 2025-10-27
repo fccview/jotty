@@ -8,6 +8,7 @@ import { Modal } from "../Modal";
 import { InfoCardVariant } from "@/app/_components/GlobalComponents/Cards/InfoCard";
 import { InfoBox } from "../../Cards/InfoBox";
 import { deleteAccount } from "@/app/_server/actions/users";
+import { useTranslations } from "next-intl";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ export const DeleteAccountModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
+  const t = useTranslations();
   const handleDelete = async () => {
     if (!confirmPassword.trim()) {
       setError("Password confirmation is required");
@@ -69,7 +70,7 @@ export const DeleteAccountModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Delete Account"
+      title={t("global.delete_account")}
       titleIcon={<Trash2 className="h-5 w-5 text-destructive" />}
     >
       <div className="space-y-4">
@@ -89,19 +90,19 @@ export const DeleteAccountModal = ({
 
         <div className="space-y-4">
           <InfoBox
-            title="Warning: This action cannot be undone"
+            title={t("global.warning_cannot_undo")}
             variant={InfoCardVariant.WARNING}
             items={[
-              "All your checklists and notes will be permanently deleted",
-              "All shared content will be removed",
-              "Your account and session data will be erased",
-              "This action is irreversible",
+              t("global.all_checklists_and_notes_will_be_permanently_deleted"),
+              t("global.all_shared_content_will_be_removed"),
+              t("global.your_account_and_session_data_will_be_erased"),
+              t("global.this_action_is_irreversible"),
             ]}
           ></InfoBox>
 
           <div>
             <label className="block text-sm font-medium mb-2">
-              Confirm Password
+              {t("global.confirm_password")}
             </label>
             <div className="relative">
               <input
@@ -109,7 +110,7 @@ export const DeleteAccountModal = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring pr-10"
-                placeholder="Enter your password to confirm"
+                placeholder={t("global.enter_your_password_to_confirm")}
                 disabled={isLoading}
               />
               <button
@@ -126,14 +127,14 @@ export const DeleteAccountModal = ({
               </button>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Enter your password to confirm account deletion
+              {t("global.enter_your_password_to_confirm_account_deletion")}
             </p>
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             onClick={handleDelete}
@@ -141,11 +142,11 @@ export const DeleteAccountModal = ({
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {isLoading ? (
-              "Deleting..."
+              t("global.deleting")
             ) : (
               <>
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Account
+                {t("global.delete_account")}
               </>
             )}
           </Button>

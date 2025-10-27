@@ -7,8 +7,10 @@ import { LoadingSpinner } from "@/app/_components/GlobalComponents/Layout/Loadin
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppSettings } from "@/app/_types";
 import { getAppSettings, updateAppSettings } from "@/app/_server/actions/config";
+import { useTranslations } from "next-intl";
 
 export const EditorSettingsTab = () => {
+    const t = useTranslations();
     const { showToast } = useToast();
     const [settings, setSettings] = useState<AppSettings | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -34,16 +36,16 @@ export const EditorSettingsTab = () => {
             } catch (error) {
                 showToast({
                     type: "error",
-                    title: "Load Error",
+                    title: t("global.error"),
                     message:
                         error instanceof Error
                             ? error.message
-                            : "Could not fetch settings.",
+                            : t("admin.settings.load_error"),
                 });
             }
         };
         loadSettings();
-    }, [showToast]);
+    }, [showToast, t]);
 
     const handleToggleChange = (field: keyof AppSettings["editor"], value: boolean) => {
         if (!settings) return;
@@ -78,19 +80,19 @@ export const EditorSettingsTab = () => {
             if (result.success) {
                 showToast({
                     type: "success",
-                    title: "Success",
-                    message: "Editor settings saved successfully.",
+                    title: t("global.success"),
+                    message: t("admin.editor.saved_success"),
                 });
                 setHasChanges(false);
             } else {
-                throw new Error(result.error || "Failed to save settings");
+                throw new Error(result.error || t("admin.settings.save_failed"));
             }
         } catch (error) {
             showToast({
                 type: "error",
-                title: "Save Error",
+                title: t("global.error"),
                 message:
-                    error instanceof Error ? error.message : "An unknown error occurred.",
+                    error instanceof Error ? error.message : t("global.unknown_error"),
             });
         } finally {
             setIsSaving(false);
@@ -104,18 +106,18 @@ export const EditorSettingsTab = () => {
             <div className="bg-card border border-border rounded-lg p-6">
                 <div className="space-y-6">
                     <div>
-                        <h3 className="text-lg font-semibold mb-2">Editor Features</h3>
+                        <h3 className="text-lg font-semibold mb-2">{t("admin.editor.editor_features")}</h3>
                         <p className="text-muted-foreground text-sm">
-                            Configure which editor features are enabled for all users.
+                            {t("admin.editor.configure_features")}
                         </p>
                     </div>
 
                     <div className="space-y-4">
                         <label className="flex items-center justify-between cursor-pointer">
                             <div className="space-y-1">
-                                <div className="text-sm font-medium">Slash Commands</div>
+                                <div className="text-sm font-medium">{t("admin.editor.slash_commands")}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    Enable the slash command menu (type &quot;/&quot; to insert elements)
+                                    {t("admin.editor.slash_commands_description")}
                                 </p>
                             </div>
                             <div className="relative">
@@ -139,9 +141,9 @@ export const EditorSettingsTab = () => {
 
                         <label className="flex items-center justify-between cursor-pointer">
                             <div className="space-y-1">
-                                <div className="text-sm font-medium">Bubble Menu</div>
+                                <div className="text-sm font-medium">{t("admin.editor.bubble_menu")}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    Enable the floating toolbar that appears when text is selected
+                                    {t("admin.editor.bubble_menu_description")}
                                 </p>
                             </div>
                             <div className="relative">
@@ -165,9 +167,9 @@ export const EditorSettingsTab = () => {
 
                         <label className="flex items-center justify-between cursor-pointer">
                             <div className="space-y-1">
-                                <div className="text-sm font-medium">Table Toolbar</div>
+                                <div className="text-sm font-medium">{t("admin.editor.table_toolbar")}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    Enable the toolbar that appears when editing tables
+                                    {t("admin.editor.table_toolbar_description")}
                                 </p>
                             </div>
                             <div className="relative">
@@ -198,7 +200,7 @@ export const EditorSettingsTab = () => {
                     disabled={!hasChanges || isSaving}
                     className="min-w-24"
                 >
-                    {isSaving ? "Saving..." : "Save Changes"}
+                    {isSaving ? t("global.saving") : t("admin.settings.save_changes")}
                 </Button>
             </div>
         </div>

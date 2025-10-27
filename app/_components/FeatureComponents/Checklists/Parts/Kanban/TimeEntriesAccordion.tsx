@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Clock, ChevronDown, ChevronRight } from "lucide-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface TimeEntriesAccordionProps {
   timeEntries: any[];
@@ -16,6 +17,7 @@ export const TimeEntriesAccordion = ({
   totalTime,
   formatTimerTime,
 }: TimeEntriesAccordionProps) => {
+  const t = useTranslations();
   const { usersPublicData } = useAppMode();
 
   const getUserAvatarUrl = (username: string) => {
@@ -39,7 +41,7 @@ export const TimeEntriesAccordion = ({
         <span className="flex items-center gap-1.5">
           <Clock className="h-3 w-3" />
           <span className="font-medium text-left">
-            {timeEntries.length} sessions
+            {t("checklists.sessions", { count: timeEntries.length })}
           </span>
           <span className="text-muted-foreground/60">•</span>
           <span className="font-semibold text-foreground">

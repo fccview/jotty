@@ -9,9 +9,10 @@ import {
   updateItem,
   deleteItem,
 } from "@/app/_server/actions/checklist-item";
-import { Edit2, Plus, Save, X } from "lucide-react";
+import { Plus, Save, X } from "lucide-react";
 import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
+import { useTranslations } from "next-intl";
 
 interface SubtaskModalProps {
   item: Item;
@@ -40,6 +41,7 @@ export const SubtaskModal = ({
   category,
   isShared,
 }: SubtaskModalProps) => {
+  const t = useTranslations();
   const [item, setItem] = useState(initialItem);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
@@ -222,29 +224,31 @@ export const SubtaskModal = ({
 
     if (item.createdBy) {
       metadata.push(
-        `Created by ${item.createdBy} on ${new Date(
-          item.createdAt!
-        ).toLocaleString()}`
+        t("checklists.created_by_on", {
+          username: item.createdBy,
+          date: new Date(item.createdAt!).toLocaleString()
+        })
       );
     }
 
     if (item.lastModifiedBy) {
       metadata.push(
-        `Last modified by ${item.lastModifiedBy} on ${new Date(
-          item.lastModifiedAt!
-        ).toLocaleString()}`
+        t("checklists.last_modified_by_on", {
+          username: item.lastModifiedBy,
+          date: new Date(item.lastModifiedAt!).toLocaleString()
+        })
       );
     }
 
     if (item.history?.length) {
-      metadata.push(`Status changes: ${item.history.length}`);
+      metadata.push(t("checklists.status_changes", { count: item.history.length }));
     }
 
     return metadata.length ? (
       <div className="border-t border-border pt-4">
         <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
           <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Metadata
+            {t("checklists.metadata")}
           </h5>
           <div className="space-y-1.5">
             {metadata.map((text, i) => (
@@ -266,7 +270,7 @@ export const SubtaskModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={item.text || "Untitled Task"}
+      title={item.text || t("checklists.untitled_task")}
       className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] !max-h-[80vh] overflow-y-auto"
     >
       <div className="space-y-6">
@@ -274,14 +278,14 @@ export const SubtaskModal = ({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Task Title
+                {t("checklists.task_title")}
               </label>
               <input
                 type="text"
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all text-base"
-                placeholder="Enter task title..."
+                placeholder={t("checklists.enter_task_title")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -299,13 +303,13 @@ export const SubtaskModal = ({
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Description
+                {t("global.description")}
               </label>
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all min-h-[120px] text-base resize-y"
-                placeholder="Add a description (optional)..."
+                placeholder={t("checklists.add_description_optional")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.ctrlKey) {
                     e.preventDefault();
@@ -321,19 +325,19 @@ export const SubtaskModal = ({
                 }}
               />
               <p className="text-xs text-muted-foreground mt-2">
-                Press{" "}
+                {t("checklists.press_enter_save_title")}{" "}
                 <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] border border-border">
-                  Enter
+                  {t("checklists.enter_key")}
                 </kbd>{" "}
-                to save title,
+                {t("checklists.to_save_title")},
                 <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] border border-border mx-1">
-                  Ctrl+Enter
+                  {t("checklists.ctrl_enter")}
                 </kbd>{" "}
-                to save description,
+                {t("checklists.to_save_description")},
                 <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] border border-border ml-1">
-                  Esc
+                  {t("checklists.esc_key")}
                 </kbd>{" "}
-                to cancel
+                {t("checklists.to_cancel")}
               </p>
             </div>
             <div className="flex justify-end gap-2 pt-2">
@@ -348,11 +352,11 @@ export const SubtaskModal = ({
                 }}
               >
                 <X className="h-4 w-4 mr-2" />
-                Cancel
+                {t("global.cancel")}
               </Button>
               <Button onClick={handleSave}>
                 <Save className="h-4 w-4 mr-2" />
-                Save Changes
+                {t("global.save_changes")}
               </Button>
             </div>
           </div>
@@ -374,7 +378,7 @@ export const SubtaskModal = ({
           <div className="border-t border-border pt-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <span>Subtasks</span>
+                <span>{t("checklists.subtasks")}</span>
                 {item.children?.length ? (
                   <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                     {item.children.filter((s) => s.completed).length} /{" "}
@@ -390,7 +394,7 @@ export const SubtaskModal = ({
                   disabled={!item.children?.length}
                   className="text-xs"
                 >
-                  Complete All
+                  {t("checklists.complete_all")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -399,7 +403,7 @@ export const SubtaskModal = ({
                   disabled={!item.children?.length}
                   className="text-xs"
                 >
-                  Reset All
+                  {t("checklists.reset_all")}
                 </Button>
               </div>
             </div>
@@ -425,7 +429,7 @@ export const SubtaskModal = ({
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground text-sm bg-muted/20 rounded-lg border border-dashed border-border mb-4">
-                No subtasks yet. Add one below to get started.
+                {t("checklists.no_subtasks_yet")}
               </div>
             )}
 
@@ -434,7 +438,7 @@ export const SubtaskModal = ({
                 type="text"
                 value={newSubtaskText}
                 onChange={(e) => setNewSubtaskText(e.target.value)}
-                placeholder="Add a subtask..."
+                placeholder={t("checklists.add_a_subtask")}
                 className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -446,7 +450,7 @@ export const SubtaskModal = ({
               <Button
                 onClick={() => handleAddSubtask()}
                 disabled={!newSubtaskText.trim()}
-                title="Add subtask"
+                title={t("checklists.add_subtask")}
               >
                 <Plus className="h-4 w-4" />
               </Button>

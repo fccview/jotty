@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { ImageIcon, X } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface CompactImageResizeOverlayProps {
   isVisible: boolean;
@@ -31,7 +32,7 @@ export const CompactImageResizeOverlay = ({
   const [width, setWidth] = useState<string>("");
   const [height, setHeight] = useState<string>("");
   const overlayRef = useRef<HTMLDivElement>(null);
-
+  const t = useTranslations();
   useEffect(() => {
     if (isVisible) {
       setWidth(currentWidth?.toString() || "");
@@ -148,10 +149,10 @@ export const CompactImageResizeOverlay = ({
             onClick={onClose}
             className="text-xs"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button size="sm" onClick={handleApply} className="text-xs">
-            Apply
+            {t("global.apply")}
           </Button>
         </div>
       </div>

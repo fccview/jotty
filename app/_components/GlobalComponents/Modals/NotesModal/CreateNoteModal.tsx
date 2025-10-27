@@ -9,6 +9,7 @@ import { Modal } from "../Modal";
 import { CategoryInput } from "@/app/_components/GlobalComponents/FormElements/CategoryInput";
 import { Modes } from "@/app/_types/enums";
 import { createCategory } from "@/app/_server/actions/category";
+import { useTranslations } from "next-intl";
 
 interface CreateNoteModalProps {
   onClose: () => void;
@@ -29,6 +30,7 @@ export const CreateNoteModal = ({
   const [isCreating, setIsCreating] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations();
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -76,7 +78,7 @@ export const CreateNoteModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Create New Note"
+      title={t("notes.create_note")}
       titleIcon={<DocIcon className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -85,7 +87,7 @@ export const CreateNoteModal = ({
             htmlFor="title"
             className="block text-sm font-medium text-foreground mb-2"
           >
-            Title *
+            {t("global.title")} *
           </label>
           <input
             ref={titleInputRef}
@@ -94,7 +96,7 @@ export const CreateNoteModal = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Enter note title..."
+            placeholder={t("notes.enter_note_title")}
             required
             disabled={isCreating}
           />
@@ -119,14 +121,14 @@ export const CreateNoteModal = ({
             disabled={isCreating}
             className="flex-1"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="submit"
             disabled={!title.trim() || isCreating}
             className="flex-1"
           >
-            {isCreating ? "Creating..." : "Create Note"}
+            {isCreating ? t("global.creating") : t("notes.create_note")}
           </Button>
         </div>
       </form>

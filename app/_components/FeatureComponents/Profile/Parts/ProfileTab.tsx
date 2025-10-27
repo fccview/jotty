@@ -23,6 +23,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { generateApiKey, getApiKey } from "@/app/_server/actions/api";
 import { User as UserData } from "@/app/_types";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
+import { useTranslations } from "next-intl";
 
 interface ProfileTabProps {
   user: UserData | null;
@@ -38,6 +39,7 @@ export const ProfileTab = ({
   isSsoUser,
 }: ProfileTabProps) => {
   const router = useRouter();
+  const t = useTranslations();
   const [editedUsername, setEditedUsername] = useState(user?.username || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -121,12 +123,12 @@ export const ProfileTab = ({
 
   const handleSaveProfile = async () => {
     if (!editedUsername.trim()) {
-      setError("Username is required");
+      setError(t("profile.username_required"));
       return;
     }
 
     if (newPassword && newPassword !== confirmPassword) {
-      setError("New passwords do not match");
+      setError(t("profile.passwords_dont_match"));
       return;
     }
 
@@ -149,7 +151,7 @@ export const ProfileTab = ({
       const result = await updateProfile(formData);
 
       if (result.success) {
-        setSuccess("Profile updated successfully!");
+        setSuccess(t("profile.profile_updated_success"));
         setUser((prev: UserType | null) =>
           prev
             ? { ...prev, username: editedUsername, avatarUrl: avatarUrl }
@@ -166,10 +168,10 @@ export const ProfileTab = ({
 
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(result.error || "Failed to update profile");
+        setError(result.error || t("profile.failed_to_update_profile"));
       }
     } catch (error) {
-      setError("Failed to update profile. Please try again.");
+      setError(`${t("profile.failed_to_update_profile")} ${t("profile.try_again")}`);
     }
   };
 
@@ -189,13 +191,13 @@ export const ProfileTab = ({
         setUser((prev: UserType | null) =>
           prev ? { ...prev, avatarUrl: url } : null
         );
-        setSuccess("Avatar updated successfully!");
+        setSuccess(t("profile.avatar_updated_success"));
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(result.error || "Failed to update avatar");
+        setError(result.error || t("profile.failed_to_update_avatar"));
       }
     } catch (error) {
-      setError("Failed to update avatar. Please try again.");
+      setError(`${t("profile.failed_to_update_avatar")} ${t("profile.try_again")}`);
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -214,13 +216,13 @@ export const ProfileTab = ({
         setUser((prev: UserType | null) =>
           prev ? { ...prev, avatarUrl: undefined } : null
         );
-        setSuccess("Avatar removed successfully!");
+        setSuccess(t("profile.avatar_removed_success"));
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(result.error || "Failed to remove avatar");
+        setError(result.error || t("profile.failed_to_remove_avatar"));
       }
     } catch (error) {
-      setError("Failed to remove avatar. Please try again.");
+      setError(`${t("profile.failed_to_remove_avatar")} ${t("profile.try_again")}`);
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -236,7 +238,7 @@ export const ProfileTab = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{user?.username}&apos;s profile</h2>
+        <h2 className="text-2xl font-bold">{t("profile.profile_title", { username: user?.username || "" })}</h2>
       </div>
 
       {error && (
@@ -264,8 +266,8 @@ export const ProfileTab = ({
             />
             {!isDemoMode && (
               <ImageUpload
-                label="Avatar"
-                description="Upload a profile picture (PNG, JPG, WebP up to 5MB)"
+                label={t("profile.avatar")}
+                description={t("profile.avatar_description")}
                 currentUrl={avatarUrl || ""}
                 onUpload={handleAvatarUpload}
                 customUploadAction={uploadUserAvatar}
@@ -278,7 +280,7 @@ export const ProfileTab = ({
                 disabled={isAvatarDisabled}
                 className="text-destructive hover:bg-destructive/10"
               >
-                Remove Avatar
+                {t("profile.remove_avatar")}
               </Button>
             )}
           </div>
@@ -287,10 +289,9 @@ export const ProfileTab = ({
           <div className="space-y-4">
             <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-lg">
               <div>
-                <h3 className="font-medium">API Key</h3>
+                <h3 className="font-medium">{t("profile.api_key")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Generate an API key for programmatic access to your checklists
-                  and notes
+                  {t("profile.api_key_description")}
                 </p>
               </div>
               <div className="flex items-center justify-between gap-2 mt-2 md:mt-0">
@@ -304,7 +305,7 @@ export const ProfileTab = ({
                       size="sm"
                       onClick={() => setShowApiKey(!showApiKey)}
                       className="h-8 w-8 p-0"
-                      title={showApiKey ? "Hide API Key" : "Show API Key"}
+                      title={showApiKey ? t("profile.hide_api_key") : t("profile.show_api_key")}
                     >
                       {showApiKey ? (
                         <EyeOff className="h-4 w-4" />
@@ -317,7 +318,7 @@ export const ProfileTab = ({
                       size="sm"
                       onClick={handleCopyApiKey}
                       className="h-8 w-8 p-0"
-                      title="Copy API Key"
+                      title={t("profile.copy_api_key")}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -325,21 +326,21 @@ export const ProfileTab = ({
                 )}
                 {isDemoMode ? (
                   <span className="text-sm text-muted-foreground">
-                    disabled in demo mode
+                    {t("profile.disabled_in_demo")}
                   </span>
                 ) : (
                   <Button
                     variant="outline"
                     onClick={handleGenerateApiKey}
                     disabled={isGenerating}
-                    title={apiKey ? "Regenerate API Key" : "Generate API Key"}
+                    title={apiKey ? t("profile.regenerate_api_key") : t("profile.generate_api_key")}
                   >
                     {apiKey ? (
                       <RefreshCw className="h-4 w-4" />
                     ) : (
                       <Key className="h-4 w-4 mr-2" />
                     )}
-                    {isGenerating ? "Generating..." : apiKey ? "" : "Generate"}
+                    {isGenerating ? t("profile.generating") : apiKey ? "" : t("profile.generate")}
                   </Button>
                 )}
               </div>
@@ -347,82 +348,82 @@ export const ProfileTab = ({
           </div>
 
           <FormWrapper
-            title="Profile"
+            title={t("profile.profile")}
             action={
               <Button
                 onClick={handleSaveProfile}
-                title="Save Profile"
+                title={t("profile.save_profile")}
                 disabled={isSaveButtonDisabled}
                 size="sm"
               >
-                {isDemoMode ? "Disabled in demo mode" : "Save Profile"}
+                {isDemoMode ? t("profile.disabled_in_demo_mode") : t("profile.save_profile")}
               </Button>
             }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-foreground">
-                  Member Since
+                  {t("profile.member_since")}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {user?.createdAt
                     ? new Date(user.createdAt).toLocaleDateString()
-                    : "Unknown"}
+                    : t("profile.unknown")}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">User Type</p>
+                <p className="text-sm font-medium text-foreground">{t("profile.user_type")}</p>
                 <p className="text-sm text-muted-foreground">
-                  {isAdmin ? "Admin" : "User"}
+                  {isAdmin ? t("profile.admin") : t("profile.user")}
                 </p>
               </div>
             </div>
             <div className="space-y-2">
               <Input
                 id="username"
-                label="Username"
+                label={t("profile.username")}
                 type="text"
                 value={editedUsername}
                 onChange={(e) => setEditedUsername(e.target.value)}
-                placeholder="Your username"
+                placeholder={t("profile.username_placeholder")}
                 defaultValue={user?.username}
                 disabled={isUsernameDisabled}
                 className="mt-1"
               />
               <p className="text-sm text-muted-foreground">
-                Updating your username will log you out and require you to log in again.
+                {t("profile.username_change_warning")}
               </p>
             </div>
             <div className="space-y-2">
               <Input
                 id="current-password"
-                label="Current Password"
+                label={t("profile.current_password")}
                 type="password"
                 value={currentPassword}
                 disabled={isCurrentPasswordDisabled}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
+                placeholder={t("profile.current_password_placeholder")}
               />
             </div>
             <div className="space-y-2">
               <Input
                 id="new-password"
-                label="New Password"
+                label={t("profile.new_password")}
                 type="password"
                 value={newPassword}
                 disabled={isNewPasswordDisabled}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password"
+                placeholder={t("profile.new_password_placeholder")}
               />
             </div>
             <div className="space-y-2">
               <Input
                 id="confirm-password"
-                label="Confirm New Password"
+                label={t("profile.confirm_new_password")}
                 type="password"
                 disabled={isConfirmPasswordDisabled}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
+                placeholder={t("profile.confirm_new_password_placeholder")}
               />
             </div>
           </FormWrapper>

@@ -6,6 +6,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Loader2, Trash2 } from "lucide-react";
 import { MapPin, Clock } from "lucide-react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface SessionCardProps {
   session: Session;
@@ -18,6 +19,7 @@ export const SessionCard = ({
   onTerminate,
   isTerminating,
 }: SessionCardProps) => {
+  const t = useTranslations();
   const { isDemoMode } = useAppMode();
   return (
     <div
@@ -37,14 +39,14 @@ export const SessionCard = ({
             </span>
             {session.isCurrent && (
               <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
-                Current
+                {t("cards.current")}
               </span>
             )}
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <MapPin className="h-3 w-3" />
-              <span>{isDemoMode ? "Hidden in demo" : session.ipAddress}</span>
+              <span>{isDemoMode ? t("cards.hidden_in_demo") : session.ipAddress}</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
@@ -53,12 +55,12 @@ export const SessionCard = ({
           </div>
           <p className="text-xs text-muted-foreground truncate">
             {isDemoMode
-              ? "Browser info hidden in demo mode"
+              ? t("cards.browser_info_hidden")
               : session.userAgent}
           </p>
           {isDemoMode && (
             <p className="text-xs text-amber-600 mt-1">
-              Sensitive information is hidden in demo mode
+              {t("cards.sensitive_info_hidden")}
             </p>
           )}
         </div>

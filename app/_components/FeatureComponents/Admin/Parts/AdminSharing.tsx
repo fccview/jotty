@@ -4,6 +4,7 @@ import { CheckSquare, FileText, Globe, Users } from "lucide-react";
 import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import { AdminSharedItemsList } from "@/app/_components/FeatureComponents/Admin/Parts/AdminSharedItemsList";
 import { GlobalSharing, MostActiveSharer } from "@/app/_types";
+import { useTranslations } from "next-intl";
 
 interface AdminSharingProps {
   globalSharing: GlobalSharing;
@@ -11,25 +12,26 @@ interface AdminSharingProps {
 
 export const AdminSharing = ({ globalSharing }: AdminSharingProps) => {
   const { sharingStats, allSharedChecklists, allSharedNotes } = globalSharing;
+  const t = useTranslations();
 
   const stats = [
     {
-      title: "Shared Checklists",
+      title: t("admin.sharing.shared_checklists"),
       value: sharingStats?.totalSharedChecklists,
       icon: <CheckSquare className="h-6 w-6 text-primary" />,
     },
     {
-      title: "Shared Notes",
+      title: t("admin.sharing.shared_notes"),
       value: sharingStats?.totalSharedNotes,
       icon: <FileText className="h-6 w-6 text-primary" />,
     },
     {
-      title: "Public Shares",
+      title: t("admin.sharing.public_shares"),
       value: sharingStats?.totalPublicShares,
       icon: <Globe className="h-6 w-6 text-primary" />,
     },
     {
-      title: "Total Shares",
+      title: t("admin.sharing.total_shares"),
       value: sharingStats?.totalSharingRelationships,
       icon: <Users className="h-6 w-6 text-primary" />,
     },
@@ -38,10 +40,9 @@ export const AdminSharing = ({ globalSharing }: AdminSharingProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Global Sharing Overview</h2>
+        <h2 className="text-2xl font-bold">{t("admin.sharing.global_sharing_overview")}</h2>
         <div className="text-sm text-muted-foreground">
-          {sharingStats?.totalSharingRelationships || 0} total sharing
-          relationships
+          {sharingStats?.totalSharingRelationships || 0} {t("admin.sharing.total_sharing_relationships")}
         </div>
       </div>
 
@@ -59,7 +60,7 @@ export const AdminSharing = ({ globalSharing }: AdminSharingProps) => {
       {sharingStats?.mostActiveSharers?.length > 0 && (
         <div className="p-6 rounded-lg border border-border bg-card">
           <h3 className="text-lg font-semibold text-foreground mb-4">
-            Most Active Sharers
+            {t("admin.sharing.most_active_sharers")}
           </h3>
           <div className="space-y-2">
             {sharingStats.mostActiveSharers.map(
@@ -77,8 +78,7 @@ export const AdminSharing = ({ globalSharing }: AdminSharingProps) => {
                     </span>
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {sharer.sharedCount} item
-                    {sharer.sharedCount !== 1 ? "s" : ""} shared
+                    {t("admin.sharing.items_shared", { count: sharer.sharedCount })}
                   </span>
                 </div>
               )
@@ -89,12 +89,12 @@ export const AdminSharing = ({ globalSharing }: AdminSharingProps) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AdminSharedItemsList
-          title="Checklists"
+          title={t("checklists.title")}
           items={allSharedChecklists}
           icon={<CheckSquare className="h-5 w-5" />}
         />
         <AdminSharedItemsList
-          title="Notes"
+          title={t("notes.title")}
           items={allSharedNotes}
           icon={<FileText className="h-5 w-5" />}
         />

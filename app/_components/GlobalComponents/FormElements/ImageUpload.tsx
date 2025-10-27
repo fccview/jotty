@@ -4,6 +4,7 @@ import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { uploadAppIcon } from "@/app/_server/actions/config";
+import { useTranslations } from "next-intl";
 
 interface AppSettings {
   appName: string;
@@ -33,6 +34,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   customUploadAction,
 }) => {
   const { showToast } = useToast();
+  const t = useTranslations();
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
@@ -42,15 +44,15 @@ export const ImageUpload: FC<ImageUploadProps> = ({
     if (!file.type.startsWith("image/")) {
       return showToast({
         type: "error",
-        title: "Invalid File Type",
-        message: "Please select an image.",
+        title: t("upload.invalid_file_type"),
+        message: t("upload.please_select_image"),
       });
     }
     if (file.size > 5 * 1024 * 1024) {
       return showToast({
         type: "error",
-        title: "File Too Large",
-        message: "Image size cannot exceed 5MB.",
+        title: t("upload.file_too_large"),
+        message: t("upload.image_size_exceeded"),
       });
     }
 
@@ -68,16 +70,16 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         onUpload(iconType, result.data.url);
         showToast({
           type: "success",
-          title: "Upload Successful",
-          message: `${label} has been updated.`,
+          title: t("upload.upload_successful"),
+          message: t("upload.has_been_updated", { label }),
         });
       } else {
-        throw new Error(result.error || "An unknown error occurred.");
+        throw new Error(result.error || t("profile.unknown_error"));
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Upload Failed",
+        title: t("upload.upload_failed"),
         message: error instanceof Error ? error.message : String(error),
       });
     } finally {
@@ -98,11 +100,10 @@ export const ImageUpload: FC<ImageUploadProps> = ({
       <Label className="text-sm font-medium">{label}</Label>
       <p className="text-xs text-muted-foreground">{description}</p>
       <div
-        className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${
-          dragOver
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-muted-foreground/50"
-        }`}
+        className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${dragOver
+          ? "border-primary bg-primary/5"
+          : "border-muted-foreground/25 hover:border-muted-foreground/50"
+          }`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -114,11 +115,11 @@ export const ImageUpload: FC<ImageUploadProps> = ({
           <div className="flex items-center gap-3">
             <img
               src={currentUrl}
-              alt={`${label} preview`}
+              alt={`${label} ${t("common.preview")}`}
               className="w-12 h-12 object-contain rounded border"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">Current icon</p>
+              <p className="text-sm font-medium truncate">{t("upload.current_icon")}</p>
               <p className="text-xs text-muted-foreground truncate">
                 {currentUrl.split("/").pop()}
               </p>
@@ -140,16 +141,16 @@ export const ImageUpload: FC<ImageUploadProps> = ({
             className="text-center cursor-pointer block"
           >
             <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm font-medium">Drop image or click to upload</p>
+            <p className="text-sm font-medium">{t("upload.drop_or_click")}</p>
             <p className="text-xs text-muted-foreground">
-              PNG, JPG, WebP up to 5MB
+              {t("upload.file_formats")}
             </p>
           </label>
         )}
         {isUploading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm mt-2">Uploading...</p>
+            <p className="text-sm mt-2">{t("upload.uploading")}</p>
           </div>
         )}
       </div>

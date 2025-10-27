@@ -5,6 +5,7 @@ import { Editor } from "@tiptap/react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Table } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface TableInsertModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ export const TableInsertModal = ({
 }: TableInsertModalProps) => {
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(3);
-
+  const t = useTranslations();
   const handleInsert = () => {
     editor
       .chain()
@@ -73,14 +74,14 @@ export const TableInsertModal = ({
             onClick={onClose}
             className="flex-1 border-border text-foreground hover:bg-muted/50"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="button"
             onClick={handleInsert}
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            Insert Table
+            {t("global.insert_table")}
           </Button>
         </div>
       </div>

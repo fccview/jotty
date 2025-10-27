@@ -10,6 +10,7 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Category } from "@/app/_types";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface EditChecklistModalProps {
   checklist: {
@@ -35,7 +36,7 @@ export const EditChecklistModal = ({
   const [category, setCategory] = useState(checklist.category || "");
   const [isLoading, setIsLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
-
+  const t = useTranslations();
   useEffect(() => {
     const checkOwnership = async () => {
       try {
@@ -81,13 +82,13 @@ export const EditChecklistModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Edit Checklist"
+      title={t("checklists.edit_checklist")}
       titleIcon={<ListTodo className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Checklist Name *
+            {t("checklists.checklist_name")} *
           </label>
           <input
             type="text"
@@ -103,7 +104,7 @@ export const EditChecklistModal = ({
         {isOwner && (
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Category
+              {t("global.category")}
             </label>
             <CategoryTreeSelector
               categories={categories}
@@ -123,14 +124,14 @@ export const EditChecklistModal = ({
             disabled={isLoading}
             className="flex-1"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="submit"
             disabled={isLoading || !title.trim()}
             className="flex-1"
           >
-            {isLoading ? "Updating..." : "Update Checklist"}
+            {isLoading ? t("global.updating") : t("checklists.update_checklist")}
           </Button>
         </div>
       </form>
