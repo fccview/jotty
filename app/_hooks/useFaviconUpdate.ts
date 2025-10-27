@@ -1,14 +1,13 @@
 "use client";
 
 import { useCallback } from "react";
-import { getSettings } from "@/app/_server/actions/config";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 export const useFaviconUpdate = () => {
-  const { isRwMarkable } = useAppMode();
+  const { isRwMarkable, appSettings } = useAppMode();
   const updateFavicons = useCallback(async () => {
     try {
-      const settings = await getSettings();
+      if (!appSettings) return;
 
       if (isRwMarkable) {
         let mainFavicon = document.querySelector(
@@ -20,7 +19,7 @@ export const useFaviconUpdate = () => {
         }
       }
 
-      if (settings["16x16Icon"]) {
+      if (appSettings["16x16Icon"]) {
         let favicon16 = document.querySelector(
           'link[rel="icon"][sizes="16x16"]'
         ) as HTMLLinkElement;
@@ -31,7 +30,7 @@ export const useFaviconUpdate = () => {
           favicon16.type = "image/png";
           document.head.appendChild(favicon16);
         }
-        favicon16.href = settings["16x16Icon"];
+        favicon16.href = appSettings["16x16Icon"];
 
         let mainFavicon = document.querySelector(
           'link[rel="icon"]:not([sizes])'
@@ -42,10 +41,10 @@ export const useFaviconUpdate = () => {
           mainFavicon.type = "image/png";
           document.head.appendChild(mainFavicon);
         }
-        mainFavicon.href = settings["16x16Icon"];
+        mainFavicon.href = appSettings["16x16Icon"];
       }
 
-      if (settings["32x32Icon"]) {
+      if (appSettings["32x32Icon"]) {
         let favicon32 = document.querySelector(
           'link[rel="icon"][sizes="32x32"]'
         ) as HTMLLinkElement;
@@ -56,7 +55,7 @@ export const useFaviconUpdate = () => {
           favicon32.type = "image/png";
           document.head.appendChild(favicon32);
         }
-        favicon32.href = settings["32x32Icon"];
+        favicon32.href = appSettings["32x32Icon"];
 
         let mainFavicon = document.querySelector(
           'link[rel="icon"]:not([sizes])'
@@ -67,10 +66,10 @@ export const useFaviconUpdate = () => {
           mainFavicon.type = "image/png";
           document.head.appendChild(mainFavicon);
         }
-        mainFavicon.href = settings["32x32Icon"];
+        mainFavicon.href = appSettings["32x32Icon"];
       }
 
-      if (settings["180x180Icon"]) {
+      if (appSettings["180x180Icon"]) {
         let appleTouchIcon = document.querySelector(
           'link[rel="apple-touch-icon"]'
         ) as HTMLLinkElement;
@@ -81,16 +80,16 @@ export const useFaviconUpdate = () => {
           appleTouchIcon.type = "image/png";
           document.head.appendChild(appleTouchIcon);
         }
-        appleTouchIcon.href = settings["180x180Icon"];
+        appleTouchIcon.href = appSettings["180x180Icon"];
       }
 
-      if (settings.appName) {
-        document.title = settings.appName;
+      if (appSettings.appName) {
+        document.title = appSettings.appName;
       }
     } catch (error) {
       console.error("Error updating favicons:", error);
     }
-  }, []);
+  }, [appSettings, isRwMarkable]);
 
   return { updateFavicons };
 };

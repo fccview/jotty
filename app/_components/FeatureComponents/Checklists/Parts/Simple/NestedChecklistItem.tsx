@@ -24,6 +24,7 @@ import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
 import { Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -38,6 +39,7 @@ interface NestedChecklistItemProps {
   isDeletingItem: boolean;
   isDragDisabled?: boolean;
   isShared?: boolean;
+  isSubtask?: boolean;
 }
 
 export const NestedChecklistItem = ({
@@ -53,6 +55,7 @@ export const NestedChecklistItem = ({
   isDeletingItem,
   isDragDisabled = false,
   isShared = false,
+  isSubtask = false,
 }: NestedChecklistItemProps) => {
   const { usersPublicData } = useAppMode();
 
@@ -91,7 +94,6 @@ export const NestedChecklistItem = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const [showAddSubItem, setShowAddSubItem] = useState(false);
   const [newSubItemText, setNewSubItemText] = useState("");
-  const [selectedAction, setSelectedAction] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -157,7 +159,6 @@ export const NestedChecklistItem = ({
   };
 
   const handleDropdownAction = (actionId: string) => {
-    setSelectedAction(actionId);
     setIsDropdownOpen(false);
     switch (actionId) {
       case "edit":
@@ -205,7 +206,8 @@ export const NestedChecklistItem = ({
         isChild &&
           "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
         "first:mt-0",
-        isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+        isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50",
+        isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
       )}
     >
       <div
@@ -290,7 +292,7 @@ export const NestedChecklistItem = ({
             <label
               htmlFor={item.id}
               className={cn(
-                "text-sm transition-all duration-200 cursor-pointer",
+                "text-sm transition-all duration-200 cursor-pointer items-center flex",
                 item.completed || completed
                   ? "line-through text-muted-foreground checked"
                   : "text-foreground"
@@ -299,49 +301,11 @@ export const NestedChecklistItem = ({
               {displayText}
             </label>
 
-            {(item.createdBy || item.lastModifiedBy) && isShared && (
-              <span
-                className={`items-center gap-1.5 group-hover/item:hidden hidden lg:flex text-xs text-muted-foreground absolute right-10 top-[27px] -translate-y-1/2`}
-              >
-                {item.createdBy && (
-                  <span
-                    className="flex items-center gap-1 border border-muted-foreground/50 bg-muted rounded-md p-1"
-                    title={`Created by ${item.createdBy}${
-                      item.createdAt
-                        ? ` on ${new Date(item.createdAt).toLocaleString()}`
-                        : ""
-                    }`}
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                    <UserAvatar
-                      username={item.createdBy}
-                      size="xs"
-                      avatarUrl={getUserAvatarUrl(item.createdBy) || ""}
-                    />
-                  </span>
-                )}
-
-                {item.lastModifiedBy && (
-                  <span
-                    className="flex items-center gap-1 border border-muted-foreground/50 bg-muted rounded-md p-1"
-                    title={`Last modified by ${item.lastModifiedBy}${
-                      item.lastModifiedAt
-                        ? ` on ${new Date(
-                            item.lastModifiedAt
-                          ).toLocaleString()}`
-                        : ""
-                    }`}
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                    <UserAvatar
-                      username={item.lastModifiedBy}
-                      size="xs"
-                      avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
-                    />
-                  </span>
-                )}
-              </span>
-            )}
+            <LastModifiedCreatedInfo
+              item={item}
+              isShared={isShared}
+              getUserAvatarUrl={getUserAvatarUrl}
+            />
           </div>
         )}
 

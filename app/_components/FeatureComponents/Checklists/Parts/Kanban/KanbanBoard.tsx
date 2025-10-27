@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { Checklist, User } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanItem } from "./KanbanItem";
@@ -9,6 +16,7 @@ import { ChecklistHeading } from "../Common/ChecklistHeading";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
 import { useKanbanBoard } from "../../../../../_hooks/useKanbanBoard";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { useSharing } from "@/app/_hooks/useSharing";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -56,6 +64,31 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
     activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
+  const { sharingStatus } = useSharing({
+    itemId: localChecklist.id,
+    itemType: "checklist",
+    itemOwner: localChecklist.owner || "",
+    onClose: () => {},
+    enabled: true,
+    itemTitle: localChecklist.title,
+    itemCategory: localChecklist.category,
+    isOpen: true,
+  });
+
+  const isShared =
+    (sharingStatus?.isShared || sharingStatus?.isPubliclyShared) ?? false;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+        delay: 100,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -76,7 +109,11 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
       <div className="flex-1 overflow-hidden pb-[8.5em]">
         {isClient ? (
-          <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
             <div className="h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4 overflow-x-auto">
               {columns.map((column) => {
                 const items = getItemsByStatus(column.status);
@@ -90,7 +127,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                     checklistId={localChecklist.id}
                     category={localChecklist.category || "Uncategorized"}
                     onUpdate={refreshChecklist}
-                    isShared={localChecklist.isShared || false}
+                    isShared={isShared}
                   />
                 );
               })}
@@ -104,7 +141,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   checklistId={localChecklist.id}
                   category={localChecklist.category || "Uncategorized"}
                   onUpdate={refreshChecklist}
-                  isShared={localChecklist.isShared || false}
+                  isShared={isShared}
                 />
               ) : null}
             </DragOverlay>
@@ -123,7 +160,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   checklistId={localChecklist.id}
                   category={localChecklist.category || "Uncategorized"}
                   onUpdate={refreshChecklist}
-                  isShared={localChecklist.isShared || false}
+                  isShared={isShared}
                 />
               );
             })}

@@ -39,9 +39,9 @@ export const KanbanColumn = ({
   const getColumnColor = (status: string) => {
     switch (status) {
       case TaskStatus.TODO:
-        return "border-border bg-muted/30";
+        return "border-border bg-primary/5";
       case TaskStatus.IN_PROGRESS:
-        return "border-primary/30 bg-primary/5";
+        return "border-primary/30 bg-primary/10";
       case TaskStatus.COMPLETED:
         return "border-green-500/30 bg-green-500/5";
       case TaskStatus.PAUSED:

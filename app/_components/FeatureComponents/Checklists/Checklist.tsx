@@ -16,8 +16,8 @@ import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/
 import { ChecklistHeading } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeading";
 import { ChecklistBody } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/ChecklistBody";
 import { ChecklistModals } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistModals";
-import { Toast } from "../../GlobalComponents/Feedback/Toast";
 import { ToastContainer } from "../../GlobalComponents/Feedback/ToastContainer";
+import { useSharing } from "@/app/_hooks/useSharing";
 
 interface ChecklistViewProps {
   list: Checklist;
@@ -65,7 +65,21 @@ export const ChecklistView = ({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const canDelete = localList.isShared
+  const { sharingStatus } = useSharing({
+    itemId: localList.id,
+    itemType: "checklist",
+    itemOwner: localList.owner || "",
+    onClose: () => {},
+    enabled: true,
+    itemTitle: localList.title,
+    itemCategory: localList.category,
+    isOpen: true,
+  });
+
+  const isShared =
+    (sharingStatus?.isShared || sharingStatus?.isPubliclyShared) ?? false;
+
+  const canDelete = isShared
     ? isAdmin || currentUsername === localList.owner
     : true;
   const deleteHandler = canDelete ? handleDeleteList : undefined;
@@ -135,6 +149,7 @@ export const ChecklistView = ({
           {...checklistHookProps}
           sensors={sensors}
           isLoading={isLoading}
+          isShared={isShared}
           isDeletingItem={deletingItemsCount > 0}
           handleAddSubItem={handleAddSubItem}
         />

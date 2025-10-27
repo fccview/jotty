@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
-import { getSettings } from "@/app/_server/actions/config";
 import { LegacyLogo } from "@/app/_components/GlobalComponents/Layout/Logo/LegacyLogo";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
@@ -15,47 +14,26 @@ export const DynamicLogo = ({
   className = "h-8 w-8",
   size = "32x32",
 }: DynamicLogoProps) => {
-  const [customIcon, setCustomIcon] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { isRwMarkable } = useAppMode();
+  const { isRwMarkable, appSettings } = useAppMode();
+  const [imageError, setImageError] = useState(false);
 
-  useEffect(() => {
-    const loadCustomIcon = async () => {
-      try {
-        const settings = await getSettings();
-        const iconKey =
-          size === "16x16"
-            ? "16x16Icon"
-            : size === "32x32"
-              ? "32x32Icon"
-              : "180x180Icon";
-        const iconUrl = settings[iconKey];
+  const iconKey =
+    size === "16x16"
+      ? "16x16Icon"
+      : size === "32x32"
+      ? "32x32Icon"
+      : "180x180Icon";
 
-        if (iconUrl) {
-          setCustomIcon(iconUrl);
-        }
-      } catch (error) {
-        console.error("Error loading custom icon:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const customIcon = appSettings?.[iconKey];
 
-    loadCustomIcon();
-  }, [size]);
-
-  if (loading) {
-    return <div className={`${className} bg-muted animate-pulse rounded`} />;
-  }
-
-  if (customIcon) {
+  if (customIcon && !imageError) {
     return (
       <img
         src={customIcon}
         alt="App Logo"
         className={`${className} object-contain`}
         onError={() => {
-          setCustomIcon(null);
+          setImageError(true);
         }}
       />
     );

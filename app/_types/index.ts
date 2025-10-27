@@ -28,15 +28,11 @@ export interface Item {
   estimatedTime?: number;
   targetDate?: string;
   children?: Item[];
-
-  // New optional fields for all items
   createdBy?: string;
   createdAt?: string;
   lastModifiedBy?: string;
   lastModifiedAt?: string;
   history?: StatusChange[];
-
-  // Optional description field (supports metadata comments)
   description?: string;
 }
 
