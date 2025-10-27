@@ -30,6 +30,10 @@ import {
   updateSharedItem,
 } from "@/app/_server/actions/sharing";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import {
+  shouldRefreshRecurringItem,
+  refreshRecurringItem,
+} from "@/app/_utils/recurrence-utils";
 
 const readListsRecursively = async (
   dir: string,
@@ -93,6 +97,64 @@ const readListsRecursively = async (
   return lists;
 };
 
+/**
+ * Check and refresh recurring items in a checklist
+ * If any recurring items are completed and past their due date, refresh them
+ * @param checklist - The checklist to check
+ * @returns Updated checklist if changes were made, otherwise original checklist
+ */
+const checkAndRefreshRecurringItems = async (
+  checklist: Checklist
+): Promise<{ checklist: Checklist; hasChanges: boolean }> => {
+  // Only process simple checklists (not task type)
+  if (checklist.type !== "simple") {
+    return { checklist, hasChanges: false };
+  }
+
+  let hasChanges = false;
+  const updatedItems = checklist.items.map((item) => {
+    if (shouldRefreshRecurringItem(item)) {
+      hasChanges = true;
+      return refreshRecurringItem(item);
+    }
+    return item;
+  });
+
+  if (!hasChanges) {
+    return { checklist, hasChanges: false };
+  }
+
+  // Create updated checklist
+  const updatedChecklist: Checklist = {
+    ...checklist,
+    items: updatedItems,
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Save the updated checklist back to file
+  try {
+    const ownerDir = path.join(
+      process.cwd(),
+      "data",
+      CHECKLISTS_FOLDER,
+      checklist.owner!
+    );
+    const categoryDir = path.join(
+      ownerDir,
+      checklist.category || "Uncategorized"
+    );
+    const filePath = path.join(categoryDir, `${checklist.id}.md`);
+
+    await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
+  } catch (error) {
+    console.error("Error saving refreshed recurring items:", error);
+    // Return original checklist if save fails
+    return { checklist, hasChanges: false };
+  }
+
+  return { checklist: updatedChecklist, hasChanges: true };
+};
+
 export const getLists = async (username?: string) => {
   try {
     let userDir: string;
@@ -148,7 +210,15 @@ export const getLists = async (username?: string) => {
       }
     }
 
-    return { success: true, data: lists };
+    // Check and refresh recurring items
+    const refreshedLists = await Promise.all(
+      lists.map(async (list) => {
+        const { checklist } = await checkAndRefreshRecurringItems(list);
+        return checklist;
+      })
+    );
+
+    return { success: true, data: refreshedLists };
   } catch (error) {
     console.error("Error in getLists:", error);
     return { success: false, error: "Failed to fetch lists" };

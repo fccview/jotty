@@ -1,6 +1,7 @@
 import { Item } from "@/app/_types";
 import { Checklist, ChecklistType } from "@/app/_types";
 import { ChecklistsTypes, TaskStatus } from "@/app/_types/enums";
+import { parseRecurrenceFromMarkdown, recurrenceToMarkdown } from "./recurrence-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (checklistType === ChecklistsTypes.TASK) {
@@ -59,7 +60,8 @@ export const parseMarkdown = (
       const completed = line.includes("- [x]");
       const text = line.replace(/^-\s*\[[x ]\]\s*/, "");
 
-      if (type === "task" && text.includes(" | ")) {
+      // Check if item has metadata (either task or recurrence)
+      if (text.includes(" | ")) {
         const parts = text.split(" | ");
         const itemText = parts[0].replace(/∣/g, "|");
         const metadata = parts.slice(1);
@@ -68,45 +70,52 @@ export const parseMarkdown = (
         let timeEntries: any[] = [];
         let estimatedTime: number | undefined;
         let targetDate: string | undefined;
+        let recurrence = parseRecurrenceFromMarkdown(metadata);
 
-        metadata.forEach((meta) => {
-          if (meta.startsWith("status:")) {
-            const statusValue = meta.substring(7) as TaskStatus;
-            if (
-              [
-                TaskStatus.TODO,
-                TaskStatus.IN_PROGRESS,
-                TaskStatus.COMPLETED,
-                TaskStatus.PAUSED,
-              ].includes(statusValue)
-            ) {
-              status = statusValue;
-            }
-          } else if (meta.startsWith("time:")) {
-            const timeValue = meta.substring(5);
-            if (timeValue && timeValue !== "0") {
-              try {
-                timeEntries = JSON.parse(timeValue);
-              } catch {
-                timeEntries = [];
+        // Parse task-specific metadata only if it's a task type checklist
+        if (type === "task") {
+          metadata.forEach((meta) => {
+            if (meta.startsWith("status:")) {
+              const statusValue = meta.substring(7) as TaskStatus;
+              if (
+                [
+                  TaskStatus.TODO,
+                  TaskStatus.IN_PROGRESS,
+                  TaskStatus.COMPLETED,
+                  TaskStatus.PAUSED,
+                ].includes(statusValue)
+              ) {
+                status = statusValue;
               }
+            } else if (meta.startsWith("time:")) {
+              const timeValue = meta.substring(5);
+              if (timeValue && timeValue !== "0") {
+                try {
+                  timeEntries = JSON.parse(timeValue);
+                } catch {
+                  timeEntries = [];
+                }
+              }
+            } else if (meta.startsWith("estimated:")) {
+              estimatedTime = parseInt(meta.substring(10));
+            } else if (meta.startsWith("target:")) {
+              targetDate = meta.substring(7);
             }
-          } else if (meta.startsWith("estimated:")) {
-            estimatedTime = parseInt(meta.substring(10));
-          } else if (meta.startsWith("target:")) {
-            targetDate = meta.substring(7);
-          }
-        });
+          });
+        }
 
         return {
           id: `${id}-${index}`,
           text: itemText,
           completed,
           order: index,
-          status,
-          timeEntries,
-          estimatedTime,
-          targetDate,
+          ...(type === "task" && {
+            status,
+            timeEntries,
+            estimatedTime,
+            targetDate,
+          }),
+          ...(recurrence && { recurrence }),
         };
       } else {
         return {
@@ -169,6 +178,12 @@ export const listToMarkdown = (list: Checklist): string => {
         return `- [${
           item.completed ? "x" : " "
         }] ${escapedText} | ${metadata.join(" | ")}`;
+      }
+
+      // Handle simple checklist items (with optional recurrence)
+      if (item.recurrence) {
+        const recurrenceParts = recurrenceToMarkdown(item.recurrence);
+        return `- [${item.completed ? "x" : " "}] ${escapedText} | ${recurrenceParts.join(" | ")}`;
       }
 
       return `- [${item.completed ? "x" : " "}] ${escapedText}`;

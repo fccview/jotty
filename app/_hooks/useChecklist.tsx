@@ -263,12 +263,15 @@ export const useChecklist = ({
     }
   };
 
-  const handleCreateItem = async (text: string) => {
+  const handleCreateItem = async (text: string, recurrence?: import("@/app/_types").RecurrenceRule) => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("listId", localList.id);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
+    if (recurrence) {
+      formData.append("recurrence", JSON.stringify(recurrence));
+    }
     const result = await createItem(formData);
     setIsLoading(false);
 
