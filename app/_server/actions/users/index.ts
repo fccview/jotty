@@ -426,6 +426,10 @@ export const getUsername = async (): Promise<string> => {
 export const getUsers = async () => {
   const users = await readJsonFile(USERS_FILE);
 
+  if (!users || !Array.isArray(users)) {
+    return [];
+  }
+
   return users.map(({ username, isAdmin, isSuperAdmin, avatarUrl }: User) => ({
     username,
     isAdmin,

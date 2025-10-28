@@ -183,6 +183,7 @@ export const parseMarkdown = (
           let itemText = text.replace(/∣/g, "|");
           let itemMetadata: Record<string, any> = {};
           let description: string | undefined;
+          let recurrence = undefined;
 
           if (itemText.includes(" | ")) {
             const parts = itemText.split(" | ");
@@ -200,6 +201,9 @@ export const parseMarkdown = (
                 }
               }
             });
+
+            // Parse recurrence from metadata
+            recurrence = parseRecurrenceFromMarkdown(parts.slice(1));
           }
 
           item = {
@@ -210,6 +214,7 @@ export const parseMarkdown = (
             description,
             ...metadata,
             ...itemMetadata,
+            ...(recurrence && { recurrence }),
           };
         }
 
@@ -337,6 +342,12 @@ const generateItemMarkdown = (
 
     if (Object.keys(itemMetadata).length > 0) {
       metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
+    }
+
+    // Serialize recurrence for simple checklist items
+    if (item.recurrence) {
+      const recurrenceParts = recurrenceToMarkdown(item.recurrence);
+      metadata.push(...recurrenceParts);
     }
 
     itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${
