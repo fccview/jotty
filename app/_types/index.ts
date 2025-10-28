@@ -10,9 +10,9 @@ export interface TimeEntry {
 }
 
 export interface RecurrenceRule {
-  rrule: string;          // RFC 5545 RRULE string (e.g., "FREQ=WEEKLY;INTERVAL=1")
-  dtstart: string;        // ISO date string for recurrence start
-  nextDue?: string;       // Calculated next occurrence (ISO date string)
+  rrule: string; // RFC 5545 RRULE string (e.g., "FREQ=WEEKLY;INTERVAL=1")
+  dtstart: string; // ISO date string for recurrence start
+  nextDue?: string; // Calculated next occurrence (ISO date string)
   lastCompleted?: string; // When last instance was completed (ISO date string)
 }
 
@@ -133,8 +133,10 @@ export interface User {
   notesDefaultMode?: NotesDefaultMode;
   pinnedLists?: string[];
   pinnedNotes?: string[];
+  enableRecurrence?: EnableRecurrence;
 }
 
+export type EnableRecurrence = "enable" | "disable";
 export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";

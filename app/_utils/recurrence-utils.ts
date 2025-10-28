@@ -1,4 +1,4 @@
-import { RRule, Frequency } from "rrule";
+import { RRule } from "rrule";
 import { RecurrenceRule, Item } from "@/app/_types";
 
 /**
@@ -117,13 +117,12 @@ export const calculateNextOccurrence = (
   after?: Date
 ): string | undefined => {
   try {
-    // Convert ISO dtstart to RFC 5545 format for RRule library
     const rfc5545Dtstart = isoToRFC5545(dtstart);
 
-    // Create RRule instance with properly formatted DTSTART
-    const rule = RRule.fromString(`DTSTART:${rfc5545Dtstart}\nRRULE:${rruleString}`);
+    const rule = RRule.fromString(
+      `DTSTART:${rfc5545Dtstart}\nRRULE:${rruleString}`
+    );
 
-    // Get next occurrence after the specified date (or now)
     const afterDate = after || new Date();
     const nextDate = rule.after(afterDate, false); // false = don't include afterDate itself
 
@@ -142,12 +141,10 @@ export const shouldRefreshRecurringItem = (item: Item): boolean => {
     return false;
   }
 
-  // If there's no nextDue, we should calculate it
   if (!item.recurrence.nextDue) {
     return true;
   }
 
-  // If nextDue is in the past, we should refresh
   const nextDueDate = new Date(item.recurrence.nextDue);
   const now = new Date();
 
@@ -166,14 +163,12 @@ export const refreshRecurringItem = (item: Item): Item => {
 
   const now = new Date();
 
-  // Calculate next occurrence after now
   const nextDue = calculateNextOccurrence(
     item.recurrence.rrule,
     item.recurrence.dtstart,
     now
   );
 
-  // Create refreshed item
   return {
     ...item,
     completed: false,
@@ -188,14 +183,17 @@ export const refreshRecurringItem = (item: Item): Item => {
 /**
  * Get human-readable description of a recurrence rule
  */
-export const getRecurrenceDescription = (recurrence: RecurrenceRule): string => {
+export const getRecurrenceDescription = (
+  recurrence: RecurrenceRule
+): string => {
   try {
     // Convert ISO dtstart to RFC 5545 format
     const rfc5545Dtstart = isoToRFC5545(recurrence.dtstart);
-    const rule = RRule.fromString(`DTSTART:${rfc5545Dtstart}\nRRULE:${recurrence.rrule}`);
+    const rule = RRule.fromString(
+      `DTSTART:${rfc5545Dtstart}\nRRULE:${recurrence.rrule}`
+    );
     return rule.toText();
   } catch (error) {
-    // Fallback to basic parsing
     const rrule = recurrence.rrule;
 
     if (rrule.includes("FREQ=DAILY")) {

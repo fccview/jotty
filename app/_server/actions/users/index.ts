@@ -9,6 +9,7 @@ import {
   NotesDefaultMode,
   Result,
   TableSyntax,
+  EnableRecurrence,
 } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
@@ -469,6 +470,7 @@ export const updateUserSettings = async ({
   landingPage,
   notesDefaultEditor,
   notesDefaultMode,
+  enableRecurrence,
 }: {
   preferredTheme?: string;
   imageSyntax?: ImageSyntax;
@@ -476,6 +478,7 @@ export const updateUserSettings = async ({
   landingPage?: LandingPage;
   notesDefaultEditor?: NotesDefaultEditor;
   notesDefaultMode?: NotesDefaultMode;
+  enableRecurrence?: EnableRecurrence;
 }): Promise<Result<{ user: User }>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -502,6 +505,8 @@ export const updateUserSettings = async ({
       updates.notesDefaultEditor = notesDefaultEditor;
     if (notesDefaultMode !== undefined)
       updates.notesDefaultMode = notesDefaultMode;
+    if (enableRecurrence !== undefined)
+      updates.enableRecurrence = enableRecurrence;
 
     const updatedUser: User = {
       ...allUsers[userIndex],

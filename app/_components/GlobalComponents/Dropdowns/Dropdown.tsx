@@ -107,7 +107,7 @@ export const Dropdown = ({
       )}
 
       {isOpen && !disabled && (
-        <div className="absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-track]:bg-muted/20 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30">
           <div className="py-1">
             {options.map((option) => (
               <button

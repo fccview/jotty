@@ -4,7 +4,14 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { updateUserSettings } from "@/app/_server/actions/users";
-import { User, TableSyntax, LandingPage, NotesDefaultEditor, NotesDefaultMode } from "@/app/_types";
+import {
+  User,
+  EnableRecurrence,
+  TableSyntax,
+  LandingPage,
+  NotesDefaultEditor,
+  NotesDefaultMode,
+} from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
@@ -15,6 +22,7 @@ import {
   themeSettingsSchema,
   editorSettingsSchema,
   navigationSettingsSchema,
+  checklistSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 
 interface SettingsTabProps {
@@ -27,24 +35,45 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const { showToast } = useToast();
   const allThemes = BUILT_IN_THEMES;
 
-  const [preferredTheme, setPreferredTheme] = useState<string>(user?.preferredTheme || "system");
-  const [notesDefaultEditor, setNotesDefaultEditor] = useState<NotesDefaultEditor>(user?.notesDefaultEditor || "wysiwyg");
-  const [tableSyntax, setTableSyntax] = useState<TableSyntax>(user?.tableSyntax || "html");
-  const [landingPage, setLandingPage] = useState<LandingPage>(user?.landingPage || Modes.CHECKLISTS);
-  const [notesDefaultMode, setNotesDefaultMode] = useState<NotesDefaultMode>(user?.notesDefaultMode || "view");
+  const [preferredTheme, setPreferredTheme] = useState<string>(
+    user?.preferredTheme || "system"
+  );
+  const [notesDefaultEditor, setNotesDefaultEditor] =
+    useState<NotesDefaultEditor>(user?.notesDefaultEditor || "wysiwyg");
+  const [tableSyntax, setTableSyntax] = useState<TableSyntax>(
+    user?.tableSyntax || "html"
+  );
+  const [landingPage, setLandingPage] = useState<LandingPage>(
+    user?.landingPage || Modes.CHECKLISTS
+  );
+  const [notesDefaultMode, setNotesDefaultMode] = useState<NotesDefaultMode>(
+    user?.notesDefaultMode || "view"
+  );
   const [initialSettings, setInitialSettings] = useState<Partial<User>>({
     preferredTheme: user?.preferredTheme || "system",
     tableSyntax: user?.tableSyntax || "html",
     landingPage: user?.landingPage || Modes.CHECKLISTS,
     notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
     notesDefaultMode: user?.notesDefaultMode || "view",
+    enableRecurrence: user?.enableRecurrence || "disable",
   });
 
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [enableRecurrence, setEnableRecurrence] = useState<EnableRecurrence>(
+    user?.enableRecurrence || "disable"
+  );
+
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const hasThemeChanges = preferredTheme !== initialSettings.preferredTheme;
-  const hasEditorChanges = notesDefaultEditor !== initialSettings.notesDefaultEditor || tableSyntax !== initialSettings.tableSyntax || notesDefaultMode !== initialSettings.notesDefaultMode;
+  const hasEditorChanges =
+    notesDefaultEditor !== initialSettings.notesDefaultEditor ||
+    tableSyntax !== initialSettings.tableSyntax ||
+    notesDefaultMode !== initialSettings.notesDefaultMode;
   const hasNavigationChanges = landingPage !== initialSettings.landingPage;
+  const hasChecklistsChanges =
+    enableRecurrence !== initialSettings.enableRecurrence;
 
   const validateAndSave = async <T extends Record<string, any>>(
     settings: T,
@@ -54,9 +83,9 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   ) => {
     try {
       schema.parse(settings);
-      setValidationErrors(prev => {
+      setValidationErrors((prev) => {
         const newErrors = { ...prev };
-        Object.keys(settings).forEach(key => {
+        Object.keys(settings).forEach((key) => {
           newErrors[key] = "";
         });
         return newErrors;
@@ -67,7 +96,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         error.errors.forEach((err: any) => {
           errors[err.path[0]] = err.message;
         });
-        setValidationErrors(prev => ({ ...prev, ...errors }));
+        setValidationErrors((prev) => ({ ...prev, ...errors }));
       }
       showToast({
         type: "error",
@@ -79,7 +108,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
 
     const result = await updateUserSettings(settings);
     if (result.success) {
-      setInitialSettings(prev => updateInitialSettings(prev));
+      setInitialSettings((prev) => updateInitialSettings(prev));
       router.refresh();
       showToast({
         type: "success",
@@ -87,7 +116,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         message: `Your ${sectionName.toLowerCase()} preferences have been updated.`,
       });
     } else {
-      console.error(`Failed to save ${sectionName.toLowerCase()} settings:`, result.error);
+      console.error(
+        `Failed to save ${sectionName.toLowerCase()} settings:`,
+        result.error
+      );
       showToast({
         type: "error",
         title: `Failed to save ${sectionName.toLowerCase()} settings`,
@@ -99,26 +131,37 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     router.refresh();
   };
 
-  const handleSaveThemeSettings = () => validateAndSave(
-    { preferredTheme },
-    themeSettingsSchema,
-    "Theme",
-    (prev) => ({ ...prev, preferredTheme })
-  );
+  const handleSaveThemeSettings = () =>
+    validateAndSave(
+      { preferredTheme },
+      themeSettingsSchema,
+      "Theme",
+      (prev) => ({ ...prev, preferredTheme })
+    );
 
-  const handleSaveEditorSettings = () => validateAndSave(
-    { notesDefaultEditor, tableSyntax, notesDefaultMode },
-    editorSettingsSchema,
-    "Notes Preferences",
-    (prev) => ({ ...prev, notesDefaultEditor, tableSyntax, notesDefaultMode })
-  );
+  const handleSaveEditorSettings = () =>
+    validateAndSave(
+      { notesDefaultEditor, tableSyntax, notesDefaultMode },
+      editorSettingsSchema,
+      "Notes Preferences",
+      (prev) => ({ ...prev, notesDefaultEditor, tableSyntax, notesDefaultMode })
+    );
 
-  const handleSaveNavigationSettings = () => validateAndSave(
-    { landingPage },
-    navigationSettingsSchema,
-    "Navigation",
-    (prev) => ({ ...prev, landingPage })
-  );
+  const handleSaveNavigationSettings = () =>
+    validateAndSave(
+      { landingPage },
+      navigationSettingsSchema,
+      "Navigation",
+      (prev) => ({ ...prev, landingPage })
+    );
+
+  const handleSaveChecklistsSettings = () =>
+    validateAndSave(
+      { enableRecurrence },
+      checklistSettingsSchema,
+      "Checklists",
+      (prev) => ({ ...prev, enableRecurrence })
+    );
 
   const tableSyntaxOptions = [
     { id: "markdown", name: "Markdown (e.g., | Header |)" },
@@ -133,6 +176,11 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const notesDefaultModeOptions = [
     { id: "edit", name: "Edit" },
     { id: "view", name: "View" },
+  ];
+
+  const enableRecurrenceOptions = [
+    { id: "enable", name: "Enable" },
+    { id: "disable", name: "Disable" },
   ];
 
   const landingPageOptions = [
@@ -173,7 +221,9 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             className="w-full"
           />
           {validationErrors.preferredTheme && (
-            <p className="text-sm text-destructive">{validationErrors.preferredTheme}</p>
+            <p className="text-sm text-destructive">
+              {validationErrors.preferredTheme}
+            </p>
           )}
           <p className="text-sm text-muted-foreground">
             Choose your preferred theme across all devices.
@@ -203,10 +253,18 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             className="w-full"
           />
           {validationErrors.notesDefaultMode && (
-            <p className="text-sm text-destructive">{validationErrors.notesDefaultMode}</p>
+            <p className="text-sm text-destructive">
+              {validationErrors.notesDefaultMode}
+            </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose if the note is automatically in edit mode or not {notesDefaultModeOptions.find(option => option.id !== notesDefaultMode)?.name} button in the note editor).
+            Choose if the note is automatically in edit mode or not{" "}
+            {
+              notesDefaultModeOptions.find(
+                (option) => option.id !== notesDefaultMode
+              )?.name
+            }{" "}
+            button in the note editor).
           </p>
         </div>
 
@@ -214,16 +272,27 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <Label htmlFor="notes-default-editor">Default Editor</Label>
           <Dropdown
             value={notesDefaultEditor}
-            onChange={(value) => setNotesDefaultEditor(value as NotesDefaultEditor)}
+            onChange={(value) =>
+              setNotesDefaultEditor(value as NotesDefaultEditor)
+            }
             options={notesDefaultEditorOptions}
             placeholder="Select notes default editor"
             className="w-full"
           />
           {validationErrors.notesDefaultEditor && (
-            <p className="text-sm text-destructive">{validationErrors.notesDefaultEditor}</p>
+            <p className="text-sm text-destructive">
+              {validationErrors.notesDefaultEditor}
+            </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose the default editor for your notes - (you can always switch by clicking on the {notesDefaultEditorOptions.find(option => option.id !== notesDefaultEditor)?.name} button in the note editor).
+            Choose the default editor for your notes - (you can always switch by
+            clicking on the{" "}
+            {
+              notesDefaultEditorOptions.find(
+                (option) => option.id !== notesDefaultEditor
+              )?.name
+            }{" "}
+            button in the note editor).
           </p>
         </div>
 
@@ -237,11 +306,37 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             className="w-full"
           />
           {validationErrors.tableSyntax && (
-            <p className="text-sm text-destructive">{validationErrors.tableSyntax}</p>
+            <p className="text-sm text-destructive">
+              {validationErrors.tableSyntax}
+            </p>
           )}
           <p className="text-sm text-muted-foreground">
             Choose how tables are rendered in your notes.
           </p>
+        </div>
+      </FormWrapper>
+
+      <FormWrapper
+        title="Checklists Preferences"
+        action={
+          <Button
+            onClick={handleSaveChecklistsSettings}
+            disabled={!hasChecklistsChanges}
+            size="sm"
+          >
+            Save Checklists
+          </Button>
+        }
+      >
+        <div className="space-y-2">
+          <Label htmlFor="enable-recurrence">Recurring checklists</Label>
+          <Dropdown
+            value={enableRecurrence}
+            onChange={(value) => setEnableRecurrence(value as EnableRecurrence)}
+            options={enableRecurrenceOptions}
+            placeholder="Select enable to add recurring checklists"
+            className="w-full"
+          />
         </div>
       </FormWrapper>
 
@@ -267,7 +362,9 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             className="w-full"
           />
           {validationErrors.landingPage && (
-            <p className="text-sm text-destructive">{validationErrors.landingPage}</p>
+            <p className="text-sm text-destructive">
+              {validationErrors.landingPage}
+            </p>
           )}
           <p className="text-sm text-muted-foreground">
             Select the default page to load after logging in.

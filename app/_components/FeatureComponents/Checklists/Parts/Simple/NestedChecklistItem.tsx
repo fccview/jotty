@@ -58,7 +58,7 @@ export const NestedChecklistItem = ({
   isShared = false,
   isSubtask = false,
 }: NestedChecklistItemProps) => {
-  const { usersPublicData } = useAppMode();
+  const { usersPublicData, user } = useAppMode();
 
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
@@ -290,7 +290,7 @@ export const NestedChecklistItem = ({
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-between gap-2">
-            <div className="flex-1 flex flex-col gap-1.5">
+            <div className="flex-1 flex gap-1.5">
               <label
                 htmlFor={item.id}
                 className={cn(
@@ -300,11 +300,12 @@ export const NestedChecklistItem = ({
                     : "text-foreground"
                 )}
               >
-                {displayText}
+                {item.recurrence && user?.enableRecurrence === "enable" && (
+                  <RecurrenceIndicator recurrence={item.recurrence} />
+                )}
+
+                <span>{displayText}</span>
               </label>
-              {item.recurrence && (
-                <RecurrenceIndicator recurrence={item.recurrence} />
-              )}
             </div>
 
             <LastModifiedCreatedInfo

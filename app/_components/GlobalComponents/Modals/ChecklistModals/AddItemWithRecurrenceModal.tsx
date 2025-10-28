@@ -6,19 +6,22 @@ import { RecurrenceRule } from "@/app/_types";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { RecurrenceSelector } from "@/app/_components/GlobalComponents/FormElements/RecurrenceSelector";
+import { Input } from "../../FormElements/Input";
 
 interface AddItemWithRecurrenceModalProps {
+  initialItemText: string;
   onClose: () => void;
   onSubmit: (text: string, recurrence?: RecurrenceRule) => void;
   isLoading?: boolean;
 }
 
 export const AddItemWithRecurrenceModal = ({
+  initialItemText,
   onClose,
   onSubmit,
   isLoading = false,
 }: AddItemWithRecurrenceModalProps) => {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialItemText || "");
   const [recurrence, setRecurrence] = useState<RecurrenceRule | undefined>();
   const textInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,16 +46,14 @@ export const AddItemWithRecurrenceModal = ({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Item Text *
-          </label>
-          <input
+          <Input
+            id="item-text"
             ref={textInputRef}
+            label="Recurring Item Text *"
             type="text"
-            value={text}
+            defaultValue={initialItemText}
             onChange={(e) => setText(e.target.value)}
-            placeholder="e.g., Water Plants"
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder="Enter the text for the recurring item"
             required
             disabled={isLoading}
           />

@@ -17,11 +17,12 @@ export const RecurrenceIndicator = ({
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md ${className}`}
+      className={`inline-flex items-center gap-1.5 relative group/recurrence-indicator bg-primary/10 rounded-md p-2 mr-2 ${className}`}
       title={`Recurring: ${description}`}
     >
-      <RefreshCw className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-      <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+      <RefreshCw className="h-4 w-4 text-primary" />
+
+      <span className="hidden group-hover/recurrence-indicator:block whitespace-nowrap text-xs font-medium text-muted-foreground absolute -top-6 left-1/2 -translate-x-1/2 bg-muted capitalize rounded-md p-1 shadow-sm">
         {description}
       </span>
     </div>
