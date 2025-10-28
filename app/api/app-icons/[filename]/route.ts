@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { withCacheControl } from "@/app/_middleware/caching";
 import { promises as fs } from "fs";
 import path from "path";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
+export const GET = withCacheControl(async function GET(
   request: NextRequest,
   { params }: { params: { filename: string } }
 ) {
@@ -46,7 +47,6 @@ export async function GET(
       return new NextResponse(file as any, {
         headers: {
           "Content-Type": contentType,
-          "Cache-Control": "public, max-age=31536000, immutable",
         },
       });
     } catch {
@@ -59,4 +59,5 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+},
+true);

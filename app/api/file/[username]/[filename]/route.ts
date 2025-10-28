@@ -134,7 +134,8 @@ export async function GET(
       return new NextResponse(fileBuffer as any, {
         headers: {
           "Content-Type": contentType,
-          "Cache-Control": "public, max-age=31536000",
+          "Cache-Control":
+            "private, no-cache, no-store, max-age=0, must-revalidate",
           "Content-Disposition": `inline; filename="${filename}"`,
         },
       });
