@@ -10,6 +10,8 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
 import { useState, useEffect, useRef } from "react";
 import { TaskStatus } from "@/app/_types/enums";
+import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
+import { RecurrenceRule } from "@/app/_types";
 
 interface Item {
   id: string;
@@ -20,6 +22,7 @@ interface Item {
   createdAt?: string;
   lastModifiedBy?: string;
   lastModifiedAt?: string;
+  recurrence?: RecurrenceRule;
 }
 
 interface ChecklistItemProps {
@@ -202,17 +205,22 @@ export const ChecklistItem = ({
           )}
         </div>
       ) : (
-        <label
-          htmlFor={item.id}
-          className={cn(
-            "flex-1 text-sm transition-all duration-200 cursor-pointer",
-            item.completed || status === TaskStatus.COMPLETED
-              ? "line-through text-muted-foreground"
-              : "text-foreground"
+        <div className="flex-1 flex flex-col gap-1.5">
+          <label
+            htmlFor={item.id}
+            className={cn(
+              "text-sm transition-all duration-200 cursor-pointer",
+              item.completed || status === TaskStatus.COMPLETED
+                ? "line-through text-muted-foreground"
+                : "text-foreground"
+            )}
+          >
+            {displayText}
+          </label>
+          {item.recurrence && (
+            <RecurrenceIndicator recurrence={item.recurrence} />
           )}
-        >
-          {displayText}
-        </label>
+        </div>
       )}
 
       {!isEditing && (

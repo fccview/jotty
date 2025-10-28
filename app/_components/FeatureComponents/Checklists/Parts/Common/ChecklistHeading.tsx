@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, ClipboardList, Users, Hash, Check, Globe } from "lucide-react";
+import { Plus, ClipboardList, Users, Hash, Check, Globe, RefreshCw } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Checklist } from "@/app/_types";
+import { Checklist, RecurrenceRule } from "@/app/_types";
 import { buildCategoryPath, isMobileDevice } from "@/app/_utils/global-utils";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
 import { useSharing } from "@/app/_hooks/useSharing";
 import { useRouter } from "next/navigation";
+import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 
 interface ChecklistHeadingProps {
   checklist: Checklist;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string, recurrence?: RecurrenceRule) => void;
   onBulkSubmit?: () => void;
   isLoading?: boolean;
   autoFocus?: boolean;
@@ -31,6 +32,7 @@ export const ChecklistHeading = ({
   submitButtonText = "Add Item",
 }: ChecklistHeadingProps) => {
   const [newItemText, setNewItemText] = useState("");
+  const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { handleCopyId, copied } = useChecklist({
@@ -54,6 +56,10 @@ export const ChecklistHeading = ({
 
     onSubmit(newItemText.trim());
     setNewItemText("");
+  };
+
+  const handleRecurrenceSubmit = (text: string, recurrence?: RecurrenceRule) => {
+    onSubmit(text, recurrence);
   };
 
   useEffect(() => {
@@ -107,6 +113,17 @@ export const ChecklistHeading = ({
               disabled={isLoading}
             />
             <div className="flex gap-2 lg:gap-3 items-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                onClick={() => setShowRecurrenceModal(true)}
+                disabled={isLoading}
+                title="Add recurring item"
+                className="px-3 lg:px-4 shadow-sm"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
               {onBulkSubmit && (
                 <Button
                   type="button"
@@ -134,6 +151,14 @@ export const ChecklistHeading = ({
           </form>
         </div>
       </div>
+
+      {showRecurrenceModal && (
+        <AddItemWithRecurrenceModal
+          onClose={() => setShowRecurrenceModal(false)}
+          onSubmit={handleRecurrenceSubmit}
+          isLoading={isLoading}
+        />
+      )}
     </>
   );
 };

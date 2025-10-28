@@ -1,6 +1,7 @@
 import { Item } from "@/app/_types";
 import { Checklist, ChecklistType } from "@/app/_types";
 import { ChecklistsTypes, TaskStatus } from "@/app/_types/enums";
+import { parseRecurrenceFromMarkdown, recurrenceToMarkdown } from "./recurrence-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (checklistType === ChecklistsTypes.TASK) {

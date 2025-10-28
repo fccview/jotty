@@ -44,3 +44,7 @@ next-env.d.ts
 /data
 
 *.test.yml
+
+#AI 
+.claude
+CLAUDE.md
