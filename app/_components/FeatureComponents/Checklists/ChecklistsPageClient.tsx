@@ -2,7 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Folder, CheckCircle, TrendingUp, Clock } from "lucide-react";
+import {
+  Folder,
+  CheckCircle,
+  TrendingUp,
+  Clock,
+  CheckIcon,
+  CheckSquare,
+} from "lucide-react";
 import { Checklist, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
@@ -152,8 +159,8 @@ export const ChecklistsPageClient = ({
           />
 
           <EmptyState
-            icon={<Folder className="h-10 w-10 text-muted-foreground" />}
-            title="No checklists yet"
+            icon={<CheckSquare className="h-10 w-10 text-muted-foreground" />}
+            title="No Checklists yet"
             description="Create your first checklist to start organizing your tasks."
             buttonText="New Checklist"
             onButtonClick={() => openCreateChecklistModal()}
