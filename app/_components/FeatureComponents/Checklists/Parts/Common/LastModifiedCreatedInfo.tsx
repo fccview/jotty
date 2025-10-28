@@ -1,6 +1,16 @@
 import { Item } from "@/app/_types";
-import { PencilIcon, PlusIcon } from "lucide-react";
+import { PenTool, FilePlus, Edit2Icon, ListPlus } from "lucide-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
 
 const LastModifiedCreatedInfo = ({
   item,
@@ -20,11 +30,10 @@ const LastModifiedCreatedInfo = ({
           {item.createdBy && (
             <span
               className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
-              title={`Created by ${item.createdBy}${
-                item.createdAt
-                  ? ` on ${new Date(item.createdAt).toLocaleString()}`
-                  : ""
-              }`}
+              title={`Created by ${item.createdBy}${item.createdAt
+                ? ` on ${new Date(item.createdAt).toLocaleString()}`
+                : ""
+                }`}
             >
               <UserAvatar
                 username={item.createdBy}
@@ -32,8 +41,8 @@ const LastModifiedCreatedInfo = ({
                 avatarUrl={getUserAvatarUrl(item.createdBy) || ""}
               />
               <span className="flex items-center gap-1">
-                <PlusIcon className="h-3 w-3" />
-                {item.createdAt ? new Date(item.createdAt).toDateString() : ""}
+                <ListPlus className="h-3 w-3" />
+                {item.createdAt ? formatDate(item.createdAt) : ""}
               </span>
             </span>
           )}
@@ -41,11 +50,10 @@ const LastModifiedCreatedInfo = ({
           {item.lastModifiedBy && (
             <span
               className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
-              title={`Last modified by ${item.lastModifiedBy}${
-                item.lastModifiedAt
-                  ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
-                  : ""
-              }`}
+              title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
+                ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
+                : ""
+                }`}
             >
               <UserAvatar
                 username={item.lastModifiedBy}
@@ -53,10 +61,8 @@ const LastModifiedCreatedInfo = ({
                 avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
               />
               <span className="flex items-center gap-1">
-                <PencilIcon className="h-3 w-3" />
-                {item.lastModifiedAt
-                  ? new Date(item.lastModifiedAt).toDateString()
-                  : ""}
+                <Edit2Icon className="h-3 w-3" />
+                {item.lastModifiedAt ? formatDate(item.lastModifiedAt) : ""}
               </span>
             </span>
           )}

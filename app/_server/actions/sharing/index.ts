@@ -424,10 +424,6 @@ export const getItemSharingStatus = async (
       return { success: false, error: "Not authenticated" };
     }
 
-    if (currentUser.username !== owner) {
-      return { success: false, error: "Unauthorized" };
-    }
-
     const metadata = await getItemSharingMetadata(itemId, type, owner);
 
     if (!metadata) {
@@ -473,15 +469,6 @@ export const getAllSharingStatuses = async (
     > = {};
 
     for (const item of items) {
-      if (currentUser.username !== item.owner) {
-        results[item.id] = {
-          isShared: false,
-          sharedWith: [],
-          isPubliclyShared: false,
-        };
-        continue;
-      }
-
       try {
         const metadata = await getItemSharingMetadata(
           item.id,
