@@ -13,7 +13,7 @@ interface FileModalProps {
   onClose: () => void;
   onSelectFile: (
     url: string,
-    type: "image" | "file",
+    type: "image" | "video" | "file",
     fileName: string,
     mimeType: string
   ) => void;
@@ -27,11 +27,14 @@ export const FileModal = ({
   const {
     isLoading,
     isUploading,
+    uploadError,
+    fileSizeError,
     selectedFile,
     setSelectedFile,
     activeTab,
     setActiveTab,
     loadFiles,
+    handleFileSelect,
     handleUpload,
     handleDeleteFile,
     filteredFiles,
@@ -41,12 +44,10 @@ export const FileModal = ({
     if (isOpen) loadFiles();
   }, [isOpen, loadFiles]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) =>
-    e.target.files?.[0] && setSelectedFile(e.target.files[0]);
 
   const handleFileClick = (
     url: string,
-    type: "image" | "file",
+    type: "image" | "video" | "file",
     fileName: string,
     mimeType: string
   ) => {
@@ -70,6 +71,8 @@ export const FileModal = ({
           onFileSelect={handleFileSelect}
           onUpload={handleUpload}
           isUploading={isUploading}
+          uploadError={uploadError || undefined}
+          fileSizeError={fileSizeError || undefined}
         />
         <FileGrid
           files={filteredFiles}

@@ -5,10 +5,11 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Item } from "@/app/_types";
+import { Item, Checklist } from "@/app/_types";
 import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface KanbanColumnProps {
   id: string;
@@ -17,7 +18,8 @@ interface KanbanColumnProps {
   status: TaskStatus;
   checklistId: string;
   category: string;
-  onUpdate?: () => void;
+  onUpdate: (updatedChecklist: Checklist) => void;
+  isShared: boolean;
 }
 
 export const KanbanColumn = ({
@@ -27,6 +29,7 @@ export const KanbanColumn = ({
   status,
   checklistId,
   category,
+  isShared,
   onUpdate,
 }: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({
@@ -36,9 +39,9 @@ export const KanbanColumn = ({
   const getColumnColor = (status: string) => {
     switch (status) {
       case TaskStatus.TODO:
-        return "border-border bg-muted/30";
+        return "border-border bg-primary/5";
       case TaskStatus.IN_PROGRESS:
-        return "border-primary/30 bg-primary/5";
+        return "border-primary/30 bg-primary/10";
       case TaskStatus.COMPLETED:
         return "border-green-500/30 bg-green-500/5";
       case TaskStatus.PAUSED:
@@ -94,6 +97,7 @@ export const KanbanColumn = ({
                 checklistId={checklistId}
                 category={category}
                 onUpdate={onUpdate}
+                isShared={isShared}
               />
             ))}
             {items.length === 0 && (

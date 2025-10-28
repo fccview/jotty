@@ -14,6 +14,8 @@ import { LoadingSpinner } from "@/app/_components/GlobalComponents/Layout/Loadin
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { AppSettings } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { MAX_FILE_SIZE } from "@/app/_consts/files";
 
 export const AppSettingsTab = () => {
   const { showToast } = useToast();
@@ -140,6 +142,32 @@ export const AppSettingsTab = () => {
               onChange={(e) => handleInputChange(field.id, e.target.value)}
             />
           ))}
+        </div>
+        <div>
+          <label
+            className="text-sm font-medium leading-none block mb-3"
+            htmlFor="notifyNewUpdates"
+          >
+            Notify me of new updates
+          </label>
+          <Dropdown
+            value={settings?.notifyNewUpdates || "yes"}
+            onChange={(value) => handleInputChange("notifyNewUpdates", value)}
+            options={[
+              { id: "yes", name: "Yes" },
+              { id: "no", name: "No" },
+            ]}
+          />
+        </div>
+        <div>
+          <Input
+            label="Maximum file upload size"
+            description="The maximum file size allowed for uploads in MB (applies to images, videos, and files)"
+            type="number"
+            id="maximumFileSize"
+            defaultValue={(settings?.maximumFileSize ? (settings.maximumFileSize / 1024 / 1024).toString() : (MAX_FILE_SIZE / 1024 / 1024).toString())}
+            onChange={(e) => handleInputChange("maximumFileSize", (Number(e.target.value) * 1024 * 1024).toString())}
+          />
         </div>
 
         <div>

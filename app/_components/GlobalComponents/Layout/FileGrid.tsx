@@ -6,14 +6,14 @@ import { ImageIcon, File } from "lucide-react";
 interface FileGridProps {
   files: FileItem[];
   isLoading: boolean;
-  activeTab: "images" | "files";
+  activeTab: "images" | "videos" | "files";
   onFileClick: (
     url: string,
-    type: "image" | "file",
+    type: "image" | "video" | "file",
     fileName: string,
     mimeType: string
   ) => void;
-  onDeleteFile: (fileName: string, fileType: "image" | "file") => void;
+  onDeleteFile: (fileName: string, fileType: "image" | "video" | "file") => void;
 }
 
 export const FileGrid = ({

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { getDeterministicColor } from "@/app/_utils/color-utils";
 
@@ -6,7 +6,7 @@ interface UserAvatarProps {
   username: string;
   avatarUrl?: string | null;
   className?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
 }
 
 export const UserAvatar: React.FC<UserAvatarProps> = ({
@@ -16,6 +16,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   size = "md",
 }) => {
   const sizeClasses = {
+    xs: "h-4 w-4 text-xs",
     sm: "h-6 w-6 text-sm",
     md: "h-8 w-8 text-base",
     lg: "h-10 w-10 text-lg",
@@ -48,7 +49,13 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
           className="w-full h-full object-cover rounded-full"
         />
       ) : (
-        <span>{initials}</span>
+        <span
+          className={`${sizeClasses[size]}${
+            size === "xs" ? " !text-[8px]" : ""
+          } flex items-center justify-center`}
+        >
+          {initials}
+        </span>
       )}
     </div>
   );

@@ -1,16 +1,29 @@
 "use client";
 
-import { Plus, FileText, FolderOpen } from "lucide-react";
+import {
+  Plus,
+  FileText,
+  FolderOpen,
+  Pin,
+  Clock,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Note, Category } from "@/app/_types";
+import { Note, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
-import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import Masonry from "react-masonry-css";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useNotesHome } from "@/app/_hooks/useNotesHome";
 
 interface NotesHomeProps {
   notes: Note[];
   categories: Category[];
+  user: User | null;
   onCreateModal: () => void;
   onSelectNote: (note: Note) => void;
 }
@@ -18,27 +31,20 @@ interface NotesHomeProps {
 export const NotesHome = ({
   notes,
   categories,
+  user,
   onCreateModal,
   onSelectNote,
 }: NotesHomeProps) => {
-  const recentDocs = [...notes]
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    )
-    .slice(0, 12);
-
-  const totalCategories = categories.length;
-
-  const breakpointColumnsObj = {
-    default: 3,
-    1600: 4,
-    1599: 3,
-    1280: 2,
-    1024: 2,
-    768: 1,
-    640: 1,
-  };
+  const {
+    sensors,
+    handleDragEnd,
+    pinned,
+    recent,
+    stats,
+    breakpointColumnsObj,
+    handleTogglePin,
+    isNotePinned,
+  } = useNotesHome({ notes, categories, user });
 
   if (notes.length === 0) {
     return (
@@ -57,56 +63,130 @@ export const NotesHome = ({
   return (
     <div className="flex-1 overflow-auto bg-background h-full">
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
               Notes
             </h1>
-            <p className="text-lg text-muted-foreground">
-              Your notes to store your ideas, thoughts, and knowledge.
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
+              Your knowledge workspace
             </p>
           </div>
-          <Button onClick={() => onCreateModal()} size="lg">
-            <Plus className="h-5 w-5 mr-2" />
-            New Note
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => (window.location.href = "/notes")}
+              size="sm"
+              className="flex-1 sm:size-lg"
+            >
+              <span className="hidden sm:inline">All Notes</span>
+              <span className="sm:hidden">All</span>
+            </Button>
+            <Button
+              onClick={() => onCreateModal()}
+              size="sm"
+              className="flex-1 sm:size-lg"
+            >
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">New Note</span>
+              <span className="sm:hidden">New</span>
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          <StatCard
-            icon={<FileText className="h-6 w-6 text-primary" />}
-            title="Total Notes"
-            value={notes.length}
-          />
-          <StatCard
-            icon={<FolderOpen className="h-6 w-6 text-primary" />}
-            title="Categories"
-            value={totalCategories}
-          />
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground mb-6">
-            Recent Notes
-          </h2>
-          <Masonry
-            breakpointCols={breakpointColumnsObj}
-            className="flex w-auto -ml-6"
-            columnClassName="pl-6 bg-clip-padding"
-          >
-            {recentDocs.map((doc) => (
-              <div key={`${doc.category}-${doc.id}`} className="mb-6">
-                <NoteCard note={doc} onSelect={onSelectNote} />
+        {pinned.length > 0 && (
+          <div className="mb-8 lg:mb-12 overflow-hidden">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Pin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-            ))}
-          </Masonry>
-        </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                Pinned Notes
+              </h2>
+              <div className="flex-1 h-px bg-border"></div>
+            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={pinned.map((note) => note.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <Masonry
+                  breakpointCols={breakpointColumnsObj}
+                  className="flex w-auto -ml-6"
+                  columnClassName="pl-6 bg-clip-padding"
+                >
+                  {pinned.map((note) => (
+                    <div
+                      key={`pinned-${note.category}-${note.id}`}
+                      className="mb-6"
+                    >
+                      <NoteCard
+                        note={note}
+                        onSelect={onSelectNote}
+                        isPinned={true}
+                        onTogglePin={handleTogglePin}
+                        isDraggable={true}
+                      />
+                    </div>
+                  ))}
+                </Masonry>
+              </SortableContext>
+            </DndContext>
+          </div>
+        )}
+
+        {recent.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                Recent Notes
+              </h2>
+              <div className="flex-1 h-px bg-border"></div>
+              <Button
+                variant="outline"
+                onClick={() => (window.location.href = "/notes")}
+                size="sm"
+                className="ml-2"
+              >
+                <span className="hidden sm:inline">Show All</span>
+                <span className="sm:hidden">All</span>
+                <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
+              </Button>
+            </div>
+            <Masonry
+              breakpointCols={breakpointColumnsObj}
+              className="flex w-auto -ml-6"
+              columnClassName="pl-6 bg-clip-padding"
+            >
+              {recent.map((note) => (
+                <div
+                  key={`recent-${note.category}-${note.id}`}
+                  className="mb-6"
+                >
+                  <NoteCard
+                    note={note}
+                    onSelect={onSelectNote}
+                    isPinned={isNotePinned(note)}
+                    onTogglePin={handleTogglePin}
+                  />
+                </div>
+              ))}
+            </Masonry>
+          </div>
+        )}
 
         {notes.length > 12 && (
           <div className="text-center mt-8">
             <p className="text-sm text-muted-foreground">
-              Showing {recentDocs.length} of {notes.length} notes. Use the
-              sidebar to browse all or search above.
+              Showing {recent.length} of {notes.length} notes. Use the sidebar
+              to browse all or search above.
             </p>
           </div>
         )}

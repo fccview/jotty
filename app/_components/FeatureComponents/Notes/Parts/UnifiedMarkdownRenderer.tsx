@@ -16,6 +16,7 @@ import { FileAttachment } from "@/app/_components/GlobalComponents/FormElements/
 import type { Components } from "react-markdown";
 import { QUOTES } from "@/app/_consts/notes";
 import { ImageAttachment } from "@/app/_components/GlobalComponents/FormElements/ImageAttachment";
+import { VideoAttachment } from "@/app/_components/GlobalComponents/FormElements/VideoAttachment";
 import { lowlight } from "@/app/_utils/lowlight-utils";
 import { toHtml } from "hast-util-to-html";
 
@@ -119,22 +120,35 @@ export const UnifiedMarkdownRenderer = ({
     a({ href, children, ...props }) {
       const childText = String(children);
       const isFileAttachment = childText.startsWith("📎 ") && href;
+      const isVideoAttachment = childText.startsWith("🎥 ") && href;
 
-      if (isFileAttachment) {
+      if (isFileAttachment || isVideoAttachment) {
         const fileName = childText.substring(2);
         const isImage = href.includes("/api/image/");
-        const mimeType = isImage ? "image/jpeg" : "application/octet-stream";
+        const isVideo = href.includes("/api/video/");
+        const mimeType = isImage ? "image/jpeg" : isVideo ? "video/mp4" : "application/octet-stream";
 
-        return isImage ? (
-          <ImageAttachment url={href} fileName={fileName} className="my-4" />
-        ) : (
-          <FileAttachment
-            url={href}
-            fileName={fileName}
-            mimeType={mimeType}
-            className="my-4"
-          />
-        );
+        if (isImage) {
+          return <ImageAttachment url={href} fileName={fileName} className="my-4" />;
+        } else if (isVideo) {
+          return (
+            <VideoAttachment
+              url={href}
+              fileName={fileName}
+              mimeType={mimeType}
+              className="my-4"
+            />
+          );
+        } else {
+          return (
+            <FileAttachment
+              url={href}
+              fileName={fileName}
+              mimeType={mimeType}
+              className="my-4"
+            />
+          );
+        }
       }
 
       return (

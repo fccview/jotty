@@ -1,0 +1,39 @@
+import { z } from "zod";
+import { Modes } from "@/app/_types/enums";
+
+export const userSettingsSchema = z.object({
+    preferredTheme: z.string().min(1, "Theme is required"),
+    tableSyntax: z.enum(["html", "markdown"], {
+        message: "Table syntax must be either 'html' or 'markdown'",
+    }),
+    landingPage: z.enum([Modes.CHECKLISTS, Modes.NOTES, "last-visited"], {
+        message: "Landing page must be 'checklists', 'notes', or 'last-visited'",
+    }),
+});
+
+export const themeSettingsSchema = z.object({
+    preferredTheme: z.string().min(1, "Theme is required"),
+});
+
+export const editorSettingsSchema = z.object({
+    notesDefaultEditor: z.enum(["wysiwyg", "markdown"], {
+        message: "Notes default editor must be either 'wysiwyg' or 'markdown'",
+    }),
+    tableSyntax: z.enum(["html", "markdown"], {
+        message: "Table syntax must be either 'html' or 'markdown'",
+    }),
+    notesDefaultMode: z.enum(["edit", "view"], {
+        message: "Notes default mode must be either 'edit' or 'view'",
+    }),
+});
+
+export const navigationSettingsSchema = z.object({
+    landingPage: z.enum([Modes.CHECKLISTS, Modes.NOTES, "last-visited"], {
+        message: "Landing page must be 'checklists', 'notes', or 'last-visited'",
+    }),
+});
+
+export type UserSettingsInput = z.infer<typeof userSettingsSchema>;
+export type ThemeSettingsInput = z.infer<typeof themeSettingsSchema>;
+export type EditorSettingsInput = z.infer<typeof editorSettingsSchema>;
+export type NavigationSettingsInput = z.infer<typeof navigationSettingsSchema>;

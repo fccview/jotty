@@ -7,6 +7,7 @@ interface useSearchProps {
   notes: Note[];
   mode: AppMode;
   onModeChange?: (mode: AppMode) => void;
+  onResultSelect?: () => void;
 }
 
 interface SearchResult {
@@ -20,6 +21,7 @@ export const useSearch = ({
   notes,
   mode,
   onModeChange,
+  onResultSelect,
 }: useSearchProps) => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -42,8 +44,10 @@ export const useSearch = ({
       router.push(targetPath);
       setIsOpen(false);
       setQuery("");
+
+      onResultSelect?.();
     },
-    [mode, onModeChange, router]
+    [mode, onModeChange, router, onResultSelect]
   );
 
   useEffect(() => {

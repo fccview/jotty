@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getSettings } from "@/app/_server/actions/config";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface AppNameProps {
   className?: string;
@@ -12,29 +11,8 @@ export const AppName = ({
   className,
   fallback = "jotty·page",
 }: AppNameProps) => {
-  const [appName, setAppName] = useState<string>(fallback);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadAppName = async () => {
-      try {
-        const settings = await getSettings();
-        if (settings.appName) {
-          setAppName(settings.appName);
-        }
-      } catch (error) {
-        console.error("Error loading app name:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAppName();
-  }, []);
-
-  if (loading) {
-    return <span className={className}></span>;
-  }
+  const { appSettings } = useAppMode();
+  const appName = appSettings?.appName || fallback;
 
   return (
     <span className={className}>

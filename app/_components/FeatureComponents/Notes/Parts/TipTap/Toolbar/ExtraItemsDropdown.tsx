@@ -22,12 +22,14 @@ interface ExtraItemsDropdownProps {
   editor: Editor;
   onFileModalOpen: () => void;
   onTableModalOpen: () => void;
+  onImageSizeModalOpen: (url: string) => void;
 }
 
 export const ExtraItemsDropdown = ({
   editor,
   onFileModalOpen,
   onTableModalOpen,
+  onImageSizeModalOpen,
 }: ExtraItemsDropdownProps) => {
   const [isMac, setIsMac] = useState(false);
 
@@ -37,7 +39,7 @@ export const ExtraItemsDropdown = ({
 
   const addImage = () => {
     const url = window.prompt("Image URL");
-    if (url) editor.chain().focus().setImage({ src: url }).run();
+    if (url) onImageSizeModalOpen(url);
   };
 
   const toggleAbbreviation = () => {
@@ -164,14 +166,13 @@ export const ExtraItemsDropdown = ({
   );
 
   return (
-    <ToolbarDropdown trigger={trigger}>
+    <ToolbarDropdown trigger={trigger} direction="right">
       <div className="flex flex-col py-1">
         {items.map((item, index) => (
           <button
             key={index}
-            className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-sm ${
-              item.isActive ? "bg-accent" : ""
-            }`}
+            className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-sm ${item.isActive ? "bg-accent" : ""
+              }`}
             onClick={item.command}
           >
             <div className="flex items-center gap-2">

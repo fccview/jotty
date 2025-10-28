@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Save,
   AlertCircle,
   Check,
   Key,
@@ -23,6 +22,7 @@ import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { generateApiKey, getApiKey } from "@/app/_server/actions/api";
 import { User as UserData } from "@/app/_types";
+import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 
 interface ProfileTabProps {
   user: UserData | null;
@@ -51,13 +51,24 @@ export const ProfileTab = ({
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [hasFormChanged, setHasFormChanged] = useState(false);
 
   const { isDemoMode } = useAppMode();
 
   useEffect(() => {
     setEditedUsername(user?.username || "");
     setAvatarUrl(user?.avatarUrl);
+    setHasFormChanged(false);
   }, [user]);
+
+  useEffect(() => {
+    const hasChanges =
+      editedUsername !== (user?.username || "") ||
+      currentPassword !== "" ||
+      newPassword !== "" ||
+      confirmPassword !== "";
+    setHasFormChanged(hasChanges);
+  }, [editedUsername, currentPassword, newPassword, confirmPassword, user?.username]);
 
   useEffect(() => {
     loadApiKey();
@@ -131,7 +142,7 @@ export const ProfileTab = ({
       if (newPassword) {
         formData.append("newPassword", newPassword);
       }
-      if (avatarUrl !== undefined) {
+      if (avatarUrl !== undefined && avatarUrl !== "null") {
         formData.append("avatarUrl", avatarUrl);
       }
 
@@ -174,7 +185,13 @@ export const ProfileTab = ({
       formData.append("newUsername", editedUsername);
       const result = await updateProfile(formData);
 
-      if (!result.success) {
+      if (result.success) {
+        setUser((prev: UserType | null) =>
+          prev ? { ...prev, avatarUrl: url } : null
+        );
+        setSuccess("Avatar updated successfully!");
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
         setError(result.error || "Failed to update avatar");
       }
     } catch (error) {
@@ -210,7 +227,7 @@ export const ProfileTab = ({
   };
 
   const isUsernameDisabled = isSsoUser || isDemoMode;
-  const isSaveButtonDisabled = isUploadingAvatar || isDemoMode;
+  const isSaveButtonDisabled = isUploadingAvatar || isDemoMode || !hasFormChanged;
   const isAvatarDisabled = isUploadingAvatar || isDemoMode;
   const isCurrentPasswordDisabled = isDemoMode;
   const isNewPasswordDisabled = isDemoMode;
@@ -328,88 +345,87 @@ export const ProfileTab = ({
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                Member Since
-              </p>
+
+          <FormWrapper
+            title="Profile"
+            action={
+              <Button
+                onClick={handleSaveProfile}
+                title="Save Profile"
+                disabled={isSaveButtonDisabled}
+                size="sm"
+              >
+                {isDemoMode ? "Disabled in demo mode" : "Save Profile"}
+              </Button>
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Member Since
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString()
+                    : "Unknown"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">User Type</p>
+                <p className="text-sm text-muted-foreground">
+                  {isAdmin ? "Admin" : "User"}
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Input
+                id="username"
+                label="Username"
+                type="text"
+                value={editedUsername}
+                onChange={(e) => setEditedUsername(e.target.value)}
+                placeholder="Your username"
+                defaultValue={user?.username}
+                disabled={isUsernameDisabled}
+                className="mt-1"
+              />
               <p className="text-sm text-muted-foreground">
-                {user?.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString()
-                  : "Unknown"}
+                Updating your username will log you out and require you to log in again.
               </p>
             </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">User Type</p>
-              <p className="text-sm text-muted-foreground">
-                {isAdmin ? "Admin" : "User"}
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <Input
-              id="username"
-              label="Username"
-              type="text"
-              value={editedUsername}
-              onChange={(e) => setEditedUsername(e.target.value)}
-              placeholder="Your username"
-              defaultValue={user?.username}
-              disabled={isUsernameDisabled}
-              className="mt-1"
-            />
-          </div>
-
-          <div className="space-y-4 pt-4 border-t border-border mt-4">
-            <h3 className="font-medium">Change Password</h3>
-
-            <div>
+            <div className="space-y-2">
               <Input
                 id="current-password"
                 label="Current Password"
                 type="password"
                 value={currentPassword}
+                disabled={isCurrentPasswordDisabled}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter current password"
-                className="mt-1"
-                disabled={isCurrentPasswordDisabled}
               />
             </div>
-
-            <div>
+            <div className="space-y-2">
               <Input
                 id="new-password"
                 label="New Password"
                 type="password"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password (optional)"
-                className="mt-1"
                 disabled={isNewPasswordDisabled}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
               />
             </div>
-
-            <div>
+            <div className="space-y-2">
               <Input
                 id="confirm-password"
                 label="Confirm New Password"
                 type="password"
-                value={confirmPassword}
+                disabled={isConfirmPasswordDisabled}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
-                className="mt-1"
-                disabled={isConfirmPasswordDisabled}
               />
             </div>
-          </div>
-
-          <div className="flex justify-end pt-4">
-            <Button onClick={handleSaveProfile} disabled={isSaveButtonDisabled}>
-              <Save className="h-4 w-4 mr-2" />
-              {isDemoMode ? "Disabled in demo mode" : "Save Changes"}
-            </Button>
-          </div>
+          </FormWrapper>
         </div>
       </div>
     </div>

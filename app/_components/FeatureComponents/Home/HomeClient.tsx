@@ -9,6 +9,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { Modes } from "@/app/_types/enums";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHeader";
 
 interface SharingStatus {
   isShared: boolean;
@@ -44,9 +45,9 @@ export const HomeClient = ({
 
   const handleOpenCreateModal = (initialCategory?: string) => {
     if (mode === Modes.NOTES) {
-      openCreateNoteModal(initialCategory);
+      openCreateNoteModal(initialCategory || undefined);
     } else {
-      openCreateChecklistModal(initialCategory);
+      openCreateChecklistModal(initialCategory || undefined);
     }
   };
 
@@ -65,10 +66,13 @@ export const HomeClient = ({
       onCategoryDeleted={() => router.refresh()}
       onCategoryRenamed={() => router.refresh()}
     >
+      <MobileHeader />
+
       {mode === Modes.CHECKLISTS && (
         <ChecklistHome
           lists={initialLists}
-          onCreateModal={openCreateChecklistModal}
+          user={user}
+          onCreateModal={handleOpenCreateModal}
           onSelectChecklist={(list) => {
             const categoryPath = buildCategoryPath(
               list.category || "Uncategorized",
@@ -83,7 +87,8 @@ export const HomeClient = ({
         <NotesHome
           notes={initialDocs}
           categories={initialDocsCategories}
-          onCreateModal={openCreateNoteModal}
+          user={user}
+          onCreateModal={handleOpenCreateModal}
           onSelectNote={(note) => {
             const categoryPath = buildCategoryPath(
               note.category || "Uncategorized",

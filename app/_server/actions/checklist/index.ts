@@ -44,11 +44,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -63,11 +63,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -79,9 +79,9 @@ const readListsRecursively = async (
           lists.push(
             parseMarkdown(content, id, categoryPath, owner, false, stats)
           );
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -117,19 +117,19 @@ export const getLists = async (username?: string) => {
       try {
         const sharedFilePath = sharedItem.filePath
           ? path.join(
-              process.cwd(),
-              "data",
-              CHECKLISTS_FOLDER,
-              sharedItem.filePath
-            )
+            process.cwd(),
+            "data",
+            CHECKLISTS_FOLDER,
+            sharedItem.filePath
+          )
           : path.join(
-              process.cwd(),
-              "data",
-              CHECKLISTS_FOLDER,
-              sharedItem.owner,
-              sharedItem.category || "Uncategorized",
-              `${sharedItem.id}.md`
-            );
+            process.cwd(),
+            "data",
+            CHECKLISTS_FOLDER,
+            sharedItem.owner,
+            sharedItem.category || "Uncategorized",
+            `${sharedItem.id}.md`
+          );
 
         const content = await fs.readFile(sharedFilePath, "utf-8");
         const stats = await fs.stat(sharedFilePath);
@@ -320,9 +320,8 @@ export const updateList = async (formData: FormData) => {
     );
 
     if (sharingMetadata) {
-      const newFilePath = `${currentList.owner}/${
-        updatedList.category || "Uncategorized"
-      }/${updatedList.id}.md`;
+      const newFilePath = `${currentList.owner}/${updatedList.category || "Uncategorized"
+        }/${updatedList.id}.md`;
 
       if (newId !== id) {
         const { removeSharedItem, addSharedItem } = await import(

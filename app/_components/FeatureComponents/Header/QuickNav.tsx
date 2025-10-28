@@ -38,7 +38,7 @@ export const QuickNav = ({
   const { checkNavigation } = useNavigationGuard();
 
   return (
-    <header className="lg:border-b lg:border-border">
+    <header className="lg:border-b lg:border-border no-print">
       <nav
         className={cn(
           "fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t bg-background",

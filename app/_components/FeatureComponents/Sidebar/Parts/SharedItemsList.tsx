@@ -21,6 +21,7 @@ interface SharedItemsListProps {
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
   getSharingStatus: (itemId: string) => SharingStatus | null;
+  user?: any;
 }
 
 export const SharedItemsList = ({
@@ -32,6 +33,7 @@ export const SharedItemsList = ({
   isItemSelected,
   mode,
   getSharingStatus,
+  user,
 }: SharedItemsListProps) => {
   const [collapsedUsers, setCollapsedUsers] = useState<Set<string>>(new Set());
 
@@ -63,7 +65,7 @@ export const SharedItemsList = ({
   };
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 overflow-hidden">
       <div className="flex items-center justify-between group">
         <button
           onClick={onToggleCollapsed}
@@ -126,6 +128,7 @@ export const SharedItemsList = ({
                         onItemClick={onItemClick}
                         onEditItem={onEditItem}
                         sharingStatus={getSharingStatus(item.id)}
+                        user={user}
                       />
                     ))}
                   </div>

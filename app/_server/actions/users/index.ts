@@ -2,7 +2,14 @@
 
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import { ImageSyntax, LandingPage, Result, TableSyntax } from "@/app/_types";
+import {
+  ImageSyntax,
+  LandingPage,
+  NotesDefaultEditor,
+  NotesDefaultMode,
+  Result,
+  TableSyntax,
+} from "@/app/_types";
 import { User } from "@/app/_types";
 import {
   getSessionId,
@@ -10,8 +17,8 @@ import {
   removeAllSessionsForUser,
 } from "../session";
 import fs from "fs/promises";
-import { cookies } from "next/headers";
 import { createHash } from "crypto";
+import path from "path";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -417,16 +424,13 @@ export const getUsername = async (): Promise<string> => {
 };
 
 export const getUsers = async () => {
-  const adminCheck = await isAdmin();
-  if (!adminCheck) {
-    return { error: "Unauthorized" };
-  }
-
   const users = await readJsonFile(USERS_FILE);
-  return users.map(({ username, isAdmin, isSuperAdmin }: User) => ({
+
+  return users.map(({ username, isAdmin, isSuperAdmin, avatarUrl }: User) => ({
     username,
     isAdmin,
     isSuperAdmin,
+    avatarUrl,
   }));
 };
 
@@ -459,11 +463,15 @@ export const updateUserSettings = async ({
   imageSyntax,
   tableSyntax,
   landingPage,
+  notesDefaultEditor,
+  notesDefaultMode,
 }: {
   preferredTheme?: string;
   imageSyntax?: ImageSyntax;
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
+  notesDefaultEditor?: NotesDefaultEditor;
+  notesDefaultMode?: NotesDefaultMode;
 }): Promise<Result<{ user: User }>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -480,12 +488,20 @@ export const updateUserSettings = async ({
       return { success: false, error: "User not found" };
     }
 
+    const updates: Partial<User> = {};
+
+    if (preferredTheme !== undefined) updates.preferredTheme = preferredTheme;
+    if (imageSyntax !== undefined) updates.imageSyntax = imageSyntax;
+    if (tableSyntax !== undefined) updates.tableSyntax = tableSyntax;
+    if (landingPage !== undefined) updates.landingPage = landingPage;
+    if (notesDefaultEditor !== undefined)
+      updates.notesDefaultEditor = notesDefaultEditor;
+    if (notesDefaultMode !== undefined)
+      updates.notesDefaultMode = notesDefaultMode;
+
     const updatedUser: User = {
       ...allUsers[userIndex],
-      preferredTheme,
-      imageSyntax,
-      tableSyntax,
-      landingPage,
+      ...updates,
     };
 
     allUsers[userIndex] = updatedUser;
@@ -495,5 +511,187 @@ export const updateUserSettings = async ({
   } catch (error) {
     console.error("Error updating user settings:", error);
     return { success: false, error: "Failed to update user settings" };
+  }
+};
+
+export const getUserByChecklist = async (
+  checklistID: string,
+  checklistCategory: string
+): Promise<Result<User>> => {
+  try {
+    const allUsers = await readJsonFile(USERS_FILE);
+
+    for (const user of allUsers) {
+      const userChecklistsDir = CHECKLISTS_DIR(user.username);
+      const categoryPath = path.join(userChecklistsDir, checklistCategory);
+      const filePath = path.join(categoryPath, `${checklistID}.md`);
+
+      try {
+        await fs.access(filePath);
+        return { success: true, data: user };
+      } catch (error) {
+        continue;
+      }
+    }
+
+    return { success: false, error: "Checklist not found" };
+  } catch (error) {
+    console.error("Error in getUserByChecklist:", error);
+    return { success: false, error: "Failed to find checklist owner" };
+  }
+};
+
+export const getUserByNote = async (
+  noteID: string,
+  noteCategory: string
+): Promise<Result<User>> => {
+  try {
+    const allUsers = await readJsonFile(USERS_FILE);
+
+    for (const user of allUsers) {
+      const userNotesDir = NOTES_DIR(user.username);
+      const categoryPath = path.join(userNotesDir, noteCategory);
+      const filePath = path.join(categoryPath, `${noteID}.md`);
+
+      try {
+        await fs.access(filePath);
+        return { success: true, data: user };
+      } catch (error) {
+        continue;
+      }
+    }
+
+    return { success: false, error: "Note not found" };
+  } catch (error) {
+    console.error("Error in getUserByNote:", error);
+    return { success: false, error: "Failed to find note owner" };
+  }
+};
+
+export const canUserEditItem = async (
+  itemId: string,
+  itemCategory: string,
+  itemType: "checklist" | "note",
+  currentUsername: string
+): Promise<boolean> => {
+  try {
+    const isAdminUser = await isAdmin();
+    if (isAdminUser) return true;
+
+    const ownerResult =
+      itemType === "checklist"
+        ? await getUserByChecklist(itemId, itemCategory)
+        : await getUserByNote(itemId, itemCategory);
+
+    if (!ownerResult.success) return false;
+
+    const owner = ownerResult.data;
+    if (owner?.username === currentUsername) return true;
+
+    const { getItemsSharedWithUser } = await import("../sharing");
+    const sharedItems = await getItemsSharedWithUser(currentUsername);
+
+    const sharedItemsList =
+      itemType === "checklist" ? sharedItems.checklists : sharedItems.notes;
+    return sharedItemsList.some(
+      (item) => item.id === itemId && item.owner === owner?.username
+    );
+  } catch (error) {
+    console.error("Error in canUserEditItem:", error);
+    return false;
+  }
+};
+
+export const togglePin = async (
+  itemId: string,
+  category: string,
+  type: "list" | "note"
+): Promise<Result<null>> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === currentUser.username
+    );
+
+    if (userIndex === -1) {
+      return { success: false, error: "User not found" };
+    }
+
+    const user = allUsers[userIndex];
+    const itemPath = `${category}/${itemId}`;
+
+    if (type === "list") {
+      const pinnedLists = user.pinnedLists || [];
+      const isPinned = pinnedLists.includes(itemPath);
+
+      if (isPinned) {
+        user.pinnedLists = pinnedLists.filter(
+          (path: string) => path !== itemPath
+        );
+      } else {
+        user.pinnedLists = [...pinnedLists, itemPath];
+      }
+    } else {
+      const pinnedNotes = user.pinnedNotes || [];
+      const isPinned = pinnedNotes.includes(itemPath);
+
+      if (isPinned) {
+        user.pinnedNotes = pinnedNotes.filter(
+          (path: string) => path !== itemPath
+        );
+      } else {
+        user.pinnedNotes = [...pinnedNotes, itemPath];
+      }
+    }
+
+    allUsers[userIndex] = user;
+    await writeJsonFile(allUsers, USERS_FILE);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error(`Error toggling pin for ${type}:`, error);
+    return { success: false, error: "Failed to toggle pin" };
+  }
+};
+
+export const updatePinnedOrder = async (
+  newOrder: string[],
+  type: "list" | "note"
+): Promise<Result<null>> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === currentUser.username
+    );
+
+    if (userIndex === -1) {
+      return { success: false, error: "User not found" };
+    }
+
+    const user = allUsers[userIndex];
+
+    if (type === "list") {
+      user.pinnedLists = newOrder;
+    } else {
+      user.pinnedNotes = newOrder;
+    }
+
+    allUsers[userIndex] = user;
+    await writeJsonFile(allUsers, USERS_FILE);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error(`Error updating pinned order for ${type}:`, error);
+    return { success: false, error: "Failed to update pinned order" };
   }
 };

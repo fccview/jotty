@@ -11,6 +11,12 @@ export interface TimeEntry {
 
 export type ItemType = "checklist" | "note";
 
+export interface StatusChange {
+  status: TaskStatus;
+  timestamp: string;
+  user: string;
+}
+
 export interface Item {
   id: string;
   category?: string;
@@ -21,6 +27,13 @@ export interface Item {
   timeEntries?: TimeEntry[];
   estimatedTime?: number;
   targetDate?: string;
+  children?: Item[];
+  createdBy?: string;
+  createdAt?: string;
+  lastModifiedBy?: string;
+  lastModifiedAt?: string;
+  history?: StatusChange[];
+  description?: string;
 }
 
 export interface List {
@@ -40,6 +53,7 @@ export interface Checklist {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  isDeleted?: boolean;
 }
 
 export interface Note {
@@ -75,6 +89,9 @@ export interface NoteEditorViewModel {
   handleUnsavedChangesSave: () => void;
   handleUnsavedChangesDiscard: () => void;
   derivedMarkdownContent: string;
+  handlePrint: () => void;
+  isPrinting: boolean;
+  setIsPrinting: (isPrinting: boolean) => void;
 }
 
 export interface Category {
@@ -104,11 +121,17 @@ export interface User {
   imageSyntax?: ImageSyntax;
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
+  notesDefaultEditor?: NotesDefaultEditor;
+  notesDefaultMode?: NotesDefaultMode;
+  pinnedLists?: string[];
+  pinnedNotes?: string[];
 }
 
 export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
+export type NotesDefaultEditor = "wysiwyg" | "markdown";
 export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
+export type NotesDefaultMode = "edit" | "view";
 
 export interface SharedItem {
   id: string;
@@ -168,6 +191,13 @@ export interface AppSettings {
   "16x16Icon": string;
   "32x32Icon": string;
   "180x180Icon": string;
+  notifyNewUpdates: "yes" | "no";
+  maximumFileSize: number;
+  editor: {
+    enableSlashCommands: boolean;
+    enableBubbleMenu: boolean;
+    enableTableToolbar: boolean;
+  };
 }
 
 export interface Session {

@@ -1,9 +1,9 @@
 import { Checklist, Item } from "@/app/_types";
 import { CheckSquare } from "lucide-react";
 import { TaskStatusSection } from "./TaskStatusSection";
-import { ChecklistItem } from "../../Checklists/Parts/Simple/ChecklistItem";
 import { useMemo } from "react";
 import { TaskStatus } from "@/app/_types/enums";
+import { NestedChecklistItem } from "../../Checklists/Parts/Simple/NestedChecklistItem";
 
 export const PublicChecklistBody = ({
   checklist,
@@ -54,14 +54,17 @@ export const PublicChecklistBody = ({
   return (
     <div className="space-y-3">
       {checklist.items.map((item, index) => (
-        <ChecklistItem
-          index={index}
-          onToggle={() => {}}
-          onDelete={() => {}}
+        <NestedChecklistItem
           key={item.id}
           item={item}
+          index={index.toString()}
+          level={0}
+          onToggle={() => {}}
+          onDelete={() => {}}
           isPublicView={true}
           isDeletingItem={false}
+          isDragDisabled={true}
+          isShared={checklist.isShared || false}
         />
       ))}
     </div>

@@ -254,10 +254,13 @@ const generateSharingId = async (
 export const readSharingMetadata = async (): Promise<SharingMetadata> => {
   await ensureDir(SHARING_DIR);
 
-  const content = await serverReadFile(SHARED_ITEMS_FILE, JSON.stringify({
-    checklists: {},
-    notes: {},
-  }));
+  const content = await serverReadFile(
+    SHARED_ITEMS_FILE,
+    JSON.stringify({
+      checklists: {},
+      notes: {},
+    })
+  );
 
   try {
     return JSON.parse(content);
@@ -421,10 +424,6 @@ export const getItemSharingStatus = async (
       return { success: false, error: "Not authenticated" };
     }
 
-    if (currentUser.username !== owner) {
-      return { success: false, error: "Unauthorized" };
-    }
-
     const metadata = await getItemSharingMetadata(itemId, type, owner);
 
     if (!metadata) {
@@ -470,15 +469,6 @@ export const getAllSharingStatuses = async (
     > = {};
 
     for (const item of items) {
-      if (currentUser.username !== item.owner) {
-        results[item.id] = {
-          isShared: false,
-          sharedWith: [],
-          isPubliclyShared: false,
-        };
-        continue;
-      }
-
       try {
         const metadata = await getItemSharingMetadata(
           item.id,

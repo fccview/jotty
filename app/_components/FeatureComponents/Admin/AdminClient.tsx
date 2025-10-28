@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
 import { UserManagementModal } from "@/app/_components/GlobalComponents/Modals/UserModals/UserManagementModal";
 import { User, Checklist, Note } from "@/app/_types";
 import { deleteUser } from "@/app/_server/actions/users";
@@ -16,6 +15,7 @@ import { AdminUsers } from "./Parts/AdminUsers";
 import { AdminContent } from "./Parts/AdminContent";
 import { AdminSharing } from "./Parts/AdminSharing";
 import { AppSettingsTab } from "./Parts/AppSettingsTab";
+import { EditorSettingsTab } from "./Parts/EditorSettingsTab";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
 
@@ -24,14 +24,13 @@ interface AdminClientProps {
 }
 
 export const AdminClient = ({ username }: AdminClientProps) => {
-  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [allLists, setAllLists] = useState<Checklist[]>([]);
   const [allDocs, setAllDocs] = useState<Note[]>([]);
   const [globalSharing, setGlobalSharing] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "content" | "sharing" | "settings"
+    "overview" | "users" | "content" | "sharing" | "settings" | "editor"
   >("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
@@ -135,24 +134,10 @@ export const AdminClient = ({ username }: AdminClientProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push("/")}
-            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage users, content, and system settings
-            </p>
-          </div>
-        </div>
-      </div>
+      <SiteHeader
+        title="Admin Dashboard"
+        description="Manage users, content, and system settings"
+      />
 
       <AdminTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -179,6 +164,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
           <AdminSharing globalSharing={globalSharing} />
         )}
         {activeTab === "settings" && <AppSettingsTab />}
+        {activeTab === "editor" && <EditorSettingsTab />}
       </div>
 
       <UserManagementModal

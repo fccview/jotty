@@ -56,6 +56,7 @@ interface CategoryRendererProps {
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
   getSharingStatus: (itemId: string) => SharingStatus | null;
+  user?: any;
 }
 
 export const CategoryRenderer = (props: CategoryRendererProps) => {
@@ -74,6 +75,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     isItemSelected,
     mode,
     getSharingStatus,
+    user,
   } = props;
 
   const sensors = useSensors(
@@ -260,6 +262,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                         onEditItem={onEditItem}
                         sharingStatus={getSharingStatus(item.id)}
                         style={{ paddingLeft: `${category.level * 16}px` }}
+                        user={user}
                       />
                     </Draggable>
                   ))}

@@ -1,34 +1,29 @@
-import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import ListItem from "@tiptap/extension-list-item";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import BulletList from "@tiptap/extension-bullet-list";
-import { Table } from "@tiptap/extension-table";
-import { TableRow } from "@tiptap/extension-table-row";
-import { TableCell } from "@tiptap/extension-table-cell";
-import { TableHeader } from "@tiptap/extension-table-header";
-import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
+import { Editor, useEditor } from "@tiptap/react";
 import { TiptapToolbar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/TipTapToolbar";
-import { FileAttachmentExtension } from "@/app/_components/FeatureComponents/Notes/Parts/FileAttachment/FileAttachmentExtension";
-import { CodeBlockNodeView } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockNodeView";
+import { UploadOverlay } from "@/app/_components/GlobalComponents/FormElements/UploadOverlay";
+import { CompactImageResizeOverlay } from "@/app/_components/FeatureComponents/Notes/Parts/FileAttachment/CompactImageResizeOverlay";
+import { CompactTableToolbar } from "@/app/_components/FeatureComponents/Notes/Parts/Table/CompactTableToolbar";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { InputRule } from "@tiptap/core";
 import {
   convertMarkdownToHtml,
   convertHtmlToMarkdownUnified,
 } from "@/app/_utils/markdown-utils";
-import { lowlight } from "@/app/_utils/lowlight-utils";
-import Underline from "@tiptap/extension-underline";
-import HardBreak from "@tiptap/extension-hard-break";
-import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/KeyboardShortcuts";
-import { DetailsExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DetailsExtension";
-import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { TableSyntax } from "@/app/_types";
 import { useSettings } from "@/app/_utils/settings-store";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useFileUpload } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useFileUpload";
+import { useImageResize } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useImageResize";
+import { useTableToolbar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useTableToolbar";
+import { useOverlayClickOutside } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useOverlayClickOutside";
+import { createEditorExtensions } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorUtils/editorConfig";
+import {
+  createKeyDownHandler,
+  createPasteHandler,
+} from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorUtils/editorHandlers";
+import { MarkdownEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MarkdownEditor";
+import { VisualEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/VisualEditor";
+import { BubbleMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/FloatingMenu/BubbleMenu";
 
 type TiptapEditorProps = {
   content: string;
@@ -41,11 +36,106 @@ export const TiptapEditor = ({
   onChange,
   tableSyntax,
 }: TiptapEditorProps) => {
-  const [isMarkdownMode, setIsMarkdownMode] = useState(false);
-  const [markdownContent, setMarkdownContent] = useState(content);
+  const { user, appSettings } = useAppMode();
+  const { compactMode } = useSettings();
+
+  const editorSettings = appSettings?.editor || {
+    enableSlashCommands: true,
+    enableBubbleMenu: true,
+    enableTableToolbar: true,
+  };
+
+  const initialOutput =
+    user?.notesDefaultEditor === "markdown"
+      ? convertHtmlToMarkdownUnified(content, tableSyntax)
+      : content;
+
+  const [isMarkdownMode, setIsMarkdownMode] = useState(
+    user?.notesDefaultEditor === "markdown"
+  );
+  const [markdownContent, setMarkdownContent] = useState(initialOutput);
+  const [showBubbleMenu, setShowBubbleMenu] = useState(false);
   const isInitialized = useRef(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout>();
-  const { compactMode } = useSettings();
+
+  const uploadHook = useFileUpload(appSettings?.maximumFileSize);
+  const tableToolbar = useTableToolbar();
+
+  const debouncedOnChange = useCallback(
+    (newContent: string, isMarkdown: boolean) => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+      debounceTimeoutRef.current = setTimeout(() => {
+        onChange(newContent, isMarkdown);
+      }, 0);
+    },
+    [onChange]
+  );
+
+  // Create a temporary ref to hold image click handler until editor is ready
+  const imageClickRef = useRef<((pos: any) => void) | null>(null);
+
+  const editor: Editor | null = useEditor({
+    immediatelyRender: false,
+    extensions: createEditorExtensions(
+      {
+        onImageClick: (pos) => {
+          if (imageClickRef.current) {
+            imageClickRef.current(pos);
+          }
+        },
+        onTableSelect: tableToolbar.handleTableSelect,
+      },
+      editorSettings
+    ),
+    content: "",
+    onUpdate: ({ editor }) => {
+      if (!isMarkdownMode) {
+        debouncedOnChange(editor.getHTML(), false);
+      }
+    },
+    editorProps: {
+      attributes: {
+        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${
+          compactMode ? "!max-w-[900px] mx-auto" : ""
+        }`,
+      },
+      handleKeyDown: (view, event) => {
+        return createKeyDownHandler(editor)(view, event);
+      },
+      handlePaste: (view, event) => {
+        return createPasteHandler(editor, uploadHook.handleFileUpload)(
+          view,
+          event
+        );
+      },
+    },
+  });
+
+  const toggleMode = useCallback(() => {
+    if (isMarkdownMode) {
+      setTimeout(() => {
+        if (editor) {
+          const htmlContent = convertMarkdownToHtml(markdownContent);
+          editor.commands.setContent(htmlContent, { emitUpdate: false });
+          setIsMarkdownMode(false);
+        }
+      }, 0);
+    } else {
+      setTimeout(() => {
+        if (editor) {
+          const htmlContent = editor.getHTML();
+          const markdownOutput = convertHtmlToMarkdownUnified(
+            htmlContent,
+            tableSyntax
+          );
+          setMarkdownContent(markdownOutput);
+          setIsMarkdownMode(true);
+        }
+      }, 0);
+    }
+  }, [isMarkdownMode, markdownContent, tableSyntax, editor]);
 
   useShortcuts([
     {
@@ -57,219 +147,21 @@ export const TiptapEditor = ({
     },
   ]);
 
-  const debouncedOnChange = useCallback(
-    (newContent: string, isMarkdown: boolean) => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
+  const imageResize = useImageResize(editor);
 
-      debounceTimeoutRef.current = setTimeout(() => {
-        onChange(newContent, isMarkdown);
-      }, 0);
-    },
-    [onChange]
-  );
+  useEffect(() => {
+    if (editor) {
+      imageClickRef.current = imageResize.handleImageClick;
+    }
+  }, [editor, imageResize.handleImageClick]);
 
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        codeBlock: false,
-        underline: false,
-        link: false,
-        listItem: false,
-        bulletList: false,
-        hardBreak: false,
-      }),
-      ...generateCustomHtmlExtensions(),
-      DetailsExtension,
-      KeyboardShortcuts,
-      Underline,
-      HardBreak,
-      CodeBlockLowlight.configure({
-        lowlight,
-        defaultLanguage: "plaintext",
-      }).extend({
-        addNodeView() {
-          return ReactNodeViewRenderer(CodeBlockNodeView);
-        },
-      }),
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-      }).extend({
-        addInputRules() {
-          return [
-            new InputRule({
-              find: /\[([^\]]+)\]\(([^)]+)\)/,
-              handler: ({ state, range, match }) => {
-                const { tr } = state;
-                const start = range.from;
-                const end = range.to;
-                const text = match[1];
-                const href = match[2];
-
-                tr.replaceWith(
-                  start,
-                  end,
-                  state.schema.text(text, [
-                    state.schema.marks.link.create({ href }),
-                  ])
-                );
-              },
-            }),
-          ];
-        },
-      }),
-      Image.configure(),
-      FileAttachmentExtension.configure({
-        HTMLAttributes: {
-          class: "file-attachment",
-        },
-      }),
-      Table.extend({
-        content: "tableRow+",
-      }).configure({
-        resizable: true,
-      }),
-      TableRow.extend({
-        content: "(tableHeader | tableCell)*",
-      }),
-      TableHeader.extend({
-        content: "block+",
-      }),
-      TableCell.extend({
-        content: "block+",
-      }),
-      ListItem.extend({
-        content: "block+",
-      }),
-      TaskList,
-      TaskItem.extend({
-        nested: true,
-        content: "block+",
-        parseHTML() {
-          return [
-            {
-              tag: 'li[data-type="taskItem"]',
-              priority: 51,
-              getAttrs: (element: HTMLElement) => {
-                if (typeof element === 'string') return false;
-                const dataChecked = element.getAttribute('data-checked');
-                return {
-                  checked: dataChecked === 'true',
-                };
-              },
-            },
-          ];
-        },
-      }),
-      BulletList.extend({
-        content: "listItem+",
-      }),
-    ],
-    content: "",
-    onUpdate: ({ editor }) => {
-      if (!isMarkdownMode) {
-        debouncedOnChange(editor.getHTML(), false);
-      }
-    },
-    editorProps: {
-      attributes: {
-        class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
-          }`,
-      },
-      handleKeyDown: (view, event) => {
-        if (!editor) {
-          return false;
-        }
-
-        const { state } = view;
-        const { selection } = state;
-
-        if (event.key === "Tab") {
-          if (editor.isActive("listItem") || editor.isActive("taskItem")) {
-            event.preventDefault();
-            if (event.shiftKey) {
-              editor
-                .chain()
-                .focus()
-                .liftListItem("listItem")
-                .liftListItem("taskItem")
-                .run();
-            } else {
-              editor
-                .chain()
-                .focus()
-                .sinkListItem("listItem")
-                .sinkListItem("taskItem")
-                .run();
-            }
-            return true;
-          }
-
-          if (editor.isActive("codeBlock")) {
-            event.preventDefault();
-            const { from, to, empty } = selection;
-
-            if (empty) {
-              if (!event.shiftKey) {
-                editor.chain().focus().insertContent("    ").run();
-              }
-            } else {
-              const selectedText = state.doc.textBetween(from, to, "\n");
-              const lines = selectedText.split("\n");
-
-              if (event.shiftKey) {
-                const newText = lines
-                  .map((line) =>
-                    line.startsWith("    ")
-                      ? line.substring(4)
-                      : line.startsWith("\t")
-                        ? line.substring(1)
-                        : line
-                  )
-                  .join("\n");
-                editor
-                  .chain()
-                  .focus()
-                  .insertContentAt({ from, to }, newText)
-                  .run();
-              } else {
-                const newText = lines.map((line) => "    " + line).join("\n");
-                editor
-                  .chain()
-                  .focus()
-                  .insertContentAt({ from, to }, newText)
-                  .run();
-              }
-            }
-            return true;
-          }
-        }
-
-        if (event.key === "Enter") {
-          const { $from } = selection;
-          if (
-            $from.parent.type.name === "listItem" ||
-            $from.parent.type.name === "taskItem"
-          ) {
-            const isEmpty = $from.parent.content.size === 0;
-            if (isEmpty) {
-              event.preventDefault();
-              const tr = state.tr.setBlockType(
-                $from.pos,
-                $from.pos,
-                state.schema.nodes.paragraph
-              );
-              view.dispatch(tr);
-              return true;
-            }
-          }
-        }
-
-        return false;
-      },
+  useOverlayClickOutside({
+    isActive:
+      imageResize.showOverlay || tableToolbar.showToolbar || showBubbleMenu,
+    onClose: () => {
+      imageResize.closeOverlay();
+      tableToolbar.closeToolbar();
+      setShowBubbleMenu(false);
     },
   });
 
@@ -297,29 +189,60 @@ export const TiptapEditor = ({
     debouncedOnChange(newContent, true);
   };
 
-  const toggleMode = () => {
-    if (isMarkdownMode) {
-      setTimeout(() => {
-        if (editor) {
-          const htmlContent = convertMarkdownToHtml(markdownContent);
-          editor.commands.setContent(htmlContent, { emitUpdate: false });
-          setIsMarkdownMode(false);
-        }
-      }, 0);
-    } else {
-      setTimeout(() => {
-        if (editor) {
-          const htmlContent = editor.getHTML();
-          const markdownOutput = convertHtmlToMarkdownUnified(
-            htmlContent,
-            tableSyntax
-          );
-          setMarkdownContent(markdownOutput);
-          setIsMarkdownMode(true);
-        }
-      }, 0);
-    }
-  };
+  const handleVisualFileDrop = useCallback(
+    (files: File[]) => {
+      files.forEach((file) => {
+        uploadHook.handleFileUpload(
+          file,
+          {
+            onImageUpload: (url) => {
+              editor?.chain().focus().setImage({ src: url }).run();
+            },
+            onFileUpload: (data) => {
+              editor
+                ?.chain()
+                .focus()
+                .setFileAttachment({
+                  url: data.url,
+                  fileName: data.fileName,
+                  mimeType: data.mimeType,
+                  type: data.type,
+                })
+                .run();
+            },
+          },
+          true
+        );
+      });
+    },
+    [editor, uploadHook]
+  );
+
+  const handleMarkdownFileDrop = useCallback(
+    (files: File[]) => {
+      files.forEach((file) => {
+        uploadHook.handleFileUpload(
+          file,
+          {
+            onImageUpload: (url) => {
+              const markdownImage = `![${file.name}](${url})`;
+              const newContent = markdownContent + "\n" + markdownImage;
+              setMarkdownContent(newContent);
+              debouncedOnChange(newContent, true);
+            },
+            onFileUpload: (data) => {
+              const markdownLink = `[📎 ${data.fileName}](${data.url})`;
+              const newContent = markdownContent + "\n" + markdownLink;
+              setMarkdownContent(newContent);
+              debouncedOnChange(newContent, true);
+            },
+          },
+          true
+        );
+      });
+    },
+    [markdownContent, uploadHook, debouncedOnChange]
+  );
 
   return (
     <div className="flex flex-col h-full">
@@ -331,19 +254,64 @@ export const TiptapEditor = ({
         />
       </div>
 
+      <UploadOverlay
+        isVisible={
+          uploadHook.isUploading ||
+          !!uploadHook.uploadError ||
+          !!uploadHook.fileSizeError
+        }
+        isUploading={uploadHook.isUploading}
+        uploadError={
+          uploadHook.uploadError || uploadHook.fileSizeError || undefined
+        }
+        fileName={uploadHook.uploadingFileName || undefined}
+        onRetry={uploadHook.resetErrors}
+      />
+
       {isMarkdownMode ? (
-        <div className="flex-1 p-4 overflow-y-auto h-full">
-          <textarea
-            value={markdownContent}
-            onChange={handleMarkdownChange}
-            className="w-full h-full bg-background text-foreground resize-none focus:outline-none focus:ring-none p-2"
-            placeholder="Write your markdown here..."
-          />
-        </div>
+        <MarkdownEditor
+          content={markdownContent}
+          onChange={handleMarkdownChange}
+          onFileDrop={handleMarkdownFileDrop}
+        />
       ) : (
-        <div className="flex-1 overflow-y-auto">
-          <EditorContent editor={editor} className="w-full h-full" />
-        </div>
+        <>
+          <VisualEditor
+            editor={editor}
+            onFileDrop={handleVisualFileDrop}
+            onTextSelection={setShowBubbleMenu}
+          />
+          {editor && editorSettings.enableBubbleMenu && (
+            <BubbleMenu
+              editor={editor}
+              isVisible={showBubbleMenu}
+              onClose={() => setShowBubbleMenu(false)}
+            />
+          )}
+        </>
+      )}
+
+      <CompactImageResizeOverlay
+        isVisible={imageResize.showOverlay}
+        position={imageResize.position}
+        onClose={imageResize.closeOverlay}
+        onResize={imageResize.handleResize}
+        onPreviewUpdate={(w, h) =>
+          imageResize.updateImageAttrs(w, h, false, true)
+        }
+        currentWidth={imageResize.imageAttrs.width}
+        currentHeight={imageResize.imageAttrs.height}
+        imageUrl={imageResize.imageAttrs.src}
+        targetElement={imageResize.targetElement || undefined}
+      />
+
+      {editor && editorSettings.enableTableToolbar && (
+        <CompactTableToolbar
+          editor={editor}
+          isVisible={tableToolbar.showToolbar}
+          position={tableToolbar.position}
+          targetElement={tableToolbar.targetElement || undefined}
+        />
       )}
     </div>
   );

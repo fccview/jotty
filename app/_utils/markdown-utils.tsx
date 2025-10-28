@@ -20,8 +20,8 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     emDelimiter: "*",
     bulletListMarker: "-",
     blankReplacement: function (content, node) {
-      return node.nodeName === 'P' ? '\u200b' : content;
-    }
+      return node.nodeName === "P" ? "\u200b" : content;
+    },
   });
 
   service.addRule("taskItem", {
@@ -32,7 +32,8 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const element = node as HTMLElement;
       const parent = element.parentElement;
 
-      if (!parent || parent.getAttribute("data-type") !== "taskList") return content;
+      if (!parent || parent.getAttribute("data-type") !== "taskList")
+        return content;
 
       let isChecked = false;
       const dataChecked = element.getAttribute("data-checked");
@@ -41,7 +42,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
         isChecked = dataChecked === "true";
       } else {
         const checkbox = element.querySelector('input[type="checkbox"]');
-        isChecked = checkbox ? checkbox.hasAttribute('checked') : false;
+        isChecked = checkbox ? checkbox.hasAttribute("checked") : false;
       }
 
       const prefix = isChecked ? "- [x] " : "- [ ] ";
@@ -135,7 +136,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
         return (node as HTMLElement).outerHTML;
       },
     });
-  } else if (tableSyntax === "markdown") {
+  } else if (tableSyntax === "markdown" || tableSyntax === undefined) {
     service.addRule("table", {
       filter: "table",
       replacement: function (content, node) {
@@ -226,9 +227,86 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
 
       if (type === "image") {
         return `![${fileName}](${url})`;
+      } else if (type === "video") {
+        return `[🎥 ${fileName}](${url})`;
       } else {
         return `[📎 ${fileName}](${url})`;
       }
+    },
+  });
+
+  service.addRule("image", {
+    filter: (node) => {
+      return node.nodeName === "IMG";
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const src = element.getAttribute("src");
+      const alt = element.getAttribute("alt") || "";
+      const width = element.getAttribute("width");
+      const height = element.getAttribute("height");
+
+      if (!src) return "";
+
+      if (
+        (width && width !== "0" && width.trim() !== "") ||
+        (height && height !== "0" && height.trim() !== "")
+      ) {
+        const style = [];
+        if (width && width !== "0" && width.trim() !== "")
+          style.push(`width: ${width}px`);
+        if (height && height !== "0" && height.trim() !== "")
+          style.push(`height: ${height}px`);
+
+        return `\n<img src="${src}" alt="${alt}" style="${style.join(
+          "; "
+        )}" />\n`;
+      }
+
+      return `![${alt}](${src})`;
+    },
+  });
+
+  service.addRule("textColor", {
+    filter: (node) => {
+      return (
+        node.nodeName === "SPAN" &&
+        (node.getAttribute("style")?.includes("color:") ?? false)
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const style = element.getAttribute("style") || "";
+      const colorMatch = style.match(/color:\s*([^;]+)/);
+
+      if (colorMatch) {
+        const color = colorMatch[1].trim();
+        return `<span style="color: ${color}">${content}</span>`;
+      }
+
+      return content;
+    },
+  });
+
+  service.addRule("highlight", {
+    filter: (node) => {
+      return (
+        node.nodeName === "MARK" ||
+        (node.nodeName === "SPAN" &&
+          (node.getAttribute("style")?.includes("background-color:") ?? false))
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const style = element.getAttribute("style") || "";
+      const bgColorMatch = style.match(/background-color:\s*([^;]+)/);
+
+      if (bgColorMatch) {
+        const color = bgColorMatch[1].trim();
+        return `<mark style="background-color: ${color}">${content}</mark>`;
+      }
+
+      return `<mark>${content}</mark>`;
     },
   });
 
@@ -254,6 +332,21 @@ const markdownProcessor = unified()
   .use(() => {
     return (tree) => {
       visit(tree, "element", (node: Element) => {
+        if (node.tagName === "img" && node.properties?.style) {
+          const style = node.properties.style as string;
+          const widthMatch = style.match(/width:\s*(\d+)px/);
+          const heightMatch = style.match(/height:\s*(\d+)px/);
+
+          if (widthMatch) {
+            node.properties.width = widthMatch[1];
+          }
+          if (heightMatch) {
+            node.properties.height = heightMatch[1];
+          }
+
+          node.properties.style = style;
+        }
+
         if (node.tagName === "ul" && hasClass(node, "contains-task-list")) {
           node.properties = node.properties || {};
           node.properties["data-type"] = "taskList";
@@ -266,14 +359,22 @@ const markdownProcessor = unified()
           let checkboxIndex = 0;
           let checkbox = node.children[checkboxIndex];
 
-          while (checkbox && checkbox.type === 'text' && checkboxIndex < node.children.length) {
+          while (
+            checkbox &&
+            checkbox.type === "text" &&
+            checkboxIndex < node.children.length
+          ) {
             checkboxIndex++;
             checkbox = node.children[checkboxIndex];
           }
 
           let isInsideP = false;
 
-          if (checkbox?.type === "element" && checkbox.tagName === "p" && checkbox.children?.[0]) {
+          if (
+            checkbox?.type === "element" &&
+            checkbox.tagName === "p" &&
+            checkbox.children?.[0]
+          ) {
             isInsideP = true;
             checkbox = checkbox.children[0];
           }
@@ -285,7 +386,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-              checkbox.properties.checked !== false
+                checkbox.properties.checked !== false
             );
 
             if (isInsideP) {
@@ -319,6 +420,29 @@ const markdownProcessor = unified()
                 },
               ];
             }
+          }
+        }
+
+        if (node.tagName === "span" && node.properties?.style) {
+          const style = node.properties.style as string;
+          const colorMatch = style.match(/color:\s*([^;]+)/);
+          const bgColorMatch = style.match(/background-color:\s*([^;]+)/);
+
+          if (colorMatch) {
+            node.properties["data-color"] = colorMatch[1].trim();
+          }
+
+          if (bgColorMatch) {
+            node.properties["data-highlight"] = bgColorMatch[1].trim();
+          }
+        }
+
+        if (node.tagName === "mark" && node.properties?.style) {
+          const style = node.properties.style as string;
+          const bgColorMatch = style.match(/background-color:\s*([^;]+)/);
+
+          if (bgColorMatch) {
+            node.properties["data-highlight"] = bgColorMatch[1].trim();
           }
         }
       });
@@ -357,12 +481,13 @@ export const convertHtmlToMarkdownUnified = (
 
 export const getMarkdownPreviewContent = (
   content: string,
-  isMarkdownMode: boolean
+  isMarkdownMode: boolean,
+  tableSyntax?: TableSyntax
 ): string => {
   if (isMarkdownMode) {
     return processMarkdownContent(content);
   } else {
-    return convertHtmlToMarkdownUnified(content);
+    return convertHtmlToMarkdownUnified(content, tableSyntax);
   }
 };
 
@@ -370,6 +495,17 @@ export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
   const sanitizedHtml = convertMarkdownToHtml(markdown);
+  let result = convertHtmlToMarkdown(sanitizedHtml);
 
-  return convertHtmlToMarkdown(sanitizedHtml);
+  result = result.replace(
+    /\\+\[(📎|🎥)\s+([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g,
+    "[$1 $2]($3)"
+  );
+  result = result.replace(
+    /\\+!\\\[([^\]]*?)\\+\]\\+\(([^)]+?)\\+\)/g,
+    "![$1]($2)"
+  );
+  result = result.replace(/\\+\[([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g, "[$1]($2)");
+
+  return result;
 };

@@ -46,3 +46,17 @@ These shortcuts are available when the note editor is focused. They allow you to
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>                       | Toggle a blockquote            |
 
 **\*Note:** For Windows/Linux, use `Ctrl` instead of `⌘ Cmd` and `Alt` instead of `⌥ Option`.\*
+
+### Table Shortcuts
+
+These shortcuts are available when working with tables in the editor.
+
+| Shortcut                                                                 | Action                         |
+| :----------------------------------------------------------------------- | :----------------------------- |
+| <kbd>⌘ Cmd</kbd> + <kbd>R</kbd>                                          | Add row below                 |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>                       | Add row above                 |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>                       | Add column right              |
+| <kbd>⌘ Cmd</kbd> + <kbd>Backspace</kbd>                                  | Delete current row            |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>Backspace</kbd>               | Delete current column         |
+
+**\*Note:** For Windows/Linux, use `Ctrl` instead of `⌘ Cmd` and `Alt` instead of `⌥ Option`.\*

@@ -8,161 +8,275 @@ import {
   Clock,
   BarChart3,
   CheckSquare,
+  Pin,
+  Filter,
+  ArrowRight,
+  CheckIcon,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Checklist } from "@/app/_types";
+import { Checklist, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
-import { isItemCompleted } from "@/app/_utils/checklist-utils";
-import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
-import { TaskStatusLabels } from "@/app/_types/enums";
+import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useChecklistHome } from "@/app/_hooks/useChecklistHome";
 
 interface ChecklistHomeProps {
   lists: Checklist[];
+  user: User | null;
   onCreateModal: () => void;
   onSelectChecklist?: (list: Checklist) => void;
 }
 
 export const ChecklistHome = ({
   lists,
+  user,
   onCreateModal,
   onSelectChecklist,
 }: ChecklistHomeProps) => {
-  const useHomeStats = () => {
-    const totalItems = lists.reduce((sum, list) => sum + list.items.length, 0);
-    const completedItems = lists.reduce(
-      (sum, list) =>
-        sum +
-        list.items.filter((item) => isItemCompleted(item, list.type)).length,
-      0
-    );
-    const completionRate =
-      totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-    const recentLists = [...lists]
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      )
-      .slice(0, 12);
-    const taskLists = recentLists.filter((list) => list.type === "task");
-    const simpleLists = recentLists.filter((list) => list.type === "simple");
-
-    return {
-      totalItems,
-      completedItems,
-      completionRate,
-      recentLists,
-      taskLists,
-      simpleLists,
-    };
-  };
-
   const {
-    totalItems,
-    completedItems,
-    completionRate,
-    recentLists,
+    sensors,
+    handleDragEnd,
+    pinned,
+    recent,
     taskLists,
     simpleLists,
-  } = useHomeStats();
+    stats,
+    completionRate,
+    filterOptions,
+    checklistFilter,
+    setChecklistFilter,
+    handleTogglePin,
+    isListPinned,
+  } = useChecklistHome({ lists, user });
 
   if (lists.length === 0) {
     return (
-      <div className="h-full overflow-y-auto bg-background">
+      <div className="h-full flex items-center justify-center">
         <EmptyState
-          icon={<Folder className="h-10 w-10 text-muted-foreground" />}
-          title="No checklists yet"
-          description="Create your first checklist to get started. You can organize your tasks, track progress, and more."
-          buttonText="Create New Checklist"
+          title="No Checklists Yet"
+          description="Create your first checklist to start organizing your tasks."
+          buttonText="New Checklist"
           onButtonClick={() => onCreateModal()}
+          icon={<CheckSquare className="h-10 w-10 text-muted-foreground" />}
         />
       </div>
     );
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-background">
+    <div className="h-full overflow-y-auto bg-background pb-16 lg:pb-0">
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
-              Welcome Back
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
+              Checklists
             </h1>
-            <p className="text-lg text-muted-foreground">
-              Your most recently updated checklists
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
+              Your productivity dashboard
             </p>
           </div>
-          <Button onClick={() => onCreateModal()} size="lg">
-            <Plus className="h-5 w-5 mr-2" />
-            New Checklist
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => (window.location.href = "/checklists")}
+              size="sm"
+              className="flex-1 sm:size-lg"
+            >
+              <span className="hidden sm:inline">All Lists</span>
+              <span className="sm:hidden">All</span>
+            </Button>
+            <Button
+              onClick={() => onCreateModal()}
+              size="sm"
+              className="flex-1 sm:size-lg"
+            >
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">New Checklist</span>
+              <span className="sm:hidden">New</span>
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard
-            icon={<Folder className="h-6 w-6 text-primary" />}
-            title="Total Lists"
-            value={lists.length}
-          />
-          <StatCard
-            icon={<CheckCircle className="h-6 w-6 text-primary" />}
-            title={TaskStatusLabels.COMPLETED}
-            value={completedItems}
-          />
-          <StatCard
-            icon={<TrendingUp className="h-6 w-6 text-primary" />}
-            title="Progress"
-            value={`${completionRate}%`}
-          />
-          <StatCard
-            icon={<Clock className="h-6 w-6 text-primary" />}
-            title="Total Items"
-            value={totalItems}
-          />
-        </div>
-
-        {taskLists.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              Tasks
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {taskLists.map((list) => (
-                <ChecklistCard
-                  key={`${list.category}-${list.id}`}
-                  list={list}
-                  onSelect={onSelectChecklist!}
-                />
-              ))}
+        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-6 lg:mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Folder className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-bold text-foreground">
+                  {stats.totalLists}
+                </div>
+                <div className="text-xs text-muted-foreground">Lists</div>
+              </div>
             </div>
+
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-bold text-foreground">
+                  {stats.completedItems}
+                </div>
+                <div className="text-xs text-muted-foreground">Completed</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-bold text-foreground">
+                  {completionRate}%
+                </div>
+                <div className="text-xs text-muted-foreground">Progress</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              </div>
+              <div>
+                <div className="text-xl sm:text-2xl font-bold text-foreground">
+                  {stats.totalItems}
+                </div>
+                <div className="text-xs text-muted-foreground">Total Items</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
+          <div className="flex items-center gap-3">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium text-foreground">
+              Filter by completion
+            </span>
+          </div>
+          <Dropdown
+            value={checklistFilter}
+            options={filterOptions}
+            onChange={(value) => setChecklistFilter(value as any)}
+            className="w-full sm:w-48"
+          />
+        </div>
+
+        {pinned.length > 0 && (
+          <div className="mb-8 lg:mb-12 overflow-hidden">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Pin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                Pinned
+              </h2>
+              <div className="flex-1 h-px bg-border"></div>
+            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={pinned.map((list) => list.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {pinned.map((list) => (
+                    <ChecklistCard
+                      key={`pinned-${list.category}-${list.id}`}
+                      list={list}
+                      onSelect={onSelectChecklist!}
+                      isPinned={true}
+                      onTogglePin={handleTogglePin}
+                      isDraggable={true}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           </div>
         )}
 
-        {simpleLists.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-              <CheckSquare className="h-5 w-5 text-primary" />
-              Simple Checklists
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {simpleLists.map((list) => (
-                <ChecklistCard
-                  key={list.id}
-                  list={list}
-                  onSelect={onSelectChecklist!}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        {recent.length > 0 && (
+          <div className="space-y-6 sm:space-y-8">
+            {taskLists.length > 0 && (
+              <div>
+                <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                    Task Lists
+                  </h2>
+                  <div className="flex-1 h-px bg-border"></div>
+                  <Button
+                    variant="outline"
+                    onClick={() => (window.location.href = "/tasks")}
+                    size="sm"
+                    className="ml-2"
+                  >
+                    <span className="hidden sm:inline">Show All Tasks</span>
+                    <span className="sm:hidden">All</span>
+                    <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {taskLists.map((list) => (
+                    <ChecklistCard
+                      key={`task-${list.category}-${list.id}`}
+                      list={list}
+                      onSelect={onSelectChecklist!}
+                      isPinned={isListPinned(list)}
+                      onTogglePin={handleTogglePin}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {lists.length > 12 && (
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Showing {recentLists.length} of {lists.length} checklists. Use the
-              sidebar to browse all or search above.
-            </p>
+            {simpleLists.length > 0 && (
+              <div>
+                <div className="flex items-center gap-3 mb-4 sm:mb-6">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <CheckSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                    Simple Lists
+                  </h2>
+                  <div className="flex-1 h-px bg-border"></div>
+                  <Button
+                    variant="outline"
+                    onClick={() => (window.location.href = "/checklists")}
+                    size="sm"
+                    className="ml-2"
+                  >
+                    <span className="hidden sm:inline">Show All</span>
+                    <span className="sm:hidden">All</span>
+                    <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {simpleLists.map((list) => (
+                    <ChecklistCard
+                      key={`simple-${list.category}-${list.id}`}
+                      list={list}
+                      onSelect={onSelectChecklist!}
+                      isPinned={isListPinned(list)}
+                      onTogglePin={handleTogglePin}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

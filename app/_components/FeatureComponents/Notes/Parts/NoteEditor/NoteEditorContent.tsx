@@ -2,6 +2,7 @@ import { TiptapEditor } from "@/app/_components/FeatureComponents/Notes/Parts/Ti
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
+import { usePathname, useSearchParams } from "next/navigation";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -18,10 +19,13 @@ export const NoteEditorContent = ({
 }: NoteEditorContentProps) => {
   const { user } = useAppMode();
   const { compactMode } = useSettings();
+  const searchParams = useSearchParams();
+  const notesDefaultMode = user?.notesDefaultMode || "view";
+  const editor = searchParams?.get('editor');
 
   return (
     <div className="flex-1 h-full pb-14 lg:pb-0">
-      {isEditing ? (
+      {notesDefaultMode === 'edit' || editor === "true" || isEditing ? (
         <TiptapEditor
           content={editorContent}
           onChange={onEditorContentChange}
@@ -29,9 +33,8 @@ export const NoteEditorContent = ({
         />
       ) : (
         <div
-          className={`px-6 pt-6 pb-12 ${
-            compactMode ? "max-w-[900px] mx-auto" : ""
-          }`}
+          className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
         >
           <UnifiedMarkdownRenderer content={noteContent || ""} />
         </div>

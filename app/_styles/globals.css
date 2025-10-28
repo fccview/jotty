@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 @import 'highlight.js/styles/github-dark-dimmed.css';
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 @layer base {
@@ -128,8 +129,8 @@
         --card-foreground: 255 255 255;
         --popover: 10 10 10;
         --popover-foreground: 255 255 255;
-        --primary: 90 90 90; /* Medium-dark gray for buttons/accents—the middle ground */
-        --primary-foreground: 255 255 255; /* White text for perfect contrast on the dark button */
+        --primary: 90 90 90;
+        --primary-foreground: 255 255 255;
         --secondary: 49 51 57;
         --secondary-foreground: 255 255 255;
         --muted: 49 51 57;
@@ -490,9 +491,70 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     @apply bg-accent bg-opacity-50;
 }
 
+
+.checklist-item input[type="checkbox"] {
+    padding: 0;
+    height: initial;
+    width: initial;
+    margin-bottom: 0;
+    display: none;
+    cursor: pointer;
+  }
+  
+  .checklist-item label {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .checklist-item label:before {
+    content:'';
+    -webkit-appearance: none;
+    background-color: transparent;
+    border: 1px solid rgb(var(--primary) / var(--tw-bg-opacity, 1));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0px -15px 10px -12px rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-right: 10px;
+    border-radius: 5px;
+  }
+  
+  .checklist-item label.checked:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 3px;
+    left: 8px;
+    width: 7px;
+    height: 12px;
+    border: solid rgb(var(--primary) / var(--tw-bg-opacity, 1));
+    border-width: 0 1px 1px 0;
+    transform: rotate(45deg);
+  }
+
+
+mark {
+    background-color: #fef08a;
+    color: inherit;
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.25rem;
+  }
+  
+  mark[style*="background-color"] {
+    background-color: inherit !important;
+  }
+
 .prose {
     @apply text-foreground;
     line-height: 1.7;
+}
+
+.prose img, 
+.ProseMirror img {
+    max-width: 100%;
+    height: none;
 }
 
 .prose p {
@@ -531,14 +593,13 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
 }
 
 .prose strong {
-    @apply font-semibold text-foreground;
+    @apply font-semibold;
 }
 
 .prose em {
     font-style: italic;
 }
 
-/* This is the crucial fix: it styles INLINE code but IGNORES code inside blocks */
 .prose :where(:not(pre)) > code {
     @apply bg-muted px-1 py-0.5 rounded text-sm;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
@@ -765,3 +826,38 @@ p > code {
 .file-attachment-wrapper .file-attachment {
     margin: 0;
 }
+
+
+@media print {
+    .no-print {
+      display: none !important;
+    }
+  
+    body {
+      background: #fff !important;
+    }
+  
+    .prose {
+      font-size: 12pt !important;
+      font-family: 'Times New Roman', Times, serif !important;
+      color: #000 !important;
+      max-width: 100% !important;
+    }
+  
+    .prose h1, .prose h2, .prose h3, .prose h4,
+    .prose pre, .prose blockquote {
+      page-break-after: avoid;
+      page-break-inside: avoid;
+    }
+  
+    .prose img {
+      max-width: 100% !important;
+    }
+  
+    .prose a[href^="http"]:after {
+      content: " (" attr(href) ")";
+      font-size: 9pt;
+      font-weight: normal;
+      color: #333;
+    }
+  } 

@@ -1,10 +1,11 @@
 "use client";
 
 import { Note, User } from "@/app/_types";
-import { FileText, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface PublicNoteViewProps {
   note: Note;
@@ -14,18 +15,37 @@ interface PublicNoteViewProps {
 export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
   const [avatarUrl, setAvatarUrl] = useState("");
 
+  const searchParams = useSearchParams();
+  const isPrintView = searchParams.get("view_mode") === "print";
+
   useEffect(() => {
     if (window && user?.avatarUrl) {
       setAvatarUrl(window.location.origin + user?.avatarUrl);
     }
   }, [user]);
 
+  const containerClass = isPrintView
+    ? "bg-background"
+    : "min-h-screen bg-background";
+
+  const mainContainerClass = isPrintView
+    ? ""
+    : "container mx-auto px-4 py-8 max-w-6xl";
+
+  const cardClass = isPrintView
+    ? ""
+    : "bg-card border border-border rounded-lg p-6";
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="mb-8">
+    <div className={containerClass}>
+      <div className={mainContainerClass}>
+        <div className="mb-8 no-print">
           <div className="flex items-center gap-3 mb-4">
-            <UserAvatar size="lg" username={user?.username || ""} avatarUrl={avatarUrl} />
+            <UserAvatar
+              size="lg"
+              username={user?.username || ""}
+              avatarUrl={avatarUrl}
+            />
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 {note.title}
@@ -46,11 +66,11 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className={cardClass}>
           <UnifiedMarkdownRenderer content={note.content} />
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border text-center">
+        <div className="mt-12 pt-8 border-t border-border text-center no-print">
           <p className="text-sm text-muted-foreground">
             This note is shared publicly by {note.owner}
           </p>
