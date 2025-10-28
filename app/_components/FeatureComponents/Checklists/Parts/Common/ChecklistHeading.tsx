@@ -65,7 +65,7 @@ export const ChecklistHeading = ({
 
   return (
     <>
-      <div className="lg:p-6 border-b border-border bg-gradient-to-r from-background to-muted/20">
+      <div className="lg:p-6 lg:border-b border-border bg-gradient-to-r from-background to-muted/20">
         <div className="fixed bottom-[64px] left-0 right-0 lg:relative lg:bottom-auto lg:left-auto lg:right-auto bg-background border-t lg:border-t-0 border-border p-4 lg:p-0 z-20 lg:z-auto items-center">
           <form
             onSubmit={handleSubmit}

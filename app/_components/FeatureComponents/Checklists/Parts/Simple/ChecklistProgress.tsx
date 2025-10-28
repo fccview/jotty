@@ -36,7 +36,7 @@ export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
-    <div className="bg-gradient-to-br from-muted/40 to-muted/20 border border-border/50 overflow-hidden backdrop-blur-sm transition-all duration-200">
+    <div className="border-t-0 bg-gradient-to-br from-muted/40 to-muted/20 border border-border/50 overflow-hidden backdrop-blur-sm transition-all duration-200">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-1.5 px-3 hover:bg-muted/40 transition-colors group"

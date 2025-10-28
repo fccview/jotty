@@ -15,11 +15,13 @@ import {
   List,
   Edit3,
   Trash2,
+  MoreHorizontal,
 } from "lucide-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
 import { useSharing } from "@/app/_hooks/useSharing";
 import { useState } from "react";
+import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -157,57 +159,109 @@ export const NoteEditorHeader = ({
               </>
             ) : (
               <>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowShareModal(true)}
-                  title="Share"
-                >
-                  <Share2 className="h-5 w-5" />
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={viewModel.handlePrint}
-                  title="Print / Save as PDF"
-                  disabled={isPrinting}
-                >
-                  {isPrinting ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Download className="h-5 w-5" />
-                  )}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowTOC(!showTOC)}
-                  className="hidden lg:flex"
-                  title="Table of Contents"
-                >
-                  <List className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleEdit}
-                  title="Edit"
-                >
-                  <Edit3 className="h-5 w-5" />
-                </Button>
-                {canDelete && (
+                <div className="hidden lg:flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={handleDelete}
-                    className="text-destructive hover:text-destructive"
-                    title="Delete"
+                    onClick={() => setShowShareModal(true)}
+                    title="Share"
                   >
-                    <Trash2 className="h-5 w-5" />
+                    <Share2 className="h-5 w-5" />
                   </Button>
-                )}
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={viewModel.handlePrint}
+                    title="Print / Save as PDF"
+                    disabled={isPrinting}
+                  >
+                    {isPrinting ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Download className="h-5 w-5" />
+                    )}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowTOC(!showTOC)}
+                    title="Table of Contents"
+                  >
+                    <List className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleEdit}
+                    title="Edit"
+                  >
+                    <Edit3 className="h-5 w-5" />
+                  </Button>
+                  {canDelete && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleDelete}
+                      className="text-destructive hover:text-destructive"
+                      title="Delete"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  )}
+                </div>
+
+                <div className="lg:hidden flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleEdit}
+                    title="Edit"
+                  >
+                    <Edit3 className="h-5 w-5" />
+                  </Button>
+                  <DropdownMenu
+                    align="right"
+                    trigger={
+                      <Button
+                        variant="outline"
+                        size="icon"
+                      >
+                        <MoreHorizontal className="h-5 w-5" />
+                      </Button>
+                    }
+                    items={[
+                      {
+                        type: "item" as const,
+                        label: "Share",
+                        icon: <Share2 className="h-4 w-4" />,
+                        onClick: () => setShowShareModal(true),
+                      },
+                      {
+                        type: "item" as const,
+                        label: "Print / Save as PDF",
+                        icon: isPrinting ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Download className="h-4 w-4" />
+                        ),
+                        onClick: viewModel.handlePrint,
+                      },
+                      ...(canDelete
+                        ? [
+                          {
+                            type: "item" as const,
+                            label: "Delete",
+                            icon: <Trash2 className="h-4 w-4" />,
+                            onClick: handleDelete,
+                            variant: "destructive" as const,
+                          },
+                        ]
+                        : []),
+                    ]}
+                  />
+                </div>
               </>
             )}
           </div>
