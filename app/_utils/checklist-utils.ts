@@ -168,7 +168,7 @@ export const parseMarkdown = (
           });
 
           item = {
-            id: generateItemId(parentLevel),
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -207,7 +207,7 @@ export const parseMarkdown = (
           }
 
           item = {
-            id: generateItemId(parentLevel),
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -281,6 +281,9 @@ const generateItemMarkdown = (
     }
 
     const itemMetadata: Record<string, any> = {};
+    if (item.id) {
+      itemMetadata.id = item.id;
+    }
     if (item.createdBy) {
       itemMetadata.createdBy = item.createdBy;
       itemMetadata.createdAt = item.createdAt;
@@ -322,6 +325,9 @@ const generateItemMarkdown = (
     }] ${escapedText} | ${metadata.join(" | ")}`;
   } else {
     const itemMetadata: Record<string, any> = {};
+    if (item.id) {
+      itemMetadata.id = item.id;
+    }
     if (item.createdBy) {
       itemMetadata.createdBy = item.createdBy;
       itemMetadata.createdAt = item.createdAt;

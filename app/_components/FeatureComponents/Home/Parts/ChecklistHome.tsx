@@ -11,6 +11,7 @@ import {
   Pin,
   Filter,
   ArrowRight,
+  CheckIcon,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist, User } from "@/app/_types";
@@ -60,8 +61,8 @@ export const ChecklistHome = ({
           title="No Checklists Yet"
           description="Create your first checklist to start organizing your tasks."
           buttonText="New Checklist"
-          onButtonClick={onCreateModal}
-          icon={<Folder className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
+          onButtonClick={() => onCreateModal()}
+          icon={<CheckSquare className="h-10 w-10 text-muted-foreground" />}
         />
       </div>
     );
