@@ -332,6 +332,20 @@ I would like to thank the following members for raising issues and help test/deb
         <a href="https://github.com/mgrimace"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/55518507?s=100"><br />mgrimace</a>
       </td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/4rft5"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/74219775?s=100&v=4"><br />4rft5</a>
+      </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/godsking121"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/140371467?s=100&v=4"><br />godsking121</a>
+      </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/pbuzdygan"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/183727077?s=100&v=4"><br />pbuzdygan</a>
+      </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/rcallison"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/535687?s=100&v=4"><br />rcallison</a>
+      </td>
+    </tr>
   </tbody>
 </table>
 
