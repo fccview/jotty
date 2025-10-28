@@ -25,6 +25,7 @@ import { Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
+import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -289,17 +290,22 @@ export const NestedChecklistItem = ({
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-between gap-2">
-            <label
-              htmlFor={item.id}
-              className={cn(
-                "text-sm transition-all duration-200 cursor-pointer items-center flex",
-                item.completed || completed
-                  ? "line-through text-muted-foreground checked"
-                  : "text-foreground"
+            <div className="flex-1 flex flex-col gap-1.5">
+              <label
+                htmlFor={item.id}
+                className={cn(
+                  "text-sm transition-all duration-200 cursor-pointer items-center flex",
+                  item.completed || completed
+                    ? "line-through text-muted-foreground checked"
+                    : "text-foreground"
+                )}
+              >
+                {displayText}
+              </label>
+              {item.recurrence && (
+                <RecurrenceIndicator recurrence={item.recurrence} />
               )}
-            >
-              {displayText}
-            </label>
+            </div>
 
             <LastModifiedCreatedInfo
               item={item}
