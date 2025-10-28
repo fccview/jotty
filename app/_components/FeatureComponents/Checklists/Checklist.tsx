@@ -69,7 +69,7 @@ export const ChecklistView = ({
     itemId: localList.id,
     itemType: "checklist",
     itemOwner: localList.owner || "",
-    onClose: () => {},
+    onClose: () => { },
     enabled: true,
     itemTitle: localList.title,
     itemCategory: localList.category,
@@ -86,7 +86,7 @@ export const ChecklistView = ({
 
   if (!isClient) {
     return (
-      <div className="h-full flex flex-col bg-background">
+      <div className="h-full flex flex-col bg-background relative">
         <ChecklistHeader
           checklist={localList}
           onBack={onBack}
@@ -100,7 +100,7 @@ export const ChecklistView = ({
   }
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background relative">
       <ChecklistHeader
         checklist={localList}
         onBack={onBack}
@@ -126,7 +126,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 

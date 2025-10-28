@@ -23,6 +23,7 @@ import {
   getCurrentUser,
   getUserByChecklist,
 } from "@/app/_server/actions/users";
+import { copyTextToClipboard } from "../_utils/global-utils";
 
 interface UseChecklistProps {
   list: Checklist;
@@ -524,14 +525,12 @@ export const useChecklist = ({
   };
 
   const handleCopyId = async () => {
-    try {
-      await navigator.clipboard.writeText(localList.id);
+    const success = await copyTextToClipboard(localList.id);
+    if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy ID:", err);
-    }
-  };
+    };
+  }
 
   const isItemFullyCompleted = (item: any): boolean => {
     if (!item.completed) return false;

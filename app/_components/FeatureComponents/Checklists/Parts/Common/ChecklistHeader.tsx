@@ -7,9 +7,15 @@ import {
   Share2,
   BarChart3,
   CheckSquare,
+  Users,
+  Globe,
+  Hash,
+  Check,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
+import { useChecklist } from "../../../../../_hooks/useChecklist";
+import { useSharing } from "@/app/_hooks/useSharing";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -28,6 +34,22 @@ export const ChecklistHeader = ({
   onShare,
   onConvertType,
 }: ChecklistHeaderProps) => {
+  const { handleCopyId, copied } = useChecklist({
+    list: checklist,
+    onUpdate: () => { },
+  });
+
+  const { sharingStatus } = useSharing({
+    itemId: checklist.id,
+    itemType: "checklist",
+    itemOwner: checklist.owner || "",
+    onClose: () => { },
+    enabled: true,
+    itemTitle: checklist.title,
+    itemCategory: checklist.category,
+    isOpen: true,
+  });
+
   return (
     <div className="bg-background border-b border-border px-3 py-4 lg:px-6 lg:py-[12px]">
       <div className="flex items-center justify-between">
@@ -40,6 +62,31 @@ export const ChecklistHeader = ({
           >
             <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
+
+          <div className="flex items-center gap-3 max-w-[30vw] lg:max-w-none">
+            <h1 className="text-xl font-bold truncate lg:text-2xl text-foreground tracking-tight">
+              {checklist.title}
+            </h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCopyId}
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              title={`Copy ID: ${checklist.id}`}
+            >
+              {copied ? (
+                <Check className="h-3 w-3 text-green-500" />
+              ) : (
+                <Hash className="h-3 w-3" />
+              )}
+            </Button>
+            {sharingStatus?.isPubliclyShared && (
+              <Globe className="h-3 w-3 text-primary" />
+            )}
+            {sharingStatus?.isShared && !sharingStatus.isPubliclyShared && (
+              <Users className="h-3 w-3 text-primary" />
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
