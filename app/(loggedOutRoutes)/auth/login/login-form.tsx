@@ -103,13 +103,11 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         </Button>
       </form>
 
-      {
-        appVersion && (
-          <div className="text-center text-xs text-muted-foreground">
-            Version {appVersion}
-          </div>
-        )
-      }
+      {appVersion && (
+        <div className="text-center text-xs text-muted-foreground">
+          Version {appVersion}
+        </div>
+      )}
     </div >
   );
 }
