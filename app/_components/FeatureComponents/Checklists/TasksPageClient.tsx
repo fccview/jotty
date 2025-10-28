@@ -180,11 +180,11 @@ export const TasksPageClient = ({
   if (initialLists.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <SiteHeader
-          title="All Tasks"
-          description="Browse and manage all your task lists"
-        />
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <SiteHeader
+            title="All Tasks"
+            description="Browse and manage all your task lists"
+          />
           <EmptyState
             icon={<BarChart3 className="h-10 w-10 text-muted-foreground" />}
             title="No task lists yet"
@@ -311,18 +311,18 @@ export const TasksPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${list.category || "Uncategorized"
-                          }/${list.id}`;
+                        const categoryPath = `${
+                          list.category || "Uncategorized"
+                        }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(
                         `${list.category || "Uncategorized"}/${list.id}`
                       )}
-                      onTogglePin={() => { }}
+                      onTogglePin={() => {}}
                     />
                   ))}
                 </div>
-
               </>
             )}
           </div>

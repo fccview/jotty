@@ -45,9 +45,9 @@ export const HomeClient = ({
 
   const handleOpenCreateModal = (initialCategory?: string) => {
     if (mode === Modes.NOTES) {
-      openCreateNoteModal(initialCategory);
+      openCreateNoteModal(initialCategory || undefined);
     } else {
-      openCreateChecklistModal(initialCategory);
+      openCreateChecklistModal(initialCategory || undefined);
     }
   };
 
@@ -66,14 +66,13 @@ export const HomeClient = ({
       onCategoryDeleted={() => router.refresh()}
       onCategoryRenamed={() => router.refresh()}
     >
-
       <MobileHeader />
 
       {mode === Modes.CHECKLISTS && (
         <ChecklistHome
           lists={initialLists}
           user={user}
-          onCreateModal={openCreateChecklistModal}
+          onCreateModal={handleOpenCreateModal}
           onSelectChecklist={(list) => {
             const categoryPath = buildCategoryPath(
               list.category || "Uncategorized",
@@ -89,7 +88,7 @@ export const HomeClient = ({
           notes={initialDocs}
           categories={initialDocsCategories}
           user={user}
-          onCreateModal={openCreateNoteModal}
+          onCreateModal={handleOpenCreateModal}
           onSelectNote={(note) => {
             const categoryPath = buildCategoryPath(
               note.category || "Uncategorized",

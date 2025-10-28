@@ -60,7 +60,7 @@ export const ChecklistHome = ({
           title="No Checklists Yet"
           description="Create your first checklist to start organizing your tasks."
           buttonText="New Checklist"
-          onButtonClick={onCreateModal}
+          onButtonClick={() => onCreateModal()}
           icon={<Folder className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />}
         />
       </div>
@@ -90,7 +90,7 @@ export const ChecklistHome = ({
               <span className="sm:hidden">All</span>
             </Button>
             <Button
-              onClick={() => onCreateModal()}
+              onClick={onCreateModal}
               size="sm"
               className="flex-1 sm:size-lg"
             >

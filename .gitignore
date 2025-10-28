@@ -42,5 +42,6 @@ next-env.d.ts
 # docker
 .dockerignore 
 /data
+/data_bak
 
 *.test.yml

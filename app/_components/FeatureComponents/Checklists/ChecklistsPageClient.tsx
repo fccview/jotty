@@ -89,7 +89,14 @@ export const ChecklistsPageClient = ({
     );
   }, [initialLists, checklistFilter, selectedCategories, user?.pinnedLists]);
 
-  const { currentPage, totalPages, paginatedItems, goToPage, totalItems, handleItemsPerPageChange } = usePagination({
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems,
+    goToPage,
+    totalItems,
+    handleItemsPerPageChange,
+  } = usePagination({
     items: filteredLists,
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
@@ -138,11 +145,12 @@ export const ChecklistsPageClient = ({
   if (initialLists.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <SiteHeader
-          title="All Checklists"
-          description="Browse and manage all your checklists"
-        />
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <SiteHeader
+            title="All Checklists"
+            description="Browse and manage all your checklists"
+          />
+
           <EmptyState
             icon={<Folder className="h-10 w-10 text-muted-foreground" />}
             title="No checklists yet"
@@ -259,18 +267,18 @@ export const ChecklistsPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${list.category || "Uncategorized"
-                          }/${list.id}`;
+                        const categoryPath = `${
+                          list.category || "Uncategorized"
+                        }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(
                         `${list.category || "Uncategorized"}/${list.id}`
                       )}
-                      onTogglePin={() => { }}
+                      onTogglePin={() => {}}
                     />
                   ))}
                 </div>
-
               </>
             )}
           </div>
