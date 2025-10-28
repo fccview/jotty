@@ -7,6 +7,7 @@ import { NoteEditorHeader } from "@/app/_components/FeatureComponents/Notes/Part
 import { NoteEditorContent } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorContent";
 import { useState } from "react";
 import { TableOfContents } from "../TableOfContents";
+import { useSearchParams } from "next/navigation";
 
 export interface NoteEditorProps {
   note: Note;

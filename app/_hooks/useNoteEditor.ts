@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   convertMarkdownToHtml,
   convertHtmlToMarkdownUnified,
@@ -25,7 +25,9 @@ export const useNoteEditor = ({
   onDelete,
   onBack,
 }: UseNoteEditorProps) => {
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAppMode();
   const [title, setTitle] = useState(note.title);
   const [category, setCategory] = useState(note.category || "Uncategorized");
   const [editorContent, setEditorContent] = useState(() =>
@@ -33,7 +35,12 @@ export const useNoteEditor = ({
   );
   const [isMarkdownMode, setIsMarkdownMode] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(() => {
+    const notesDefaultMode = user?.notesDefaultMode || "view";
+    const editor = searchParams?.get('editor');
+
+    return notesDefaultMode === "edit" || editor === "true" ? true : false;
+  });
   const [status, setStatus] = useState({
     isSaving: false,
     isAutoSaving: false,
@@ -42,7 +49,6 @@ export const useNoteEditor = ({
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
 
   const { autosaveNotes } = useSettings();
-  const { user } = useAppMode();
   const {
     registerNavigationGuard,
     unregisterNavigationGuard,
@@ -62,7 +68,9 @@ export const useNoteEditor = ({
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     setEditorContent(convertMarkdownToHtml(note.content || ""));
-    setIsEditing(false);
+    if (searchParams?.get('editor') !== "true") {
+      setIsEditing(false);
+    }
     setHasUnsavedChanges(false);
   }, [note]);
 
