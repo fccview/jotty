@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Settings, Monitor } from "lucide-react";
+import { User, Settings, Monitor, Archive } from "lucide-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
 import { User as UserType } from "@/app/_types";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,7 @@ import { SessionsTab } from "./Parts/SessionsTab";
 import { SettingsTab } from "./Parts/SettingsTab";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Button } from "../../GlobalComponents/Buttons/Button";
+import { ArchiveTab } from "./Parts/ArchiveTab";
 
 interface UserProfileClientProps {
   isSsoUser: boolean;
@@ -24,11 +25,9 @@ export const UserProfileClient = ({
   isAdmin,
   avatarUrl,
 }: UserProfileClientProps) => {
-  const router = useRouter();
-  const { checkNavigation } = useNavigationGuard();
   const { user } = useAppMode();
   const [activeTab, setActiveTab] = useState<
-    "profile" | "sessions" | "settings"
+    "profile" | "sessions" | "archive" | "settings"
   >("profile");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -44,6 +43,7 @@ export const UserProfileClient = ({
           {[
             { id: "profile", label: "Profile", icon: User },
             { id: "sessions", label: "Sessions", icon: Monitor },
+            { id: "archive", label: "Archive", icon: Archive },
             { id: "settings", label: "Settings", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -53,7 +53,9 @@ export const UserProfileClient = ({
                 variant={activeTab === tab.id ? "default" : "ghost"}
                 size="sm"
                 onClick={() =>
-                  setActiveTab(tab.id as "profile" | "sessions" | "settings")
+                  setActiveTab(
+                    tab.id as "profile" | "sessions" | "archive" | "settings"
+                  )
                 }
                 className="flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap flex-shrink-0"
               >
@@ -75,6 +77,7 @@ export const UserProfileClient = ({
           />
         )}
         {activeTab === "sessions" && <SessionsTab />}
+        {activeTab === "archive" && <ArchiveTab user={user} />}
         {activeTab === "settings" && (
           <SettingsTab setShowDeleteModal={setShowDeleteModal} />
         )}

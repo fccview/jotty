@@ -1,10 +1,17 @@
 "use server";
 
-import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
+import {
+  ARCHIVED_DIR_NAME,
+  CHECKLISTS_DIR,
+  NOTES_DIR,
+  USERS_FILE,
+} from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
 import {
+  Checklist,
   ImageSyntax,
   LandingPage,
+  Note,
   NotesDefaultEditor,
   NotesDefaultMode,
   Result,
@@ -19,6 +26,10 @@ import {
 import fs from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
+import { updateList } from "@/app/_server/actions/checklist";
+import { updateNote } from "@/app/_server/actions/note";
+import { Modes } from "@/app/_types/enums";
+import { AppMode } from "@/app/_types";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -694,4 +705,38 @@ export const updatePinnedOrder = async (
     console.error(`Error updating pinned order for ${type}:`, error);
     return { success: false, error: "Failed to update pinned order" };
   }
+};
+
+export const toggleArchive = async (
+  item: Checklist | Note,
+  mode: AppMode,
+  newCategory?: string
+): Promise<{ success: boolean; data?: Checklist | Note; error?: string }> => {
+  const isOwner = await getCurrentUser();
+  const formData = new FormData();
+  formData.append("id", item.id);
+  formData.append("title", item.title);
+
+  if (mode === Modes.NOTES) {
+    formData.append("content", (item as Note).content);
+  }
+
+  if (isOwner) {
+    formData.append("category", newCategory || ARCHIVED_DIR_NAME);
+  }
+
+  formData.append("originalCategory", item.category || "Uncategorized");
+
+  let result: Result<Checklist | Note>;
+  if (mode === Modes.NOTES) {
+    result = (await updateNote(formData, false)) as Result<Note>;
+  } else {
+    result = (await updateList(formData)) as Result<Checklist>;
+  }
+
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+
+  return { success: false, error: result.error };
 };

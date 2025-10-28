@@ -26,7 +26,11 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { DEPRECATED_DOCS_FOLDER, NOTES_FOLDER } from "@/app/_consts/notes";
 import { readJsonFile } from "../file";
-import { USERS_FILE } from "@/app/_consts/files";
+import {
+  ARCHIVED_DIR_NAME,
+  EXCLUDED_DIRS,
+  USERS_FILE,
+} from "@/app/_consts/files";
 import { Modes } from "@/app/_types/enums";
 import { serverReadFile } from "@/app/_server/actions/file";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
@@ -92,11 +96,16 @@ const _noteToMarkdown = (doc: Note): string => {
 const _readNotesRecursively = async (
   dir: string,
   basePath: string = "",
-  owner: string
+  owner: string,
+  allowArchived: boolean = false
 ): Promise<Note[]> => {
   const docs: Note[] = [];
   const entries = await serverReadDir(dir);
-  const excludedDirs = ["images", "files"];
+  const excludedDirs = EXCLUDED_DIRS;
+
+  if (!allowArchived) {
+    excludedDirs.push(ARCHIVED_DIR_NAME);
+  }
 
   const order = await readOrderFile(dir);
   const dirNames = entries
