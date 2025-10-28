@@ -50,58 +50,38 @@ export const RECURRENCE_PRESETS = {
 
 /**
  * Parse recurrence metadata from markdown format
- * Format: | rrule:FREQ=WEEKLY;INTERVAL=1 | dtstart:2025-01-27T00:00:00Z | nextDue:2025-02-03T00:00:00Z | lastCompleted:2025-01-20T00:00:00Z
+ * Format example: | recurrence:{"rrule":"FREQ=WEEKLY;INTERVAL=1","dtstart":"2025-01-27T00:00:00Z","nextDue":"2025-02-03T00:00:00Z"}
  */
 export const parseRecurrenceFromMarkdown = (
   metadata: string[]
 ): RecurrenceRule | undefined => {
-  let rrule: string | undefined;
-  let dtstart: string | undefined;
-  let nextDue: string | undefined;
-  let lastCompleted: string | undefined;
-
   for (const meta of metadata) {
-    if (meta.startsWith("rrule:")) {
-      rrule = meta.substring(6);
-    } else if (meta.startsWith("dtstart:")) {
-      dtstart = meta.substring(8);
-    } else if (meta.startsWith("nextDue:")) {
-      nextDue = meta.substring(8);
-    } else if (meta.startsWith("lastCompleted:")) {
-      lastCompleted = meta.substring(14);
+    if (meta.startsWith("recurrence:")) {
+      try {
+        const recurrenceJson = meta.substring(11);
+        const recurrence = JSON.parse(recurrenceJson);
+
+        if (!recurrence.rrule || !recurrence.dtstart) {
+          return undefined;
+        }
+
+        return recurrence as RecurrenceRule;
+      } catch (error) {
+        console.error("Error parsing recurrence JSON:", error);
+        return undefined;
+      }
     }
   }
 
-  if (!rrule || !dtstart) {
-    return undefined;
-  }
-
-  return {
-    rrule,
-    dtstart,
-    nextDue,
-    lastCompleted,
-  };
+  return undefined;
 };
 
 /**
  * Convert recurrence metadata to markdown format
+ * Format: | recurrence:<JSON_STRING>
  */
 export const recurrenceToMarkdown = (recurrence: RecurrenceRule): string[] => {
-  const parts: string[] = [];
-
-  parts.push(`rrule:${recurrence.rrule}`);
-  parts.push(`dtstart:${recurrence.dtstart}`);
-
-  if (recurrence.nextDue) {
-    parts.push(`nextDue:${recurrence.nextDue}`);
-  }
-
-  if (recurrence.lastCompleted) {
-    parts.push(`lastCompleted:${recurrence.lastCompleted}`);
-  }
-
-  return parts;
+  return [`recurrence:${JSON.stringify(recurrence)}`];
 };
 
 /**
