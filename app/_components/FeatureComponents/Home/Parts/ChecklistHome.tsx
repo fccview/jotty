@@ -91,7 +91,7 @@ export const ChecklistHome = ({
               <span className="sm:hidden">All</span>
             </Button>
             <Button
-              onClick={onCreateModal}
+              onClick={() => onCreateModal()}
               size="sm"
               className="flex-1 sm:size-lg"
             >
