@@ -121,6 +121,7 @@ export interface User {
   imageSyntax?: ImageSyntax;
   tableSyntax?: TableSyntax;
   landingPage?: LandingPage;
+  notesAutoSaveInterval?: NotesAutoSaveInterval;
   notesDefaultEditor?: NotesDefaultEditor;
   notesDefaultMode?: NotesDefaultMode;
   pinnedLists?: string[];
@@ -132,6 +133,7 @@ export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";
 export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
 export type NotesDefaultMode = "edit" | "view";
+export type NotesAutoSaveInterval = 0 | 1000 | 5000 | 10000 | 15000 | 20000;
 
 export interface SharedItem {
   id: string;

@@ -10,6 +10,7 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Category } from "@/app/_types";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 
 interface EditChecklistModalProps {
   checklist: {
@@ -22,6 +23,7 @@ interface EditChecklistModalProps {
   categories: Category[];
   onClose: () => void;
   onUpdated: () => void;
+  unarchive?: boolean;
 }
 
 export const EditChecklistModal = ({
@@ -29,10 +31,12 @@ export const EditChecklistModal = ({
   categories,
   onClose,
   onUpdated,
+  unarchive,
 }: EditChecklistModalProps) => {
   const router = useRouter();
   const [title, setTitle] = useState(checklist.title);
-  const [category, setCategory] = useState(checklist.category || "");
+  const initialCategory = unarchive ? "" : checklist.category || "";
+  const [category, setCategory] = useState(initialCategory);
   const [isLoading, setIsLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
 
@@ -57,6 +61,7 @@ export const EditChecklistModal = ({
     formData.append("id", checklist.id);
     formData.append("title", title.trim());
     formData.append("originalCategory", checklist.category || "Uncategorized");
+    formData.append("unarchive", unarchive ? "true" : "false");
 
     if (isOwner) {
       formData.append("category", category || "");
@@ -71,7 +76,10 @@ export const EditChecklistModal = ({
         updatedChecklist.category || "Uncategorized",
         updatedChecklist.id
       );
-      router.push(`/checklist/${categoryPath}`);
+
+      if (!unarchive) {
+        router.push(`/checklist/${categoryPath}`);
+      }
 
       onUpdated();
     }
@@ -81,11 +89,11 @@ export const EditChecklistModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Edit Checklist"
+      title={unarchive ? "Unarchive Checklist" : "Edit Checklist"}
       titleIcon={<ListTodo className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
+        <div className={unarchive ? "hidden" : ""}>
           <label className="block text-sm font-medium text-foreground mb-2">
             Checklist Name *
           </label>
@@ -96,9 +104,13 @@ export const EditChecklistModal = ({
             placeholder="Enter checklist name..."
             className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
             required
-            disabled={isLoading}
+            disabled={isLoading || unarchive}
           />
         </div>
+
+        {unarchive && (
+          <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>
+        )}
 
         {isOwner && (
           <div>
@@ -130,7 +142,11 @@ export const EditChecklistModal = ({
             disabled={isLoading || !title.trim()}
             className="flex-1"
           >
-            {isLoading ? "Updating..." : "Update Checklist"}
+            {isLoading
+              ? "Updating..."
+              : unarchive
+              ? "Unarchive Checklist"
+              : "Update Checklist"}
           </Button>
         </div>
       </form>

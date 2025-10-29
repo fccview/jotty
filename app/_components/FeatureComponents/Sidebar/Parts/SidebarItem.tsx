@@ -10,6 +10,7 @@ import {
   Pin,
   PinOff,
   MoreHorizontal,
+  Archive,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -19,6 +20,8 @@ import { Modes } from "@/app/_types/enums";
 import { togglePin } from "@/app/_server/actions/users";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { toggleArchive } from "@/app/_server/actions/users";
 
 interface SharingStatus {
   isShared: boolean;
@@ -72,7 +75,8 @@ export const SidebarItem = ({
 
   const isItemPinned = () => {
     if (!user) return false;
-    const pinnedItems = mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
+    const pinnedItems =
+      mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
     if (!pinnedItems) return false;
 
     const itemPath = `${item.category || "Uncategorized"}/${item.id}`;
@@ -80,16 +84,38 @@ export const SidebarItem = ({
   };
 
   const dropdownItems = [
-    ...(onEditItem ? [{
-      label: "Edit",
-      onClick: () => onEditItem(item),
-      icon: <Edit className="h-4 w-4" />,
-    }] : []),
+    ...(onEditItem
+      ? [
+          {
+            label: "Edit",
+            onClick: () => onEditItem(item),
+            icon: <Edit className="h-4 w-4" />,
+          },
+        ]
+      : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
+    ...(item.category !== ARCHIVED_DIR_NAME
+      ? [
+          {
+            label: "Archive",
+            onClick: async () => {
+              const result = await toggleArchive(item, mode);
+              if (result.success) {
+                router.refresh();
+              }
+            },
+            icon: <Archive className="h-4 w-4" />,
+          },
+        ]
+      : []),
     {
       label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
       onClick: handleTogglePin,
-      icon: isItemPinned() ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />,
+      icon: isItemPinned() ? (
+        <PinOff className="h-4 w-4" />
+      ) : (
+        <Pin className="h-4 w-4" />
+      ),
       disabled: isTogglingPin === item.id,
     },
   ];

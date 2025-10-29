@@ -212,7 +212,145 @@ Retrieves all notes/documents for the authenticated user.
 
 **Note**: All notes include a `category` field for organization. If no category is specified when creating a note, it defaults to "Uncategorized".
 
-### 6. Get User Summary Statistics
+### 6. Create Note
+
+**POST** `/api/notes`
+
+Creates a new note for the authenticated user.
+
+**Request Body:**
+
+```json
+{
+  "title": "My New Note",
+  "content": "Note content here...",
+  "category": "Personal"
+}
+```
+
+**Parameters:**
+
+- `title` (required): The title of the note
+- `content` (optional): The content of the note in markdown format (defaults to empty string)
+- `category` (optional): Category for the note (defaults to "Uncategorized")
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "note-123",
+    "title": "My New Note",
+    "content": "Note content here...",
+    "category": "Personal",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "owner": "username"
+  }
+}
+```
+
+### 7. Get User Information
+
+**GET** `/api/user/{username}`
+
+Retrieves user information. Returns full user data if authenticated as the user or admin, otherwise returns only public information.
+
+**Response (Own Profile or Admin):**
+
+```json
+{
+  "user": {
+    "username": "fccview",
+    "isAdmin": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "lastLogin": "2024-01-15T10:30:00.000Z",
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "preferredTheme": "dark",
+    "imageSyntax": "markdown",
+    "tableSyntax": "markdown",
+    "landingPage": "checklists",
+    "notesAutoSaveInterval": 5000,
+    "notesDefaultEditor": "wysiwyg",
+    "notesDefaultMode": "edit",
+    "pinnedLists": ["Work/project-tasks"],
+    "pinnedNotes": ["Personal/important-note"]
+  }
+}
+```
+
+**Response (Public):**
+
+```json
+{
+  "user": {
+    "username": "fccview",
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "preferredTheme": "dark"
+  }
+}
+```
+
+**Note**: Sensitive fields like `passwordHash` and `apiKey` are never returned.
+
+### 8. Get All Categories
+
+**GET** `/api/categories`
+
+Retrieves all categories for notes and checklists for the authenticated user. Archived categories are excluded.
+
+**Response:**
+
+```json
+{
+  "categories": {
+    "notes": [
+      {
+        "name": "Personal",
+        "path": "Personal",
+        "count": 5,
+        "level": 0
+      },
+      {
+        "name": "Work",
+        "path": "Work",
+        "count": 3,
+        "level": 0
+      },
+      {
+        "name": "Projects",
+        "path": "Work/Projects",
+        "count": 2,
+        "level": 1
+      }
+    ],
+    "checklists": [
+      {
+        "name": "Shopping",
+        "path": "Shopping",
+        "count": 4,
+        "level": 0
+      },
+      {
+        "name": "Work",
+        "path": "Work",
+        "count": 6,
+        "level": 0
+      }
+    ]
+  }
+}
+```
+
+**Response Fields:**
+
+- `name`: The category name
+- `path`: Full path to the category (includes parent categories)
+- `count`: Number of items in this category
+- `level`: Nesting level (0 for root categories)
+
+### 9. Get User Summary Statistics
 
 **GET** `/api/summary`
 
@@ -400,6 +538,35 @@ curl -H "x-api-key: ck_your_api_key_here" \
      https://your-checklist-app.com/api/notes
 ```
 
+### Create a note
+
+```bash
+curl -X POST \
+     -H "x-api-key: ck_your_api_key_here" \
+     -H "Content-Type: application/json" \
+     -d '{"title": "My New Note", "content": "This is the content", "category": "Personal"}' \
+     https://your-checklist-app.com/api/notes
+```
+
+### Get user information
+
+```bash
+# Get your own user info
+curl -H "x-api-key: ck_your_api_key_here" \
+     https://your-checklist-app.com/api/user/your_username
+
+# Get another user's public info
+curl -H "x-api-key: ck_your_api_key_here" \
+     https://your-checklist-app.com/api/user/other_username
+```
+
+### Get all categories
+
+```bash
+curl -H "x-api-key: ck_your_api_key_here" \
+     https://your-checklist-app.com/api/categories
+```
+
 ### Get user summary statistics
 
 ```bash
@@ -451,4 +618,7 @@ curl -H "x-api-key: ck_your_api_key_here" \
 - The summary endpoint provides comprehensive statistics including category breakdowns
 - Admin users can query summary data for any user using the `username` parameter
 - Non-admin users can only query their own summary data
+- The user information endpoint returns different data based on authentication context
+- Categories endpoint excludes archived categories automatically
+- When creating notes, the `content` and `category` fields are optional
 - This is a beta implementation - additional features will be added in future updates

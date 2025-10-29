@@ -20,8 +20,10 @@ import {
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
 import { useSharing } from "@/app/_hooks/useSharing";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
+import { useSearchParams } from "next/navigation";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -51,7 +53,6 @@ export const NoteEditorHeader = ({
     setTitle,
     category,
     isEditing,
-    setIsEditing,
     status,
     handleEdit,
     handleCancel,
@@ -60,6 +61,7 @@ export const NoteEditorHeader = ({
     isPrinting,
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
+  const { user } = useAppMode();
   const { sharingStatus } = useSharing({
     itemId: note.id,
     itemType: "note",
@@ -139,7 +141,6 @@ export const NoteEditorHeader = ({
                   size="sm"
                   onClick={() => {
                     handleSave();
-                    setIsEditing(false);
                   }}
                   className="fixed bottom-[150px] right-4 rounded-full py-6 lg:py-0 lg:rounded-md lg:relative lg:bottom-auto lg:right-auto z-10"
                   disabled={status.isSaving || status.isAutoSaving}
@@ -160,6 +161,27 @@ export const NoteEditorHeader = ({
             ) : (
               <>
                 <div className="hidden lg:flex items-center gap-2">
+
+                  {user?.notesDefaultMode === "edit" && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleSave()}
+                      title="Quick Save"
+                      className="text-primary hover:text-primary/80"
+                    >
+                      {status.isSaving ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-5 w-5" />
+                        </>
+                      )}
+                    </Button>
+                  )}
+
                   <Button
                     variant="outline"
                     size="icon"
@@ -213,6 +235,26 @@ export const NoteEditorHeader = ({
                 </div>
 
                 <div className="lg:hidden flex items-center gap-2">
+                  {user?.notesDefaultMode === "edit" && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleSave()}
+                      title="Quick Save"
+                      className="text-primary hover:text-primary/80"
+                    >
+                      {status.isSaving ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-5 w-5" />
+                        </>
+                      )}
+                    </Button>
+                  )}
+
                   <Button
                     variant="outline"
                     size="icon"

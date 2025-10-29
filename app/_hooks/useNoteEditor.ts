@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   convertMarkdownToHtml,
   convertHtmlToMarkdownUnified,
@@ -8,7 +8,11 @@ import {
 import { useSettings } from "@/app/_utils/settings-store";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
-import { buildCategoryPath, encodeCategoryPath, encodeId } from "@/app/_utils/global-utils";
+import {
+  buildCategoryPath,
+  encodeCategoryPath,
+  encodeId,
+} from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
@@ -25,7 +29,9 @@ export const useNoteEditor = ({
   onDelete,
   onBack,
 }: UseNoteEditorProps) => {
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const { user } = useAppMode();
   const [title, setTitle] = useState(note.title);
   const [category, setCategory] = useState(note.category || "Uncategorized");
   const [editorContent, setEditorContent] = useState(() =>
@@ -33,7 +39,13 @@ export const useNoteEditor = ({
   );
   const [isMarkdownMode, setIsMarkdownMode] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const notesDefaultMode = user?.notesDefaultMode || "view";
+
+  const [isEditing, setIsEditing] = useState(() => {
+    const editor = searchParams?.get("editor");
+
+    return notesDefaultMode === "edit" || editor === "true" ? true : false;
+  });
   const [status, setStatus] = useState({
     isSaving: false,
     isAutoSaving: false,
@@ -42,7 +54,6 @@ export const useNoteEditor = ({
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
 
   const { autosaveNotes } = useSettings();
-  const { user } = useAppMode();
   const {
     registerNavigationGuard,
     unregisterNavigationGuard,
@@ -62,12 +73,14 @@ export const useNoteEditor = ({
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     setEditorContent(convertMarkdownToHtml(note.content || ""));
-    setIsEditing(false);
-    setHasUnsavedChanges(false);
+    if (searchParams?.get("editor") !== "true") {
+      setIsEditing(false);
+      setHasUnsavedChanges(false);
+    }
   }, [note]);
 
   useEffect(() => {
-    if (!isEditing) return;
+    if (notesDefaultMode !== "edit" && !isEditing) return;
     const contentChanged =
       derivedMarkdownContent.trim() !== (note.content || "").trim();
     const titleChanged = title !== note.title;
@@ -112,19 +125,33 @@ export const useNoteEditor = ({
 
   useEffect(() => {
     if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
-    if (autosaveNotes && isEditing && hasUnsavedChanges) {
+    const isEditMode = notesDefaultMode === "edit" || isEditing;
+
+    if (
+      user?.notesAutoSaveInterval !== 0 &&
+      autosaveNotes &&
+      isEditMode &&
+      hasUnsavedChanges
+    ) {
       autosaveTimeoutRef.current = setTimeout(() => {
         setStatus((prev) => ({ ...prev, isAutoSaving: true }));
         const isAutosave = autosaveNotes ? true : false;
-        handleSave(isAutosave).finally(() =>
-          setStatus((prev) => ({ ...prev, isAutoSaving: false }))
-        );
-      }, 5000);
+        handleSave(isAutosave).finally(() => {
+          setStatus((prev) => ({ ...prev, isAutoSaving: false }));
+          setHasUnsavedChanges(false);
+        });
+      }, user?.notesAutoSaveInterval || 5000);
     }
     return () => {
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
     };
-  }, [autosaveNotes, isEditing, hasUnsavedChanges, handleSave]);
+  }, [
+    autosaveNotes,
+    isEditing,
+    hasUnsavedChanges,
+    handleSave,
+    user?.notesDefaultMode,
+  ]);
 
   useEffect(() => {
     const guard = () => {
@@ -174,7 +201,9 @@ export const useNoteEditor = ({
         ? encodeCategoryPath(note.category) + "/"
         : "";
 
-    const printUrl = `/public/note/${categoryUrlPath}${encodeId(note.id)}?view_mode=print`;
+    const printUrl = `/public/note/${categoryUrlPath}${encodeId(
+      note.id
+    )}?view_mode=print`;
 
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -198,7 +227,7 @@ export const useNoteEditor = ({
         cleanup();
         return;
       }
-      win.addEventListener('afterprint', cleanup);
+      win.addEventListener("afterprint", cleanup);
       try {
         win.focus();
         win.print();
@@ -209,10 +238,7 @@ export const useNoteEditor = ({
     };
 
     iframe.onerror = () => {
-      console.error(
-        "Failed to load print iframe. Check URL:",
-        printUrl
-      );
+      console.error("Failed to load print iframe. Check URL:", printUrl);
       cleanup();
     };
 

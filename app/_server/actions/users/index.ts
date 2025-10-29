@@ -1,10 +1,18 @@
 "use server";
 
-import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
+import {
+  ARCHIVED_DIR_NAME,
+  CHECKLISTS_DIR,
+  NOTES_DIR,
+  USERS_FILE,
+} from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
 import {
+  Checklist,
   ImageSyntax,
   LandingPage,
+  Note,
+  NotesAutoSaveInterval,
   NotesDefaultEditor,
   NotesDefaultMode,
   Result,
@@ -19,6 +27,10 @@ import {
 import fs from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
+import { updateList } from "@/app/_server/actions/checklist";
+import { updateNote } from "@/app/_server/actions/note";
+import { Modes } from "@/app/_types/enums";
+import { AppMode } from "@/app/_types";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -210,16 +222,22 @@ export const createUser = async (
   }
 };
 
-export const getCurrentUser = async (): Promise<User | null> => {
+export const getCurrentUser = async (
+  username?: string
+): Promise<User | null> => {
   const users = await readJsonFile(USERS_FILE);
 
   const sessionId = await getSessionId();
   const sessions = await readSessions();
-  const username = sessions[sessionId || ""];
+  const currentUsername = sessions[sessionId || ""];
 
-  if (!username) return null;
+  if (!currentUsername && !username) return null;
 
-  return users.find((u: User) => u.username === username) || null;
+  return (
+    users.find(
+      (u: User) => u.username === currentUsername || u.username === username
+    ) || null
+  );
 };
 
 export const deleteUser = async (formData: FormData): Promise<Result<null>> => {
@@ -424,7 +442,7 @@ export const getUsername = async (): Promise<string> => {
 };
 
 export const getUsers = async () => {
-  const users = await readJsonFile(USERS_FILE) || [];
+  const users = (await readJsonFile(USERS_FILE)) || [];
 
   return users.map(({ username, isAdmin, isSuperAdmin, avatarUrl }: User) => ({
     username,
@@ -465,6 +483,7 @@ export const updateUserSettings = async ({
   landingPage,
   notesDefaultEditor,
   notesDefaultMode,
+  notesAutoSaveInterval,
 }: {
   preferredTheme?: string;
   imageSyntax?: ImageSyntax;
@@ -472,6 +491,7 @@ export const updateUserSettings = async ({
   landingPage?: LandingPage;
   notesDefaultEditor?: NotesDefaultEditor;
   notesDefaultMode?: NotesDefaultMode;
+  notesAutoSaveInterval?: NotesAutoSaveInterval;
 }): Promise<Result<{ user: User }>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -494,6 +514,8 @@ export const updateUserSettings = async ({
     if (imageSyntax !== undefined) updates.imageSyntax = imageSyntax;
     if (tableSyntax !== undefined) updates.tableSyntax = tableSyntax;
     if (landingPage !== undefined) updates.landingPage = landingPage;
+    if (notesAutoSaveInterval !== undefined)
+      updates.notesAutoSaveInterval = notesAutoSaveInterval;
     if (notesDefaultEditor !== undefined)
       updates.notesDefaultEditor = notesDefaultEditor;
     if (notesDefaultMode !== undefined)
@@ -694,4 +716,38 @@ export const updatePinnedOrder = async (
     console.error(`Error updating pinned order for ${type}:`, error);
     return { success: false, error: "Failed to update pinned order" };
   }
+};
+
+export const toggleArchive = async (
+  item: Checklist | Note,
+  mode: AppMode,
+  newCategory?: string
+): Promise<{ success: boolean; data?: Checklist | Note; error?: string }> => {
+  const isOwner = await getCurrentUser();
+  const formData = new FormData();
+  formData.append("id", item.id);
+  formData.append("title", item.title);
+
+  if (mode === Modes.NOTES) {
+    formData.append("content", (item as Note).content);
+  }
+
+  if (isOwner) {
+    formData.append("category", newCategory || ARCHIVED_DIR_NAME);
+  }
+
+  formData.append("originalCategory", item.category || "Uncategorized");
+
+  let result: Result<Checklist | Note>;
+  if (mode === Modes.NOTES) {
+    result = (await updateNote(formData, false)) as Result<Note>;
+  } else {
+    result = (await updateList(formData)) as Result<Checklist>;
+  }
+
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+
+  return { success: false, error: result.error };
 };
