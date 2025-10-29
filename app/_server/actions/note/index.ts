@@ -265,15 +265,19 @@ export const createNote = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const category = (formData.get("category") as string) || "Uncategorized";
     const rawContent = (formData.get("content") as string) || "";
+    const formUser = formData.get("user")
+      ? JSON.parse(formData.get("user") as string)
+      : null;
 
     const content = sanitizeMarkdown(rawContent);
 
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
+    const currentUser = formUser || (await getCurrentUser());
+
+    if (!currentUser?.username) {
       return { error: "Not authenticated" };
     }
 
-    const userDir = await getUserModeDir(Modes.NOTES);
+    const userDir = await getUserModeDir(Modes.NOTES, currentUser.username);
     const categoryDir = path.join(userDir, category);
     await ensureDir(categoryDir);
 

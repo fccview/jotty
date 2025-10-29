@@ -222,16 +222,22 @@ export const createUser = async (
   }
 };
 
-export const getCurrentUser = async (): Promise<User | null> => {
+export const getCurrentUser = async (
+  username?: string
+): Promise<User | null> => {
   const users = await readJsonFile(USERS_FILE);
 
   const sessionId = await getSessionId();
   const sessions = await readSessions();
-  const username = sessions[sessionId || ""];
+  const currentUsername = sessions[sessionId || ""];
 
-  if (!username) return null;
+  if (!currentUsername && !username) return null;
 
-  return users.find((u: User) => u.username === username) || null;
+  return (
+    users.find(
+      (u: User) => u.username === currentUsername || u.username === username
+    ) || null
+  );
 };
 
 export const deleteUser = async (formData: FormData): Promise<Result<null>> => {
