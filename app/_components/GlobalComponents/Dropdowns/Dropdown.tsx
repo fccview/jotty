@@ -5,13 +5,13 @@ import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { cn } from "@/app/_utils/global-utils";
 
 interface DropdownOption {
-  id: string;
+  id: number | string;
   name: string;
   icon?: React.ComponentType<{ className?: string }>;
 }
 
 interface DropdownProps {
-  value: string;
+  value: string | number;
   options: DropdownOption[];
   onChange: (value: string) => void;
   className?: string;
@@ -113,7 +113,7 @@ export const Dropdown = ({
               <button
                 key={option.id}
                 type="button"
-                onClick={(e) => handleSelect(e, option.id)}
+                onClick={(e) => handleSelect(e, option.id.toString())}
                 className={cn(
                   "w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground",
                   option.id === value && "bg-accent text-accent-foreground"

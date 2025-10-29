@@ -12,6 +12,7 @@ import {
   ImageSyntax,
   LandingPage,
   Note,
+  NotesAutoSaveInterval,
   NotesDefaultEditor,
   NotesDefaultMode,
   Result,
@@ -435,7 +436,7 @@ export const getUsername = async (): Promise<string> => {
 };
 
 export const getUsers = async () => {
-  const users = await readJsonFile(USERS_FILE) || [];
+  const users = (await readJsonFile(USERS_FILE)) || [];
 
   return users.map(({ username, isAdmin, isSuperAdmin, avatarUrl }: User) => ({
     username,
@@ -476,6 +477,7 @@ export const updateUserSettings = async ({
   landingPage,
   notesDefaultEditor,
   notesDefaultMode,
+  notesAutoSaveInterval,
 }: {
   preferredTheme?: string;
   imageSyntax?: ImageSyntax;
@@ -483,6 +485,7 @@ export const updateUserSettings = async ({
   landingPage?: LandingPage;
   notesDefaultEditor?: NotesDefaultEditor;
   notesDefaultMode?: NotesDefaultMode;
+  notesAutoSaveInterval?: NotesAutoSaveInterval;
 }): Promise<Result<{ user: User }>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -505,6 +508,8 @@ export const updateUserSettings = async ({
     if (imageSyntax !== undefined) updates.imageSyntax = imageSyntax;
     if (tableSyntax !== undefined) updates.tableSyntax = tableSyntax;
     if (landingPage !== undefined) updates.landingPage = landingPage;
+    if (notesAutoSaveInterval !== undefined)
+      updates.notesAutoSaveInterval = notesAutoSaveInterval;
     if (notesDefaultEditor !== undefined)
       updates.notesDefaultEditor = notesDefaultEditor;
     if (notesDefaultMode !== undefined)
