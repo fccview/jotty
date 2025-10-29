@@ -190,6 +190,18 @@ export function useCalendar({
     );
   };
 
+  const handleMonthSelect = (monthIndex: number) => {
+    setDisplayDate(
+      (prevDate) => new Date(prevDate.getFullYear(), monthIndex, 1)
+    );
+  };
+
+  const handleYearSelect = (year: number) => {
+    setDisplayDate(
+      (prevDate) => new Date(year, prevDate.getMonth(), 1)
+    );
+  };
+
   const handleDayClick = (day: CalendarDay, event: MouseEvent) => {
     event.stopPropagation();
 
@@ -216,6 +228,8 @@ export function useCalendar({
     days,
     handlePreviousMonth,
     handleNextMonth,
+    handleMonthSelect,
+    handleYearSelect,
     handleDayClick,
     monthName: MONTHS[currentMonth],
     year: currentYear,

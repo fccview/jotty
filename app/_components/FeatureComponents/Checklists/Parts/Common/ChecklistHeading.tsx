@@ -44,22 +44,6 @@ export const ChecklistHeading = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useAppMode();
 
-  const { handleCopyId, copied } = useChecklist({
-    list: checklist,
-    onUpdate: () => {},
-  });
-
-  const { sharingStatus } = useSharing({
-    itemId: checklist.id,
-    itemType: "checklist",
-    itemOwner: checklist.owner || "",
-    onClose: () => {},
-    enabled: true,
-    itemTitle: checklist.title,
-    itemCategory: checklist.category,
-    isOpen: true,
-  });
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItemText.trim()) return;
@@ -118,11 +102,10 @@ export const ChecklistHeading = ({
                   type="submit"
                   size="lg"
                   disabled={isLoading || !newItemText.trim()}
-                  className={`px-4 lg:px-6 shadow-sm ${
-                    user?.enableRecurrence === "enable"
-                      ? "rounded-tr-none rounded-br-none"
-                      : ""
-                  }`}
+                  className={`px-4 lg:px-6 shadow-sm ${user?.enableRecurrence === "enable"
+                    ? "rounded-tr-none rounded-br-none"
+                    : ""
+                    }`}
                 >
                   <Plus className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">{submitButtonText}</span>

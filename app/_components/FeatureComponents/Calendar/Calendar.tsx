@@ -1,13 +1,24 @@
 "use client";
 
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { useCalendar, UseCalendarProps } from "@/app/_hooks/useCalendar";
+import { useCalendar, UseCalendarProps, MONTHS } from "@/app/_hooks/useCalendar";
+import { cn } from "@/app/_utils/global-utils";
 
 export interface CalendarProps extends UseCalendarProps {
   className?: string;
 }
 
 const DAYS_OF_WEEK = ["M", "T", "W", "T", "F", "S", "S"];
+
+const MONTH_OPTIONS = MONTHS.map((month, index) => ({
+  id: index,
+  name: month,
+}));
+
+const YEAR_OPTIONS = Array.from({ length: 11 }, (_, i) => {
+  const currentYear = new Date().getFullYear();
+  return currentYear + i;
+});
 
 export default function Calendar(props: CalendarProps) {
   const { className = "", ...calendarProps } = props;
@@ -16,6 +27,8 @@ export default function Calendar(props: CalendarProps) {
     days,
     handlePreviousMonth,
     handleNextMonth,
+    handleMonthSelect,
+    handleYearSelect,
     handleDayClick,
     monthName,
     year,
@@ -29,19 +42,38 @@ export default function Calendar(props: CalendarProps) {
             <button
               type="button"
               onClick={handlePreviousMonth}
-              onMouseDown={(e) => e.stopPropagation()}
               className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="sr-only">Previous month</span>
               <ChevronLeft aria-hidden="true" className="size-5" />
             </button>
-            <div className="flex-auto text-sm font-semibold">
-              {monthName} {year}
+            <div className="flex-auto flex items-center justify-center gap-2">
+              <select
+                value={MONTHS.indexOf(monthName)}
+                onChange={(e) => handleMonthSelect(parseInt(e.target.value))}
+                className="bg-transparent text-sm font-semibold border-none outline-none cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5"
+              >
+                {MONTH_OPTIONS.map((month) => (
+                  <option key={month.id} value={month.id}>
+                    {month.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={year}
+                onChange={(e) => handleYearSelect(parseInt(e.target.value))}
+                className="bg-transparent text-sm font-semibold border-none outline-none cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5"
+              >
+                {YEAR_OPTIONS.map((yearOption) => (
+                  <option key={yearOption} value={yearOption}>
+                    {yearOption}
+                  </option>
+                ))}
+              </select>
             </div>
             <button
               type="button"
               onClick={handleNextMonth}
-              onMouseDown={(e) => e.stopPropagation()}
               className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="sr-only">Next month</span>
@@ -67,67 +99,52 @@ export default function Calendar(props: CalendarProps) {
                   key={day.date.toISOString()}
                   type="button"
                   onClick={(e) => handleDayClick(day, e)}
-                  onMouseDown={(e) => e.stopPropagation()}
                   disabled={day.isDisabled}
-                  className={`
-                    py-1.5 focus:z-10 transition-colors relative
-                    ${!day.isCurrentMonth ? "bg-muted" : "bg-popover"}
-                    ${
-                      !day.isCurrentMonth && !day.isSelected && !day.isToday
-                        ? "text-muted-foreground"
-                        : ""
-                    }
-                    ${
-                      day.isCurrentMonth && !day.isSelected && !day.isToday
-                        ? "text-popover-foreground"
-                        : ""
-                    }
-                    ${
-                      !day.isDisabled
-                        ? "hover:bg-accent"
-                        : "opacity-40 cursor-not-allowed"
-                    }
-                    ${
-                      day.isSelected || day.isRangeStart || day.isRangeEnd
-                        ? "font-semibold"
-                        : ""
-                    }
-                    ${
-                      day.isToday &&
+                  className={cn(
+                    "py-1.5 focus:z-10 transition-colors relative",
+                    !day.isCurrentMonth ? "bg-muted" : "bg-popover",
+                    !day.isCurrentMonth && !day.isSelected && !day.isToday
+                      ? "text-muted-foreground"
+                      : "",
+                    day.isCurrentMonth && !day.isSelected && !day.isToday
+                      ? "text-popover-foreground"
+                      : "",
+                    !day.isDisabled
+                      ? "hover:bg-accent"
+                      : "opacity-40 cursor-not-allowed",
+                    day.isSelected || day.isRangeStart || day.isRangeEnd
+                      ? "font-semibold"
+                      : "",
+                    day.isToday &&
                       !day.isSelected &&
                       !day.isRangeStart &&
                       !day.isRangeEnd
-                        ? "font-semibold text-primary"
-                        : ""
-                    }
-                    ${
-                      day.isInRange && props.mode === "range" ? "bg-accent" : ""
-                    }
-                    ${isFirstInRow && isFirstRow ? "rounded-tl-lg" : ""}
-                    ${isLastInRow && isFirstRow ? "rounded-tr-lg" : ""}
-                    ${isFirstInRow && isLastRow ? "rounded-bl-lg" : ""}
-                    ${isLastInRow && isLastRow ? "rounded-br-lg" : ""}
-                  `}
+                      ? "font-semibold text-primary"
+                      : "",
+                    day.isInRange && props.mode === "range" ? "bg-accent" : "",
+                    isFirstInRow && isFirstRow ? "rounded-tl-lg" : "",
+                    isLastInRow && isFirstRow ? "rounded-tr-lg" : "",
+                    isFirstInRow && isLastRow ? "rounded-bl-lg" : "",
+                    isLastInRow && isLastRow ? "rounded-br-lg" : "",
+                  )}
                 >
                   <time
                     dateTime={day.date.toISOString()}
                     className={`
                       mx-auto flex size-7 items-center justify-center rounded-full
-                      ${
-                        (day.isSelected ||
-                          day.isRangeStart ||
-                          day.isRangeEnd) &&
+                      ${(day.isSelected ||
+                        day.isRangeStart ||
+                        day.isRangeEnd) &&
                         !day.isToday
-                          ? "bg-foreground text-background"
-                          : ""
+                        ? "bg-foreground text-background"
+                        : ""
                       }
-                      ${
-                        (day.isSelected ||
-                          day.isRangeStart ||
-                          day.isRangeEnd) &&
+                      ${(day.isSelected ||
+                        day.isRangeStart ||
+                        day.isRangeEnd) &&
                         day.isToday
-                          ? "bg-primary text-primary-foreground"
-                          : ""
+                        ? "bg-primary text-primary-foreground"
+                        : ""
                       }
                     `}
                   >

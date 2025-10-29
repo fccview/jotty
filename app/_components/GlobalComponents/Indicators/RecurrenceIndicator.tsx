@@ -17,7 +17,7 @@ export const RecurrenceIndicator = ({
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 relative group/recurrence-indicator bg-primary/10 rounded-md p-2 mr-2 ${className}`}
+      className={`inline-flex items-center gap-1.5 relative group/recurrence-indicator bg-primary/10 rounded-md p-2 mr-2 h-[22px] ${className}`}
       title={`Recurring: ${description}`}
     >
       <RefreshCw className="h-4 w-4 text-primary" />

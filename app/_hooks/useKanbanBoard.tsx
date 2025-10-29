@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist } from "@/app/_types";
+import { Checklist, RecurrenceRule } from "@/app/_types";
 import {
   createItem,
   updateItemStatus,
@@ -149,7 +149,7 @@ export const useKanbanBoard = ({
     }
   };
 
-  const handleAddItem = async (text: string) => {
+  const handleAddItem = async (text: string, recurrence?: RecurrenceRule) => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("listId", localChecklist.id);
@@ -157,6 +157,11 @@ export const useKanbanBoard = ({
     formData.append("category", localChecklist.category || "Uncategorized");
 
     const currentUser = await getCurrentUser();
+
+    if (recurrence) {
+      formData.append("recurrence", JSON.stringify(recurrence));
+    }
+
     const result = await createItem(formData, currentUser?.username);
 
     const checklistOwner = await getUserByChecklist(

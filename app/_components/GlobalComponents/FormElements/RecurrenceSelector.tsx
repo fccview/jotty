@@ -46,7 +46,6 @@ export const RecurrenceSelector = ({
       return;
     }
 
-    // Create recurrence with current dates (or defaults)
     const recurrence = createRecurrenceFromPreset(
       presetValue,
       startDate,
@@ -59,12 +58,10 @@ export const RecurrenceSelector = ({
     setStartDate(date);
     setShowStartCalendar(false);
 
-    // If end date is before new start date, clear it
     if (endDate && date > endDate) {
       setEndDate(undefined);
     }
 
-    // Update recurrence with new start date
     if (selectedPreset) {
       const recurrence = createRecurrenceFromPreset(
         selectedPreset,
@@ -79,7 +76,6 @@ export const RecurrenceSelector = ({
     setEndDate(date);
     setShowEndCalendar(false);
 
-    // Update recurrence with new end date
     if (selectedPreset) {
       const recurrence = createRecurrenceFromPreset(
         selectedPreset,
@@ -94,7 +90,6 @@ export const RecurrenceSelector = ({
     setEndDate(undefined);
     setShowEndCalendar(false);
 
-    // Update recurrence without end date
     if (selectedPreset) {
       const recurrence = createRecurrenceFromPreset(
         selectedPreset,
@@ -140,53 +135,54 @@ export const RecurrenceSelector = ({
 
       {selectedPreset && selectedPreset !== "" && (
         <>
-          {/* Date Selection Buttons */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+          <div className="flex gap-2 items-center justify-between">
+            <div className="w-full text-center">
               <Button
                 type="button"
                 size="sm"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setShowStartCalendar(true)}
                 disabled={disabled}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full"
               >
                 <CalendarIcon className="h-4 w-4" />
                 {startDate ? formatDate(startDate) : 'Set Start Date'}
               </Button>
-              {startDate && (
-                <span className="text-xs text-muted-foreground">
-                  (optional - defaults to today)
-                </span>
-              )}
+              <span className="text-xs text-muted-foreground">
+                (optional - defaults to today)
+              </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={() => setShowEndCalendar(true)}
-                disabled={disabled || !selectedPreset}
-                className="flex items-center gap-2"
-              >
-                <CalendarIcon className="h-4 w-4" />
-                {endDate ? formatDate(endDate) : 'Set End Date (Optional)'}
-              </Button>
-              {endDate && (
-                <button
+            <div className="w-full text-center">
+              <div className="flex items-center gap-2 w-full">
+                <Button
                   type="button"
-                  onClick={handleClearEndDate}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                  title="Clear end date"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowEndCalendar(true)}
+                  disabled={disabled || !selectedPreset}
+                  className="flex items-center gap-2 w-full"
                 >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+                  <CalendarIcon className="h-4 w-4" />
+                  {endDate ? formatDate(endDate) : 'Set End Date (Optional)'}
+                </Button>
+                {endDate && (
+                  <button
+                    type="button"
+                    onClick={handleClearEndDate}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    title="Clear end date"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground">
+                (optional)
+              </span>
             </div>
           </div>
 
-          {/* Info Message */}
           <div className="flex items-start gap-2 p-3 bg-muted/50 border border-border rounded-lg">
             <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
             <p className="text-xs text-muted-foreground">
@@ -198,11 +194,11 @@ export const RecurrenceSelector = ({
         </>
       )}
 
-      {/* Start Date Calendar Modal */}
       <Modal
         isOpen={showStartCalendar}
         onClose={() => setShowStartCalendar(false)}
         title="Select Start Date"
+        className="!max-w-[380px] mx-auto"
       >
         <Calendar
           selectedDate={startDate}
@@ -212,11 +208,11 @@ export const RecurrenceSelector = ({
         />
       </Modal>
 
-      {/* End Date Calendar Modal */}
       <Modal
         isOpen={showEndCalendar}
         onClose={() => setShowEndCalendar(false)}
         title="Select End Date (Optional)"
+        className="!max-w-[380px] mx-auto"
       >
         <Calendar
           selectedDate={endDate}

@@ -1,5 +1,6 @@
 import { RRule } from "rrule";
 import { RecurrenceRule, Item } from "@/app/_types";
+import { TaskStatus } from "../_types/enums";
 
 /**
  * Convert ISO 8601 date string to RFC 5545 compact format
@@ -101,7 +102,6 @@ export const calculateNextOccurrence = (
   try {
     const rfc5545Dtstart = isoToRFC5545(dtstart);
 
-    // Add UNTIL to rrule string if provided and not already present
     let finalRruleString = rruleString;
     if (until && !rruleString.includes("UNTIL=")) {
       const rfc5545Until = isoToRFC5545(until);
@@ -113,7 +113,7 @@ export const calculateNextOccurrence = (
     );
 
     const afterDate = after || new Date();
-    const nextDate = rule.after(afterDate, false); // false = don't include afterDate itself
+    const nextDate = rule.after(afterDate, false);
 
     return nextDate ? nextDate.toISOString() : undefined;
   } catch (error) {
@@ -126,16 +126,22 @@ export const calculateNextOccurrence = (
  * Check if a recurring item needs to be refreshed (completed and past due date)
  */
 export const shouldRefreshRecurringItem = (item: Item): boolean => {
-  if (!item.recurrence || !item.completed) {
+  let isCompleted = false;
+  if (item.status !== TaskStatus.PAUSED && item.status !== TaskStatus.TODO) {
+    isCompleted = true;
+  }
+  if (item.completed) {
+    isCompleted = true;
+  }
+
+  if (!item.recurrence || !isCompleted) {
     return false;
   }
 
-  // Check if recurrence has ended (past until date)
   if (item.recurrence.until) {
     const untilDate = new Date(item.recurrence.until);
     const now = new Date();
     if (now > untilDate) {
-      // Recurrence has ended - don't refresh anymore
       return false;
     }
   }
@@ -169,6 +175,18 @@ export const refreshRecurringItem = (item: Item): Item => {
     item.recurrence.until
   );
 
+  if (item?.status !== TaskStatus.PAUSED) {
+    return {
+      ...item,
+      status: TaskStatus.TODO,
+      recurrence: {
+        ...item.recurrence,
+        nextDue,
+        lastCompleted: now.toISOString(),
+      },
+    };
+  }
+
   return {
     ...item,
     completed: false,
@@ -189,7 +207,6 @@ export const getRecurrenceDescription = (
   let description = "";
 
   try {
-    // Convert ISO dtstart to RFC 5545 format
     const rfc5545Dtstart = isoToRFC5545(recurrence.dtstart);
     const rule = RRule.fromString(
       `DTSTART:${rfc5545Dtstart}\nRRULE:${recurrence.rrule}`
@@ -215,7 +232,6 @@ export const getRecurrenceDescription = (
     }
   }
 
-  // Add date information
   const startDate = new Date(recurrence.dtstart);
   const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -245,7 +261,6 @@ export const createRecurrenceFromPreset = (
     return undefined;
   }
 
-  // Convert dates to UTC midnight to avoid timezone issues
   const convertToUTCMidnight = (date: Date): string => {
     const utcDate = new Date(Date.UTC(
       date.getFullYear(),

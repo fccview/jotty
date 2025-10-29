@@ -236,12 +236,12 @@ export const createItem = async (
     }
 
     const now = new Date().toISOString();
-    // Parse recurrence if provided
+
     let recurrence = undefined;
     if (recurrenceStr) {
       try {
         recurrence = JSON.parse(recurrenceStr);
-        // Calculate nextDue if not set
+
         if (recurrence && !recurrence.nextDue) {
           const { calculateNextOccurrence } = await import("@/app/_utils/recurrence-utils");
           recurrence.nextDue = calculateNextOccurrence(
