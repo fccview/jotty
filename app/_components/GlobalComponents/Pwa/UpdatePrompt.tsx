@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Download, NewspaperIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { getLatestGitHubRelease } from "@/app/_server/actions/github";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
@@ -16,7 +15,6 @@ export const UpdatePrompt = () => {
   const [releaseUrl, setReleaseUrl] = useState<string | null>(null);
   const [releaseNotes, setReleaseNotes] = useState<string | null>(null);
   const [showReleaseNotesModal, setShowReleaseNotesModal] = useState(false);
-  const { isRwMarkable } = useAppMode();
   const [currentAppVersion, setCurrentAppVersion] = useState<string | null>(
     null
   );

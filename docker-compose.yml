@@ -18,6 +18,7 @@ services:
       - NODE_ENV=production
       #- HTTPS=true
       #- APP_URL=https://your-jotty-domain.com
+      #- INTERNAL_API_URL=http://localhost:3000
       #- SERVE_PUBLIC_IMAGES=yes
       #- SERVE_PUBLIC_FILES=yes
       #- SSO_MODE=oidc
