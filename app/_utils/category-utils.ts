@@ -13,10 +13,10 @@ export const buildCategoryTree = async (
 ): Promise<Category[]> => {
   const categories: Category[] = [];
   const entries = await serverReadDir(dir);
-  const excludedDirs = EXCLUDED_DIRS;
+  let excludedDirs = EXCLUDED_DIRS;
 
   if (!allowArchived) {
-    excludedDirs.push(ARCHIVED_DIR_NAME);
+    excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
   }
 
   const order = await readOrderFile(dir);

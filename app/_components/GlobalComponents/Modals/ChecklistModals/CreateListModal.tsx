@@ -10,6 +10,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryInput } from "@/app/_components/GlobalComponents/FormElements/CategoryInput";
 import { ChecklistTypeSelector } from "../../../FeatureComponents/Checklists/Parts/ChecklistTypeSelector";
 import { Modes } from "@/app/_types/enums";
+import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 
 interface CreateListModalProps {
   onClose: () => void;
@@ -31,6 +32,7 @@ export const CreateListModal = ({
   const [type, setType] = useState<ChecklistType>("simple");
   const [isLoading, setIsLoading] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -127,7 +129,11 @@ export const CreateListModal = ({
           </Button>
           <Button
             type="submit"
-            disabled={isLoading || !title.trim()}
+            disabled={
+              isLoading ||
+              !title.trim() ||
+              notAllowedNames.includes(newCategory?.trim()?.toLowerCase())
+            }
             className="flex-1"
           >
             {isLoading ? "Creating..." : "Create Checklist"}

@@ -253,9 +253,12 @@ export const updateList = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
+    const unarchive = formData.get("unarchive") === "true";
 
     const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists());
+    const lists = await (isAdminUser
+      ? getAllLists(unarchive)
+      : getLists(undefined, unarchive));
     if (!lists.success || !lists.data) {
       throw new Error(lists.error || "Failed to fetch lists");
     }

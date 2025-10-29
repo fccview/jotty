@@ -101,10 +101,10 @@ const _readNotesRecursively = async (
 ): Promise<Note[]> => {
   const docs: Note[] = [];
   const entries = await serverReadDir(dir);
-  const excludedDirs = EXCLUDED_DIRS;
+  let excludedDirs = EXCLUDED_DIRS;
 
   if (!allowArchived) {
-    excludedDirs.push(ARCHIVED_DIR_NAME);
+    excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
   }
 
   const order = await readOrderFile(dir);
@@ -162,7 +162,8 @@ const _readNotesRecursively = async (
     const subDocs = await _readNotesRecursively(
       categoryDir,
       categoryPath,
-      owner
+      owner,
+      allowArchived
     );
     docs.push(...subDocs);
   }
@@ -193,7 +194,7 @@ export const getNoteById = async (
   );
 };
 
-export const getNotes = async (username?: string) => {
+export const getNotes = async (username?: string, allowArchived?: boolean) => {
   try {
     let userDir: string;
     let currentUser: any = null;
@@ -210,7 +211,12 @@ export const getNotes = async (username?: string) => {
     }
     await ensureDir(userDir);
 
-    const docs = await _readNotesRecursively(userDir, "", currentUser.username);
+    const docs = await _readNotesRecursively(
+      userDir,
+      "",
+      currentUser.username,
+      allowArchived
+    );
 
     const sharedItems = await getItemsSharedWithUser(currentUser.username);
     for (const sharedItem of sharedItems.notes) {
@@ -300,11 +306,14 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const rawContent = formData.get("content") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
+    const unarchive = formData.get("unarchive") === "true";
 
     const content = sanitizeMarkdown(rawContent);
 
     const isAdminUser = await isAdmin();
-    const docs = await (isAdminUser ? getAllNotes() : getNotes());
+    const docs = await (isAdminUser
+      ? getAllNotes(unarchive)
+      : getNotes(undefined, unarchive));
     if (!docs.success || !docs.data) {
       throw new Error(docs.error || "Failed to fetch notes");
     }
@@ -504,7 +513,7 @@ export const deleteNote = async (formData: FormData) => {
   }
 };
 
-export const getAllNotes = async () => {
+export const getAllNotes = async (allowArchived?: boolean) => {
   try {
     const allDocs: Note[] = [];
 
@@ -517,7 +526,8 @@ export const getAllNotes = async () => {
         const userDocs = await _readNotesRecursively(
           userDir,
           "",
-          user.username
+          user.username,
+          allowArchived
         );
         allDocs.push(...userDocs);
       } catch (error) {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { User, Settings, Monitor, Archive } from "lucide-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
-import { User as UserType } from "@/app/_types";
+import { User as UserType, Category } from "@/app/_types";
 import { useRouter } from "next/navigation";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
@@ -13,17 +13,24 @@ import { SettingsTab } from "./Parts/SettingsTab";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Button } from "../../GlobalComponents/Buttons/Button";
 import { ArchiveTab } from "./Parts/ArchiveTab";
+import { ArchivedItem } from "@/app/_server/actions/archived";
 
 interface UserProfileClientProps {
   isSsoUser: boolean;
   isAdmin: boolean;
   avatarUrl?: string | null;
+  archivedItems: ArchivedItem[];
+  listsCategories: Category[];
+  notesCategories: Category[];
 }
 
 export const UserProfileClient = ({
   isSsoUser,
   isAdmin,
   avatarUrl,
+  archivedItems,
+  listsCategories,
+  notesCategories,
 }: UserProfileClientProps) => {
   const { user } = useAppMode();
   const [activeTab, setActiveTab] = useState<
@@ -77,7 +84,14 @@ export const UserProfileClient = ({
           />
         )}
         {activeTab === "sessions" && <SessionsTab />}
-        {activeTab === "archive" && <ArchiveTab user={user} />}
+        {activeTab === "archive" && (
+          <ArchiveTab
+            user={user}
+            archivedItems={archivedItems}
+            listsCategories={listsCategories}
+            notesCategories={notesCategories}
+          />
+        )}
         {activeTab === "settings" && (
           <SettingsTab setShowDeleteModal={setShowDeleteModal} />
         )}
