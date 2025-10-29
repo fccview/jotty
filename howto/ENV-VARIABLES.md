@@ -23,6 +23,7 @@ OIDC_ADMIN_GROUPS=admins
 
 - `HTTPS=true` Optional. Enables HTTPS mode for secure connections.
 - `APP_URL=https://your-jotty-domain.com` Force a base URL of your jotty·page instance. Required for SSO but optional otherwise - if you have trouble logging in with reverse proxy try setting this up as it will force the application to login using this exact url.
+- `INTERNAL_API_URL=http://localhost:3000` Optional. URL used for internal API calls within the container. Defaults to `http://localhost:3000` if not set. Only needed if you're experiencing session validation issues behind a reverse proxy.
 - `SERVE_PUBLIC_IMAGES=yes` Optional. Allows public access to uploaded images via direct URLs.
 - `SERVE_PUBLIC_FILES=yes` Optional. Allows public access to uploaded files via direct URLs.
 - `SERVE_PUBLIC_VIDEOS=yes` Optional. Allows public access to uploaded files via direct URLs.
