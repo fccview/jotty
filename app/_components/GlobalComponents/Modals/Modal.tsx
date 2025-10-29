@@ -71,9 +71,11 @@ export const Modal = ({
   }
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black/50 flex lg:items-center lg:justify-center items-end z-50" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/50 flex lg:items-center lg:justify-center items-end z-50">
       <div
         ref={modalRef}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
         className={`
           bg-background border border-border w-full lg:max-w-md shadow-xl
           lg:rounded-xl rounded-t-xl p-6
