@@ -12,6 +12,7 @@ export interface TimeEntry {
 export interface RecurrenceRule {
   rrule: string; // RFC 5545 RRULE string (e.g., "FREQ=WEEKLY;INTERVAL=1")
   dtstart: string; // ISO date string for recurrence start
+  until?: string; // ISO date string for recurrence end (optional)
   nextDue?: string; // Calculated next occurrence (ISO date string)
   lastCompleted?: string; // When last instance was completed (ISO date string)
 }

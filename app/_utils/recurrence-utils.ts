@@ -89,18 +89,27 @@ export const recurrenceToMarkdown = (recurrence: RecurrenceRule): string[] => {
  * @param rruleString - RFC 5545 RRULE string
  * @param dtstart - Start date as ISO string
  * @param after - Calculate next occurrence after this date (defaults to now)
+ * @param until - Optional end date as ISO string (stop recurring after this date)
  * @returns ISO date string of next occurrence, or undefined if no more occurrences
  */
 export const calculateNextOccurrence = (
   rruleString: string,
   dtstart: string,
-  after?: Date
+  after?: Date,
+  until?: string
 ): string | undefined => {
   try {
     const rfc5545Dtstart = isoToRFC5545(dtstart);
 
+    // Add UNTIL to rrule string if provided and not already present
+    let finalRruleString = rruleString;
+    if (until && !rruleString.includes("UNTIL=")) {
+      const rfc5545Until = isoToRFC5545(until);
+      finalRruleString = `${rruleString};UNTIL=${rfc5545Until}`;
+    }
+
     const rule = RRule.fromString(
-      `DTSTART:${rfc5545Dtstart}\nRRULE:${rruleString}`
+      `DTSTART:${rfc5545Dtstart}\nRRULE:${finalRruleString}`
     );
 
     const afterDate = after || new Date();
@@ -119,6 +128,16 @@ export const calculateNextOccurrence = (
 export const shouldRefreshRecurringItem = (item: Item): boolean => {
   if (!item.recurrence || !item.completed) {
     return false;
+  }
+
+  // Check if recurrence has ended (past until date)
+  if (item.recurrence.until) {
+    const untilDate = new Date(item.recurrence.until);
+    const now = new Date();
+    if (now > untilDate) {
+      // Recurrence has ended - don't refresh anymore
+      return false;
+    }
   }
 
   if (!item.recurrence.nextDue) {
@@ -146,7 +165,8 @@ export const refreshRecurringItem = (item: Item): Item => {
   const nextDue = calculateNextOccurrence(
     item.recurrence.rrule,
     item.recurrence.dtstart,
-    now
+    now,
+    item.recurrence.until
   );
 
   return {
@@ -166,53 +186,86 @@ export const refreshRecurringItem = (item: Item): Item => {
 export const getRecurrenceDescription = (
   recurrence: RecurrenceRule
 ): string => {
+  let description = "";
+
   try {
     // Convert ISO dtstart to RFC 5545 format
     const rfc5545Dtstart = isoToRFC5545(recurrence.dtstart);
     const rule = RRule.fromString(
       `DTSTART:${rfc5545Dtstart}\nRRULE:${recurrence.rrule}`
     );
-    return rule.toText();
+    description = rule.toText();
   } catch (error) {
     const rrule = recurrence.rrule;
 
     if (rrule.includes("FREQ=DAILY")) {
       const interval = rrule.match(/INTERVAL=(\d+)/)?.[1] || "1";
-      return interval === "1" ? "Daily" : `Every ${interval} days`;
+      description = interval === "1" ? "Daily" : `Every ${interval} days`;
     } else if (rrule.includes("FREQ=WEEKLY")) {
       const interval = rrule.match(/INTERVAL=(\d+)/)?.[1] || "1";
-      return interval === "1" ? "Weekly" : `Every ${interval} weeks`;
+      description = interval === "1" ? "Weekly" : `Every ${interval} weeks`;
     } else if (rrule.includes("FREQ=MONTHLY")) {
       const interval = rrule.match(/INTERVAL=(\d+)/)?.[1] || "1";
-      return interval === "1" ? "Monthly" : `Every ${interval} months`;
+      description = interval === "1" ? "Monthly" : `Every ${interval} months`;
     } else if (rrule.includes("FREQ=YEARLY")) {
       const interval = rrule.match(/INTERVAL=(\d+)/)?.[1] || "1";
-      return interval === "1" ? "Yearly" : `Every ${interval} years`;
+      description = interval === "1" ? "Yearly" : `Every ${interval} years`;
+    } else {
+      description = "Custom recurrence";
     }
-
-    return "Custom recurrence";
   }
+
+  // Add date information
+  const startDate = new Date(recurrence.dtstart);
+  const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  if (recurrence.until) {
+    const endDate = new Date(recurrence.until);
+    const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    description += ` • ${startStr} - ${endStr}`;
+  } else {
+    description += ` • Starts ${startStr}`;
+  }
+
+  return description;
 };
 
 /**
  * Create a recurrence rule from a preset
  * @param presetValue - The RRULE string from RECURRENCE_PRESETS
  * @param startDate - Optional start date (defaults to now)
+ * @param endDate - Optional end date (no end if not provided)
  */
 export const createRecurrenceFromPreset = (
   presetValue: string,
-  startDate?: Date
+  startDate?: Date,
+  endDate?: Date
 ): RecurrenceRule | undefined => {
   if (!presetValue) {
     return undefined;
   }
 
-  const dtstart = (startDate || new Date()).toISOString();
-  const nextDue = calculateNextOccurrence(presetValue, dtstart);
+  // Convert dates to UTC midnight to avoid timezone issues
+  const convertToUTCMidnight = (date: Date): string => {
+    const utcDate = new Date(Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      0, 0, 0, 0
+    ));
+    return utcDate.toISOString();
+  };
+
+  const dtstart = startDate
+    ? convertToUTCMidnight(startDate)
+    : new Date().toISOString();
+  const until = endDate ? convertToUTCMidnight(endDate) : undefined;
+  const nextDue = calculateNextOccurrence(presetValue, dtstart, undefined, until);
 
   return {
     rrule: presetValue,
     dtstart,
+    ...(until && { until }),
     nextDue,
   };
 };
