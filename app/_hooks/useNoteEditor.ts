@@ -8,7 +8,11 @@ import {
 import { useSettings } from "@/app/_utils/settings-store";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
-import { buildCategoryPath, encodeCategoryPath, encodeId } from "@/app/_utils/global-utils";
+import {
+  buildCategoryPath,
+  encodeCategoryPath,
+  encodeId,
+} from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
@@ -35,9 +39,10 @@ export const useNoteEditor = ({
   );
   const [isMarkdownMode, setIsMarkdownMode] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const notesDefaultMode = user?.notesDefaultMode || "view";
+
   const [isEditing, setIsEditing] = useState(() => {
-    const notesDefaultMode = user?.notesDefaultMode || "view";
-    const editor = searchParams?.get('editor');
+    const editor = searchParams?.get("editor");
 
     return notesDefaultMode === "edit" || editor === "true" ? true : false;
   });
@@ -68,14 +73,14 @@ export const useNoteEditor = ({
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     setEditorContent(convertMarkdownToHtml(note.content || ""));
-    if (searchParams?.get('editor') !== "true") {
+    if (searchParams?.get("editor") !== "true") {
       setIsEditing(false);
+      setHasUnsavedChanges(false);
     }
-    setHasUnsavedChanges(false);
   }, [note]);
 
   useEffect(() => {
-    if (!isEditing) return;
+    if (notesDefaultMode !== "edit" && !isEditing) return;
     const contentChanged =
       derivedMarkdownContent.trim() !== (note.content || "").trim();
     const titleChanged = title !== note.title;
@@ -120,7 +125,9 @@ export const useNoteEditor = ({
 
   useEffect(() => {
     if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
-    if (autosaveNotes && isEditing && hasUnsavedChanges) {
+    const isEditMode = notesDefaultMode === "edit" || isEditing;
+
+    if (autosaveNotes && isEditMode && hasUnsavedChanges) {
       autosaveTimeoutRef.current = setTimeout(() => {
         setStatus((prev) => ({ ...prev, isAutoSaving: true }));
         const isAutosave = autosaveNotes ? true : false;
@@ -132,7 +139,13 @@ export const useNoteEditor = ({
     return () => {
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
     };
-  }, [autosaveNotes, isEditing, hasUnsavedChanges, handleSave]);
+  }, [
+    autosaveNotes,
+    isEditing,
+    hasUnsavedChanges,
+    handleSave,
+    user?.notesDefaultMode,
+  ]);
 
   useEffect(() => {
     const guard = () => {
@@ -182,7 +195,9 @@ export const useNoteEditor = ({
         ? encodeCategoryPath(note.category) + "/"
         : "";
 
-    const printUrl = `/public/note/${categoryUrlPath}${encodeId(note.id)}?view_mode=print`;
+    const printUrl = `/public/note/${categoryUrlPath}${encodeId(
+      note.id
+    )}?view_mode=print`;
 
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -206,7 +221,7 @@ export const useNoteEditor = ({
         cleanup();
         return;
       }
-      win.addEventListener('afterprint', cleanup);
+      win.addEventListener("afterprint", cleanup);
       try {
         win.focus();
         win.print();
@@ -217,10 +232,7 @@ export const useNoteEditor = ({
     };
 
     iframe.onerror = () => {
-      console.error(
-        "Failed to load print iframe. Check URL:",
-        printUrl
-      );
+      console.error("Failed to load print iframe. Check URL:", printUrl);
       cleanup();
     };
 
