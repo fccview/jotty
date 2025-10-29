@@ -8,7 +8,7 @@ import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Folder } from "lucide-react";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppMode, Category } from "@/app/_types";
-import { Modes } from "@/app/_types/enums";
+import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 
 interface CreateCategoryModalProps {
   onClose: () => void;
@@ -29,6 +29,7 @@ export const CreateCategoryModal = ({
   const [parentCategory, setParentCategory] = useState(initialParent);
   const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
+  const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +100,12 @@ export const CreateCategoryModal = ({
           />
         </div>
 
+        {notAllowedNames.includes(categoryName.trim().toLowerCase()) && (
+          <div className="text-xs text-destructive">
+            {categoryName} is not allowed. Please choose a different name.
+          </div>
+        )}
+
         <div className="flex gap-3 pt-4">
           <Button
             type="button"
@@ -111,7 +118,11 @@ export const CreateCategoryModal = ({
           </Button>
           <Button
             type="submit"
-            disabled={isLoading || !categoryName.trim()}
+            disabled={
+              isLoading ||
+              !categoryName.trim() ||
+              notAllowedNames.includes(categoryName.trim().toLowerCase())
+            }
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isLoading ? "Creating..." : "Create Category"}

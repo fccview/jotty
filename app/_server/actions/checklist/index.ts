@@ -15,7 +15,7 @@ import { readJsonFile } from "../file";
 import fs from "fs/promises";
 import { parseMarkdown } from "@/app/_utils/checklist-utils";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { USERS_FILE } from "@/app/_consts/files";
+import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
 import { Modes, TaskStatus } from "@/app/_types/enums";
 import { ChecklistType } from "@/app/_types";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
@@ -38,7 +38,8 @@ import {
 const readListsRecursively = async (
   dir: string,
   basePath: string = "",
-  owner: string
+  owner: string,
+  allowArchived?: boolean
 ): Promise<Checklist[]> => {
   const lists: Checklist[] = [];
   const entries = await serverReadDir(dir);
@@ -48,14 +49,18 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-      ...order.categories.filter((n) => dirNames.includes(n)),
-      ...dirNames
-        .filter((n) => !order.categories!.includes(n))
-        .sort((a, b) => a.localeCompare(b)),
-    ]
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
+    if (dirName === ARCHIVED_DIR_NAME && !allowArchived) {
+      continue;
+    }
+
     const categoryPath = basePath ? `${basePath}/${dirName}` : dirName;
     const categoryDir = path.join(dir, dirName);
 
@@ -67,11 +72,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -83,17 +88,19 @@ const readListsRecursively = async (
           lists.push(
             parseMarkdown(content, id, categoryPath, owner, false, stats)
           );
-        } catch { }
+        } catch {}
       }
-    } catch { }
+    } catch {}
 
     const subLists = await readListsRecursively(
       categoryDir,
       categoryPath,
-      owner
+      owner,
+      allowArchived
     );
     lists.push(...subLists);
   }
+
   return lists;
 };
 
@@ -155,7 +162,7 @@ const checkAndRefreshRecurringItems = async (
   return { checklist: updatedChecklist, hasChanges: true };
 };
 
-export const getLists = async (username?: string) => {
+export const getLists = async (username?: string, allowArchived?: boolean) => {
   try {
     let userDir: string;
     let currentUser: any = null;
@@ -172,26 +179,31 @@ export const getLists = async (username?: string) => {
     }
     await ensureDir(userDir);
 
-    const lists = await readListsRecursively(userDir, "", currentUser.username);
+    const lists = await readListsRecursively(
+      userDir,
+      "",
+      currentUser.username,
+      allowArchived
+    );
 
     const sharedItems = await getItemsSharedWithUser(currentUser.username);
     for (const sharedItem of sharedItems.checklists) {
       try {
         const sharedFilePath = sharedItem.filePath
           ? path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.filePath
-          )
+              process.cwd(),
+              "data",
+              CHECKLISTS_FOLDER,
+              sharedItem.filePath
+            )
           : path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.owner,
-            sharedItem.category || "Uncategorized",
-            `${sharedItem.id}.md`
-          );
+              process.cwd(),
+              "data",
+              CHECKLISTS_FOLDER,
+              sharedItem.owner,
+              sharedItem.category || "Uncategorized",
+              `${sharedItem.id}.md`
+            );
 
         const content = await fs.readFile(sharedFilePath, "utf-8");
         const stats = await fs.stat(sharedFilePath);
@@ -239,7 +251,7 @@ export const getListById = async (
   );
 };
 
-export const getAllLists = async () => {
+export const getAllLists = async (allowArchived?: boolean) => {
   try {
     const allLists: Checklist[] = [];
 
@@ -257,7 +269,8 @@ export const getAllLists = async () => {
         const userLists = await readListsRecursively(
           userDir,
           "",
-          user.username
+          user.username,
+          allowArchived
         );
         allLists.push(...userLists);
       } catch (error) {
@@ -310,9 +323,12 @@ export const updateList = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
+    const unarchive = formData.get("unarchive") === "true";
 
     const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists());
+    const lists = await (isAdminUser
+      ? getAllLists(unarchive)
+      : getLists(undefined, unarchive));
     if (!lists.success || !lists.data) {
       throw new Error(lists.error || "Failed to fetch lists");
     }
@@ -390,8 +406,9 @@ export const updateList = async (formData: FormData) => {
     );
 
     if (sharingMetadata) {
-      const newFilePath = `${currentList.owner}/${updatedList.category || "Uncategorized"
-        }/${updatedList.id}.md`;
+      const newFilePath = `${currentList.owner}/${
+        updatedList.category || "Uncategorized"
+      }/${updatedList.id}.md`;
 
       if (newId !== id) {
         const { removeSharedItem, addSharedItem } = await import(

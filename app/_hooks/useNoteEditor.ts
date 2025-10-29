@@ -127,14 +127,20 @@ export const useNoteEditor = ({
     if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
     const isEditMode = notesDefaultMode === "edit" || isEditing;
 
-    if (autosaveNotes && isEditMode && hasUnsavedChanges) {
+    if (
+      user?.notesAutoSaveInterval !== 0 &&
+      autosaveNotes &&
+      isEditMode &&
+      hasUnsavedChanges
+    ) {
       autosaveTimeoutRef.current = setTimeout(() => {
         setStatus((prev) => ({ ...prev, isAutoSaving: true }));
         const isAutosave = autosaveNotes ? true : false;
-        handleSave(isAutosave).finally(() =>
-          setStatus((prev) => ({ ...prev, isAutoSaving: false }))
-        );
-      }, 5000);
+        handleSave(isAutosave).finally(() => {
+          setStatus((prev) => ({ ...prev, isAutoSaving: false }));
+          setHasUnsavedChanges(false);
+        });
+      }, user?.notesAutoSaveInterval || 5000);
     }
     return () => {
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);

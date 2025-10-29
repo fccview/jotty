@@ -106,17 +106,19 @@ export const CategoryTreeSelector = ({
           )}
         >
           <div className="p-2">
-            <div
-              className={cn(
-                "flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted/50",
-                !selectedCategory && "bg-primary/10 text-primary"
-              )}
-              onClick={() => handleCategoryClick("")}
-            >
-              <div className="w-5" />
-              <Folder className="h-4 w-4 text-muted-foreground" />
-              <span>Uncategorized</span>
-            </div>
+            {rootCategories.length === 0 && (
+              <div
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted/50",
+                  !selectedCategory && "bg-primary/10 text-primary"
+                )}
+                onClick={() => handleCategoryClick("")}
+              >
+                <div className="w-5" />
+                <Folder className="h-4 w-4 text-muted-foreground" />
+                <span>Uncategorized</span>
+              </div>
+            )}
             {rootCategories.map((category) => (
               <CategoryTreeNode
                 key={category.path}

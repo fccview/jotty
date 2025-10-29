@@ -11,6 +11,7 @@ import {
   LandingPage,
   NotesDefaultEditor,
   NotesDefaultMode,
+  NotesAutoSaveInterval,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -49,18 +50,21 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const [notesDefaultMode, setNotesDefaultMode] = useState<NotesDefaultMode>(
     user?.notesDefaultMode || "view"
   );
+  const [notesAutoSaveInterval, setNotesAutoSaveInterval] =
+    useState<NotesAutoSaveInterval>(user?.notesAutoSaveInterval || 5000);
+
+  const [enableRecurrence, setEnableRecurrence] = useState<EnableRecurrence>(
+    user?.enableRecurrence || "disable"
+  );
+
   const [initialSettings, setInitialSettings] = useState<Partial<User>>({
     preferredTheme: user?.preferredTheme || "system",
     tableSyntax: user?.tableSyntax || "html",
     landingPage: user?.landingPage || Modes.CHECKLISTS,
     notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
     notesDefaultMode: user?.notesDefaultMode || "view",
-    enableRecurrence: user?.enableRecurrence || "disable",
+    notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
   });
-
-  const [enableRecurrence, setEnableRecurrence] = useState<EnableRecurrence>(
-    user?.enableRecurrence || "disable"
-  );
 
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
@@ -70,8 +74,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const hasEditorChanges =
     notesDefaultEditor !== initialSettings.notesDefaultEditor ||
     tableSyntax !== initialSettings.tableSyntax ||
-    notesDefaultMode !== initialSettings.notesDefaultMode;
+    notesDefaultMode !== initialSettings.notesDefaultMode ||
+    notesAutoSaveInterval !== initialSettings.notesAutoSaveInterval;
   const hasNavigationChanges = landingPage !== initialSettings.landingPage;
+
   const hasChecklistsChanges =
     enableRecurrence !== initialSettings.enableRecurrence;
 
@@ -141,10 +147,21 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
 
   const handleSaveEditorSettings = () =>
     validateAndSave(
-      { notesDefaultEditor, tableSyntax, notesDefaultMode },
+      {
+        notesDefaultEditor,
+        tableSyntax,
+        notesDefaultMode,
+        notesAutoSaveInterval,
+      },
       editorSettingsSchema,
       "Notes Preferences",
-      (prev) => ({ ...prev, notesDefaultEditor, tableSyntax, notesDefaultMode })
+      (prev) => ({
+        ...prev,
+        notesDefaultEditor,
+        tableSyntax,
+        notesDefaultMode,
+        notesAutoSaveInterval,
+      })
     );
 
   const handleSaveNavigationSettings = () =>
@@ -166,6 +183,17 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const tableSyntaxOptions = [
     { id: "markdown", name: "Markdown (e.g., | Header |)" },
     { id: "html", name: "HTML (e.g., <table><tr><td>)" },
+  ];
+
+  const autoSaveIntervalOptions = [
+    { id: 0, name: "Disabled" },
+    { id: 1000, name: "1 second" },
+    { id: 5000, name: "5 seconds" },
+    { id: 10000, name: "10 seconds" },
+    { id: 15000, name: "15 seconds" },
+    { id: 20000, name: "20 seconds" },
+    { id: 25000, name: "25 seconds" },
+    { id: 30000, name: "30 seconds" },
   ];
 
   const notesDefaultEditorOptions = [
@@ -243,6 +271,27 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           </Button>
         }
       >
+        <div className="space-y-2">
+          <Label htmlFor="auto-save-interval">Auto Save Interval</Label>
+          <Dropdown
+            value={notesAutoSaveInterval}
+            onChange={(value) =>
+              setNotesAutoSaveInterval(parseInt(value) as NotesAutoSaveInterval)
+            }
+            options={autoSaveIntervalOptions}
+            placeholder="Select auto save interval"
+            className="w-full"
+          />
+          {validationErrors.autoSaveInterval && (
+            <p className="text-sm text-destructive">
+              {validationErrors.autoSaveInterval}
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Choose the interval for automatic saving of your notes.
+          </p>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="notes-default-editor">Default Mode</Label>
           <Dropdown

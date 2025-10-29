@@ -3,15 +3,21 @@
 import { Category } from "../_types";
 import { serverReadDir, readOrderFile } from "../_server/actions/file";
 import path from "path";
+import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "../_consts/files";
 
 export const buildCategoryTree = async (
   dir: string,
   basePath: string = "",
-  level: number = 0
+  level: number = 0,
+  allowArchived?: boolean
 ): Promise<Category[]> => {
   const categories: Category[] = [];
   const entries = await serverReadDir(dir);
-  const excludedDirs = ["images", "files"];
+  let excludedDirs = EXCLUDED_DIRS;
+
+  if (!allowArchived) {
+    excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  }
 
   const order = await readOrderFile(dir);
   const dirNames = entries
@@ -49,7 +55,8 @@ export const buildCategoryTree = async (
     const subCategories = await buildCategoryTree(
       categoryDir,
       categoryPath,
-      level + 1
+      level + 1,
+      allowArchived
     );
     categories.push(...subCategories);
   }

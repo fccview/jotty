@@ -5,7 +5,11 @@ import fs from "fs/promises";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
 import { getUserModeDir } from "../file";
-import { MAX_FILE_SIZE, ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES } from "@/app/_consts/files";
+import {
+  MAX_FILE_SIZE,
+  ALLOWED_IMAGE_TYPES,
+  ALLOWED_VIDEO_TYPES,
+} from "@/app/_consts/files";
 import { getSettings } from "../config";
 
 export interface FileItem {
@@ -76,7 +80,12 @@ export const uploadUserAvatar = async (formData: FormData) => {
     if (file.size > (settings?.maximumFileSize || MAX_FILE_SIZE)) {
       return {
         success: false,
-        error: `File is too large. Maximum size is ${((settings?.maximumFileSize || MAX_FILE_SIZE) / (1024 * 1024)).toFixed(0)}MB. Your file is ${((file.size / (1024 * 1024)).toFixed(1))}MB.`,
+        error: `File is too large. Maximum size is ${(
+          (settings?.maximumFileSize || MAX_FILE_SIZE) /
+          (1024 * 1024)
+        ).toFixed(0)}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(
+          1
+        )}MB.`,
       };
     }
 
@@ -149,7 +158,12 @@ export const uploadFile = async (formData: FormData) => {
     if (file.size > (settings?.maximumFileSize || MAX_FILE_SIZE)) {
       return {
         success: false,
-        error: `File is too large. Maximum size is ${((settings?.maximumFileSize || MAX_FILE_SIZE) / (1024 * 1024)).toFixed(0)}MB. Your file is ${((file.size / (1024 * 1024)).toFixed(1))}MB.`,
+        error: `File is too large. Maximum size is ${(
+          (settings?.maximumFileSize || MAX_FILE_SIZE) /
+          (1024 * 1024)
+        ).toFixed(0)}MB. Your file is ${(file.size / (1024 * 1024)).toFixed(
+          1
+        )}MB.`,
       };
     }
 
@@ -157,7 +171,11 @@ export const uploadFile = async (formData: FormData) => {
     const userDir = await getUserModeDir(Modes.NOTES);
     const targetDir = path.join(
       userDir,
-      fileType === "image" ? "images" : fileType === "video" ? "videos" : "files"
+      fileType === "image"
+        ? "images"
+        : fileType === "video"
+        ? "videos"
+        : "files"
     );
     await fs.mkdir(targetDir, { recursive: true });
 
@@ -181,8 +199,13 @@ export const uploadFile = async (formData: FormData) => {
     const buffer = Buffer.from(await file.arrayBuffer());
     await fs.writeFile(filePath, buffer);
 
-    const fileUrl = `/${fileType === "image" ? "api/image" : fileType === "video" ? "api/video" : "api/file"}/${user.username
-      }/${encodeURIComponent(fileName)}`;
+    const fileUrl = `/${
+      fileType === "image"
+        ? "api/image"
+        : fileType === "video"
+        ? "api/video"
+        : "api/file"
+    }/${user.username}/${encodeURIComponent(fileName)}`;
 
     return {
       success: true,
@@ -281,7 +304,11 @@ export const deleteFile = async (formData: FormData) => {
     const userDir = await getUserModeDir(Modes.NOTES);
     const targetDir = path.join(
       userDir,
-      fileType === "image" ? "images" : fileType === "video" ? "videos" : "files"
+      fileType === "image"
+        ? "images"
+        : fileType === "video"
+        ? "videos"
+        : "files"
     );
     const filePath = path.join(targetDir, fileName);
 

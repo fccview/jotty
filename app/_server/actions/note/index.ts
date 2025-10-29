@@ -26,7 +26,11 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { DEPRECATED_DOCS_FOLDER, NOTES_FOLDER } from "@/app/_consts/notes";
 import { readJsonFile } from "../file";
-import { USERS_FILE } from "@/app/_consts/files";
+import {
+  ARCHIVED_DIR_NAME,
+  EXCLUDED_DIRS,
+  USERS_FILE,
+} from "@/app/_consts/files";
 import { Modes } from "@/app/_types/enums";
 import { serverReadFile } from "@/app/_server/actions/file";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
@@ -92,11 +96,16 @@ const _noteToMarkdown = (doc: Note): string => {
 const _readNotesRecursively = async (
   dir: string,
   basePath: string = "",
-  owner: string
+  owner: string,
+  allowArchived: boolean = false
 ): Promise<Note[]> => {
   const docs: Note[] = [];
   const entries = await serverReadDir(dir);
-  const excludedDirs = ["images", "files"];
+  let excludedDirs = EXCLUDED_DIRS;
+
+  if (!allowArchived) {
+    excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  }
 
   const order = await readOrderFile(dir);
   const dirNames = entries
@@ -153,7 +162,8 @@ const _readNotesRecursively = async (
     const subDocs = await _readNotesRecursively(
       categoryDir,
       categoryPath,
-      owner
+      owner,
+      allowArchived
     );
     docs.push(...subDocs);
   }
@@ -184,7 +194,7 @@ export const getNoteById = async (
   );
 };
 
-export const getNotes = async (username?: string) => {
+export const getNotes = async (username?: string, allowArchived?: boolean) => {
   try {
     let userDir: string;
     let currentUser: any = null;
@@ -201,7 +211,12 @@ export const getNotes = async (username?: string) => {
     }
     await ensureDir(userDir);
 
-    const docs = await _readNotesRecursively(userDir, "", currentUser.username);
+    const docs = await _readNotesRecursively(
+      userDir,
+      "",
+      currentUser.username,
+      allowArchived
+    );
 
     const sharedItems = await getItemsSharedWithUser(currentUser.username);
     for (const sharedItem of sharedItems.notes) {
@@ -250,15 +265,19 @@ export const createNote = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const category = (formData.get("category") as string) || "Uncategorized";
     const rawContent = (formData.get("content") as string) || "";
+    const formUser = formData.get("user")
+      ? JSON.parse(formData.get("user") as string)
+      : null;
 
     const content = sanitizeMarkdown(rawContent);
 
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
+    const currentUser = formUser || (await getCurrentUser());
+
+    if (!currentUser?.username) {
       return { error: "Not authenticated" };
     }
 
-    const userDir = await getUserModeDir(Modes.NOTES);
+    const userDir = await getUserModeDir(Modes.NOTES, currentUser.username);
     const categoryDir = path.join(userDir, category);
     await ensureDir(categoryDir);
 
@@ -291,11 +310,14 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const rawContent = formData.get("content") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
+    const unarchive = formData.get("unarchive") === "true";
 
     const content = sanitizeMarkdown(rawContent);
 
     const isAdminUser = await isAdmin();
-    const docs = await (isAdminUser ? getAllNotes() : getNotes());
+    const docs = await (isAdminUser
+      ? getAllNotes(unarchive)
+      : getNotes(undefined, unarchive));
     if (!docs.success || !docs.data) {
       throw new Error(docs.error || "Failed to fetch notes");
     }
@@ -495,7 +517,7 @@ export const deleteNote = async (formData: FormData) => {
   }
 };
 
-export const getAllNotes = async () => {
+export const getAllNotes = async (allowArchived?: boolean) => {
   try {
     const allDocs: Note[] = [];
 
@@ -508,7 +530,8 @@ export const getAllNotes = async () => {
         const userDocs = await _readNotesRecursively(
           userDir,
           "",
-          user.username
+          user.username,
+          allowArchived
         );
         allDocs.push(...userDocs);
       } catch (error) {

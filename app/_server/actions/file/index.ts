@@ -99,10 +99,17 @@ export const readFile = async (filePath: string): Promise<string> => {
   }
 };
 
-export const getUserModeDir = async (mode: Modes): Promise<string> => {
+export const getUserModeDir = async (
+  mode: Modes,
+  username?: string
+): Promise<string> => {
+  if (username) {
+    return path.join(process.cwd(), DATA_DIR, mode, username);
+  }
+
   const user = await getCurrentUser();
   if (!user) throw new Error("Not authenticated");
-  return path.join(process.cwd(), DATA_DIR, mode, user.username);
+  return path.join(process.cwd(), DATA_DIR, mode, user.username || "");
 };
 
 /**

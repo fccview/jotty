@@ -105,9 +105,9 @@ export const renameCategory = async (formData: FormData) => {
   }
 };
 
-export const getCategories = async (mode: Modes) => {
+export const getCategories = async (mode: Modes, username?: string) => {
   try {
-    const dir = await getUserModeDir(mode);
+    const dir = await getUserModeDir(mode, username);
     await ensureDir(dir);
 
     const categories = await buildCategoryTree(dir);

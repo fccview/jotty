@@ -25,6 +25,9 @@ export const editorSettingsSchema = z.object({
   notesDefaultMode: z.enum(["edit", "view"], {
     message: "Notes default mode must be either 'edit' or 'view'",
   }),
+  notesAutoSaveInterval: z
+    .number()
+    .min(0, "Notes auto save interval must be greater than 0"),
 });
 
 export const navigationSettingsSchema = z.object({
