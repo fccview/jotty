@@ -433,7 +433,10 @@ export const useChecklist = ({
     }
   };
 
-  const handleCreateItem = async (text: string, recurrence?: RecurrenceRule) => {
+  const handleCreateItem = async (
+    text: string,
+    recurrence?: RecurrenceRule
+  ) => {
     setIsLoading(true);
     const formData = new FormData();
 
@@ -532,8 +535,8 @@ export const useChecklist = ({
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    };
-  }
+    }
+  };
 
   const isItemFullyCompleted = (item: any): boolean => {
     if (!item.completed) return false;

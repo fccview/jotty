@@ -16,6 +16,7 @@ import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { useChecklist } from "@/app/_hooks/useChecklist";
 import { Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
+import { toggleArchive } from "@/app/_server/actions/users";
 
 interface SharingStatus {
   isShared: boolean;
@@ -70,6 +71,13 @@ export const ChecklistClient = ({
     });
   };
 
+  const handleArchive = async () => {
+    const result = await toggleArchive(localChecklist, Modes.CHECKLISTS);
+    if (result.success) {
+      router.refresh();
+    }
+  };
+
   const handleEdit = () => {
     setShowEditModal(true);
   };
@@ -104,6 +112,7 @@ export const ChecklistClient = ({
             }
             onShare={() => setShowShareModal(true)}
             onConvertType={() => setShowConversionModal(true)}
+            onArchive={handleArchive}
           />
           <KanbanBoard checklist={localChecklist} onUpdate={handleUpdate} />
         </div>

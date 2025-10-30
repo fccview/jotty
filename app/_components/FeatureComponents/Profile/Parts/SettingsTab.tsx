@@ -254,7 +254,9 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         <div className="space-y-2">
           <Label htmlFor="preferred-theme">Preferred Theme</Label>
           {loadingThemes ? (
-            <div className="text-sm text-muted-foreground">Loading themes...</div>
+            <div className="text-sm text-muted-foreground">
+              Loading themes...
+            </div>
           ) : (
             <Dropdown
               value={preferredTheme}
@@ -398,7 +400,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         }
       >
         <div className="space-y-2">
-          <Label htmlFor="enable-recurrence">Recurring checklists</Label>
+          <Label htmlFor="enable-recurrence">
+            Recurring checklists{" "}
+            <span className="text-sm text-muted-foreground">(Beta)</span>
+          </Label>
           <Dropdown
             value={enableRecurrence}
             onChange={(value) => setEnableRecurrence(value as EnableRecurrence)}

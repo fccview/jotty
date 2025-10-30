@@ -11,6 +11,7 @@ import {
   PinOff,
   MoreHorizontal,
   Archive,
+  Trash,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -22,6 +23,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { toggleArchive } from "@/app/_server/actions/users";
+import { deleteList } from "@/app/_server/actions/checklist";
+import { deleteNote } from "@/app/_server/actions/note";
 
 interface SharingStatus {
   isShared: boolean;
@@ -94,6 +97,16 @@ export const SidebarItem = ({
         ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
+    {
+      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
+      onClick: handleTogglePin,
+      icon: isItemPinned() ? (
+        <PinOff className="h-4 w-4" />
+      ) : (
+        <Pin className="h-4 w-4" />
+      ),
+      disabled: isTogglingPin === item.id,
+    },
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
           {
@@ -108,15 +121,36 @@ export const SidebarItem = ({
           },
         ]
       : []),
+    ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
-      onClick: handleTogglePin,
-      icon: isItemPinned() ? (
-        <PinOff className="h-4 w-4" />
-      ) : (
-        <Pin className="h-4 w-4" />
-      ),
-      disabled: isTogglingPin === item.id,
+      label: "Delete",
+      onClick: async () => {
+        const confirmed = window.confirm(
+          `Are you sure you want to delete "${item.title}"?`
+        );
+
+        if (!confirmed) return;
+
+        const formData = new FormData();
+
+        if (mode === Modes.CHECKLISTS) {
+          formData.append("id", item.id);
+          formData.append("category", item.category || "Uncategorized");
+          const result = await deleteList(formData);
+          if (result.success) {
+            router.refresh();
+          }
+        } else {
+          formData.append("id", item.id);
+          formData.append("category", item.category || "Uncategorized");
+          const result = await deleteNote(formData);
+          if (result.success) {
+            router.push("/");
+          }
+        }
+      },
+      variant: "destructive" as const,
+      icon: <Trash className="h-4 w-4" />,
     },
   ];
   return (
