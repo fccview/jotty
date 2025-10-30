@@ -291,7 +291,7 @@ export const TiptapEditor = ({
 
       <CompactImageResizeOverlay
         isVisible={imageResize.showOverlay}
-        position={imageResize.position}
+        position={{ x: 0, y: 0 }} // Position will be calculated based on targetElement
         onClose={imageResize.closeOverlay}
         onResize={imageResize.handleResize}
         onPreviewUpdate={(w, h) =>

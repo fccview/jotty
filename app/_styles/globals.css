@@ -537,14 +537,11 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
 
 mark {
     background-color: #fef08a;
-    color: inherit;
     border-radius: 0.25rem;
     padding: 0.125rem 0.25rem;
-  }
+    color: inherit;
+}
   
-  mark[style*="background-color"] {
-    background-color: inherit !important;
-  }
 
 .prose {
     @apply text-foreground;
