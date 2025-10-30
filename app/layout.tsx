@@ -17,7 +17,6 @@ import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { headers } from "next/headers";
 import { themeInitScript } from "./_consts/themes";
-import { getThemeColors } from "./_consts/colors";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +37,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
   return {
     title: appName,
     description: appDescription,
-    manifest: "/api/manifest",
+    manifest: "/site.webmanifest",
     icons: {
       icon: [
         {
@@ -68,27 +67,12 @@ export const generateMetadata = async (): Promise<Metadata> => {
   };
 };
 
-export async function generateViewport(): Promise<Viewport> {
-  const settings = await getSettings();
-  const user = await getCurrentUser();
-
-  let themeToUse = "system";
-
-  if (user?.preferredTheme && user.preferredTheme !== "system") {
-    themeToUse = user.preferredTheme;
-  } else if (settings?.isRwMarkable) {
-    themeToUse = "rwmarkable-dark";
-  }
-
-  const { primary: themeColor } = await getThemeColors(themeToUse);
-
-  return {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    themeColor,
-  };
-}
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#000000",
+};
 
 export default async function RootLayout({
   children,

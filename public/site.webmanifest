@@ -4,8 +4,8 @@
   "description": "A simple, fast, and lightweight checklist application",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#0c1435",
+  "theme_color": "#8b3bd0",
   "orientation": "portrait-primary",
   "icons": [
     {
