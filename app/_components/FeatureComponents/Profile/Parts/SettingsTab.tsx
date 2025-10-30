@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -19,6 +19,7 @@ import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { BUILT_IN_THEMES } from "@/app/_consts/themes";
+import { getAllThemes } from "@/app/_consts/themes";
 import {
   themeSettingsSchema,
   editorSettingsSchema,
@@ -34,7 +35,22 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
   const { showToast } = useToast();
-  const allThemes = BUILT_IN_THEMES;
+  const [allThemes, setAllThemes] = useState<any[]>([]);
+  const [loadingThemes, setLoadingThemes] = useState(true);
+
+  useEffect(() => {
+    const loadThemes = async () => {
+      try {
+        const themes = await getAllThemes();
+        setAllThemes(themes);
+      } catch (error) {
+        console.error("Failed to load themes:", error);
+      } finally {
+        setLoadingThemes(false);
+      }
+    };
+    loadThemes();
+  }, []);
 
   const [preferredTheme, setPreferredTheme] = useState<string>(
     user?.preferredTheme || "system"
@@ -237,17 +253,21 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       >
         <div className="space-y-2">
           <Label htmlFor="preferred-theme">Preferred Theme</Label>
-          <Dropdown
-            value={preferredTheme}
-            onChange={(value) => setPreferredTheme(value)}
-            options={allThemes.map((theme) => ({
-              id: theme.id,
-              name: theme.name,
-              icon: theme.icon,
-            }))}
-            placeholder="Select a theme"
-            className="w-full"
-          />
+          {loadingThemes ? (
+            <div className="text-sm text-muted-foreground">Loading themes...</div>
+          ) : (
+            <Dropdown
+              value={preferredTheme}
+              onChange={(value) => setPreferredTheme(value)}
+              options={allThemes.map((theme) => ({
+                id: theme.id,
+                name: theme.name,
+                icon: theme.icon,
+              }))}
+              placeholder="Select a theme"
+              className="w-full"
+            />
+          )}
           {validationErrors.preferredTheme && (
             <p className="text-sm text-destructive">
               {validationErrors.preferredTheme}

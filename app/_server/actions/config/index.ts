@@ -352,3 +352,74 @@ export const readPackageVersion = async (): Promise<Result<string>> => {
     return { success: false, error: "Failed to read package version" };
   }
 };
+
+export const saveCustomCSS = async (css: string): Promise<Result<null>> => {
+  try {
+    const admin = await isAdmin();
+    if (!admin) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const cssPath = path.join(process.cwd(), "config", "custom.css");
+
+    try {
+      await fs.access(path.dirname(cssPath));
+    } catch {
+      await fs.mkdir(path.dirname(cssPath), { recursive: true });
+    }
+
+    await fs.writeFile(cssPath, css, "utf-8");
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error saving custom CSS:", error);
+    return { success: false, error: "Failed to save custom CSS" };
+  }
+};
+
+export const loadCustomCSS = async (): Promise<Result<string>> => {
+  try {
+    const cssPath = path.join(process.cwd(), "config", "custom.css");
+
+    try {
+      const css = await fs.readFile(cssPath, "utf-8");
+      return { success: true, data: css };
+    } catch {
+      // File doesn't exist, return empty CSS
+      return { success: true, data: "" };
+    }
+  } catch (error) {
+    console.error("Error loading custom CSS:", error);
+    return { success: false, error: "Failed to load custom CSS" };
+  }
+};
+
+export const saveCustomThemes = async (
+  themes: ThemeConfig
+): Promise<Result<null>> => {
+  try {
+    const admin = await isAdmin();
+    if (!admin) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (!validateThemeConfig(themes)) {
+      return { success: false, error: "Invalid theme configuration" };
+    }
+
+    const themesPath = path.join(process.cwd(), "config", "themes.json");
+
+    try {
+      await fs.access(path.dirname(themesPath));
+    } catch {
+      await fs.mkdir(path.dirname(themesPath), { recursive: true });
+    }
+
+    await fs.writeFile(themesPath, JSON.stringify(themes, null, 2), "utf-8");
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error saving custom themes:", error);
+    return { success: false, error: "Failed to save custom themes" };
+  }
+};

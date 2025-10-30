@@ -828,36 +828,49 @@ p > code {
 }
 
 
+
+pre.text-foreground,
+pre.text-foreground *,
+pre.text-foreground span,
+.font-mono textarea {
+    font-family: "JetBrainsMono", "Fira Code", "Monaco", "Consolas", monospace !important;
+    font-size: 14px !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    line-height: 1.5 !important;
+    letter-spacing: normal !important;
+}
+
 @media print {
     .no-print {
-      display: none !important;
+        display: none !important;
     }
-  
+
     body {
-      background: #fff !important;
+        background: #fff !important;
     }
-  
+
     .prose {
-      font-size: 12pt !important;
-      font-family: 'Times New Roman', Times, serif !important;
-      color: #000 !important;
-      max-width: 100% !important;
+        font-size: 12pt !important;
+        font-family: 'Times New Roman', Times, serif !important;
+        color: #000 !important;
+        max-width: 100% !important;
     }
-  
+
     .prose h1, .prose h2, .prose h3, .prose h4,
     .prose pre, .prose blockquote {
-      page-break-after: avoid;
-      page-break-inside: avoid;
+        page-break-after: avoid;
+        page-break-inside: avoid;
     }
-  
+
     .prose img {
-      max-width: 100% !important;
+        max-width: 100% !important;
     }
-  
+
     .prose a[href^="http"]:after {
-      content: " (" attr(href) ")";
-      font-size: 9pt;
-      font-weight: normal;
-      color: #333;
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+        font-weight: normal;
+        color: #333;
     }
-  } 
+}

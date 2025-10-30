@@ -8,7 +8,7 @@ interface AuthShellProps {
 
 export const AuthShell = ({ children }: AuthShellProps) => {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center lg:p-6 bg-background">
+    <div className="jotty-auth-wrapper min-h-screen w-full flex items-center justify-center lg:p-6 bg-background">
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center justify-center gap-3">
           <DynamicLogo className="h-8 w-8" size="32x32" />

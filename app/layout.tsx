@@ -100,6 +100,19 @@ export default async function RootLayout({
     serveUpdates = false;
   }
 
+  const loadCustomCSS = async () => {
+    try {
+      const timestamp = Date.now();
+      const response = await fetch(`/api/custom-css?t=${timestamp}`);
+      if (response.ok) {
+        const css = await response.text();
+        return css;
+      }
+    } catch (error) {
+      console.error("Failed to load custom CSS:", error);
+    }
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -109,7 +122,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content={appName} />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} jotty-body`}>
         <AppModeProvider
           isDemoMode={settings?.isDemo || false}
           isRwMarkable={settings?.rwmarkable || false}
@@ -128,7 +141,7 @@ export default async function RootLayout({
                     noteCategories={noteCategories.data || []}
                     checklistCategories={checklistCategories.data || []}
                   >
-                    <div className="min-h-screen bg-background text-foreground transition-colors">
+                    <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
                       <DynamicFavicon />
                       {children}
 

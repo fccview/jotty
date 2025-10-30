@@ -25,7 +25,6 @@ export const Pagination = ({
   variant = "default",
   className = "",
 }: PaginationProps) => {
-
   const getVisiblePages = () => {
     const delta = 2;
     const range = [];
@@ -56,13 +55,13 @@ export const Pagination = ({
     return rangeWithDots;
   };
 
-  const visiblePages = getVisiblePages();
-
   const itemsPerPageOptions = [
-    { id: "10", name: "10 per page" },
-    { id: "30", name: "30 per page" },
-    { id: "50", name: "50 per page" },
-    { id: "100", name: "100 per page" },
+    { id: "12", name: "12 per page" },
+    { id: "24", name: "24 per page" },
+    { id: "36", name: "36 per page" },
+    { id: "72", name: "72 per page" },
+    { id: "84", name: "84 per page" },
+    { id: "120", name: "120 per page" },
   ];
 
   return (
@@ -77,7 +76,9 @@ export const Pagination = ({
 
         {itemsPerPage && onItemsPerPageChange && (
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">Items per page</label>
+            <label className="text-xs text-muted-foreground mb-1 block">
+              Items per page
+            </label>
             <Dropdown
               value={itemsPerPage.toString()}
               options={itemsPerPageOptions}

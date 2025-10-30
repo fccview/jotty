@@ -58,7 +58,7 @@ export const Layout = ({
 
   if (!isInitialized) {
     return (
-      <div className="flex h-screen bg-background w-full">
+      <div className="jotty-layout flex h-screen bg-background w-full">
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -67,7 +67,7 @@ export const Layout = ({
   }
 
   return (
-    <div className="flex h-screen bg-background w-full overflow-hidden relative pb-16 lg:pb-0">
+    <div className="jotty-layout flex h-screen bg-background w-full overflow-hidden relative pb-16 lg:pb-0">
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -83,7 +83,7 @@ export const Layout = ({
         user={user}
       />
 
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="jotty-layout-main flex-1 flex flex-col overflow-hidden">
         <QuickNav
           showSidebarToggle
           onSidebarToggle={() => setSidebarOpen(true)}
@@ -94,7 +94,9 @@ export const Layout = ({
           onModeChange={setMode}
         />
 
-        <div className="flex-1 overflow-hidden">{children}</div>
+        <div className="jotty-layout-content flex-1 overflow-hidden">
+          {children}
+        </div>
       </main>
     </div>
   );
