@@ -45,3 +45,7 @@ next-env.d.ts
 /data_bak
 
 *.test.yml
+
+#AI 
+.claude
+CLAUDE.md

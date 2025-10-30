@@ -6,6 +6,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { updateUserSettings } from "@/app/_server/actions/users";
 import {
   User,
+  EnableRecurrence,
   TableSyntax,
   LandingPage,
   NotesDefaultEditor,
@@ -23,6 +24,7 @@ import {
   themeSettingsSchema,
   editorSettingsSchema,
   navigationSettingsSchema,
+  checklistSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 
 interface SettingsTabProps {
@@ -66,6 +68,11 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   );
   const [notesAutoSaveInterval, setNotesAutoSaveInterval] =
     useState<NotesAutoSaveInterval>(user?.notesAutoSaveInterval || 5000);
+
+  const [enableRecurrence, setEnableRecurrence] = useState<EnableRecurrence>(
+    user?.enableRecurrence || "disable"
+  );
+
   const [initialSettings, setInitialSettings] = useState<Partial<User>>({
     preferredTheme: user?.preferredTheme || "system",
     tableSyntax: user?.tableSyntax || "html",
@@ -86,6 +93,9 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     notesDefaultMode !== initialSettings.notesDefaultMode ||
     notesAutoSaveInterval !== initialSettings.notesAutoSaveInterval;
   const hasNavigationChanges = landingPage !== initialSettings.landingPage;
+
+  const hasChecklistsChanges =
+    enableRecurrence !== initialSettings.enableRecurrence;
 
   const validateAndSave = async <T extends Record<string, any>>(
     settings: T,
@@ -178,6 +188,14 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       (prev) => ({ ...prev, landingPage })
     );
 
+  const handleSaveChecklistsSettings = () =>
+    validateAndSave(
+      { enableRecurrence },
+      checklistSettingsSchema,
+      "Checklists",
+      (prev) => ({ ...prev, enableRecurrence })
+    );
+
   const tableSyntaxOptions = [
     { id: "markdown", name: "Markdown (e.g., | Header |)" },
     { id: "html", name: "HTML (e.g., <table><tr><td>)" },
@@ -202,6 +220,11 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const notesDefaultModeOptions = [
     { id: "edit", name: "Edit" },
     { id: "view", name: "View" },
+  ];
+
+  const enableRecurrenceOptions = [
+    { id: "enable", name: "Enable" },
+    { id: "disable", name: "Disable" },
   ];
 
   const landingPageOptions = [
@@ -359,6 +382,30 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <p className="text-sm text-muted-foreground">
             Choose how tables are rendered in your notes.
           </p>
+        </div>
+      </FormWrapper>
+
+      <FormWrapper
+        title="Checklists Preferences"
+        action={
+          <Button
+            onClick={handleSaveChecklistsSettings}
+            disabled={!hasChecklistsChanges}
+            size="sm"
+          >
+            Save Checklists
+          </Button>
+        }
+      >
+        <div className="space-y-2">
+          <Label htmlFor="enable-recurrence">Recurring checklists</Label>
+          <Dropdown
+            value={enableRecurrence}
+            onChange={(value) => setEnableRecurrence(value as EnableRecurrence)}
+            options={enableRecurrenceOptions}
+            placeholder="Select enable to add recurring checklists"
+            className="w-full"
+          />
         </div>
       </FormWrapper>
 

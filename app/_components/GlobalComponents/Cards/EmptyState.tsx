@@ -25,7 +25,10 @@ export const EmptyState = ({
       <p className="text-muted-foreground mb-6 max-w-md text-center">
         {description}
       </p>
-      <Button onClick={onButtonClick} size="lg">
+      <Button onClick={(e) => {
+        e.preventDefault();
+        onButtonClick();
+      }} size="lg">
         <Plus className="h-5 w-5 mr-2" />
         {buttonText}
       </Button>

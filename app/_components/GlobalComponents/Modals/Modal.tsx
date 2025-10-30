@@ -79,6 +79,8 @@ export const Modal = ({
     >
       <div
         ref={modalRef}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
         className={`
           jotty-modal-content
           bg-background border border-border w-full lg:max-w-md shadow-xl
