@@ -33,6 +33,8 @@ services:
       - OIDC_CLIENT_SECRET=your_client_secret # Enable confidential client mode (if your provider requires it)
       - SSO_FALLBACK_LOCAL=yes # Allow both SSO and local login
       - OIDC_ADMIN_GROUPS=admins # Map provider groups to admin role
+      - OIDC_GROUPS_SCOPE=groups # Scope to request for groups (set to empty string or "no" to disable for providers like Entra ID)
+      - OIDC_LOGOUT_URL=https://authprovider.local/realms/master/logout # Custom logout URL for global logout
       # Optional for reverse proxy issues:
       # - INTERNAL_API_URL=http://localhost:3000 # Use if getting 403 errors after SSO login
 ```
@@ -48,9 +50,10 @@ Community verified Providers:
 
 - [Pocket ID](https://github.com/fccview/jotty/issues/6#issuecomment-3350380435)
 - [Authelia](https://github.com/fccview/jotty/issues/6#issuecomment-3369291122) (`OIDC_ISSUER: https://my-pocket-id.domain.com`)
-- [Google](https://github.com/fccview/jotty/issues/6#issuecomment-3437686494) (`OIDC_ISSUER: https://accounts.google.com`)  
-*Note: Google doesn't support [OIDC groups](https://github.com/fccview/jotty/issues/6#issuecomment-3427559069) so exclude `env: OIDC_ADMIN_GROUPS`*
+- [Google](https://github.com/fccview/jotty/issues/6#issuecomment-3437686494) (`OIDC_ISSUER: https://accounts.google.com`)
+- [Entra ID (Azure AD)](https://github.com/fccview/jotty/issues/6#issuecomment-3464237999) (`OIDC_ISSUER: https://login.microsoftonline.com/{tenant-id}/v2.0`)
 
+_Note: Google and Entra ID don't support the "groups" scope so do NOT set `OIDC_ADMIN_GROUPS` for it. Entra will also require `OIDC_GROUPS_SCOPE="no"` or `OIDC_GROUPS_SCOPE=""` to fully disable the groups scope request and let Entra deal with it internally._
 
 Other providers will likely work, but I can at least guarantee these do as I have test them both locally.
 
