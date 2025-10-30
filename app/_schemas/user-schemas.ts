@@ -36,7 +36,14 @@ export const navigationSettingsSchema = z.object({
   }),
 });
 
+export const checklistSettingsSchema = z.object({
+  enableRecurrence: z.enum(["enable", "disable"], {
+    message: "Enable recurrence must be either 'enable' or 'disable'",
+  }),
+});
+
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;
 export type ThemeSettingsInput = z.infer<typeof themeSettingsSchema>;
 export type EditorSettingsInput = z.infer<typeof editorSettingsSchema>;
 export type NavigationSettingsInput = z.infer<typeof navigationSettingsSchema>;
+export type ChecklistSettingsInput = z.infer<typeof checklistSettingsSchema>;

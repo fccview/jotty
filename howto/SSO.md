@@ -48,6 +48,8 @@ Community verified Providers:
 
 - [Pocket ID](https://github.com/fccview/jotty/issues/6#issuecomment-3350380435)
 - [Authelia](https://github.com/fccview/jotty/issues/6#issuecomment-3369291122) (`OIDC_ISSUER: https://my-pocket-id.domain.com`)
+- [Google](https://github.com/fccview/jotty/issues/6#issuecomment-3437686494) (`OIDC_ISSUER: https://accounts.google.com`)  
+*Note: Google doesn't support [OIDC groups](https://github.com/fccview/jotty/issues/6#issuecomment-3427559069) so exclude `env: OIDC_ADMIN_GROUPS`*
 
 
 Other providers will likely work, but I can at least guarantee these do as I have test them both locally.
