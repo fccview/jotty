@@ -57,7 +57,10 @@ export const DropdownMenu = ({
   };
 
   return (
-    <div ref={dropdownRef} className="relative inline-block">
+    <div
+      ref={dropdownRef}
+      className="jotty-dropdown-menu relative inline-block"
+    >
       <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
         {trigger}
       </div>

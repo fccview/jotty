@@ -14,7 +14,13 @@ interface ChecklistCardProps {
   isDraggable?: boolean;
 }
 
-export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, isDraggable = false }: ChecklistCardProps) => {
+export const ChecklistCard = ({
+  list,
+  onSelect,
+  isPinned = false,
+  onTogglePin,
+  isDraggable = false,
+}: ChecklistCardProps) => {
   const {
     attributes,
     listeners,
@@ -24,7 +30,7 @@ export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, i
     isDragging,
   } = useSortable({
     id: list.id,
-    disabled: !isDraggable
+    disabled: !isDraggable,
   });
 
   const style = {
@@ -45,8 +51,9 @@ export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, i
       style={style}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
       onClick={() => onSelect(list)}
-      className={`bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${isDragging ? 'opacity-50' : ''
-        }`}
+      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${
+        isDragging ? "opacity-50" : ""
+      }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -61,7 +68,9 @@ export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, i
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"} group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
               title={isPinned ? "Unpin" : "Pin"}
             >
               {isPinned ? (

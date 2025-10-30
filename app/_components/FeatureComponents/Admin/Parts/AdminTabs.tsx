@@ -1,10 +1,25 @@
 "use client";
 
-import { Users, FileText, Activity, Shield, Settings, Edit3 } from "lucide-react";
+import {
+  Users,
+  FileText,
+  Activity,
+  Shield,
+  Settings,
+  Edit3,
+  Palette,
+} from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 
-type AdminTab = "overview" | "users" | "content" | "sharing" | "settings" | "editor";
+type AdminTab =
+  | "overview"
+  | "users"
+  | "content"
+  | "sharing"
+  | "settings"
+  | "editor"
+  | "styling";
 
 interface AdminTabsProps {
   activeTab: AdminTab;
@@ -39,10 +54,15 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
       icon: Edit3,
     },
     {
+      id: "styling" as AdminTab,
+      label: "Styling",
+      icon: Palette,
+    },
+    {
       id: "settings" as AdminTab,
       label: "Settings",
       icon: Settings,
-    }
+    },
   ];
 
   return (
@@ -56,9 +76,7 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
               variant={activeTab === tab.id ? "default" : "ghost"}
               size="sm"
               onClick={() => onTabChange(tab.id)}
-              className={cn(
-                "flex items-center gap-2 flex-shrink-0"
-              )}
+              className={cn("flex items-center gap-2 flex-shrink-0")}
             >
               <Icon className="h-4 w-4" />
               {tab.label}

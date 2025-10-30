@@ -22,8 +22,8 @@ export const CategoryPills = ({
   if (categories.length === 0) return null;
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      <div className="flex items-center justify-between">
+    <div className={`jotty-category-pills space-y-3 ${className}`}>
+      <div className="jotty-category-pills-header flex items-center justify-between">
         <h3 className="text-sm font-medium text-foreground">
           Filter by Category
         </h3>
@@ -39,7 +39,7 @@ export const CategoryPills = ({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="jotty-category-pills-list flex flex-wrap gap-2">
         {categories.map((category) => {
           const isSelected = selectedCategories.includes(category.name);
 

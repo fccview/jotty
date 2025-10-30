@@ -71,10 +71,16 @@ export const Modal = ({
   }
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black/50 flex lg:items-center lg:justify-center items-end z-50">
+    <div
+      className={`jotty-modal-${title
+        ?.toString()
+        .replace(/ /g, "-")
+        .toLowerCase()} fixed inset-0 bg-black/50 flex lg:items-center lg:justify-center items-end z-50`}
+    >
       <div
         ref={modalRef}
         className={`
+          jotty-modal-content
           bg-background border border-border w-full lg:max-w-md shadow-xl
           lg:rounded-xl rounded-t-xl p-6
           translate-y-0 lg:translate-y-0
@@ -82,10 +88,10 @@ export const Modal = ({
           ${className}
         `}
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="jotty-modal-header flex items-center justify-between mb-6">
           <div className="lg:hidden absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-muted-foreground/20" />
 
-          <div className="text-xl font-bold text-foreground flex items-center">
+          <div className="jotty-modal-title text-xl font-bold text-foreground flex items-center">
             {titleIcon && (
               <div className="mr-2 p-2 bg-primary/10 rounded-lg">
                 {titleIcon}
@@ -102,6 +108,7 @@ export const Modal = ({
             <X className="h-4 w-4" />
           </Button>
         </div>
+
         {children}
       </div>
     </div>

@@ -17,7 +17,7 @@ export const EmptyState = ({
   onButtonClick,
 }: EmptyStateProps) => {
   return (
-    <div className="h-full flex flex-col items-center justify-center p-4">
+    <div className="jotty-empty-state h-full flex flex-col items-center justify-center p-4">
       <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
         {icon}
       </div>

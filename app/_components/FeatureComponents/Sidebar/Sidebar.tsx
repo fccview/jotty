@@ -53,7 +53,7 @@ export const Sidebar = (props: SidebarProps) => {
     <>
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/50 lg:hidden",
+          "jotty-sidebar-overlay fixed inset-0 z-40 bg-black/50 lg:hidden",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -66,7 +66,7 @@ export const Sidebar = (props: SidebarProps) => {
           } as React.CSSProperties
         }
         className={cn(
-          "fixed left-0 top-0 z-50 h-full bg-background border-r border-border flex flex-col lg:static",
+          "jotty-sidebar fixed left-0 top-0 z-50 h-full bg-background border-r border-border flex flex-col lg:static",
           "transition-transform duration-300 ease-in-out",
           "w-[80vw]",
           "lg:w-[var(--sidebar-desktop-width)] lg:min-w-[var(--sidebar-desktop-width)] lg:max-w-[var(--sidebar-desktop-width)]",
@@ -75,11 +75,12 @@ export const Sidebar = (props: SidebarProps) => {
         )}
       >
         <div
-          className="absolute top-0 right-0 w-2 h-full cursor-ew-resize hidden lg:block hover:bg-primary/10"
+          className="jotty-sidebar-resize-handle absolute top-0 right-0 w-2 h-full cursor-ew-resize hidden lg:block hover:bg-primary/10"
           onMouseDown={sidebar.startResizing}
         />
-        <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-border">
+
+        <div className="jotty-sidebar-content flex flex-col h-full">
+          <div className="jotty-sidebar-header p-6 border-b border-border">
             <div className="flex items-center justify-between">
               <a href="/" className="flex items-center gap-3">
                 <DynamicLogo className="h-8 w-8" size="32x32" />
@@ -101,15 +102,15 @@ export const Sidebar = (props: SidebarProps) => {
             mode={sidebar.mode}
             onModeChange={sidebar.handleModeSwitch}
           />
-          <div className="flex-1 overflow-y-auto p-2 space-y-4">
+          <div className="jotty-sidebar-categories flex-1 overflow-y-auto p-2 space-y-4">
             <div className="px-2 pt-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                <h3 className="jotty-sidebar-categories-title text-xs font-bold uppercase text-muted-foreground tracking-wider">
                   Categories
                 </h3>
                 <button
                   onClick={sidebar.handleToggleAllCategories}
-                  className="text-xs font-medium text-primary hover:underline focus:outline-none"
+                  className="jotty-sidebar-categories-toggle-all text-xs font-medium text-primary hover:underline focus:outline-none"
                 >
                   {sidebar.areAnyCollapsed ? "Expand All" : "Collapse All"}
                 </button>
@@ -155,7 +156,7 @@ export const Sidebar = (props: SidebarProps) => {
             onOpenCategoryModal={onOpenCategoryModal}
           />
 
-          <div className="hidden lg:flex items-center justify-between px-4 pb-4">
+          <div className="jotty-sidebar-footer hidden lg:flex items-center justify-between px-4 pb-4">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -189,7 +190,7 @@ export const Sidebar = (props: SidebarProps) => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between p-2 lg:hidden">
+          <div className="jotty-sidebar-mobile-footer flex items-center justify-between p-2 lg:hidden">
             <div className="flex">
               <NavigationGlobalIcon
                 icon={
@@ -270,7 +271,7 @@ export const Sidebar = (props: SidebarProps) => {
             note={sidebar.modalState.data as Note}
             categories={categories}
             onClose={sidebar.closeModal}
-            onUpdated={(customFunction: () => void = () => { }) => {
+            onUpdated={(customFunction: () => void = () => {}) => {
               sidebar.closeModal();
               sidebar.router.refresh();
               customFunction?.();

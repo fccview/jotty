@@ -64,7 +64,7 @@ export const Toast = ({ toast, onRemove }: ToastProps) => {
   return (
     <div
       className={cn(
-        "flex items-start gap-3 p-4 rounded-lg border shadow-lg transition-all duration-300 transform",
+        "jotty-toast flex items-start gap-3 p-4 rounded-lg border shadow-lg transition-all duration-300 transform",
         getStyles(),
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       )}

@@ -17,7 +17,7 @@ export const ArchivedItemCard = ({
   const Icon = item.type === "checklist" ? ListTodo : FileText;
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/50 transition-all duration-200 group flex flex-col h-full">
+    <div className="jotty-archived-item-card bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/50 transition-all duration-200 group flex flex-col h-full">
       <div className="flex items-start gap-2 mb-3">
         <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
         <h3

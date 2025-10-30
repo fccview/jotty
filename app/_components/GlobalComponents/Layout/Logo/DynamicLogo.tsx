@@ -31,7 +31,7 @@ export const DynamicLogo = ({
       <img
         src={customIcon}
         alt="App Logo"
-        className={`${className} object-contain`}
+        className={`jotty-logo ${className} object-contain`}
         onError={() => {
           setImageError(true);
         }}
