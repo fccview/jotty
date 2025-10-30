@@ -17,6 +17,7 @@ import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { headers } from "next/headers";
 import { User } from "./_types";
+import { themeInitScript } from "./_consts/themes";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -100,27 +101,20 @@ export default async function RootLayout({
     serveUpdates = false;
   }
 
-  const loadCustomCSS = async () => {
-    try {
-      const timestamp = Date.now();
-      const response = await fetch(`/api/custom-css?t=${timestamp}`);
-      if (response.ok) {
-        const css = await response.text();
-        return css;
-      }
-    } catch (error) {
-      console.error("Failed to load custom CSS:", error);
-    }
-  };
-
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-rwmarkable={settings?.rwmarkable ? "true" : "false"}
+      data-user-theme={user?.preferredTheme || ""}
+    >
       <head>
         <link rel="icon" href="/app-icons/favicon.ico" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
         <meta name="mobile-web-app-capable" content="yes" />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className={`${inter.className} jotty-body`}>
         <AppModeProvider

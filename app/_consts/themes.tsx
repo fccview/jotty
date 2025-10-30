@@ -125,3 +125,44 @@ export const getCustomThemeColors = async () => {
 
   return colors;
 };
+
+export const themeInitScript = `
+(function() {
+  try {
+    const isRwMarkable = document.documentElement.getAttribute('data-rwmarkable') === 'true';
+    const userPreferredTheme = document.documentElement.getAttribute('data-user-theme') || '';
+
+    const settings = localStorage.getItem('checklist-settings');
+    let localStorageTheme = 'system'; // default
+
+    if (settings) {
+      const parsed = JSON.parse(settings);
+      localStorageTheme = parsed.state?.theme || 'system';
+    }
+
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let resolvedTheme;
+
+    if (localStorageTheme && localStorageTheme !== 'system') {
+      resolvedTheme = localStorageTheme;
+    } else if (userPreferredTheme && userPreferredTheme !== 'system') {
+      resolvedTheme = userPreferredTheme;
+    } else {
+      if (isRwMarkable) {
+        resolvedTheme = isDark ? 'rwmarkable-dark' : 'rwmarkable-light';
+      } else {
+        resolvedTheme = isDark ? 'dark' : 'light';
+      }
+    }
+
+    document.documentElement.classList.add(resolvedTheme);
+  } catch (e) {
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isRwMarkable = document.documentElement.getAttribute('data-rwmarkable') === 'true';
+    const fallbackTheme = isRwMarkable ?
+      (isDark ? 'rwmarkable-dark' : 'rwmarkable-light') :
+      (isDark ? 'dark' : 'light');
+    document.documentElement.classList.add(fallbackTheme);
+  }
+})();
+`;
