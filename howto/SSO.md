@@ -35,6 +35,8 @@ services:
       - OIDC_ADMIN_GROUPS=admins # Map provider groups to admin role
       # Optional for reverse proxy issues:
       # - INTERNAL_API_URL=http://localhost:3000 # Use if getting 403 errors after SSO login
+      # Optional for groups scope:
+      # - OIDC_GROUPS_SCOPE="yes" # Use if getting error from your Identity Provider requiring `groups` to be included in `scope`
 ```
 
 **Note**: When OIDC_CLIENT_SECRET is set, jotty·page switches to confidential client mode using client authentication instead of PKCE. This is more secure but requires provider support.
@@ -50,7 +52,7 @@ Community verified Providers:
 - [Authelia](https://github.com/fccview/jotty/issues/6#issuecomment-3369291122) (`OIDC_ISSUER: https://my-pocket-id.domain.com`)
 - [Google](https://github.com/fccview/jotty/issues/6#issuecomment-3437686494) (`OIDC_ISSUER: https://accounts.google.com`)  
 *Note: Google doesn't support [OIDC groups](https://github.com/fccview/jotty/issues/6#issuecomment-3427559069) so exclude `env: OIDC_ADMIN_GROUPS`*
-
+- [Entra ID](https://github.com/fccview/jotty/issues/6#issuecomment-3469823004) (`OIDC_ISSUER: https://login.microsoftonline.com/<<Directory (tenant) ID>>/v2.0`)
 
 Other providers will likely work, but I can at least guarantee these do as I have test them both locally.
 
