@@ -109,6 +109,7 @@ export const useSidebar = (props: SidebarProps) => {
         JSON.stringify(Array.from(collapsedCategories[mode]))
       );
   }, [collapsedCategories, mode, isLocalStorageInitialized]);
+
   useEffect(() => {
     if (isLocalStorageInitialized)
       localStorage.setItem(
@@ -206,8 +207,9 @@ export const useSidebar = (props: SidebarProps) => {
   const handleModeSwitch = (newMode: AppMode) =>
     checkNavigation(() => {
       setMode(newMode);
-      router.push("/");
+      router.push("/?mode=" + newMode);
     });
+
   const handleItemClick = (item: Checklist | Note) =>
     checkNavigation(() => {
       const categoryPath = buildCategoryPath(
@@ -236,11 +238,15 @@ export const useSidebar = (props: SidebarProps) => {
       item.category || "Uncategorized",
       item.id
     );
+
     return (
-      pathname ===
-      `/${mode === Modes.NOTES ? "note" : "checklist"}/${expectedPath}`
+      pathname?.toLowerCase() ===
+      `/${
+        mode === Modes.NOTES ? "note" : "checklist"
+      }/${expectedPath}`.toLowerCase()
     );
   };
+
   const getSharingStatus = (itemId: string) => sharingStatuses[itemId] || null;
 
   const expandCategoryPath = useCallback(

@@ -47,7 +47,7 @@ export async function PUT(
       formData.append("completed", "false");
       formData.append("category", list.category || "Uncategorized");
 
-      const result = await updateItem(formData, user.username, true);
+      const result = await updateItem(list, formData, user.username, true);
 
       if (!result.success) {
         return NextResponse.json(

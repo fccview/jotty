@@ -22,6 +22,7 @@ import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
 import { RefreshCw } from "lucide-react";
 
 interface KanbanItemProps {
+  checklist: Checklist;
   item: Item;
   isDragging?: boolean;
   checklistId: string;
@@ -31,6 +32,7 @@ interface KanbanItemProps {
 }
 
 export const KanbanItem = ({
+  checklist,
   item,
   isDragging,
   checklistId,
@@ -53,6 +55,7 @@ export const KanbanItem = ({
   const [showSubtaskModal, setShowSubtaskModal] = useState(false);
 
   const kanbanItemHook = useKanbanItem({
+    checklist,
     item,
     checklistId,
     category,
@@ -93,6 +96,7 @@ export const KanbanItem = ({
     <>
       {showSubtaskModal && (
         <SubtaskModal
+          checklist={checklist}
           item={item}
           isShared={isShared}
           isOpen={showSubtaskModal}
@@ -114,7 +118,7 @@ export const KanbanItem = ({
             "group relative bg-background border rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
             getStatusColor(item.status),
             (isDragging || isSortableDragging) &&
-            "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+              "opacity-50 scale-95 rotate-1 shadow-lg z-50"
           )}
         >
           <div className="space-y-2">
@@ -157,7 +161,9 @@ export const KanbanItem = ({
 
             {item.recurrence && (
               <div className="text-xs flex items-center gap-1 capitalize !mt-2 border bg-muted-foreground/5 border-muted-foreground/20 rounded-md p-2">
-                <span className="text-muted-foreground/80">Repeats {getRecurrenceDescription(item.recurrence)}</span>
+                <span className="text-muted-foreground/80">
+                  Repeats {getRecurrenceDescription(item.recurrence)}
+                </span>
               </div>
             )}
 

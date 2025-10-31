@@ -14,6 +14,7 @@ import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checkli
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 
 interface SubtaskModalProps {
+  checklist: Checklist;
   item: Item;
   isOpen: boolean;
   onClose: () => void;
@@ -32,6 +33,7 @@ const unsanitizeDescription = (text: string): string => {
 };
 
 export const SubtaskModal = ({
+  checklist,
   item: initialItem,
   isOpen,
   onClose,
@@ -97,7 +99,7 @@ export const SubtaskModal = ({
       formData.append("description", sanitizedDescription);
       formData.append("category", category);
 
-      const result = await updateItem(formData);
+      const result = await updateItem(checklist, formData);
       if (result.success && result.data) {
         onUpdate(result.data);
         const updatedItem = findItemInChecklist(result.data, item.id);
@@ -157,7 +159,7 @@ export const SubtaskModal = ({
     formData.append("completed", completed.toString());
     formData.append("category", category);
 
-    const result = await updateItem(formData);
+    const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data);
       const updatedItem = findItemInChecklist(result.data, item.id);
@@ -174,7 +176,7 @@ export const SubtaskModal = ({
     formData.append("text", text);
     formData.append("category", category);
 
-    const result = await updateItem(formData);
+    const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data);
       const updatedItem = findItemInChecklist(result.data, item.id);
@@ -210,7 +212,7 @@ export const SubtaskModal = ({
       formData.append("completed", completed.toString());
       formData.append("category", category);
 
-      const result = await updateItem(formData);
+      const result = await updateItem(checklist, formData);
       if (result.success && result.data) {
         onUpdate(result.data);
       }

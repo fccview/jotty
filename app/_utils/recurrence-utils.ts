@@ -26,7 +26,6 @@ export const isoToRFC5545 = (isoDate: string): string => {
  * @returns ISO date string (e.g., "2025-01-27T19:42:04.000Z")
  */
 export const rfc5545ToISO = (rfc5545Date: string): string => {
-  // Parse YYYYMMDDTHHMMSSZ format
   const year = rfc5545Date.substring(0, 4);
   const month = rfc5545Date.substring(4, 6);
   const day = rfc5545Date.substring(6, 8);
@@ -233,11 +232,19 @@ export const getRecurrenceDescription = (
   }
 
   const startDate = new Date(recurrence.dtstart);
-  const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const startStr = startDate.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   if (recurrence.until) {
     const endDate = new Date(recurrence.until);
-    const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const endStr = endDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
     description += ` • ${startStr} - ${endStr}`;
   } else {
     description += ` • Starts ${startStr}`;
@@ -262,12 +269,9 @@ export const createRecurrenceFromPreset = (
   }
 
   const convertToUTCMidnight = (date: Date): string => {
-    const utcDate = new Date(Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      0, 0, 0, 0
-    ));
+    const utcDate = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+    );
     return utcDate.toISOString();
   };
 
@@ -275,7 +279,12 @@ export const createRecurrenceFromPreset = (
     ? convertToUTCMidnight(startDate)
     : new Date().toISOString();
   const until = endDate ? convertToUTCMidnight(endDate) : undefined;
-  const nextDue = calculateNextOccurrence(presetValue, dtstart, undefined, until);
+  const nextDue = calculateNextOccurrence(
+    presetValue,
+    dtstart,
+    undefined,
+    until
+  );
 
   return {
     rrule: presetValue,

@@ -11,6 +11,7 @@ import {
 
 interface UseKanbanItemProps {
   item: Item;
+  checklist: Checklist;
   checklistId: string;
   category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
@@ -18,6 +19,7 @@ interface UseKanbanItemProps {
 
 export const useKanbanItem = ({
   item,
+  checklist,
   checklistId,
   category,
   onUpdate,
@@ -162,7 +164,8 @@ export const useKanbanItem = ({
       formData.append("itemId", item.id);
       formData.append("text", editText.trim());
       formData.append("category", category || "Uncategorized");
-      const result = await updateItem(formData);
+
+      const result = await updateItem(checklist, formData);
       if (result.success && result.data) {
         onUpdate(result.data as Checklist);
       }

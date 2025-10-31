@@ -133,7 +133,7 @@ export const themeInitScript = `
     const userPreferredTheme = document.documentElement.getAttribute('data-user-theme') || '';
 
     const settings = localStorage.getItem('checklist-settings');
-    let localStorageTheme = 'system'; // default
+    let localStorageTheme = 'system'; 
 
     if (settings) {
       const parsed = JSON.parse(settings);

@@ -7,8 +7,9 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { AppMode, AppSettings, User } from "@/app/_types";
+import { AppMode, AppSettings, Checklist, Note, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
+import { LinkIndex } from "../_server/actions/link";
 
 interface AppModeContextType {
   mode: AppMode;
@@ -23,6 +24,9 @@ interface AppModeContextType {
   appVersion: string;
   appSettings: AppSettings | null;
   usersPublicData: Partial<User>[];
+  linkIndex: LinkIndex | null;
+  notes: Partial<Note>[];
+  checklists: Partial<Checklist>[];
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
@@ -36,6 +40,9 @@ export const AppModeProvider = ({
   pathname,
   appVersion,
   initialSettings,
+  linkIndex,
+  notes,
+  checklists,
 }: {
   children: ReactNode;
   isDemoMode?: boolean;
@@ -45,13 +52,17 @@ export const AppModeProvider = ({
   pathname?: string;
   appVersion?: string;
   initialSettings?: AppSettings;
+  linkIndex?: LinkIndex | null;
+  notes?: Partial<Note>[];
+  checklists?: Partial<Checklist>[];
 }) => {
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(
+  const [appSettings, _] = useState<AppSettings | null>(
     initialSettings || null
   );
   const isNoteOrChecklistPage =
     pathname?.includes("/checklist") || pathname?.includes("/note");
   let modeToSet: AppMode = Modes.CHECKLISTS;
+
   if (isNoteOrChecklistPage) {
     modeToSet = pathname?.includes("/checklist")
       ? Modes.CHECKLISTS
@@ -93,6 +104,9 @@ export const AppModeProvider = ({
         appSettings,
         appVersion: appVersion || "",
         usersPublicData,
+        linkIndex: linkIndex || null,
+        notes: notes || [],
+        checklists: checklists || [],
       }}
     >
       {children}

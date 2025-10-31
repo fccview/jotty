@@ -153,6 +153,7 @@ export const SidebarItem = ({
       icon: <Trash className="h-4 w-4" />,
     },
   ];
+
   return (
     <div className="flex items-center group/item" style={style}>
       <button

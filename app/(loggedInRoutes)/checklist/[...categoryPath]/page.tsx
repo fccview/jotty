@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getLists } from "@/app/_server/actions/checklist";
+import { getListById, getLists, getRawLists } from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllSharingStatuses } from "@/app/_server/actions/sharing";
@@ -45,7 +45,7 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
   const isAdminUser = user?.isAdmin || false;
 
   const [listsResult, categoriesResult] = await Promise.all([
-    getLists(username),
+    getRawLists(username),
     getCategories(Modes.CHECKLISTS),
   ]);
 
@@ -53,26 +53,7 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
     redirect("/");
   }
 
-  let checklist = listsResult.data.find(
-    (list) => list.id === id && list.category === category
-  );
-
-  if (!checklist) {
-    if (categoryPath.length === 1) {
-      checklist = listsResult.data.find(
-        (list) => list.id === id && list.category === "Uncategorized"
-      );
-    }
-
-    if (!checklist) {
-      const searchScope = isAdminUser
-        ? await getAllLists()
-        : { success: true, data: listsResult.data };
-      if (searchScope.success && searchScope.data) {
-        checklist = searchScope.data.find((list) => list.id === id);
-      }
-    }
-  }
+  let checklist = await getListById(id, username, category);
 
   if (!checklist && isAdminUser) {
     const allListsResult = await getAllLists();

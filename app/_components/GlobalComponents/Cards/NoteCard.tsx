@@ -9,6 +9,7 @@ import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { UnifiedMarkdownRenderer } from "../../FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 
 interface NoteCardProps {
   note: Note;
@@ -16,6 +17,7 @@ interface NoteCardProps {
   isPinned?: boolean;
   onTogglePin?: (note: Note) => void;
   isDraggable?: boolean;
+  fullScrollableContent?: boolean;
 }
 
 export const NoteCard = ({
@@ -24,6 +26,7 @@ export const NoteCard = ({
   isPinned = false,
   onTogglePin,
   isDraggable = false,
+  fullScrollableContent = false,
 }: NoteCardProps) => {
   const {
     attributes,
@@ -44,8 +47,18 @@ export const NoteCard = ({
 
   const { showMarkdownPreview } = useSettings();
 
+  const parsedData = useMemo(() => {
+    if ('rawContent' in note) {
+      return parseNoteContent((note as any).rawContent, note.id);
+    }
+    return null;
+  }, [note]);
+
+  const displayTitle = parsedData?.title || note.title;
+  const displayContent = parsedData?.content || note.content || "";
+
   const { previewText, wordCount } = useMemo(() => {
-    const content = note.content || "";
+    const content = displayContent;
     const plainText = content
       .replace(/!\[.*?\]\(.*?\)/g, "")
       .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
@@ -56,18 +69,14 @@ export const NoteCard = ({
     const words = plainText.split(/\s+/).filter(Boolean);
 
     return {
-      previewText:
-        plainText.length > 550
+      previewText: fullScrollableContent
+        ? content
+        : plainText.length > 550
           ? plainText.substring(0, 550) + "..."
           : plainText,
       wordCount: words.length,
     };
-  }, [note.content]);
-
-  const renderedContent = useMemo(
-    () => convertMarkdownToHtml(note.content || ""),
-    [note.content]
-  );
+  }, [displayContent, fullScrollableContent]);
 
   const categoryName = useMemo(() => {
     return note.category ? note.category.split("/").pop() : null;
@@ -79,15 +88,14 @@ export const NoteCard = ({
       style={style}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
       onClick={() => onSelect(note)}
-      className={`jotty-note-card bg-card border border-border rounded-xl cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${
-        isDragging ? "opacity-50" : ""
-      }`}
+      className={`jotty-note-card bg-card border border-border rounded-xl cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${isDragging ? "opacity-50" : ""
+        }`}
     >
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="jotty-note-card-title flex-1 min-w-0">
             <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-              {note.title}
+              {displayTitle}
             </h3>
           </div>
           {onTogglePin && (
@@ -96,9 +104,8 @@ export const NoteCard = ({
                 e.stopPropagation();
                 onTogglePin(note);
               }}
-              className={`${
-                isPinned ? "opacity-100" : "opacity-0"
-              } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-lg flex-shrink-0`}
+              className={`${isPinned ? "opacity-100" : "opacity-0"
+                } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-lg flex-shrink-0`}
               title={isPinned ? "Unpin" : "Pin"}
             >
               {isPinned ? (
@@ -115,8 +122,13 @@ export const NoteCard = ({
         <div className="jotty-note-card-content relative">
           {showMarkdownPreview ? (
             <div className="text-sm text-muted-foreground prose prose-sm max-w-none">
-              <div className="line-clamp-4 [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded">
-                <UnifiedMarkdownRenderer content={note.content || ""} />
+              <div
+                className={`${fullScrollableContent
+                  ? "max-h-[200px] overflow-y-auto"
+                  : "line-clamp-4"
+                  } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
+              >
+                <UnifiedMarkdownRenderer content={displayContent} />
               </div>
             </div>
           ) : (

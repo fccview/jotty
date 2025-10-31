@@ -12,6 +12,7 @@ import { TaskStatus } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface KanbanColumnProps {
+  checklist: Checklist;
   id: string;
   title: string;
   items: Item[];
@@ -23,6 +24,7 @@ interface KanbanColumnProps {
 }
 
 export const KanbanColumn = ({
+  checklist,
   id,
   title,
   items,
@@ -92,6 +94,7 @@ export const KanbanColumn = ({
           <div className="space-y-2">
             {items.map((item) => (
               <KanbanItem
+                checklist={checklist}
                 key={item.id}
                 item={item}
                 checklistId={checklistId}

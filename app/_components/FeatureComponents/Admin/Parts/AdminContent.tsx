@@ -13,8 +13,8 @@ import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
 import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
-import { Modes } from "@/app/_types/enums";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { rebuildLinkIndex } from "@/app/_server/actions/link";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -28,6 +28,7 @@ export const AdminContent = ({
   users,
 }: AdminContentProps) => {
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
+  const [rebuildingIndex, setRebuildingIndex] = useState<string | null>(null);
 
   const sortedUserContent = useMemo(() => {
     const listsByOwner = new Map<string, Checklist[]>();
@@ -94,6 +95,19 @@ export const AdminContent = ({
 
   const isAllExpanded = expandedUsers?.size === sortedUserContent.length;
 
+  const handleRebuildIndex = async (username: string) => {
+    setRebuildingIndex(username);
+    try {
+      await rebuildLinkIndex(username);
+      alert(`Successfully rebuilt link index for ${username}`);
+    } catch (error) {
+      console.error("Failed to rebuild index:", error);
+      alert(`Failed to rebuild link index for ${username}`);
+    } finally {
+      setRebuildingIndex(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Accordion title="Data Export" defaultOpen={false} className="mb-6">
@@ -158,6 +172,17 @@ export const AdminContent = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRebuildIndex(user.username);
+                    }}
+                    disabled={rebuildingIndex === user.username}
+                    className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Rebuild link index"
+                  >
+                    {rebuildingIndex === user.username ? "Rebuilding..." : "Rebuild Links"}
+                  </button>
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                       {totalItems} items

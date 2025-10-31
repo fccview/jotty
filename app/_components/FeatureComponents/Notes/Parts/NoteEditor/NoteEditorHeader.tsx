@@ -37,7 +37,6 @@ interface NoteEditorHeaderProps {
   showTOC: boolean;
   setShowTOC: (show: boolean) => void;
   viewModel: NoteEditorViewModel;
-  onArchive?: () => void;
 }
 
 export const NoteEditorHeader = ({
@@ -45,7 +44,6 @@ export const NoteEditorHeader = ({
   categories,
   isOwner,
   isAdmin,
-  onArchive,
   currentUsername,
   onBack,
   viewModel,
@@ -173,7 +171,7 @@ export const NoteEditorHeader = ({
               </>
             ) : (
               <>
-                <div className="hidden lg:flex items-center gap-2">
+                {/* <div className="hidden lg:flex items-center gap-2">
                   {user?.notesDefaultMode === "edit" && (
                     <Button
                       variant="outline"
@@ -253,9 +251,9 @@ export const NoteEditorHeader = ({
                       <Trash2 className="h-5 w-5" />
                     </Button>
                   )}
-                </div>
+                </div> */}
 
-                <div className="lg:hidden flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   {user?.notesDefaultMode === "edit" && (
                     <Button
                       variant="outline"
@@ -310,20 +308,27 @@ export const NoteEditorHeader = ({
                       },
                       {
                         type: "item" as const,
+                        label: "Table of Contents",
+                        icon: <List className="h-4 w-4" />,
+                        onClick: () => setShowTOC(!showTOC),
+                        className: "hidden lg:flex",
+                      },
+                      {
+                        type: "item" as const,
                         label: "Archive",
                         icon: <Archive className="h-4 w-4" />,
                         onClick: handleArchive,
                       },
                       ...(canDelete
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Delete",
-                              icon: <Trash2 className="h-4 w-4" />,
-                              onClick: handleDelete,
-                              variant: "destructive" as const,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Delete",
+                            icon: <Trash2 className="h-4 w-4" />,
+                            onClick: handleDelete,
+                            variant: "destructive" as const,
+                          },
+                        ]
                         : []),
                     ]}
                   />

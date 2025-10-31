@@ -609,6 +609,19 @@ export const canUserEditItem = async (
     const isAdminUser = await isAdmin();
     if (isAdminUser) return true;
 
+    const userDir =
+      itemType === "checklist"
+        ? CHECKLISTS_DIR(currentUsername)
+        : NOTES_DIR(currentUsername);
+    const categoryDir = path.join(userDir, itemCategory);
+    const filePath = path.join(categoryDir, `${itemId}.md`);
+
+    try {
+      await fs.access(filePath);
+      return true;
+    } catch {
+    }
+
     const ownerResult =
       itemType === "checklist"
         ? await getUserByChecklist(itemId, itemCategory)

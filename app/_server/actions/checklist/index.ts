@@ -31,9 +31,16 @@ import {
 } from "@/app/_server/actions/sharing";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import {
+  updateIndexForItem,
+  parseInternalLinks,
+  removeItemFromIndex,
+  updateItemCategory,
+} from "@/app/_server/actions/link";
+import {
   shouldRefreshRecurringItem,
   refreshRecurringItem,
 } from "@/app/_utils/recurrence-utils";
+import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 
 const readListsRecursively = async (
   dir: string,
@@ -103,6 +110,7 @@ const readListsRecursively = async (
 
   return lists;
 };
+
 
 /**
  * Check and refresh recurring items in a checklist
@@ -228,18 +236,204 @@ export const getLists = async (username?: string, allowArchived?: boolean) => {
   }
 };
 
+const getChecklistType = (content: string): ChecklistType => {
+  if (content.includes("<!-- type:task -->")) {
+    return "task";
+  } else if (
+    content.includes(" | status:") ||
+    content.includes(" | time:") ||
+    content.includes(" | estimated:") ||
+    content.includes(" | target:")
+  ) {
+    return "task";
+  }
+  return "simple";
+};
+
+export const getRawLists = async (username?: string, allowArchived?: boolean) => {
+  try {
+    let userDir: string;
+    let currentUser: any = null;
+
+    if (username) {
+      userDir = path.join(process.cwd(), "data", CHECKLISTS_FOLDER, username);
+      currentUser = { username };
+    } else {
+      currentUser = await getCurrentUser();
+      if (!currentUser) {
+        return { success: false, error: "Not authenticated" };
+      }
+      userDir = await getUserModeDir(Modes.CHECKLISTS);
+    }
+    await ensureDir(userDir);
+
+    const lists: Checklist[] = [];
+    const entries = await serverReadDir(userDir);
+
+    const order = await readOrderFile(userDir);
+    const dirNames = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+
+    const orderedDirNames: string[] = order?.categories
+      ? [
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
+      : dirNames.sort((a, b) => a.localeCompare(b));
+
+    for (const dirName of orderedDirNames) {
+      if (dirName === ARCHIVED_DIR_NAME && !allowArchived) {
+        continue;
+      }
+
+      const categoryPath = dirName;
+      const categoryDir = path.join(userDir, dirName);
+
+      try {
+        const files = await serverReadDir(categoryDir);
+        const mdFiles = files.filter((f) => f.isFile() && f.name.endsWith(".md"));
+
+        const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
+        const categoryOrder = await readOrderFile(categoryDir);
+        const orderedIds: string[] = categoryOrder?.items
+          ? [
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
+          : ids.sort((a, b) => a.localeCompare(b));
+
+        for (const id of orderedIds) {
+          const fileName = `${id}.md`;
+          const filePath = path.join(categoryDir, fileName);
+          try {
+            const content = await serverReadFile(filePath);
+            const stats = await fs.stat(filePath);
+            const type = getChecklistType(content);
+            const rawList: Checklist & { rawContent: string } = {
+              id,
+              title: id,
+              type,
+              category: categoryPath,
+              items: [],
+              createdAt: stats.birthtime.toISOString(),
+              updatedAt: stats.mtime.toISOString(),
+              owner: currentUser.username,
+              isShared: false,
+              rawContent: content,
+            };
+            lists.push(rawList as Checklist);
+          } catch { }
+        }
+      } catch { }
+    }
+
+    const sharedItems = await getItemsSharedWithUser(currentUser.username);
+    for (const sharedItem of sharedItems.checklists) {
+      try {
+        const sharedFilePath = sharedItem.filePath
+          ? path.join(
+            process.cwd(),
+            "data",
+            CHECKLISTS_FOLDER,
+            sharedItem.filePath
+          )
+          : path.join(
+            process.cwd(),
+            "data",
+            CHECKLISTS_FOLDER,
+            sharedItem.owner,
+            sharedItem.category || "Uncategorized",
+            `${sharedItem.id}.md`
+          );
+
+        const content = await fs.readFile(sharedFilePath, "utf-8");
+        const stats = await fs.stat(sharedFilePath);
+        const type = getChecklistType(content);
+        const rawList: Checklist & { rawContent: string } = {
+          id: sharedItem.id,
+          title: sharedItem.id,
+          type,
+          category: sharedItem.category || "Uncategorized",
+          items: [],
+          createdAt: stats.birthtime.toISOString(),
+          updatedAt: stats.mtime.toISOString(),
+          owner: sharedItem.owner,
+          isShared: true,
+          rawContent: content,
+        };
+        lists.push(rawList as Checklist);
+      } catch (error) {
+        continue;
+      }
+    }
+
+    return { success: true, data: lists };
+  } catch (error) {
+    console.error("Error in getRawLists:", error);
+    return { success: false, error: "Failed to fetch raw lists" };
+  }
+};
+
+export const getProjectedLists = async (projection: string[]) => {
+  try {
+    const checklistsResults = await getRawLists();
+
+    if (!checklistsResults.success || !checklistsResults.data) {
+      return { success: false, error: "Failed to fetch notes" };
+    }
+
+    const projectedLists = checklistsResults.data.map((list: Checklist) => {
+      const projectedList: Partial<Checklist> = {};
+      for (const key of projection) {
+        if (Object.prototype.hasOwnProperty.call(list, key)) {
+          (projectedList as any)[key] = (list as any)[key];
+        }
+      }
+      return projectedList;
+    });
+
+    return {
+      success: true,
+      data: projectedLists,
+    };
+  } catch (error) {
+    console.error("Error in getProjectedLists:", error);
+    return { success: false, error: "Failed to fetch lists" };
+  }
+};
+
 export const getListById = async (
   id: string,
   username?: string,
   category?: string
 ): Promise<Checklist | undefined> => {
-  const lists = await (username ? getLists(username) : getAllLists());
+
+  const lists = await (username ? getRawLists(username) : getAllLists());
+
   if (!lists.success || !lists.data) {
     throw new Error(lists.error || "Failed to fetch lists");
   }
-  return lists.data.find(
-    (list) => list.id === id && (!category || list.category === category)
+
+  const list = lists.data.find(
+    (list) =>
+      list.id === id &&
+      (!category || list.category?.toLowerCase() === category?.toLowerCase())
   );
+
+  if (list && 'rawContent' in list) {
+    const parsedData = parseChecklistContent((list as any).rawContent, list.id);
+    const result = {
+      ...list,
+      title: parsedData.title,
+      items: parsedData.items,
+    };
+    return result;
+  }
+
+  return list;
 };
 
 export const getAllLists = async (allowArchived?: boolean) => {
@@ -301,6 +495,28 @@ export const createList = async (formData: FormData) => {
     };
 
     await serverWriteFile(filePath, listToMarkdown(newList));
+
+    try {
+      const content = newList.items.map((i) => i.text).join("\n");
+      const links = parseInternalLinks(content);
+      const currentUser = await getCurrentUser();
+      if (currentUser?.username) {
+        const itemKey = `${newList.category || "Uncategorized"}/${newList.id}`;
+        await updateIndexForItem(
+          currentUser.username,
+          "checklist",
+          itemKey,
+          links
+        );
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to update link index for new checklist:",
+        newList.id,
+        error
+      );
+    }
+
     return { success: true, data: newList };
   } catch (error) {
     console.error("Error creating list:", error);
@@ -386,6 +602,36 @@ export const updateList = async (formData: FormData) => {
     }
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
+
+    try {
+      const content = updatedList.items.map((i) => i.text).join("\n");
+      const links = parseInternalLinks(content);
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
+        }`;
+
+      const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
+      if (oldItemKey !== newItemKey) {
+        await updateItemCategory(
+          currentList.owner!,
+          "checklist",
+          oldItemKey,
+          newItemKey
+        );
+      }
+
+      await updateIndexForItem(
+        currentList.owner!,
+        "checklist",
+        newItemKey,
+        links
+      );
+    } catch (error) {
+      console.warn(
+        "Failed to update link index for checklist:",
+        updatedList.id,
+        error
+      );
+    }
 
     const { getItemSharingMetadata } = await import(
       "@/app/_server/actions/sharing"
@@ -505,6 +751,13 @@ export const deleteList = async (formData: FormData) => {
     }
 
     await serverDeleteFile(filePath);
+
+    try {
+      const itemKey = `${list.category || "Uncategorized"}/${id}`;
+      await removeItemFromIndex(list.owner!, "checklist", itemKey);
+    } catch (error) {
+      console.warn("Failed to remove checklist from link index:", id, error);
+    }
 
     if (list.isShared && list.owner) {
       await removeSharedItem(id, "checklist", list.owner);
