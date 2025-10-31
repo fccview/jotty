@@ -46,6 +46,7 @@ Dev verified Providers:
 - Auth0 (`OIDC_ISSUER=https://YOUR_TENANT.REGION.auth0.com`)
 - Authentik (`OIDC_ISSUER=https://YOUR_DOMAIN/application/o/APP_SLUG/`)
 
+Other providers will likely work, but I can at least guarantee these do as I have test them both locally.  
 Community verified Providers:
 
 - [Pocket ID](https://github.com/fccview/jotty/issues/6#issuecomment-3350380435)
@@ -53,9 +54,10 @@ Community verified Providers:
 - [Google](https://github.com/fccview/jotty/issues/6#issuecomment-3437686494) (`OIDC_ISSUER: https://accounts.google.com`)
 - [Entra ID (Azure AD)](https://github.com/fccview/jotty/issues/6#issuecomment-3464237999) (`OIDC_ISSUER: https://login.microsoftonline.com/{tenant-id}/v2.0`)
 
-_Note: Google and Entra ID don't support the "groups" scope so do NOT set `OIDC_ADMIN_GROUPS` for it. Entra will also require `OIDC_GROUPS_SCOPE="no"` or `OIDC_GROUPS_SCOPE=""` to fully disable the groups scope request and let Entra deal with it internally._
+Provider's specific notes:
 
-Other providers will likely work, but I can at least guarantee these do as I have test them both locally.
+- **Google** provider doesn't support usage of `groups` with OIDC authentication, so do NOT set the `OIDC_ADMIN_GROUPS` environment variable.
+- **Entra ID** provider allows usage of admin groups with `OIDC_ADMIN_GROUPS={Entra Group ID}` variable. For that, ensure to include optional `groups` claim in the 'Token Configuration' pane of your 'Enterprise Registration' AND define the environment variable to `OIDC_GROUPS_SCOPE="no"` or `OIDC_GROUPS_SCOPE=""`.
 
 p.s. **First user to sign in via SSO when no local users exist becomes admin automatically.**
 
