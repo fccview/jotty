@@ -18,23 +18,15 @@ import { Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { toggleArchive } from "@/app/_server/actions/users";
 
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
-
 interface ChecklistClientProps {
   checklist: Checklist;
   categories: Category[];
-  sharingStatuses?: Record<string, SharingStatus>;
   user: User | null;
 }
 
 export const ChecklistClient = ({
   checklist,
   categories,
-  sharingStatuses,
   user,
 }: ChecklistClientProps) => {
   const router = useRouter();
@@ -133,7 +125,6 @@ export const ChecklistClient = ({
   return (
     <Layout
       categories={categories}
-      sharingStatuses={sharingStatuses}
       onOpenSettings={openSettings}
       onOpenCreateModal={openCreateChecklistModal}
       onOpenCategoryModal={openCreateCategoryModal}
@@ -144,7 +135,10 @@ export const ChecklistClient = ({
       {showShareModal && (
         <ShareModal
           isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
+          onClose={() => {
+            setShowShareModal(false);
+            router.refresh();
+          }}
           itemId={localChecklist.id}
           itemTitle={localChecklist.title}
           itemType="checklist"

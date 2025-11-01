@@ -421,7 +421,7 @@ export const SubtaskModal = ({
                     onAddSubItem={handleAddNestedSubtask}
                     isDeletingItem={false}
                     isDragDisabled={true}
-                    isShared={isShared}
+                    checklist={checklist}
                   />
                 ))}
               </div>

@@ -26,7 +26,6 @@ interface ChecklistBodyProps {
   sensors: any;
   isLoading: boolean;
   isDeletingItem: boolean;
-  isShared: boolean;
 }
 
 export const ChecklistBody = ({
@@ -42,7 +41,6 @@ export const ChecklistBody = ({
   sensors,
   isLoading,
   isDeletingItem,
-  isShared,
 }: ChecklistBodyProps) => {
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
 
@@ -117,7 +115,7 @@ export const ChecklistBody = ({
                       onEdit={handleEditItem}
                       onAddSubItem={handleAddSubItem}
                       isDragDisabled={false}
-                      isShared={isShared}
+                      checklist={localList}
                     />
                   ))}
                 </ChecklistItemsWrapper>
@@ -143,7 +141,7 @@ export const ChecklistBody = ({
                       onAddSubItem={handleAddSubItem}
                       completed
                       isDragDisabled={false}
-                      isShared={isShared}
+                      checklist={localList}
                     />
                   ))}
                 </ChecklistItemsWrapper>

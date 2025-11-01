@@ -7,19 +7,12 @@ import { Modes } from "../_types/enums";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { buildCategoryPath } from "../_utils/global-utils";
 
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
-
 export interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenCreateModal: (initialCategory?: string) => void;
   onOpenCategoryModal: (parentCategory?: string) => void;
   categories: Category[];
-  sharingStatuses?: Record<string, SharingStatus>;
   user: User | null;
   onCategoryDeleted?: (categoryName: string) => void;
   onCategoryRenamed?: (oldName: string, newName: string) => void;
@@ -27,13 +20,7 @@ export interface SidebarProps {
 }
 
 export const useSidebar = (props: SidebarProps) => {
-  const {
-    categories,
-    sharingStatuses = {},
-    onCategoryDeleted,
-    onCategoryRenamed,
-    onClose,
-  } = props;
+  const { categories, onCategoryDeleted, onCategoryRenamed, onClose } = props;
 
   const router = useRouter();
   const pathname = usePathname();
@@ -245,8 +232,6 @@ export const useSidebar = (props: SidebarProps) => {
     );
   };
 
-  const getSharingStatus = (itemId: string) => sharingStatuses[itemId] || null;
-
   const expandCategoryPath = useCallback(
     (categoryPath: string) => {
       if (!categoryPath) return;
@@ -312,7 +297,6 @@ export const useSidebar = (props: SidebarProps) => {
     handleConfirmDeleteCategory,
     handleConfirmRenameCategory,
     isItemSelected,
-    getSharingStatus,
     router,
   };
 };

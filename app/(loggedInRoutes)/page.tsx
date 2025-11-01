@@ -1,7 +1,6 @@
 import { getCategories } from "@/app/_server/actions/category";
 import { getRawLists } from "@/app/_server/actions/checklist";
 import { getRawNotes, CheckForNeedsMigration } from "@/app/_server/actions/note";
-import { getAllSharingStatuses } from "@/app/_server/actions/sharing";
 import { HomeClient } from "@/app/_components/FeatureComponents/Home/HomeClient";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
@@ -44,19 +43,12 @@ export default async function HomePage() {
     owner: item.owner || "",
   }));
 
-  const sharingStatusesResult = await getAllSharingStatuses(itemsToCheck);
-  const sharingStatuses =
-    sharingStatusesResult.success && sharingStatusesResult.data
-      ? sharingStatusesResult.data
-      : {};
-
   return (
     <HomeClient
       initialLists={lists}
       initialCategories={categories}
       initialDocs={docs}
       initialDocsCategories={docsCategories}
-      sharingStatuses={sharingStatuses}
       user={user}
     />
   );

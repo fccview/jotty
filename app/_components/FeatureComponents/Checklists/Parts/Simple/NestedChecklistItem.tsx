@@ -21,7 +21,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
-import { Item } from "@/app/_types";
+import { Checklist, Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
@@ -39,8 +39,8 @@ interface NestedChecklistItemProps {
   isPublicView?: boolean;
   isDeletingItem: boolean;
   isDragDisabled?: boolean;
-  isShared?: boolean;
   isSubtask?: boolean;
+  checklist: Checklist;
 }
 
 export const NestedChecklistItem = ({
@@ -55,11 +55,10 @@ export const NestedChecklistItem = ({
   isPublicView = false,
   isDeletingItem,
   isDragDisabled = false,
-  isShared = false,
   isSubtask = false,
+  checklist,
 }: NestedChecklistItemProps) => {
   const { usersPublicData, user } = useAppMode();
-
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
 
@@ -310,7 +309,7 @@ export const NestedChecklistItem = ({
 
             <LastModifiedCreatedInfo
               item={item}
-              isShared={isShared}
+              checklist={checklist}
               getUserAvatarUrl={getUserAvatarUrl}
             />
           </div>
@@ -442,7 +441,7 @@ export const NestedChecklistItem = ({
               isDeletingItem={isDeletingItem}
               isDragDisabled={isDragDisabled}
               isPublicView={isPublicView}
-              isShared={isShared}
+              checklist={checklist}
             />
           ))}
         </div>

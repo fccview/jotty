@@ -13,14 +13,14 @@ import {
   Check,
   MoreHorizontal,
   Archive,
-  ArchiveRestore,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
-import { useSharing } from "@/app/_hooks/useSharing";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { sharingInfo } from "@/app/_utils/sharing-utils";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -46,16 +46,12 @@ export const ChecklistHeader = ({
     onUpdate: () => { },
   });
 
-  const { sharingStatus } = useSharing({
-    itemId: checklist.id,
-    itemType: "checklist",
-    itemOwner: checklist.owner || "",
-    onClose: () => { },
-    enabled: true,
-    itemTitle: checklist.title,
-    itemCategory: checklist.category,
-    isOpen: true,
-  });
+  const { globalSharing } = useAppMode();
+  const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
+  const itemDetails = sharingInfo(globalSharing, checklist.id, encodedCategory);
+  const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
+  const sharedWith = itemDetails.sharedWith;
+  const isPubliclyShared = itemDetails.isPublic;
 
   return (
     <div className="bg-background border-b border-border px-3 py-4 lg:px-6 lg:py-[12px]">
@@ -88,12 +84,8 @@ export const ChecklistHeader = ({
               )}
             </Button>
 
-            {sharingStatus?.isPubliclyShared && (
-              <Globe className="h-3 w-3 text-primary" />
-            )}
-            {sharingStatus?.isShared && !sharingStatus.isPubliclyShared && (
-              <Users className="h-3 w-3 text-primary" />
-            )}
+            {isPubliclyShared && <span title="Publicly shared"><Globe className="h-3 w-3 text-primary" /></span>}
+            {isShared && <span title={sharedWith.join(", ")}><Users className="h-3 w-3 text-primary" /></span>}
           </div>
         </div>
 

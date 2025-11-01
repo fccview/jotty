@@ -4,17 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import {
   Plus,
   ClipboardList,
-  Users,
-  Hash,
-  Check,
-  Globe,
   RefreshCw,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist, RecurrenceRule } from "@/app/_types";
 import { isMobileDevice } from "@/app/_utils/global-utils";
-import { useChecklist } from "../../../../../_hooks/useChecklist";
-import { useSharing } from "@/app/_hooks/useSharing";
 import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
@@ -103,8 +97,8 @@ export const ChecklistHeading = ({
                   size="lg"
                   disabled={isLoading || !newItemText.trim()}
                   className={`px-4 lg:px-6 shadow-sm ${user?.enableRecurrence === "enable"
-                    ? "rounded-tr-none rounded-br-none"
-                    : ""
+                      ? "rounded-tr-none rounded-br-none"
+                      : ""
                     }`}
                 >
                   <Plus className="h-4 w-4 lg:mr-2" />

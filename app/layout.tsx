@@ -20,6 +20,11 @@ import { themeInitScript } from "./_consts/themes";
 import { getProjectedLists } from "./_server/actions/checklist";
 import { getProjectedNotes } from "./_server/actions/note";
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
+import {
+  getAllSharedItems,
+  getAllSharedItemsForUser,
+  readShareFile,
+} from "./_server/actions/sharing";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -93,10 +98,16 @@ export default async function RootLayout({
   const users = await getUsers();
   const linkIndex = user?.username ? await readLinkIndex(user.username) : null;
 
-  const [notesResult, checklistsResult] = await Promise.all([
-    getProjectedNotes(["id", "title", "category"]),
-    getProjectedLists(["id", "title", "category"]),
-  ]);
+  const [notesResult, checklistsResult, allSharedItems, userSharedItems, globalSharing] =
+    await Promise.all([
+      getProjectedNotes(["id", "title", "category"]),
+      getProjectedLists(["id", "title", "category"]),
+      getAllSharedItems(),
+      user
+        ? getAllSharedItemsForUser(user.username)
+        : Promise.resolve({ notes: [], checklists: [] }),
+      readShareFile("all"),
+    ]);
 
   const notes = notesResult.success ? notesResult.data || [] : [];
   const checklists = checklistsResult.success
@@ -142,6 +153,9 @@ export default async function RootLayout({
           linkIndex={linkIndex}
           notes={notes}
           checklists={checklists}
+          allSharedItems={allSharedItems}
+          userSharedItems={userSharedItems}
+          globalSharing={globalSharing}
         >
           <ThemeProvider user={user || {}}>
             <NavigationGuardProvider>

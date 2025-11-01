@@ -10,7 +10,6 @@ import {
   readOrderFile,
 } from "@/app/_server/actions/file";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getItemsSharedWithUser } from "@/app/_server/actions/sharing";
 import { readJsonFile } from "../file";
 import fs from "fs/promises";
 import { parseMarkdown } from "@/app/_utils/checklist-utils";
@@ -26,10 +25,9 @@ import { isAdmin } from "@/app/_server/actions/users";
 import { serverDeleteFile } from "@/app/_server/actions/file";
 import { revalidatePath } from "next/cache";
 import {
-  removeSharedItem,
-  updateSharedItem,
-} from "@/app/_server/actions/sharing";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+  buildCategoryPath,
+  decodeCategoryPath,
+} from "@/app/_utils/global-utils";
 import {
   updateIndexForItem,
   parseInternalLinks,
@@ -111,7 +109,6 @@ const readListsRecursively = async (
   return lists;
 };
 
-
 /**
  * Check and refresh recurring items in a checklist
  * If any recurring items are completed and past their due date, refresh them
@@ -186,24 +183,25 @@ export const getLists = async (username?: string, allowArchived?: boolean) => {
       allowArchived
     );
 
-    const sharedItems = await getItemsSharedWithUser(currentUser.username);
-    for (const sharedItem of sharedItems.checklists) {
+    const { getAllSharedItemsForUser } = await import(
+      "@/app/_server/actions/sharing"
+    );
+    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+
+    for (const sharedItem of sharedData.checklists) {
       try {
-        const sharedFilePath = sharedItem.filePath
-          ? path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.filePath
-          )
-          : path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.owner,
-            sharedItem.category || "Uncategorized",
-            `${sharedItem.id}.md`
-          );
+        const decodedCategory = decodeCategoryPath(
+          sharedItem.category || "Uncategorized"
+        );
+
+        const sharedFilePath = path.join(
+          process.cwd(),
+          "data",
+          CHECKLISTS_FOLDER,
+          sharedItem.sharer,
+          decodedCategory,
+          `${sharedItem.id}.md`
+        );
 
         const content = await fs.readFile(sharedFilePath, "utf-8");
         const stats = await fs.stat(sharedFilePath);
@@ -211,8 +209,8 @@ export const getLists = async (username?: string, allowArchived?: boolean) => {
           parseMarkdown(
             content,
             sharedItem.id,
-            sharedItem.category || "Uncategorized",
-            sharedItem.owner,
+            decodedCategory,
+            sharedItem.sharer,
             true,
             stats
           )
@@ -250,7 +248,10 @@ const getChecklistType = (content: string): ChecklistType => {
   return "simple";
 };
 
-export const getRawLists = async (username?: string, allowArchived?: boolean) => {
+export const getRawLists = async (
+  username?: string,
+  allowArchived?: boolean
+) => {
   try {
     let userDir: string;
     let currentUser: any = null;
@@ -292,7 +293,9 @@ export const getRawLists = async (username?: string, allowArchived?: boolean) =>
 
       try {
         const files = await serverReadDir(categoryDir);
-        const mdFiles = files.filter((f) => f.isFile() && f.name.endsWith(".md"));
+        const mdFiles = files.filter(
+          (f) => f.isFile() && f.name.endsWith(".md")
+        );
 
         const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
         const categoryOrder = await readOrderFile(categoryDir);
@@ -330,24 +333,25 @@ export const getRawLists = async (username?: string, allowArchived?: boolean) =>
       } catch { }
     }
 
-    const sharedItems = await getItemsSharedWithUser(currentUser.username);
-    for (const sharedItem of sharedItems.checklists) {
+    const { getAllSharedItemsForUser } = await import(
+      "@/app/_server/actions/sharing"
+    );
+    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+
+    for (const sharedItem of sharedData.checklists) {
       try {
-        const sharedFilePath = sharedItem.filePath
-          ? path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.filePath
-          )
-          : path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.owner,
-            sharedItem.category || "Uncategorized",
-            `${sharedItem.id}.md`
-          );
+        const decodedCategory = decodeCategoryPath(
+          sharedItem.category || "Uncategorized"
+        );
+
+        const sharedFilePath = path.join(
+          process.cwd(),
+          "data",
+          CHECKLISTS_FOLDER,
+          sharedItem.sharer,
+          decodedCategory,
+          `${sharedItem.id}.md`
+        );
 
         const content = await fs.readFile(sharedFilePath, "utf-8");
         const stats = await fs.stat(sharedFilePath);
@@ -356,11 +360,11 @@ export const getRawLists = async (username?: string, allowArchived?: boolean) =>
           id: sharedItem.id,
           title: sharedItem.id,
           type,
-          category: sharedItem.category || "Uncategorized",
+          category: decodedCategory,
           items: [],
           createdAt: stats.birthtime.toISOString(),
           updatedAt: stats.mtime.toISOString(),
-          owner: sharedItem.owner,
+          owner: sharedItem.sharer,
           isShared: true,
           rawContent: content,
         };
@@ -410,7 +414,6 @@ export const getListById = async (
   username?: string,
   category?: string
 ): Promise<Checklist | undefined> => {
-
   const lists = await (username ? getRawLists(username) : getAllLists());
 
   if (!lists.success || !lists.data) {
@@ -420,10 +423,10 @@ export const getListById = async (
   const list = lists.data.find(
     (list) =>
       list.id === id &&
-      (!category || list.category?.toLowerCase() === category?.toLowerCase())
+      (!category || list.category?.toLowerCase() === decodeCategoryPath(category).toLowerCase())
   );
 
-  if (list && 'rawContent' in list) {
+  if (list && "rawContent" in list) {
     const parsedData = parseChecklistContent((list as any).rawContent, list.id);
     const result = {
       ...list,
@@ -633,48 +636,23 @@ export const updateList = async (formData: FormData) => {
       );
     }
 
-    const { getItemSharingMetadata } = await import(
-      "@/app/_server/actions/sharing"
-    );
-    const sharingMetadata = await getItemSharingMetadata(
-      id,
-      "checklist",
-      currentList.owner!
-    );
+    if (newId !== id || (category && category !== currentList.category)) {
+      const { updateSharingData } = await import("@/app/_server/actions/sharing");
 
-    if (sharingMetadata) {
-      const newFilePath = `${currentList.owner}/${updatedList.category || "Uncategorized"
-        }/${updatedList.id}.md`;
-
-      if (newId !== id) {
-        const { removeSharedItem, addSharedItem } = await import(
-          "@/app/_server/actions/sharing"
-        );
-
-        await removeSharedItem(id, "checklist", currentList.owner!);
-
-        await addSharedItem(
-          updatedList.id,
-          "checklist",
-          updatedList.title,
-          currentList.owner!,
-          sharingMetadata.sharedWith,
-          updatedList.category,
-          newFilePath,
-          sharingMetadata.isPubliclyShared
-        );
-      } else {
-        await updateSharedItem(
-          updatedList.id,
-          "checklist",
-          currentList.owner!,
-          {
-            filePath: newFilePath,
-            category: updatedList.category,
-            title: updatedList.title,
-          }
-        );
-      }
+      await updateSharingData(
+        {
+          id,
+          category: currentList.category || "Uncategorized",
+          itemType: "checklist",
+          sharer: currentList.owner!,
+        },
+        {
+          id: newId,
+          category: updatedList.category || "Uncategorized",
+          itemType: "checklist",
+          sharer: currentList.owner!,
+        }
+      );
     }
 
     if (oldFilePath && oldFilePath !== filePath) {
@@ -759,8 +737,17 @@ export const deleteList = async (formData: FormData) => {
       console.warn("Failed to remove checklist from link index:", id, error);
     }
 
-    if (list.isShared && list.owner) {
-      await removeSharedItem(id, "checklist", list.owner);
+    if (list.owner) {
+      const { updateSharingData } = await import("@/app/_server/actions/sharing");
+      await updateSharingData(
+        {
+          id,
+          category: list.category || "Uncategorized",
+          itemType: "checklist",
+          sharer: list.owner,
+        },
+        null
+      );
     }
 
     try {

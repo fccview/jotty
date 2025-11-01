@@ -1,17 +1,12 @@
 import { redirect } from "next/navigation";
-import {
-  getListById,
-  getLists,
-  getRawLists,
-} from "@/app/_server/actions/checklist";
+import { getListById, getRawLists } from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
 import { getAllLists } from "@/app/_server/actions/checklist";
-import { getAllSharingStatuses } from "@/app/_server/actions/sharing";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { ChecklistClient } from "@/app/_components/FeatureComponents/Checklists/Parts/ChecklistClient";
 import { Modes } from "@/app/_types/enums";
-import type { Metadata, ResolvingMetadata } from "next";
-import { getMedatadaTitle, getSettings } from "@/app/_server/actions/config";
+import type { Metadata } from "next";
+import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 
 interface ChecklistPageProps {
@@ -77,24 +72,10 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
       ? categoriesResult.data
       : [];
 
-  const allItems = [...listsResult.data];
-  const itemsToCheck = allItems.map((item) => ({
-    id: item.id,
-    type: "checklist" as const,
-    owner: item.owner || "",
-  }));
-
-  const sharingStatusesResult = await getAllSharingStatuses(itemsToCheck);
-  const sharingStatuses =
-    sharingStatusesResult.success && sharingStatusesResult.data
-      ? sharingStatusesResult.data
-      : {};
-
   return (
     <ChecklistClient
       checklist={checklist}
       categories={categories}
-      sharingStatuses={sharingStatuses}
       user={user}
     />
   );

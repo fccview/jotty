@@ -20,12 +20,6 @@ import { CategoryRenderer } from "./CategoryRenderer";
 import { Draggable } from "./Draggable";
 import { Modes } from "@/app/_types/enums";
 
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
-
 interface CategoryListProps {
   categories: Category[];
   items: (Checklist | Note)[];
@@ -39,7 +33,6 @@ interface CategoryListProps {
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
-  getSharingStatus: (itemId: string) => SharingStatus | null;
   user?: any;
 }
 

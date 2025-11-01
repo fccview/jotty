@@ -8,15 +8,8 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMobileGestures } from "@/app/_hooks/useMobileGestures";
 import { isMobileDevice } from "@/app/_utils/global-utils";
 
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
-
 interface LayoutProps {
   categories: Category[];
-  sharingStatuses?: Record<string, SharingStatus>;
   onOpenSettings: () => void;
   onOpenCreateModal: (initialCategory?: string) => void;
   onOpenCategoryModal: (parentCategory?: string) => void;
@@ -28,7 +21,6 @@ interface LayoutProps {
 
 export const Layout = ({
   categories,
-  sharingStatuses,
   onOpenSettings,
   onOpenCreateModal,
   onOpenCategoryModal,
@@ -67,7 +59,6 @@ export const Layout = ({
         onOpenCreateModal={onOpenCreateModal}
         onOpenCategoryModal={onOpenCategoryModal}
         categories={categories}
-        sharingStatuses={sharingStatuses}
         onCategoryDeleted={onCategoryDeleted}
         onCategoryRenamed={onCategoryRenamed}
         onOpenSettings={onOpenSettings}

@@ -142,17 +142,13 @@ export const Sidebar = (props: SidebarProps) => {
               </div>
             </div>
             <SharedItemsList
-              items={currentItems as unknown as (Checklist | Note)[]}
               collapsed={sidebar.sharedItemsCollapsed}
               onToggleCollapsed={() =>
                 sidebar.setSharedItemsCollapsed((p) => !p)
               }
               onItemClick={sidebar.handleItemClick}
-              onEditItem={sidebar.handleEditItem}
               isItemSelected={sidebar.isItemSelected}
               mode={sidebar.mode}
-              getSharingStatus={sidebar.getSharingStatus}
-              user={user}
             />
             <CategoryList
               categories={categories}
@@ -171,7 +167,6 @@ export const Sidebar = (props: SidebarProps) => {
               onEditItem={sidebar.handleEditItem}
               isItemSelected={sidebar.isItemSelected}
               mode={sidebar.mode}
-              getSharingStatus={sidebar.getSharingStatus}
               user={user}
             />
           </div>

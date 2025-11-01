@@ -1,12 +1,10 @@
 import { redirect } from "next/navigation";
 import {
-  getNotes,
   getAllNotes,
   CheckForNeedsMigration,
   getNoteById,
   getRawNotes,
 } from "@/app/_server/actions/note";
-import { getAllSharingStatuses } from "@/app/_server/actions/sharing";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { NoteClient } from "@/app/_components/FeatureComponents/Notes/NoteClient";
 import { Modes } from "@/app/_types/enums";
@@ -80,25 +78,7 @@ export default async function NotePage({ params }: NotePageProps) {
       ? categoriesResult.data
       : [];
 
-  const allItems = [...docsResult.data];
-  const itemsToCheck = allItems.map((item) => ({
-    id: item.id,
-    type: "note" as const,
-    owner: item.owner || "",
-  }));
-
-  const sharingStatusesResult = await getAllSharingStatuses(itemsToCheck);
-  const sharingStatuses =
-    sharingStatusesResult.success && sharingStatusesResult.data
-      ? sharingStatusesResult.data
-      : {};
-
   return (
-    <NoteClient
-      note={note}
-      docs={docsResult.data}
-      categories={docsCategories}
-      sharingStatuses={sharingStatuses}
-    />
+    <NoteClient note={note} categories={docsCategories} />
   );
 }

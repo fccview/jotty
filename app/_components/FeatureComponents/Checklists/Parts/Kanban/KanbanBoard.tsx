@@ -9,18 +9,17 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { Checklist, User } from "@/app/_types";
+import { Checklist } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanItem } from "./KanbanItem";
 import { ChecklistHeading } from "../Common/ChecklistHeading";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
 import { useKanbanBoard } from "../../../../../_hooks/useKanbanBoard";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
-import { useSharing } from "@/app/_hooks/useSharing";
 import { ReferencedBySection } from "../../../Notes/Parts/ReferencedBySection";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { cornersOfRectangle } from "@dnd-kit/core/dist/utilities/algorithms/helpers";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -53,6 +52,11 @@ const columns = [
 export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const [isClient, setIsClient] = useState(false);
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
+  const { allSharedItems } = useAppMode();
+  const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
+  const isShared = allSharedItems?.checklists.some(
+    (sharedChecklist) => sharedChecklist.id === checklist.id && sharedChecklist.category === encodedCategory
+  ) || false;
   const {
     localChecklist,
     isLoading,
@@ -68,19 +72,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
     activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
-  const { sharingStatus } = useSharing({
-    itemId: localChecklist.id,
-    itemType: "checklist",
-    itemOwner: localChecklist.owner || "",
-    onClose: () => { },
-    enabled: true,
-    itemTitle: localChecklist.title,
-    itemCategory: localChecklist.category,
-    isOpen: true,
-  });
 
-  const isShared =
-    (sharingStatus?.isShared || sharingStatus?.isPubliclyShared) ?? false;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
