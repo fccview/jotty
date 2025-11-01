@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation";
-import { getListById, getLists, getRawLists } from "@/app/_server/actions/checklist";
+import {
+  getListById,
+  getLists,
+  getRawLists,
+} from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllSharingStatuses } from "@/app/_server/actions/sharing";
@@ -89,7 +93,6 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
   return (
     <ChecklistClient
       checklist={checklist}
-      lists={listsResult.data}
       categories={categories}
       sharingStatuses={sharingStatuses}
       user={user}

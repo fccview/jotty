@@ -19,8 +19,6 @@ export interface SidebarProps {
   onOpenCreateModal: (initialCategory?: string) => void;
   onOpenCategoryModal: (parentCategory?: string) => void;
   categories: Category[];
-  checklists: Checklist[];
-  notes?: Note[];
   sharingStatuses?: Record<string, SharingStatus>;
   user: User | null;
   onCategoryDeleted?: (categoryName: string) => void;
@@ -31,8 +29,6 @@ export interface SidebarProps {
 export const useSidebar = (props: SidebarProps) => {
   const {
     categories,
-    checklists,
-    notes = [],
     sharingStatuses = {},
     onCategoryDeleted,
     onCategoryRenamed,
@@ -41,7 +37,7 @@ export const useSidebar = (props: SidebarProps) => {
 
   const router = useRouter();
   const pathname = usePathname();
-  const { mode, setMode, isInitialized } = useAppMode();
+  const { mode, setMode, isInitialized, checklists, notes } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
 
   const [modalState, setModalState] = useState<{
@@ -243,8 +239,9 @@ export const useSidebar = (props: SidebarProps) => {
 
     return (
       pathname?.toLowerCase() ===
-      `/${mode === Modes.NOTES ? "note" : "checklist"
-        }/${expectedPath}`.toLowerCase()
+      `/${
+        mode === Modes.NOTES ? "note" : "checklist"
+      }/${expectedPath}`.toLowerCase()
     );
   };
 
@@ -281,7 +278,7 @@ export const useSidebar = (props: SidebarProps) => {
     if (!isInitialized) return;
 
     const itemId = pathname.split("/").pop();
-    let currentItem: Checklist | Note | undefined;
+    let currentItem: Partial<Checklist> | Partial<Note> | undefined;
 
     if (mode === Modes.CHECKLISTS) {
       currentItem = checklists.find((c) => c.id === itemId);

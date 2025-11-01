@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Checklist, Category, User } from "@/app/_types";
+import { Category, Checklist, User } from "@/app/_types";
 import { ChecklistView } from "@/app/_components/FeatureComponents/Checklists/Checklist";
 import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
 import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeader";
@@ -26,7 +26,6 @@ interface SharingStatus {
 
 interface ChecklistClientProps {
   checklist: Checklist;
-  lists: Checklist[];
   categories: Category[];
   sharingStatuses?: Record<string, SharingStatus>;
   user: User | null;
@@ -34,7 +33,6 @@ interface ChecklistClientProps {
 
 export const ChecklistClient = ({
   checklist,
-  lists,
   categories,
   sharingStatuses,
   user,
@@ -134,7 +132,6 @@ export const ChecklistClient = ({
 
   return (
     <Layout
-      lists={lists}
       categories={categories}
       sharingStatuses={sharingStatuses}
       onOpenSettings={openSettings}

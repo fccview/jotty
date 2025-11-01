@@ -31,8 +31,6 @@ export const Sidebar = (props: SidebarProps) => {
     isOpen,
     onClose,
     categories,
-    checklists,
-    notes,
     onOpenCreateModal,
     onOpenCategoryModal,
     user,
@@ -40,6 +38,7 @@ export const Sidebar = (props: SidebarProps) => {
   } = props;
 
   const { checkNavigation } = useNavigationGuard();
+  const { checklists, notes } = useAppMode();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { isDemoMode, isRwMarkable, mode, setMode } = useAppMode();
@@ -64,8 +63,8 @@ export const Sidebar = (props: SidebarProps) => {
       updatedMode = isNotesPage
         ? Modes.NOTES
         : isChecklistsPage
-          ? Modes.CHECKLISTS
-          : sidebar.mode || Modes.CHECKLISTS;
+        ? Modes.CHECKLISTS
+        : sidebar.mode || Modes.CHECKLISTS;
     }
 
     setMode(searchMode || updatedMode || Modes.CHECKLISTS);
@@ -143,7 +142,7 @@ export const Sidebar = (props: SidebarProps) => {
               </div>
             </div>
             <SharedItemsList
-              items={currentItems}
+              items={currentItems as unknown as (Checklist | Note)[]}
               collapsed={sidebar.sharedItemsCollapsed}
               onToggleCollapsed={() =>
                 sidebar.setSharedItemsCollapsed((p) => !p)
@@ -157,7 +156,7 @@ export const Sidebar = (props: SidebarProps) => {
             />
             <CategoryList
               categories={categories}
-              items={currentItems}
+              items={currentItems as unknown as (Checklist | Note)[]}
               collapsedCategories={sidebar.collapsedCategoriesForMode}
               onToggleCategory={sidebar.toggleCategory}
               onDeleteCategory={(path: string) =>
@@ -297,7 +296,7 @@ export const Sidebar = (props: SidebarProps) => {
             note={sidebar.modalState.data as Note}
             categories={categories}
             onClose={sidebar.closeModal}
-            onUpdated={(customFunction: () => void = () => { }) => {
+            onUpdated={(customFunction: () => void = () => {}) => {
               sidebar.closeModal();
               sidebar.router.refresh();
               customFunction?.();

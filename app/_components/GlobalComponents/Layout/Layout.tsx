@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { QuickNav } from "@/app/_components/FeatureComponents/Header/QuickNav";
 import { Sidebar } from "@/app/_components/FeatureComponents/Sidebar/Sidebar";
-import { Checklist, Category, Note, User } from "@/app/_types";
+import { Category, User } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMobileGestures } from "@/app/_hooks/useMobileGestures";
 import { isMobileDevice } from "@/app/_utils/global-utils";
@@ -15,8 +15,6 @@ interface SharingStatus {
 }
 
 interface LayoutProps {
-  lists: Checklist[];
-  docs?: Note[];
   categories: Category[];
   sharingStatuses?: Record<string, SharingStatus>;
   onOpenSettings: () => void;
@@ -29,8 +27,6 @@ interface LayoutProps {
 }
 
 export const Layout = ({
-  lists,
-  docs,
   categories,
   sharingStatuses,
   onOpenSettings,
@@ -53,9 +49,6 @@ export const Layout = ({
     velocityThreshold: 0.02,
   });
 
-  const notesMemo = useMemo(() => docs || [], [docs]);
-  const listsMemo = useMemo(() => lists || [], [lists]);
-
   if (!isInitialized) {
     return (
       <div className="jotty-layout flex h-screen bg-background w-full">
@@ -74,8 +67,6 @@ export const Layout = ({
         onOpenCreateModal={onOpenCreateModal}
         onOpenCategoryModal={onOpenCategoryModal}
         categories={categories}
-        checklists={listsMemo}
-        notes={notesMemo}
         sharingStatuses={sharingStatuses}
         onCategoryDeleted={onCategoryDeleted}
         onCategoryRenamed={onCategoryRenamed}
@@ -89,8 +80,6 @@ export const Layout = ({
           onSidebarToggle={() => setSidebarOpen(true)}
           onOpenSettings={onOpenSettings}
           isAdmin={user?.isAdmin || false}
-          checklists={listsMemo}
-          notes={notesMemo}
           onModeChange={setMode}
         />
 
