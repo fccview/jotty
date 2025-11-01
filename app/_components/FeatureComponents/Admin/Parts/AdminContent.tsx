@@ -15,6 +15,7 @@ import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -146,10 +147,10 @@ export const AdminContent = ({
               className="p-6 rounded-lg border border-border bg-card"
             >
               <div
-                className="flex items-center justify-between cursor-pointer"
+                className="lg:flex items-center justify-between cursor-pointer"
                 onClick={() => toggleUser(user.username)}
               >
-                <div className="flex items-center gap-3">
+                <div className="mb-2 lg:mb-0 flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
                     <UserAvatar
                       size="lg"
@@ -172,17 +173,18 @@ export const AdminContent = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
+                    variant="default"
+                    size="xs"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRebuildIndex(user.username);
                     }}
                     disabled={rebuildingIndex === user.username}
-                    className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Rebuild link index"
+                    title="Rebuild link indexex"
                   >
-                    {rebuildingIndex === user.username ? "Rebuilding..." : "Rebuild Links"}
-                  </button>
+                    {rebuildingIndex === user.username ? "Rebuilding..." : "Rebuild Indexes"}
+                  </Button>
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                       {totalItems} items

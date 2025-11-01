@@ -56,6 +56,7 @@ export const EditNoteModal = ({
     formData.append("title", title.trim());
     formData.append("content", note.content);
     formData.append("unarchive", unarchive ? "true" : "false");
+    formData.append("user", note.owner || "");
 
     if (isOwner) {
       formData.append("category", category || "");
@@ -143,8 +144,8 @@ export const EditNoteModal = ({
             {isLoading
               ? "Updating..."
               : unarchive
-              ? "Unarchive Note"
-              : "Update Note"}
+                ? "Unarchive Note"
+                : "Update Note"}
           </Button>
         </div>
       </form>

@@ -6,7 +6,7 @@ import {
   generateUniqueFilename,
   sanitizeFilename,
 } from "@/app/_utils/filename-utils";
-import { canUserEditItem, getCurrentUser, getUsername } from "@/app/_server/actions/users";
+import { canUserEditItem, getCurrentUser, getUserByNote, getUsername } from "@/app/_server/actions/users";
 import {
   getItemsSharedWithUser,
   removeSharedItem,
@@ -194,7 +194,17 @@ export const getNoteById = async (
   category?: string,
   username?: string
 ): Promise<Note | undefined> => {
-  const notes = await getRawNotes(username);
+
+  if (!username) {
+    const user = await getUserByNote(id, category || "Uncategorized");
+    if (user.success && user.data) {
+      username = user.data.username;
+    } else {
+      return undefined;
+    }
+  }
+
+  const notes = await getRawNotes(username, true);
 
   if (!notes.success || !notes.data) {
     return undefined;
@@ -495,7 +505,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const rawContent = formData.get("content") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
-    const unarchive = formData.get("unarchive") === "true";
     let currentUser = formData.get("user") as string | undefined;
 
     if (!currentUser) {

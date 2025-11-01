@@ -25,6 +25,7 @@ import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { toggleArchive } from "@/app/_server/actions/users";
 import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
+import { capitalize } from "lodash";
 
 interface SharingStatus {
   isShared: boolean;
@@ -89,12 +90,12 @@ export const SidebarItem = ({
   const dropdownItems = [
     ...(onEditItem
       ? [
-          {
-            label: "Edit",
-            onClick: () => onEditItem(item),
-            icon: <Edit className="h-4 w-4" />,
-          },
-        ]
+        {
+          label: "Edit",
+          onClick: () => onEditItem(item),
+          icon: <Edit className="h-4 w-4" />,
+        },
+      ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
@@ -109,17 +110,17 @@ export const SidebarItem = ({
     },
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
-          {
-            label: "Archive",
-            onClick: async () => {
-              const result = await toggleArchive(item, mode);
-              if (result.success) {
-                router.refresh();
-              }
-            },
-            icon: <Archive className="h-4 w-4" />,
+        {
+          label: "Archive",
+          onClick: async () => {
+            const result = await toggleArchive(item, mode);
+            if (result.success) {
+              router.refresh();
+            }
           },
-        ]
+          icon: <Archive className="h-4 w-4" />,
+        },
+      ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
@@ -191,7 +192,7 @@ export const SidebarItem = ({
             )}
           </>
         )}
-        <span className="truncate flex-1">{item.title}</span>
+        <span className="truncate flex-1">{capitalize(item.title.replace(/-/g, ' '))}</span>
 
         <div className="flex items-center gap-1 flex-shrink-0">
           {sharingStatus?.isPubliclyShared && (

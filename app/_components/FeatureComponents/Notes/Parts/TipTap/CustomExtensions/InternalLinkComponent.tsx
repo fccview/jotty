@@ -8,6 +8,7 @@ import { getListById } from "@/app/_server/actions/checklist";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { decodeCategoryPath } from "@/app/_utils/global-utils";
+import { capitalize } from "lodash";
 
 interface InternalLinkComponentProps {
   node: {
@@ -95,16 +96,13 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
           <CheckSquare className="h-3 w-3 text-foreground" />
         )}
       </span>
-      <span className="text-sm font-medium text-foreground">{title}</span>
+      <span className="text-sm font-medium text-foreground">{capitalize(title.replace(/-/g, ' '))}</span>
 
-      {category && (
-        <>
-          <span className="text-xs text-muted-foreground">•</span>
-          <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
-            {decodeCategoryPath(category).split("/").pop()}
-          </span>
-        </>
-      )}
+
+      <span className="text-xs text-muted-foreground">•</span>
+      <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
+        {decodeCategoryPath(category || "Uncategorized").split("/").pop()}
+      </span>
     </NodeViewWrapper>
   );
 };

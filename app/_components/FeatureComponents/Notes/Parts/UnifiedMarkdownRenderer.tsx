@@ -137,11 +137,11 @@ export const UnifiedMarkdownRenderer = ({
                 category:
                   href?.includes("/note/") || href?.includes("/checklist/")
                     ? href
-                        .replace("checklist/", "")
-                        .replace("note/", "")
-                        .split("/")
-                        .slice(1, -1)
-                        .join("/")
+                      .replace("checklist/", "")
+                      .replace("note/", "")
+                      .split("/")
+                      .slice(1, -1)
+                      .join("/")
                     : (null as string | null),
               },
             }}
@@ -156,8 +156,8 @@ export const UnifiedMarkdownRenderer = ({
         const mimeType = isImage
           ? "image/jpeg"
           : isVideo
-          ? "video/mp4"
-          : "application/octet-stream";
+            ? "video/mp4"
+            : "application/octet-stream";
 
         if (isImage) {
           return (

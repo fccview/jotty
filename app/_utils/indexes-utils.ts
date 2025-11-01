@@ -1,5 +1,6 @@
 import { LinkIndex } from "../_server/actions/link";
 import { Checklist, Note } from "../_types";
+import { encodeCategoryPath } from "./global-utils";
 
 export const createItemMap = (itemsArray: Note[] | Checklist[]) => {
   return itemsArray.reduce(
@@ -44,7 +45,7 @@ export const getReferences = (
 ) => {
   if (!linkIndex || !itemId) return [];
 
-  const itemKey = `${itemCategory || "Uncategorized"}/${itemId}`;
+  const itemKey = `${encodeCategoryPath(itemCategory || "Uncategorized")}/${itemId}`;
   const currentItemData =
     itemType === "note"
       ? linkIndex.notes[itemKey]

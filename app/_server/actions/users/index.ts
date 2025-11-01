@@ -545,27 +545,65 @@ export const updateUserSettings = async ({
   }
 };
 
+// Helper function to find a file by walking the directory tree
+const findFileRecursively = async (
+  dir: string,
+  targetFileName: string,
+  targetCategory: string
+): Promise<string | null> => {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      // Check if this directory matches the target category
+      if (entry.name === targetCategory) {
+        const categoryPath = path.join(dir, entry.name);
+        const categoryEntries = await fs.readdir(categoryPath, { withFileTypes: true });
+
+        for (const fileEntry of categoryEntries) {
+          if (fileEntry.isFile() && fileEntry.name === targetFileName) {
+            return path.join(categoryPath, fileEntry.name);
+          }
+        }
+      } else {
+        // Recurse into subdirectories
+        const result = await findFileRecursively(path.join(dir, entry.name), targetFileName, targetCategory);
+        if (result) return result;
+      }
+    }
+  }
+
+  return null;
+};
+
 export const getUserByChecklist = async (
   checklistID: string,
   checklistCategory: string
 ): Promise<Result<User>> => {
   try {
-    const allUsers = await readJsonFile(USERS_FILE);
+    // Find the actual file first by walking the directory tree
+    const checklistsBaseDir = path.join(process.cwd(), "data", "checklists");
+    const targetFileName = `${checklistID}.md`;
+    const foundFile = await findFileRecursively(checklistsBaseDir, targetFileName, checklistCategory);
 
-    for (const user of allUsers) {
-      const userChecklistsDir = CHECKLISTS_DIR(user.username);
-      const categoryPath = path.join(userChecklistsDir, checklistCategory);
-      const filePath = path.join(categoryPath, `${checklistID}.md`);
-
-      try {
-        await fs.access(filePath);
-        return { success: true, data: user };
-      } catch (error) {
-        continue;
-      }
+    if (!foundFile) {
+      return { success: false, error: "Checklist not found" };
     }
 
-    return { success: false, error: "Checklist not found" };
+    // Extract username from the file path (parent folder of the category)
+    const pathParts = foundFile.split(path.sep);
+    const categoryIndex = pathParts.indexOf(checklistCategory);
+    const username = pathParts[categoryIndex - 1];
+
+    // Read all users and check if the parent folder name matches any user
+    const allUsers = await readJsonFile(USERS_FILE);
+    const foundUser = allUsers.find((user: User) => user.username === username);
+
+    if (!foundUser) {
+      return { success: false, error: "Invalid user" };
+    }
+
+    return { success: true, data: foundUser };
   } catch (error) {
     console.error("Error in getUserByChecklist:", error);
     return { success: false, error: "Failed to find checklist owner" };
@@ -577,22 +615,29 @@ export const getUserByNote = async (
   noteCategory: string
 ): Promise<Result<User>> => {
   try {
-    const allUsers = await readJsonFile(USERS_FILE);
+    // Find the actual file first by walking the directory tree
+    const notesBaseDir = path.join(process.cwd(), "data", "notes");
+    const targetFileName = `${noteID}.md`;
+    const foundFile = await findFileRecursively(notesBaseDir, targetFileName, noteCategory);
 
-    for (const user of allUsers) {
-      const userNotesDir = NOTES_DIR(user.username);
-      const categoryPath = path.join(userNotesDir, noteCategory);
-      const filePath = path.join(categoryPath, `${noteID}.md`);
-
-      try {
-        await fs.access(filePath);
-        return { success: true, data: user };
-      } catch (error) {
-        continue;
-      }
+    if (!foundFile) {
+      return { success: false, error: "Note not found" };
     }
 
-    return { success: false, error: "Note not found" };
+    // Extract username from the file path (parent folder of the category)
+    const pathParts = foundFile.split(path.sep);
+    const categoryIndex = pathParts.indexOf(noteCategory);
+    const username = pathParts[categoryIndex - 1];
+
+    // Read all users and check if the parent folder name matches any user
+    const allUsers = await readJsonFile(USERS_FILE);
+    const foundUser = allUsers.find((user: User) => user.username === username);
+
+    if (!foundUser) {
+      return { success: false, error: "Invalid user" };
+    }
+
+    return { success: true, data: foundUser };
   } catch (error) {
     console.error("Error in getUserByNote:", error);
     return { success: false, error: "Failed to find note owner" };
@@ -747,8 +792,14 @@ export const toggleArchive = async (
 ): Promise<{ success: boolean; data?: Checklist | Note; error?: string }> => {
   const isOwner = await getCurrentUser();
   const formData = new FormData();
+
   formData.append("id", item.id);
   formData.append("title", item.title);
+
+  if (!formData.get("user")) {
+    const owner = await getUserByNote(item.id, item.category || "Uncategorized");
+    formData.append("user", owner.data?.username || "");
+  }
 
   if (mode === Modes.NOTES) {
     formData.append("content", (item as Note).content);

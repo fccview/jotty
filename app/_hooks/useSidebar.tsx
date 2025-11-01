@@ -221,8 +221,10 @@ export const useSidebar = (props: SidebarProps) => {
       );
       onClose();
     });
+
   const handleEditItem = (item: Checklist | Note) =>
     openModal("editItem", item);
+
   const toggleCategory = (categoryPath: string) => {
     setCollapsedCategories((prev) => {
       const newModeSet = new Set(prev[mode]);
@@ -241,9 +243,8 @@ export const useSidebar = (props: SidebarProps) => {
 
     return (
       pathname?.toLowerCase() ===
-      `/${
-        mode === Modes.NOTES ? "note" : "checklist"
-      }/${expectedPath}`.toLowerCase()
+      `/${mode === Modes.NOTES ? "note" : "checklist"
+        }/${expectedPath}`.toLowerCase()
     );
   };
 
