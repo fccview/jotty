@@ -17,6 +17,7 @@ import {
   NotesDefaultMode,
   Result,
   TableSyntax,
+  EnableRecurrence,
 } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
@@ -27,10 +28,10 @@ import {
 import fs from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
-import { updateList } from "@/app/_server/actions/checklist";
 import { updateNote } from "@/app/_server/actions/note";
 import { Modes } from "@/app/_types/enums";
 import { AppMode } from "@/app/_types";
+import { updateList } from "@/app/_server/actions/checklist";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -444,6 +445,10 @@ export const getUsername = async (): Promise<string> => {
 export const getUsers = async () => {
   const users = (await readJsonFile(USERS_FILE)) || [];
 
+  if (!users || !Array.isArray(users)) {
+    return [];
+  }
+
   return users.map(({ username, isAdmin, isSuperAdmin, avatarUrl }: User) => ({
     username,
     isAdmin,
@@ -483,6 +488,7 @@ export const updateUserSettings = async ({
   landingPage,
   notesDefaultEditor,
   notesDefaultMode,
+  enableRecurrence,
   notesAutoSaveInterval,
 }: {
   preferredTheme?: string;
@@ -491,6 +497,7 @@ export const updateUserSettings = async ({
   landingPage?: LandingPage;
   notesDefaultEditor?: NotesDefaultEditor;
   notesDefaultMode?: NotesDefaultMode;
+  enableRecurrence?: EnableRecurrence;
   notesAutoSaveInterval?: NotesAutoSaveInterval;
 }): Promise<Result<{ user: User }>> => {
   try {
@@ -520,6 +527,8 @@ export const updateUserSettings = async ({
       updates.notesDefaultEditor = notesDefaultEditor;
     if (notesDefaultMode !== undefined)
       updates.notesDefaultMode = notesDefaultMode;
+    if (enableRecurrence !== undefined)
+      updates.enableRecurrence = enableRecurrence;
 
     const updatedUser: User = {
       ...allUsers[userIndex],

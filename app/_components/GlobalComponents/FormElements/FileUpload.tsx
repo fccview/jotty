@@ -22,11 +22,17 @@ export const FileUpload = ({
   uploadError,
   fileSizeError,
 }: FileUploadProps) => (
-  <div className="p-6 border-b border-border">
+  <div className="jotty-file-upload p-6 border-b border-border">
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
       <input
         type="file"
-        accept={activeTab === "images" ? "image/*" : activeTab === "videos" ? "video/*" : "*"}
+        accept={
+          activeTab === "images"
+            ? "image/*"
+            : activeTab === "videos"
+            ? "video/*"
+            : "*"
+        }
         onChange={onFileSelect}
         className="hidden"
         id="file-upload"
@@ -58,11 +64,7 @@ export const FileUpload = ({
               {formatFileSize(selectedFile.size)}
             </span>
             {!isUploading && !uploadError && (
-              <Button
-                onClick={onUpload}
-                size="sm"
-                className="w-full sm:w-auto"
-              >
+              <Button onClick={onUpload} size="sm" className="w-full sm:w-auto">
                 Upload
               </Button>
             )}

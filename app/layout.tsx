@@ -16,7 +16,7 @@ import { Modes } from "./_types/enums";
 import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { headers } from "next/headers";
-import { User } from "./_types";
+import { themeInitScript } from "./_consts/themes";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -101,15 +101,21 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-rwmarkable={settings?.rwmarkable ? "true" : "false"}
+      data-user-theme={user?.preferredTheme || ""}
+    >
       <head>
         <link rel="icon" href="/app-icons/favicon.ico" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
         <meta name="mobile-web-app-capable" content="yes" />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} jotty-body`}>
         <AppModeProvider
           isDemoMode={settings?.isDemo || false}
           isRwMarkable={settings?.rwmarkable || false}
@@ -128,7 +134,7 @@ export default async function RootLayout({
                     noteCategories={noteCategories.data || []}
                     checklistCategories={checklistCategories.data || []}
                   >
-                    <div className="min-h-screen bg-background text-foreground transition-colors">
+                    <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
                       <DynamicFavicon />
                       {children}
 

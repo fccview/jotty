@@ -16,6 +16,7 @@ import { AppSettings } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
+import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 
 export const AppSettingsTab = () => {
   const { showToast } = useToast();
@@ -144,12 +145,7 @@ export const AppSettingsTab = () => {
           ))}
         </div>
         <div>
-          <label
-            className="text-sm font-medium leading-none block mb-3"
-            htmlFor="notifyNewUpdates"
-          >
-            Notify me of new updates
-          </label>
+          <Label htmlFor="notifyNewUpdates" className="block mb-3">Notify me of new updates</Label>
           <Dropdown
             value={settings?.notifyNewUpdates || "yes"}
             onChange={(value) => handleInputChange("notifyNewUpdates", value)}

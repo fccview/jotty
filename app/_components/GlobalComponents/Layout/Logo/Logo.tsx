@@ -4,7 +4,7 @@ import { cn } from "@/app/_utils/global-utils";
 
 export const Logo = ({ className = "h-8 w-8" }: { className?: string }) => {
   return (
-    <div className={cn("bg-primary rounded-md p-0.5", className)}>
+    <div className={cn("jotty-logo bg-primary rounded-md p-0.5", className)}>
       <svg
         version="1.2"
         xmlns="http://www.w3.org/2000/svg"

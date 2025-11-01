@@ -33,7 +33,7 @@ export const PageHeader = ({
   const router = useRouter();
 
   return (
-    <div className={`mb-8 ${className}`}>
+    <div className={`jotty-page-header mb-8 ${className}`}>
       {showBackButton && (
         <Button variant="ghost" onClick={() => router.back()} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -41,10 +41,12 @@ export const PageHeader = ({
         </Button>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="jotty-page-header-content flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">{title}</h1>
-          <p className="text-muted-foreground">
+          <h1 className="jotty-page-header-title text-3xl font-bold text-foreground">
+            {title}
+          </h1>
+          <p className="jotty-page-header-description text-muted-foreground">
             {stats
               ? `Showing ${stats.current}-${stats.total} of ${
                   stats.total

@@ -1,4 +1,5 @@
 import { EditorContent, Editor } from "@tiptap/react";
+import { Node } from "@tiptap/pm/model";
 import { useEffect } from "react";
 
 interface VisualEditorProps {
@@ -7,14 +8,30 @@ interface VisualEditorProps {
   onTextSelection?: (hasSelection: boolean) => void;
 }
 
-export const VisualEditor = ({ editor, onFileDrop, onTextSelection }: VisualEditorProps) => {
+export const VisualEditor = ({
+  editor,
+  onFileDrop,
+  onTextSelection,
+}: VisualEditorProps) => {
   useEffect(() => {
     if (!editor || !onTextSelection) return;
 
     const handleSelectionUpdate = () => {
       const { from, to } = editor.state.selection;
       const hasSelection = from !== to;
-      onTextSelection(hasSelection);
+
+      let hasTextContent = false;
+      if (hasSelection) {
+        editor.state.doc.nodesBetween(from, to, (node: Node) => {
+          if (node.isText && node.text && node.text.trim().length > 0) {
+            hasTextContent = true;
+            return false;
+          }
+          return true;
+        });
+      }
+
+      onTextSelection(hasSelection && hasTextContent);
     };
 
     editor.on("selectionUpdate", handleSelectionUpdate);

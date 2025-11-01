@@ -3,7 +3,7 @@
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { ArrowLeft } from "lucide-react";
+import { Archive, ArrowLeft } from "lucide-react";
 import {
   Globe,
   Users,
@@ -22,8 +22,10 @@ import { NoteEditorViewModel } from "@/app/_types";
 import { useSharing } from "@/app/_hooks/useSharing";
 import { useState, useEffect } from "react";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { toggleArchive } from "@/app/_server/actions/users";
+import { Modes } from "@/app/_types/enums";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -35,6 +37,7 @@ interface NoteEditorHeaderProps {
   showTOC: boolean;
   setShowTOC: (show: boolean) => void;
   viewModel: NoteEditorViewModel;
+  onArchive?: () => void;
 }
 
 export const NoteEditorHeader = ({
@@ -42,6 +45,7 @@ export const NoteEditorHeader = ({
   categories,
   isOwner,
   isAdmin,
+  onArchive,
   currentUsername,
   onBack,
   viewModel,
@@ -62,6 +66,15 @@ export const NoteEditorHeader = ({
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
   const { user } = useAppMode();
+  const router = useRouter();
+
+  const handleArchive = async () => {
+    const result = await toggleArchive(note, Modes.NOTES);
+    if (result.success) {
+      router.refresh();
+    }
+  };
+
   const { sharingStatus } = useSharing({
     itemId: note.id,
     itemType: "note",
@@ -161,7 +174,6 @@ export const NoteEditorHeader = ({
             ) : (
               <>
                 <div className="hidden lg:flex items-center gap-2">
-
                   {user?.notesDefaultMode === "edit" && (
                     <Button
                       variant="outline"
@@ -181,6 +193,15 @@ export const NoteEditorHeader = ({
                       )}
                     </Button>
                   )}
+
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleArchive}
+                    title="Archive"
+                  >
+                    <Archive className="h-5 w-5" />
+                  </Button>
 
                   <Button
                     variant="outline"
@@ -266,10 +287,7 @@ export const NoteEditorHeader = ({
                   <DropdownMenu
                     align="right"
                     trigger={
-                      <Button
-                        variant="outline"
-                        size="icon"
-                      >
+                      <Button variant="outline" size="icon">
                         <MoreHorizontal className="h-5 w-5" />
                       </Button>
                     }
@@ -290,16 +308,22 @@ export const NoteEditorHeader = ({
                         ),
                         onClick: viewModel.handlePrint,
                       },
+                      {
+                        type: "item" as const,
+                        label: "Archive",
+                        icon: <Archive className="h-4 w-4" />,
+                        onClick: handleArchive,
+                      },
                       ...(canDelete
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Delete",
-                            icon: <Trash2 className="h-4 w-4" />,
-                            onClick: handleDelete,
-                            variant: "destructive" as const,
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Delete",
+                              icon: <Trash2 className="h-4 w-4" />,
+                              onClick: handleDelete,
+                              variant: "destructive" as const,
+                            },
+                          ]
                         : []),
                     ]}
                   />

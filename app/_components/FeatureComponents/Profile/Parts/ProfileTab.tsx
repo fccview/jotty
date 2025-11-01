@@ -68,7 +68,13 @@ export const ProfileTab = ({
       newPassword !== "" ||
       confirmPassword !== "";
     setHasFormChanged(hasChanges);
-  }, [editedUsername, currentPassword, newPassword, confirmPassword, user?.username]);
+  }, [
+    editedUsername,
+    currentPassword,
+    newPassword,
+    confirmPassword,
+    user?.username,
+  ]);
 
   useEffect(() => {
     loadApiKey();
@@ -227,7 +233,8 @@ export const ProfileTab = ({
   };
 
   const isUsernameDisabled = isSsoUser || isDemoMode;
-  const isSaveButtonDisabled = isUploadingAvatar || isDemoMode || !hasFormChanged;
+  const isSaveButtonDisabled =
+    isUploadingAvatar || isDemoMode || !hasFormChanged;
   const isAvatarDisabled = isUploadingAvatar || isDemoMode;
   const isCurrentPasswordDisabled = isDemoMode;
   const isNewPasswordDisabled = isDemoMode;
@@ -382,7 +389,6 @@ export const ProfileTab = ({
                 id="username"
                 label="Username"
                 type="text"
-                value={editedUsername}
                 onChange={(e) => setEditedUsername(e.target.value)}
                 placeholder="Your username"
                 defaultValue={user?.username}
@@ -390,7 +396,8 @@ export const ProfileTab = ({
                 className="mt-1"
               />
               <p className="text-sm text-muted-foreground">
-                Updating your username will log you out and require you to log in again.
+                Updating your username will log you out and require you to log
+                in again.
               </p>
             </div>
             <div className="space-y-2">

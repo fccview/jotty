@@ -2,228 +2,231 @@
 
 import { Editor } from "@tiptap/react";
 import {
-    Bold,
-    Italic,
-    Underline,
-    Strikethrough,
-    Code,
-    Link as LinkIcon,
-    Palette,
-    Highlighter,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Code,
+  Link as LinkIcon,
+  Palette,
+  Highlighter,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ColorPicker } from "../ColorPicker/ColorPicker";
 import { useState, useRef, useEffect } from "react";
 
 interface BubbleMenuProps {
-    editor: Editor;
-    isVisible: boolean;
-    onClose: () => void;
+  editor: Editor;
+  isVisible: boolean;
+  onClose: () => void;
 }
 
 export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
-    const [showTextColorPicker, setShowTextColorPicker] = useState(false);
-    const [showHighlightPicker, setShowHighlightPicker] = useState(false);
-    const [colorPickerPosition, setColorPickerPosition] = useState({ x: 0, y: 0 });
-    const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
-    const menuRef = useRef<HTMLDivElement>(null);
+  const [showTextColorPicker, setShowTextColorPicker] = useState(false);
+  const [showHighlightPicker, setShowHighlightPicker] = useState(false);
+  const [colorPickerPosition, setColorPickerPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (!isVisible || !menuRef.current) return;
+  useEffect(() => {
+    if (!isVisible || !menuRef.current) return;
 
-        const updatePosition = () => {
-            if (menuRef.current) {
-                const { from, to } = editor.state.selection;
-                if (from === to) return;
+    const updatePosition = () => {
+      if (menuRef.current) {
+        const { from, to } = editor.state.selection;
+        if (from === to) return;
 
-                const coords = editor.view.coordsAtPos(from);
-                const menuRect = menuRef.current.getBoundingClientRect();
-                const viewportHeight = window.innerHeight;
-                const viewportWidth = window.innerWidth;
+        const coords = editor.view.coordsAtPos(from);
+        const menuRect = menuRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
 
-                let top = coords.top - menuRect.height - 8;
-                let left = coords.left;
+        let top = coords.top - menuRect.height - 8;
+        let left = coords.left;
 
-                if (top < 0) {
-                    top = coords.bottom + 8;
-                }
-
-                if (left + menuRect.width > viewportWidth) {
-                    left = viewportWidth - menuRect.width - 8;
-                }
-
-                if (left < 0) {
-                    left = 8;
-                }
-
-                menuRef.current.style.left = `${left}px`;
-                menuRef.current.style.top = `${top}px`;
-
-                setColorPickerPosition({
-                    x: left,
-                    y: top - 10,
-                });
-                setTargetElement(menuRef.current);
-            }
-        };
-
-        updatePosition();
-
-        const handleScroll = () => updatePosition();
-        const handleResize = () => updatePosition();
-
-        window.addEventListener("scroll", handleScroll, true);
-        window.addEventListener("resize", handleResize);
-
-        return () => {
-            window.removeEventListener("scroll", handleScroll, true);
-            window.removeEventListener("resize", handleResize);
-        };
-    }, [isVisible, editor]);
-
-    const setLink = () => {
-        const previousUrl = editor.getAttributes("link").href;
-        const url = window.prompt("URL", previousUrl);
-
-        if (url === null) return;
-        if (url === "") {
-            editor.chain().focus().unsetLink().run();
-            return;
+        if (top < 0) {
+          top = coords.bottom + 8;
         }
-        editor.chain().focus().setLink({ href: url }).run();
-    };
 
-    const handleTextColorSelect = (color: string) => {
-        if (color) {
-            editor.chain().focus().setColor(color).run();
-        } else {
-            editor.chain().focus().unsetColor().run();
+        if (left + menuRect.width > viewportWidth) {
+          left = viewportWidth - menuRect.width - 8;
         }
-        setShowTextColorPicker(false);
-    };
 
-    const handleHighlightSelect = (color: string) => {
-        if (color) {
-            editor.chain().focus().setHighlight({ color }).run();
-        } else {
-            editor.chain().focus().unsetHighlight().run();
+        if (left < 0) {
+          left = 8;
         }
-        setShowHighlightPicker(false);
+
+        menuRef.current.style.left = `${left}px`;
+        menuRef.current.style.top = `${top}px`;
+
+        setColorPickerPosition({
+          x: left,
+          y: top - 10,
+        });
+        setTargetElement(menuRef.current);
+      }
     };
 
-    const getCurrentTextColor = () => {
-        return editor.getAttributes("textStyle").color || "";
+    updatePosition();
+
+    const handleScroll = () => updatePosition();
+    const handleResize = () => updatePosition();
+
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
     };
+  }, [isVisible, editor]);
 
-    const getCurrentHighlightColor = () => {
-        return editor.getAttributes("highlight").color || "";
-    };
+  const setLink = () => {
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("URL", previousUrl);
 
-    if (!isVisible) return null;
+    if (url === null) return;
+    if (url === "") {
+      editor.chain().focus().unsetLink().run();
+      return;
+    }
+    editor.chain().focus().setLink({ href: url }).run();
+  };
 
-    return (
-        <>
-            <div
-                ref={menuRef}
-                data-overlay
-                className="fixed z-40 bg-card border border-border rounded-lg shadow-lg p-1 flex items-center gap-1"
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <Button
-                    variant={editor.isActive("bold") ? "secondary" : "ghost"}
-                    size="sm"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                >
-                    <Bold className="h-4 w-4" />
-                </Button>
+  const handleTextColorSelect = (color: string) => {
+    if (color) {
+      editor.chain().focus().setColor(color).run();
+    } else {
+      editor.chain().focus().unsetColor().run();
+    }
+    setShowTextColorPicker(false);
+  };
 
-                <Button
-                    variant={editor.isActive("italic") ? "secondary" : "ghost"}
-                    size="sm"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                >
-                    <Italic className="h-4 w-4" />
-                </Button>
+  const handleHighlightSelect = (color: string) => {
+    if (color) {
+      editor.chain().focus().setHighlight({ color }).run();
+    } else {
+      editor.chain().focus().unsetHighlight().run();
+    }
+    setShowHighlightPicker(false);
+  };
 
-                <Button
-                    variant={editor.isActive("underline") ? "secondary" : "ghost"}
-                    size="sm"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => editor.chain().focus().toggleUnderline().run()}
-                >
-                    <Underline className="h-4 w-4" />
-                </Button>
+  const getCurrentTextColor = () => {
+    return editor.getAttributes("textStyle").color || "";
+  };
 
-                <Button
-                    variant={editor.isActive("strike") ? "secondary" : "ghost"}
-                    size="sm"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => editor.chain().focus().toggleStrike().run()}
-                >
-                    <Strikethrough className="h-4 w-4" />
-                </Button>
+  const getCurrentHighlightColor = () => {
+    return editor.getAttributes("highlight").color || "";
+  };
 
-                <Button
-                    variant={editor.isActive("code") ? "secondary" : "ghost"}
-                    size="sm"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => editor.chain().focus().toggleCode().run()}
-                >
-                    <Code className="h-4 w-4" />
-                </Button>
+  if (!isVisible) return null;
 
-                <div className="w-px h-6 bg-border mx-1" />
+  return (
+    <>
+      <div
+        ref={menuRef}
+        data-overlay
+        className="fixed z-40 bg-card border border-border rounded-lg shadow-lg p-1 flex items-center gap-1"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Button
+          variant={editor.isActive("bold") ? "secondary" : "ghost"}
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
+          <Bold className="h-4 w-4" />
+        </Button>
 
-                <Button
-                    variant={editor.isActive("link") ? "secondary" : "ghost"}
-                    size="sm"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={setLink}
-                >
-                    <LinkIcon className="h-4 w-4" />
-                </Button>
+        <Button
+          variant={editor.isActive("italic") ? "secondary" : "ghost"}
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        >
+          <Italic className="h-4 w-4" />
+        </Button>
 
-                <Button
-                    variant={editor.isActive("textStyle") ? "secondary" : "ghost"}
-                    size="sm"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => setShowTextColorPicker(!showTextColorPicker)}
-                >
-                    <Palette className="h-4 w-4" />
-                </Button>
+        <Button
+          variant={editor.isActive("underline") ? "secondary" : "ghost"}
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+        >
+          <Underline className="h-4 w-4" />
+        </Button>
 
-                <Button
-                    variant={editor.isActive("highlight") ? "secondary" : "ghost"}
-                    size="sm"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => setShowHighlightPicker(!showHighlightPicker)}
-                >
-                    <Highlighter className="h-4 w-4" />
-                </Button>
-            </div>
+        <Button
+          variant={editor.isActive("strike") ? "secondary" : "ghost"}
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+        >
+          <Strikethrough className="h-4 w-4" />
+        </Button>
 
-            <ColorPicker
-                isVisible={showTextColorPicker}
-                onClose={() => setShowTextColorPicker(false)}
-                onColorSelect={handleTextColorSelect}
-                currentColor={getCurrentTextColor()}
-                type="text"
-                position={colorPickerPosition}
-                targetElement={targetElement || undefined}
-            />
+        <Button
+          variant={editor.isActive("code") ? "secondary" : "ghost"}
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleCode().run()}
+        >
+          <Code className="h-4 w-4" />
+        </Button>
 
-            <ColorPicker
-                isVisible={showHighlightPicker}
-                onClose={() => setShowHighlightPicker(false)}
-                onColorSelect={handleHighlightSelect}
-                currentColor={getCurrentHighlightColor()}
-                type="highlight"
-                position={colorPickerPosition}
-                targetElement={targetElement || undefined}
-            />
-        </>
-    );
+        <div className="w-px h-6 bg-border mx-1" />
+
+        <Button
+          variant={editor.isActive("link") ? "secondary" : "ghost"}
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={setLink}
+        >
+          <LinkIcon className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant={editor.isActive("textStyle") ? "secondary" : "ghost"}
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setShowTextColorPicker(!showTextColorPicker)}
+        >
+          <Palette className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant={editor.isActive("highlight") ? "secondary" : "ghost"}
+          size="sm"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setShowHighlightPicker(!showHighlightPicker)}
+        >
+          <Highlighter className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <ColorPicker
+        isVisible={showTextColorPicker}
+        onClose={() => setShowTextColorPicker(false)}
+        onColorSelect={handleTextColorSelect}
+        currentColor={getCurrentTextColor()}
+        type="text"
+        position={colorPickerPosition}
+        targetElement={targetElement || undefined}
+      />
+
+      <ColorPicker
+        isVisible={showHighlightPicker}
+        onClose={() => setShowHighlightPicker(false)}
+        onColorSelect={handleHighlightSelect}
+        currentColor={getCurrentHighlightColor()}
+        type="highlight"
+        position={colorPickerPosition}
+        targetElement={targetElement || undefined}
+      />
+    </>
+  );
 };

@@ -16,9 +16,14 @@ export const LegacyLogo = ({
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      className={`rwmarkable-legacy-logo ${className}`}
     >
-      <rect width="100" height="100" rx="20" className={fillClass} />
+      <rect
+        width="100"
+        height="100"
+        rx="20"
+        className={`rwmarkable-legacy-logo-fill ${fillClass}`}
+      />
       <path
         d="M25 65L40 80L75 45"
         className={strokeClass}

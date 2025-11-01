@@ -18,6 +18,7 @@ import { AppSettingsTab } from "./Parts/AppSettingsTab";
 import { EditorSettingsTab } from "./Parts/EditorSettingsTab";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
+import { StylingTab } from "./Parts/StylingTab";
 
 interface AdminClientProps {
   username: string;
@@ -31,6 +32,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
     "overview" | "users" | "content" | "sharing" | "settings" | "editor"
+    | "styling"
   >("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
@@ -165,6 +167,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
         )}
         {activeTab === "settings" && <AppSettingsTab />}
         {activeTab === "editor" && <EditorSettingsTab />}
+        {activeTab === "styling" && <StylingTab />}
       </div>
 
       <UserManagementModal

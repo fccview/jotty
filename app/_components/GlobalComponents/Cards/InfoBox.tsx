@@ -12,7 +12,7 @@ export const InfoBox = ({ title, items, variant }: InfoBoxProps) => {
     : "bg-primary/5 border-primary/20 text-primary";
 
   return (
-    <div className={`${baseClasses} ${variantClasses}`}>
+    <div className={`jotty-info-box ${baseClasses} ${variantClasses}`}>
       <h3 className="text-sm font-medium mb-2">{title}</h3>
       <ul className="text-sm text-muted-foreground space-y-1">
         {items.map((item) => (

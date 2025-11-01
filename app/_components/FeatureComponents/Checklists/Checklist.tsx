@@ -18,6 +18,9 @@ import { ChecklistBody } from "@/app/_components/FeatureComponents/Checklists/Pa
 import { ChecklistModals } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistModals";
 import { ToastContainer } from "../../GlobalComponents/Feedback/ToastContainer";
 import { useSharing } from "@/app/_hooks/useSharing";
+import { toggleArchive } from "@/app/_server/actions/users";
+import { Modes } from "@/app/_types/enums";
+import { useRouter } from "next/navigation";
 
 interface ChecklistViewProps {
   list: Checklist;
@@ -38,12 +41,17 @@ export const ChecklistView = ({
   currentUsername,
   isAdmin = false,
 }: ChecklistViewProps) => {
+  const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const checklistHookProps = useChecklist({ list, onUpdate, onDelete });
+  const checklistHookProps = useChecklist({
+    list,
+    onUpdate,
+    onDelete,
+  });
   const {
     localList,
     setShowShareModal,
@@ -69,7 +77,7 @@ export const ChecklistView = ({
     itemId: localList.id,
     itemType: "checklist",
     itemOwner: localList.owner || "",
-    onClose: () => { },
+    onClose: () => {},
     enabled: true,
     itemTitle: localList.title,
     itemCategory: localList.category,
@@ -83,6 +91,14 @@ export const ChecklistView = ({
     ? isAdmin || currentUsername === localList.owner
     : true;
   const deleteHandler = canDelete ? handleDeleteList : undefined;
+
+  const archiveHandler = async () => {
+    const result = await toggleArchive(localList, Modes.CHECKLISTS);
+
+    if (result.success) {
+      router.refresh();
+    }
+  };
 
   if (!isClient) {
     return (
@@ -106,6 +122,7 @@ export const ChecklistView = ({
         onBack={onBack}
         onEdit={() => onEdit?.(list)}
         onDelete={deleteHandler}
+        onArchive={archiveHandler}
         onShare={() => setShowShareModal(true)}
         onConvertType={handleConvertType}
       />
@@ -126,7 +143,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => { }}
+          onRemove={() => {}}
         ></ToastContainer>
       )}
 

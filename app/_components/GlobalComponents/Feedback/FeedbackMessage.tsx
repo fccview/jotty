@@ -10,7 +10,7 @@ export const FeedbackMessage = ({ error, success }: FeedbackMessageProps) => {
   const isError = !!error;
   return (
     <div
-      className={`flex items-center gap-2 p-3 rounded-md border ${
+      className={`jotty-feedback-message flex items-center gap-2 p-3 rounded-md border ${
         isError
           ? "bg-destructive/10 border-destructive/20"
           : "bg-primary/10 border-primary/20"

@@ -13,6 +13,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
+  const customLogoutUrl = process.env.OIDC_LOGOUT_URL;
+  if (customLogoutUrl) {
+    if (process.env.DEBUGGER) {
+      console.log("SSO LOGOUT - using custom logout URL", customLogoutUrl);
+    }
+
+    return NextResponse.redirect(customLogoutUrl);
+  }
+
   const issuer = process.env.OIDC_ISSUER || "";
   if (!issuer) {
     if (process.env.DEBUGGER) {

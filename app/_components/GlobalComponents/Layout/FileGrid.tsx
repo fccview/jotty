@@ -13,7 +13,10 @@ interface FileGridProps {
     fileName: string,
     mimeType: string
   ) => void;
-  onDeleteFile: (fileName: string, fileType: "image" | "video" | "file") => void;
+  onDeleteFile: (
+    fileName: string,
+    fileType: "image" | "video" | "file"
+  ) => void;
 }
 
 export const FileGrid = ({
@@ -26,7 +29,7 @@ export const FileGrid = ({
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="text-center py-12">
+        <div className="jotty-file-grid-loading text-center py-12">
           <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
           <p className="mt-4 text-muted-foreground">Loading {activeTab}...</p>
         </div>
@@ -35,7 +38,7 @@ export const FileGrid = ({
 
     if (files.length === 0) {
       return (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="jotty-file-grid-empty text-center py-12 text-muted-foreground">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
             {activeTab === "images" ? (
               <ImageIcon className="h-8 w-8" />
@@ -49,7 +52,7 @@ export const FileGrid = ({
     }
 
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+      <div className="jotty-file-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
         {files.map((file: FileItem) => (
           <FileCard
             key={file.fileName}
@@ -65,7 +68,7 @@ export const FileGrid = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 min-h-0">
+    <div className="jotty-file-grid-container flex-1 overflow-y-auto p-4 sm:p-6 min-h-0">
       {renderContent()}
     </div>
   );

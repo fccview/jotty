@@ -32,7 +32,7 @@ export const NotesPageClient = ({
   const { isInitialized } = useAppMode();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [noteFilter, setNoteFilter] = useState<NoteFilter>("all");
-  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
   const filterOptions = [
     { id: "all", name: "All Notes" },
@@ -179,19 +179,19 @@ export const NotesPageClient = ({
                     <NoteCard
                       note={note}
                       onSelect={(note) => {
-                        const categoryPath = `${note.category || "Uncategorized"
-                          }/${note.id}`;
+                        const categoryPath = `${
+                          note.category || "Uncategorized"
+                        }/${note.id}`;
                         router.push(`/note/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedNotes?.includes(
                         `${note.category || "Uncategorized"}/${note.id}`
                       )}
-                      onTogglePin={() => { }}
+                      onTogglePin={() => {}}
                     />
                   </div>
                 ))}
               </Masonry>
-
             </>
           )}
         </div>

@@ -46,7 +46,7 @@ export const SidebarNavigation = ({
   });
 
   return (
-    <div className="flex gap-1 p-2 border-b border-border">
+    <div className="jotty-sidebar-navigation flex gap-1 p-2 border-b border-border">
       {orderedModes.map((modeOption: ModeOption) => {
         const Icon = modeOption.icon;
         return (

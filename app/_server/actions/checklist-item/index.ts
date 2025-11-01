@@ -200,6 +200,7 @@ export const createItem = async (
     const category = formData.get("category") as string;
     const description = formData.get("description") as string;
     const currentUser = username || (await getUsername());
+    const recurrenceStr = formData.get("recurrence") as string;
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getLists(username));
@@ -235,6 +236,25 @@ export const createItem = async (
     }
 
     const now = new Date().toISOString();
+
+    let recurrence = undefined;
+    if (recurrenceStr) {
+      try {
+        recurrence = JSON.parse(recurrenceStr);
+
+        if (recurrence && !recurrence.nextDue) {
+          const { calculateNextOccurrence } = await import("@/app/_utils/recurrence-utils");
+          recurrence.nextDue = calculateNextOccurrence(
+            recurrence.rrule,
+            recurrence.dtstart
+          );
+        }
+      } catch (e) {
+        console.error("Failed to parse recurrence:", e);
+        recurrence = undefined;
+      }
+    }
+
     const newItem = {
       id: `${listId}-${Date.now()}`,
       text,
@@ -256,6 +276,7 @@ export const createItem = async (
           },
         ],
       }),
+      ...(recurrence && { recurrence }),
     };
 
     const updatedList = {

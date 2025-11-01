@@ -30,6 +30,10 @@ import {
   updateSharedItem,
 } from "@/app/_server/actions/sharing";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import {
+  shouldRefreshRecurringItem,
+  refreshRecurringItem,
+} from "@/app/_utils/recurrence-utils";
 
 const readListsRecursively = async (
   dir: string,
@@ -45,11 +49,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -68,11 +72,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -84,9 +88,9 @@ const readListsRecursively = async (
           lists.push(
             parseMarkdown(content, id, categoryPath, owner, false, stats)
           );
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -98,6 +102,56 @@ const readListsRecursively = async (
   }
 
   return lists;
+};
+
+/**
+ * Check and refresh recurring items in a checklist
+ * If any recurring items are completed and past their due date, refresh them
+ * @param checklist - The checklist to check
+ * @returns Updated checklist if changes were made, otherwise original checklist
+ */
+const checkAndRefreshRecurringItems = async (
+  checklist: Checklist
+): Promise<{ checklist: Checklist; hasChanges: boolean }> => {
+  let hasChanges = false;
+  const updatedItems = checklist.items.map((item) => {
+    if (shouldRefreshRecurringItem(item)) {
+      hasChanges = true;
+      return refreshRecurringItem(item);
+    }
+    return item;
+  });
+
+  if (!hasChanges) {
+    return { checklist, hasChanges: false };
+  }
+
+  const updatedChecklist: Checklist = {
+    ...checklist,
+    items: updatedItems,
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    const ownerDir = path.join(
+      process.cwd(),
+      "data",
+      CHECKLISTS_FOLDER,
+      checklist.owner!
+    );
+    const categoryDir = path.join(
+      ownerDir,
+      checklist.category || "Uncategorized"
+    );
+    const filePath = path.join(categoryDir, `${checklist.id}.md`);
+
+    await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
+  } catch (error) {
+    console.error("Error saving refreshed recurring items:", error);
+    return { checklist, hasChanges: false };
+  }
+
+  return { checklist: updatedChecklist, hasChanges: true };
 };
 
 export const getLists = async (username?: string, allowArchived?: boolean) => {
@@ -129,19 +183,19 @@ export const getLists = async (username?: string, allowArchived?: boolean) => {
       try {
         const sharedFilePath = sharedItem.filePath
           ? path.join(
-              process.cwd(),
-              "data",
-              CHECKLISTS_FOLDER,
-              sharedItem.filePath
-            )
+            process.cwd(),
+            "data",
+            CHECKLISTS_FOLDER,
+            sharedItem.filePath
+          )
           : path.join(
-              process.cwd(),
-              "data",
-              CHECKLISTS_FOLDER,
-              sharedItem.owner,
-              sharedItem.category || "Uncategorized",
-              `${sharedItem.id}.md`
-            );
+            process.cwd(),
+            "data",
+            CHECKLISTS_FOLDER,
+            sharedItem.owner,
+            sharedItem.category || "Uncategorized",
+            `${sharedItem.id}.md`
+          );
 
         const content = await fs.readFile(sharedFilePath, "utf-8");
         const stats = await fs.stat(sharedFilePath);
@@ -160,7 +214,14 @@ export const getLists = async (username?: string, allowArchived?: boolean) => {
       }
     }
 
-    return { success: true, data: lists };
+    const refreshedLists = await Promise.all(
+      lists.map(async (list) => {
+        const { checklist } = await checkAndRefreshRecurringItems(list);
+        return checklist;
+      })
+    );
+
+    return { success: true, data: refreshedLists };
   } catch (error) {
     console.error("Error in getLists:", error);
     return { success: false, error: "Failed to fetch lists" };
@@ -336,9 +397,8 @@ export const updateList = async (formData: FormData) => {
     );
 
     if (sharingMetadata) {
-      const newFilePath = `${currentList.owner}/${
-        updatedList.category || "Uncategorized"
-      }/${updatedList.id}.md`;
+      const newFilePath = `${currentList.owner}/${updatedList.category || "Uncategorized"
+        }/${updatedList.id}.md`;
 
       if (newId !== id) {
         const { removeSharedItem, addSharedItem } = await import(

@@ -258,7 +258,7 @@ yarn start
 
 ## Single Sign-On (SSO) with OIDC
 
-`jotty·page` supports any OIDC provider (Authentik, Auth0, Keycloak, Okta, etc.)
+`jotty·page` supports any OIDC provider (Authentik, Auth0, Keycloak, Okta, Google, EntraID, etc.)
 
 📖 **For the complete SSO documentation, see [howto/SSO.md](howto/SSO.md)**
 

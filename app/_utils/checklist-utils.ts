@@ -1,6 +1,10 @@
 import { Item } from "@/app/_types";
 import { Checklist, ChecklistType } from "@/app/_types";
 import { ChecklistsTypes, TaskStatus } from "@/app/_types/enums";
+import {
+  parseRecurrenceFromMarkdown,
+  recurrenceToMarkdown,
+} from "./recurrence-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (checklistType === ChecklistsTypes.TASK) {
@@ -117,6 +121,8 @@ export const parseMarkdown = (
         let text = cleanLine;
 
         let item: Item;
+        let recurrence = undefined;
+
         if (type === "task" && text.includes(" | ")) {
           const parts = text.split(" | ");
           const itemText = parts[0].replace(/∣/g, "|");
@@ -128,6 +134,7 @@ export const parseMarkdown = (
           let targetDate: string | undefined;
           let description: string | undefined;
           let itemMetadata: Record<string, any> = {};
+
 
           metadata.forEach((meta) => {
             if (meta.startsWith("status:")) {
@@ -163,6 +170,8 @@ export const parseMarkdown = (
               } catch (e) {
                 console.warn("Failed to parse item metadata:", e);
               }
+            } else if (meta.startsWith("recurrence:")) {
+              recurrence = parseRecurrenceFromMarkdown([meta]);
             }
           });
 
@@ -177,6 +186,7 @@ export const parseMarkdown = (
             targetDate,
             description,
             ...itemMetadata,
+            ...(recurrence ? { recurrence } : {}),
           };
         } else {
           let itemText = text.replace(/∣/g, "|");
@@ -199,6 +209,8 @@ export const parseMarkdown = (
                 }
               }
             });
+
+            recurrence = parseRecurrenceFromMarkdown(parts.slice(1));
           }
 
           item = {
@@ -209,6 +221,7 @@ export const parseMarkdown = (
             description,
             ...metadata,
             ...itemMetadata,
+            ...(recurrence && { recurrence }),
           };
         }
 
@@ -310,13 +323,17 @@ const generateItemMarkdown = (
       metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
     }
 
+    if (item.recurrence) {
+      const recurrenceParts = recurrenceToMarkdown(item.recurrence);
+      metadata.push(...recurrenceParts);
+    }
+
     if (Object.keys(itemMetadata).length > 0) {
       metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
     }
 
-    itemLine = `${indent}- [${
-      item.completed ? "x" : " "
-    }] ${escapedText} | ${metadata.join(" | ")}`;
+    itemLine = `${indent}- [${item.completed ? "x" : " "
+      }] ${escapedText} | ${metadata.join(" | ")}`;
   } else {
     const itemMetadata: Record<string, any> = {};
     if (item.id) {
@@ -344,9 +361,13 @@ const generateItemMarkdown = (
       metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
     }
 
-    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${
-      metadata.length ? ` | ${metadata.join(" | ")}` : ""
-    }`;
+    if (item.recurrence) {
+      const recurrenceParts = recurrenceToMarkdown(item.recurrence);
+      metadata.push(...recurrenceParts);
+    }
+
+    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${metadata.length ? ` | ${metadata.join(" | ")}` : ""
+      }`;
   }
 
   if (item.children && item.children.length > 0) {

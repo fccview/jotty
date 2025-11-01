@@ -138,13 +138,19 @@ export const getSettings = async () => {
     }
   } catch (error) {
     return {
-      appName: "",
-      appDescription: "",
-      "16x16Icon": "",
-      "32x32Icon": "",
-      "180x180Icon": "",
-      isRwMarkable: false,
-      isDemo: false,
+      appName: "jotty·page",
+      appDescription:
+        "A simple, fast, and lightweight checklist and notes application",
+      "16x16Icon": "/app-icons/favicon-16x16.png",
+      "32x32Icon": "/app-icons/favicon-32x32.png",
+      "180x180Icon": "/app-icons/apple-touch-icon.png",
+      notifyNewUpdates: "yes",
+      maximumFileSize: MAX_FILE_SIZE,
+      editor: {
+        enableSlashCommands: true,
+        enableBubbleMenu: true,
+        enableTableToolbar: true,
+      },
     };
   }
 };
@@ -216,7 +222,8 @@ export const updateAppSettings = async (
     const icon180x180 = (formData.get("180x180Icon") as string) || "";
     const notifyNewUpdates =
       (formData.get("notifyNewUpdates") as "yes" | "no") || "yes";
-    const maximumFileSize = Number(formData.get("maximumFileSize")) || MAX_FILE_SIZE;
+    const maximumFileSize =
+      Number(formData.get("maximumFileSize")) || MAX_FILE_SIZE;
 
     let editorSettings = {
       enableSlashCommands: true,
@@ -350,5 +357,76 @@ export const readPackageVersion = async (): Promise<Result<string>> => {
   } catch (error) {
     console.error("Error reading package.json version:", error);
     return { success: false, error: "Failed to read package version" };
+  }
+};
+
+export const saveCustomCSS = async (css: string): Promise<Result<null>> => {
+  try {
+    const admin = await isAdmin();
+    if (!admin) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const cssPath = path.join(process.cwd(), "config", "custom.css");
+
+    try {
+      await fs.access(path.dirname(cssPath));
+    } catch {
+      await fs.mkdir(path.dirname(cssPath), { recursive: true });
+    }
+
+    await fs.writeFile(cssPath, css, "utf-8");
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error saving custom CSS:", error);
+    return { success: false, error: "Failed to save custom CSS" };
+  }
+};
+
+export const loadCustomCSS = async (): Promise<Result<string>> => {
+  try {
+    const cssPath = path.join(process.cwd(), "config", "custom.css");
+
+    try {
+      const css = await fs.readFile(cssPath, "utf-8");
+      return { success: true, data: css };
+    } catch {
+      // File doesn't exist, return empty CSS
+      return { success: true, data: "" };
+    }
+  } catch (error) {
+    console.error("Error loading custom CSS:", error);
+    return { success: false, error: "Failed to load custom CSS" };
+  }
+};
+
+export const saveCustomThemes = async (
+  themes: ThemeConfig
+): Promise<Result<null>> => {
+  try {
+    const admin = await isAdmin();
+    if (!admin) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (!validateThemeConfig(themes)) {
+      return { success: false, error: "Invalid theme configuration" };
+    }
+
+    const themesPath = path.join(process.cwd(), "config", "themes.json");
+
+    try {
+      await fs.access(path.dirname(themesPath));
+    } catch {
+      await fs.mkdir(path.dirname(themesPath), { recursive: true });
+    }
+
+    await fs.writeFile(themesPath, JSON.stringify(themes, null, 2), "utf-8");
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error saving custom themes:", error);
+    return { success: false, error: "Failed to save custom themes" };
   }
 };

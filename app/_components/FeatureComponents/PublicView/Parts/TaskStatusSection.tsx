@@ -1,7 +1,7 @@
 import { cn } from "@/app/_utils/global-utils";
 import { Item } from "@/app/_types";
-import { ChecklistItem } from "../../Checklists/Parts/Simple/ChecklistItem";
 import { TASK_STATUS_CONFIG } from "@/app/_consts/checklists";
+import { NestedChecklistItem } from "../../Checklists/Parts/Simple/NestedChecklistItem";
 
 export const TaskStatusSection = ({
   status,
@@ -22,15 +22,17 @@ export const TaskStatusSection = ({
 
       <div className="space-y-2">
         {items.map((item, index) => (
-          <ChecklistItem
-            onToggle={() => {}}
-            onDelete={() => {}}
+          <NestedChecklistItem
             key={item.id}
             item={item}
-            index={index}
+            index={index.toString()}
+            level={0}
+            onToggle={() => {}}
+            onDelete={() => {}}
             isPublicView={true}
-            status={config.title}
             isDeletingItem={false}
+            isDragDisabled={true}
+            isShared={true}
           />
         ))}
       </div>
