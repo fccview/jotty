@@ -157,6 +157,22 @@ export const shouldRefreshRecurringItem = (item: Item): boolean => {
 };
 
 /**
+ * Helper function to recursively reset all nested children to uncompleted state
+ * @param children - Array of child items to reset
+ * @returns Array of reset children, or undefined if no children
+ */
+const resetChildren = (children?: Item[]): Item[] | undefined => {
+  if (!children || children.length === 0) return children;
+
+  return children.map(child => ({
+    ...child,
+    completed: false,
+    status: child.status ? TaskStatus.TODO : undefined,
+    children: resetChildren(child.children), // Recursive call for nested children
+  }));
+};
+
+/**
  * Refresh a recurring item by creating a new instance
  * @param item - The completed recurring item
  * @returns Updated item with new nextDue date and uncompleted status
@@ -178,7 +194,9 @@ export const refreshRecurringItem = (item: Item): Item => {
   if (item?.status !== TaskStatus.PAUSED) {
     return {
       ...item,
+      completed: false,
       status: TaskStatus.TODO,
+      children: resetChildren(item.children),
       recurrence: {
         ...item.recurrence,
         nextDue,
@@ -190,6 +208,7 @@ export const refreshRecurringItem = (item: Item): Item => {
   return {
     ...item,
     completed: false,
+    children: resetChildren(item.children),
     recurrence: {
       ...item.recurrence,
       nextDue,
