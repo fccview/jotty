@@ -2,7 +2,7 @@ name: Build and Publish Multi-Platform Docker Image
 
 on:
   push:
-    branches: ["main", "develop", "sso-debug"]
+    branches: ["main", "develop", "feature/bi-directional-linking"]
     tags: ["*"]
 
 jobs:

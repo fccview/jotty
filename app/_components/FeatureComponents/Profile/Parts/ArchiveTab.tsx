@@ -40,6 +40,7 @@ export const ArchiveTab = ({
 
   const handleUnarchive = (item: ArchivedItem) => {
     setSelectedItem(item);
+
     if (item.type === "checklist") {
       setShowEditChecklistModal(true);
     } else {

@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { getAllNotes } from "@/app/_server/actions/note";
-import { getItemSharingMetadata } from "@/app/_server/actions/sharing";
 import { PublicNoteView } from "@/app/_components/FeatureComponents/PublicView/PublicNoteView";
 import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { Modes } from "@/app/_types/enums";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
+import { isItemSharedWith } from "@/app/_server/actions/sharing";
 
 interface PublicNotePageProps {
   params: {
@@ -66,7 +66,6 @@ export default async function PublicNotePage({
     redirect("/");
   }
 
-  const sharingMetadata = await getItemSharingMetadata(id, "note", note.owner!);
   const user = await getUserByUsername(note.owner!);
   if (user) {
     user.avatarUrl = process.env.SERVE_PUBLIC_IMAGES
@@ -74,15 +73,15 @@ export default async function PublicNotePage({
       : undefined;
   }
 
-  const isPubliclyShared = sharingMetadata?.isPubliclyShared || false;
+  const isPubliclyShared = await isItemSharedWith(id, category, "note", "public");
   const isPrintView = searchParams.view_mode === "print";
 
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.username === note.owner;
 
-  if (!isPubliclyShared && !(isOwner && isPrintView)) {
-    redirect("/");
+  if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
+    return <PublicNoteView note={note} user={user} />;
   }
 
-  return <PublicNoteView note={note} user={user} />;
+  redirect("/");
 }

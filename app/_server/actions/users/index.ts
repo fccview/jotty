@@ -131,6 +131,23 @@ async function _updateUserCore(
         error
       );
     }
+
+    try {
+      const { updateSharingData, updateReceiverUsername } = await import("@/app/_server/actions/sharing");
+
+      await updateSharingData(
+        { sharer: targetUsername } as any,
+        { sharer: updates.username } as any
+      );
+
+      await updateReceiverUsername(targetUsername, updates.username, "checklist");
+      await updateReceiverUsername(targetUsername, updates.username, "note");
+    } catch (error) {
+      console.warn(
+        `Could not update sharing data for username change ${targetUsername} -> ${updates.username}:`,
+        error
+      );
+    }
   }
 
   const updatedUser: User = {
@@ -545,27 +562,59 @@ export const updateUserSettings = async ({
   }
 };
 
+const findFileRecursively = async (
+  dir: string,
+  targetFileName: string,
+  targetCategory: string
+): Promise<string | null> => {
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      if (entry.name === targetCategory) {
+        const categoryPath = path.join(dir, entry.name);
+        const categoryEntries = await fs.readdir(categoryPath, { withFileTypes: true });
+
+        for (const fileEntry of categoryEntries) {
+          if (fileEntry.isFile() && fileEntry.name === targetFileName) {
+            return path.join(categoryPath, fileEntry.name);
+          }
+        }
+      } else {
+        const result = await findFileRecursively(path.join(dir, entry.name), targetFileName, targetCategory);
+        if (result) return result;
+      }
+    }
+  }
+
+  return null;
+};
+
 export const getUserByChecklist = async (
   checklistID: string,
   checklistCategory: string
 ): Promise<Result<User>> => {
   try {
-    const allUsers = await readJsonFile(USERS_FILE);
+    const checklistsBaseDir = path.join(process.cwd(), "data", "checklists");
+    const targetFileName = `${checklistID}.md`;
+    const foundFile = await findFileRecursively(checklistsBaseDir, targetFileName, checklistCategory);
 
-    for (const user of allUsers) {
-      const userChecklistsDir = CHECKLISTS_DIR(user.username);
-      const categoryPath = path.join(userChecklistsDir, checklistCategory);
-      const filePath = path.join(categoryPath, `${checklistID}.md`);
-
-      try {
-        await fs.access(filePath);
-        return { success: true, data: user };
-      } catch (error) {
-        continue;
-      }
+    if (!foundFile) {
+      return { success: false, error: "Checklist not found" };
     }
 
-    return { success: false, error: "Checklist not found" };
+    const pathParts = foundFile.split(path.sep);
+    const categoryIndex = pathParts.indexOf(checklistCategory);
+    const username = pathParts[categoryIndex - 1];
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const foundUser = allUsers.find((user: User) => user.username === username);
+
+    if (!foundUser) {
+      return { success: false, error: "Invalid user" };
+    }
+
+    return { success: true, data: foundUser };
   } catch (error) {
     console.error("Error in getUserByChecklist:", error);
     return { success: false, error: "Failed to find checklist owner" };
@@ -577,22 +626,26 @@ export const getUserByNote = async (
   noteCategory: string
 ): Promise<Result<User>> => {
   try {
-    const allUsers = await readJsonFile(USERS_FILE);
+    const notesBaseDir = path.join(process.cwd(), "data", "notes");
+    const targetFileName = `${noteID}.md`;
+    const foundFile = await findFileRecursively(notesBaseDir, targetFileName, noteCategory);
 
-    for (const user of allUsers) {
-      const userNotesDir = NOTES_DIR(user.username);
-      const categoryPath = path.join(userNotesDir, noteCategory);
-      const filePath = path.join(categoryPath, `${noteID}.md`);
-
-      try {
-        await fs.access(filePath);
-        return { success: true, data: user };
-      } catch (error) {
-        continue;
-      }
+    if (!foundFile) {
+      return { success: false, error: "Note not found" };
     }
 
-    return { success: false, error: "Note not found" };
+    const pathParts = foundFile.split(path.sep);
+    const categoryIndex = pathParts.indexOf(noteCategory);
+    const username = pathParts[categoryIndex - 1];
+
+    const allUsers = await readJsonFile(USERS_FILE);
+    const foundUser = allUsers.find((user: User) => user.username === username);
+
+    if (!foundUser) {
+      return { success: false, error: "Invalid user" };
+    }
+
+    return { success: true, data: foundUser };
   } catch (error) {
     console.error("Error in getUserByNote:", error);
     return { success: false, error: "Failed to find note owner" };
@@ -609,6 +662,19 @@ export const canUserEditItem = async (
     const isAdminUser = await isAdmin();
     if (isAdminUser) return true;
 
+    const userDir =
+      itemType === "checklist"
+        ? CHECKLISTS_DIR(currentUsername)
+        : NOTES_DIR(currentUsername);
+    const categoryDir = path.join(userDir, itemCategory);
+    const filePath = path.join(categoryDir, `${itemId}.md`);
+
+    try {
+      await fs.access(filePath);
+      return true;
+    } catch {
+    }
+
     const ownerResult =
       itemType === "checklist"
         ? await getUserByChecklist(itemId, itemCategory)
@@ -619,14 +685,8 @@ export const canUserEditItem = async (
     const owner = ownerResult.data;
     if (owner?.username === currentUsername) return true;
 
-    const { getItemsSharedWithUser } = await import("../sharing");
-    const sharedItems = await getItemsSharedWithUser(currentUsername);
-
-    const sharedItemsList =
-      itemType === "checklist" ? sharedItems.checklists : sharedItems.notes;
-    return sharedItemsList.some(
-      (item) => item.id === itemId && item.owner === owner?.username
-    );
+    const { isItemSharedWith } = await import("@/app/_server/actions/sharing");
+    return await isItemSharedWith(itemId, itemCategory, itemType, currentUsername);
   } catch (error) {
     console.error("Error in canUserEditItem:", error);
     return false;
@@ -734,8 +794,14 @@ export const toggleArchive = async (
 ): Promise<{ success: boolean; data?: Checklist | Note; error?: string }> => {
   const isOwner = await getCurrentUser();
   const formData = new FormData();
+
   formData.append("id", item.id);
   formData.append("title", item.title);
+
+  if (!formData.get("user")) {
+    const owner = await getUserByNote(item.id, item.category || "Uncategorized");
+    formData.append("user", owner.data?.username || "");
+  }
 
   if (mode === Modes.NOTES) {
     formData.append("content", (item as Note).content);

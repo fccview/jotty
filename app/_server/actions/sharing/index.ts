@@ -1,510 +1,303 @@
 "use server";
 
+import { ItemType, Result } from "@/app/_types";
 import {
-  Result,
-  User,
-  GlobalSharingReturn,
-  SharedItem,
-  SharingMetadata,
-} from "@/app/_types";
-import { getCurrentUser } from "@/app/_server/actions/users";
-import { ItemType } from "@/app/_types";
-import { ensureDir, serverReadFile } from "@/app/_server/actions/file";
-import { readJsonFile, writeJsonFile } from "@/app/_server/actions/file";
-import {
-  SHARING_DIR,
-  SHARED_ITEMS_FILE,
-  USERS_FILE,
-} from "@/app/_consts/files";
+  ensureDir,
+  readJsonFile,
+  writeJsonFile,
+} from "@/app/_server/actions/file";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import path from "path";
+import { DATA_DIR } from "@/app/_consts/files";
+import { Modes } from "@/app/_types/enums";
 
-export const getGlobalSharing = async (): Promise<GlobalSharingReturn> => {
-  try {
-    const metadata = await readSharingMetadata();
+interface SharedItemEntry {
+  id: string;
+  category: string;
+  sharer: string;
+}
 
-    const allSharedChecklists = Object.values(metadata.checklists);
-    const allSharedNotes = Object.values(metadata.notes);
-    const allItems = [...allSharedChecklists, ...allSharedNotes];
+interface SharingItemUpdate {
+  id: string;
+  category: string;
+  itemType: ItemType;
+  sharer?: string;
+}
 
-    const totalSharedChecklists = allSharedChecklists.length;
-    const totalSharedNotes = allSharedNotes.length;
+type SharingData = Record<string, SharedItemEntry[]>;
 
-    const totalSharingRelationships = allItems.length;
+const getSharingFilePath = (itemType: ItemType): string => {
+  const folderName = itemType === "checklist" ? Modes.CHECKLISTS : Modes.NOTES;
+  return path.join(DATA_DIR, folderName, ".sharing.json");
+};
 
-    const totalPublicShares = allItems.filter(
-      (item) => item.isPubliclyShared
-    ).length;
-
-    const sharerCounts: Record<string, number> = {};
-    allItems.forEach((item) => {
-      sharerCounts[item.owner] = (sharerCounts[item.owner] || 0) + 1;
-    });
-
-    const mostActiveSharers = Object.entries(sharerCounts)
-      .map(([username, sharedCount]) => ({ username, sharedCount }))
-      .sort((a, b) => b.sharedCount - a.sharedCount)
-      .slice(0, 5);
-
+export const readShareFile = async (
+  itemType: ItemType | "all"
+): Promise<SharingData> => {
+  if (itemType === "all") {
+    const noteSharingData = await readShareFile("note");
+    const checklistSharingData = await readShareFile("checklist");
     return {
-      success: true,
-      data: {
-        allSharedChecklists,
-        allSharedNotes,
-        sharingStats: {
-          totalSharedChecklists,
-          totalSharedNotes,
-          totalSharingRelationships,
-          mostActiveSharers,
-          totalPublicShares,
-        },
-      },
-    };
-  } catch (error) {
-    console.error("Error in getGlobalSharing:", error);
+      notes: noteSharingData,
+      checklists: checklistSharingData
+    } as any;
+  } else {
+    const filePath = getSharingFilePath(itemType);
+    await ensureDir(path.dirname(filePath));
 
-    return {
-      success: false,
-      data: {
-        allSharedChecklists: [],
-        allSharedNotes: [],
-        sharingStats: {
-          totalSharedChecklists: 0,
-          totalSharedNotes: 0,
-          totalSharingRelationships: 0,
-          totalPublicShares: 0,
-          mostActiveSharers: [],
-        },
-      },
-    };
+    const content = await readJsonFile(filePath);
+    return content || {};
   }
 };
 
-export const shareItem = async (formData: FormData): Promise<Result<null>> => {
+const writeShareFile = async (
+  itemType: ItemType,
+  data: SharingData
+): Promise<void> => {
+  const filePath = getSharingFilePath(itemType);
+  await writeJsonFile(data, filePath);
+};
+
+export const shareWith = async (
+  item: string,
+  categoryPath: string,
+  sharerUsername: string,
+  receiverUsername: string,
+  itemType: ItemType
+): Promise<Result<null>> => {
+  const sharingData = await readShareFile(itemType);
+
+  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
+
+  const newEntry: SharedItemEntry = {
+    id: item,
+    category: encodedCategory,
+    sharer: sharerUsername,
+  };
+
+  if (!sharingData[receiverUsername]) {
+    sharingData[receiverUsername] = [];
+  }
+
+  sharingData[receiverUsername] = sharingData[receiverUsername].filter(
+    (entry) => !(entry.id === item && entry.sharer === sharerUsername)
+  );
+
+  sharingData[receiverUsername].push(newEntry);
+
   try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return { success: false, error: "Not authenticated" };
+    await writeShareFile(itemType, sharingData);
+  } catch (error) {
+    return { success: false, error: "Failed to write share file" };
+  }
+
+  return { success: true, data: null };
+};
+
+export const isItemSharedWith = async (
+  item: string,
+  categoryPath: string,
+  itemType: ItemType,
+  username: string
+): Promise<boolean> => {
+  const sharingData = await readShareFile(itemType);
+  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
+
+  const userShares = sharingData[username] || [];
+  return userShares.some(
+    (entry) => entry.id === item && entry.category === encodedCategory
+  );
+};
+
+export const unshareWith = async (
+  item: string,
+  categoryPath: string,
+  sharerUsername: string,
+  receiverUsername: string,
+  itemType: ItemType
+): Promise<Result<null>> => {
+  const sharingData = await readShareFile(itemType);
+  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
+
+  console.log(item);
+
+  if (sharingData[receiverUsername]) {
+    sharingData[receiverUsername] = sharingData[receiverUsername].filter(
+      (entry) =>
+        !(
+          entry.id === item &&
+          entry.sharer === sharerUsername &&
+          entry.category === encodedCategory
+        )
+    );
+
+    if (sharingData[receiverUsername].length === 0) {
+      delete sharingData[receiverUsername];
     }
+  }
+  try {
+    await writeShareFile(itemType, sharingData);
+  } catch (error) {
+    return { success: false, error: "Failed to write unshare file" };
+  }
 
-    const itemId = formData.get("itemId") as string;
-    const type = formData.get("type") as ItemType;
-    const title = formData.get("title") as string;
-    const category = formData.get("category") as string;
-    const action = formData.get("action") as
-      | "share"
-      | "unshare"
-      | "share-public"
-      | "unshare-public";
-    const targetUsers = formData.get("targetUsers") as string;
+  return { success: true };
+};
 
-    if (!itemId || !type || !title || !action) {
-      return { success: false, error: "Missing required fields" };
-    }
+export const getAllSharedItemsForUser = async (
+  username: string
+): Promise<{ notes: SharedItemEntry[]; checklists: SharedItemEntry[] }> => {
+  const notesSharing = await readShareFile("note");
+  const checklistsSharing = await readShareFile("checklist");
 
-    if (type !== "checklist" && type !== "note") {
-      return { success: false, error: "Invalid item type" };
-    }
+  return {
+    notes: notesSharing[username] || [],
+    checklists: checklistsSharing[username] || [],
+  };
+};
 
-    const users = await readJsonFile(USERS_FILE);
-    const usernames = users.map((u: User) => u.username);
+export const getAllSharedItems = async (): Promise<{
+  notes: Array<{ id: string; category: string }>;
+  checklists: Array<{ id: string; category: string }>;
+  public: {
+    notes: Array<{ id: string; category: string }>;
+    checklists: Array<{ id: string; category: string }>;
+  };
+}> => {
+  const [notesSharing, checklistsSharing] = await Promise.all([
+    readShareFile("note"),
+    readShareFile("checklist"),
+  ]);
 
-    if (action === "share") {
-      if (!targetUsers) {
-        return { success: false, error: "No target users specified" };
-      }
+  const allNotes: Array<{ id: string; category: string }> = [];
+  const allChecklists: Array<{ id: string; category: string }> = [];
+  const publicNotes: Array<{ id: string; category: string }> = [];
+  const publicChecklists: Array<{ id: string; category: string }> = [];
 
-      const targetUserList = targetUsers.split(",").map((u) => u.trim());
+  Object.values(notesSharing).forEach((userShares) => {
+    userShares.forEach((entry) => {
+      allNotes.push({ id: entry.id, category: entry.category });
+    });
+  });
 
-      const invalidUsers = targetUserList.filter((u) => !usernames.includes(u));
-      if (invalidUsers.length > 0) {
-        return {
-          success: false,
-          error: `Invalid users: ${invalidUsers.join(", ")}`,
-        };
-      }
+  Object.values(checklistsSharing).forEach((userShares) => {
+    userShares.forEach((entry) => {
+      allChecklists.push({ id: entry.id, category: entry.category });
+    });
+  });
 
-      const filteredUsers = targetUserList.filter(
-        (u) => u !== currentUser.username
+  if (notesSharing.public) {
+    notesSharing.public.forEach((entry) => {
+      publicNotes.push({ id: entry.id, category: entry.category });
+    });
+  }
+
+  if (checklistsSharing.public) {
+    checklistsSharing.public.forEach((entry) => {
+      publicChecklists.push({ id: entry.id, category: entry.category });
+    });
+  }
+
+  const deduplicate = (items: Array<{ id: string; category: string }>) =>
+    items.filter(
+      (item, index, array) =>
+        array.findIndex(
+          (i) => i.id === item.id && i.category === item.category
+        ) === index
+    );
+
+  return {
+    notes: deduplicate(allNotes),
+    checklists: deduplicate(allChecklists),
+    public: {
+      notes: deduplicate(publicNotes),
+      checklists: deduplicate(publicChecklists),
+    },
+  };
+};
+
+export const updateSharingData = async (
+  previousItem: SharingItemUpdate,
+  newItem: SharingItemUpdate | null
+): Promise<void> => {
+  const sharingData = await readShareFile(previousItem.itemType);
+  let hasChanges = false;
+
+  if (newItem === null) {
+    Object.keys(sharingData).forEach(username => {
+      const originalLength = sharingData[username].length;
+      sharingData[username] = sharingData[username].filter(
+        entry =>
+          !(entry.id === previousItem.id &&
+            entry.category === encodeCategoryPath(previousItem.category || "Uncategorized"))
       );
-      if (filteredUsers.length === 0) {
-        return { success: false, error: "Cannot share with yourself" };
+      if (sharingData[username].length !== originalLength) {
+        hasChanges = true;
       }
-
-      const existingMetadata = await getItemSharingMetadata(
-        itemId,
-        type,
-        currentUser.username
-      );
-
-      if (existingMetadata) {
-        const allUsers = [...existingMetadata.sharedWith, ...filteredUsers];
-        const newSharedWith = allUsers.filter(
-          (user, index) => allUsers.indexOf(user) === index
-        );
-        await updateSharedItem(itemId, type, currentUser.username, {
-          sharedWith: newSharedWith,
-        });
-      } else {
-        await addSharedItem(
-          itemId,
-          type,
-          title,
-          currentUser.username,
-          filteredUsers,
-          category
-        );
+      if (sharingData[username].length === 0) {
+        delete sharingData[username];
       }
+    });
+  } else {
+    const prevCategory = previousItem.category ? encodeCategoryPath(previousItem.category) : null;
+    const newCategory = newItem.category ? encodeCategoryPath(newItem.category) : null;
 
-      return { success: true };
-    } else if (action === "share-public") {
-      const existingMetadata = await getItemSharingMetadata(
-        itemId,
-        type,
-        currentUser.username
-      );
+    Object.keys(sharingData).forEach(username => {
+      sharingData[username].forEach(entry => {
+        let updated = false;
 
-      if (existingMetadata) {
-        await updateSharedItem(itemId, type, currentUser.username, {
-          ...existingMetadata,
-          isPubliclyShared: true,
-        });
-      } else {
-        await addSharedItem(
-          itemId,
-          type,
-          title,
-          currentUser.username,
-          [],
-          category,
-          undefined,
-          true
-        );
-      }
-
-      return { success: true };
-    } else if (action === "unshare-public") {
-      const existingMetadata = await getItemSharingMetadata(
-        itemId,
-        type,
-        currentUser.username
-      );
-
-      if (existingMetadata) {
-        if (existingMetadata.sharedWith.length === 0) {
-          await removeSharedItem(itemId, type, currentUser.username);
-        } else {
-          await updateSharedItem(itemId, type, currentUser.username, {
-            ...existingMetadata,
-            isPubliclyShared: false,
-          });
+        if (!previousItem.id && newItem.sharer && entry.sharer === previousItem.sharer) {
+          entry.sharer = newItem.sharer;
+          updated = true;
         }
-      }
+        else if (previousItem.id) {
+          if (entry.id === previousItem.id &&
+            entry.category === (prevCategory || encodeCategoryPath("Uncategorized")) &&
+            newItem.id !== previousItem.id) {
+            entry.id = newItem.id;
+            updated = true;
+          }
 
-      return { success: true };
-    } else if (action === "unshare") {
-      if (!targetUsers) {
-        await removeSharedItem(itemId, type, currentUser.username);
-      } else {
-        const targetUserList = targetUsers.split(",").map((u) => u.trim());
-        const existingMetadata = await getItemSharingMetadata(
-          itemId,
-          type,
-          currentUser.username
-        );
+          if (entry.id === (newItem.id || previousItem.id) &&
+            entry.category === (prevCategory || encodeCategoryPath("Uncategorized")) &&
+            newCategory && newCategory !== (prevCategory || encodeCategoryPath("Uncategorized"))) {
+            entry.category = newCategory;
+            updated = true;
+          }
 
-        if (existingMetadata) {
-          const newSharedWith = existingMetadata.sharedWith.filter(
-            (u) => !targetUserList.includes(u)
-          );
-
-          if (newSharedWith.length === 0) {
-            await removeSharedItem(itemId, type, currentUser.username);
-          } else {
-            await updateSharedItem(itemId, type, currentUser.username, {
-              sharedWith: newSharedWith,
-            });
+          if (newItem.sharer &&
+            entry.sharer === previousItem.sharer &&
+            entry.id === (newItem.id || previousItem.id) &&
+            entry.category === (newCategory || prevCategory || encodeCategoryPath("Uncategorized")) &&
+            newItem.sharer !== previousItem.sharer) {
+            entry.sharer = newItem.sharer;
+            updated = true;
           }
         }
-      }
 
-      return { success: true };
-    }
-
-    return { success: false, error: "Invalid action" };
-  } catch (error) {
-    console.error("Error in shareItemAction:", error);
-    return { success: false, error: "Failed to share item" };
-  }
-};
-
-export const unshareItem = async (
-  formData: FormData
-): Promise<Result<null>> => {
-  formData.set("action", "unshare");
-  return shareItem(formData);
-};
-
-const generateSharingId = async (
-  owner: string,
-  itemId: string,
-  type: ItemType
-): Promise<string> => {
-  return `${owner}-${itemId}-${type}`;
-};
-
-export const readSharingMetadata = async (): Promise<SharingMetadata> => {
-  await ensureDir(SHARING_DIR);
-
-  const content = await serverReadFile(
-    SHARED_ITEMS_FILE,
-    JSON.stringify({
-      checklists: {},
-      notes: {},
-    })
-  );
-
-  try {
-    return JSON.parse(content);
-  } catch {
-    return {
-      checklists: {},
-      notes: {},
-    };
-  }
-};
-
-export const addSharedItem = async (
-  itemId: string,
-  type: ItemType,
-  title: string,
-  owner: string,
-  sharedWith: string[],
-  category?: string,
-  filePath?: string,
-  isPubliclyShared?: boolean
-): Promise<void> => {
-  const metadata = await readSharingMetadata();
-  const sharingId = await generateSharingId(owner, itemId, type);
-
-  const sharedItem: SharedItem = {
-    id: itemId,
-    type,
-    title,
-    owner,
-    sharedWith,
-    sharedAt: new Date().toISOString(),
-    category,
-    filePath:
-      filePath || `${owner}/${category || "Uncategorized"}/${itemId}.md`,
-    isPubliclyShared: isPubliclyShared || false,
-  };
-
-  if (type === "checklist") {
-    metadata.checklists[sharingId] = sharedItem;
-  } else {
-    metadata.notes[sharingId] = sharedItem;
-  }
-
-  await writeJsonFile(metadata, SHARED_ITEMS_FILE);
-};
-
-export const removeSharedItem = async (
-  itemId: string,
-  type: ItemType,
-  owner: string
-): Promise<void> => {
-  const metadata = await readSharingMetadata();
-  const sharingId = await generateSharingId(owner, itemId, type);
-
-  if (type === "checklist") {
-    delete metadata.checklists[sharingId];
-  } else {
-    delete metadata.notes[sharingId];
-  }
-
-  await writeJsonFile(metadata, SHARED_ITEMS_FILE);
-};
-
-export const updateSharedItem = async (
-  itemId: string,
-  type: ItemType,
-  owner: string,
-  updates: Partial<SharedItem>
-): Promise<void> => {
-  const metadata = await readSharingMetadata();
-  const sharingId = await generateSharingId(owner, itemId, type);
-
-  if (type === "checklist") {
-    if (metadata.checklists[sharingId]) {
-      metadata.checklists[sharingId] = {
-        ...metadata.checklists[sharingId],
-        ...updates,
-      };
-    }
-  } else {
-    if (metadata.notes[sharingId]) {
-      metadata.notes[sharingId] = {
-        ...metadata.notes[sharingId],
-        ...updates,
-      };
-    }
-  }
-
-  await writeJsonFile(metadata, SHARED_ITEMS_FILE);
-};
-
-export const getItemsSharedWithUser = async (
-  username: string
-): Promise<{
-  checklists: SharedItem[];
-  notes: SharedItem[];
-}> => {
-  const metadata = await readSharingMetadata();
-
-  const sharedChecklists = Object.values(metadata.checklists).filter((item) =>
-    item.sharedWith.includes(username)
-  );
-
-  const sharedNotes = Object.values(metadata.notes).filter((item) =>
-    item.sharedWith.includes(username)
-  );
-
-  return {
-    checklists: sharedChecklists,
-    notes: sharedNotes,
-  };
-};
-
-export const getItemsSharedByUser = async (
-  username: string
-): Promise<{
-  checklists: SharedItem[];
-  notes: SharedItem[];
-}> => {
-  const metadata = await readSharingMetadata();
-
-  const sharedChecklists = Object.values(metadata.checklists).filter(
-    (item) => item.owner === username
-  );
-
-  const sharedNotes = Object.values(metadata.notes).filter(
-    (item) => item.owner === username
-  );
-
-  return {
-    checklists: sharedChecklists,
-    notes: sharedNotes,
-  };
-};
-
-export const getItemSharingMetadata = async (
-  itemId: string,
-  type: ItemType,
-  owner: string
-): Promise<SharedItem | null> => {
-  const metadata = await readSharingMetadata();
-  const sharingId = await generateSharingId(owner, itemId, type);
-
-  if (type === "checklist") {
-    return metadata.checklists[sharingId] || null;
-  } else {
-    return metadata.notes[sharingId] || null;
-  }
-};
-
-export const getItemSharingStatus = async (
-  itemId: string,
-  type: ItemType,
-  owner: string
-): Promise<
-  Result<{ isShared: boolean; sharedWith: string[]; isPubliclyShared: boolean }>
-> => {
-  try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const metadata = await getItemSharingMetadata(itemId, type, owner);
-
-    if (!metadata) {
-      return {
-        success: true,
-        data: { isShared: false, sharedWith: [], isPubliclyShared: false },
-      };
-    }
-
-    return {
-      success: true,
-      data: {
-        isShared: metadata.sharedWith.length > 0,
-        sharedWith: metadata.sharedWith,
-        isPubliclyShared: metadata.isPubliclyShared || false,
-      },
-    };
-  } catch (error) {
-    console.error("Error in getItemSharingStatus:", error);
-    return { success: false, error: "Failed to get sharing status" };
-  }
-};
-
-export const getAllSharingStatuses = async (
-  items: Array<{ id: string; type: ItemType; owner: string }>
-): Promise<
-  Result<
-    Record<
-      string,
-      { isShared: boolean; sharedWith: string[]; isPubliclyShared: boolean }
-    >
-  >
-> => {
-  try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const results: Record<
-      string,
-      { isShared: boolean; sharedWith: string[]; isPubliclyShared: boolean }
-    > = {};
-
-    for (const item of items) {
-      try {
-        const metadata = await getItemSharingMetadata(
-          item.id,
-          item.type,
-          item.owner
-        );
-
-        if (!metadata) {
-          results[item.id] = {
-            isShared: false,
-            sharedWith: [],
-            isPubliclyShared: false,
-          };
-        } else {
-          results[item.id] = {
-            isShared: metadata.sharedWith.length > 0,
-            sharedWith: metadata.sharedWith,
-            isPubliclyShared: metadata.isPubliclyShared || false,
-          };
+        if (updated) {
+          hasChanges = true;
         }
-      } catch (error) {
-        console.error(
-          `Error getting sharing status for item ${item.id}:`,
-          error
-        );
-        results[item.id] = {
-          isShared: false,
-          sharedWith: [],
-          isPubliclyShared: false,
-        };
-      }
-    }
+      });
+    });
+  }
 
-    return { success: true, data: results };
-  } catch (error) {
-    console.error("Error in getAllSharingStatuses:", error);
-    return { success: false, error: "Failed to get sharing statuses" };
+  if (hasChanges) {
+    await writeShareFile(previousItem.itemType, sharingData);
+  }
+};
+
+export const updateReceiverUsername = async (
+  oldUsername: string,
+  newUsername: string,
+  itemType: ItemType
+): Promise<void> => {
+  const sharingData = await readShareFile(itemType);
+
+  if (sharingData[oldUsername]) {
+    sharingData[newUsername] = sharingData[oldUsername];
+    delete sharingData[oldUsername];
+
+    await writeShareFile(itemType, sharingData);
   }
 };

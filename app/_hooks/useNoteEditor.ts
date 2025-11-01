@@ -15,6 +15,7 @@ import {
 } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { getUserByNote } from "../_server/actions/users";
 
 interface UseNoteEditorProps {
   note: Note;
@@ -90,6 +91,7 @@ export const useNoteEditor = ({
 
   const handleSave = useCallback(
     async (autosaveNotes = false) => {
+      const owner = await getUserByNote(note.id, note.category || "Uncategorized");
       const useAutosave = autosaveNotes ? true : false;
       if (!useAutosave) {
         setStatus((prev) => ({ ...prev, isSaving: true }));
@@ -100,6 +102,7 @@ export const useNoteEditor = ({
       formData.append("content", derivedMarkdownContent);
       formData.append("category", category);
       formData.append("originalCategory", note.category || "Uncategorized");
+      formData.append("user", owner.data?.username || "");
 
       const result = await updateNote(formData, useAutosave);
 

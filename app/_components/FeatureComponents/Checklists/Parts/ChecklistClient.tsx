@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Checklist, Category, User } from "@/app/_types";
+import { Category, Checklist, User } from "@/app/_types";
 import { ChecklistView } from "@/app/_components/FeatureComponents/Checklists/Checklist";
 import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
 import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeader";
@@ -18,25 +18,15 @@ import { Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { toggleArchive } from "@/app/_server/actions/users";
 
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
-
 interface ChecklistClientProps {
   checklist: Checklist;
-  lists: Checklist[];
   categories: Category[];
-  sharingStatuses?: Record<string, SharingStatus>;
   user: User | null;
 }
 
 export const ChecklistClient = ({
   checklist,
-  lists,
   categories,
-  sharingStatuses,
   user,
 }: ChecklistClientProps) => {
   const router = useRouter();
@@ -134,9 +124,7 @@ export const ChecklistClient = ({
 
   return (
     <Layout
-      lists={lists}
       categories={categories}
-      sharingStatuses={sharingStatuses}
       onOpenSettings={openSettings}
       onOpenCreateModal={openCreateChecklistModal}
       onOpenCategoryModal={openCreateCategoryModal}
@@ -147,7 +135,10 @@ export const ChecklistClient = ({
       {showShareModal && (
         <ShareModal
           isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
+          onClose={() => {
+            setShowShareModal(false);
+            router.refresh();
+          }}
           itemId={localChecklist.id}
           itemTitle={localChecklist.title}
           itemType="checklist"

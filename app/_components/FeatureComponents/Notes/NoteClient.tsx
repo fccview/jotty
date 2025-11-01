@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Note, Category, User } from "@/app/_types";
+import { Note, Category } from "@/app/_types";
 import { NoteEditor } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditor";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
@@ -11,25 +11,12 @@ import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
-
 interface NoteClientProps {
   note: Note;
-  docs: Note[];
   categories: Category[];
-  sharingStatuses?: Record<string, SharingStatus>;
 }
 
-export const NoteClient = ({
-  note,
-  docs,
-  categories,
-  sharingStatuses,
-}: NoteClientProps) => {
+export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const router = useRouter();
   const { checkNavigation } = useNavigationGuard();
   const { openCreateNoteModal, openCreateCategoryModal, openSettings } =
@@ -85,10 +72,7 @@ export const NoteClient = ({
 
   return (
     <Layout
-      lists={[]}
-      docs={docs}
       categories={categories}
-      sharingStatuses={sharingStatuses}
       onOpenSettings={openSettings}
       onOpenCreateModal={openCreateNoteModal}
       onOpenCategoryModal={openCreateCategoryModal}

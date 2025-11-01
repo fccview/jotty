@@ -19,8 +19,6 @@ interface QuickNavProps {
   onSidebarToggle?: () => void;
   onOpenSettings?: () => void;
   isAdmin: boolean;
-  checklists?: Checklist[];
-  notes?: Note[];
   onModeChange?: (mode: AppMode) => void;
 }
 
@@ -29,8 +27,6 @@ export const QuickNav = ({
   onSidebarToggle,
   onOpenSettings,
   isAdmin,
-  checklists = [],
-  notes = [],
   onModeChange,
 }: QuickNavProps) => {
   const router = useRouter();
@@ -57,11 +53,7 @@ export const QuickNav = ({
         )}
 
         <div className="hidden lg:flex lg:items-center lg:gap-2">
-          <NavigationSearchIcon
-            checklists={checklists}
-            notes={notes}
-            onModeChange={onModeChange}
-          />
+          <NavigationSearchIcon onModeChange={onModeChange} />
 
           <NavigationHelpIcon />
 
@@ -121,11 +113,7 @@ export const QuickNav = ({
             }
           />
 
-          <NavigationSearchIcon
-            checklists={checklists}
-            notes={notes}
-            onModeChange={onModeChange}
-          />
+          <NavigationSearchIcon onModeChange={onModeChange} />
         </div>
       </nav>
     </header>

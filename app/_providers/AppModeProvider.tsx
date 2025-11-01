@@ -7,8 +7,9 @@ import {
   ReactNode,
   useEffect,
 } from "react";
-import { AppMode, AppSettings, User } from "@/app/_types";
+import { AppMode, AppSettings, Checklist, Note, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
+import { LinkIndex } from "../_server/actions/link";
 
 interface AppModeContextType {
   mode: AppMode;
@@ -23,6 +24,22 @@ interface AppModeContextType {
   appVersion: string;
   appSettings: AppSettings | null;
   usersPublicData: Partial<User>[];
+  linkIndex: LinkIndex | null;
+  notes: Partial<Note>[];
+  checklists: Partial<Checklist>[];
+  allSharedItems: {
+    notes: Array<{ id: string; category: string }>;
+    checklists: Array<{ id: string; category: string }>;
+    public: {
+      notes: Array<{ id: string; category: string }>;
+      checklists: Array<{ id: string; category: string }>;
+    };
+  } | null;
+  userSharedItems: {
+    notes: Array<{ id: string; category: string; sharer: string }>;
+    checklists: Array<{ id: string; category: string; sharer: string }>;
+  } | null;
+  globalSharing: any;
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
@@ -36,6 +53,12 @@ export const AppModeProvider = ({
   pathname,
   appVersion,
   initialSettings,
+  linkIndex,
+  notes,
+  checklists,
+  allSharedItems,
+  userSharedItems,
+  globalSharing,
 }: {
   children: ReactNode;
   isDemoMode?: boolean;
@@ -45,13 +68,30 @@ export const AppModeProvider = ({
   pathname?: string;
   appVersion?: string;
   initialSettings?: AppSettings;
+  linkIndex?: LinkIndex | null;
+  notes?: Partial<Note>[];
+  checklists?: Partial<Checklist>[];
+  allSharedItems?: {
+    notes: Array<{ id: string; category: string }>;
+    checklists: Array<{ id: string; category: string }>;
+    public: {
+      notes: Array<{ id: string; category: string }>;
+      checklists: Array<{ id: string; category: string }>;
+    };
+  } | null;
+  userSharedItems?: {
+    notes: Array<{ id: string; category: string; sharer: string }>;
+    checklists: Array<{ id: string; category: string; sharer: string }>;
+  } | null;
+  globalSharing?: any;
 }) => {
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(
+  const [appSettings, _] = useState<AppSettings | null>(
     initialSettings || null
   );
   const isNoteOrChecklistPage =
     pathname?.includes("/checklist") || pathname?.includes("/note");
   let modeToSet: AppMode = Modes.CHECKLISTS;
+
   if (isNoteOrChecklistPage) {
     modeToSet = pathname?.includes("/checklist")
       ? Modes.CHECKLISTS
@@ -93,6 +133,12 @@ export const AppModeProvider = ({
         appSettings,
         appVersion: appVersion || "",
         usersPublicData,
+        linkIndex: linkIndex || null,
+        notes: notes || [],
+        checklists: checklists || [],
+        allSharedItems: allSharedItems || null,
+        userSharedItems: userSharedItems || null,
+        globalSharing: globalSharing || null,
       }}
     >
       {children}

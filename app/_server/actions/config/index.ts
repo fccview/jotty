@@ -150,6 +150,7 @@ export const getSettings = async () => {
         enableSlashCommands: true,
         enableBubbleMenu: true,
         enableTableToolbar: true,
+        enableBilateralLinks: true,
       },
     };
   }
@@ -186,6 +187,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
             enableSlashCommands: true,
             enableBubbleMenu: true,
             enableTableToolbar: true,
+            enableBilateralLinks: true,
           },
         };
       }
@@ -196,6 +198,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
         enableSlashCommands: true,
         enableBubbleMenu: true,
         enableTableToolbar: true,
+        enableBilateralLinks: true,
       };
     }
 
@@ -229,6 +232,7 @@ export const updateAppSettings = async (
       enableSlashCommands: true,
       enableBubbleMenu: true,
       enableTableToolbar: true,
+      enableBilateralLinks: true,
     };
 
     const editorData = formData.get("editor") as string;

@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "@/app/_styles/globals.css";
 import { ThemeProvider } from "@/app/_providers/ThemeProvider";
-import { ChecklistProvider } from "@/app/_providers/ChecklistProvider";
 import { AppModeProvider } from "@/app/_providers/AppModeProvider";
 import { ToastProvider } from "@/app/_providers/ToastProvider";
 import { NavigationGuardProvider } from "@/app/_providers/NavigationGuardProvider";
@@ -15,8 +14,17 @@ import { getCategories } from "@/app/_server/actions/category";
 import { Modes } from "./_types/enums";
 import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
+import { readLinkIndex } from "@/app/_server/actions/link";
 import { headers } from "next/headers";
 import { themeInitScript } from "./_consts/themes";
+import { getProjectedLists } from "./_server/actions/checklist";
+import { getProjectedNotes } from "./_server/actions/note";
+import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
+import {
+  getAllSharedItems,
+  getAllSharedItemsForUser,
+  readShareFile,
+} from "./_server/actions/sharing";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -88,6 +96,23 @@ export default async function RootLayout({
   const appVersion = await readPackageVersion();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
   const users = await getUsers();
+  const linkIndex = user?.username ? await readLinkIndex(user.username) : null;
+
+  const [notesResult, checklistsResult, allSharedItems, userSharedItems, globalSharing] =
+    await Promise.all([
+      getProjectedNotes(["id", "title", "category"]),
+      getProjectedLists(["id", "title", "category"]),
+      getAllSharedItems(),
+      user
+        ? getAllSharedItemsForUser(user.username)
+        : Promise.resolve({ notes: [], checklists: [] }),
+      readShareFile("all"),
+    ]);
+
+  const notes = notesResult.success ? notesResult.data || [] : [];
+  const checklists = checklistsResult.success
+    ? checklistsResult.data || []
+    : [];
 
   let serveUpdates = true;
 
@@ -108,6 +133,7 @@ export default async function RootLayout({
       data-user-theme={user?.preferredTheme || ""}
     >
       <head>
+        {process.env.NODE_ENV === "development" && <SuppressWarnings />}
         <link rel="icon" href="/app-icons/favicon.ico" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -124,30 +150,34 @@ export default async function RootLayout({
           pathname={pathname || ""}
           initialSettings={settings}
           usersPublicData={users}
+          linkIndex={linkIndex}
+          notes={notes}
+          checklists={checklists}
+          allSharedItems={allSharedItems}
+          userSharedItems={userSharedItems}
+          globalSharing={globalSharing}
         >
           <ThemeProvider user={user || {}}>
-            <ChecklistProvider>
-              <NavigationGuardProvider>
-                <ToastProvider>
-                  <ShortcutProvider
-                    user={user}
-                    noteCategories={noteCategories.data || []}
-                    checklistCategories={checklistCategories.data || []}
-                  >
-                    <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                      <DynamicFavicon />
-                      {children}
+            <NavigationGuardProvider>
+              <ToastProvider>
+                <ShortcutProvider
+                  user={user}
+                  noteCategories={noteCategories.data || []}
+                  checklistCategories={checklistCategories.data || []}
+                >
+                  <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                    <DynamicFavicon />
+                    {children}
 
-                      {!pathname?.includes("/public") && <InstallPrompt />}
+                    {!pathname?.includes("/public") && <InstallPrompt />}
 
-                      {serveUpdates && !pathname?.includes("/public") && (
-                        <UpdatePrompt />
-                      )}
-                    </div>
-                  </ShortcutProvider>
-                </ToastProvider>
-              </NavigationGuardProvider>
-            </ChecklistProvider>
+                    {serveUpdates && !pathname?.includes("/public") && (
+                      <UpdatePrompt />
+                    )}
+                  </div>
+                </ShortcutProvider>
+              </ToastProvider>
+            </NavigationGuardProvider>
           </ThemeProvider>
         </AppModeProvider>
       </body>

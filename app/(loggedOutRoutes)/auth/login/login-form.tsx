@@ -33,7 +33,10 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           Welcome back
         </h1>
         <p className="text-sm text-muted-foreground">
-          {ssoEnabled ? "Choose how to access " : "Enter your credentials to access "} {isRwMarkable ? "rwMarkable" : "jotty·page"}
+          {ssoEnabled
+            ? "Choose how to access "
+            : "Enter your credentials to access "}{" "}
+          {isRwMarkable ? "rwMarkable" : "jotty·page"}
         </p>
       </div>
 
@@ -50,7 +53,9 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs text-muted-foreground">
-              <span className="bg-background px-2">or continue with local account</span>
+              <span className="bg-background px-2">
+                or continue with local account
+              </span>
             </div>
           </div>
         </div>
@@ -81,6 +86,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             className="mt-1"
             placeholder="Enter your username"
             defaultValue=""
+            autoComplete="username"
           />
         </div>
 
@@ -94,12 +100,19 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             disabled={isLoading}
             className="mt-1"
             placeholder="Enter your password"
+            autoComplete="current-password"
             defaultValue=""
           />
         </div>
 
         <Button type="submit" className="w-full !mt-8" disabled={isLoading}>
-          {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing In...</> : "Sign In"}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing In...
+            </>
+          ) : (
+            "Sign In"
+          )}
         </Button>
       </form>
 
@@ -108,6 +121,6 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           Version {appVersion}
         </div>
       )}
-    </div >
+    </div>
   );
 }

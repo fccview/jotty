@@ -1,14 +1,16 @@
 import { cn } from "@/app/_utils/global-utils";
-import { Item } from "@/app/_types";
+import { Checklist, Item } from "@/app/_types";
 import { TASK_STATUS_CONFIG } from "@/app/_consts/checklists";
 import { NestedChecklistItem } from "../../Checklists/Parts/Simple/NestedChecklistItem";
 
 export const TaskStatusSection = ({
   status,
   items,
+  checklist,
 }: {
   status: string;
   items: Item[];
+  checklist: Checklist;
 }) => {
   const config = TASK_STATUS_CONFIG[status as keyof typeof TASK_STATUS_CONFIG];
   if (!config || items.length === 0) return null;
@@ -27,12 +29,12 @@ export const TaskStatusSection = ({
             item={item}
             index={index.toString()}
             level={0}
-            onToggle={() => {}}
-            onDelete={() => {}}
+            onToggle={() => { }}
+            onDelete={() => { }}
             isPublicView={true}
             isDeletingItem={false}
             isDragDisabled={true}
-            isShared={true}
+            checklist={checklist}
           />
         ))}
       </div>

@@ -9,8 +9,6 @@ import { useEffect } from "react";
 
 interface SearchBarProps {
   mode: AppMode;
-  checklists: Checklist[];
-  notes: Note[];
   onModeChange?: (mode: AppMode) => void;
   className?: string;
   autoFocus?: boolean;
@@ -19,8 +17,6 @@ interface SearchBarProps {
 
 export const SearchBar = ({
   mode,
-  checklists,
-  notes,
   onModeChange,
   className,
   autoFocus = false,
@@ -36,7 +32,7 @@ export const SearchBar = ({
     handleSelectResult,
     inputRef,
     containerRef,
-  } = useSearch({ mode, checklists, notes, onModeChange, onResultSelect });
+  } = useSearch({ mode, onModeChange, onResultSelect });
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {

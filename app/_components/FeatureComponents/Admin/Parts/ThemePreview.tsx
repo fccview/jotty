@@ -4,13 +4,12 @@ import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/Checklis
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
-import { CheckCircle, Clock, CogIcon, Plus, SettingsIcon } from "lucide-react";
+import { CheckCircle, Clock, SettingsIcon } from "lucide-react";
 
 interface ThemePreviewProps {
   colors: { [key: string]: string };
 }
 
-// Sample data for preview
 const sampleChecklist = {
   id: "preview-checklist",
   title: "Daily Tasks",
@@ -46,8 +45,8 @@ const sampleChecklist = {
       order: 4,
     },
   ],
-  createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-  updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
+  createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
 };
 
 const sampleNote = {
@@ -67,17 +66,15 @@ const sampleNote = {
 
 *This is just a preview of the note content...*`,
   category: "work/projects",
-  createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
-  updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
+  createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+  updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
 };
 
 export const ThemePreview: React.FC<ThemePreviewProps> = ({ colors }) => {
-  // Create CSS custom properties from the colors
   const themeStyles = useMemo(() => {
     const cssVars: { [key: string]: string } = {};
     Object.entries(colors).forEach(([key, value]) => {
       if (value && value.includes(" ")) {
-        // RGB format like "255 255 255"
         cssVars[key] = value;
       }
     });

@@ -3,19 +3,15 @@ import { cn } from "@/app/_utils/global-utils";
 import { Search, X } from "lucide-react";
 import { SearchBar } from "../../Search/SearchBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { Checklist, Note, AppMode } from "@/app/_types";
+import { AppMode } from "@/app/_types";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 
 interface NavigationSearchIconProps {
-  checklists: Checklist[];
-  notes: Note[];
   onModeChange?: (mode: AppMode) => void;
 }
 
 export const NavigationSearchIcon = ({
-  checklists,
-  notes,
   onModeChange,
 }: NavigationSearchIconProps) => {
   const { checkNavigation } = useNavigationGuard();
@@ -33,8 +29,6 @@ export const NavigationSearchIcon = ({
       >
         <SearchBar
           mode={mode}
-          checklists={checklists}
-          notes={notes}
           className="w-full max-w-md"
           autoFocus={isSearchOpen}
           onResultSelect={closeSearch}
@@ -54,9 +48,7 @@ export const NavigationSearchIcon = ({
       >
         <SearchBar
           mode={mode}
-          checklists={checklists}
           className="w-full"
-          notes={notes}
           autoFocus={isSearchOpen}
           onResultSelect={closeSearch}
           onModeChange={

@@ -8,6 +8,7 @@ interface InputProps {
   description?: React.ReactNode;
   value?: string;
   type: string;
+  autoComplete?: string;
   required?: boolean;
   placeholder?: string;
   disabled?: boolean;
@@ -24,6 +25,7 @@ export const Input: FC<InputProps> = ({
   name,
   description,
   type,
+  autoComplete,
   required,
   disabled,
   placeholder,
@@ -43,6 +45,7 @@ export const Input: FC<InputProps> = ({
       type={type}
       value={value}
       defaultValue={defaultValue}
+      autoComplete={autoComplete}
       required={required}
       disabled={disabled}
       placeholder={placeholder}

@@ -1,6 +1,8 @@
-import { Item } from "@/app/_types";
-import { PenTool, FilePlus, Edit2Icon, ListPlus } from "lucide-react";
+import { Checklist, Item } from "@/app/_types";
+import { Edit2Icon, ListPlus } from "lucide-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -14,13 +16,19 @@ const formatDate = (dateString: string): string => {
 
 const LastModifiedCreatedInfo = ({
   item,
-  isShared,
   getUserAvatarUrl,
+  checklist,
 }: {
   item: Item;
-  isShared: boolean;
   getUserAvatarUrl: (username: string) => string;
+  checklist: Checklist;
 }) => {
+  const { allSharedItems } = useAppMode();
+  const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
+
+  const isShared = allSharedItems?.checklists.some(
+    (sharedChecklist) => sharedChecklist.id === checklist.id && sharedChecklist.category === encodedCategory
+  );
   return (
     <>
       {(item.createdBy || item.lastModifiedBy) && isShared && (

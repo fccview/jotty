@@ -19,13 +19,14 @@ import {
 } from "lucide-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
-import { useSharing } from "@/app/_hooks/useSharing";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { sharingInfo } from "@/app/_utils/sharing-utils";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -37,7 +38,6 @@ interface NoteEditorHeaderProps {
   showTOC: boolean;
   setShowTOC: (show: boolean) => void;
   viewModel: NoteEditorViewModel;
-  onArchive?: () => void;
 }
 
 export const NoteEditorHeader = ({
@@ -45,7 +45,6 @@ export const NoteEditorHeader = ({
   categories,
   isOwner,
   isAdmin,
-  onArchive,
   currentUsername,
   onBack,
   viewModel,
@@ -75,16 +74,12 @@ export const NoteEditorHeader = ({
     }
   };
 
-  const { sharingStatus } = useSharing({
-    itemId: note.id,
-    itemType: "note",
-    itemOwner: note.owner || "",
-    itemTitle: note.title,
-    itemCategory: note.category,
-    isOpen: showShareModal,
-    onClose: () => setShowShareModal(false),
-    enabled: true,
-  });
+  const { globalSharing } = useAppMode();
+  const encodedCategory = encodeCategoryPath(note.category || "Uncategorized");
+  const itemDetails = sharingInfo(globalSharing, note.id, encodedCategory);
+  const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
+  const sharedWith = itemDetails.sharedWith;
+  const isPubliclyShared = itemDetails.isPublic;
 
   const canDelete = note.isShared
     ? isAdmin || currentUsername === note.owner
@@ -116,13 +111,8 @@ export const NoteEditorHeader = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold truncate">{title}</h1>
-                    {sharingStatus?.isPubliclyShared && (
-                      <Globe className="h-4 w-4 text-primary" />
-                    )}
-                    {sharingStatus?.isShared &&
-                      !sharingStatus.isPubliclyShared && (
-                        <Users className="h-4 w-4 text-primary" />
-                      )}
+                    {isPubliclyShared && <span title="Publicly shared"><Globe className="h-4 w-4 text-primary" /></span>}
+                    {isShared && <span title={sharedWith.join(", ")}><Users className="h-4 w-4 text-primary" /></span>}
                   </div>
                   {category && category !== "Uncategorized" && (
                     <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
@@ -173,7 +163,7 @@ export const NoteEditorHeader = ({
               </>
             ) : (
               <>
-                <div className="hidden lg:flex items-center gap-2">
+                {/* <div className="hidden lg:flex items-center gap-2">
                   {user?.notesDefaultMode === "edit" && (
                     <Button
                       variant="outline"
@@ -253,9 +243,9 @@ export const NoteEditorHeader = ({
                       <Trash2 className="h-5 w-5" />
                     </Button>
                   )}
-                </div>
+                </div> */}
 
-                <div className="lg:hidden flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   {user?.notesDefaultMode === "edit" && (
                     <Button
                       variant="outline"
@@ -310,20 +300,27 @@ export const NoteEditorHeader = ({
                       },
                       {
                         type: "item" as const,
+                        label: "Table of Contents",
+                        icon: <List className="h-4 w-4" />,
+                        onClick: () => setShowTOC(!showTOC),
+                        className: "hidden lg:flex",
+                      },
+                      {
+                        type: "item" as const,
                         label: "Archive",
                         icon: <Archive className="h-4 w-4" />,
                         onClick: handleArchive,
                       },
                       ...(canDelete
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Delete",
-                              icon: <Trash2 className="h-4 w-4" />,
-                              onClick: handleDelete,
-                              variant: "destructive" as const,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Delete",
+                            icon: <Trash2 className="h-4 w-4" />,
+                            onClick: handleDelete,
+                            variant: "destructive" as const,
+                          },
+                        ]
                         : []),
                     ]}
                   />
@@ -336,7 +333,10 @@ export const NoteEditorHeader = ({
       {showShareModal && (
         <ShareModal
           isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
+          onClose={() => {
+            setShowShareModal(false);
+            router.refresh();
+          }}
           itemId={note.id}
           itemTitle={note.title}
           itemType="note"

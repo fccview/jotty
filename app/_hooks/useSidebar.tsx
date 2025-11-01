@@ -7,21 +7,12 @@ import { Modes } from "../_types/enums";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { buildCategoryPath } from "../_utils/global-utils";
 
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
-
 export interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenCreateModal: (initialCategory?: string) => void;
   onOpenCategoryModal: (parentCategory?: string) => void;
   categories: Category[];
-  checklists: Checklist[];
-  notes?: Note[];
-  sharingStatuses?: Record<string, SharingStatus>;
   user: User | null;
   onCategoryDeleted?: (categoryName: string) => void;
   onCategoryRenamed?: (oldName: string, newName: string) => void;
@@ -29,19 +20,11 @@ export interface SidebarProps {
 }
 
 export const useSidebar = (props: SidebarProps) => {
-  const {
-    categories,
-    checklists,
-    notes = [],
-    sharingStatuses = {},
-    onCategoryDeleted,
-    onCategoryRenamed,
-    onClose,
-  } = props;
+  const { categories, onCategoryDeleted, onCategoryRenamed, onClose } = props;
 
   const router = useRouter();
   const pathname = usePathname();
-  const { mode, setMode, isInitialized } = useAppMode();
+  const { mode, setMode, isInitialized, checklists, notes } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
 
   const [modalState, setModalState] = useState<{
@@ -109,6 +92,7 @@ export const useSidebar = (props: SidebarProps) => {
         JSON.stringify(Array.from(collapsedCategories[mode]))
       );
   }, [collapsedCategories, mode, isLocalStorageInitialized]);
+
   useEffect(() => {
     if (isLocalStorageInitialized)
       localStorage.setItem(
@@ -206,8 +190,9 @@ export const useSidebar = (props: SidebarProps) => {
   const handleModeSwitch = (newMode: AppMode) =>
     checkNavigation(() => {
       setMode(newMode);
-      router.push("/");
+      router.push("/?mode=" + newMode);
     });
+
   const handleItemClick = (item: Checklist | Note) =>
     checkNavigation(() => {
       const categoryPath = buildCategoryPath(
@@ -219,8 +204,10 @@ export const useSidebar = (props: SidebarProps) => {
       );
       onClose();
     });
+
   const handleEditItem = (item: Checklist | Note) =>
     openModal("editItem", item);
+
   const toggleCategory = (categoryPath: string) => {
     setCollapsedCategories((prev) => {
       const newModeSet = new Set(prev[mode]);
@@ -236,12 +223,14 @@ export const useSidebar = (props: SidebarProps) => {
       item.category || "Uncategorized",
       item.id
     );
+
     return (
-      pathname ===
-      `/${mode === Modes.NOTES ? "note" : "checklist"}/${expectedPath}`
+      pathname?.toLowerCase() ===
+      `/${
+        mode === Modes.NOTES ? "note" : "checklist"
+      }/${expectedPath}`.toLowerCase()
     );
   };
-  const getSharingStatus = (itemId: string) => sharingStatuses[itemId] || null;
 
   const expandCategoryPath = useCallback(
     (categoryPath: string) => {
@@ -274,7 +263,7 @@ export const useSidebar = (props: SidebarProps) => {
     if (!isInitialized) return;
 
     const itemId = pathname.split("/").pop();
-    let currentItem: Checklist | Note | undefined;
+    let currentItem: Partial<Checklist> | Partial<Note> | undefined;
 
     if (mode === Modes.CHECKLISTS) {
       currentItem = checklists.find((c) => c.id === itemId);
@@ -308,7 +297,6 @@ export const useSidebar = (props: SidebarProps) => {
     handleConfirmDeleteCategory,
     handleConfirmRenameCategory,
     isItemSelected,
-    getSharingStatus,
     router,
   };
 };

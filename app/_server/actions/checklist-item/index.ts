@@ -7,7 +7,7 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import { getLists, getAllLists } from "@/app/_server/actions/checklist";
+import { getLists, getAllLists, getRawLists, getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import {
   isAdmin,
@@ -19,6 +19,7 @@ import { Checklist } from "@/app/_types";
 import { Modes, TaskStatus } from "@/app/_types/enums";
 
 export const updateItem = async (
+  checklist: Checklist,
   formData: FormData,
   username?: string,
   skipRevalidation = false
@@ -31,17 +32,17 @@ export const updateItem = async (
     const description = formData.get("description") as string;
     const category = formData.get("category") as string;
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists(username));
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
-    }
+    const currentUser = username || (await getUsername());
 
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+    const canEdit = await canUserEditItem(
+      listId,
+      category || "Uncategorized",
+      "checklist",
+      currentUser
     );
-    if (!list) {
-      throw new Error("List not found");
+
+    if (!canEdit) {
+      throw new Error("Permission denied");
     }
 
     const areAllItemsCompleted = (items: any[]): boolean => {
@@ -133,11 +134,10 @@ export const updateItem = async (
     };
 
     const now = new Date().toISOString();
-    const currentUser = username || (await getUsername());
 
     const updatedList = {
-      ...list,
-      items: findAndUpdateItem(list.items, itemId, {
+      ...checklist,
+      items: findAndUpdateItem(checklist.items, itemId, {
         completed,
         ...(text && { text }),
         ...(description !== null &&
@@ -152,9 +152,12 @@ export const updateItem = async (
       process.cwd(),
       "data",
       CHECKLISTS_FOLDER,
-      list.owner!
+      checklist.owner!
     );
-    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+    const categoryDir = path.join(
+      ownerDir,
+      checklist.category || "Uncategorized"
+    );
     await ensureDir(categoryDir);
 
     const filePath = path.join(categoryDir, `${listId}.md`);
@@ -188,6 +191,7 @@ export const updateItem = async (
 };
 
 export const createItem = async (
+  list: Checklist,
   formData: FormData,
   username?: string,
   skipRevalidation = false
@@ -202,27 +206,15 @@ export const createItem = async (
     const currentUser = username || (await getUsername());
     const recurrenceStr = formData.get("recurrence") as string;
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists(username));
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
-    }
-
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
-    );
-    if (!list) {
-      throw new Error("List not found");
-    }
-
     const canEdit = await canUserEditItem(
       listId,
       category || "Uncategorized",
       "checklist",
       username || ""
     );
+
     if (!canEdit) {
-      throw new Error("List not found");
+      throw new Error("Permission denied");
     }
 
     let timeEntries: any[] = [];
@@ -243,7 +235,9 @@ export const createItem = async (
         recurrence = JSON.parse(recurrenceStr);
 
         if (recurrence && !recurrence.nextDue) {
-          const { calculateNextOccurrence } = await import("@/app/_utils/recurrence-utils");
+          const { calculateNextOccurrence } = await import(
+            "@/app/_utils/recurrence-utils"
+          );
           recurrence.nextDue = calculateNextOccurrence(
             recurrence.rrule,
             recurrence.dtstart
@@ -491,6 +485,7 @@ export const updateItemStatus = async (formData: FormData) => {
     const status = formData.get("status") as TaskStatus;
     const timeEntriesStr = formData.get("timeEntries") as string;
     const category = formData.get("category") as string;
+
     const username = await getUsername();
 
     if (!listId || !itemId) {
@@ -501,23 +496,20 @@ export const updateItemStatus = async (formData: FormData) => {
       return { error: "Either status or timeEntries must be provided" };
     }
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists());
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
+    const list = await getListById(listId, username, category);
+    const canEdit = await canUserEditItem(listId, category, "checklist", username);
+
+    if (!canEdit) {
+      return { error: "Permission denied" };
     }
 
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
-    );
     if (!list) {
-      throw new Error("List not found");
+      return { error: "List not found" };
     }
 
     const now = new Date().toISOString();
     const updatedList = {
-      ...list,
-      items: list.items.map((item) => {
+      ...list, items: list.items.map((item) => {
         if (item.id === itemId) {
           const updates: any = {};
           if (status) {
@@ -678,6 +670,11 @@ export const bulkToggleItems = async (formData: FormData) => {
     const completed = formData.get("completed") === "true";
     const itemIdsStr = formData.get("itemIds") as string;
     const category = formData.get("category") as string;
+    let currentUser = formData.get("username") as string;
+
+    if (!currentUser) {
+      currentUser = await getUsername();
+    }
 
     if (!listId || !itemIdsStr) {
       return { error: "List ID and item IDs are required" };
@@ -685,19 +682,17 @@ export const bulkToggleItems = async (formData: FormData) => {
 
     const itemIds = JSON.parse(itemIdsStr);
 
-    const lists = await getLists();
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
+    const list = await getListById(listId, currentUser, category);
+    const canEdit = await canUserEditItem(listId, category, "checklist", currentUser);
+
+    if (!canEdit) {
+      return { error: "Permission denied" };
     }
 
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
-    );
     if (!list) {
-      throw new Error("List not found");
+      return { error: "List not found" };
     }
 
-    const currentUser = await getUsername();
     const now = new Date().toISOString();
 
     const areAllItemsCompleted = (items: any[]): boolean => {
@@ -854,21 +849,25 @@ export const bulkDeleteItems = async (formData: FormData) => {
     const itemIdsStr = formData.get("itemIds") as string;
     const itemIdsToDelete = JSON.parse(itemIdsStr) as string[];
     const category = formData.get("category") as string;
+    let currentUser = formData.get("username") as string;
+
+    if (!currentUser) {
+      currentUser = await getUsername();
+    }
 
     if (!listId || !itemIdsToDelete || itemIdsToDelete.length === 0) {
       return { success: true };
     }
 
-    const lists = await getLists();
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
+    const list = await getListById(listId, currentUser, category);
+    const canEdit = await canUserEditItem(listId, category, "checklist", currentUser);
+
+    if (!canEdit) {
+      return { error: "Permission denied" };
     }
 
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
-    );
     if (!list) {
-      throw new Error("List not found");
+      return { error: "List not found" };
     }
 
     const itemIdsSet = new Set(itemIdsToDelete);

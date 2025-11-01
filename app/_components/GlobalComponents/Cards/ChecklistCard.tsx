@@ -5,6 +5,8 @@ import { isItemCompleted, formatTime } from "@/app/_utils/checklist-utils";
 import { TaskSpecificDetails } from "@/app/_components/GlobalComponents/Cards/TaskSpecificDetails";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
+import { useMemo } from "react";
 
 interface ChecklistCardProps {
   list: Checklist;
@@ -38,8 +40,18 @@ export const ChecklistCard = ({
     transition,
   };
 
-  const totalItems = list.items.length;
-  const completedItems = list.items.filter((item) =>
+  const parsedData = useMemo(() => {
+    if ('rawContent' in list) {
+      return parseChecklistContent((list as any).rawContent, list.id);
+    }
+    return null;
+  }, [list]);
+
+  const displayTitle = parsedData?.title || list.title;
+  const displayItems = parsedData?.items || list.items;
+
+  const totalItems = displayItems.length;
+  const completedItems = displayItems.filter((item) =>
     isItemCompleted(item, list.type)
   ).length;
   const completionRate =
@@ -51,15 +63,14 @@ export const ChecklistCard = ({
       style={style}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
       onClick={() => onSelect(list)}
-      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${
-        isDragging ? "opacity-50" : ""
-      }`}
+      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${isDragging ? "opacity-50" : ""
+        }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
-            {list.title}
-          </h3>
+          <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+            {displayTitle}
+          </span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {onTogglePin && (
@@ -68,9 +79,8 @@ export const ChecklistCard = ({
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${
-                isPinned ? "opacity-100" : "opacity-0"
-              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              className={`${isPinned ? "opacity-100" : "opacity-0"
+                } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
               title={isPinned ? "Unpin" : "Pin"}
             >
               {isPinned ? (
@@ -101,7 +111,7 @@ export const ChecklistCard = ({
         </div>
       </div>
 
-      {list.type === "task" && <TaskSpecificDetails items={list.items} />}
+      {list.type === "task" && <TaskSpecificDetails items={displayItems} />}
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1">

@@ -22,7 +22,6 @@ interface HomeClientProps {
   initialCategories: Category[];
   initialDocs: Note[];
   initialDocsCategories: Category[];
-  sharingStatuses: Record<string, SharingStatus>;
   user: User | null;
 }
 
@@ -31,7 +30,6 @@ export const HomeClient = ({
   initialCategories,
   initialDocs,
   initialDocsCategories,
-  sharingStatuses,
   user,
 }: HomeClientProps) => {
   const router = useRouter();
@@ -53,12 +51,9 @@ export const HomeClient = ({
 
   return (
     <Layout
-      lists={initialLists}
-      docs={initialDocs}
       categories={
         mode === Modes.NOTES ? initialDocsCategories : initialCategories
       }
-      sharingStatuses={sharingStatuses}
       onOpenSettings={openSettings}
       onOpenCreateModal={handleOpenCreateModal}
       onOpenCategoryModal={openCreateCategoryModal}

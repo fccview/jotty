@@ -64,7 +64,7 @@ export const copyTextToClipboard = async (text: string): Promise<boolean> => {
 
 export function encodeCategoryPath(categoryPath: string): string {
   if (!categoryPath || categoryPath === "Uncategorized") {
-    return "";
+    return "Uncategorized";
   }
   return categoryPath
     .split("/")

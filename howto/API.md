@@ -51,9 +51,40 @@ The API supports two types of checklists:
   - `time`: Time tracking data (either `0` or JSON array of time entries)
 - Used for project management and time tracking
 
-## Endpoints
+## Public Endpoints
 
-### 1. Get All Checklists
+These endpoints are publicly accessible and do not require authentication.
+
+### 1. Health Check
+
+**GET** `/api/health`
+
+Returns the application health status and version information. This endpoint is useful for monitoring and load balancers.
+
+**Response:**
+
+```json
+{
+  "status": "healthy",
+  "version": "1.9.3",
+  "timestamp": "2025-10-31T21:15:57.009Z"
+}
+```
+
+**Response Fields:**
+
+- `status`: Either "healthy" or "unhealthy"
+- `version`: Application version from package.json (null if unable to read)
+- `timestamp`: Current server timestamp in ISO 8601 format
+- `error`: Error message (only present when status is "unhealthy")
+
+**Note**: This endpoint does not require authentication and is accessible to anyone.
+
+## Authenticated Endpoints
+
+The following endpoints require authentication via API key.
+
+### 2. Get All Checklists
 
 **GET** `/api/checklists`
 
@@ -121,7 +152,7 @@ Retrieves all checklists for the authenticated user.
 
 **Note**: All checklists include a `category` field for organization. If no category is specified when creating a checklist, it defaults to "Uncategorized".
 
-### 2. Create Checklist Item
+### 3. Create Checklist Item
 
 **POST** `/api/checklists/{listId}/items`
 
@@ -159,7 +190,7 @@ Adds a new item to the specified checklist.
 }
 ```
 
-### 3. Check Item
+### 4. Check Item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/check`
 
@@ -173,7 +204,7 @@ Marks an item as completed. Use the item index (0-based) from the checklist resp
 }
 ```
 
-### 4. Uncheck Item
+### 5. Uncheck Item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/uncheck`
 
@@ -187,7 +218,7 @@ Marks an item as incomplete. Use the item index (0-based) from the checklist res
 }
 ```
 
-### 5. Get All Notes
+### 6. Get All Notes
 
 **GET** `/api/notes`
 
@@ -212,7 +243,7 @@ Retrieves all notes/documents for the authenticated user.
 
 **Note**: All notes include a `category` field for organization. If no category is specified when creating a note, it defaults to "Uncategorized".
 
-### 6. Create Note
+### 7. Create Note
 
 **POST** `/api/notes`
 
@@ -251,7 +282,7 @@ Creates a new note for the authenticated user.
 }
 ```
 
-### 7. Get User Information
+### 8. Get User Information
 
 **GET** `/api/user/{username}`
 
@@ -294,7 +325,7 @@ Retrieves user information. Returns full user data if authenticated as the user 
 
 **Note**: Sensitive fields like `passwordHash` and `apiKey` are never returned.
 
-### 8. Get All Categories
+### 9. Get All Categories
 
 **GET** `/api/categories`
 
@@ -350,7 +381,41 @@ Retrieves all categories for notes and checklists for the authenticated user. Ar
 - `count`: Number of items in this category
 - `level`: Nesting level (0 for root categories)
 
-### 9. Get User Summary Statistics
+### 10. Rebuild Link Index
+
+**POST** `/api/admin/rebuild-index`
+
+Rebuilds the internal link index for a specific user. This is useful when the link relationships between notes and checklists become inconsistent due to bulk operations, data migrations, or other maintenance tasks.
+
+**Request Body:**
+
+```json
+{
+  "username": "fccview"
+}
+```
+
+**Parameters:**
+
+- `username` (required): Username whose link index should be rebuilt
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Successfully rebuilt link index for fccview"
+}
+```
+
+**Notes:**
+
+- Only administrators can use this endpoint
+- The rebuild process scans all notes and checklists for the specified user and recreates the link relationships
+- This operation may take time for users with large amounts of content
+- The link index tracks internal references between notes and checklists (e.g., when one note links to another)
+
+### 11. Get User Summary Statistics
 
 **GET** `/api/summary`
 
@@ -488,6 +553,12 @@ Retrieves the current progress of an ongoing export operation.
 
 ## Usage Examples
 
+### Health check (public endpoint)
+
+```bash
+curl https://your-checklist-app.com/api/health
+```
+
 ### Get all checklists
 
 ```bash
@@ -606,6 +677,129 @@ curl -H "x-api-key: ck_your_api_key_here" \
      https://your-checklist-app.com/api/exports
 ```
 
+### Rebuild link index for a user (admin only)
+
+```bash
+curl -X POST \
+     -H "x-api-key: ck_admin_api_key_here" \
+     -H "Content-Type: application/json" \
+     -d '{"username": "fccview"}' \
+     https://your-checklist-app.com/api/admin/rebuild-index
+```
+
+## Cron Job Automation
+
+The link index rebuild API can be automated using cron jobs to ensure link relationships remain consistent over time. This is particularly useful for:
+
+- Regular maintenance of large installations
+- Ensuring data integrity after bulk operations
+- Preventing link reference issues in production environments
+
+### Example Cron Job Setup
+
+Create a shell script (`rebuild-index.sh`) to rebuild the index for all users:
+
+```bash
+#!/bin/bash
+
+# rebuild-index.sh - Rebuild link indexes for specific users
+API_KEY="ck_your_admin_api_key_here"
+BASE_URL="https://your-checklist-app.com"
+
+# Get all usernames (requires admin API access)
+usernames=("user1" "user2" "user3")
+
+for username in "${usernames[@]}"; do
+    echo "Rebuilding index for user: $username"
+
+    response=$(curl -s -X POST \
+        -H "x-api-key: $API_KEY" \
+        -H "Content-Type: application/json" \
+        -d "{\"username\": \"$username\"}" \
+        "$BASE_URL/api/admin/rebuild-index")
+
+    if echo "$response" | grep -q '"success":true'; then
+        echo "Successfully rebuilt index for $username"
+    else
+        echo "Failed to rebuild index for $username: $response"
+    fi
+
+    # Small delay between requests
+    sleep 1
+done
+
+echo "Index rebuild complete"
+```
+
+Make the script executable:
+
+```bash
+chmod +x rebuild-index.sh
+```
+
+### Cron Job Installation
+
+Add to your crontab to run weekly (every Sunday at 2:00 AM):
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line to run weekly on Sundays at 2:00 AM
+0 2 * * 0 /path/to/rebuild-index.sh >> /var/log/checklist-index-rebuild.log 2>&1
+```
+
+For daily rebuilds (not recommended for large installations):
+
+```bash
+# Daily at 2:00 AM
+0 2 * * * /path/to/rebuild-index.sh >> /var/log/checklist-index-rebuild.log 2>&1
+```
+
+### Alternative: Single User Cron Job
+
+For rebuilding only your own index (non-admin users can only rebuild their own data):
+
+```bash
+#!/bin/bash
+
+# rebuild-my-index.sh - Rebuild link index for current user
+API_KEY="ck_your_api_key_here"
+USERNAME="your_username"
+BASE_URL="https://your-checklist-app.com"
+
+echo "Rebuilding link index for $USERNAME"
+
+response=$(curl -s -X POST \
+    -H "x-api-key: $API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{\"username\": \"$USERNAME\"}" \
+    "$BASE_URL/api/admin/rebuild-index")
+
+if echo "$response" | grep -q '"success":true'; then
+    echo "✅ Successfully rebuilt index"
+else
+    echo "❌ Failed to rebuild index: $response"
+fi
+```
+
+### Monitoring and Logging
+
+The scripts above include basic logging. For production environments, consider:
+
+1. **Log Rotation**: Use `logrotate` to manage log files
+2. **Monitoring**: Integrate with monitoring systems to alert on failures
+3. **Backup**: Run the rebuild after database backups
+4. **Performance**: Schedule during low-traffic periods
+
+### Best Practices
+
+- **Test First**: Run the script manually before scheduling
+- **Monitor Logs**: Regularly check logs for failures
+- **Resource Usage**: Be aware that rebuilds can be resource-intensive for large datasets
+- **Frequency**: Weekly is usually sufficient; daily may be overkill
+- **Error Handling**: Implement retry logic for transient failures
+
 ## Important Notes
 
 - Item indices are 0-based (first item is index 0)
@@ -621,4 +815,7 @@ curl -H "x-api-key: ck_your_api_key_here" \
 - The user information endpoint returns different data based on authentication context
 - Categories endpoint excludes archived categories automatically
 - When creating notes, the `content` and `category` fields are optional
+- Admin endpoints require administrator privileges and API key authentication
+- The link index rebuild endpoint can be automated with cron jobs for regular maintenance
+- Link relationships between notes and checklists are maintained automatically, but the rebuild endpoint ensures consistency after bulk operations
 - This is a beta implementation - additional features will be added in future updates

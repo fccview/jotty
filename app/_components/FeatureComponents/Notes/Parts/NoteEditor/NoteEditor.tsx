@@ -50,6 +50,8 @@ export const NoteEditor = ({
             noteContent={note.content}
             editorContent={viewModel.editorContent}
             onEditorContentChange={viewModel.handleEditorContentChange}
+            noteId={note.id}
+            noteCategory={note.category}
           />
         </div>
 

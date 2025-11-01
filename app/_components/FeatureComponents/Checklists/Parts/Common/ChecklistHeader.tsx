@@ -13,14 +13,14 @@ import {
   Check,
   MoreHorizontal,
   Archive,
-  ArchiveRestore,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
-import { useSharing } from "@/app/_hooks/useSharing";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { sharingInfo } from "@/app/_utils/sharing-utils";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -43,19 +43,15 @@ export const ChecklistHeader = ({
 }: ChecklistHeaderProps) => {
   const { handleCopyId, copied } = useChecklist({
     list: checklist,
-    onUpdate: () => {},
+    onUpdate: () => { },
   });
 
-  const { sharingStatus } = useSharing({
-    itemId: checklist.id,
-    itemType: "checklist",
-    itemOwner: checklist.owner || "",
-    onClose: () => {},
-    enabled: true,
-    itemTitle: checklist.title,
-    itemCategory: checklist.category,
-    isOpen: true,
-  });
+  const { globalSharing } = useAppMode();
+  const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
+  const itemDetails = sharingInfo(globalSharing, checklist.id, encodedCategory);
+  const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
+  const sharedWith = itemDetails.sharedWith;
+  const isPubliclyShared = itemDetails.isPublic;
 
   return (
     <div className="bg-background border-b border-border px-3 py-4 lg:px-6 lg:py-[12px]">
@@ -88,12 +84,8 @@ export const ChecklistHeader = ({
               )}
             </Button>
 
-            {sharingStatus?.isPubliclyShared && (
-              <Globe className="h-3 w-3 text-primary" />
-            )}
-            {sharingStatus?.isShared && !sharingStatus.isPubliclyShared && (
-              <Users className="h-3 w-3 text-primary" />
-            )}
+            {isPubliclyShared && <span title="Publicly shared"><Globe className="h-3 w-3 text-primary" /></span>}
+            {isShared && <span title={sharedWith.join(", ")}><Users className="h-3 w-3 text-primary" /></span>}
           </div>
         </div>
 
@@ -119,34 +111,6 @@ export const ChecklistHeader = ({
               </Button>
             )}
 
-            {onArchive && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={
-                  checklist.category === ARCHIVED_DIR_NAME ? onEdit : onArchive
-                }
-                className="h-10 w-10 p-0"
-                title={
-                  checklist.category === ARCHIVED_DIR_NAME
-                    ? "Unarchive"
-                    : "Archive"
-                }
-              >
-                <Archive className="h-4 w-4 lg:h-5 lg:w-5" />
-              </Button>
-            )}
-
-            {onShare && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onShare}
-                className="h-10 w-10 p-0"
-              >
-                <Share2 className="h-4 w-4 lg:h-5 lg:w-5" />
-              </Button>
-            )}
             {onEdit && (
               <Button
                 variant="outline"
@@ -157,89 +121,79 @@ export const ChecklistHeader = ({
                 <Edit3 className="h-4 w-4 lg:h-5 lg:w-5" />
               </Button>
             )}
-            {onDelete && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onDelete}
-                className="h-10 w-10 p-0 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4 lg:h-5 lg:w-5" />
-              </Button>
-            )}
           </div>
 
-          <div className="lg:hidden">
-            <DropdownMenu
-              align="right"
-              trigger={
-                <Button variant="outline" size="sm" className="h-10 w-10 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              }
-              items={[
-                ...(onConvertType
-                  ? [
-                      {
-                        type: "item" as const,
-                        label:
-                          checklist.type === "task"
-                            ? "Convert to Simple Checklist"
-                            : "Convert to Task Project",
-                        icon:
-                          checklist.type === "task" ? (
-                            <CheckSquare className="h-4 w-4" />
-                          ) : (
-                            <BarChart3 className="h-4 w-4" />
-                          ),
-                        onClick: onConvertType,
-                      },
-                    ]
-                  : []),
-                ...(onArchive
-                  ? [
-                      {
-                        type: "item" as const,
-                        label: "Archive",
-                        icon: <Archive className="h-4 w-4" />,
-                        onClick: onArchive,
-                      },
-                    ]
-                  : []),
-                ...(onShare
-                  ? [
-                      {
-                        type: "item" as const,
-                        label: "Share",
-                        icon: <Share2 className="h-4 w-4" />,
-                        onClick: onShare,
-                      },
-                    ]
-                  : []),
-                ...(onEdit
-                  ? [
-                      {
-                        type: "item" as const,
-                        label: "Edit",
-                        icon: <Edit3 className="h-4 w-4" />,
-                        onClick: onEdit,
-                      },
-                    ]
-                  : []),
-                ...(onDelete
-                  ? [
-                      {
-                        type: "item" as const,
-                        label: "Delete",
-                        icon: <Trash2 className="h-4 w-4" />,
-                        onClick: onDelete,
-                        variant: "destructive" as const,
-                      },
-                    ]
-                  : []),
-              ]}
-            />
-          </div>
+          <DropdownMenu
+            align="right"
+            trigger={
+              <Button variant="outline" size="sm" className="h-10 w-10 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            }
+            items={[
+              ...(onConvertType
+                ? [
+                  {
+                    type: "item" as const,
+                    label:
+                      checklist.type === "task"
+                        ? "Convert to Simple Checklist"
+                        : "Convert to Task Project",
+                    icon:
+                      checklist.type === "task" ? (
+                        <CheckSquare className="h-4 w-4" />
+                      ) : (
+                        <BarChart3 className="h-4 w-4" />
+                      ),
+                    onClick: onConvertType,
+                    className: "lg:!hidden",
+                  },
+                ]
+                : []),
+              ...(onArchive
+                ? [
+                  {
+                    type: "item" as const,
+                    label: "Archive",
+                    icon: <Archive className="h-4 w-4" />,
+                    onClick: onArchive,
+                  },
+                ]
+                : []),
+              ...(onShare
+                ? [
+                  {
+                    type: "item" as const,
+                    label: "Share",
+                    icon: <Share2 className="h-4 w-4" />,
+                    onClick: onShare,
+                  },
+                ]
+                : []),
+              ...(onEdit
+                ? [
+                  {
+                    type: "item" as const,
+                    label: "Edit",
+                    icon: <Edit3 className="h-4 w-4" />,
+                    onClick: onEdit,
+                    className: "lg:!hidden",
+                  },
+                ]
+                : []),
+              ...(onDelete
+                ? [
+                  {
+                    type: "item" as const,
+                    label: "Delete",
+                    icon: <Trash2 className="h-4 w-4" />,
+                    onClick: onDelete,
+                    variant: "destructive" as const,
+                  },
+                ]
+                : []),
+            ]}
+          />
         </div>
       </div>
     </div>

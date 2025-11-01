@@ -13,8 +13,9 @@ import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
 import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
-import { Modes } from "@/app/_types/enums";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { rebuildLinkIndex } from "@/app/_server/actions/link";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -28,6 +29,7 @@ export const AdminContent = ({
   users,
 }: AdminContentProps) => {
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
+  const [rebuildingIndex, setRebuildingIndex] = useState<string | null>(null);
 
   const sortedUserContent = useMemo(() => {
     const listsByOwner = new Map<string, Checklist[]>();
@@ -94,6 +96,19 @@ export const AdminContent = ({
 
   const isAllExpanded = expandedUsers?.size === sortedUserContent.length;
 
+  const handleRebuildIndex = async (username: string) => {
+    setRebuildingIndex(username);
+    try {
+      await rebuildLinkIndex(username);
+      alert(`Successfully rebuilt link index for ${username}`);
+    } catch (error) {
+      console.error("Failed to rebuild index:", error);
+      alert(`Failed to rebuild link index for ${username}`);
+    } finally {
+      setRebuildingIndex(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Accordion title="Data Export" defaultOpen={false} className="mb-6">
@@ -132,10 +147,10 @@ export const AdminContent = ({
               className="p-6 rounded-lg border border-border bg-card"
             >
               <div
-                className="flex items-center justify-between cursor-pointer"
+                className="lg:flex items-center justify-between cursor-pointer"
                 onClick={() => toggleUser(user.username)}
               >
-                <div className="flex items-center gap-3">
+                <div className="mb-2 lg:mb-0 flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
                     <UserAvatar
                       size="lg"
@@ -158,6 +173,18 @@ export const AdminContent = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="default"
+                    size="xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRebuildIndex(user.username);
+                    }}
+                    disabled={rebuildingIndex === user.username}
+                    title="Rebuild link indexex"
+                  >
+                    {rebuildingIndex === user.username ? "Rebuilding..." : "Rebuild Indexes"}
+                  </Button>
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                       {totalItems} items

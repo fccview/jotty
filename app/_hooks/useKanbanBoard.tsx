@@ -162,7 +162,11 @@ export const useKanbanBoard = ({
       formData.append("recurrence", JSON.stringify(recurrence));
     }
 
-    const result = await createItem(formData, currentUser?.username);
+    const result = await createItem(
+      localChecklist,
+      formData,
+      currentUser?.username
+    );
 
     const checklistOwner = await getUserByChecklist(
       localChecklist.id,

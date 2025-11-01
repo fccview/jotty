@@ -7,8 +7,6 @@ import { User, Checklist, Note } from "@/app/_types";
 import { deleteUser } from "@/app/_server/actions/users";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllNotes } from "@/app/_server/actions/note";
-import { getGlobalSharing } from "@/app/_server/actions/sharing";
-import { useRouter } from "next/navigation";
 import { AdminTabs } from "./Parts/AdminTabs";
 import { AdminOverview } from "./Parts/AdminOverview";
 import { AdminUsers } from "./Parts/AdminUsers";
@@ -24,21 +22,51 @@ interface AdminClientProps {
   username: string;
 }
 
+const getInitialTab = (): "overview" | "users" | "content" | "sharing" | "settings" | "editor" | "styling" => {
+  if (typeof window !== 'undefined') {
+    const hash = window.location.hash.replace('#', '');
+    const validTabs = ["overview", "users", "content", "sharing", "settings", "editor", "styling"];
+    if (validTabs.includes(hash)) {
+      return hash as any;
+    }
+  }
+  return "overview";
+};
+
 export const AdminClient = ({ username }: AdminClientProps) => {
   const [users, setUsers] = useState<User[]>([]);
   const [allLists, setAllLists] = useState<Checklist[]>([]);
   const [allDocs, setAllDocs] = useState<Note[]>([]);
-  const [globalSharing, setGlobalSharing] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
     "overview" | "users" | "content" | "sharing" | "settings" | "editor"
     | "styling"
-  >("overview");
+  >(getInitialTab());
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
   const [userModalMode, setUserModalMode] = useState<"add" | "edit">("add");
   const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
+
+  const handleTabChange = (newTab: "overview" | "users" | "content" | "sharing" | "settings" | "editor" | "styling") => {
+    setActiveTab(newTab);
+    if (typeof window !== 'undefined') {
+      window.location.hash = newTab;
+    }
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      const validTabs = ["overview", "users", "content", "sharing", "settings", "editor", "styling"];
+      if (validTabs.includes(hash)) {
+        setActiveTab(hash as any);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   useEffect(() => {
     loadAdminData();
@@ -47,19 +75,15 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   const loadAdminData = async () => {
     setIsLoading(true);
     try {
-      const [usersData, listsData, docsData, sharingData] = await Promise.all([
+      const [usersData, listsData, docsData] = await Promise.all([
         readJsonFile(USERS_FILE),
         getAllLists(),
         getAllNotes(),
-        getGlobalSharing(),
       ]);
 
       setUsers(usersData);
       setAllLists(listsData.success && listsData.data ? listsData.data : []);
       setAllDocs(docsData.success && docsData.data ? docsData.data : []);
-      setGlobalSharing(
-        sharingData.success && sharingData.data ? sharingData.data : {}
-      );
     } catch (error) {
       console.error("Error loading admin data:", error);
     } finally {
@@ -116,10 +140,6 @@ export const AdminClient = ({ username }: AdminClientProps) => {
     totalUsers: users.length,
     totalChecklists: allLists.length,
     totalNotes: allDocs.length,
-    sharedChecklists: globalSharing.sharingStats?.totalSharedChecklists || 0,
-    sharedNotes: globalSharing.sharingStats?.totalSharedNotes || 0,
-    totalSharingRelationships:
-      globalSharing.sharingStats?.totalSharingRelationships || 0,
     adminUsers: users.filter((u) => u.isAdmin).length,
   };
 
@@ -141,7 +161,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
         description="Manage users, content, and system settings"
       />
 
-      <AdminTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      <AdminTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
       <div className="min-h-[600px]">
         {activeTab === "overview" && <AdminOverview stats={stats} />}
@@ -162,9 +182,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
         {activeTab === "content" && (
           <AdminContent allLists={allLists} allDocs={allDocs} users={users} />
         )}
-        {activeTab === "sharing" && (
-          <AdminSharing globalSharing={globalSharing} />
-        )}
+        {activeTab === "sharing" && <AdminSharing />}
         {activeTab === "settings" && <AppSettingsTab />}
         {activeTab === "editor" && <EditorSettingsTab />}
         {activeTab === "styling" && <StylingTab />}
