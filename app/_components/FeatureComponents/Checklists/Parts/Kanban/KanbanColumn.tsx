@@ -93,7 +93,6 @@ export const KanbanColumn = ({
         <SortableContext
           items={items.map((item) => item.id)}
           strategy={verticalListSortingStrategy}
-          disabled={!permissions?.canEdit}
         >
           <div className="space-y-2">
             {items.map((item) => (

@@ -21,8 +21,8 @@ export const DynamicLogo = ({
     size === "16x16"
       ? "16x16Icon"
       : size === "32x32"
-      ? "32x32Icon"
-      : "180x180Icon";
+        ? "32x32Icon"
+        : "180x180Icon";
 
   const customIcon = appSettings?.[iconKey];
 

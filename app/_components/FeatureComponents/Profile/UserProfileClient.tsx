@@ -37,6 +37,38 @@ export const UserProfileClient = ({
     "profile" | "sessions" | "archive" | "settings"
   >("profile");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  const handleTabChange = (newTab: "profile" | "sessions" | "archive" | "settings") => {
+    setActiveTab(newTab);
+    if (typeof window !== 'undefined') {
+      window.location.hash = newTab;
+    }
+  };
+
+  useEffect(() => {
+    setIsHydrated(true);
+    const hash = window.location.hash.replace('#', '');
+    const validTabs = ["profile", "sessions", "archive", "settings"];
+    if (validTabs.includes(hash)) {
+      setActiveTab(hash as any);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      const validTabs = ["profile", "sessions", "archive", "settings"];
+      if (validTabs.includes(hash)) {
+        setActiveTab(hash as any);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [isHydrated]);
 
   return (
     <div className="space-y-6">
@@ -60,7 +92,7 @@ export const UserProfileClient = ({
                 variant={activeTab === tab.id ? "default" : "ghost"}
                 size="sm"
                 onClick={() =>
-                  setActiveTab(
+                  handleTabChange(
                     tab.id as "profile" | "sessions" | "archive" | "settings"
                   )
                 }
@@ -79,7 +111,7 @@ export const UserProfileClient = ({
           <ProfileTab
             user={user}
             isAdmin={isAdmin}
-            setUser={() => {}}
+            setUser={() => { }}
             isSsoUser={isSsoUser}
           />
         )}

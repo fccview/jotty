@@ -2,10 +2,12 @@ import { CssEditor } from "@/app/_components/GlobalComponents/FormElements/CSSEd
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Loader2, Plus, Palette, Edit, Trash2 } from "lucide-react";
+import { Loader2, Plus, Edit, Trash2, Palette } from "lucide-react";
 import { useStyling } from "@/app/_hooks/useStyling";
 import { ThemePreview } from "@/app/_components/FeatureComponents/Admin/Parts/ThemePreview";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
+import { DynamicIcon } from "@/app/_components/GlobalComponents/Icons/DynamicIcon";
+import { useState } from "react";
 
 export const StylingTab = () => {
   const {
@@ -28,6 +30,16 @@ export const StylingTab = () => {
     handleThemeFormChange,
     getCustomThemes,
   } = useStyling();
+
+  const [focusedColor, setFocusedColor] = useState<string | null>(null);
+
+  const handleColorFocus = (colorKey: string) => {
+    setFocusedColor(colorKey);
+  };
+
+  const handleColorBlur = () => {
+    setFocusedColor(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -138,33 +150,43 @@ export const StylingTab = () => {
                 id="themeName"
                 label="Theme Name"
                 type="text"
-                value={themeForm.name}
                 defaultValue={themeForm.name}
                 onChange={(e) => handleThemeFormChange("name", e.target.value)}
                 placeholder="My Custom Theme"
               />
 
-              <Input
-                id="themeIcon"
-                label="Icon Name"
-                type="text"
-                value={themeForm.icon}
-                defaultValue={themeForm.icon}
-                onChange={(e) => handleThemeFormChange("icon", e.target.value)}
-                placeholder="Palette"
-                description={
-                  <>
-                    <a
-                      className="text-primary hover:text-primary/80 underline"
-                      href="https://lucide.dev/icons/"
-                      target="_blank"
-                    >
-                      Lucide icon
-                    </a>{" "}
-                    name (e.g., Palette, Sun, Moon)
-                  </>
-                }
-              />
+              <div className="space-y-2">
+                <label htmlFor="themeIcon" className="text-sm font-medium">
+                  Icon Name
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                    <DynamicIcon
+                      iconName={themeForm.icon}
+                      fallbackIcon={Palette}
+                      className="h-4 w-4 text-muted-foreground"
+                    />
+                  </div>
+                  <Input
+                    id="themeIcon"
+                    type="text"
+                    defaultValue={themeForm.icon}
+                    onChange={(e) => handleThemeFormChange("icon", e.target.value)}
+                    placeholder="Palette"
+                    className="pl-10"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <a
+                    className="text-primary hover:text-primary/80 underline"
+                    href="https://lucide.dev/icons/"
+                    target="_blank"
+                  >
+                    Lucide icon
+                  </a>{" "}
+                  name (e.g., Palette, Sun, Moon)
+                </p>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -180,12 +202,12 @@ export const StylingTab = () => {
                       value={
                         value
                           ? `#${value
-                              .split(" ")
-                              .map((v) => {
-                                const num = parseInt(v);
-                                return num.toString(16).padStart(2, "0");
-                              })
-                              .join("")}`
+                            .split(" ")
+                            .map((v) => {
+                              const num = parseInt(v);
+                              return num.toString(16).padStart(2, "0");
+                            })
+                            .join("")}`
                           : "#000000"
                       }
                       onChange={(e) => {
@@ -196,16 +218,19 @@ export const StylingTab = () => {
                         const rgbValue = `${r} ${g} ${b}`;
                         handleThemeFormChange(key, rgbValue);
                       }}
+                      onFocus={() => handleColorFocus(key)}
+                      onBlur={handleColorBlur}
                       className="w-8 h-8 rounded border border-border cursor-pointer"
                     />
                     <Input
                       id={key}
                       type="text"
-                      value={value}
                       defaultValue={value}
                       onChange={(e) =>
                         handleThemeFormChange(key, e.target.value)
                       }
+                      onFocus={() => handleColorFocus(key)}
+                      onBlur={handleColorBlur}
                       placeholder="255 255 255"
                       className="flex-1 text-xs font-mono"
                     />
@@ -240,7 +265,7 @@ export const StylingTab = () => {
           <div className="space-y-4">
             <h4 className="text-sm font-medium">Live Preview</h4>
             <div className="border border-border rounded-lg">
-              <ThemePreview colors={themeForm.colors} />
+              <ThemePreview colors={themeForm.colors} focusedColor={focusedColor} />
             </div>
           </div>
         </div>
