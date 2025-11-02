@@ -6,12 +6,10 @@ import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Not
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
-import { usePathname, useSearchParams } from "next/navigation";
-import { getNotes } from "@/app/_server/actions/note";
-import { getLists } from "@/app/_server/actions/checklist";
-import { useEffect, useState, useRef, useMemo } from "react";
-import { createItemMap } from "@/app/_utils/indexes-utils";
-import { getReferencingItems, getReferences } from "@/app/_utils/indexes-utils";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useMemo } from "react";
+import { getReferences } from "@/app/_utils/indexes-utils";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -36,7 +34,7 @@ export const NoteEditorContent = ({
   const notesDefaultMode = user?.notesDefaultMode || "view";
   const editor = searchParams?.get("editor");
   const editorRef = useRef<TiptapEditorRef>(null);
-
+  const { permissions } = usePermissions();
   const referencingItems = useMemo(() => {
     return getReferences(
       linkIndex,
@@ -59,7 +57,8 @@ export const NoteEditorContent = ({
 
   return (
     <div className="flex-1 h-full pb-14 lg:pb-0">
-      {notesDefaultMode === "edit" || editor === "true" || isEditing ? (
+      {(notesDefaultMode === "edit" || editor === "true" || isEditing) &&
+      permissions?.canEdit ? (
         <TiptapEditor
           ref={editorRef}
           content={editorContent}

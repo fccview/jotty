@@ -16,6 +16,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface ArchiveTabProps {
   user: User | null;
@@ -41,7 +42,7 @@ export const ArchiveTab = ({
   const handleUnarchive = (item: ArchivedItem) => {
     setSelectedItem(item);
 
-    if (item.type === "checklist") {
+    if (item.type === ItemTypes.CHECKLIST) {
       setShowEditChecklistModal(true);
     } else {
       setShowEditNoteModal(true);
@@ -69,12 +70,12 @@ export const ArchiveTab = ({
   }, [archivedItems, searchQuery]);
 
   const archivedChecklists = useMemo(
-    () => filteredItems.filter((item) => item.type === "checklist"),
+    () => filteredItems.filter((item) => item.type === ItemTypes.CHECKLIST),
     [filteredItems]
   );
 
   const archivedNotes = useMemo(
-    () => filteredItems.filter((item) => item.type === "note"),
+    () => filteredItems.filter((item) => item.type === ItemTypes.NOTE),
     [filteredItems]
   );
 
@@ -201,7 +202,7 @@ export const ArchiveTab = ({
 
       {showEditChecklistModal &&
         selectedItem &&
-        selectedItem.type === "checklist" && (
+        selectedItem.type === ItemTypes.CHECKLIST && (
           <EditChecklistModal
             checklist={selectedItem.data as Checklist}
             categories={listsCategories}
@@ -211,7 +212,7 @@ export const ArchiveTab = ({
           />
         )}
 
-      {showEditNoteModal && selectedItem && selectedItem.type === "note" && (
+      {showEditNoteModal && selectedItem && selectedItem.type === ItemTypes.NOTE && (
         <EditNoteModal
           note={selectedItem.data as Note}
           categories={notesCategories}

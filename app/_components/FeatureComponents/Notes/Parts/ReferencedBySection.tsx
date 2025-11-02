@@ -3,9 +3,11 @@
 import { FileText, CheckSquare, Router } from "lucide-react";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
+import { ItemType } from "@/app/_types";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface ReferencingItem {
-  type: "note" | "checklist";
+  type: ItemType;
   path: string;
   title: string;
   category: string;
@@ -44,7 +46,7 @@ export const ReferencedBySection = ({
           >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
-                {item.type === "note" ? (
+                {item.type === ItemTypes.NOTE ? (
                   <FileText className="h-4 w-4 text-blue-500" />
                 ) : (
                   <CheckSquare className="h-4 w-4 text-green-500" />

@@ -3,11 +3,12 @@
 import path from "path";
 import fs from "fs/promises";
 import { getUserModeDir } from "@/app/_server/actions/file";
-import { Modes } from "@/app/_types/enums";
+import { ItemTypes, Modes } from "@/app/_types/enums";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
 import { getNotes } from "@/app/_server/actions/note";
 import { getLists } from "@/app/_server/actions/checklist";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { ItemType } from "@/app/_types";
 
 export interface LinkIndex {
   notes: Record<string, ItemLinks>;
@@ -27,7 +28,7 @@ export interface ItemLinks {
 }
 
 export interface LinkTarget {
-  type: "note" | "checklist";
+  type: ItemType;
   path: string;
 }
 
@@ -68,7 +69,7 @@ export const parseInternalLinks = (content: string): LinkTarget[] => {
     const category = pathParts.slice(0, -1).join("/");
 
     links.push({
-      type: type as "note" | "checklist",
+      type: type as ItemType,
       path: category ? `${category}/${id}` : id,
     });
   }
@@ -81,7 +82,7 @@ export const parseInternalLinks = (content: string): LinkTarget[] => {
     const category = pathParts.slice(0, -1).join("/");
 
     links.push({
-      type: type as "note" | "checklist",
+      type: type as ItemType,
       path: category ? `${category}/${id}` : id,
     });
   }
@@ -97,7 +98,7 @@ export const parseInternalLinks = (content: string): LinkTarget[] => {
 
 const resolveLinkPath = (
   linkPath: string,
-  linkType: "note" | "checklist",
+  linkType: ItemType,
   index: LinkIndex
 ): string | null => {
   const targetKey = `${linkType}s`;
@@ -116,7 +117,7 @@ const resolveLinkPath = (
 
 export const updateIndexForItem = async (
   username: string,
-  itemType: "note" | "checklist",
+  itemType: ItemType,
   itemId: string,
   currentLinks: LinkTarget[]
 ): Promise<void> => {
@@ -146,12 +147,12 @@ export const updateIndexForItem = async (
   }
 
   const newOutgoingLinks = {
-    notes: currentLinks.filter((l) => l.type === "note").map((l) => {
+    notes: currentLinks.filter((l) => l.type === ItemTypes.NOTE).map((l) => {
       const resolvedPath = resolveLinkPath(l.path, l.type, index);
       return resolvedPath || `Uncategorized/${l.path}`;
     }),
     checklists: currentLinks
-      .filter((l) => l.type === "checklist")
+      .filter((l) => l.type === ItemTypes.CHECKLIST)
       .map((l) => {
         const resolvedPath = resolveLinkPath(l.path, l.type, index);
         return resolvedPath || `Uncategorized/${l.path}`;
@@ -170,11 +171,11 @@ export const updateIndexForItem = async (
     }
     if (
       !index[targetKey][targetPath].isReferencedIn[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ].includes(itemId)
     ) {
       index[targetKey][targetPath].isReferencedIn[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ].push(itemId);
     }
   }
@@ -187,7 +188,7 @@ export const updateIndexForItem = async (
 
 export const removeItemFromIndex = async (
   username: string,
-  itemType: "note" | "checklist",
+  itemType: ItemType,
   itemId: string
 ): Promise<void> => {
   const index = await readLinkIndex(username);
@@ -200,9 +201,9 @@ export const removeItemFromIndex = async (
   for (const linkedItem of itemLinks.isLinkedTo.notes) {
     if (index.notes[linkedItem]) {
       index.notes[linkedItem].isReferencedIn[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ] = index.notes[linkedItem].isReferencedIn[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ].filter((ref) => ref !== itemId);
     }
   }
@@ -210,9 +211,9 @@ export const removeItemFromIndex = async (
   for (const linkedItem of itemLinks.isLinkedTo.checklists) {
     if (index.checklists[linkedItem]) {
       index.checklists[linkedItem].isReferencedIn[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ] = index.checklists[linkedItem].isReferencedIn[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ].filter((ref) => ref !== itemId);
     }
   }
@@ -220,9 +221,9 @@ export const removeItemFromIndex = async (
   for (const referencingItem of itemLinks.isReferencedIn.notes) {
     if (index.notes[referencingItem]) {
       index.notes[referencingItem].isLinkedTo[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ] = index.notes[referencingItem].isLinkedTo[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ].filter((link) => link !== itemId);
     }
   }
@@ -230,9 +231,9 @@ export const removeItemFromIndex = async (
   for (const referencingItem of itemLinks.isReferencedIn.checklists) {
     if (index.checklists[referencingItem]) {
       index.checklists[referencingItem].isLinkedTo[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ] = index.checklists[referencingItem].isLinkedTo[
-        itemType === "note" ? "notes" : "checklists"
+        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ].filter((link) => link !== itemId);
     }
   }
@@ -244,7 +245,7 @@ export const removeItemFromIndex = async (
 
 export const updateItemCategory = async (
   username: string,
-  itemType: "note" | "checklist",
+  itemType: ItemType,
   oldItemId: string,
   newItemId: string
 ): Promise<void> => {
@@ -317,14 +318,14 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
     const itemKey = encodeCategoryPath(`${category}/${note.id}`);
     const links = parseInternalLinks(note.content);
     newIndex.notes[itemKey].isLinkedTo = {
-      notes: links.filter((l) => l.type === "note").map((l) => {
-        const resolvedPath = resolveLinkPath(l.path, l.type as "note" | "checklist", newIndex);
+      notes: links.filter((l) => l.type === ItemTypes.NOTE).map((l) => {
+        const resolvedPath = resolveLinkPath(l.path, l.type as ItemType, newIndex);
         return resolvedPath || encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`);
       }),
       checklists: links
-        .filter((l) => l.type === "checklist")
+        .filter((l) => l.type === ItemTypes.CHECKLIST)
         .map((l) => {
-          const resolvedPath = resolveLinkPath(l.path, l.type as "note" | "checklist", newIndex);
+          const resolvedPath = resolveLinkPath(l.path, l.type as ItemType, newIndex);
           return resolvedPath || encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`);
         }),
     };
@@ -336,14 +337,14 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
     const content = checklist.items.map((i) => i.text).join("\n");
     const links = parseInternalLinks(content);
     newIndex.checklists[itemKey].isLinkedTo = {
-      notes: links.filter((l) => l.type === "note").map((l) => {
-        const resolvedPath = resolveLinkPath(l.path, l.type as "note" | "checklist", newIndex);
+      notes: links.filter((l) => l.type === ItemTypes.NOTE).map((l) => {
+        const resolvedPath = resolveLinkPath(l.path, l.type as ItemType, newIndex);
         return resolvedPath || encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`);
       }),
       checklists: links
-        .filter((l) => l.type === "checklist")
+        .filter((l) => l.type === ItemTypes.CHECKLIST)
         .map((l) => {
-          const resolvedPath = resolveLinkPath(l.path, l.type as "note" | "checklist", newIndex);
+          const resolvedPath = resolveLinkPath(l.path, l.type as ItemType, newIndex);
           return resolvedPath || encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`);
         }),
     };
@@ -362,18 +363,19 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   for (const [itemType, items] of Object.entries(newIndex)) {
     for (const [itemId, itemLinks] of Object.entries(items)) {
       for (const link of [
-        ...itemLinks.isLinkedTo.notes.map((path) => ({ type: "note", path })),
+        ...itemLinks.isLinkedTo.notes.map((path) => ({ type: ItemTypes.NOTE, path })),
         ...itemLinks.isLinkedTo.checklists.map((path) => ({
-          type: "checklist",
+          type: ItemTypes.CHECKLIST,
           path,
         })),
       ]) {
-        const resolvedPath = resolveLinkPath(link.path, link.type as "note" | "checklist", newIndex);
+        const resolvedPath = resolveLinkPath(link.path, link.type as ItemType, newIndex);
+
         if (resolvedPath) {
           const targetKey = `${link.type}s`;
           const finalResolvedPath = resolvedPath.includes("/") ? resolvedPath : `Uncategorized/${resolvedPath}`;
           newIndex[targetKey][finalResolvedPath].isReferencedIn[
-            itemType === "notes" ? "notes" : "checklists"
+            itemType === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS
           ].push(itemId);
         }
       }

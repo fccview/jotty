@@ -11,12 +11,12 @@ import { getLists, getAllLists, getRawLists, getListById } from "@/app/_server/a
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import {
   isAdmin,
-  canUserEditItem,
   getUsername,
 } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { Checklist } from "@/app/_types";
-import { Modes, TaskStatus } from "@/app/_types/enums";
+import { ItemTypes, Modes, PermissionTypes, TaskStatus } from "@/app/_types/enums";
+import { checkUserPermission } from "../sharing";
 
 export const updateItem = async (
   checklist: Checklist,
@@ -34,11 +34,12 @@ export const updateItem = async (
 
     const currentUser = username || (await getUsername());
 
-    const canEdit = await canUserEditItem(
+    const canEdit = await checkUserPermission(
       listId,
       category || "Uncategorized",
-      "checklist",
-      currentUser
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.WRITE
     );
 
     if (!canEdit) {
@@ -206,11 +207,12 @@ export const createItem = async (
     const currentUser = username || (await getUsername());
     const recurrenceStr = formData.get("recurrence") as string;
 
-    const canEdit = await canUserEditItem(
+    const canEdit = await checkUserPermission(
       listId,
       category || "Uncategorized",
-      "checklist",
-      username || ""
+      ItemTypes.CHECKLIST,
+      username || "",
+      PermissionTypes.WRITE
     );
 
     if (!canEdit) {
@@ -497,7 +499,7 @@ export const updateItemStatus = async (formData: FormData) => {
     }
 
     const list = await getListById(listId, username, category);
-    const canEdit = await canUserEditItem(listId, category, "checklist", username);
+    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, username, PermissionTypes.WRITE);
 
     if (!canEdit) {
       return { error: "Permission denied" };
@@ -683,7 +685,7 @@ export const bulkToggleItems = async (formData: FormData) => {
     const itemIds = JSON.parse(itemIdsStr);
 
     const list = await getListById(listId, currentUser, category);
-    const canEdit = await canUserEditItem(listId, category, "checklist", currentUser);
+    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, currentUser, PermissionTypes.WRITE);
 
     if (!canEdit) {
       return { error: "Permission denied" };
@@ -860,7 +862,7 @@ export const bulkDeleteItems = async (formData: FormData) => {
     }
 
     const list = await getListById(listId, currentUser, category);
-    const canEdit = await canUserEditItem(listId, category, "checklist", currentUser);
+    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, currentUser, PermissionTypes.WRITE);
 
     if (!canEdit) {
       return { error: "Permission denied" };

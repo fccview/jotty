@@ -21,6 +21,7 @@ import { lowlight } from "@/app/_utils/lowlight-utils";
 import { toHtml } from "hast-util-to-html";
 import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
+import { ItemTypes } from "@/app/_types/enums";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -133,7 +134,7 @@ export const UnifiedMarkdownRenderer = ({
               attrs: {
                 href: href || "",
                 title: childText,
-                type: href?.includes("/note/") ? "note" : "checklist",
+                type: href?.includes("/note/") ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
                 category:
                   href?.includes("/note/") || href?.includes("/checklist/")
                     ? href

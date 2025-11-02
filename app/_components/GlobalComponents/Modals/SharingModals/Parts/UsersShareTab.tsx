@@ -1,13 +1,18 @@
 import { User } from "@/app/_types";
-import { Search, UserPlus, UserMinus, Loader2 } from "lucide-react";
+import { Search, UserPlus, UserMinus, Loader2, Eye, Edit, Trash2, Settings, Users } from "lucide-react";
 import { UserAvatar } from "../../../User/UserAvatar";
 import { Button } from "../../../Buttons/Button";
+import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { cn } from "@/app/_utils/global-utils";
 
 export const UsersShareTab = ({
   filteredUsers,
   currentSharing,
+  selectedUsers,
+  userPermissions,
   handleShare,
+  handlePermissionChange,
+  handleAllPermissionsChange,
   searchQuery,
   setSearchQuery,
   isLoading,
@@ -28,51 +33,128 @@ export const UsersShareTab = ({
         {filteredUsers.length > 0 ? (
           filteredUsers.map((user: User) => {
             const isShared = currentSharing.includes(user.username);
+            const isSelected = selectedUsers.includes(user.username);
+            const permissions = userPermissions[user.username] || { canRead: true, canEdit: false, canDelete: false };
+            const hasAllPermissions = permissions.canRead && permissions.canEdit && permissions.canDelete;
+
             return (
               <div
                 key={user.username}
-                className="flex items-center justify-between p-3 rounded-lg hover:bg-accent"
+                className="p-3 rounded-lg border hover:bg-accent/50"
               >
-                <div className="flex items-center">
-                  <UserAvatar
-                    size="sm"
-                    className="mr-2"
-                    username={user.username}
-                    avatarUrl={user.avatarUrl}
-                  />
-                  <span className="text-sm font-medium">{user.username}</span>
-                  {isShared && (
-                    <span className="ml-2 text-xs text-primary font-medium">
-                      Shared
-                    </span>
-                  )}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <UserAvatar
+                      size="sm"
+                      className="mt-0.5 flex-shrink-0"
+                      username={user.username}
+                      avatarUrl={user.avatarUrl}
+                    />
+                    <div className="min-w-0 flex items-center gap-2">
+                      <div className="text-sm font-medium truncate">{user.username}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    {isShared && (
+                      <button
+                        onClick={() => handleAllPermissionsChange(user.username, !hasAllPermissions)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors disabled:opacity-50"
+                        title="Toggle all permissions"
+                      >
+                        <Settings className="h-3 w-3 text-primary" />
+                        <Toggle
+                          size="sm"
+                          checked={hasAllPermissions}
+                          onCheckedChange={(checked: boolean) =>
+                            handleAllPermissionsChange(user.username, checked)
+                          }
+                          disabled={isLoading}
+                        />
+                      </button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant={isShared ? "outline" : "default"}
+                      onClick={() =>
+                        handleShare(isShared ? "unshare" : "share", user.username)
+                      }
+                      disabled={isLoading}
+                      className={cn(
+                        `w-full min-w-[80px]`,
+                        isShared && "text-destructive hover:text-destructive min-w-[10px]"
+                      )}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : isShared ? (
+                        <UserMinus className="h-3 w-3 mr-1" />
+                      ) : (
+                        <>
+                          <UserPlus className="h-3 w-3 mr-1" />
+                          Share
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant={isShared ? "outline" : "default"}
-                  onClick={() =>
-                    handleShare(isShared ? "unshare" : "share", user.username)
-                  }
-                  disabled={isLoading}
-                  className={cn(
-                    "min-w-[80px]",
-                    isShared && "text-destructive hover:text-destructive"
-                  )}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : isShared ? (
-                    <>
-                      <UserMinus className="h-3 w-3 mr-1" />
-                      Unshare
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="h-3 w-3 mr-1" />
-                      Share
-                    </>
-                  )}
-                </Button>
+
+                {(isShared || isSelected) && (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between gap-2 pt-4 border-t border-border">
+                      <button
+                        onClick={() => handlePermissionChange(user.username, "canRead", !permissions.canRead)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1 py-1 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
+                      >
+                        <Eye className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs font-medium">Read</span>
+                        <Toggle
+                          size="sm"
+                          checked={permissions.canRead}
+                          onCheckedChange={(checked: boolean) =>
+                            handlePermissionChange(user.username, "canRead", checked)
+                          }
+                          disabled={isLoading}
+                        />
+                      </button>
+
+                      <button
+                        onClick={() => handlePermissionChange(user.username, "canEdit", !permissions.canEdit)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1 py-1 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
+                      >
+                        <Edit className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs font-medium">Write</span>
+                        <Toggle
+                          size="sm"
+                          checked={permissions.canEdit}
+                          onCheckedChange={(checked: boolean) =>
+                            handlePermissionChange(user.username, "canEdit", checked)
+                          }
+                          disabled={isLoading}
+                        />
+                      </button>
+
+                      <button
+                        onClick={() => handlePermissionChange(user.username, "canDelete", !permissions.canDelete)}
+                        disabled={isLoading}
+                        className="flex items-center gap-1 py-1 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                        <span className="text-xs font-medium">Delete</span>
+                        <Toggle
+                          size="sm"
+                          checked={permissions.canDelete}
+                          onCheckedChange={(checked: boolean) =>
+                            handlePermissionChange(user.username, "canDelete", checked)
+                          }
+                          disabled={isLoading}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })

@@ -3,7 +3,7 @@ import { useAppMode } from "../_providers/AppModeProvider";
 import { useNavigationGuard } from "../_providers/NavigationGuardProvider";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Checklist, Category, Note, AppMode, User } from "../_types";
-import { Modes } from "../_types/enums";
+import { ItemTypes, Modes } from "../_types/enums";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { buildCategoryPath } from "../_utils/global-utils";
 
@@ -200,7 +200,7 @@ export const useSidebar = (props: SidebarProps) => {
         item.id
       );
       router.push(
-        `/${mode === Modes.NOTES ? "note" : "checklist"}/${categoryPath}`
+        `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${categoryPath}`
       );
       onClose();
     });
@@ -226,9 +226,8 @@ export const useSidebar = (props: SidebarProps) => {
 
     return (
       pathname?.toLowerCase() ===
-      `/${
-        mode === Modes.NOTES ? "note" : "checklist"
-      }/${expectedPath}`.toLowerCase()
+      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
+        }/${expectedPath}`.toLowerCase()
     );
   };
 

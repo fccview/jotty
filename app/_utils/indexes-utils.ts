@@ -1,5 +1,6 @@
 import { LinkIndex } from "../_server/actions/link";
-import { Checklist, Note } from "../_types";
+import { Checklist, ItemType, Note } from "../_types";
+import { ItemTypes } from "../_types/enums";
 import { encodeCategoryPath } from "./global-utils";
 
 export const createItemMap = (itemsArray: Note[] | Checklist[]) => {
@@ -16,7 +17,7 @@ export const createItemMap = (itemsArray: Note[] | Checklist[]) => {
 export const getReferencingItems = (
   keys: string[],
   map: Map<string, Note | Checklist>,
-  type: "note" | "checklist"
+  type: ItemType
 ) => {
   return keys
     .map((key) => {
@@ -39,7 +40,7 @@ export const getReferences = (
   linkIndex: LinkIndex | null,
   itemId: string | undefined,
   itemCategory: string | undefined,
-  itemType: "note" | "checklist",
+  itemType: ItemType,
   notes: Partial<Note>[],
   checklists: Partial<Checklist>[]
 ) => {
@@ -47,12 +48,12 @@ export const getReferences = (
 
   const itemKey = `${encodeCategoryPath(itemCategory || "Uncategorized")}/${itemId}`;
   const currentItemData =
-    itemType === "note"
+    itemType === ItemTypes.NOTE
       ? linkIndex.notes[itemKey]
       : linkIndex.checklists[itemKey];
 
   const items: Array<{
-    type: "note" | "checklist";
+    type: ItemType;
     path: string;
     title: string;
     category: string;
@@ -66,13 +67,13 @@ export const getReferences = (
   const referencedNotes = getReferencingItems(
     currentItemData.isReferencedIn.notes,
     notesMap,
-    "note"
+    ItemTypes.NOTE
   );
 
   const referencedChecklists = getReferencingItems(
     currentItemData.isReferencedIn.checklists,
     checklistsMap,
-    "checklist"
+    ItemTypes.CHECKLIST
   );
 
   items.push(...referencedNotes, ...referencedChecklists);

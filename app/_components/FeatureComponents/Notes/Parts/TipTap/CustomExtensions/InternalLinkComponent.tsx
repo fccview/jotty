@@ -3,19 +3,20 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { FileText, CheckSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getNoteById } from "@/app/_server/actions/note";
-import { Checklist, Note } from "@/app/_types";
+import { Checklist, ItemType, Note } from "@/app/_types";
 import { getListById } from "@/app/_server/actions/checklist";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { decodeCategoryPath } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface InternalLinkComponentProps {
   node: {
     attrs: {
       href: string;
       title: string;
-      type: "note" | "checklist";
+      type: ItemType;
       category: string | null;
     };
   };
@@ -47,7 +48,7 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
   };
 
   const fetchFullItem = async () => {
-    if (type === "note") {
+    if (type === ItemTypes.NOTE) {
       const note = await getNoteById(
         href.split("/").pop() || "",
         decodeCategoryPath(category || "") || undefined
@@ -90,7 +91,7 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
         </span>
       )}
       <span className="flex-shrink-0">
-        {type === "note" ? (
+        {type === ItemTypes.NOTE ? (
           <FileText className="h-3 w-3 text-foreground" />
         ) : (
           <CheckSquare className="h-3 w-3 text-foreground" />

@@ -1,3 +1,5 @@
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
+
 interface checklistItemsWrapperProps {
   title: string;
   count: number;
@@ -15,6 +17,7 @@ export const ChecklistItemsWrapper = ({
   isLoading,
   isCompleted = false,
 }: checklistItemsWrapperProps) => {
+  const { permissions } = usePermissions();
   return (
     <div className="bg-card border-b border-border pb-4 lg:border-0">
       <div className="flex items-center justify-between mb-4">
@@ -30,13 +33,15 @@ export const ChecklistItemsWrapper = ({
             </span>
           )}
         </h3>
-        <button
-          onClick={onBulkToggle}
-          disabled={isLoading}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-        >
-          {isCompleted ? "Uncheck All" : "Check All"}
-        </button>
+        {permissions?.canEdit && (
+          <button
+            onClick={onBulkToggle}
+            disabled={isLoading}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+          >
+            {isCompleted ? "Uncheck All" : "Check All"}
+          </button>
+        )}
       </div>
       <div className="space-y-2">{children}</div>
     </div>

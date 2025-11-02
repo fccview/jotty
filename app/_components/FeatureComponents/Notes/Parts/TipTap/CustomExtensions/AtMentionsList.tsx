@@ -3,10 +3,12 @@
 import { forwardRef, useEffect, useImperativeHandle, useState, useRef } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { BookText, CheckSquare, Search } from "lucide-react";
+import { ItemType } from "@/app/_types";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface AtMentionItem {
     title: string;
-    type: "note" | "checklist";
+    type: ItemType;
     category: string;
     id: string;
 }
@@ -29,8 +31,8 @@ export const AtMentionsList = forwardRef<
         item.category?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const notes = filteredItems.filter(item => item.type === "note");
-    const checklists = filteredItems.filter(item => item.type === "checklist");
+    const notes = filteredItems.filter(item => item.type === ItemTypes.NOTE);
+    const checklists = filteredItems.filter(item => item.type === ItemTypes.CHECKLIST);
     const allItems = [...notes, ...checklists];
 
     const selectItem = (index: number) => {
@@ -107,7 +109,7 @@ export const AtMentionsList = forwardRef<
                             onClick={() => selectItem(globalIndex)}
                         >
                             <div className="flex-shrink-0 text-muted-foreground">
-                                {item.type === "note" ? (
+                                {item.type === ItemTypes.NOTE ? (
                                     <BookText className="h-4 w-4" />
                                 ) : (
                                     <CheckSquare className="h-4 w-4" />

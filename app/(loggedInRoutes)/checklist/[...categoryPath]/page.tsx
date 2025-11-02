@@ -8,6 +8,7 @@ import { Modes } from "@/app/_types/enums";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
+import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 
 interface ChecklistPageProps {
   params: {
@@ -73,10 +74,12 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
       : [];
 
   return (
-    <ChecklistClient
-      checklist={checklist}
-      categories={categories}
-      user={user}
-    />
+    <PermissionsProvider item={checklist}>
+      <ChecklistClient
+        checklist={checklist}
+        categories={categories}
+        user={user}
+      />
+    </PermissionsProvider>
   );
 }

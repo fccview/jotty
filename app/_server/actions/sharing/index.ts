@@ -1,6 +1,6 @@
 "use server";
 
-import { ItemType, Result } from "@/app/_types";
+import { ItemType, Result, SharingPermissions } from "@/app/_types";
 import {
   ensureDir,
   readJsonFile,
@@ -9,12 +9,16 @@ import {
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import path from "path";
 import { DATA_DIR } from "@/app/_consts/files";
-import { Modes } from "@/app/_types/enums";
+import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
+import { isAdmin, getUserByChecklist, getUserByNote } from "@/app/_server/actions/users";
+import { CHECKLISTS_DIR, NOTES_DIR } from "@/app/_consts/files";
+import fs from "fs/promises";
 
 interface SharedItemEntry {
   id: string;
   category: string;
   sharer: string;
+  permissions: SharingPermissions;
 }
 
 interface SharingItemUpdate {
@@ -27,7 +31,7 @@ interface SharingItemUpdate {
 type SharingData = Record<string, SharedItemEntry[]>;
 
 const getSharingFilePath = (itemType: ItemType): string => {
-  const folderName = itemType === "checklist" ? Modes.CHECKLISTS : Modes.NOTES;
+  const folderName = itemType === ItemTypes.CHECKLIST ? Modes.CHECKLISTS : Modes.NOTES;
   return path.join(DATA_DIR, folderName, ".sharing.json");
 };
 
@@ -35,8 +39,8 @@ export const readShareFile = async (
   itemType: ItemType | "all"
 ): Promise<SharingData> => {
   if (itemType === "all") {
-    const noteSharingData = await readShareFile("note");
-    const checklistSharingData = await readShareFile("checklist");
+    const noteSharingData = await readShareFile(ItemTypes.NOTE);
+    const checklistSharingData = await readShareFile(ItemTypes.CHECKLIST);
     return {
       notes: noteSharingData,
       checklists: checklistSharingData
@@ -63,7 +67,8 @@ export const shareWith = async (
   categoryPath: string,
   sharerUsername: string,
   receiverUsername: string,
-  itemType: ItemType
+  itemType: ItemType,
+  permissions: SharingPermissions = { canRead: true, canEdit: false, canDelete: false }
 ): Promise<Result<null>> => {
   const sharingData = await readShareFile(itemType);
 
@@ -73,6 +78,7 @@ export const shareWith = async (
     id: item,
     category: encodedCategory,
     sharer: sharerUsername,
+    permissions,
   };
 
   if (!sharingData[receiverUsername]) {
@@ -107,6 +113,103 @@ export const isItemSharedWith = async (
   return userShares.some(
     (entry) => entry.id === item && entry.category === encodedCategory
   );
+};
+
+export const getItemPermissions = async (
+  item: string,
+  categoryPath: string,
+  itemType: ItemType,
+  username: string
+): Promise<SharingPermissions | null> => {
+  const sharingData = await readShareFile(itemType);
+  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
+
+  const userShares = sharingData[username] || [];
+  const entry = userShares.find(
+    (entry) => entry.id === item && entry.category === encodedCategory
+  );
+
+  return entry ? entry.permissions : null;
+};
+
+export const canUserReadItem = async (
+  item: string,
+  categoryPath: string,
+  itemType: ItemType,
+  username: string
+): Promise<boolean> => {
+  const permissions = await getItemPermissions(item, categoryPath, itemType, username);
+  return permissions ? permissions.canRead : false;
+};
+
+export const canUserWriteItem = async (
+  item: string,
+  categoryPath: string,
+  itemType: ItemType,
+  username: string
+): Promise<boolean> => {
+  const permissions = await getItemPermissions(item, categoryPath, itemType, username);
+  return permissions ? permissions.canEdit : false;
+};
+
+export const canUserDeleteItem = async (
+  item: string,
+  categoryPath: string,
+  itemType: ItemType,
+  username: string
+): Promise<boolean> => {
+  const permissions = await getItemPermissions(item, categoryPath, itemType, username);
+  return permissions ? permissions.canDelete : false;
+};
+
+export const checkUserPermission = async (
+  itemId: string,
+  itemCategory: string,
+  itemType: ItemType,
+  currentUsername: string,
+  permission: PermissionTypes
+): Promise<boolean> => {
+  try {
+    const isAdminUser = await isAdmin();
+    if (isAdminUser) return true;
+
+    const userDir =
+      itemType === ItemTypes.CHECKLIST
+        ? CHECKLISTS_DIR(currentUsername)
+        : NOTES_DIR(currentUsername);
+    const categoryDir = path.join(userDir, itemCategory);
+    const filePath = path.join(categoryDir, `${itemId}.md`);
+
+    try {
+      await fs.access(filePath);
+      return true;
+    } catch {
+    }
+
+    const ownerResult =
+      itemType === ItemTypes.CHECKLIST
+        ? await getUserByChecklist(itemId, itemCategory)
+        : await getUserByNote(itemId, itemCategory);
+
+    if (!ownerResult.success) return false;
+
+    const owner = ownerResult.data;
+    if (owner?.username === currentUsername) return true;
+
+    switch (permission) {
+      case PermissionTypes.READ:
+        return await canUserReadItem(itemId, itemCategory, itemType, currentUsername);
+      case PermissionTypes.WRITE:
+        return await canUserWriteItem(itemId, itemCategory, itemType, currentUsername);
+      case PermissionTypes.DELETE:
+        return await canUserDeleteItem(itemId, itemCategory, itemType, currentUsername);
+      default:
+        return false;
+    }
+  } catch (error) {
+    console.error("Error in checkUserPermission:", error);
+    return false;
+  }
 };
 
 export const unshareWith = async (
@@ -147,8 +250,8 @@ export const unshareWith = async (
 export const getAllSharedItemsForUser = async (
   username: string
 ): Promise<{ notes: SharedItemEntry[]; checklists: SharedItemEntry[] }> => {
-  const notesSharing = await readShareFile("note");
-  const checklistsSharing = await readShareFile("checklist");
+  const notesSharing = await readShareFile(ItemTypes.NOTE);
+  const checklistsSharing = await readShareFile(ItemTypes.CHECKLIST);
 
   return {
     notes: notesSharing[username] || [],
@@ -165,8 +268,8 @@ export const getAllSharedItems = async (): Promise<{
   };
 }> => {
   const [notesSharing, checklistsSharing] = await Promise.all([
-    readShareFile("note"),
-    readShareFile("checklist"),
+    readShareFile(ItemTypes.NOTE),
+    readShareFile(ItemTypes.CHECKLIST),
   ]);
 
   const allNotes: Array<{ id: string; category: string }> = [];
@@ -287,6 +390,38 @@ export const updateSharingData = async (
   }
 };
 
+export const updateItemPermissions = async (
+  item: string,
+  categoryPath: string,
+  itemType: ItemType,
+  username: string,
+  permissions: SharingPermissions
+): Promise<Result<null>> => {
+  const sharingData = await readShareFile(itemType);
+  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
+
+  if (!sharingData[username]) {
+    return { success: false, error: "Item not shared with this user" };
+  }
+
+  const entryIndex = sharingData[username].findIndex(
+    (entry) => entry.id === item && entry.category === encodedCategory
+  );
+
+  if (entryIndex === -1) {
+    return { success: false, error: "Item not shared with this user" };
+  }
+
+  sharingData[username][entryIndex].permissions = permissions;
+
+  try {
+    await writeShareFile(itemType, sharingData);
+    return { success: true, data: null };
+  } catch (error) {
+    return { success: false, error: "Failed to update permissions" };
+  }
+};
+
 export const updateReceiverUsername = async (
   oldUsername: string,
   newUsername: string,
@@ -301,3 +436,6 @@ export const updateReceiverUsername = async (
     await writeShareFile(itemType, sharingData);
   }
 };
+
+// Re-export for convenience
+export type { SharingPermissions };

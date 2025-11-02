@@ -15,7 +15,12 @@ import fs from "fs/promises";
 import { parseMarkdown } from "@/app/_utils/checklist-utils";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
-import { Modes, TaskStatus } from "@/app/_types/enums";
+import {
+  ItemTypes,
+  Modes,
+  PermissionTypes,
+  TaskStatus,
+} from "@/app/_types/enums";
 import { ChecklistType } from "@/app/_types";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
 import { sanitizeFilename } from "@/app/_utils/filename-utils";
@@ -39,6 +44,7 @@ import {
   refreshRecurringItem,
 } from "@/app/_utils/recurrence-utils";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
+import { checkUserPermission } from "@/app/_server/actions/sharing";
 
 const readListsRecursively = async (
   dir: string,
@@ -412,9 +418,12 @@ export const getProjectedLists = async (projection: string[]) => {
 export const getListById = async (
   id: string,
   username?: string,
-  category?: string
+  category?: string,
+  unarchive?: boolean
 ): Promise<Checklist | undefined> => {
-  const lists = await (username ? getRawLists(username) : getAllLists());
+  const lists = await (username
+    ? getRawLists(username, unarchive)
+    : getAllLists(unarchive));
 
   if (!lists.success || !lists.data) {
     throw new Error(lists.error || "Failed to fetch lists");
@@ -423,7 +432,9 @@ export const getListById = async (
   const list = lists.data.find(
     (list) =>
       list.id === id &&
-      (!category || list.category?.toLowerCase() === decodeCategoryPath(category).toLowerCase())
+      (!category ||
+        list.category?.toLowerCase() ===
+        decodeCategoryPath(category).toLowerCase())
   );
 
   if (list && "rawContent" in list) {
@@ -507,7 +518,7 @@ export const createList = async (formData: FormData) => {
         const itemKey = `${newList.category || "Uncategorized"}/${newList.id}`;
         await updateIndexForItem(
           currentUser.username,
-          "checklist",
+          ItemTypes.CHECKLIST,
           itemKey,
           links
         );
@@ -533,19 +544,28 @@ export const updateList = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
-    const unarchive = formData.get("unarchive") === "true";
+    const user = formData.get("user") as string;
+    const unarchive = formData.get("unarchive") as string;
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser
-      ? getAllLists(unarchive)
-      : getLists(undefined, unarchive));
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
+    const currentList = await getListById(
+      id,
+      user || undefined,
+      originalCategory,
+      unarchive === "true"
+    );
+
+    const canEdit = await checkUserPermission(
+      id,
+      originalCategory,
+      ItemTypes.CHECKLIST,
+      user || "",
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      return { error: "Permission denied" };
     }
 
-    const currentList = lists.data.find(
-      (list) => list.id === id && list.category === originalCategory
-    );
     if (!currentList) {
       throw new Error("List not found");
     }
@@ -616,7 +636,7 @@ export const updateList = async (formData: FormData) => {
       if (oldItemKey !== newItemKey) {
         await updateItemCategory(
           currentList.owner!,
-          "checklist",
+          ItemTypes.CHECKLIST,
           oldItemKey,
           newItemKey
         );
@@ -624,7 +644,7 @@ export const updateList = async (formData: FormData) => {
 
       await updateIndexForItem(
         currentList.owner!,
-        "checklist",
+        ItemTypes.CHECKLIST,
         newItemKey,
         links
       );
@@ -637,19 +657,21 @@ export const updateList = async (formData: FormData) => {
     }
 
     if (newId !== id || (category && category !== currentList.category)) {
-      const { updateSharingData } = await import("@/app/_server/actions/sharing");
+      const { updateSharingData } = await import(
+        "@/app/_server/actions/sharing"
+      );
 
       await updateSharingData(
         {
           id,
           category: currentList.category || "Uncategorized",
-          itemType: "checklist",
+          itemType: ItemTypes.CHECKLIST,
           sharer: currentList.owner!,
         },
         {
           id: newId,
           category: updatedList.category || "Uncategorized",
-          itemType: "checklist",
+          itemType: ItemTypes.CHECKLIST,
           sharer: currentList.owner!,
         }
       );
@@ -732,18 +754,20 @@ export const deleteList = async (formData: FormData) => {
 
     try {
       const itemKey = `${list.category || "Uncategorized"}/${id}`;
-      await removeItemFromIndex(list.owner!, "checklist", itemKey);
+      await removeItemFromIndex(list.owner!, ItemTypes.CHECKLIST, itemKey);
     } catch (error) {
       console.warn("Failed to remove checklist from link index:", id, error);
     }
 
     if (list.owner) {
-      const { updateSharingData } = await import("@/app/_server/actions/sharing");
+      const { updateSharingData } = await import(
+        "@/app/_server/actions/sharing"
+      );
       await updateSharingData(
         {
           id,
           category: list.category || "Uncategorized",
-          itemType: "checklist",
+          itemType: ItemTypes.CHECKLIST,
           sharer: list.owner,
         },
         null

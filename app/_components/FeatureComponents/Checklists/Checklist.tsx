@@ -20,6 +20,7 @@ import { ToastContainer } from "../../GlobalComponents/Feedback/ToastContainer";
 import { toggleArchive } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
 import { useRouter } from "next/navigation";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface ChecklistViewProps {
   list: Checklist;
@@ -71,6 +72,8 @@ export const ChecklistView = ({
     }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
+
+  const { permissions } = usePermissions();
 
   const canDelete = true
     ? isAdmin || currentUsername === localList.owner
@@ -128,13 +131,12 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 
-      {localList.type === "simple" && (
+      {localList.type === "simple" && permissions?.canEdit && (
         <ChecklistHeading
-          checklist={localList}
           key={focusKey}
           onSubmit={handleCreateItem}
           onBulkSubmit={() => setShowBulkPasteModal(true)}

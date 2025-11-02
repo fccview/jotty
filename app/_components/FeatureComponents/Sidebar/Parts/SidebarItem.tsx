@@ -17,7 +17,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
-import { Modes } from "@/app/_types/enums";
+import { ItemTypes, Modes } from "@/app/_types/enums";
 import { togglePin } from "@/app/_server/actions/users";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -68,7 +68,7 @@ export const SidebarItem = ({
       const result = await togglePin(
         item.id,
         item.category || "Uncategorized",
-        mode === Modes.CHECKLISTS ? "list" : "note"
+        mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE
       );
       if (result.success) {
         router.refresh();

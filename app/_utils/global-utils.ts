@@ -66,6 +66,11 @@ export function encodeCategoryPath(categoryPath: string): string {
   if (!categoryPath || categoryPath === "Uncategorized") {
     return "Uncategorized";
   }
+
+  if (categoryPath.includes("%20") || categoryPath.includes("%2F")) {
+    return categoryPath;
+  }
+
   return categoryPath
     .split("/")
     .map((segment) => encodeURIComponent(segment))
@@ -76,6 +81,7 @@ export function decodeCategoryPath(encodedPath: string): string {
   if (!encodedPath) {
     return "Uncategorized";
   }
+
   return encodedPath
     .split("/")
     .map((segment) => decodeURIComponent(segment))

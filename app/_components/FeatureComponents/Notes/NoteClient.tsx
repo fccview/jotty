@@ -83,8 +83,6 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
         categories={categories}
         viewModel={viewModel}
         onBack={handleBack}
-        currentUsername={user?.username}
-        isAdmin={user?.isAdmin}
       />
     </Layout>
   );

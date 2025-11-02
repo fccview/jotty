@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
-import { updateNote } from "@/app/_server/actions/note";
+import { getNoteById, updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
-import { getCurrentUser } from "@/app/_server/actions/users";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { buildCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { getPermissions } from "@/app/_utils/sharing-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 
 interface EditNoteModalProps {
   note: Note;
@@ -21,30 +24,48 @@ interface EditNoteModalProps {
 }
 
 export const EditNoteModal = ({
-  note,
+  note: initialNote,
   categories,
   onClose,
   onUpdated,
   unarchive,
 }: EditNoteModalProps) => {
+  const { user } = useAppMode();
   const router = useRouter();
-  const [title, setTitle] = useState(note.title);
-  const initialCategory = unarchive ? "" : note.category || "";
+  const [note, setNote] = useState<Note | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [title, setTitle] = useState(initialNote.title);
+  const initialCategory = unarchive ? "" : initialNote.category || "";
   const [category, setCategory] = useState(initialCategory);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
-    const checkOwnership = async () => {
-      try {
-        const user = await getCurrentUser();
-        setIsOwner(user?.username === note.owner);
-      } catch (error) {
-        console.error("Error checking ownership:", error);
-      }
+    const fetchNote = async () => {
+      const note = await getNoteById(initialNote.id, initialNote.category || "Uncategorized", user?.username || "");
+      const parsedNote = parseNoteContent(note?.rawContent || "", note?.id || "");
+
+      console.log(parsedNote?.title);
+
+      setNote(note || null);
+      setTitle(parsedNote?.title || "");
+      setIsOwner(user?.username === note?.owner);
     };
-    checkOwnership();
-  }, [note.owner]);
+    fetchNote();
+  }, [initialNote]);
+
+  if (!note) {
+    return (
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        title="Note not found"
+        titleIcon={<FileText className="h-5 w-5 text-primary" />}
+      >
+        <p>Note not found</p>
+      </Modal>
+    );
+  }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +81,10 @@ export const EditNoteModal = ({
 
     if (isOwner) {
       formData.append("category", category || "");
+    } else if (unarchive) {
+      formData.append("category", category || "Uncategorized");
     }
+
     formData.append("originalCategory", note.category || "Uncategorized");
 
     const result = await updateNote(formData, false);

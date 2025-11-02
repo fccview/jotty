@@ -21,6 +21,8 @@ import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/Dropd
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { ChecklistsTypes } from "@/app/_types/enums";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -43,11 +45,15 @@ export const ChecklistHeader = ({
 }: ChecklistHeaderProps) => {
   const { handleCopyId, copied } = useChecklist({
     list: checklist,
-    onUpdate: () => { },
+    onUpdate: () => {},
   });
 
   const { globalSharing } = useAppMode();
-  const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
+  const { permissions } = usePermissions();
+
+  const encodedCategory = encodeCategoryPath(
+    checklist.category || "Uncategorized"
+  );
   const itemDetails = sharingInfo(globalSharing, checklist.id, encodedCategory);
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
   const sharedWith = itemDetails.sharedWith;
@@ -84,26 +90,34 @@ export const ChecklistHeader = ({
               )}
             </Button>
 
-            {isPubliclyShared && <span title="Publicly shared"><Globe className="h-3 w-3 text-primary" /></span>}
-            {isShared && <span title={sharedWith.join(", ")}><Users className="h-3 w-3 text-primary" /></span>}
+            {isPubliclyShared && (
+              <span title="Publicly shared">
+                <Globe className="h-3 w-3 text-primary" />
+              </span>
+            )}
+            {isShared && (
+              <span title={sharedWith.join(", ")}>
+                <Users className="h-3 w-3 text-primary" />
+              </span>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="hidden lg:flex items-center gap-2">
-            {onConvertType && (
+            {onConvertType && permissions?.canEdit && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onConvertType}
                 className="h-10 w-10 p-0"
                 title={
-                  checklist.type === "task"
+                  checklist.type === ChecklistsTypes.TASK
                     ? "Convert to Simple Checklist"
                     : "Convert to Task Project"
                 }
               >
-                {checklist.type === "task" ? (
+                {checklist.type === ChecklistsTypes.TASK ? (
                   <CheckSquare className="h-4 w-4 lg:h-5 lg:w-5" />
                 ) : (
                   <BarChart3 className="h-4 w-4 lg:h-5 lg:w-5" />
@@ -111,7 +125,7 @@ export const ChecklistHeader = ({
               </Button>
             )}
 
-            {onEdit && (
+            {onEdit && permissions?.canEdit && (
               <Button
                 variant="outline"
                 size="sm"
@@ -123,77 +137,88 @@ export const ChecklistHeader = ({
             )}
           </div>
 
-          <DropdownMenu
-            align="right"
-            trigger={
-              <Button variant="outline" size="sm" className="h-10 w-10 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            }
-            items={[
-              ...(onConvertType
-                ? [
-                  {
-                    type: "item" as const,
-                    label:
-                      checklist.type === "task"
-                        ? "Convert to Simple Checklist"
-                        : "Convert to Task Project",
-                    icon:
-                      checklist.type === "task" ? (
-                        <CheckSquare className="h-4 w-4" />
-                      ) : (
-                        <BarChart3 className="h-4 w-4" />
-                      ),
-                    onClick: onConvertType,
-                    className: "lg:!hidden",
-                  },
-                ]
-                : []),
-              ...(onArchive
-                ? [
-                  {
-                    type: "item" as const,
-                    label: "Archive",
-                    icon: <Archive className="h-4 w-4" />,
-                    onClick: onArchive,
-                  },
-                ]
-                : []),
-              ...(onShare
-                ? [
-                  {
-                    type: "item" as const,
-                    label: "Share",
-                    icon: <Share2 className="h-4 w-4" />,
-                    onClick: onShare,
-                  },
-                ]
-                : []),
-              ...(onEdit
-                ? [
-                  {
-                    type: "item" as const,
-                    label: "Edit",
-                    icon: <Edit3 className="h-4 w-4" />,
-                    onClick: onEdit,
-                    className: "lg:!hidden",
-                  },
-                ]
-                : []),
-              ...(onDelete
-                ? [
-                  {
-                    type: "item" as const,
-                    label: "Delete",
-                    icon: <Trash2 className="h-4 w-4" />,
-                    onClick: onDelete,
-                    variant: "destructive" as const,
-                  },
-                ]
-                : []),
-            ]}
-          />
+          {(permissions?.canEdit || permissions?.canDelete) && (
+            <div
+              className={`${
+                permissions?.canEdit &&
+                !permissions?.canDelete &&
+                !permissions?.isOwner &&
+                "lg:hidden"
+              }`}
+            >
+              <DropdownMenu
+                align="right"
+                trigger={
+                  <Button variant="outline" size="sm" className="h-10 w-10 p-0">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                }
+                items={[
+                  ...(onConvertType && permissions?.canEdit
+                    ? [
+                        {
+                          type: "item" as const,
+                          label:
+                            checklist.type === ChecklistsTypes.TASK
+                              ? "Convert to Simple Checklist"
+                              : "Convert to Task Project",
+                          icon:
+                            checklist.type === ChecklistsTypes.TASK ? (
+                              <CheckSquare className="h-4 w-4" />
+                            ) : (
+                              <BarChart3 className="h-4 w-4" />
+                            ),
+                          onClick: onConvertType,
+                          className: "lg:!hidden",
+                        },
+                      ]
+                    : []),
+                  ...(onArchive && permissions?.canDelete
+                    ? [
+                        {
+                          type: "item" as const,
+                          label: "Archive",
+                          icon: <Archive className="h-4 w-4" />,
+                          onClick: onArchive,
+                        },
+                      ]
+                    : []),
+                  ...(onShare && permissions?.isOwner
+                    ? [
+                        {
+                          type: "item" as const,
+                          label: "Share",
+                          icon: <Share2 className="h-4 w-4" />,
+                          onClick: onShare,
+                        },
+                      ]
+                    : []),
+                  ...(onEdit && permissions?.canEdit
+                    ? [
+                        {
+                          type: "item" as const,
+                          label: "Edit",
+                          icon: <Edit3 className="h-4 w-4" />,
+                          onClick: onEdit,
+                          className: "lg:!hidden",
+                        },
+                      ]
+                    : []),
+                  ...(onDelete && permissions?.canDelete
+                    ? [
+                        {
+                          type: "item" as const,
+                          label: "Delete",
+                          icon: <Trash2 className="h-4 w-4" />,
+                          onClick: onDelete,
+                          variant: "destructive" as const,
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { Clock, Archive, FileText, ListTodo } from "lucide-react";
 import { ArchivedItem } from "@/app/_server/actions/archived";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface ArchivedItemCardProps {
   item: ArchivedItem;
@@ -14,7 +15,7 @@ export const ArchivedItemCard = ({
   item,
   onUnarchive,
 }: ArchivedItemCardProps) => {
-  const Icon = item.type === "checklist" ? ListTodo : FileText;
+  const Icon = item.type === ItemTypes.CHECKLIST ? ListTodo : FileText;
 
   return (
     <div className="jotty-archived-item-card bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/50 transition-all duration-200 group flex flex-col h-full">

@@ -12,6 +12,7 @@ import { getCategories } from "@/app/_server/actions/category";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
+import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 
 interface NotePageProps {
   params: {
@@ -79,6 +80,8 @@ export default async function NotePage({ params }: NotePageProps) {
       : [];
 
   return (
-    <NoteClient note={note} categories={docsCategories} />
+    <PermissionsProvider item={note}>
+      <NoteClient note={note} categories={docsCategories} />
+    </PermissionsProvider>
   );
 }

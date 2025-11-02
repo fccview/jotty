@@ -3,7 +3,7 @@ import { getRawLists } from "@/app/_server/actions/checklist";
 import { getRawNotes, CheckForNeedsMigration } from "@/app/_server/actions/note";
 import { HomeClient } from "@/app/_components/FeatureComponents/Home/HomeClient";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { Modes } from "@/app/_types/enums";
+import { ChecklistsTypes, ItemTypes, Modes } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
@@ -35,11 +35,11 @@ export default async function HomePage() {
   const itemsToCheck = allItems.map((item) => ({
     id: item.id,
     type:
-      "type" in item && item.type === "task"
-        ? ("checklist" as const)
+      "type" in item && item.type === ChecklistsTypes.TASK
+        ? (ItemTypes.CHECKLIST as const)
         : "type" in item
-          ? ("checklist" as const)
-          : ("note" as const),
+          ? (ItemTypes.CHECKLIST as const)
+          : (ItemTypes.NOTE as const),
     owner: item.owner || "",
   }));
 

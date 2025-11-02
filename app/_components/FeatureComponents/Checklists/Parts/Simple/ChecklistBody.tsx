@@ -7,7 +7,7 @@ import { ChecklistProgress } from "./ChecklistProgress";
 import { ChecklistItemsWrapper } from "./ChecklistItemsWrapper";
 import { NestedChecklistItem } from "./NestedChecklistItem";
 import { Checklist, Item } from "@/app/_types";
-import { TaskStatusLabels } from "@/app/_types/enums";
+import { ItemTypes, TaskStatusLabels } from "@/app/_types/enums";
 import { useMemo } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -49,7 +49,7 @@ export const ChecklistBody = ({
       linkIndex,
       localList.id,
       localList.category,
-      "checklist",
+      ItemTypes.CHECKLIST,
       notes,
       checklists
     );

@@ -1,6 +1,7 @@
 import { TaskStatus, Modes } from "./enums";
 
 export type ChecklistType = "simple" | "task";
+export type ItemType = "checklist" | "note";
 
 export interface TimeEntry {
   id: string;
@@ -16,8 +17,6 @@ export interface RecurrenceRule {
   nextDue?: string;
   lastCompleted?: string;
 }
-
-export type ItemType = "checklist" | "note";
 
 export interface StatusChange {
   status: TaskStatus;
@@ -63,6 +62,7 @@ export interface Checklist {
   owner?: string;
   isShared?: boolean;
   isDeleted?: boolean;
+  rawContent?: string;
 }
 
 export interface Note {
@@ -74,6 +74,7 @@ export interface Note {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  rawContent?: string;
 }
 
 export interface NoteEditorViewModel {
@@ -165,8 +166,8 @@ export interface SharingMetadata {
 
 export interface SharingPermissions {
   canRead: boolean;
-  canWrite: boolean;
-  canShare: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
 export interface GlobalSharing {

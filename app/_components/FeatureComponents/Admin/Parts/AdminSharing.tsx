@@ -3,11 +3,11 @@
 import { CheckSquare, FileText, Globe, Users } from "lucide-react";
 import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import { AdminSharedItemsList } from "@/app/_components/FeatureComponents/Admin/Parts/AdminSharedItemsList";
-import { MostActiveSharer } from "@/app/_types";
+import { ItemType, MostActiveSharer } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { unshareWith } from "@/app/_server/actions/sharing";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { decodeCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 
 const calculateMostActiveSharers = (globalSharing: any) => {
   const sharerCounts: Record<string, number> = {};
@@ -34,7 +34,7 @@ const calculateMostActiveSharers = (globalSharing: any) => {
     .slice(0, 5);
 };
 
-const handleUnsharePublicItem = async (item: { id: string; category: string }, itemType: "checklist" | "note") => {
+const handleUnsharePublicItem = async (item: { id: string; category: string }, itemType: ItemType) => {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) return;
@@ -165,7 +165,7 @@ export const AdminSharing = () => {
           icon={<Globe className="h-5 w-5" />}
           onUnshare={(item) => {
             const isChecklist = allSharedItems?.public.checklists.some(c => c.id === item.id && c.category === item.category);
-            handleUnsharePublicItem(item, isChecklist ? "checklist" : "note");
+            handleUnsharePublicItem(item, isChecklist ? ItemTypes.CHECKLIST : ItemTypes.NOTE);
           }}
         />
       </div>

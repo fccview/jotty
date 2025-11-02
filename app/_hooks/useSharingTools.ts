@@ -12,8 +12,12 @@ import {
   shareWith,
   unshareWith,
   readShareFile,
+  getItemPermissions,
+  updateItemPermissions,
+  SharingPermissions,
 } from "../_server/actions/sharing";
 import { getCurrentUser } from "../_server/actions/users";
+import { ItemTypes } from "../_types/enums";
 
 
 interface ShareModalProps {
@@ -38,6 +42,7 @@ export const useSharingTools = ({
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [currentSharing, setCurrentSharing] = useState<string[]>([]);
+  const [userPermissions, setUserPermissions] = useState<Record<string, SharingPermissions>>({});
   const [isPubliclyShared, setIsPubliclyShared] = useState(false);
   const [publicUrl, setPublicUrl] = useState("");
   const [status, setStatus] = useState<{
@@ -68,12 +73,15 @@ export const useSharingTools = ({
         const targetUsersList = targetUsers?.split(",") || [targetUsers || ""];
 
         for (const targetUser of targetUsersList) {
+          const permissions = userPermissions[targetUser] || { canRead: true, canEdit: false, canDelete: false };
+          const finalPermissions = { ...permissions, canRead: true };
           const result = await shareWith(
             itemId,
             itemCategory || "Uncategorized",
             currentUser?.username || "",
             targetUser || "",
-            itemType
+            itemType,
+            finalPermissions
           );
           if (!result.success) {
             throw new Error(result.error || "An unknown error occurred.");
@@ -91,7 +99,7 @@ export const useSharingTools = ({
         setStatus((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [itemId, itemType, itemTitle, itemCategory]
+    [itemId, itemType, itemTitle, itemCategory, userPermissions]
   );
 
   const _executeUnshare = useCallback(
@@ -145,22 +153,25 @@ export const useSharingTools = ({
       );
       const sharedUsers: string[] = [];
 
+      const permissionsMap: Record<string, SharingPermissions> = {};
+
       Object.entries(sharingData).forEach(([username, items]) => {
         if (username !== "public") {
-          const hasItem = items.some(
+          const itemEntry = items.find(
             (entry) => entry.id === itemId && entry.category === encodedCategory
           );
 
-          if (hasItem) {
+          if (itemEntry) {
             sharedUsers.push(username);
+            permissionsMap[username] = itemEntry.permissions;
           }
         }
       });
 
       setCurrentSharing(sharedUsers);
       setSelectedUsers(sharedUsers);
+      setUserPermissions(permissionsMap);
 
-      // Check if publicly shared
       const publicItems = sharingData.public || [];
       const isPublic = publicItems.some(
         (entry) => entry.id === itemId && entry.sharer === itemOwner
@@ -169,7 +180,7 @@ export const useSharingTools = ({
 
       if (isPublic) {
         const publicPath =
-          itemType === "checklist" ? "public/checklist" : "public/note";
+          itemType === ItemTypes.CHECKLIST ? "public/checklist" : "public/note";
         const categoryPath = buildCategoryPath(
           itemCategory || "Uncategorized",
           itemId
@@ -193,11 +204,23 @@ export const useSharingTools = ({
 
   const handleUserToggle = (username: string) => {
     resetMessages();
-    setSelectedUsers((prev) =>
-      prev.includes(username)
-        ? prev.filter((u) => u !== username)
-        : [...prev, username]
-    );
+    setSelectedUsers((prev) => {
+      const isCurrentlySelected = prev.includes(username);
+      if (isCurrentlySelected) {
+        setUserPermissions(current => {
+          const newPermissions = { ...current };
+          delete newPermissions[username];
+          return newPermissions;
+        });
+        return prev.filter((u) => u !== username);
+      } else {
+        setUserPermissions(current => ({
+          ...current,
+          [username]: { canRead: true, canEdit: false, canDelete: false }
+        }));
+        return [...prev, username];
+      }
+    });
   };
 
   const handleShare = async (action: "share" | "unshare", user: string) => {
@@ -207,36 +230,84 @@ export const useSharingTools = ({
         : await _executeUnshare(user);
 
     if (result?.success) {
-      try {
-        const sharingData = await readShareFile(itemType);
-        const encodedCategory = encodeCategoryPath(
-          itemCategory || "Uncategorized"
-        );
-        const sharedUsers: string[] = [];
-
-        Object.entries(sharingData).forEach(([username, items]) => {
-          if (username !== "public") {
-            const hasItem = items.some(
-              (entry) =>
-                entry.id === itemId && entry.category === encodedCategory
-            );
-            if (hasItem) {
-              sharedUsers.push(username);
-            }
-          }
-        });
-
-        setCurrentSharing(sharedUsers);
-        setSelectedUsers(sharedUsers);
-      } catch (error) {
-        console.error("Error refreshing sharing state:", error);
-      }
+      await loadInitialState();
 
       setStatus((prev) => ({
         ...prev,
         success: `Item ${action === "share" ? "shared" : "unshared"
           } successfully!`,
       }));
+    }
+  };
+
+  const handlePermissionChange = async (user: string, permission: keyof SharingPermissions, value: boolean) => {
+    const currentPermissions = userPermissions[user] || { canRead: true, canEdit: false, canDelete: false };
+    const newPermissions = { ...currentPermissions, [permission]: value };
+
+    const hasNoPermissions = !newPermissions.canRead && !newPermissions.canEdit && !newPermissions.canDelete;
+
+    if (hasNoPermissions && currentSharing.includes(user)) {
+      const result = await _executeUnshare(user);
+      if (result?.success) {
+        await loadInitialState();
+        setStatus((prev) => ({
+          ...prev,
+          success: "Item unshared - no permissions remaining",
+        }));
+      }
+    } else {
+      if (currentSharing.includes(user)) {
+        const result = await updateItemPermissions(
+          itemId,
+          itemCategory || "Uncategorized",
+          itemType,
+          user,
+          newPermissions
+        );
+
+        if (result.success) {
+          setUserPermissions(prev => ({ ...prev, [user]: newPermissions }));
+        }
+      } else {
+        setUserPermissions(prev => ({ ...prev, [user]: newPermissions }));
+      }
+    }
+  };
+
+  const handleAllPermissionsChange = async (user: string, value: boolean) => {
+    const newPermissions: SharingPermissions = {
+      canRead: value,
+      canEdit: value,
+      canDelete: value,
+    };
+
+    const hasNoPermissions = !value;
+
+    if (hasNoPermissions && currentSharing.includes(user)) {
+      const result = await _executeUnshare(user);
+      if (result?.success) {
+        await loadInitialState();
+        setStatus((prev) => ({
+          ...prev,
+          success: "Item unshared - no permissions remaining",
+        }));
+      }
+    } else {
+      if (currentSharing.includes(user)) {
+        const result = await updateItemPermissions(
+          itemId,
+          itemCategory || "Uncategorized",
+          itemType,
+          user,
+          newPermissions
+        );
+
+        if (result.success) {
+          setUserPermissions(prev => ({ ...prev, [user]: newPermissions }));
+        }
+      } else {
+        setUserPermissions(prev => ({ ...prev, [user]: newPermissions }));
+      }
     }
   };
 
@@ -284,7 +355,7 @@ export const useSharingTools = ({
 
       if (isPublic) {
         const publicPath =
-          itemType === "checklist" ? "public/checklist" : "public/note";
+          itemType === ItemTypes.CHECKLIST ? "public/checklist" : "public/note";
         const categoryPath = buildCategoryPath(
           itemCategory || "Uncategorized",
           itemId
@@ -396,10 +467,13 @@ export const useSharingTools = ({
     users,
     selectedUsers,
     currentSharing,
+    userPermissions,
     searchQuery,
     setSearchQuery,
     handleUserToggle,
     handleShare,
+    handlePermissionChange,
+    handleAllPermissionsChange,
     activeTab,
     setActiveTab,
     handlePublicToggle,

@@ -10,6 +10,7 @@ import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -37,6 +38,8 @@ export const KanbanColumn = ({
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
+
+  const { permissions } = usePermissions();
 
   const getColumnColor = (status: string) => {
     switch (status) {
@@ -90,6 +93,7 @@ export const KanbanColumn = ({
         <SortableContext
           items={items.map((item) => item.id)}
           strategy={verticalListSortingStrategy}
+          disabled={!permissions?.canEdit}
         >
           <div className="space-y-2">
             {items.map((item) => (

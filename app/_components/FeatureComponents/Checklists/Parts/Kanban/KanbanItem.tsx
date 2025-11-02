@@ -19,6 +19,7 @@ import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { KanbanItemContent } from "./KanbanItemContent";
 import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanItemProps {
   checklist: Checklist;
@@ -40,6 +41,7 @@ export const KanbanItem = ({
   isShared,
 }: KanbanItemProps) => {
   const { usersPublicData } = useAppMode();
+  const { permissions } = usePermissions();
 
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
@@ -117,7 +119,7 @@ export const KanbanItem = ({
             "group relative bg-background border rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
             getStatusColor(item.status),
             (isDragging || isSortableDragging) &&
-            "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+              "opacity-50 scale-95 rotate-1 shadow-lg z-50"
           )}
         >
           <div className="space-y-2">

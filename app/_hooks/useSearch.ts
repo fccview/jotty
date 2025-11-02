@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { AppMode, Checklist, ItemType, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface useSearchProps {
   mode: AppMode;
@@ -55,13 +56,13 @@ export const useSearch = ({
       ...checklists.map((c) => ({
         id: c.id || "",
         title: capitalize(c.title?.replace(/-/g, " ")),
-        type: "checklist" as const,
+        type: ItemTypes.CHECKLIST,
         content: c?.items?.map((i) => i.text).join(" ") || "".toLowerCase(),
       })),
       ...notes.map((n) => ({
         id: n.id || "",
         title: capitalize(n.title?.replace(/-/g, " ")),
-        type: "note" as const,
+        type: ItemTypes.NOTE,
         content: n.content?.toLowerCase() || "",
       })),
     ],

@@ -7,7 +7,6 @@ import {
   sanitizeFilename,
 } from "@/app/_utils/filename-utils";
 import {
-  canUserEditItem,
   getCurrentUser,
   getUserByNote,
   getUsername,
@@ -31,12 +30,13 @@ import {
   EXCLUDED_DIRS,
   USERS_FILE,
 } from "@/app/_consts/files";
-import { Modes } from "@/app/_types/enums";
+import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { serverReadFile } from "@/app/_server/actions/file";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
 import {
   buildCategoryPath,
   decodeCategoryPath,
+  encodeCategoryPath,
 } from "@/app/_utils/global-utils";
 import {
   updateIndexForItem,
@@ -45,6 +45,7 @@ import {
   updateItemCategory,
 } from "@/app/_server/actions/link";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
+import { checkUserPermission } from "@/app/_server/actions/sharing";
 
 const USER_NOTES_DIR = (username: string) =>
   path.join(process.cwd(), "data", NOTES_FOLDER, username);
@@ -214,7 +215,9 @@ export const getNoteById = async (
   const note = notes.data.find(
     (d) =>
       d.id === id &&
-      (!category || d.category?.toLowerCase() === decodeCategoryPath(category).toLowerCase())
+      (!category ||
+        encodeCategoryPath(d.category || "Uncategorized")?.toLowerCase() ===
+        encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
   );
 
   if (note && "rawContent" in note) {
@@ -527,6 +530,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const rawContent = formData.get("content") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
+    const unarchive = formData.get("unarchive") as string;
     let currentUser = formData.get("user") as string | undefined;
 
     if (!currentUser) {
@@ -536,11 +540,13 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const content = sanitizeMarkdown(rawContent);
 
     const doc = await getNoteById(id, originalCategory, currentUser);
-    const canEdit = await canUserEditItem(
+
+    const canEdit = await checkUserPermission(
       id,
       originalCategory,
       "note",
-      currentUser
+      currentUser,
+      PermissionTypes.EDIT
     );
 
     if (!doc) {
@@ -623,7 +629,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     }
 
     if (newId !== id || (category && category !== doc.category)) {
-      const { updateSharingData } = await import("@/app/_server/actions/sharing");
+      const { updateSharingData } = await import(
+        "@/app/_server/actions/sharing"
+      );
 
       await updateSharingData(
         {
@@ -721,7 +729,9 @@ export const deleteNote = async (formData: FormData) => {
     }
 
     if (doc.owner) {
-      const { updateSharingData } = await import("@/app/_server/actions/sharing");
+      const { updateSharingData } = await import(
+        "@/app/_server/actions/sharing"
+      );
       await updateSharingData(
         {
           id,

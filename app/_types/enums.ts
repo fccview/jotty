@@ -4,6 +4,11 @@ export enum Modes {
   DEPRECATED_DOCS = "docs",
 }
 
+export enum ItemTypes {
+  CHECKLIST = "checklist",
+  NOTE = "note",
+}
+
 export enum ChecklistsTypes {
   SIMPLE = "simple",
   TASK = "task",
@@ -21,4 +26,10 @@ export enum TaskStatusLabels {
   IN_PROGRESS = "In Progress",
   COMPLETED = "Completed",
   PAUSED = "Paused",
+}
+
+export enum PermissionTypes {
+  READ = "canRead",
+  EDIT = "canEdit",
+  DELETE = "canDelete",
 }

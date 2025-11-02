@@ -15,11 +15,12 @@ import { KanbanItem } from "./KanbanItem";
 import { ChecklistHeading } from "../Common/ChecklistHeading";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
 import { useKanbanBoard } from "../../../../../_hooks/useKanbanBoard";
-import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { ReferencedBySection } from "../../../Notes/Parts/ReferencedBySection";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -57,6 +58,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const isShared = allSharedItems?.checklists.some(
     (sharedChecklist) => sharedChecklist.id === checklist.id && sharedChecklist.category === encodedCategory
   ) || false;
+  const { permissions } = usePermissions();
   const {
     localChecklist,
     isLoading,
@@ -94,7 +96,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
       linkIndex,
       checklist.id,
       checklist.category,
-      "checklist",
+      ItemTypes.CHECKLIST,
       notes,
       checklists
     );
@@ -102,18 +104,18 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
   return (
     <div className="h-full flex flex-col bg-background overflow-y-auto">
-      <ChecklistHeading
-        checklist={localChecklist}
-        key={focusKey}
-        onSubmit={handleAddItem}
-        onBulkSubmit={() => setShowBulkPasteModal(true)}
-        isLoading={isLoading}
-        autoFocus={true}
-        focusKey={focusKey}
-        placeholder="Add new task..."
-        submitButtonText="Add Task"
-      />
-
+      {permissions?.canEdit && (
+        <ChecklistHeading
+          key={focusKey}
+          onSubmit={handleAddItem}
+          onBulkSubmit={() => setShowBulkPasteModal(true)}
+          isLoading={isLoading}
+          autoFocus={true}
+          focusKey={focusKey}
+          placeholder="Add new task..."
+          submitButtonText="Add Task"
+        />
+      )}
       <div className="flex-1 pb-[8.5em]">
         {isClient ? (
           <DndContext

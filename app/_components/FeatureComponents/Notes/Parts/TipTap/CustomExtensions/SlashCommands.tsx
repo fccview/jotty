@@ -17,6 +17,8 @@ import {
 import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommandsList";
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { ItemType } from "@/app/_types";
+import { ItemTypes } from "@/app/_types/enums";
 
 export interface SlashCommandItem {
   title: string;
@@ -27,7 +29,7 @@ export interface SlashCommandItem {
 
 export interface AtMentionItem {
   title: string;
-  type: "note" | "checklist";
+  type: ItemType;
   category: string;
   id: string;
 }
@@ -289,11 +291,11 @@ export const SlashCommands = Extension.create({
           const allItems = [
             ...atMentionData.notes.map((note: any) => ({
               ...note,
-              type: "note" as const,
+              type: ItemTypes.NOTE as const,
             })),
             ...atMentionData.checklists.map((checklist: any) => ({
               ...checklist,
-              type: "checklist" as const,
+              type: ItemTypes.CHECKLIST as const,
             })),
           ];
 

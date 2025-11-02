@@ -18,6 +18,7 @@ import {
   Result,
   TableSyntax,
   EnableRecurrence,
+  ItemType,
 } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
@@ -29,7 +30,7 @@ import fs from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
 import { updateNote } from "@/app/_server/actions/note";
-import { Modes } from "@/app/_types/enums";
+import { ItemTypes, Modes } from "@/app/_types/enums";
 import { AppMode } from "@/app/_types";
 import { updateList } from "@/app/_server/actions/checklist";
 
@@ -140,8 +141,8 @@ async function _updateUserCore(
         { sharer: updates.username } as any
       );
 
-      await updateReceiverUsername(targetUsername, updates.username, "checklist");
-      await updateReceiverUsername(targetUsername, updates.username, "note");
+      await updateReceiverUsername(targetUsername, updates.username, ItemTypes.CHECKLIST);
+      await updateReceiverUsername(targetUsername, updates.username, ItemTypes.NOTE);
     } catch (error) {
       console.warn(
         `Could not update sharing data for username change ${targetUsername} -> ${updates.username}:`,
@@ -652,51 +653,10 @@ export const getUserByNote = async (
   }
 };
 
-export const canUserEditItem = async (
-  itemId: string,
-  itemCategory: string,
-  itemType: "checklist" | "note",
-  currentUsername: string
-): Promise<boolean> => {
-  try {
-    const isAdminUser = await isAdmin();
-    if (isAdminUser) return true;
-
-    const userDir =
-      itemType === "checklist"
-        ? CHECKLISTS_DIR(currentUsername)
-        : NOTES_DIR(currentUsername);
-    const categoryDir = path.join(userDir, itemCategory);
-    const filePath = path.join(categoryDir, `${itemId}.md`);
-
-    try {
-      await fs.access(filePath);
-      return true;
-    } catch {
-    }
-
-    const ownerResult =
-      itemType === "checklist"
-        ? await getUserByChecklist(itemId, itemCategory)
-        : await getUserByNote(itemId, itemCategory);
-
-    if (!ownerResult.success) return false;
-
-    const owner = ownerResult.data;
-    if (owner?.username === currentUsername) return true;
-
-    const { isItemSharedWith } = await import("@/app/_server/actions/sharing");
-    return await isItemSharedWith(itemId, itemCategory, itemType, currentUsername);
-  } catch (error) {
-    console.error("Error in canUserEditItem:", error);
-    return false;
-  }
-};
-
 export const togglePin = async (
   itemId: string,
   category: string,
-  type: "list" | "note"
+  type: ItemType
 ): Promise<Result<null>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -716,7 +676,7 @@ export const togglePin = async (
     const user = allUsers[userIndex];
     const itemPath = `${category}/${itemId}`;
 
-    if (type === "list") {
+    if (type === ItemTypes.CHECKLIST) {
       const pinnedLists = user.pinnedLists || [];
       const isPinned = pinnedLists.includes(itemPath);
 
@@ -752,7 +712,7 @@ export const togglePin = async (
 
 export const updatePinnedOrder = async (
   newOrder: string[],
-  type: "list" | "note"
+  type: ItemType
 ): Promise<Result<null>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -771,7 +731,7 @@ export const updatePinnedOrder = async (
 
     const user = allUsers[userIndex];
 
-    if (type === "list") {
+    if (type === ItemTypes.CHECKLIST) {
       user.pinnedLists = newOrder;
     } else {
       user.pinnedNotes = newOrder;
@@ -798,8 +758,13 @@ export const toggleArchive = async (
   formData.append("id", item.id);
   formData.append("title", item.title);
 
-  if (!formData.get("user")) {
+  if (!formData.get("user") && mode === Modes.NOTES) {
     const owner = await getUserByNote(item.id, item.category || "Uncategorized");
+    formData.append("user", owner.data?.username || "");
+  }
+
+  if (!formData.get("user") && mode === Modes.CHECKLISTS) {
+    const owner = await getUserByChecklist(item.id, item.category || "Uncategorized");
     formData.append("user", owner.data?.username || "");
   }
 
