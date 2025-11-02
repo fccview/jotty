@@ -100,8 +100,8 @@ export default async function RootLayout({
 
   const [notesResult, checklistsResult, allSharedItems, userSharedItems, globalSharing] =
     await Promise.all([
-      getProjectedNotes(["id", "title", "category"]),
-      getProjectedLists(["id", "title", "category"]),
+      getProjectedNotes(["id", "title", "category", "owner"]),
+      getProjectedLists(["id", "title", "category", "owner"]),
       getAllSharedItems(),
       user
         ? getAllSharedItemsForUser(user.username)

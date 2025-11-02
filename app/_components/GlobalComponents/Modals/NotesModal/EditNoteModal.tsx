@@ -44,8 +44,6 @@ export const EditNoteModal = ({
       const note = await getNoteById(initialNote.id, initialNote.category || "Uncategorized", user?.username || "");
       const parsedNote = parseNoteContent(note?.rawContent || "", note?.id || "");
 
-      console.log(parsedNote?.title);
-
       setNote(note || null);
       setTitle(parsedNote?.title || "");
       setIsOwner(user?.username === note?.owner);

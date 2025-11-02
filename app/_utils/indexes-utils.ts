@@ -29,6 +29,7 @@ export const getReferencingItems = (
           path: key,
           title: item.title,
           category: item.category || "Uncategorized",
+          owner: item.owner,
         };
       }
       return null;
@@ -57,6 +58,7 @@ export const getReferences = (
     path: string;
     title: string;
     category: string;
+    owner: string | undefined;
   }> = [];
 
   const notesMap = createItemMap(notes as Note[]);

@@ -39,7 +39,7 @@ export const updateItem = async (
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
       currentUser,
-      PermissionTypes.WRITE
+      PermissionTypes.EDIT
     );
 
     if (!canEdit) {
@@ -212,7 +212,7 @@ export const createItem = async (
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
       username || "",
-      PermissionTypes.WRITE
+      PermissionTypes.EDIT
     );
 
     if (!canEdit) {
@@ -499,7 +499,7 @@ export const updateItemStatus = async (formData: FormData) => {
     }
 
     const list = await getListById(listId, username, category);
-    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, username, PermissionTypes.WRITE);
+    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, username, PermissionTypes.EDIT);
 
     if (!canEdit) {
       return { error: "Permission denied" };
@@ -685,7 +685,7 @@ export const bulkToggleItems = async (formData: FormData) => {
     const itemIds = JSON.parse(itemIdsStr);
 
     const list = await getListById(listId, currentUser, category);
-    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, currentUser, PermissionTypes.WRITE);
+    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, currentUser, PermissionTypes.EDIT);
 
     if (!canEdit) {
       return { error: "Permission denied" };
@@ -862,7 +862,7 @@ export const bulkDeleteItems = async (formData: FormData) => {
     }
 
     const list = await getListById(listId, currentUser, category);
-    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, currentUser, PermissionTypes.WRITE);
+    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, currentUser, PermissionTypes.EDIT);
 
     if (!canEdit) {
       return { error: "Permission denied" };

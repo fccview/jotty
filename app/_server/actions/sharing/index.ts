@@ -199,7 +199,7 @@ export const checkUserPermission = async (
     switch (permission) {
       case PermissionTypes.READ:
         return await canUserReadItem(itemId, itemCategory, itemType, currentUsername);
-      case PermissionTypes.WRITE:
+      case PermissionTypes.EDIT:
         return await canUserWriteItem(itemId, itemCategory, itemType, currentUsername);
       case PermissionTypes.DELETE:
         return await canUserDeleteItem(itemId, itemCategory, itemType, currentUsername);
@@ -221,8 +221,6 @@ export const unshareWith = async (
 ): Promise<Result<null>> => {
   const sharingData = await readShareFile(itemType);
   const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
-
-  console.log(item);
 
   if (sharingData[receiverUsername]) {
     sharingData[receiverUsername] = sharingData[receiverUsername].filter(

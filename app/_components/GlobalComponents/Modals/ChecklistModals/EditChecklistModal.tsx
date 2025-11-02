@@ -42,8 +42,6 @@ export const EditChecklistModal = ({
       const checklist = await getListById(initialChecklist.id, user?.username || "", initialChecklist.category || "Uncategorized");
       const parsedChecklist = parseChecklistContent(checklist?.rawContent || "", checklist?.id || "");
 
-      console.log(parsedChecklist?.title);
-
       setChecklist(checklist || null);
       setTitle(parsedChecklist?.title || "");
       setIsOwner(user?.username === checklist?.owner);

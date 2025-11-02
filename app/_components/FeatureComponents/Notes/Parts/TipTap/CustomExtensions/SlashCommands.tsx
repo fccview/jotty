@@ -37,6 +37,7 @@ export interface AtMentionItem {
 let atMentionData = {
   notes: [] as any[],
   checklists: [] as any[],
+  username: "",
 };
 
 const slashCommands: SlashCommandItem[] = [
@@ -297,11 +298,12 @@ export const SlashCommands = Extension.create({
               ...checklist,
               type: ItemTypes.CHECKLIST as const,
             })),
-          ];
+          ]
 
           if (!query.trim()) return allItems.slice(0, 8);
 
           const lowerCaseQuery = query.toLowerCase();
+
           return allItems
             .filter(
               (item) =>
@@ -392,17 +394,18 @@ export const SlashCommands = Extension.create({
   /** @ts-ignore */
   addCommands() {
     return {
-      updateAtMentionData: (notes: any[], checklists: any[]) => () => {
-        atMentionData.notes = notes;
-        atMentionData.checklists = checklists;
+      updateAtMentionData: (notes: any[], checklists: any[], username: string) => () => {
+        atMentionData.notes = notes?.filter((note: any) => note.owner === username) || [];
+        atMentionData.checklists = checklists?.filter((checklist: any) => checklist.owner === username) || [];
+
         return true;
       },
     };
   },
 
   addProseMirrorPlugins() {
-    atMentionData.notes = this.options.notes || [];
-    atMentionData.checklists = this.options.checklists || [];
+    atMentionData.notes = this.options.notes?.filter((note: any) => note.owner === this.options.username) || [];
+    atMentionData.checklists = this.options.checklists?.filter((checklist: any) => checklist.owner === this.options.username) || [];
 
     return [
       Suggestion({
