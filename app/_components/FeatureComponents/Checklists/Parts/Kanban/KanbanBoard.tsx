@@ -54,10 +54,15 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const [isClient, setIsClient] = useState(false);
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
   const { allSharedItems } = useAppMode();
-  const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
-  const isShared = allSharedItems?.checklists.some(
-    (sharedChecklist) => sharedChecklist.id === checklist.id && sharedChecklist.category === encodedCategory
-  ) || false;
+  const encodedCategory = encodeCategoryPath(
+    checklist.category || "Uncategorized"
+  );
+  const isShared =
+    allSharedItems?.checklists.some(
+      (sharedChecklist) =>
+        sharedChecklist.id === checklist.id &&
+        sharedChecklist.category === encodedCategory
+    ) || false;
   const { permissions } = usePermissions();
   const {
     localChecklist,
@@ -71,10 +76,14 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
     handleDragEnd,
     handleAddItem,
     handleBulkPaste,
+    handleItemStatusUpdate,
     activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
-
+  const handleToggleItem = async (itemId: string, completed: boolean) => {
+    const newStatus = completed ? TaskStatus.COMPLETED : TaskStatus.TODO;
+    await handleItemStatusUpdate(itemId, newStatus);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -107,7 +116,9 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
       {permissions?.canEdit && (
         <ChecklistHeading
           key={focusKey}
+          checklist={checklist}
           onSubmit={handleAddItem}
+          onToggleCompletedItem={handleToggleItem}
           onBulkSubmit={() => setShowBulkPasteModal(true)}
           isLoading={isLoading}
           autoFocus={true}

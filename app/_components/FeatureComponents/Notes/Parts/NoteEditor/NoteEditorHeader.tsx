@@ -28,6 +28,7 @@ import { Modes } from "@/app/_types/enums";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -62,6 +63,8 @@ export const NoteEditorHeader = ({
     isPrinting,
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showSharedWithModal, setShowSharedWithModal] = useState(false);
+
   const { user } = useAppMode();
   const router = useRouter();
   const { permissions } = usePermissions();
@@ -114,8 +117,12 @@ export const NoteEditorHeader = ({
                       </span>
                     )}
                     {isShared && (
-                      <span title={sharedWith.join(", ")}>
-                        <Users className="h-4 w-4 text-primary" />
+                      <span
+                        title={`Shared with ${sharedWith.join(", ")}`}
+                        className="cursor-pointer hover:text-primary"
+                        onClick={() => setShowSharedWithModal(true)}
+                      >
+                        <Users className="h-3 w-3" />
                       </span>
                     )}
                   </div>
@@ -278,6 +285,12 @@ export const NoteEditorHeader = ({
           itemOwner={note.owner || ""}
         />
       )}
+
+      <SharedWithModal
+        usernames={itemDetails.sharedWith}
+        isOpen={showSharedWithModal}
+        onClose={() => setShowSharedWithModal(false)}
+      />
     </>
   );
 };

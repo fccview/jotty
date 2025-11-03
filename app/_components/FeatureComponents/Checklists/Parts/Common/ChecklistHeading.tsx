@@ -9,6 +9,7 @@ import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/M
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
 import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
+import { TaskStatus } from "@/app/_types/enums";
 
 interface ChecklistHeadingProps {
   checklist?: Checklist;
@@ -54,7 +55,7 @@ export const ChecklistHeading = ({
 
     const collectCompleted = (itemList: Item[]) => {
       for (const item of itemList) {
-        if (item.completed) {
+        if (item.completed || item.status === TaskStatus.COMPLETED) {
           completedItems.push(item);
         }
         if (item.children && item.children.length > 0) {

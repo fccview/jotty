@@ -20,6 +20,8 @@ import { usePagination } from "@/app/_hooks/usePagination";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { togglePin } from "@/app/_server/actions/users";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -47,6 +49,7 @@ export const ChecklistsPageClient = ({
   const [checklistFilter, setChecklistFilter] =
     useState<ChecklistFilter>("all");
   const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
   const filterOptions = [
     { id: "all", name: "All Checklists" },
@@ -119,6 +122,26 @@ export const ChecklistsPageClient = ({
 
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
+  };
+
+  const handleTogglePin = async (list: Checklist) => {
+    if (!user || isTogglingPin === list.id) return;
+
+    setIsTogglingPin(list.id);
+    try {
+      const result = await togglePin(
+        list.id,
+        list.category || "Uncategorized",
+        ItemTypes.CHECKLIST
+      );
+      if (result.success) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to toggle pin:", error);
+    } finally {
+      setIsTogglingPin(null);
+    }
   };
 
   const stats = useMemo(() => {
@@ -282,7 +305,7 @@ export const ChecklistsPageClient = ({
                       isPinned={user?.pinnedLists?.includes(
                         `${list.category || "Uncategorized"}/${list.id}`
                       )}
-                      onTogglePin={() => {}}
+                      onTogglePin={() => handleTogglePin(list)}
                     />
                   ))}
                 </div>

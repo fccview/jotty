@@ -13,6 +13,7 @@ import { cn } from "@/app/_utils/global-utils";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
+import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 
 interface SharedItemsListProps {
   collapsed: boolean;
@@ -114,7 +115,7 @@ export const SharedItemsList = ({
                   ) : (
                     <ChevronDown className="h-4 w-4" />
                   )}
-                  <User className="h-4 w-4 text-muted-foreground" />
+                  <UserAvatar size="xs" username={sharer} />
                   <span className="truncate font-medium text-foreground">
                     {sharer}
                   </span>

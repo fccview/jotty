@@ -60,11 +60,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-      ...order.categories.filter((n) => dirNames.includes(n)),
-      ...dirNames
-        .filter((n) => !order.categories!.includes(n))
-        .sort((a, b) => a.localeCompare(b)),
-    ]
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -83,11 +83,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -99,9 +99,9 @@ const readListsRecursively = async (
           lists.push(
             parseMarkdown(content, id, categoryPath, owner, false, stats)
           );
-        } catch { }
+        } catch {}
       }
-    } catch { }
+    } catch {}
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -275,69 +275,76 @@ export const getRawLists = async (
     await ensureDir(userDir);
 
     const lists: Checklist[] = [];
-    const entries = await serverReadDir(userDir);
 
-    const order = await readOrderFile(userDir);
-    const dirNames = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+    // Recursive function to read checklists from directories
+    const readListsFromDir = async (
+      dirPath: string,
+      categoryPrefix: string
+    ) => {
+      const entries = await serverReadDir(dirPath);
 
-    const orderedDirNames: string[] = order?.categories
-      ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
-      : dirNames.sort((a, b) => a.localeCompare(b));
+      const order = await readOrderFile(dirPath);
+      const dirNames = entries
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name);
 
-    for (const dirName of orderedDirNames) {
-      if (dirName === ARCHIVED_DIR_NAME && !allowArchived) {
-        continue;
-      }
+      const orderedDirNames: string[] = order?.categories
+        ? [
+            ...order.categories.filter((n) => dirNames.includes(n)),
+            ...dirNames
+              .filter((n) => !order.categories!.includes(n))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
+        : dirNames.sort((a, b) => a.localeCompare(b));
 
-      const categoryPath = dirName;
-      const categoryDir = path.join(userDir, dirName);
-
-      try {
-        const files = await serverReadDir(categoryDir);
-        const mdFiles = files.filter(
-          (f) => f.isFile() && f.name.endsWith(".md")
-        );
-
-        const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
-        const categoryOrder = await readOrderFile(categoryDir);
-        const orderedIds: string[] = categoryOrder?.items
-          ? [
+      const files = entries.filter((e) => e.isFile() && e.name.endsWith(".md"));
+      const ids = files.map((f) => path.basename(f.name, ".md"));
+      const categoryOrder = await readOrderFile(dirPath);
+      const orderedIds: string[] = categoryOrder?.items
+        ? [
             ...categoryOrder.items.filter((id) => ids.includes(id)),
             ...ids
               .filter((id) => !categoryOrder.items!.includes(id))
               .sort((a, b) => a.localeCompare(b)),
           ]
-          : ids.sort((a, b) => a.localeCompare(b));
+        : ids.sort((a, b) => a.localeCompare(b));
 
-        for (const id of orderedIds) {
-          const fileName = `${id}.md`;
-          const filePath = path.join(categoryDir, fileName);
-          try {
-            const content = await serverReadFile(filePath);
-            const stats = await fs.stat(filePath);
-            const type = getChecklistType(content);
-            const rawList: Checklist & { rawContent: string } = {
-              id,
-              title: id,
-              type,
-              category: categoryPath,
-              items: [],
-              createdAt: stats.birthtime.toISOString(),
-              updatedAt: stats.mtime.toISOString(),
-              owner: currentUser.username,
-              isShared: false,
-              rawContent: content,
-            };
-            lists.push(rawList as Checklist);
-          } catch { }
+      for (const id of orderedIds) {
+        const fileName = `${id}.md`;
+        const filePath = path.join(dirPath, fileName);
+        try {
+          const content = await serverReadFile(filePath);
+          const stats = await fs.stat(filePath);
+          const type = getChecklistType(content);
+          const rawList: Checklist & { rawContent: string } = {
+            id,
+            title: id,
+            type,
+            category: categoryPrefix,
+            items: [],
+            createdAt: stats.birthtime.toISOString(),
+            updatedAt: stats.mtime.toISOString(),
+            owner: currentUser.username,
+            isShared: false,
+            rawContent: content,
+          };
+          lists.push(rawList as Checklist);
+        } catch {}
+      }
+
+      for (const dirName of orderedDirNames) {
+        if (dirName === ARCHIVED_DIR_NAME && !allowArchived) {
+          continue;
         }
-      } catch { }
-    }
+        const subDirPath = path.join(dirPath, dirName);
+        const subCategoryPrefix = categoryPrefix
+          ? `${categoryPrefix}/${dirName}`
+          : dirName;
+        await readListsFromDir(subDirPath, subCategoryPrefix);
+      }
+    };
+
+    await readListsFromDir(userDir, "");
 
     const { getAllSharedItemsForUser } = await import(
       "@/app/_server/actions/sharing"
@@ -434,7 +441,7 @@ export const getListById = async (
       list.id === id &&
       (!category ||
         list.category?.toLowerCase() ===
-        decodeCategoryPath(category).toLowerCase())
+          decodeCategoryPath(category).toLowerCase())
   );
 
   if (list && "rawContent" in list) {
@@ -629,8 +636,9 @@ export const updateList = async (formData: FormData) => {
     try {
       const content = updatedList.items.map((i) => i.text).join("\n");
       const links = parseInternalLinks(content);
-      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
-        }`;
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${
+        updatedList.id
+      }`;
 
       const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
       if (oldItemKey !== newItemKey) {

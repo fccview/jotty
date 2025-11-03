@@ -134,15 +134,25 @@ async function _updateUserCore(
     }
 
     try {
-      const { updateSharingData, updateReceiverUsername } = await import("@/app/_server/actions/sharing");
+      const { updateSharingData, updateReceiverUsername } = await import(
+        "@/app/_server/actions/sharing"
+      );
 
       await updateSharingData(
         { sharer: targetUsername } as any,
         { sharer: updates.username } as any
       );
 
-      await updateReceiverUsername(targetUsername, updates.username, ItemTypes.CHECKLIST);
-      await updateReceiverUsername(targetUsername, updates.username, ItemTypes.NOTE);
+      await updateReceiverUsername(
+        targetUsername,
+        updates.username,
+        ItemTypes.CHECKLIST
+      );
+      await updateReceiverUsername(
+        targetUsername,
+        updates.username,
+        ItemTypes.NOTE
+      );
     } catch (error) {
       console.warn(
         `Could not update sharing data for username change ${targetUsername} -> ${updates.username}:`,
@@ -568,21 +578,40 @@ const findFileRecursively = async (
   targetFileName: string,
   targetCategory: string
 ): Promise<string | null> => {
+  const categoryParts = targetCategory.split("/");
+  const currentCategoryPart = categoryParts[0];
+  const remainingCategoryParts = categoryParts.slice(1);
+
   const entries = await fs.readdir(dir, { withFileTypes: true });
 
   for (const entry of entries) {
     if (entry.isDirectory()) {
-      if (entry.name === targetCategory) {
-        const categoryPath = path.join(dir, entry.name);
-        const categoryEntries = await fs.readdir(categoryPath, { withFileTypes: true });
+      if (entry.name === currentCategoryPart) {
+        if (remainingCategoryParts.length === 0) {
+          const categoryPath = path.join(dir, entry.name);
+          const categoryEntries = await fs.readdir(categoryPath, {
+            withFileTypes: true,
+          });
 
-        for (const fileEntry of categoryEntries) {
-          if (fileEntry.isFile() && fileEntry.name === targetFileName) {
-            return path.join(categoryPath, fileEntry.name);
+          for (const fileEntry of categoryEntries) {
+            if (fileEntry.isFile() && fileEntry.name === targetFileName) {
+              return path.join(categoryPath, fileEntry.name);
+            }
           }
+        } else {
+          const result = await findFileRecursively(
+            path.join(dir, entry.name),
+            targetFileName,
+            remainingCategoryParts.join("/")
+          );
+          if (result) return result;
         }
       } else {
-        const result = await findFileRecursively(path.join(dir, entry.name), targetFileName, targetCategory);
+        const result = await findFileRecursively(
+          path.join(dir, entry.name),
+          targetFileName,
+          targetCategory
+        );
         if (result) return result;
       }
     }
@@ -598,15 +627,19 @@ export const getUserByChecklist = async (
   try {
     const checklistsBaseDir = path.join(process.cwd(), "data", "checklists");
     const targetFileName = `${checklistID}.md`;
-    const foundFile = await findFileRecursively(checklistsBaseDir, targetFileName, checklistCategory);
+    const foundFile = await findFileRecursively(
+      checklistsBaseDir,
+      targetFileName,
+      checklistCategory
+    );
 
     if (!foundFile) {
       return { success: false, error: "Checklist not found" };
     }
 
     const pathParts = foundFile.split(path.sep);
-    const categoryIndex = pathParts.indexOf(checklistCategory);
-    const username = pathParts[categoryIndex - 1];
+    const checklistsIndex = pathParts.indexOf("checklists");
+    const username = pathParts[checklistsIndex + 1];
 
     const allUsers = await readJsonFile(USERS_FILE);
     const foundUser = allUsers.find((user: User) => user.username === username);
@@ -629,15 +662,19 @@ export const getUserByNote = async (
   try {
     const notesBaseDir = path.join(process.cwd(), "data", "notes");
     const targetFileName = `${noteID}.md`;
-    const foundFile = await findFileRecursively(notesBaseDir, targetFileName, noteCategory);
+    const foundFile = await findFileRecursively(
+      notesBaseDir,
+      targetFileName,
+      noteCategory
+    );
 
     if (!foundFile) {
       return { success: false, error: "Note not found" };
     }
 
     const pathParts = foundFile.split(path.sep);
-    const categoryIndex = pathParts.indexOf(noteCategory);
-    const username = pathParts[categoryIndex - 1];
+    const notesIndex = pathParts.indexOf("notes");
+    const username = pathParts[notesIndex + 1];
 
     const allUsers = await readJsonFile(USERS_FILE);
     const foundUser = allUsers.find((user: User) => user.username === username);
@@ -759,12 +796,18 @@ export const toggleArchive = async (
   formData.append("title", item.title);
 
   if (!formData.get("user") && mode === Modes.NOTES) {
-    const owner = await getUserByNote(item.id, item.category || "Uncategorized");
+    const owner = await getUserByNote(
+      item.id,
+      item.category || "Uncategorized"
+    );
     formData.append("user", owner.data?.username || "");
   }
 
   if (!formData.get("user") && mode === Modes.CHECKLISTS) {
-    const owner = await getUserByChecklist(item.id, item.category || "Uncategorized");
+    const owner = await getUserByChecklist(
+      item.id,
+      item.category || "Uncategorized"
+    );
     formData.append("user", owner.data?.username || "");
   }
 

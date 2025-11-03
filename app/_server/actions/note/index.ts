@@ -124,11 +124,11 @@ const _readNotesRecursively = async (
     .map((e) => e.name);
   const orderedDirNames: string[] = order?.categories
     ? [
-      ...order.categories.filter((n) => dirNames.includes(n)),
-      ...dirNames
-        .filter((n) => !order.categories!.includes(n))
-        .sort((a, b) => a.localeCompare(b)),
-    ]
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -142,11 +142,11 @@ const _readNotesRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -166,9 +166,9 @@ const _readNotesRecursively = async (
               fileName
             )
           );
-        } catch { }
+        } catch {}
       }
-    } catch { }
+    } catch {}
 
     const subDocs = await _readNotesRecursively(
       categoryDir,
@@ -217,7 +217,7 @@ export const getNoteById = async (
       d.id === id &&
       (!category ||
         encodeCategoryPath(d.category || "Uncategorized")?.toLowerCase() ===
-        encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
+          encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
   );
 
   if (note && "rawContent" in note) {
@@ -328,68 +328,77 @@ export const getRawNotes = async (
     await ensureDir(userDir);
 
     const docs: Note[] = [];
-    const entries = await serverReadDir(userDir);
-    let excludedDirs = EXCLUDED_DIRS;
 
-    if (!allowArchived) {
-      excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
-    }
+    // Recursive function to read notes from directories
+    const readNotesFromDir = async (
+      dirPath: string,
+      categoryPrefix: string
+    ) => {
+      const entries = await serverReadDir(dirPath);
+      let excludedDirs = EXCLUDED_DIRS;
 
-    const order = await readOrderFile(userDir);
-    const dirNames = entries
-      .filter((e) => e.isDirectory() && !excludedDirs.includes(e.name))
-      .map((e) => e.name);
-    const orderedDirNames: string[] = order?.categories
-      ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
-      : dirNames.sort((a, b) => a.localeCompare(b));
+      if (!allowArchived) {
+        excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+      }
 
-    for (const dirName of orderedDirNames) {
-      const categoryPath = dirName;
-      const categoryDir = path.join(userDir, dirName);
+      const order = await readOrderFile(dirPath);
+      const dirNames = entries
+        .filter((e) => e.isDirectory() && !excludedDirs.includes(e.name))
+        .map((e) => e.name);
+      const orderedDirNames: string[] = order?.categories
+        ? [
+            ...order.categories.filter((n) => dirNames.includes(n)),
+            ...dirNames
+              .filter((n) => !order.categories!.includes(n))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
+        : dirNames.sort((a, b) => a.localeCompare(b));
 
-      try {
-        const files = await serverReadDir(categoryDir);
-        const mdFiles = files.filter(
-          (f) => f.isFile() && f.name.endsWith(".md")
-        );
-        const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
-        const categoryOrder = await readOrderFile(categoryDir);
-        const orderedIds: string[] = categoryOrder?.items
-          ? [
+      // Read files in current directory
+      const files = entries.filter((e) => e.isFile() && e.name.endsWith(".md"));
+      const ids = files.map((f) => path.basename(f.name, ".md"));
+      const categoryOrder = await readOrderFile(dirPath);
+      const orderedIds: string[] = categoryOrder?.items
+        ? [
             ...categoryOrder.items.filter((id) => ids.includes(id)),
             ...ids
               .filter((id) => !categoryOrder.items!.includes(id))
               .sort((a, b) => a.localeCompare(b)),
           ]
-          : ids.sort((a, b) => a.localeCompare(b));
+        : ids.sort((a, b) => a.localeCompare(b));
 
-        for (const id of orderedIds) {
-          const fileName = `${id}.md`;
-          const filePath = path.join(categoryDir, fileName);
-          try {
-            const content = await serverReadFile(filePath);
-            const stats = await fs.stat(filePath);
-            const rawNote: Note & { rawContent: string } = {
-              id,
-              title: id,
-              content: "",
-              category: categoryPath,
-              createdAt: stats.birthtime.toISOString(),
-              updatedAt: stats.mtime.toISOString(),
-              owner: currentUser.username,
-              isShared: false,
-              rawContent: content,
-            };
-            docs.push(rawNote as Note);
-          } catch { }
-        }
-      } catch { }
-    }
+      for (const id of orderedIds) {
+        const fileName = `${id}.md`;
+        const filePath = path.join(dirPath, fileName);
+        try {
+          const content = await serverReadFile(filePath);
+          const stats = await fs.stat(filePath);
+          const rawNote: Note & { rawContent: string } = {
+            id,
+            title: id,
+            content: "",
+            category: categoryPrefix,
+            createdAt: stats.birthtime.toISOString(),
+            updatedAt: stats.mtime.toISOString(),
+            owner: currentUser.username,
+            isShared: false,
+            rawContent: content,
+          };
+          docs.push(rawNote as Note);
+        } catch {}
+      }
+
+      // Recursively read subdirectories
+      for (const dirName of orderedDirNames) {
+        const subDirPath = path.join(dirPath, dirName);
+        const subCategoryPrefix = categoryPrefix
+          ? `${categoryPrefix}/${dirName}`
+          : dirName;
+        await readNotesFromDir(subDirPath, subCategoryPrefix);
+      }
+    };
+
+    await readNotesFromDir(userDir, "");
 
     const { getAllSharedItemsForUser } = await import(
       "@/app/_server/actions/sharing"
@@ -611,8 +620,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     try {
       const links = parseInternalLinks(updatedDoc.content);
-      const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
-        }`;
+      const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
+        updatedDoc.id
+      }`;
 
       const oldItemKey = `${doc.category || "Uncategorized"}/${id}`;
       if (oldItemKey !== newItemKey) {

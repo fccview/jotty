@@ -23,6 +23,8 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { ChecklistsTypes } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useState } from "react";
+import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -50,12 +52,14 @@ export const ChecklistHeader = ({
 
   const { globalSharing } = useAppMode();
   const { permissions } = usePermissions();
+  const [showSharedWithModal, setShowSharedWithModal] = useState(false);
 
   const encodedCategory = encodeCategoryPath(
     checklist.category || "Uncategorized"
   );
   const itemDetails = sharingInfo(globalSharing, checklist.id, encodedCategory);
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
+
   const sharedWith = itemDetails.sharedWith;
   const isPubliclyShared = itemDetails.isPublic;
 
@@ -96,8 +100,12 @@ export const ChecklistHeader = ({
               </span>
             )}
             {isShared && (
-              <span title={sharedWith.join(", ")}>
-                <Users className="h-3 w-3 text-primary" />
+              <span
+                title={`Shared with ${sharedWith.join(", ")}`}
+                className="cursor-pointer hover:text-primary"
+                onClick={() => setShowSharedWithModal(true)}
+              >
+                <Users className="h-3 w-3" />
               </span>
             )}
           </div>
@@ -221,6 +229,12 @@ export const ChecklistHeader = ({
           )}
         </div>
       </div>
+
+      <SharedWithModal
+        usernames={itemDetails.sharedWith}
+        isOpen={showSharedWithModal}
+        onClose={() => setShowSharedWithModal(false)}
+      />
     </div>
   );
 };
