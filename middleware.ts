@@ -37,19 +37,23 @@ export const middleware = async (request: NextRequest) => {
   }
 
   try {
-    const internalApiUrl = process.env.INTERNAL_API_URL || process.env.APP_URL || request.nextUrl.origin;
+    const internalApiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.APP_URL ||
+      request.nextUrl.origin;
 
     if (process.env.DEBUGGER) {
       console.log("MIDDLEWARE - URL Resolution:");
-      console.log("  INTERNAL_API_URL:", process.env.INTERNAL_API_URL || "(not set)");
+      console.log(
+        "  INTERNAL_API_URL:",
+        process.env.INTERNAL_API_URL || "(not set)"
+      );
       console.log("  APP_URL:", process.env.APP_URL || "(not set)");
       console.log("  request.nextUrl.origin:", request.nextUrl.origin);
       console.log("  → Using:", internalApiUrl);
     }
 
-    const sessionCheckUrl = new URL(
-      `${internalApiUrl}/api/auth/check-session`
-    );
+    const sessionCheckUrl = new URL(`${internalApiUrl}/api/auth/check-session`);
 
     if (process.env.DEBUGGER) {
       console.log("MIDDLEWARE - Session Check URL:", sessionCheckUrl.href);

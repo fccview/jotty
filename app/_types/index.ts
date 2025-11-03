@@ -205,6 +205,8 @@ export interface AppSettings {
   "16x16Icon": string;
   "32x32Icon": string;
   "180x180Icon": string;
+  "512x512Icon": string;
+  "192x192Icon": string;
   notifyNewUpdates: "yes" | "no";
   maximumFileSize: number;
   editor: {

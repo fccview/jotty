@@ -4,14 +4,7 @@ import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { uploadAppIcon } from "@/app/_server/actions/config";
-
-interface AppSettings {
-  appName: string;
-  appDescription: string;
-  "16x16Icon": string;
-  "32x32Icon": string;
-  "180x180Icon": string;
-}
+import { AppSettings } from "@/app/_types";
 
 interface ImageUploadProps {
   label: string;

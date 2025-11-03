@@ -16,7 +16,11 @@ import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { readLinkIndex } from "@/app/_server/actions/link";
 import { headers } from "next/headers";
-import { themeInitScript } from "./_consts/themes";
+import {
+  themeInitScript,
+  getThemeBackgroundColor,
+  rgbToHex,
+} from "./_consts/themes";
 import { getProjectedLists } from "./_server/actions/checklist";
 import { getProjectedNotes } from "./_server/actions/note";
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
@@ -25,13 +29,18 @@ import {
   getAllSharedItemsForUser,
   readShareFile,
 } from "./_server/actions/sharing";
+import { generateWebManifest } from "./_utils/global-utils";
+import path from "path";
+import { writeJsonFile } from "./_server/actions/file";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
+  const user = await getCurrentUser();
   const ogName = settings?.isRwMarkable ? "rwMarkable" : "jotty·page";
   const appName = settings?.appName || ogName;
+  const appVersion = new Date().getTime().toString();
   const appDescription =
     settings?.appDescription ||
     "A simple, fast, and lightweight checklist and notes application";
@@ -41,11 +50,37 @@ export const generateMetadata = async (): Promise<Metadata> => {
     settings?.["32x32Icon"] || "/app-icons/favicon-32x32.png";
   const app180x180Icon =
     settings?.["180x180Icon"] || "/app-icons/apple-touch-icon.png";
+  const app512x512Icon =
+    settings?.["512x512Icon"] || "/app-icons/android-chrome-512x512.png";
+  const app192x192Icon =
+    settings?.["192x192Icon"] || "/app-icons/android-chrome-192x192.png";
+
+  const defaultTheme = settings?.isRwMarkable
+    ? "rwmarkable-dark"
+    : user?.preferredTheme || "dark";
+
+  const themeColor = getThemeBackgroundColor(defaultTheme);
+
+  const manifest = JSON.parse(
+    generateWebManifest(
+      appName,
+      appDescription,
+      app16x16Icon,
+      app32x32Icon,
+      app180x180Icon,
+      app512x512Icon,
+      app192x192Icon,
+      themeColor,
+      appVersion
+    )
+  );
+
+  await writeJsonFile(manifest, path.join("data", "site.webmanifest"));
 
   return {
     title: appName,
     description: appDescription,
-    manifest: "/site.webmanifest",
+    manifest: "/api/manifest",
     icons: {
       icon: [
         {
@@ -79,8 +114,21 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#000000",
+  themeColor: rgbToHex("12 20 53"),
 };
+
+export async function generateViewport(): Promise<Viewport> {
+  const settings = await getSettings();
+  const defaultTheme = settings?.isRwMarkable ? "rwmarkable-dark" : "dark";
+  const themeColor = getThemeBackgroundColor(defaultTheme);
+
+  return {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    themeColor,
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -98,16 +146,21 @@ export default async function RootLayout({
   const users = await getUsers();
   const linkIndex = user?.username ? await readLinkIndex(user.username) : null;
 
-  const [notesResult, checklistsResult, allSharedItems, userSharedItems, globalSharing] =
-    await Promise.all([
-      getProjectedNotes(["id", "title", "category", "owner"]),
-      getProjectedLists(["id", "title", "category", "owner"]),
-      getAllSharedItems(),
-      user
-        ? getAllSharedItemsForUser(user.username)
-        : Promise.resolve({ notes: [], checklists: [] }),
-      readShareFile("all"),
-    ]);
+  const [
+    notesResult,
+    checklistsResult,
+    allSharedItems,
+    userSharedItems,
+    globalSharing,
+  ] = await Promise.all([
+    getProjectedNotes(["id", "title", "category", "owner"]),
+    getProjectedLists(["id", "title", "category", "owner"]),
+    getAllSharedItems(),
+    user
+      ? getAllSharedItemsForUser(user.username)
+      : Promise.resolve({ notes: [], checklists: [] }),
+    readShareFile("all"),
+  ]);
 
   const notes = notesResult.success ? notesResult.data || [] : [];
   const checklists = checklistsResult.success

@@ -120,6 +120,16 @@ export const AppSettingsTab = () => {
       description: "Icon for iOS home screen.",
       iconType: "180x180Icon",
     },
+    {
+      label: "192x192 Icon",
+      description: "Icon for Android home screen.",
+      iconType: "192x192Icon",
+    },
+    {
+      label: "512x512 Icon",
+      description: "High-resolution icon for PWA splash screens.",
+      iconType: "512x512Icon",
+    },
   ] as const;
 
   return (
@@ -145,7 +155,9 @@ export const AppSettingsTab = () => {
           ))}
         </div>
         <div>
-          <Label htmlFor="notifyNewUpdates" className="block mb-3">Notify me of new updates</Label>
+          <Label htmlFor="notifyNewUpdates" className="block mb-3">
+            Notify me of new updates
+          </Label>
           <Dropdown
             value={settings?.notifyNewUpdates || "yes"}
             onChange={(value) => handleInputChange("notifyNewUpdates", value)}
@@ -161,14 +173,23 @@ export const AppSettingsTab = () => {
             description="The maximum file size allowed for uploads in MB (applies to images, videos, and files)"
             type="number"
             id="maximumFileSize"
-            defaultValue={(settings?.maximumFileSize ? (settings.maximumFileSize / 1024 / 1024).toString() : (MAX_FILE_SIZE / 1024 / 1024).toString())}
-            onChange={(e) => handleInputChange("maximumFileSize", (Number(e.target.value) * 1024 * 1024).toString())}
+            defaultValue={
+              settings?.maximumFileSize
+                ? (settings.maximumFileSize / 1024 / 1024).toString()
+                : (MAX_FILE_SIZE / 1024 / 1024).toString()
+            }
+            onChange={(e) =>
+              handleInputChange(
+                "maximumFileSize",
+                (Number(e.target.value) * 1024 * 1024).toString()
+              )
+            }
           />
         </div>
 
         <div>
           <h3 className="text-lg font-semibold mb-4">Application Icons</h3>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {iconFields.map((field) => (
               <ImageUpload
                 key={field.iconType}
