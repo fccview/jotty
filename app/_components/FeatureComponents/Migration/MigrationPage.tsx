@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  renameDocsFolder,
-  migrateSharingMetadata,
-} from "@/app/_server/actions/migration/index";
+import { migrateToNewSharingFormat } from "@/app/_server/actions/migration/index";
 import { logout } from "@/app/_server/actions/auth";
 import { isAdmin as checkIsAdmin } from "@/app/_server/actions/users";
-import { MigrationAdminView } from "@/app/_components/FeatureComponents/Migration/Parts/MigrationAdminView";
 import { AdminRequiredView } from "@/app/_components/FeatureComponents/Migration/Parts/MIgrationAdminRequired";
 import { clearAllSessions } from "@/app/_server/actions/session";
+import { SharingMigrationView } from "./Parts/SharingMigrationView";
 
 const LoadingView = () => (
   <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4">
@@ -21,10 +18,14 @@ const LoadingView = () => (
 );
 
 export const MigrationPage = () => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [migrationResult, setMigrationResult] = useState<{
+    migrated: boolean;
+    changes: string[];
+  } | null>(null);
 
   useEffect(() => {
     checkIsAdmin()
@@ -33,34 +34,26 @@ export const MigrationPage = () => {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
+  const handleMigrateSharing = async () => {
+    setIsMigrating(true);
     setError(null);
     try {
-      const [folderResult, sharingResult] = await Promise.all([
-        renameDocsFolder(),
-        migrateSharingMetadata(),
-      ]);
+      const result = await migrateToNewSharingFormat();
 
-      if (folderResult.success && sharingResult.success) {
-        await clearAllSessions();
-        await logout();
+      if (result.success) {
+        setMigrationResult(result.data || null);
+        if (result.data?.migrated) {
+          await clearAllSessions();
+          await logout();
+        }
       } else {
-        const errors = [
-          !folderResult.success &&
-            (folderResult.error || "Failed to rename folder"),
-          !sharingResult.success &&
-            (sharingResult.error || "Failed to migrate sharing metadata"),
-        ]
-          .filter(Boolean)
-          .join("; ");
-        throw new Error(errors);
+        throw new Error(result.error || "Migration failed");
       }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unexpected error occurred"
       );
-      setIsRefreshing(false);
+      setIsMigrating(false);
     }
   };
 
@@ -68,10 +61,11 @@ export const MigrationPage = () => {
   if (isAdmin === false) return <AdminRequiredView />;
 
   return (
-    <MigrationAdminView
-      onMigrate={handleRefresh}
-      isMigrating={isRefreshing}
+    <SharingMigrationView
+      onMigrate={handleMigrateSharing}
+      isMigrating={isMigrating}
       error={error}
+      migrationResult={migrationResult}
     />
   );
 };

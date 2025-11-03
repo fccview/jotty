@@ -182,10 +182,10 @@ const _readNotesRecursively = async (
   return docs;
 };
 
-const _checkForDocsFolder = async (): Promise<boolean> => {
+const _checkForMigrationNeeded = async (): Promise<boolean> => {
   try {
-    const docsPath = path.join(process.cwd(), "data", DEPRECATED_DOCS_FOLDER);
-    await fs.access(docsPath);
+    const { SHARED_ITEMS_FILE } = await import("@/app/_consts/files");
+    await fs.access(SHARED_ITEMS_FILE);
     return true;
   } catch {
     return false;
@@ -803,7 +803,7 @@ export const getAllNotes = async (allowArchived?: boolean) => {
 };
 
 export const CheckForNeedsMigration = async (): Promise<boolean> => {
-  const needsMigration = await _checkForDocsFolder();
+  const needsMigration = await _checkForMigrationNeeded();
   const isLoggedIn = await isAuthenticated();
   if (needsMigration && isLoggedIn) {
     redirect("/migration");

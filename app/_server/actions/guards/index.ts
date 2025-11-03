@@ -5,14 +5,14 @@ import { getCurrentUser } from "../users";
 const EXCLUDED_PATHS = ["/auth", "/migration", "/public"];
 
 export const redirectGuards = async () => {
-    const user = await getCurrentUser();
-    const pathname = headers().get("x-pathname");
+  const user = await getCurrentUser();
+  const pathname = headers().get("x-pathname");
 
-    if (!user && !EXCLUDED_PATHS.some(path => pathname?.includes(path))) {
-        redirect("/auth/login");
-    }
+  if (!user && !EXCLUDED_PATHS.some((path) => pathname?.includes(path))) {
+    redirect("/auth/login");
+  }
 
-    if (user && pathname?.includes("/auth")) {
-        redirect("/");
-    }
-}
+  if (user && pathname?.includes("/auth")) {
+    redirect("/");
+  }
+};
