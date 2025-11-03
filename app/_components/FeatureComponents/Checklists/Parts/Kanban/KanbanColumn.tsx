@@ -10,8 +10,10 @@ import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanColumnProps {
+  checklist: Checklist;
   id: string;
   title: string;
   items: Item[];
@@ -23,6 +25,7 @@ interface KanbanColumnProps {
 }
 
 export const KanbanColumn = ({
+  checklist,
   id,
   title,
   items,
@@ -35,6 +38,8 @@ export const KanbanColumn = ({
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
+
+  const { permissions } = usePermissions();
 
   const getColumnColor = (status: string) => {
     switch (status) {
@@ -92,6 +97,7 @@ export const KanbanColumn = ({
           <div className="space-y-2">
             {items.map((item) => (
               <KanbanItem
+                checklist={checklist}
                 key={item.id}
                 item={item}
                 checklistId={checklistId}

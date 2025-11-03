@@ -9,11 +9,13 @@ import {
   updateItem,
   deleteItem,
 } from "@/app/_server/actions/checklist-item";
-import { Edit2, Plus, Save, X } from "lucide-react";
+import { Plus, Save, X } from "lucide-react";
 import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface SubtaskModalProps {
+  checklist: Checklist;
   item: Item;
   isOpen: boolean;
   onClose: () => void;
@@ -32,6 +34,7 @@ const unsanitizeDescription = (text: string): string => {
 };
 
 export const SubtaskModal = ({
+  checklist,
   item: initialItem,
   isOpen,
   onClose,
@@ -40,6 +43,8 @@ export const SubtaskModal = ({
   category,
   isShared,
 }: SubtaskModalProps) => {
+  const { permissions } = usePermissions();
+
   const [item, setItem] = useState(initialItem);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
@@ -97,7 +102,7 @@ export const SubtaskModal = ({
       formData.append("description", sanitizedDescription);
       formData.append("category", category);
 
-      const result = await updateItem(formData);
+      const result = await updateItem(checklist, formData);
       if (result.success && result.data) {
         onUpdate(result.data);
         const updatedItem = findItemInChecklist(result.data, item.id);
@@ -157,7 +162,7 @@ export const SubtaskModal = ({
     formData.append("completed", completed.toString());
     formData.append("category", category);
 
-    const result = await updateItem(formData);
+    const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data);
       const updatedItem = findItemInChecklist(result.data, item.id);
@@ -174,7 +179,7 @@ export const SubtaskModal = ({
     formData.append("text", text);
     formData.append("category", category);
 
-    const result = await updateItem(formData);
+    const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data);
       const updatedItem = findItemInChecklist(result.data, item.id);
@@ -210,7 +215,7 @@ export const SubtaskModal = ({
       formData.append("completed", completed.toString());
       formData.append("category", category);
 
-      const result = await updateItem(formData);
+      const result = await updateItem(checklist, formData);
       if (result.success && result.data) {
         onUpdate(result.data);
       }
@@ -359,8 +364,9 @@ export const SubtaskModal = ({
         ) : (
           <div className="space-y-4">
             <div
-              className="bg-card border border-border rounded-lg p-4 shadow-sm cursor-pointer"
-              onClick={() => setIsEditing(true)}
+              className={`bg-card border border-border rounded-lg p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""
+                }`}
+              onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
               <div
                 className="text-card-foreground prose leading-relaxed prose prose-sm dark:prose-invert max-w-none"
@@ -382,26 +388,28 @@ export const SubtaskModal = ({
                   </span>
                 ) : null}
               </h4>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleToggleAll(true)}
-                  disabled={!item.children?.length}
-                  className="text-xs"
-                >
-                  Complete All
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleToggleAll(false)}
-                  disabled={!item.children?.length}
-                  className="text-xs"
-                >
-                  Reset All
-                </Button>
-              </div>
+              {permissions?.canEdit && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleToggleAll(true)}
+                    disabled={!item.children?.length}
+                    className="text-xs"
+                  >
+                    Complete All
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleToggleAll(false)}
+                    disabled={!item.children?.length}
+                    className="text-xs"
+                  >
+                    Reset All
+                  </Button>
+                </div>
+              )}
             </div>
 
             {item.children?.length ? (
@@ -419,7 +427,7 @@ export const SubtaskModal = ({
                     onAddSubItem={handleAddNestedSubtask}
                     isDeletingItem={false}
                     isDragDisabled={true}
-                    isShared={isShared}
+                    checklist={checklist}
                   />
                 ))}
               </div>
@@ -429,28 +437,30 @@ export const SubtaskModal = ({
               </div>
             )}
 
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newSubtaskText}
-                onChange={(e) => setNewSubtaskText(e.target.value)}
-                placeholder="Add a subtask..."
-                className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleAddSubtask();
-                  }
-                }}
-              />
-              <Button
-                onClick={() => handleAddSubtask()}
-                disabled={!newSubtaskText.trim()}
-                title="Add subtask"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+            {permissions?.canEdit && (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newSubtaskText}
+                  onChange={(e) => setNewSubtaskText(e.target.value)}
+                  placeholder="Add a subtask..."
+                  className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleAddSubtask();
+                    }
+                  }}
+                />
+                <Button
+                  onClick={() => handleAddSubtask()}
+                  disabled={!newSubtaskText.trim()}
+                  title="Add subtask"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

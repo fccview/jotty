@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Download, X } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -10,11 +10,29 @@ export const InstallPrompt = () => {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const { isRwMarkable } = useAppMode();
+  const autoPromptTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    if (window.matchMedia("(display-mode: standalone)").matches) {
+    const checkIfInstalled = () => {
+      if (window.matchMedia("(display-mode: standalone)").matches) {
+        return true;
+      }
+
+      if ((window.navigator as any).standalone === true) {
+        return true;
+      }
+
+      const wasInstalled = localStorage.getItem("pwa-installed") === "true";
+      if (wasInstalled) {
+        return true;
+      }
+
+      return false;
+    };
+
+    if (checkIfInstalled()) {
       setIsInstalled(true);
       return;
     }
@@ -24,29 +42,62 @@ export const InstallPrompt = () => {
       return;
     }
 
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      localStorage.setItem("pwa-installed", "true");
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
+    };
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallPrompt(true);
+
+      autoPromptTimeoutRef.current = setTimeout(() => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult: any) => {
+            if (choiceResult.outcome === "accepted") {
+              handleAppInstalled();
+            }
+            setDeferredPrompt(null);
+            setShowInstallPrompt(false);
+          });
+        }
+      }, 30000);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
       window.removeEventListener(
         "beforeinstallprompt",
         handleBeforeInstallPrompt
       );
+      window.removeEventListener("appinstalled", handleAppInstalled);
+
+      if (autoPromptTimeoutRef.current) {
+        clearTimeout(autoPromptTimeoutRef.current);
+        autoPromptTimeoutRef.current = null;
+      }
     };
   }, []);
 
   const handleInstallClick = async () => {
+    if (autoPromptTimeoutRef.current) {
+      clearTimeout(autoPromptTimeoutRef.current);
+      autoPromptTimeoutRef.current = null;
+    }
+
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
 
       if (outcome === "accepted") {
         setIsInstalled(true);
+        localStorage.setItem("pwa-installed", "true");
       }
 
       setDeferredPrompt(null);
@@ -56,6 +107,11 @@ export const InstallPrompt = () => {
   };
 
   const handleDismiss = () => {
+    if (autoPromptTimeoutRef.current) {
+      clearTimeout(autoPromptTimeoutRef.current);
+      autoPromptTimeoutRef.current = null;
+    }
+
     setShowInstallPrompt(false);
     localStorage.setItem("pwa-prompt-dismissed", "true");
   };
@@ -76,10 +132,7 @@ export const InstallPrompt = () => {
           </div>
           <div>
             <h3 className="font-medium text-foreground hover:underline">
-              Install{" "}
-              {isRwMarkable
-                ? "rwMarkable"
-                : "jotty·page"}
+              Install {isRwMarkable ? "rwMarkable" : "jotty·page"}
             </h3>
             <p className="text-sm text-muted-foreground">
               Add to your home screen for quick access

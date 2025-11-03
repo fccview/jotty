@@ -4,7 +4,7 @@ import { CHECKLISTS_FOLDER } from "./checklists";
 import { NOTES_FOLDER } from "./notes";
 
 export const ARCHIVED_DIR_NAME = ".archive";
-export const EXCLUDED_DIRS = ["images", "files"];
+export const EXCLUDED_DIRS = ["images", "files", "videos"];
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024;
 export const ALLOWED_IMAGE_TYPES = [

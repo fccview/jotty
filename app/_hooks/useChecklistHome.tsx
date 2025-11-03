@@ -15,6 +15,7 @@ import { Checklist, User } from "@/app/_types";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { useHomeFilter } from "@/app/_utils/home-filter-store";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/users";
+import { ItemTypes } from "../_types/enums";
 
 interface UseChecklistHomeProps {
   lists: Checklist[];
@@ -54,7 +55,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     );
 
     try {
-      const result = await updatePinnedOrder(newPinnedPaths, "list");
+      const result = await updatePinnedOrder(newPinnedPaths, ItemTypes.CHECKLIST);
       if (result.success) {
         router.refresh();
       }
@@ -132,7 +133,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
       const result = await togglePin(
         list.id,
         list.category || "Uncategorized",
-        "list"
+        ItemTypes.CHECKLIST
       );
       if (result.success) {
         router.refresh();

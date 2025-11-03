@@ -35,12 +35,6 @@ import {
 import { SidebarItem } from "./SidebarItem";
 import { Modes } from "@/app/_types/enums";
 
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
-
 interface CategoryRendererProps {
   category: Category;
   allCategories: Category[];
@@ -55,7 +49,6 @@ interface CategoryRendererProps {
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
-  getSharingStatus: (itemId: string) => SharingStatus | null;
   user?: any;
 }
 
@@ -74,7 +67,6 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     onEditItem,
     isItemSelected,
     mode,
-    getSharingStatus,
     user,
   } = props;
 
@@ -260,7 +252,6 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                         isSelected={isItemSelected(item)}
                         onItemClick={onItemClick}
                         onEditItem={onEditItem}
-                        sharingStatus={getSharingStatus(item.id)}
                         style={{ paddingLeft: `${category.level * 16}px` }}
                         user={user}
                       />

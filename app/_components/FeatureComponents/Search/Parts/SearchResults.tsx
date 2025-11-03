@@ -3,6 +3,7 @@
 import { CheckSquare, FileText, Users } from "lucide-react";
 import { cn } from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface SearchResult {
   id: string;
@@ -63,7 +64,7 @@ export const SearchResults = ({
         >
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 mt-1">
-              {result.type === "checklist" ? (
+              {result.type === ItemTypes.CHECKLIST ? (
                 <CheckSquare className="h-5 w-5 text-primary md:h-4 md:w-4" />
               ) : (
                 <FileText className="h-5 w-5 text-primary md:h-4 md:w-4" />

@@ -1,6 +1,7 @@
 import { TaskStatus, Modes } from "./enums";
 
 export type ChecklistType = "simple" | "task";
+export type ItemType = "checklist" | "note";
 
 export interface TimeEntry {
   id: string;
@@ -10,14 +11,12 @@ export interface TimeEntry {
 }
 
 export interface RecurrenceRule {
-  rrule: string; // RFC 5545 RRULE string (e.g., "FREQ=WEEKLY;INTERVAL=1")
-  dtstart: string; // ISO date string for recurrence start
-  until?: string; // ISO date string for recurrence end (optional)
-  nextDue?: string; // Calculated next occurrence (ISO date string)
-  lastCompleted?: string; // When last instance was completed (ISO date string)
+  rrule: string;
+  dtstart: string;
+  until?: string;
+  nextDue?: string;
+  lastCompleted?: string;
 }
-
-export type ItemType = "checklist" | "note";
 
 export interface StatusChange {
   status: TaskStatus;
@@ -63,6 +62,7 @@ export interface Checklist {
   owner?: string;
   isShared?: boolean;
   isDeleted?: boolean;
+  rawContent?: string;
 }
 
 export interface Note {
@@ -74,6 +74,7 @@ export interface Note {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  rawContent?: string;
 }
 
 export interface NoteEditorViewModel {
@@ -165,8 +166,8 @@ export interface SharingMetadata {
 
 export interface SharingPermissions {
   canRead: boolean;
-  canWrite: boolean;
-  canShare: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
 export interface GlobalSharing {
@@ -204,12 +205,15 @@ export interface AppSettings {
   "16x16Icon": string;
   "32x32Icon": string;
   "180x180Icon": string;
+  "512x512Icon": string;
+  "192x192Icon": string;
   notifyNewUpdates: "yes" | "no";
   maximumFileSize: number;
   editor: {
     enableSlashCommands: boolean;
     enableBubbleMenu: boolean;
     enableTableToolbar: boolean;
+    enableBilateralLinks: boolean;
   };
 }
 

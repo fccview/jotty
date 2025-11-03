@@ -4,22 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import {
   Plus,
   ClipboardList,
-  Users,
-  Hash,
-  Check,
-  Globe,
   RefreshCw,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Checklist, RecurrenceRule } from "@/app/_types";
+import { RecurrenceRule } from "@/app/_types";
 import { isMobileDevice } from "@/app/_utils/global-utils";
-import { useChecklist } from "../../../../../_hooks/useChecklist";
-import { useSharing } from "@/app/_hooks/useSharing";
 import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface ChecklistHeadingProps {
-  checklist: Checklist;
   onSubmit: (text: string, recurrence?: RecurrenceRule) => void;
   onBulkSubmit?: () => void;
   isLoading?: boolean;
@@ -30,7 +23,6 @@ interface ChecklistHeadingProps {
 }
 
 export const ChecklistHeading = ({
-  checklist,
   onSubmit,
   onBulkSubmit,
   isLoading = false,

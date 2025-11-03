@@ -3,23 +3,18 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ListTodo } from "lucide-react";
-import { updateList } from "@/app/_server/actions/checklist";
+import { getListById, updateList } from "@/app/_server/actions/checklist";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Category } from "@/app/_types";
+import { Category, Checklist } from "@/app/_types";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
-import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 
 interface EditChecklistModalProps {
-  checklist: {
-    id: string;
-    title: string;
-    category?: string;
-    owner?: string;
-    isShared?: boolean;
-  };
+  checklist: Checklist;
   categories: Category[];
   onClose: () => void;
   onUpdated: () => void;
@@ -27,30 +22,45 @@ interface EditChecklistModalProps {
 }
 
 export const EditChecklistModal = ({
-  checklist,
+  checklist: initialChecklist,
   categories,
   onClose,
   onUpdated,
   unarchive,
 }: EditChecklistModalProps) => {
   const router = useRouter();
-  const [title, setTitle] = useState(checklist.title);
-  const initialCategory = unarchive ? "" : checklist.category || "";
+  const { user } = useAppMode();
+  const [title, setTitle] = useState(initialChecklist.title);
+  const initialCategory = unarchive ? "" : initialChecklist.category || "";
   const [category, setCategory] = useState(initialCategory);
   const [isLoading, setIsLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [checklist, setChecklist] = useState<Checklist | null>(null);
 
   useEffect(() => {
-    const checkOwnership = async () => {
-      try {
-        const user = await getCurrentUser();
-        setIsOwner(user?.username === checklist.owner);
-      } catch (error) {
-        console.error("Error checking ownership:", error);
-      }
+    const fetchChecklist = async () => {
+      const checklist = await getListById(initialChecklist.id, user?.username || "", initialChecklist.category || "Uncategorized");
+      const parsedChecklist = parseChecklistContent(checklist?.rawContent || "", checklist?.id || "");
+
+      setChecklist(checklist || null);
+      setTitle(parsedChecklist?.title || "");
+      setIsOwner(user?.username === checklist?.owner);
     };
-    checkOwnership();
-  }, [checklist.owner]);
+    fetchChecklist();
+  }, [initialChecklist]);
+
+  if (!checklist) {
+    return (
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        title="Checklist not found"
+        titleIcon={<ListTodo className="h-5 w-5 text-primary" />}
+      >
+        <p>Checklist not found</p>
+      </Modal>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,14 +68,17 @@ export const EditChecklistModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", checklist.id);
+    formData.append("id", initialChecklist.id);
     formData.append("title", title.trim());
-    formData.append("originalCategory", checklist.category || "Uncategorized");
+    formData.append("originalCategory", initialChecklist.category || "Uncategorized");
     formData.append("unarchive", unarchive ? "true" : "false");
 
     if (isOwner) {
       formData.append("category", category || "");
+    } else if (unarchive) {
+      formData.append("category", category || "Uncategorized");
     }
+
     const result = await updateList(formData);
     setIsLoading(false);
 
@@ -145,8 +158,8 @@ export const EditChecklistModal = ({
             {isLoading
               ? "Updating..."
               : unarchive
-              ? "Unarchive Checklist"
-              : "Update Checklist"}
+                ? "Unarchive Checklist"
+                : "Update Checklist"}
           </Button>
         </div>
       </form>

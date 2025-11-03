@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -9,14 +9,18 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { Checklist, User } from "@/app/_types";
+import { Checklist } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanItem } from "./KanbanItem";
 import { ChecklistHeading } from "../Common/ChecklistHeading";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
 import { useKanbanBoard } from "../../../../../_hooks/useKanbanBoard";
-import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
-import { useSharing } from "@/app/_hooks/useSharing";
+import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { ReferencedBySection } from "../../../Notes/Parts/ReferencedBySection";
+import { getReferences } from "@/app/_utils/indexes-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -48,7 +52,13 @@ const columns = [
 
 export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const [isClient, setIsClient] = useState(false);
-
+  const { linkIndex, notes, checklists, appSettings } = useAppMode();
+  const { allSharedItems } = useAppMode();
+  const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
+  const isShared = allSharedItems?.checklists.some(
+    (sharedChecklist) => sharedChecklist.id === checklist.id && sharedChecklist.category === encodedCategory
+  ) || false;
+  const { permissions } = usePermissions();
   const {
     localChecklist,
     isLoading,
@@ -64,19 +74,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
     activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
-  const { sharingStatus } = useSharing({
-    itemId: localChecklist.id,
-    itemType: "checklist",
-    itemOwner: localChecklist.owner || "",
-    onClose: () => {},
-    enabled: true,
-    itemTitle: localChecklist.title,
-    itemCategory: localChecklist.category,
-    isOpen: true,
-  });
 
-  const isShared =
-    (sharingStatus?.isShared || sharingStatus?.isPubliclyShared) ?? false;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -93,21 +91,32 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
     setIsClient(true);
   }, []);
 
-  return (
-    <div className="h-full flex flex-col bg-background">
-      <ChecklistHeading
-        checklist={localChecklist}
-        key={focusKey}
-        onSubmit={handleAddItem}
-        onBulkSubmit={() => setShowBulkPasteModal(true)}
-        isLoading={isLoading}
-        autoFocus={true}
-        focusKey={focusKey}
-        placeholder="Add new task..."
-        submitButtonText="Add Task"
-      />
+  const referencingItems = useMemo(() => {
+    return getReferences(
+      linkIndex,
+      checklist.id,
+      checklist.category,
+      ItemTypes.CHECKLIST,
+      notes,
+      checklists
+    );
+  }, [linkIndex, checklist.id, checklist.category, checklists, notes]);
 
-      <div className="flex-1 overflow-hidden pb-[8.5em]">
+  return (
+    <div className="h-full flex flex-col bg-background overflow-y-auto">
+      {permissions?.canEdit && (
+        <ChecklistHeading
+          key={focusKey}
+          onSubmit={handleAddItem}
+          onBulkSubmit={() => setShowBulkPasteModal(true)}
+          isLoading={isLoading}
+          autoFocus={true}
+          focusKey={focusKey}
+          placeholder="Add new task..."
+          submitButtonText="Add Task"
+        />
+      )}
+      <div className="flex-1 pb-[8.5em]">
         {isClient ? (
           <DndContext
             sensors={sensors}
@@ -119,6 +128,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 const items = getItemsByStatus(column.status);
                 return (
                   <KanbanColumn
+                    checklist={localChecklist}
                     key={column.id}
                     id={column.id}
                     title={column.title}
@@ -136,6 +146,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             <DragOverlay>
               {activeItem ? (
                 <KanbanItem
+                  checklist={localChecklist}
                   item={activeItem}
                   isDragging
                   checklistId={localChecklist.id}
@@ -152,6 +163,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
               const items = getItemsByStatus(column.status);
               return (
                 <KanbanColumn
+                  checklist={localChecklist}
                   key={column.id}
                   id={column.id}
                   title={column.title}
@@ -166,6 +178,13 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             })}
           </div>
         )}
+
+        <div className="px-4 pt-4 pb-[100px] lg:pb-4">
+          {referencingItems.length > 0 &&
+            appSettings?.editor?.enableBilateralLinks && (
+              <ReferencedBySection referencingItems={referencingItems} />
+            )}
+        </div>
       </div>
 
       {showBulkPasteModal && (

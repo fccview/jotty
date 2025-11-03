@@ -29,8 +29,7 @@
       "name": "Midnight Purple",
       "icon": "Moon",
       "colors": {
-        "--background": "30 30 46",
-        "--background-secondary": "49 50 68",
+        "--background": "81 81 103",
         "--foreground": "205 214 244",
         "--card": "30 30 46",
         "--card-foreground": "205 214 244",

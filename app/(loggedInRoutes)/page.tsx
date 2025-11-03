@@ -1,10 +1,9 @@
-import { getLists } from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
-import { getNotes, CheckForNeedsMigration } from "@/app/_server/actions/note";
-import { getAllSharingStatuses } from "@/app/_server/actions/sharing";
+import { getRawLists } from "@/app/_server/actions/checklist";
+import { getRawNotes, CheckForNeedsMigration } from "@/app/_server/actions/note";
 import { HomeClient } from "@/app/_components/FeatureComponents/Home/HomeClient";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { Modes } from "@/app/_types/enums";
+import { ChecklistsTypes, ItemTypes, Modes } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +12,8 @@ export default async function HomePage() {
 
   const [listsResult, docsResult, categoriesResult, docsCategoriesResult] =
     await Promise.all([
-      getLists(),
-      getNotes(),
+      getRawLists(),
+      getRawNotes(),
       getCategories(Modes.CHECKLISTS),
       getCategories(Modes.NOTES),
     ]);
@@ -32,22 +31,17 @@ export default async function HomePage() {
   const user = await getCurrentUser();
 
   const allItems = [...lists, ...docs];
+
   const itemsToCheck = allItems.map((item) => ({
     id: item.id,
     type:
-      "type" in item && item.type === "task"
-        ? ("checklist" as const)
+      "type" in item && item.type === ChecklistsTypes.TASK
+        ? (ItemTypes.CHECKLIST as const)
         : "type" in item
-        ? ("checklist" as const)
-        : ("note" as const),
+          ? (ItemTypes.CHECKLIST as const)
+          : (ItemTypes.NOTE as const),
     owner: item.owner || "",
   }));
-
-  const sharingStatusesResult = await getAllSharingStatuses(itemsToCheck);
-  const sharingStatuses =
-    sharingStatusesResult.success && sharingStatusesResult.data
-      ? sharingStatusesResult.data
-      : {};
 
   return (
     <HomeClient
@@ -55,7 +49,6 @@ export default async function HomePage() {
       initialCategories={categories}
       initialDocs={docs}
       initialDocsCategories={docsCategories}
-      sharingStatuses={sharingStatuses}
       user={user}
     />
   );

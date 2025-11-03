@@ -3,14 +3,75 @@
 import { CheckSquare, FileText, Globe, Users } from "lucide-react";
 import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import { AdminSharedItemsList } from "@/app/_components/FeatureComponents/Admin/Parts/AdminSharedItemsList";
-import { GlobalSharing, MostActiveSharer } from "@/app/_types";
+import { ItemType, MostActiveSharer } from "@/app/_types";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { unshareWith } from "@/app/_server/actions/sharing";
+import { getCurrentUser } from "@/app/_server/actions/users";
+import { ItemTypes } from "@/app/_types/enums";
 
-interface AdminSharingProps {
-  globalSharing: GlobalSharing;
-}
+const calculateMostActiveSharers = (globalSharing: any) => {
+  const sharerCounts: Record<string, number> = {};
 
-export const AdminSharing = ({ globalSharing }: AdminSharingProps) => {
-  const { sharingStats, allSharedChecklists, allSharedNotes } = globalSharing;
+  Object.values(globalSharing?.checklists || {}).forEach((entries: any) => {
+    if (Array.isArray(entries)) {
+      entries.forEach((entry: any) => {
+        sharerCounts[entry.sharer] = (sharerCounts[entry.sharer] || 0) + 1;
+      });
+    }
+  });
+
+  Object.values(globalSharing?.notes || {}).forEach((entries: any) => {
+    if (Array.isArray(entries)) {
+      entries.forEach((entry: any) => {
+        sharerCounts[entry.sharer] = (sharerCounts[entry.sharer] || 0) + 1;
+      });
+    }
+  });
+
+  return Object.entries(sharerCounts)
+    .map(([username, sharedCount]) => ({ username, sharedCount }))
+    .sort((a, b) => b.sharedCount - a.sharedCount)
+    .slice(0, 5);
+};
+
+const handleUnsharePublicItem = async (item: { id: string; category: string }, itemType: ItemType) => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return;
+
+    await unshareWith(
+      item.id,
+      item.category,
+      currentUser.username,
+      "public",
+      itemType
+    );
+
+    window.location.reload();
+  } catch (error) {
+    console.error("Error unsharing public item:", error);
+    alert("Failed to unshare public item");
+  }
+};
+
+export const AdminSharing = () => {
+  const { allSharedItems, globalSharing: rawGlobalSharing } = useAppMode();
+
+  const totalSharedChecklists = allSharedItems?.checklists.length || 0;
+  const totalSharedNotes = allSharedItems?.notes.length || 0;
+  const totalSharingRelationships = totalSharedChecklists + totalSharedNotes;
+  const totalPublicShares = (allSharedItems?.public.checklists.length || 0) + (allSharedItems?.public.notes.length || 0);
+
+  const mostActiveSharers = calculateMostActiveSharers(rawGlobalSharing);
+
+
+  const sharingStats = {
+    totalSharedChecklists,
+    totalSharedNotes,
+    totalSharingRelationships,
+    mostActiveSharers,
+    totalPublicShares,
+  };
 
   const stats = [
     {
@@ -87,16 +148,25 @@ export const AdminSharing = ({ globalSharing }: AdminSharingProps) => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <AdminSharedItemsList
           title="Checklists"
-          items={allSharedChecklists}
+          items={allSharedItems?.checklists || []}
           icon={<CheckSquare className="h-5 w-5" />}
         />
         <AdminSharedItemsList
           title="Notes"
-          items={allSharedNotes}
+          items={allSharedItems?.notes || []}
           icon={<FileText className="h-5 w-5" />}
+        />
+        <AdminSharedItemsList
+          title="Public Shares"
+          items={[...(allSharedItems?.public.checklists || []), ...(allSharedItems?.public.notes || [])]}
+          icon={<Globe className="h-5 w-5" />}
+          onUnshare={(item) => {
+            const isChecklist = allSharedItems?.public.checklists.some(c => c.id === item.id && c.category === item.category);
+            handleUnsharePublicItem(item, isChecklist ? ItemTypes.CHECKLIST : ItemTypes.NOTE);
+          }}
         />
       </div>
     </div>

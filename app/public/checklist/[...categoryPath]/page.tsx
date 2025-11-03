@@ -1,24 +1,27 @@
 import { redirect } from "next/navigation";
 import { getAllLists } from "@/app/_server/actions/checklist";
-import { getItemSharingMetadata } from "@/app/_server/actions/sharing";
 import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
-import { getUserByUsername } from "@/app/_server/actions/users";
-import type { Metadata, ResolvingMetadata } from "next";
+import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
+import type { Metadata } from "next";
 import { Modes } from "@/app/_types/enums";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
+import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { isItemSharedWith } from "@/app/_server/actions/sharing";
 
 interface PublicChecklistPageProps {
   params: {
     categoryPath: string[];
   };
+  searchParams: { [key: string]: string | string[] | undefined };
 }
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
+  searchParams
 }: PublicChecklistPageProps): Promise<Metadata> {
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
@@ -33,6 +36,7 @@ export async function generateMetadata({
 
 export default async function PublicChecklistPage({
   params,
+  searchParams,
 }: PublicChecklistPageProps) {
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
@@ -74,15 +78,14 @@ export default async function PublicChecklistPage({
       : undefined;
   }
 
-  const sharingMetadata = await getItemSharingMetadata(
-    id,
-    "checklist",
-    checklist.owner!
-  );
+  const isPubliclyShared = await isItemSharedWith(id, category, "checklist", "public");
+  const currentUser = await getCurrentUser();
+  const isOwner = currentUser?.username === checklist.owner;
+  const isPrintView = searchParams?.view_mode === "print";
 
-  if (!sharingMetadata || !sharingMetadata.isPubliclyShared) {
-    redirect("/");
+  if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
+    return <PublicChecklistView checklist={checklist} user={user} />;
   }
 
-  return <PublicChecklistView checklist={checklist} user={user} />;
+  redirect("/");
 }

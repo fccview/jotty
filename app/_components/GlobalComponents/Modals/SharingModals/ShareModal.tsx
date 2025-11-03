@@ -2,8 +2,8 @@
 
 import { Modal } from "../Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Share2, Copy, Loader2 } from "lucide-react";
-import { useSharing } from "@/app/_hooks/useSharing";
+import { Share2 } from "lucide-react";
+import { useSharingTools } from "@/app/_hooks/useSharingTools";
 import { FeedbackMessage } from "./Parts/SharingFeedbackMessage";
 import { ShareTabs } from "./Parts/ShareTabs";
 import { UsersShareTab } from "./Parts/UsersShareTab";
@@ -22,7 +22,7 @@ interface ShareModalProps {
 
 export const ShareModal = (props: ShareModalProps) => {
   const { isOpen, onClose, itemTitle, itemType } = props;
-  const hookResult = useSharing({
+  const hookResult = useSharingTools({
     ...props,
     enabled: true,
   });
@@ -78,23 +78,6 @@ export const ShareModal = (props: ShareModalProps) => {
           >
             Close
           </Button>
-          {activeTab === "users" && (
-            <Button
-              onClick={hookResult.handleShare}
-              disabled={
-                hookResult.isLoading || hookResult.selectedUsers.length === 0
-              }
-            >
-              {hookResult.isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Updating...
-                </>
-              ) : (
-                "Update Sharing"
-              )}
-            </Button>
-          )}
         </div>
       </div>
     </Modal>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Checklist } from "@/app/_types";
 import {
   KeyboardSensor,
@@ -17,10 +17,10 @@ import { ChecklistHeading } from "@/app/_components/FeatureComponents/Checklists
 import { ChecklistBody } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/ChecklistBody";
 import { ChecklistModals } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistModals";
 import { ToastContainer } from "../../GlobalComponents/Feedback/ToastContainer";
-import { useSharing } from "@/app/_hooks/useSharing";
 import { toggleArchive } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
 import { useRouter } from "next/navigation";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface ChecklistViewProps {
   list: Checklist;
@@ -73,21 +73,9 @@ export const ChecklistView = ({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const { sharingStatus } = useSharing({
-    itemId: localList.id,
-    itemType: "checklist",
-    itemOwner: localList.owner || "",
-    onClose: () => {},
-    enabled: true,
-    itemTitle: localList.title,
-    itemCategory: localList.category,
-    isOpen: true,
-  });
+  const { permissions } = usePermissions();
 
-  const isShared =
-    (sharingStatus?.isShared || sharingStatus?.isPubliclyShared) ?? false;
-
-  const canDelete = isShared
+  const canDelete = true
     ? isAdmin || currentUsername === localList.owner
     : true;
   const deleteHandler = canDelete ? handleDeleteList : undefined;
@@ -143,13 +131,12 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 
-      {localList.type === "simple" && (
+      {localList.type === "simple" && permissions?.canEdit && (
         <ChecklistHeading
-          checklist={localList}
           key={focusKey}
           onSubmit={handleCreateItem}
           onBulkSubmit={() => setShowBulkPasteModal(true)}
@@ -166,7 +153,6 @@ export const ChecklistView = ({
           {...checklistHookProps}
           sensors={sensors}
           isLoading={isLoading}
-          isShared={isShared}
           isDeletingItem={deletingItemsCount > 0}
           handleAddSubItem={handleAddSubItem}
         />

@@ -227,7 +227,7 @@ export const useChecklist = ({
     formData.append("itemId", itemId);
     formData.append("completed", String(completed));
     formData.append("category", localList.category || "Uncategorized");
-    const result = await updateItem(formData);
+    const result = await updateItem(localList, formData);
 
     if (result.success && result.data) {
       setLocalList(result.data);
@@ -289,11 +289,14 @@ export const useChecklist = ({
 
   const handleEditItem = async (itemId: string, text: string) => {
     const formData = new FormData();
+    const owner = await getUserByChecklist(localList.id, localList.category || "Uncategorized");
     formData.append("listId", localList.id);
     formData.append("itemId", itemId);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
-    const result = await updateItem(formData);
+    formData.append("user", owner.data?.username || "");
+
+    const result = await updateItem(localList, formData);
 
     if (result.success) {
       if (result.data) {
@@ -448,7 +451,7 @@ export const useChecklist = ({
     if (recurrence) {
       formData.append("recurrence", JSON.stringify(recurrence));
     }
-    const result = await createItem(formData, currentUser?.username);
+    const result = await createItem(localList, formData, currentUser?.username);
 
     const checklistOwner = await getUserByChecklist(
       localList.id,

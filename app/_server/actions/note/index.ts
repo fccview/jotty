@@ -6,12 +6,11 @@ import {
   generateUniqueFilename,
   sanitizeFilename,
 } from "@/app/_utils/filename-utils";
-import { getCurrentUser } from "@/app/_server/actions/users";
 import {
-  getItemsSharedWithUser,
-  removeSharedItem,
-  updateSharedItem,
-} from "@/app/_server/actions/sharing";
+  getCurrentUser,
+  getUserByNote,
+  getUsername,
+} from "@/app/_server/actions/users";
 import { isAdmin, isAuthenticated } from "@/app/_server/actions/users";
 import fs from "fs/promises";
 import {
@@ -31,10 +30,22 @@ import {
   EXCLUDED_DIRS,
   USERS_FILE,
 } from "@/app/_consts/files";
-import { Modes } from "@/app/_types/enums";
+import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { serverReadFile } from "@/app/_server/actions/file";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import {
+  buildCategoryPath,
+  decodeCategoryPath,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
+import {
+  updateIndexForItem,
+  parseInternalLinks,
+  removeItemFromIndex,
+  updateItemCategory,
+} from "@/app/_server/actions/link";
+import { parseNoteContent } from "@/app/_utils/client-parser-utils";
+import { checkUserPermission } from "@/app/_server/actions/sharing";
 
 const USER_NOTES_DIR = (username: string) =>
   path.join(process.cwd(), "data", NOTES_FOLDER, username);
@@ -113,11 +124,11 @@ const _readNotesRecursively = async (
     .map((e) => e.name);
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -131,11 +142,11 @@ const _readNotesRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -155,9 +166,9 @@ const _readNotesRecursively = async (
               fileName
             )
           );
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subDocs = await _readNotesRecursively(
       categoryDir,
@@ -183,15 +194,43 @@ const _checkForDocsFolder = async (): Promise<boolean> => {
 
 export const getNoteById = async (
   id: string,
-  category?: string
+  category?: string,
+  username?: string
 ): Promise<Note | undefined> => {
-  const docs = await getNotes();
-  if (!docs.success || !docs.data) {
+  if (!username) {
+    const user = await getUserByNote(id, category || "Uncategorized");
+    if (user.success && user.data) {
+      username = user.data.username;
+    } else {
+      return undefined;
+    }
+  }
+
+  const notes = await getRawNotes(username, true);
+
+  if (!notes.success || !notes.data) {
     return undefined;
   }
-  return docs.data.find(
-    (d) => d.id === id && (!category || d.category === category)
+
+  const note = notes.data.find(
+    (d) =>
+      d.id === id &&
+      (!category ||
+        encodeCategoryPath(d.category || "Uncategorized")?.toLowerCase() ===
+        encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
   );
+
+  if (note && "rawContent" in note) {
+    const parsedData = parseNoteContent((note as any).rawContent, note.id);
+    const result = {
+      ...note,
+      title: parsedData.title,
+      content: parsedData.content,
+    };
+    return result as Note;
+  }
+
+  return note;
 };
 
 export const getNotes = async (username?: string, allowArchived?: boolean) => {
@@ -218,19 +257,27 @@ export const getNotes = async (username?: string, allowArchived?: boolean) => {
       allowArchived
     );
 
-    const sharedItems = await getItemsSharedWithUser(currentUser.username);
-    for (const sharedItem of sharedItems.notes) {
+    const { getAllSharedItemsForUser } = await import(
+      "@/app/_server/actions/sharing"
+    );
+    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+
+    for (const sharedItem of sharedData.notes) {
       const fileName = `${sharedItem.id}.md`;
-      const sharedFilePath = sharedItem.filePath
-        ? path.join(process.cwd(), "data", NOTES_FOLDER, sharedItem.filePath)
-        : path.join(
-            process.cwd(),
-            "data",
-            NOTES_FOLDER,
-            sharedItem.owner,
-            sharedItem.category || "Uncategorized",
-            `${sharedItem.id}.md`
-          );
+
+      // Decode the category path since it's URL-encoded in the sharing data
+      const decodedCategory = decodeURIComponent(
+        sharedItem.category || "Uncategorized"
+      );
+
+      const sharedFilePath = path.join(
+        process.cwd(),
+        "data",
+        NOTES_FOLDER,
+        sharedItem.sharer,
+        decodedCategory,
+        `${sharedItem.id}.md`
+      );
 
       try {
         const content = await fs.readFile(sharedFilePath, "utf-8");
@@ -239,8 +286,8 @@ export const getNotes = async (username?: string, allowArchived?: boolean) => {
           _parseMarkdownNote(
             content,
             sharedItem.id,
-            sharedItem.category || "Uncategorized",
-            sharedItem.owner,
+            decodedCategory,
+            sharedItem.sharer,
             true,
             stats,
             fileName
@@ -256,6 +303,166 @@ export const getNotes = async (username?: string, allowArchived?: boolean) => {
     return { success: true, data: docs };
   } catch (error) {
     console.error("Error in getNotes:", error);
+    return { success: false, error: "Failed to fetch notes" };
+  }
+};
+
+export const getRawNotes = async (
+  username?: string,
+  allowArchived?: boolean
+) => {
+  try {
+    let userDir: string;
+    let currentUser: any = null;
+
+    if (username) {
+      userDir = USER_NOTES_DIR(username);
+      currentUser = { username };
+    } else {
+      currentUser = await getCurrentUser();
+      if (!currentUser) {
+        return { success: false, error: "Not authenticated" };
+      }
+      userDir = await getUserModeDir(Modes.NOTES);
+    }
+    await ensureDir(userDir);
+
+    const docs: Note[] = [];
+    const entries = await serverReadDir(userDir);
+    let excludedDirs = EXCLUDED_DIRS;
+
+    if (!allowArchived) {
+      excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+    }
+
+    const order = await readOrderFile(userDir);
+    const dirNames = entries
+      .filter((e) => e.isDirectory() && !excludedDirs.includes(e.name))
+      .map((e) => e.name);
+    const orderedDirNames: string[] = order?.categories
+      ? [
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
+      : dirNames.sort((a, b) => a.localeCompare(b));
+
+    for (const dirName of orderedDirNames) {
+      const categoryPath = dirName;
+      const categoryDir = path.join(userDir, dirName);
+
+      try {
+        const files = await serverReadDir(categoryDir);
+        const mdFiles = files.filter(
+          (f) => f.isFile() && f.name.endsWith(".md")
+        );
+        const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
+        const categoryOrder = await readOrderFile(categoryDir);
+        const orderedIds: string[] = categoryOrder?.items
+          ? [
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
+          : ids.sort((a, b) => a.localeCompare(b));
+
+        for (const id of orderedIds) {
+          const fileName = `${id}.md`;
+          const filePath = path.join(categoryDir, fileName);
+          try {
+            const content = await serverReadFile(filePath);
+            const stats = await fs.stat(filePath);
+            const rawNote: Note & { rawContent: string } = {
+              id,
+              title: id,
+              content: "",
+              category: categoryPath,
+              createdAt: stats.birthtime.toISOString(),
+              updatedAt: stats.mtime.toISOString(),
+              owner: currentUser.username,
+              isShared: false,
+              rawContent: content,
+            };
+            docs.push(rawNote as Note);
+          } catch { }
+        }
+      } catch { }
+    }
+
+    const { getAllSharedItemsForUser } = await import(
+      "@/app/_server/actions/sharing"
+    );
+    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+
+    for (const sharedItem of sharedData.notes) {
+      const decodedCategory = decodeCategoryPath(
+        sharedItem.category || "Uncategorized"
+      );
+
+      const sharedFilePath = path.join(
+        process.cwd(),
+        "data",
+        NOTES_FOLDER,
+        sharedItem.sharer,
+        decodedCategory,
+        `${sharedItem.id}.md`
+      );
+
+      try {
+        const content = await fs.readFile(sharedFilePath, "utf-8");
+        const stats = await fs.stat(sharedFilePath);
+        const rawNote: Note & { rawContent: string } = {
+          id: sharedItem.id,
+          title: sharedItem.id,
+          content: "",
+          category: decodedCategory,
+          createdAt: stats.birthtime.toISOString(),
+          updatedAt: stats.mtime.toISOString(),
+          owner: sharedItem.sharer,
+          isShared: true,
+          rawContent: content,
+        };
+        docs.push(rawNote as Note);
+      } catch (error) {
+        console.error(`Error reading shared document ${sharedItem.id}:`, error);
+        console.error(`File path attempted:`, sharedFilePath);
+        continue;
+      }
+    }
+
+    return { success: true, data: docs };
+  } catch (error) {
+    console.error("Error in getRawNotes:", error);
+    return { success: false, error: "Failed to fetch raw notes" };
+  }
+};
+
+export const getProjectedNotes = async (projection: string[]) => {
+  try {
+    const notesResult = await getRawNotes();
+
+    if (!notesResult.success || !notesResult.data) {
+      return { success: false, error: "Failed to fetch notes" };
+    }
+
+    const projectedNotes = notesResult.data.map((note: Note) => {
+      const projectedNote: Partial<Note> = {};
+      for (const key of projection) {
+        if (Object.prototype.hasOwnProperty.call(note, key)) {
+          (projectedNote as any)[key] = (note as any)[key];
+        }
+      }
+      return projectedNote;
+    });
+
+    return {
+      success: true,
+      data: projectedNotes,
+    };
+  } catch (error) {
+    console.error("Error in getNotesProjected:", error);
     return { success: false, error: "Failed to fetch notes" };
   }
 };
@@ -296,6 +503,19 @@ export const createNote = async (formData: FormData) => {
     };
 
     await serverWriteFile(filePath, _noteToMarkdown(newDoc));
+
+    try {
+      const links = parseInternalLinks(newDoc.content);
+      const itemKey = `${newDoc.category || "Uncategorized"}/${newDoc.id}`;
+      await updateIndexForItem(currentUser.username, "note", itemKey, links);
+    } catch (error) {
+      console.warn(
+        "Failed to update link index for new note:",
+        newDoc.id,
+        error
+      );
+    }
+
     return { success: true, data: newDoc };
   } catch (error) {
     console.error("Error creating document:", error);
@@ -310,23 +530,31 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const rawContent = formData.get("content") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
-    const unarchive = formData.get("unarchive") === "true";
+    const unarchive = formData.get("unarchive") as string;
+    let currentUser = formData.get("user") as string | undefined;
+
+    if (!currentUser) {
+      currentUser = await getUsername();
+    }
 
     const content = sanitizeMarkdown(rawContent);
 
-    const isAdminUser = await isAdmin();
-    const docs = await (isAdminUser
-      ? getAllNotes(unarchive)
-      : getNotes(undefined, unarchive));
-    if (!docs.success || !docs.data) {
-      throw new Error(docs.error || "Failed to fetch notes");
-    }
+    const doc = await getNoteById(id, originalCategory, currentUser);
 
-    const doc = docs.data.find(
-      (d) => d.id === id && d.category === originalCategory
+    const canEdit = await checkUserPermission(
+      id,
+      originalCategory,
+      "note",
+      currentUser,
+      PermissionTypes.EDIT
     );
+
     if (!doc) {
       throw new Error("Note not found");
+    }
+
+    if (!canEdit) {
+      return { error: "Permission denied" };
     }
 
     const updatedDoc = {
@@ -381,44 +609,44 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     await serverWriteFile(filePath, _noteToMarkdown(updatedDoc));
 
-    const { getItemSharingMetadata } = await import(
-      "@/app/_server/actions/sharing"
-    );
-    const sharingMetadata = await getItemSharingMetadata(
-      id,
-      "note",
-      doc.owner!
-    );
+    try {
+      const links = parseInternalLinks(updatedDoc.content);
+      const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
+        }`;
 
-    if (sharingMetadata) {
-      const newFilePath = `${doc.owner}/${
-        updatedDoc.category || "Uncategorized"
-      }/${updatedDoc.id}.md`;
-
-      if (newId !== id) {
-        const { removeSharedItem, addSharedItem } = await import(
-          "@/app/_server/actions/sharing"
-        );
-
-        await removeSharedItem(id, "note", doc.owner!);
-
-        await addSharedItem(
-          updatedDoc.id,
-          "note",
-          updatedDoc.title,
-          doc.owner!,
-          sharingMetadata.sharedWith,
-          updatedDoc.category,
-          newFilePath,
-          sharingMetadata.isPubliclyShared
-        );
-      } else {
-        await updateSharedItem(updatedDoc.id, "note", doc.owner!, {
-          filePath: newFilePath,
-          category: updatedDoc.category,
-          title: updatedDoc.title,
-        });
+      const oldItemKey = `${doc.category || "Uncategorized"}/${id}`;
+      if (oldItemKey !== newItemKey) {
+        await updateItemCategory(doc.owner!, "note", oldItemKey, newItemKey);
       }
+
+      await updateIndexForItem(doc.owner!, "note", newItemKey, links);
+    } catch (error) {
+      console.warn(
+        "Failed to update link index for note:",
+        updatedDoc.id,
+        error
+      );
+    }
+
+    if (newId !== id || (category && category !== doc.category)) {
+      const { updateSharingData } = await import(
+        "@/app/_server/actions/sharing"
+      );
+
+      await updateSharingData(
+        {
+          id,
+          category: doc.category || "Uncategorized",
+          itemType: "note",
+          sharer: doc.owner!,
+        },
+        {
+          id: newId,
+          category: updatedDoc.category || "Uncategorized",
+          itemType: "note",
+          sharer: doc.owner!,
+        }
+      );
     }
 
     if (oldFilePath && oldFilePath !== filePath) {
@@ -493,8 +721,26 @@ export const deleteNote = async (formData: FormData) => {
 
     await serverDeleteFile(filePath);
 
-    if (doc.isShared && doc.owner) {
-      await removeSharedItem(id, "note", doc.owner);
+    try {
+      const itemKey = `${doc.category || "Uncategorized"}/${id}`;
+      await removeItemFromIndex(doc.owner!, "note", itemKey);
+    } catch (error) {
+      console.warn("Failed to remove note from link index:", id, error);
+    }
+
+    if (doc.owner) {
+      const { updateSharingData } = await import(
+        "@/app/_server/actions/sharing"
+      );
+      await updateSharingData(
+        {
+          id,
+          category: doc.category || "Uncategorized",
+          itemType: "note",
+          sharer: doc.owner,
+        },
+        null
+      );
     }
 
     try {

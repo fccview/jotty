@@ -8,10 +8,13 @@ interface InputProps {
   description?: React.ReactNode;
   value?: string;
   type: string;
+  autoComplete?: string;
   required?: boolean;
   placeholder?: string;
   disabled?: boolean;
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   className?: string;
   defaultValue?: string;
   ref?: React.RefObject<HTMLInputElement>;
@@ -24,6 +27,7 @@ export const Input: FC<InputProps> = ({
   name,
   description,
   type,
+  autoComplete,
   required,
   disabled,
   placeholder,
@@ -31,6 +35,8 @@ export const Input: FC<InputProps> = ({
   className,
   defaultValue,
   onChange,
+  onFocus,
+  onBlur,
   onKeyDown,
   ref,
   ...props
@@ -43,10 +49,13 @@ export const Input: FC<InputProps> = ({
       type={type}
       value={value}
       defaultValue={defaultValue}
+      autoComplete={autoComplete}
       required={required}
       disabled={disabled}
       placeholder={placeholder}
       onChange={onChange}
+      onFocus={onFocus}
+      onBlur={onBlur}
       {...props}
       className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     />
