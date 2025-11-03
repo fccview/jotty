@@ -1,7 +1,7 @@
 {
-  "name": "doflamingo notes",
-  "short_name": "doflamingo notes",
-  "description": "testing",
+  "name": "jotty·page",
+  "short_name": "jotty·page",
+  "description": "A simple, fast, and lightweight checklist and notes application",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f0fdfa",
@@ -9,32 +9,32 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/api/app-icons/192x192Icon-1762161381982.png",
+      "src": "/app-icons/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/api/app-icons/512x512Icon-1762161386372.png",
+      "src": "/app-icons/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/api/app-icons/16x16Icon-1762159779088.png",
+      "src": "/app-icons/favicon-16x16.png",
       "sizes": "16x16",
       "type": "image/png"
     },
     {
-      "src": "/api/app-icons/32x32Icon-1762159784367.png",
+      "src": "/app-icons/favicon-32x32.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "/api/app-icons/180x180Icon-1762159788674.png",
+      "src": "/app-icons/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
     }
   ],
-  "version": "1762164088982"
+  "version": "1762164104517"
 }
