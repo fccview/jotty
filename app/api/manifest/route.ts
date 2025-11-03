@@ -4,7 +4,7 @@ import path from "path";
 
 export async function GET() {
   const overrideManifest = await readJsonFile(
-    path.join("data", "override.webmanifest")
+    path.join("config", "site.webmanifest")
   );
 
   if (overrideManifest !== null) {

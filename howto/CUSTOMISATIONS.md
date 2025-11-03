@@ -1,49 +1,8 @@
-# Custom Themes and Emojis
+# Custom Emojis & Manifest
 
-You can easily add custom themes and emojis by creating configuration files in the `config/` directory. These will be automatically loaded and merged with the built-in themes and emojis.
+You can easily add custom emojis by creating configuration files in the `config/` directory. These will be automatically loaded and merged with the built-in themes and emojis.
 
-**Note**: While app settings (name, description, icons) are now managed through the admin UI, custom themes and emojis still use the `config/` directory approach below.
-
-### Custom Themes
-
-Create `config/themes.json` with your custom themes:
-
-```json
-{
-  "custom-themes": {
-    "my-theme": {
-      "name": "My Custom Theme",
-      "icon": "Palette",
-      "colors": {
-        "--background": "255 255 255",
-        "--background-secondary": "249 250 251",
-        "--foreground": "20 20 20",
-        "--primary": "37 99 235",
-        "--primary-foreground": "255 255 255",
-        "--secondary": "241 245 249",
-        "--secondary-foreground": "20 20 20",
-        "--muted": "241 245 249",
-        "--muted-foreground": "100 116 139",
-        "--accent": "241 245 249",
-        "--accent-foreground": "20 20 20",
-        "--destructive": "239 68 68",
-        "--destructive-foreground": "255 255 255",
-        "--border": "226 232 240",
-        "--input": "226 232 240",
-        "--ring": "37 99 235"
-      }
-    }
-  }
-}
-```
-
-**Required color variables:**
-
-- `--background`, `--background-secondary`, `--foreground`
-- `--card`, `--card-foreground`, `--popover`, `--popover-foreground`
-- `--primary`, `--primary-foreground`, `--secondary`, `--secondary-foreground`
-- `--muted`, `--muted-foreground`, `--accent`, `--accent-foreground`
-- `--destructive`, `--destructive-foreground`, `--border`, `--input`, `--ring`
+**Note**: While app settings (name, description, icons, themes) are now managed through the admin UI, custom emojis still use the manual `config/` directory approach below - for now.
 
 ### Custom Emojis
 
@@ -64,9 +23,60 @@ Create `config/emojis.json` with your custom emojis:
 
 When you type checklist items containing these words, the custom emojis will automatically appear.
 
-### Available Icons
+### Custom manifest
 
-For themes, you can use these icon names: `Sun`, `Moon`, `Sunset`, `Waves`, `Trees`, `CloudMoon`, `Palette`, `Terminal`, `Github`, `Monitor`, `Coffee`, `Flower2`, `Flame`, `Palmtree`, `Building`. If no icon is specified, a default will be chosen based on the theme name.
+You can completely customize your PWA by creating an override manifest file. This allows you to change the app name, description, icons, colors, and more.
+
+1. Create a file called `site.webmanifest` in your `config/` directory
+2. Add your custom manifest configuration:
+
+```json
+{
+  "name": "My Custom App Name",
+  "short_name": "Custom App",
+  "description": "A custom description for my PWA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "orientation": "any",
+  "categories": ["productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/custom-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/custom-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Note",
+      "short_name": "New Note",
+      "description": "Create a new note",
+      "url": "/notes/new",
+      "icons": [{ "src": "/shortcut-icon.png", "sizes": "96x96" }]
+    }
+  ],
+  "version": "1.0.0"
+}
+```
+
+3. Save the file and refresh your PWA
+4. The changes will take effect immediately
+
+Learn more about how the PWA works visiting [howto/PWA.md](howto/PWA.md)
+
+**Note**: The override manifest takes precedence over any settings configured through the admin UI. Use this for complete customization control.
+
 
 ### Configuration Validation
 

@@ -1,7 +1,7 @@
 import { MigrationHeader } from "./MigrationHeader";
 import { InfoCard } from "@/app/_components/GlobalComponents/Cards/InfoCard";
 import { InfoCardVariant } from "@/app/_components/GlobalComponents/Cards/InfoCard";
-import { Info } from "lucide-react";
+import { Globe, Info, Shield } from "lucide-react";
 import { Database } from "lucide-react";
 import { Users } from "lucide-react";
 import { CheckCircle } from "lucide-react";
@@ -44,7 +44,7 @@ export const SharingMigrationView = ({
           description={
             isMigrationComplete
               ? "Your sharing data has been successfully migrated to the new format."
-              : `We${"'ve"} improved how sharing works in your app! We need to update your sharing data structure.`
+              : `I${"'ve"} improved how sharing works in your app but you need to update your sharing data structure.`
           }
         />
 
@@ -55,7 +55,7 @@ export const SharingMigrationView = ({
               title="What's happening?"
             >
               <p className="text-sm">
-                We&apos;re migrating from the old{" "}
+                I&apos;m migrating from the old{" "}
                 <code className="bg-muted px-1 rounded text-xs">
                   shared-items.json
                 </code>{" "}
@@ -73,17 +73,17 @@ export const SharingMigrationView = ({
                 Migration Changes
               </h2>
               <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                   <Users className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">User-focused sharing</p>
                     <p className="text-xs text-muted-foreground">
-                      Each user now sees only items shared <strong>WITH</strong>{" "}
-                      them, rather than items shared <strong>BY</strong> them.
+                      Each user now has an array of items they shared <strong>WITH</strong>{" "}
+                      them rather than items having an array of users they shared with.
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                   <Database className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
@@ -98,15 +98,26 @@ export const SharingMigrationView = ({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <Globe className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
                       Public sharing support
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Publicly shared items are now properly organized in a
-                      &quot;public&quot; section.
+                      &quot;public&quot; array.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <Shield className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">
+                      Granular sharing permissions
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Each item will have read, edit and delete permissions for each user it is shared with.
                     </p>
                   </div>
                 </div>
@@ -123,8 +134,8 @@ export const SharingMigrationView = ({
                 <code className="bg-muted px-1 rounded text-xs">
                   data/sharing
                 </code>{" "}
-                folder. While this migration is safe, it&apos;s always good
-                practice to have a backup.
+                folder. While this migration is safe and it manually backs up your sharing data, it&apos;s always good
+                practice to have a backup just in case.
               </p>
             </InfoCard>
 
@@ -139,7 +150,7 @@ export const SharingMigrationView = ({
             )}
 
             <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-              <div className="flex items-start gap-3">
+              <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
                   id="backup-confirmation"
@@ -154,11 +165,11 @@ export const SharingMigrationView = ({
                   >
                     I have backed up my sharing data and understand the
                     migration process.
+                    <span className="text-xs text-muted-foreground block">
+                      Please confirm you&apos;ve created a backup before
+                      proceeding.
+                    </span>
                   </label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Please confirm you&apos;ve created a backup before
-                    proceeding.
-                  </p>
                 </div>
               </div>
             </div>

@@ -50,7 +50,7 @@ Once installed, jotty·page provides:
 
 You can completely customize your PWA by creating an override manifest file. This allows you to change the app name, description, icons, colors, and more.
 
-1. Create a file called `override.webmanifest` in your `data/` directory
+1. Create a file called `site.webmanifest` in your `config/` directory
 2. Add your custom manifest configuration:
 
 ```json

@@ -42,10 +42,10 @@ export const MigrationPage = () => {
 
       if (result.success) {
         setMigrationResult(result.data || null);
-        if (result.data?.migrated) {
-          await clearAllSessions();
-          await logout();
-        }
+        // if (result.data?.migrated) {
+        //   await clearAllSessions();
+        //   await logout();
+        // }
       } else {
         throw new Error(result.error || "Migration failed");
       }

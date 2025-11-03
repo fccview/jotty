@@ -39,6 +39,7 @@ Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a
 
 ## Quick nav
 
+- [How to contribute](#contribute)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
@@ -46,6 +47,7 @@ Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a
   - [Initial Setup](#initial-setup)
   - [Local Development (Without Docker)](#local-development-without-docker)
 - [Data Storage](#data-storage)
+- [Versioning Scheme](#versioning)
 - [Updating](#updating)
   - [Docker Compose](#docker-compose-1)
   - [Manual](#manual)
@@ -60,6 +62,8 @@ Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a
     <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" width="150">
   </a>
 </p>
+
+<a id="contribute"></a>
 
 ## How to contribute
 
@@ -197,6 +201,28 @@ If you want to run the app locally for development:
 
 **Make sure you back up the `data` directory!**
 
+<a id="versioning"></a>
+
+## Versioning Scheme
+
+This project uses a `[STABLE].[FEATURE].[FIX]` versioning scheme, not strict [SemVer](https://semver.org/). As a product (not a package), this format makes more sense for my specific release cycle.
+
+My format is `1.10.1`, which breaks down as:
+
+* **`1.x.x` (Stable):** The `1` represents the current stable generation. I will only change this (e.g., to `2.0.0`) for a complete rewrite or a fundamental shift in the product or seriously breaking changes.
+
+* **`x.10.x` (Feature):** This is the main release number. I increment this for new features, code refactors, or significant changes (e.g., `1.9.0` -> `1.10.0`). This is the equivalent of a SemVer `MINOR` bump.
+
+* **`x.x.1` (Fix):** This is incremented *only* for hotfixes, bug-fix-only and very minor feature releases (e.g., `1.10.0` -> `1.10.1`). This is the equivalent of a SemVer `PATCH` bump.
+
+### A Note on "Breaking" Changes
+
+A **Feature** release (like `1.10.0`) may include major backend or data structure changes. When this happens, **I will always provide an automatic migration script** that runs on first launch to update your data seamlessly.
+
+Because the migration is automatic, I do not consider this a "breaking" change that requires a `2.0.0` version.
+
+I will always detail these migrations in the release notes. I *highly recommend* you **back up your data** before any feature update, just in case.
+
 <a id="updating"></a>
 
 ## Updating
@@ -264,11 +290,12 @@ yarn start
 
 <a id="custom-themes-and-emojis"></a>
 
-## Custom Themes and Emojis
+## Custom Emojis & Manifest
 
-You can easily add custom themes and emojis by creating configuration files in the `config/` directory. These will be automatically loaded and merged with the built-in themes and emojis.
+You can easily add custom emojis and manually define your PWA manifest by creating configuration files in the `config/` directory. These will be automatically loaded and merged with the built-in themes and emojis.
 
 📖 **For the complete customisation documentation, see [howto/CUSTOMISATIONS.md](howto/CUSTOMISATIONS.md)**
+📖 **For better understanding on how the PWA works see [howto/PWA.md](howto/PWA.md)**
 
 ## Community shouts
 
