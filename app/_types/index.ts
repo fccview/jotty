@@ -137,9 +137,11 @@ export interface User {
   pinnedLists?: string[];
   pinnedNotes?: string[];
   enableRecurrence?: EnableRecurrence;
+  showCompletedSuggestions?: ShowCompletedSuggestions;
 }
 
 export type EnableRecurrence = "enable" | "disable";
+export type ShowCompletedSuggestions = "enable" | "disable";
 export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";

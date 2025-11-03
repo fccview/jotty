@@ -131,14 +131,16 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => { }}
+          onRemove={() => {}}
         ></ToastContainer>
       )}
 
       {localList.type === "simple" && permissions?.canEdit && (
         <ChecklistHeading
           key={focusKey}
+          checklist={localList}
           onSubmit={handleCreateItem}
+          onToggleCompletedItem={checklistHookProps.handleToggleItem}
           onBulkSubmit={() => setShowBulkPasteModal(true)}
           isLoading={isLoading}
           autoFocus={true}

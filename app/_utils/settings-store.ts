@@ -39,10 +39,12 @@ interface SettingsState {
   showEmojis: boolean;
   autosaveNotes: boolean;
   showMarkdownPreview: boolean;
+  showCompletedSuggestions: boolean;
   setTheme: (theme: Theme) => void;
   setShowEmojis: (show: boolean) => void;
   setAutosaveNotes: (enabled: boolean) => void;
   setShowMarkdownPreview: (show: boolean) => void;
+  setShowCompletedSuggestions: (show: boolean) => void;
   setCompactMode: (compact: boolean) => void;
   getResolvedTheme: (
     isRwMarkable: boolean,
@@ -58,11 +60,14 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
       showEmojis: true,
       autosaveNotes: true,
       showMarkdownPreview: false,
+      showCompletedSuggestions: true,
       compactMode: false,
       setTheme: (theme) => set({ theme }),
       setShowEmojis: (show) => set({ showEmojis: show }),
       setAutosaveNotes: (enabled) => set({ autosaveNotes: enabled }),
       setShowMarkdownPreview: (show) => set({ showMarkdownPreview: show }),
+      setShowCompletedSuggestions: (show) =>
+        set({ showCompletedSuggestions: show }),
       setCompactMode: (compact) => set({ compactMode: compact }),
       getResolvedTheme: (
         isRwMarkable: boolean,

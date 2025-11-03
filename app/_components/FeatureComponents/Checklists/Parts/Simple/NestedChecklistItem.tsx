@@ -80,7 +80,7 @@ export const NestedChecklistItem = ({
     transition,
     isDragging,
   } = isDragDisabled
-      ? {
+    ? {
         attributes: {},
         listeners: {},
         setNodeRef: null,
@@ -88,7 +88,7 @@ export const NestedChecklistItem = ({
         transition: null,
         isDragging: false,
       }
-      : sortableProps;
+    : sortableProps;
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -193,6 +193,19 @@ export const NestedChecklistItem = ({
     { id: "delete", name: "Delete", icon: Trash2 },
   ];
 
+  useEffect(() => {
+    if (hasChildren && item.children) {
+      const allChildrenCompleted = item.children.every(
+        (child) => child.completed
+      );
+      if (allChildrenCompleted) {
+        setIsExpanded(false);
+      } else {
+        setIsExpanded(true);
+      }
+    }
+  }, [item.children, hasChildren]);
+
   return (
     <div
       ref={setNodeRef}
@@ -200,13 +213,13 @@ export const NestedChecklistItem = ({
       className={cn(
         "relative my-1",
         hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         !hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         isChild &&
-        "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
+          "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
         "first:mt-0",
         isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50",
         isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
@@ -218,26 +231,32 @@ export const NestedChecklistItem = ({
           "rounded-lg",
           isChild ? "px-2.5 py-2" : "p-3",
           completed && "opacity-80",
-          !permissions?.canEdit && "opacity-50 cursor-not-allowed pointer-events-none"
+          !permissions?.canEdit &&
+            "opacity-50 cursor-not-allowed pointer-events-none"
         )}
       >
-        {!isPublicView && !isDragDisabled && !isChild && permissions?.canEdit && (
-          <button
-            type="button"
-            {...attributes}
-            {...listeners}
-            className="text-muted-foreground hidden lg:block hover:text-foreground cursor-move touch-manipulation"
-          >
-            <GripVertical className="h-4 w-4" />
-          </button>
-        )}
+        {!isPublicView &&
+          !isDragDisabled &&
+          !isChild &&
+          permissions?.canEdit && (
+            <button
+              type="button"
+              {...attributes}
+              {...listeners}
+              className="text-muted-foreground hidden lg:block hover:text-foreground cursor-move touch-manipulation"
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+          )}
 
         <div className="relative flex items-center">
           <input
             type="checkbox"
             checked={item.completed || completed}
             id={item.id}
-            onChange={(e) => onToggle(item.id, e.target.checked)}
+            onChange={(e) => {
+              onToggle(item.id, e.target.checked);
+            }}
             className={cn(
               "h-5 w-5 rounded border-input focus:ring-2 focus:ring-offset-2 focus:ring-ring",
               "transition-colors duration-200",
@@ -396,67 +415,63 @@ export const NestedChecklistItem = ({
         )}
       </div>
 
-      {
-        showAddSubItem && !isPublicView && (
-          <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>
-            <form onSubmit={handleAddSubItem} className="flex gap-2 items-center">
-              <div className="flex-1 flex items-center gap-2">
-                <div className="h-5 w-5 border border-border rounded bg-background"></div>
-                <input
-                  type="text"
-                  value={newSubItemText}
-                  onChange={(e) => setNewSubItemText(e.target.value)}
-                  placeholder="Add sub-item..."
-                  className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-2 focus:ring-ring"
-                  autoFocus
-                />
-              </div>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={!newSubItemText.trim()}
-                className="px-3"
-              >
-                Add
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setShowAddSubItem(false);
-                  setNewSubItemText("");
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
-        )
-      }
-
-      {
-        hasChildren && isExpanded && (
-          <div className={cn("pt-1")}>
-            {item.children!.map((child, childIndex) => (
-              <NestedChecklistItem
-                key={child.id}
-                item={child}
-                index={`${index}.${childIndex}`}
-                level={level + 1}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-                onAddSubItem={onAddSubItem}
-                isDeletingItem={isDeletingItem}
-                isDragDisabled={isDragDisabled}
-                isPublicView={isPublicView}
-                checklist={checklist}
+      {showAddSubItem && !isPublicView && (
+        <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>
+          <form onSubmit={handleAddSubItem} className="flex gap-2 items-center">
+            <div className="flex-1 flex items-center gap-2">
+              <div className="h-5 w-5 border border-border rounded bg-background"></div>
+              <input
+                type="text"
+                value={newSubItemText}
+                onChange={(e) => setNewSubItemText(e.target.value)}
+                placeholder="Add sub-item..."
+                className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-2 focus:ring-ring"
+                autoFocus
               />
-            ))}
-          </div>
-        )
-      }
-    </div >
+            </div>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!newSubItemText.trim()}
+              className="px-3"
+            >
+              Add
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowAddSubItem(false);
+                setNewSubItemText("");
+              }}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </form>
+        </div>
+      )}
+
+      {hasChildren && isExpanded && (
+        <div className={cn("pt-1")}>
+          {item.children!.map((child, childIndex) => (
+            <NestedChecklistItem
+              key={child.id}
+              item={child}
+              index={`${index}.${childIndex}`}
+              level={level + 1}
+              onToggle={onToggle}
+              onDelete={onDelete}
+              onEdit={onEdit}
+              onAddSubItem={onAddSubItem}
+              isDeletingItem={isDeletingItem}
+              isDragDisabled={isDragDisabled}
+              isPublicView={isPublicView}
+              checklist={checklist}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 };

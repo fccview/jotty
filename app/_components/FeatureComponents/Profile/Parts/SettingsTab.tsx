@@ -7,6 +7,7 @@ import { updateUserSettings } from "@/app/_server/actions/users";
 import {
   User,
   EnableRecurrence,
+  ShowCompletedSuggestions,
   TableSyntax,
   LandingPage,
   NotesDefaultEditor,
@@ -72,6 +73,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const [enableRecurrence, setEnableRecurrence] = useState<EnableRecurrence>(
     user?.enableRecurrence || "disable"
   );
+  const [showCompletedSuggestions, setShowCompletedSuggestions] =
+    useState<ShowCompletedSuggestions>(
+      user?.showCompletedSuggestions || "enable"
+    );
 
   const [initialSettings, setInitialSettings] = useState<Partial<User>>({
     preferredTheme: user?.preferredTheme || "system",
@@ -80,6 +85,8 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
     notesDefaultMode: user?.notesDefaultMode || "view",
     notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
+    enableRecurrence: user?.enableRecurrence || "disable",
+    showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
   });
 
   const [validationErrors, setValidationErrors] = useState<
@@ -95,7 +102,8 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const hasNavigationChanges = landingPage !== initialSettings.landingPage;
 
   const hasChecklistsChanges =
-    enableRecurrence !== initialSettings.enableRecurrence;
+    enableRecurrence !== initialSettings.enableRecurrence ||
+    showCompletedSuggestions !== initialSettings.showCompletedSuggestions;
 
   const validateAndSave = async <T extends Record<string, any>>(
     settings: T,
@@ -190,10 +198,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
 
   const handleSaveChecklistsSettings = () =>
     validateAndSave(
-      { enableRecurrence },
+      { enableRecurrence, showCompletedSuggestions },
       checklistSettingsSchema,
       "Checklists",
-      (prev) => ({ ...prev, enableRecurrence })
+      (prev) => ({ ...prev, enableRecurrence, showCompletedSuggestions })
     );
 
   const tableSyntaxOptions = [
@@ -223,6 +231,11 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   ];
 
   const enableRecurrenceOptions = [
+    { id: "enable", name: "Enable" },
+    { id: "disable", name: "Disable" },
+  ];
+
+  const showCompletedSuggestionsOptions = [
     { id: "enable", name: "Enable" },
     { id: "disable", name: "Disable" },
   ];
@@ -411,6 +424,25 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             placeholder="Select enable to add recurring checklists"
             className="w-full"
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="show-completed-suggestions">
+            Show completed tasks as suggestions
+          </Label>
+          <Dropdown
+            value={showCompletedSuggestions}
+            onChange={(value) =>
+              setShowCompletedSuggestions(value as ShowCompletedSuggestions)
+            }
+            options={showCompletedSuggestionsOptions}
+            placeholder="Select whether to show completed tasks as suggestions"
+            className="w-full"
+          />
+          <p className="text-sm text-muted-foreground">
+            When adding new tasks, show completed tasks as suggestions that can
+            be re-enabled.
+          </p>
         </div>
       </FormWrapper>
 

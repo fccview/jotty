@@ -40,6 +40,9 @@ export const checklistSettingsSchema = z.object({
   enableRecurrence: z.enum(["enable", "disable"], {
     message: "Enable recurrence must be either 'enable' or 'disable'",
   }),
+  showCompletedSuggestions: z.enum(["enable", "disable"], {
+    message: "Show completed suggestions must be either 'enable' or 'disable'",
+  }),
 });
 
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;
