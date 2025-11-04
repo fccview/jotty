@@ -1,6 +1,7 @@
 import { TaskStatus, Modes } from "./enums";
 
 export type ChecklistType = "simple" | "task";
+export type ItemType = "checklist" | "note";
 
 export interface TimeEntry {
   id: string;
@@ -9,7 +10,13 @@ export interface TimeEntry {
   duration?: number;
 }
 
-export type ItemType = "checklist" | "note";
+export interface RecurrenceRule {
+  rrule: string;
+  dtstart: string;
+  until?: string;
+  nextDue?: string;
+  lastCompleted?: string;
+}
 
 export interface StatusChange {
   status: TaskStatus;
@@ -34,6 +41,7 @@ export interface Item {
   lastModifiedAt?: string;
   history?: StatusChange[];
   description?: string;
+  recurrence?: RecurrenceRule;
 }
 
 export interface List {
@@ -54,6 +62,7 @@ export interface Checklist {
   owner?: string;
   isShared?: boolean;
   isDeleted?: boolean;
+  rawContent?: string;
 }
 
 export interface Note {
@@ -65,6 +74,7 @@ export interface Note {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  rawContent?: string;
 }
 
 export interface NoteEditorViewModel {
@@ -126,8 +136,12 @@ export interface User {
   notesDefaultMode?: NotesDefaultMode;
   pinnedLists?: string[];
   pinnedNotes?: string[];
+  enableRecurrence?: EnableRecurrence;
+  showCompletedSuggestions?: ShowCompletedSuggestions;
 }
 
+export type EnableRecurrence = "enable" | "disable";
+export type ShowCompletedSuggestions = "enable" | "disable";
 export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";
@@ -154,8 +168,8 @@ export interface SharingMetadata {
 
 export interface SharingPermissions {
   canRead: boolean;
-  canWrite: boolean;
-  canShare: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }
 
 export interface GlobalSharing {
@@ -193,12 +207,15 @@ export interface AppSettings {
   "16x16Icon": string;
   "32x32Icon": string;
   "180x180Icon": string;
+  "512x512Icon": string;
+  "192x192Icon": string;
   notifyNewUpdates: "yes" | "no";
   maximumFileSize: number;
   editor: {
     enableSlashCommands: boolean;
     enableBubbleMenu: boolean;
     enableTableToolbar: boolean;
+    enableBilateralLinks: boolean;
   };
 }
 

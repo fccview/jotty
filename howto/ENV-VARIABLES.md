@@ -32,12 +32,16 @@ OIDC_ADMIN_GROUPS=admins
 ## SSO Configuration (Optional)
 
 ### Mandatory
+
 - `APP_URL=https://your-jotty-domain.com` Tells the OIDC of your choice what url you are trying to authenticate against.
 - `SSO_MODE=oidc` Enables OIDC (OpenID Connect) single sign-on authentication.
 - `OIDC_ISSUER=<YOUR_SSO_ISSUER>` URL of your OIDC provider (e.g., Authentik, Auth0, Keycloak).
 - `OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>` Client ID from your OIDC provider configuration.
 
 ### Optional
+
 - `OIDC_CLIENT_SECRET=your_client_secret` Optional. Client secret for confidential OIDC client authentication.
 - `SSO_FALLBACK_LOCAL=yes` Optional. Allows both SSO and local authentication methods.
 - `OIDC_ADMIN_GROUPS=admins` Optional. Comma-separated list of OIDC groups that should have admin privileges.
+- `OIDC_GROUPS_SCOPE=groups` Optional. Scope to request for groups. Defaults to "groups". Set to empty string or "no" to disable for providers like Entra ID that don't support the groups scope.
+- `OIDC_LOGOUT_URL=https://authprovider.local/realms/master/logout` Optional. Custom logout URL for global logout. Full URL to redirect to when logging out.

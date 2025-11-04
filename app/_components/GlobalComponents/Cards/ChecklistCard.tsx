@@ -1,10 +1,13 @@
-import { CheckCircle, Clock, Timer, Pin, PinOff } from "lucide-react";
+import { CheckCircle, Clock, Pin, PinOff } from "lucide-react";
 import { Checklist } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
-import { isItemCompleted, formatTime } from "@/app/_utils/checklist-utils";
+import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { TaskSpecificDetails } from "@/app/_components/GlobalComponents/Cards/TaskSpecificDetails";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
+import { useMemo } from "react";
+import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 
 interface ChecklistCardProps {
   list: Checklist;
@@ -12,9 +15,17 @@ interface ChecklistCardProps {
   isPinned?: boolean;
   onTogglePin?: (list: Checklist) => void;
   isDraggable?: boolean;
+  sharer?: string;
 }
 
-export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, isDraggable = false }: ChecklistCardProps) => {
+export const ChecklistCard = ({
+  list,
+  onSelect,
+  isPinned = false,
+  onTogglePin,
+  isDraggable = false,
+  sharer,
+}: ChecklistCardProps) => {
   const {
     attributes,
     listeners,
@@ -24,7 +35,7 @@ export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, i
     isDragging,
   } = useSortable({
     id: list.id,
-    disabled: !isDraggable
+    disabled: !isDraggable,
   });
 
   const style = {
@@ -32,8 +43,18 @@ export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, i
     transition,
   };
 
-  const totalItems = list.items.length;
-  const completedItems = list.items.filter((item) =>
+  const parsedData = useMemo(() => {
+    if ("rawContent" in list) {
+      return parseChecklistContent((list as any).rawContent, list.id);
+    }
+    return null;
+  }, [list]);
+
+  const displayTitle = parsedData?.title || list.title;
+  const displayItems = parsedData?.items || list.items;
+
+  const totalItems = displayItems.length;
+  const completedItems = displayItems.filter((item) =>
     isItemCompleted(item, list.type)
   ).length;
   const completionRate =
@@ -45,14 +66,15 @@ export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, i
       style={style}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
       onClick={() => onSelect(list)}
-      className={`bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${isDragging ? 'opacity-50' : ''
-        }`}
+      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${
+        isDragging ? "opacity-50" : ""
+      }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
-            {list.title}
-          </h3>
+          <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+            {displayTitle}
+          </span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {onTogglePin && (
@@ -61,7 +83,9 @@ export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, i
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"} group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
               title={isPinned ? "Unpin" : "Pin"}
             >
               {isPinned ? (
@@ -92,14 +116,26 @@ export const ChecklistCard = ({ list, onSelect, isPinned = false, onTogglePin, i
         </div>
       </div>
 
-      {list.type === "task" && <TaskSpecificDetails items={list.items} />}
+      {list.type === "task" && <TaskSpecificDetails items={displayItems} />}
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <CheckCircle className="h-3 w-3" />
-          <span>
-            {completedItems}/{totalItems} completed
-          </span>
+        <div className="flex items-center gap-2">
+          {sharer && (
+            <div className="flex items-center gap-1">
+              <UserAvatar username={sharer} size="xs" />
+              <span className="text-xs text-muted-foreground">
+                Shared by {sharer}
+              </span>
+            </div>
+          )}
+          {!sharer && (
+            <>
+              <CheckCircle className="h-3 w-3" />
+              <span>
+                {completedItems}/{totalItems} completed
+              </span>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3" />

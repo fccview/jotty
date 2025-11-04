@@ -14,7 +14,7 @@ services:
       - "1122:3000"
     volumes:
       - ./data:/app/data:rw
-      - ./config:/app/config:ro
+      - ./config:/app/config:rw
       - ./cache:/app/.next/cache:rw
     restart: unless-stopped
     environment:
@@ -72,7 +72,7 @@ Maps host port 1122 to container port 3000. You can change `1122` to any availab
 ```yaml
 volumes:
   - ./data:/app/data:rw
-  - ./config:/app/config:ro
+  - ./config:/app/config:rw
   - ./cache:/app/.next/cache:rw
 ```
 

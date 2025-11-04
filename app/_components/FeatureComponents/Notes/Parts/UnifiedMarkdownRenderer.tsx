@@ -19,6 +19,9 @@ import { ImageAttachment } from "@/app/_components/GlobalComponents/FormElements
 import { VideoAttachment } from "@/app/_components/GlobalComponents/FormElements/VideoAttachment";
 import { lowlight } from "@/app/_utils/lowlight-utils";
 import { toHtml } from "hast-util-to-html";
+import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
+import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
+import { ItemTypes } from "@/app/_types/enums";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -121,15 +124,46 @@ export const UnifiedMarkdownRenderer = ({
       const childText = String(children);
       const isFileAttachment = childText.startsWith("📎 ") && href;
       const isVideoAttachment = childText.startsWith("🎥 ") && href;
+      const isInternalLink =
+        href && (href?.includes("/note/") || href?.includes("/checklist/"));
+
+      if (isInternalLink) {
+        return (
+          <InternalLinkComponent
+            node={{
+              attrs: {
+                href: href || "",
+                title: childText,
+                type: href?.includes("/note/") ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
+                category:
+                  href?.includes("/note/") || href?.includes("/checklist/")
+                    ? href
+                      .replace("checklist/", "")
+                      .replace("note/", "")
+                      .split("/")
+                      .slice(1, -1)
+                      .join("/")
+                    : (null as string | null),
+              },
+            }}
+          />
+        );
+      }
 
       if (isFileAttachment || isVideoAttachment) {
         const fileName = childText.substring(2);
         const isImage = href.includes("/api/image/");
         const isVideo = href.includes("/api/video/");
-        const mimeType = isImage ? "image/jpeg" : isVideo ? "video/mp4" : "application/octet-stream";
+        const mimeType = isImage
+          ? "image/jpeg"
+          : isVideo
+            ? "video/mp4"
+            : "application/octet-stream";
 
         if (isImage) {
-          return <ImageAttachment url={href} fileName={fileName} className="my-4" />;
+          return (
+            <ImageAttachment url={href} fileName={fileName} className="my-4" />
+          );
         } else if (isVideo) {
           return (
             <VideoAttachment
@@ -196,10 +230,7 @@ export const UnifiedMarkdownRenderer = ({
 
       if (isTaskItem) {
         return (
-          <li
-            className={`${className || ""}`}
-            {...props}
-          >
+          <li className={`${className || ""}`} {...props}>
             {children}
           </li>
         );

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist } from "@/app/_types";
+import { Checklist, RecurrenceRule } from "@/app/_types";
 import {
   deleteList,
   convertChecklistType,
@@ -24,6 +24,7 @@ import {
   getUserByChecklist,
 } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
+import { encodeCategoryPath } from "../_utils/global-utils";
 
 interface UseChecklistProps {
   list: Checklist;
@@ -227,7 +228,7 @@ export const useChecklist = ({
     formData.append("itemId", itemId);
     formData.append("completed", String(completed));
     formData.append("category", localList.category || "Uncategorized");
-    const result = await updateItem(formData);
+    const result = await updateItem(localList, formData);
 
     if (result.success && result.data) {
       setLocalList(result.data);
@@ -289,11 +290,17 @@ export const useChecklist = ({
 
   const handleEditItem = async (itemId: string, text: string) => {
     const formData = new FormData();
+    const owner = await getUserByChecklist(
+      localList.id,
+      localList.category || "Uncategorized"
+    );
     formData.append("listId", localList.id);
     formData.append("itemId", itemId);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
-    const result = await updateItem(formData);
+    formData.append("user", owner.data?.username || "");
+
+    const result = await updateItem(localList, formData);
 
     if (result.success) {
       if (result.data) {
@@ -433,7 +440,10 @@ export const useChecklist = ({
     }
   };
 
-  const handleCreateItem = async (text: string) => {
+  const handleCreateItem = async (
+    text: string,
+    recurrence?: RecurrenceRule
+  ) => {
     setIsLoading(true);
     const formData = new FormData();
 
@@ -442,7 +452,10 @@ export const useChecklist = ({
     formData.append("category", localList.category || "Uncategorized");
 
     const currentUser = await getCurrentUser();
-    const result = await createItem(formData, currentUser?.username);
+    if (recurrence) {
+      formData.append("recurrence", JSON.stringify(recurrence));
+    }
+    const result = await createItem(localList, formData, currentUser?.username);
 
     const checklistOwner = await getUserByChecklist(
       localList.id,
@@ -525,12 +538,16 @@ export const useChecklist = ({
   };
 
   const handleCopyId = async () => {
-    const success = await copyTextToClipboard(localList.id);
+    const success = await copyTextToClipboard(
+      `${encodeCategoryPath(localList.category || "Uncategorized")}/${
+        localList.id
+      }`
+    );
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    };
-  }
+    }
+  };
 
   const isItemFullyCompleted = (item: any): boolean => {
     if (!item.completed) return false;

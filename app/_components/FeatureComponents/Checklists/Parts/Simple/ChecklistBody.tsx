@@ -7,7 +7,11 @@ import { ChecklistProgress } from "./ChecklistProgress";
 import { ChecklistItemsWrapper } from "./ChecklistItemsWrapper";
 import { NestedChecklistItem } from "./NestedChecklistItem";
 import { Checklist, Item } from "@/app/_types";
-import { TaskStatusLabels } from "@/app/_types/enums";
+import { ItemTypes, TaskStatusLabels } from "@/app/_types/enums";
+import { useMemo } from "react";
+import { getReferences } from "@/app/_utils/indexes-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
 
 interface ChecklistBodyProps {
   localList: Checklist;
@@ -22,7 +26,6 @@ interface ChecklistBodyProps {
   sensors: any;
   isLoading: boolean;
   isDeletingItem: boolean;
-  isShared: boolean;
 }
 
 export const ChecklistBody = ({
@@ -38,18 +41,39 @@ export const ChecklistBody = ({
   sensors,
   isLoading,
   isDeletingItem,
-  isShared,
 }: ChecklistBodyProps) => {
+  const { linkIndex, notes, checklists, appSettings } = useAppMode();
+
+  const referencingItems = useMemo(() => {
+    return getReferences(
+      linkIndex,
+      localList.id,
+      localList.category,
+      ItemTypes.CHECKLIST,
+      notes,
+      checklists
+    );
+  }, [linkIndex, localList.id, localList.category, notes, checklists]);
+
   if (localList.items.length === 0) {
     return (
-      <div className="bg-card rounded-lg border border-border m-4 p-8 text-center">
-        <h3 className="text-xl font-semibold text-foreground mb-2">
-          No items yet
-        </h3>
-        <p className="text-muted-foreground">
-          Add your first item to get started!
-        </p>
-      </div>
+      <>
+        <div className="bg-card rounded-lg border border-border m-4 p-8 text-center">
+          <h3 className="text-xl font-semibold text-foreground mb-2">
+            No items yet
+          </h3>
+          <p className="text-muted-foreground">
+            Add your first item to get started!
+          </p>
+        </div>
+
+        {referencingItems.length > 0 &&
+          appSettings?.editor?.enableBilateralLinks && (
+            <div className="p-4">
+              <ReferencedBySection referencingItems={referencingItems} />
+            </div>
+          )}
+      </>
     );
   }
 
@@ -91,7 +115,7 @@ export const ChecklistBody = ({
                       onEdit={handleEditItem}
                       onAddSubItem={handleAddSubItem}
                       isDragDisabled={false}
-                      isShared={isShared}
+                      checklist={localList}
                     />
                   ))}
                 </ChecklistItemsWrapper>
@@ -117,7 +141,7 @@ export const ChecklistBody = ({
                       onAddSubItem={handleAddSubItem}
                       completed
                       isDragDisabled={false}
-                      isShared={isShared}
+                      checklist={localList}
                     />
                   ))}
                 </ChecklistItemsWrapper>
@@ -125,6 +149,11 @@ export const ChecklistBody = ({
             </div>
           </SortableContext>
         </DndContext>
+
+        {referencingItems.length > 0 &&
+          appSettings?.editor?.enableBilateralLinks && (
+            <ReferencedBySection referencingItems={referencingItems} />
+          )}
       </div>
     </>
   );

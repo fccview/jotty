@@ -12,6 +12,8 @@ import { FilterSidebar } from "@/app/_components/GlobalComponents/Layout/FilterS
 import { usePagination } from "@/app/_hooks/usePagination";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { togglePin } from "@/app/_server/actions/users";
+import { ItemTypes } from "@/app/_types/enums";
 import Masonry from "react-masonry-css";
 
 interface NotesPageClientProps {
@@ -32,7 +34,8 @@ export const NotesPageClient = ({
   const { isInitialized } = useAppMode();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [noteFilter, setNoteFilter] = useState<NoteFilter>("all");
-  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
   const filterOptions = [
     { id: "all", name: "All Notes" },
@@ -90,6 +93,26 @@ export const NotesPageClient = ({
 
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
+  };
+
+  const handleTogglePin = async (note: Note) => {
+    if (!user || isTogglingPin === note.id) return;
+
+    setIsTogglingPin(note.id);
+    try {
+      const result = await togglePin(
+        note.id,
+        note.category || "Uncategorized",
+        ItemTypes.NOTE
+      );
+      if (result.success) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to toggle pin:", error);
+    } finally {
+      setIsTogglingPin(null);
+    }
   };
 
   const breakpointColumnsObj = {
@@ -179,19 +202,19 @@ export const NotesPageClient = ({
                     <NoteCard
                       note={note}
                       onSelect={(note) => {
-                        const categoryPath = `${note.category || "Uncategorized"
-                          }/${note.id}`;
+                        const categoryPath = `${
+                          note.category || "Uncategorized"
+                        }/${note.id}`;
                         router.push(`/note/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedNotes?.includes(
                         `${note.category || "Uncategorized"}/${note.id}`
                       )}
-                      onTogglePin={() => { }}
+                      onTogglePin={() => handleTogglePin(note)}
                     />
                   </div>
                 ))}
               </Masonry>
-
             </>
           )}
         </div>

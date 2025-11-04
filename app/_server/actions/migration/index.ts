@@ -7,6 +7,7 @@ import { Result } from "@/app/_types";
 import { DEPRECATED_DOCS_FOLDER, NOTES_FOLDER } from "@/app/_consts/notes";
 import fs from "fs/promises";
 import { SHARING_DIR, SHARED_ITEMS_FILE } from "@/app/_consts/files";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 
 const hasMarkdownFiles = (dirPath: string): boolean => {
   try {
@@ -64,6 +65,224 @@ export const renameDocsFolder = async (): Promise<Result<null>> => {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to rename folder",
+    };
+  }
+};
+
+interface OldSharedItem {
+  id: string;
+  type: string;
+  title: string;
+  owner: string;
+  sharedWith: string[];
+  sharedAt: string;
+  category: string;
+  filePath: string;
+  isPubliclyShared: boolean;
+}
+
+interface OldSharedItemsData {
+  checklists: Record<string, OldSharedItem>;
+  notes: Record<string, OldSharedItem>;
+}
+
+interface NewSharedItem {
+  id: string;
+  category: string;
+  sharer: string;
+  permissions: {
+    canRead: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+  };
+}
+
+interface NewSharingData {
+  [username: string]: NewSharedItem[];
+}
+
+export const migrateToNewSharingFormat = async (): Promise<
+  Result<{
+    migrated: boolean;
+    changes: string[];
+  }>
+> => {
+  try {
+    let metadata: OldSharedItemsData;
+
+    if (!existsSync(SHARED_ITEMS_FILE)) {
+      return {
+        success: true,
+        data: {
+          migrated: false,
+          changes: ["No shared-items.json file found - nothing to migrate"],
+        },
+      };
+    }
+
+    try {
+      const content = await fs.readFile(SHARED_ITEMS_FILE, "utf-8");
+      if (!content.trim()) {
+        const backupPath = `${SHARED_ITEMS_FILE}.backup`;
+        await fs.copyFile(SHARED_ITEMS_FILE, backupPath);
+        await fs.unlink(SHARED_ITEMS_FILE);
+        return {
+          success: true,
+          data: {
+            migrated: true,
+            changes: [
+              `Backed up empty shared-items.json to ${backupPath}`,
+              "Removed deprecated shared-items.json file"
+            ],
+          },
+        };
+      }
+      metadata = JSON.parse(content);
+    } catch (error) {
+      const backupPath = `${SHARED_ITEMS_FILE}.backup`;
+      await fs.copyFile(SHARED_ITEMS_FILE, backupPath);
+      await fs.unlink(SHARED_ITEMS_FILE);
+      return {
+        success: true,
+        data: {
+          migrated: true,
+          changes: [
+            `Backed up invalid shared-items.json to ${backupPath}`,
+            "Removed deprecated shared-items.json file"
+          ],
+        },
+      };
+    }
+
+    const changes: string[] = [];
+    let totalMigrations = 0;
+
+    const notesSharingData: NewSharingData = {};
+    if (metadata.notes) {
+      for (const [itemKey, item] of Object.entries(metadata.notes)) {
+        const encodedCategory = encodeCategoryPath(item.category);
+
+        for (const username of item.sharedWith) {
+          if (!notesSharingData[username]) {
+            notesSharingData[username] = [];
+          }
+          notesSharingData[username].push({
+            id: item.id,
+            category: encodedCategory,
+            sharer: item.owner,
+            permissions: { canRead: true, canEdit: true, canDelete: true },
+          });
+        }
+
+        if (item.isPubliclyShared) {
+          if (!notesSharingData.public) {
+            notesSharingData.public = [];
+          }
+          notesSharingData.public.push({
+            id: item.id,
+            category: encodedCategory,
+            sharer: item.owner,
+            permissions: { canRead: true, canEdit: true, canDelete: true },
+          });
+        }
+
+        totalMigrations++;
+      }
+    }
+
+    const checklistsSharingData: NewSharingData = {};
+    if (metadata.checklists) {
+      for (const [itemKey, item] of Object.entries(metadata.checklists)) {
+        const encodedCategory = encodeCategoryPath(item.category);
+
+        for (const username of item.sharedWith) {
+          if (!checklistsSharingData[username]) {
+            checklistsSharingData[username] = [];
+          }
+          checklistsSharingData[username].push({
+            id: item.id,
+            category: encodedCategory,
+            sharer: item.owner,
+            permissions: { canRead: true, canEdit: true, canDelete: true },
+          });
+        }
+
+        if (item.isPubliclyShared) {
+          if (!checklistsSharingData.public) {
+            checklistsSharingData.public = [];
+          }
+          checklistsSharingData.public.push({
+            id: item.id,
+            category: encodedCategory,
+            sharer: item.owner,
+            permissions: { canRead: true, canEdit: true, canDelete: true },
+          });
+        }
+
+        totalMigrations++;
+      }
+    }
+
+    const notesSharingPath = join(
+      process.cwd(),
+      "data",
+      "notes",
+      ".sharing.json"
+    );
+    const checklistsSharingPath = join(
+      process.cwd(),
+      "data",
+      "checklists",
+      ".sharing.json"
+    );
+
+    if (Object.keys(notesSharingData).length > 0) {
+      await fs.mkdir(join(process.cwd(), "data", "notes"), { recursive: true });
+      await fs.writeFile(
+        notesSharingPath,
+        JSON.stringify(notesSharingData, null, 2)
+      );
+      changes.push(
+        `Created notes sharing file with ${Object.keys(notesSharingData).length
+        } user entries`
+      );
+    }
+
+    if (Object.keys(checklistsSharingData).length > 0) {
+      await fs.mkdir(join(process.cwd(), "data", "checklists"), {
+        recursive: true,
+      });
+      await fs.writeFile(
+        checklistsSharingPath,
+        JSON.stringify(checklistsSharingData, null, 2)
+      );
+      changes.push(
+        `Created checklists sharing file with ${Object.keys(checklistsSharingData).length
+        } user entries`
+      );
+    }
+
+    if (totalMigrations > 0) {
+      const backupPath = `${SHARED_ITEMS_FILE}.backup`;
+      await fs.copyFile(SHARED_ITEMS_FILE, backupPath);
+      changes.push(`Backed up old shared-items.json to ${backupPath}`);
+
+      await fs.unlink(SHARED_ITEMS_FILE);
+      changes.push("Removed deprecated shared-items.json file");
+    }
+
+    return {
+      success: true,
+      data: {
+        migrated: totalMigrations > 0,
+        changes,
+      },
+    };
+  } catch (error) {
+    console.error("Error migrating to new sharing format:", error);
+    return {
+      success: false,
+      error: "Failed to migrate to new sharing format",
     };
   }
 };

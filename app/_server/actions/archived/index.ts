@@ -5,6 +5,7 @@ import { getLists } from "@/app/_server/actions/checklist";
 import { getNotes } from "@/app/_server/actions/note";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { getCurrentUser } from "@/app/_server/actions/users";
+import { ItemTypes } from "@/app/_types/enums";
 
 export interface ArchivedItem {
   id: string;
@@ -35,7 +36,7 @@ export const getArchivedItems = async () => {
         ...archivedLists.map((list) => ({
           id: list.id,
           title: list.title,
-          type: "checklist" as ItemType,
+          type: ItemTypes.CHECKLIST,
           category: list.category || ARCHIVED_DIR_NAME,
           updatedAt: list.updatedAt,
           owner: list.owner,

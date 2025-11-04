@@ -5,6 +5,7 @@ import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown"
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { Item } from "@/app/_types";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanItemContentProps {
   item: Item;
@@ -37,6 +38,8 @@ export const KanbanItemContent = ({
   onEdit,
   onDelete,
 }: KanbanItemContentProps) => {
+  const { permissions } = usePermissions();
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -88,9 +91,9 @@ export const KanbanItemContent = ({
               value=""
               options={[
                 { id: "view", name: "View Task" },
-                { id: "add", name: "Add Subtask" },
-                { id: "rename", name: "Rename Task" },
-                { id: "delete", name: "Delete Task" },
+                ...(permissions?.canEdit ? [{ id: "add", name: "Add Subtask" }] : []),
+                ...(permissions?.canEdit ? [{ id: "rename", name: "Rename Task" }] : []),
+                ...(permissions?.canDelete ? [{ id: "delete", name: "Delete Task" }] : []),
               ]}
               onChange={(action) => {
                 switch (action) {
@@ -129,11 +132,10 @@ export const KanbanItemContent = ({
         {item.lastModifiedBy && isShared && (
           <div
             className="flex items-center gap-1"
-            title={`Last modified by ${item.lastModifiedBy}${
-              item.lastModifiedAt
-                ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
-                : ""
-            }`}
+            title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
+              ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
+              : ""
+              }`}
           >
             <UserAvatar
               username={item.lastModifiedBy}
@@ -162,7 +164,7 @@ export const KanbanItemContent = ({
             progress={Math.round(
               (item.children.filter((c) => c.completed).length /
                 item.children.length) *
-                100
+              100
             )}
           />
         </>

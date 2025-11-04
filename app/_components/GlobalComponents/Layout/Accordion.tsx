@@ -22,10 +22,15 @@ export const Accordion = ({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className={cn("border border-border rounded-lg bg-card", className)}>
+    <div
+      className={cn(
+        "jotty-accordion border border-border rounded-lg bg-card",
+        className
+      )}
+    >
       <button
         className={cn(
-          "flex items-center justify-between w-full p-6 text-lg font-semibold",
+          "jotty-accordion-title flex items-center justify-between w-full p-6 text-lg font-semibold",
           "text-foreground hover:bg-muted/50 transition-colors",
           isOpen && "border-b border-border/70",
           titleClassName
@@ -39,7 +44,9 @@ export const Accordion = ({
           <ChevronRight className="h-5 w-5 transition-transform duration-200" />
         )}
       </button>
-      {isOpen && <div className="p-6 pt-4">{children}</div>}
+      {isOpen && (
+        <div className="jotty-accordion-content p-6 pt-4">{children}</div>
+      )}
     </div>
   );
 };

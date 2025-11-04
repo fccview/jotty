@@ -12,6 +12,7 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import { Note, Category, User } from "@/app/_types";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/users";
+import { ItemTypes } from "../_types/enums";
 
 interface UseNotesHomeProps {
   notes: Note[];
@@ -95,7 +96,7 @@ export const useNotesHome = ({
       const result = await togglePin(
         note.id,
         note.category || "Uncategorized",
-        "note"
+        ItemTypes.NOTE
       );
       if (result.success) {
         router.refresh();

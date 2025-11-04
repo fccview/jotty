@@ -41,7 +41,7 @@ export async function POST(
         );
       }
 
-      const result = await createItem(formData, user.username, true);
+      const result = await createItem(list, formData, user.username, true);
 
       if (!result.success) {
         return NextResponse.json(

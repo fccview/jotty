@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist } from "@/app/_types";
+import { Checklist, RecurrenceRule } from "@/app/_types";
 import {
   createItem,
   updateItemStatus,
@@ -132,24 +132,11 @@ export const useKanbanBoard = ({
         await refreshChecklist();
       }
     } else {
-      if (activeItem.status === newStatus) return;
-
-      const formData = new FormData();
-      formData.append("listId", localChecklist.id);
-      formData.append("itemId", activeId);
-      formData.append("status", newStatus);
-      formData.append("category", localChecklist.category || "Uncategorized");
-
-      const result = await updateItemStatus(formData);
-
-      if (result.success && result.data) {
-        setLocalChecklist(result.data as Checklist);
-        onUpdate(result.data as Checklist);
-      }
+      await handleItemStatusUpdate(activeId, newStatus);
     }
   };
 
-  const handleAddItem = async (text: string) => {
+  const handleAddItem = async (text: string, recurrence?: RecurrenceRule) => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("listId", localChecklist.id);
@@ -157,7 +144,16 @@ export const useKanbanBoard = ({
     formData.append("category", localChecklist.category || "Uncategorized");
 
     const currentUser = await getCurrentUser();
-    const result = await createItem(formData, currentUser?.username);
+
+    if (recurrence) {
+      formData.append("recurrence", JSON.stringify(recurrence));
+    }
+
+    const result = await createItem(
+      localChecklist,
+      formData,
+      currentUser?.username
+    );
 
     const checklistOwner = await getUserByChecklist(
       localChecklist.id,
@@ -200,6 +196,33 @@ export const useKanbanBoard = ({
     ? localChecklist.items.find((item) => item.id === activeId)
     : null;
 
+  const handleItemStatusUpdate = async (
+    itemId: string,
+    newStatus: TaskStatus
+  ) => {
+    const item = localChecklist.items.find((item) => item.id === itemId);
+    if (!item) {
+      return;
+    }
+
+    if (item.status === newStatus) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("listId", localChecklist.id);
+    formData.append("itemId", itemId);
+    formData.append("status", newStatus);
+    formData.append("category", localChecklist.category || "Uncategorized");
+
+    const result = await updateItemStatus(formData);
+
+    if (result.success && result.data) {
+      setLocalChecklist(result.data as Checklist);
+      onUpdate(result.data as Checklist);
+    }
+  };
+
   return {
     activeId,
     localChecklist,
@@ -214,6 +237,7 @@ export const useKanbanBoard = ({
     handleDragEnd,
     handleAddItem,
     handleBulkPaste,
+    handleItemStatusUpdate,
     activeItem,
   };
 };

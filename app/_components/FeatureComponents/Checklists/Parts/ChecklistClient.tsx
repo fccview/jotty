@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Checklist, Category, User } from "@/app/_types";
+import { Category, Checklist, User } from "@/app/_types";
 import { ChecklistView } from "@/app/_components/FeatureComponents/Checklists/Checklist";
 import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
 import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeader";
@@ -14,28 +14,22 @@ import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/C
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { useChecklist } from "@/app/_hooks/useChecklist";
-import { Modes } from "@/app/_types/enums";
+import { ItemTypes, Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
-
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
+import { toggleArchive } from "@/app/_server/actions/users";
+import { getPermissions } from "@/app/_utils/sharing-utils";
+import { decodeCategoryPath } from "@/app/_utils/global-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface ChecklistClientProps {
   checklist: Checklist;
-  lists: Checklist[];
   categories: Category[];
-  sharingStatuses?: Record<string, SharingStatus>;
   user: User | null;
 }
 
 export const ChecklistClient = ({
   checklist,
-  lists,
   categories,
-  sharingStatuses,
   user,
 }: ChecklistClientProps) => {
   const router = useRouter();
@@ -68,6 +62,13 @@ export const ChecklistClient = ({
     checkNavigation(() => {
       router.push("/");
     });
+  };
+
+  const handleArchive = async () => {
+    const result = await toggleArchive(localChecklist, Modes.CHECKLISTS);
+    if (result.success) {
+      router.refresh();
+    }
   };
 
   const handleEdit = () => {
@@ -104,6 +105,7 @@ export const ChecklistClient = ({
             }
             onShare={() => setShowShareModal(true)}
             onConvertType={() => setShowConversionModal(true)}
+            onArchive={handleArchive}
           />
           <KanbanBoard checklist={localChecklist} onUpdate={handleUpdate} />
         </div>
@@ -125,9 +127,7 @@ export const ChecklistClient = ({
 
   return (
     <Layout
-      lists={lists}
       categories={categories}
-      sharingStatuses={sharingStatuses}
       onOpenSettings={openSettings}
       onOpenCreateModal={openCreateChecklistModal}
       onOpenCategoryModal={openCreateCategoryModal}
@@ -138,10 +138,13 @@ export const ChecklistClient = ({
       {showShareModal && (
         <ShareModal
           isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
+          onClose={() => {
+            setShowShareModal(false);
+            router.refresh();
+          }}
           itemId={localChecklist.id}
           itemTitle={localChecklist.title}
-          itemType="checklist"
+          itemType={ItemTypes.CHECKLIST}
           itemCategory={localChecklist.category}
           itemOwner={localChecklist.owner || ""}
         />

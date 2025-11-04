@@ -21,8 +21,8 @@ export const DynamicLogo = ({
     size === "16x16"
       ? "16x16Icon"
       : size === "32x32"
-      ? "32x32Icon"
-      : "180x180Icon";
+        ? "32x32Icon"
+        : "180x180Icon";
 
   const customIcon = appSettings?.[iconKey];
 
@@ -31,7 +31,7 @@ export const DynamicLogo = ({
       <img
         src={customIcon}
         alt="App Logo"
-        className={`${className} object-contain`}
+        className={`jotty-logo ${className} object-contain`}
         onError={() => {
           setImageError(true);
         }}

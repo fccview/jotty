@@ -19,6 +19,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useNotesHome } from "@/app/_hooks/useNotesHome";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 
 interface NotesHomeProps {
   notes: Note[];
@@ -35,6 +37,8 @@ export const NotesHome = ({
   onCreateModal,
   onSelectNote,
 }: NotesHomeProps) => {
+  const { userSharedItems } = useAppMode();
+
   const {
     sensors,
     handleDragEnd,
@@ -45,6 +49,16 @@ export const NotesHome = ({
     handleTogglePin,
     isNotePinned,
   } = useNotesHome({ notes, categories, user });
+
+  const getNoteSharer = (note: Note) => {
+    const encodedCategory = encodeCategoryPath(
+      note.category || "Uncategorized"
+    );
+    const sharedItem = userSharedItems?.notes?.find(
+      (item) => item.id === note.id && item.category === encodedCategory
+    );
+    return sharedItem?.sharer;
+  };
 
   if (notes.length === 0) {
     return (
@@ -130,6 +144,7 @@ export const NotesHome = ({
                         isPinned={true}
                         onTogglePin={handleTogglePin}
                         isDraggable={true}
+                        sharer={getNoteSharer(note)}
                       />
                     </div>
                   ))}
@@ -175,6 +190,7 @@ export const NotesHome = ({
                     onSelect={onSelectNote}
                     isPinned={isNotePinned(note)}
                     onTogglePin={handleTogglePin}
+                    sharer={getNoteSharer(note)}
                   />
                 </div>
               ))}

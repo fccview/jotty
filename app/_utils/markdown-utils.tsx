@@ -235,6 +235,26 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     },
   });
 
+  service.addRule("internalLink", {
+    filter: (node) => {
+      return (
+        node.nodeName === "SPAN" &&
+        (node as HTMLElement).hasAttribute("data-internal-link")
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const href = element.getAttribute("data-href");
+      const title = element.getAttribute("data-title");
+
+      if (href && title) {
+        return `[${title}](${href})`;
+      }
+
+      return content;
+    },
+  });
+
   service.addRule("image", {
     filter: (node) => {
       return node.nodeName === "IMG";
@@ -386,7 +406,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-                checkbox.properties.checked !== false
+              checkbox.properties.checked !== false
             );
 
             if (isInsideP) {
@@ -443,6 +463,65 @@ const markdownProcessor = unified()
 
           if (bgColorMatch) {
             node.properties["data-highlight"] = bgColorMatch[1].trim();
+          }
+        }
+
+        if (node.tagName === "a" && node.properties?.href) {
+          const href = String(node.properties.href);
+          if (href.startsWith("/note/") || href.startsWith("/checklist/")) {
+            const textContent =
+              node.children?.[0]?.type === "text"
+                ? String(node.children[0].value)
+                : "";
+
+            const parts = href.split("/").filter(Boolean);
+            const type = parts.length >= 1 ? parts[0] : "note";
+
+            const category =
+              parts.length >= 3 ? parts.slice(1, -1).join("/") : "";
+
+            const newChildren: any[] = [];
+
+            newChildren.push({
+              type: "element",
+              tagName: "span",
+              properties: { class: "title" },
+              children: [{ type: "text", value: textContent }],
+            });
+
+            if (category && category !== "Uncategorized") {
+              newChildren.push({
+                type: "element",
+                tagName: "span",
+                properties: { class: "separator" },
+                children: [{ type: "text", value: "•" }],
+              });
+
+              newChildren.push({
+                type: "element",
+                tagName: "span",
+                properties: { class: "category" },
+                children: [
+                  {
+                    type: "text",
+                    value: category.split("/").pop() || category,
+                  },
+                ],
+              });
+            }
+
+            node.tagName = "span";
+            node.properties = {
+              "data-internal-link": "",
+              "data-href": href,
+              "data-title": textContent,
+              "data-type": type,
+              "data-category": category,
+            };
+
+            node.children = newChildren;
+
+            delete node.properties.href;
           }
         }
       });

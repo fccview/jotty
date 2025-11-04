@@ -125,3 +125,77 @@ export const getCustomThemeColors = async () => {
 
   return colors;
 };
+
+export const rgbToHex = (rgbString: string): string => {
+  const [r, g, b] = rgbString.split(" ").map(Number);
+  return `#${r.toString(16).padStart(2, "0")}${g
+    .toString(16)
+    .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+};
+
+const THEME_BACKGROUND_COLORS: Record<string, string> = {
+  light: rgbToHex("255 255 255"),
+  dark: rgbToHex("12 20 53"),
+  "rwmarkable-light": rgbToHex("255 255 255"),
+  "rwmarkable-dark": rgbToHex("17 24 39"),
+  fccview: rgbToHex("12 20 53"),
+  "black-white": rgbToHex("10 10 10"),
+  sunset: rgbToHex("254 242 242"),
+  ocean: rgbToHex("240 253 250"),
+  forest: rgbToHex("248 250 252"),
+  nord: rgbToHex("46 52 64"),
+  dracula: rgbToHex("40 42 54"),
+  monokai: rgbToHex("39 40 34"),
+  "github-dark": rgbToHex("13 17 23"),
+  "tokyo-night": rgbToHex("26 27 38"),
+  catppuccin: rgbToHex("30 30 46"),
+  "rose-pine": rgbToHex("25 23 36"),
+  gruvbox: rgbToHex("40 40 40"),
+  "solarized-dark": rgbToHex("0 43 54"),
+  system: rgbToHex("255 255 255"),
+};
+
+export const getThemeBackgroundColor = (themeId: string): string => {
+  return THEME_BACKGROUND_COLORS[themeId] || THEME_BACKGROUND_COLORS["dark"];
+};
+
+export const themeInitScript = `
+(function() {
+  try {
+    const isRwMarkable = document.documentElement.getAttribute('data-rwmarkable') === 'true';
+    const userPreferredTheme = document.documentElement.getAttribute('data-user-theme') || '';
+
+    const settings = localStorage.getItem('checklist-settings');
+    let localStorageTheme = 'system'; 
+
+    if (settings) {
+      const parsed = JSON.parse(settings);
+      localStorageTheme = parsed.state?.theme || 'system';
+    }
+
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let resolvedTheme;
+
+    if (localStorageTheme && localStorageTheme !== 'system') {
+      resolvedTheme = localStorageTheme;
+    } else if (userPreferredTheme && userPreferredTheme !== 'system') {
+      resolvedTheme = userPreferredTheme;
+    } else {
+      if (isRwMarkable) {
+        resolvedTheme = isDark ? 'rwmarkable-dark' : 'rwmarkable-light';
+      } else {
+        resolvedTheme = isDark ? 'dark' : 'light';
+      }
+    }
+
+    document.documentElement.classList.add(resolvedTheme);
+  } catch (e) {
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isRwMarkable = document.documentElement.getAttribute('data-rwmarkable') === 'true';
+    const fallbackTheme = isRwMarkable ?
+      (isDark ? 'rwmarkable-dark' : 'rwmarkable-light') :
+      (isDark ? 'dark' : 'light');
+    document.documentElement.classList.add(fallbackTheme);
+  }
+})();
+`;

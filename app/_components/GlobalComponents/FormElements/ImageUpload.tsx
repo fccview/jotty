@@ -4,14 +4,7 @@ import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { X, Image as ImageIcon, Loader2 } from "lucide-react";
 import { uploadAppIcon } from "@/app/_server/actions/config";
-
-interface AppSettings {
-  appName: string;
-  appDescription: string;
-  "16x16Icon": string;
-  "32x32Icon": string;
-  "180x180Icon": string;
-}
+import { AppSettings } from "@/app/_types";
 
 interface ImageUploadProps {
   label: string;
@@ -94,7 +87,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   };
 
   return (
-    <div className="space-y-2 w-full">
+    <div className="jotty-image-upload space-y-2 w-full">
       <Label className="text-sm font-medium">{label}</Label>
       <p className="text-xs text-muted-foreground">{description}</p>
       <div

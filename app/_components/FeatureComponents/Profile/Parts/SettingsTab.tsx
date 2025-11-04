@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { updateUserSettings } from "@/app/_server/actions/users";
 import {
   User,
+  EnableRecurrence,
+  ShowCompletedSuggestions,
   TableSyntax,
   LandingPage,
   NotesDefaultEditor,
@@ -18,10 +20,12 @@ import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { BUILT_IN_THEMES } from "@/app/_consts/themes";
+import { getAllThemes } from "@/app/_consts/themes";
 import {
   themeSettingsSchema,
   editorSettingsSchema,
   navigationSettingsSchema,
+  checklistSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 
 interface SettingsTabProps {
@@ -32,7 +36,22 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
   const { showToast } = useToast();
-  const allThemes = BUILT_IN_THEMES;
+  const [allThemes, setAllThemes] = useState<any[]>([]);
+  const [loadingThemes, setLoadingThemes] = useState(true);
+
+  useEffect(() => {
+    const loadThemes = async () => {
+      try {
+        const themes = await getAllThemes();
+        setAllThemes(themes);
+      } catch (error) {
+        console.error("Failed to load themes:", error);
+      } finally {
+        setLoadingThemes(false);
+      }
+    };
+    loadThemes();
+  }, []);
 
   const [preferredTheme, setPreferredTheme] = useState<string>(
     user?.preferredTheme || "system"
@@ -50,6 +69,15 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   );
   const [notesAutoSaveInterval, setNotesAutoSaveInterval] =
     useState<NotesAutoSaveInterval>(user?.notesAutoSaveInterval || 5000);
+
+  const [enableRecurrence, setEnableRecurrence] = useState<EnableRecurrence>(
+    user?.enableRecurrence || "disable"
+  );
+  const [showCompletedSuggestions, setShowCompletedSuggestions] =
+    useState<ShowCompletedSuggestions>(
+      user?.showCompletedSuggestions || "enable"
+    );
+
   const [initialSettings, setInitialSettings] = useState<Partial<User>>({
     preferredTheme: user?.preferredTheme || "system",
     tableSyntax: user?.tableSyntax || "html",
@@ -57,6 +85,8 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
     notesDefaultMode: user?.notesDefaultMode || "view",
     notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
+    enableRecurrence: user?.enableRecurrence || "disable",
+    showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
   });
 
   const [validationErrors, setValidationErrors] = useState<
@@ -70,6 +100,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     notesDefaultMode !== initialSettings.notesDefaultMode ||
     notesAutoSaveInterval !== initialSettings.notesAutoSaveInterval;
   const hasNavigationChanges = landingPage !== initialSettings.landingPage;
+
+  const hasChecklistsChanges =
+    enableRecurrence !== initialSettings.enableRecurrence ||
+    showCompletedSuggestions !== initialSettings.showCompletedSuggestions;
 
   const validateAndSave = async <T extends Record<string, any>>(
     settings: T,
@@ -162,6 +196,14 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       (prev) => ({ ...prev, landingPage })
     );
 
+  const handleSaveChecklistsSettings = () =>
+    validateAndSave(
+      { enableRecurrence, showCompletedSuggestions },
+      checklistSettingsSchema,
+      "Checklists",
+      (prev) => ({ ...prev, enableRecurrence, showCompletedSuggestions })
+    );
+
   const tableSyntaxOptions = [
     { id: "markdown", name: "Markdown (e.g., | Header |)" },
     { id: "html", name: "HTML (e.g., <table><tr><td>)" },
@@ -186,6 +228,16 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const notesDefaultModeOptions = [
     { id: "edit", name: "Edit" },
     { id: "view", name: "View" },
+  ];
+
+  const enableRecurrenceOptions = [
+    { id: "enable", name: "Enable" },
+    { id: "disable", name: "Disable" },
+  ];
+
+  const showCompletedSuggestionsOptions = [
+    { id: "enable", name: "Enable" },
+    { id: "disable", name: "Disable" },
   ];
 
   const landingPageOptions = [
@@ -214,17 +266,23 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       >
         <div className="space-y-2">
           <Label htmlFor="preferred-theme">Preferred Theme</Label>
-          <Dropdown
-            value={preferredTheme}
-            onChange={(value) => setPreferredTheme(value)}
-            options={allThemes.map((theme) => ({
-              id: theme.id,
-              name: theme.name,
-              icon: theme.icon,
-            }))}
-            placeholder="Select a theme"
-            className="w-full"
-          />
+          {loadingThemes ? (
+            <div className="text-sm text-muted-foreground">
+              Loading themes...
+            </div>
+          ) : (
+            <Dropdown
+              value={preferredTheme}
+              onChange={(value) => setPreferredTheme(value)}
+              options={allThemes.map((theme) => ({
+                id: theme.id,
+                name: theme.name,
+                icon: theme.icon,
+              }))}
+              placeholder="Select a theme"
+              className="w-full"
+            />
+          )}
           {validationErrors.preferredTheme && (
             <p className="text-sm text-destructive">
               {validationErrors.preferredTheme}
@@ -338,6 +396,52 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           )}
           <p className="text-sm text-muted-foreground">
             Choose how tables are rendered in your notes.
+          </p>
+        </div>
+      </FormWrapper>
+
+      <FormWrapper
+        title="Checklists Preferences"
+        action={
+          <Button
+            onClick={handleSaveChecklistsSettings}
+            disabled={!hasChecklistsChanges}
+            size="sm"
+          >
+            Save Checklists
+          </Button>
+        }
+      >
+        <div className="space-y-2">
+          <Label htmlFor="enable-recurrence">
+            Recurring checklists{" "}
+            <span className="text-sm text-muted-foreground">(Beta)</span>
+          </Label>
+          <Dropdown
+            value={enableRecurrence}
+            onChange={(value) => setEnableRecurrence(value as EnableRecurrence)}
+            options={enableRecurrenceOptions}
+            placeholder="Select enable to add recurring checklists"
+            className="w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="show-completed-suggestions">
+            Show completed tasks as suggestions
+          </Label>
+          <Dropdown
+            value={showCompletedSuggestions}
+            onChange={(value) =>
+              setShowCompletedSuggestions(value as ShowCompletedSuggestions)
+            }
+            options={showCompletedSuggestionsOptions}
+            placeholder="Select whether to show completed tasks as suggestions"
+            className="w-full"
+          />
+          <p className="text-sm text-muted-foreground">
+            When adding new tasks, show completed tasks as suggestions that can
+            be re-enabled.
           </p>
         </div>
       </FormWrapper>

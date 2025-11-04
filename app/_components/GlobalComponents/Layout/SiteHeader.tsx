@@ -23,8 +23,8 @@ export const SiteHeader = ({
   const { isRwMarkable } = useAppMode();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between fixed top-0 left-0 right-0 z-50 p-4 w-full bg-background max-w-7xl mx-auto">
+    <div className="jotty-site-header space-y-6">
+      <div className="jotty-site-header-container flex items-center justify-between fixed top-0 left-0 right-0 z-50 p-4 w-full bg-background max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
           {showBackButton && (
             <Button
@@ -50,9 +50,13 @@ export const SiteHeader = ({
         </div>
       </div>
 
-      <div className="!mt-14 !mb-4">
-        <h1 className="text-3xl font-bold">{title}</h1>
-        {description && <p className="text-muted-foreground">{description}</p>}
+      <div className="jotty-site-header-content !mt-14 !mb-4">
+        <h1 className="jotty-site-header-title text-3xl font-bold">{title}</h1>
+        {description && (
+          <p className="jotty-site-header-description text-muted-foreground">
+            {description}
+          </p>
+        )}
       </div>
     </div>
   );

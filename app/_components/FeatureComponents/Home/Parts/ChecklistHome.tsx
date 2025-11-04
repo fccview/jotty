@@ -11,7 +11,6 @@ import {
   Pin,
   Filter,
   ArrowRight,
-  CheckIcon,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist, User } from "@/app/_types";
@@ -24,6 +23,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useChecklistHome } from "@/app/_hooks/useChecklistHome";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 
 interface ChecklistHomeProps {
   lists: Checklist[];
@@ -38,6 +39,8 @@ export const ChecklistHome = ({
   onCreateModal,
   onSelectChecklist,
 }: ChecklistHomeProps) => {
+  const { userSharedItems } = useAppMode();
+
   const {
     sensors,
     handleDragEnd,
@@ -53,6 +56,16 @@ export const ChecklistHome = ({
     handleTogglePin,
     isListPinned,
   } = useChecklistHome({ lists, user });
+
+  const getListSharer = (list: Checklist) => {
+    const encodedCategory = encodeCategoryPath(
+      list.category || "Uncategorized"
+    );
+    const sharedItem = userSharedItems?.checklists?.find(
+      (item) => item.id === list.id && item.category === encodedCategory
+    );
+    return sharedItem?.sharer;
+  };
 
   if (lists.length === 0) {
     return (
@@ -198,6 +211,7 @@ export const ChecklistHome = ({
                       isPinned={true}
                       onTogglePin={handleTogglePin}
                       isDraggable={true}
+                      sharer={getListSharer(list)}
                     />
                   ))}
                 </div>
@@ -237,6 +251,7 @@ export const ChecklistHome = ({
                       onSelect={onSelectChecklist!}
                       isPinned={isListPinned(list)}
                       onTogglePin={handleTogglePin}
+                      sharer={getListSharer(list)}
                     />
                   ))}
                 </div>
@@ -272,6 +287,7 @@ export const ChecklistHome = ({
                       onSelect={onSelectChecklist!}
                       isPinned={isListPinned(list)}
                       onTogglePin={handleTogglePin}
+                      sharer={getListSharer(list)}
                     />
                   ))}
                 </div>

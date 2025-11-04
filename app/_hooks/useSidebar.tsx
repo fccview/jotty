@@ -3,15 +3,9 @@ import { useAppMode } from "../_providers/AppModeProvider";
 import { useNavigationGuard } from "../_providers/NavigationGuardProvider";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Checklist, Category, Note, AppMode, User } from "../_types";
-import { Modes } from "../_types/enums";
+import { ItemTypes, Modes } from "../_types/enums";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
-import { buildCategoryPath } from "../_utils/global-utils";
-
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
+import { buildCategoryPath, encodeId } from "../_utils/global-utils";
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -19,9 +13,6 @@ export interface SidebarProps {
   onOpenCreateModal: (initialCategory?: string) => void;
   onOpenCategoryModal: (parentCategory?: string) => void;
   categories: Category[];
-  checklists: Checklist[];
-  notes?: Note[];
-  sharingStatuses?: Record<string, SharingStatus>;
   user: User | null;
   onCategoryDeleted?: (categoryName: string) => void;
   onCategoryRenamed?: (oldName: string, newName: string) => void;
@@ -29,19 +20,11 @@ export interface SidebarProps {
 }
 
 export const useSidebar = (props: SidebarProps) => {
-  const {
-    categories,
-    checklists,
-    notes = [],
-    sharingStatuses = {},
-    onCategoryDeleted,
-    onCategoryRenamed,
-    onClose,
-  } = props;
+  const { categories, onCategoryDeleted, onCategoryRenamed, onClose } = props;
 
   const router = useRouter();
   const pathname = usePathname();
-  const { mode, setMode, isInitialized } = useAppMode();
+  const { mode, setMode, isInitialized, checklists, notes } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
 
   const [modalState, setModalState] = useState<{
@@ -109,6 +92,7 @@ export const useSidebar = (props: SidebarProps) => {
         JSON.stringify(Array.from(collapsedCategories[mode]))
       );
   }, [collapsedCategories, mode, isLocalStorageInitialized]);
+
   useEffect(() => {
     if (isLocalStorageInitialized)
       localStorage.setItem(
@@ -206,8 +190,9 @@ export const useSidebar = (props: SidebarProps) => {
   const handleModeSwitch = (newMode: AppMode) =>
     checkNavigation(() => {
       setMode(newMode);
-      router.push("/");
+      router.push("/?mode=" + newMode);
     });
+
   const handleItemClick = (item: Checklist | Note) =>
     checkNavigation(() => {
       const categoryPath = buildCategoryPath(
@@ -215,12 +200,14 @@ export const useSidebar = (props: SidebarProps) => {
         item.id
       );
       router.push(
-        `/${mode === Modes.NOTES ? "note" : "checklist"}/${categoryPath}`
+        `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${categoryPath}`
       );
       onClose();
     });
+
   const handleEditItem = (item: Checklist | Note) =>
     openModal("editItem", item);
+
   const toggleCategory = (categoryPath: string) => {
     setCollapsedCategories((prev) => {
       const newModeSet = new Set(prev[mode]);
@@ -234,14 +221,15 @@ export const useSidebar = (props: SidebarProps) => {
   const isItemSelected = (item: Checklist | Note) => {
     const expectedPath = buildCategoryPath(
       item.category || "Uncategorized",
-      item.id
+      encodeId(item.id)
     );
+
     return (
-      pathname ===
-      `/${mode === Modes.NOTES ? "note" : "checklist"}/${expectedPath}`
+      pathname?.toLowerCase() ===
+      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
+        }/${expectedPath}`.toLowerCase()
     );
   };
-  const getSharingStatus = (itemId: string) => sharingStatuses[itemId] || null;
 
   const expandCategoryPath = useCallback(
     (categoryPath: string) => {
@@ -274,7 +262,7 @@ export const useSidebar = (props: SidebarProps) => {
     if (!isInitialized) return;
 
     const itemId = pathname.split("/").pop();
-    let currentItem: Checklist | Note | undefined;
+    let currentItem: Partial<Checklist> | Partial<Note> | undefined;
 
     if (mode === Modes.CHECKLISTS) {
       currentItem = checklists.find((c) => c.id === itemId);
@@ -308,7 +296,6 @@ export const useSidebar = (props: SidebarProps) => {
     handleConfirmDeleteCategory,
     handleConfirmRenameCategory,
     isItemSelected,
-    getSharingStatus,
     router,
   };
 };

@@ -64,8 +64,13 @@ export const copyTextToClipboard = async (text: string): Promise<boolean> => {
 
 export function encodeCategoryPath(categoryPath: string): string {
   if (!categoryPath || categoryPath === "Uncategorized") {
-    return "";
+    return "Uncategorized";
   }
+
+  if (categoryPath.includes("%20") || categoryPath.includes("%2F")) {
+    return categoryPath;
+  }
+
   return categoryPath
     .split("/")
     .map((segment) => encodeURIComponent(segment))
@@ -76,6 +81,7 @@ export function decodeCategoryPath(encodedPath: string): string {
   if (!encodedPath) {
     return "Uncategorized";
   }
+
   return encodedPath
     .split("/")
     .map((segment) => decodeURIComponent(segment))
@@ -97,3 +103,56 @@ export function decodeId(encodedId: string): string {
 export function encodeId(id: string): string {
   return encodeURIComponent(id);
 }
+
+export const generateWebManifest = (
+  appName: string,
+  appDescription: string,
+  app16x16Icon: string,
+  app32x32Icon: string,
+  app180x180Icon: string,
+  app512x512Icon: string,
+  app192x192Icon: string,
+  themeColor: string,
+  appVersion: string
+): string => {
+  return JSON.stringify({
+    name: appName,
+    short_name: appName,
+    description: appDescription,
+    start_url: "/",
+    display: "standalone",
+    background_color: themeColor,
+    theme_color: themeColor,
+    orientation: "portrait-primary",
+    icons: [
+      {
+        src: app192x192Icon || "/app-icons/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any maskable",
+      },
+      {
+        src: app512x512Icon || "/app-icons/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any maskable",
+      },
+      {
+        src: app16x16Icon,
+        sizes: "16x16",
+        type: "image/png",
+      },
+      {
+        src: app32x32Icon,
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        src: app180x180Icon,
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+    version: appVersion,
+  });
+};

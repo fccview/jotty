@@ -60,7 +60,7 @@ export const InfoCard = ({
   return (
     <div
       className={cn(
-        "rounded-xl p-6 shadow-sm",
+        "jotty-info-card rounded-xl p-6 shadow-sm",
         variantClasses.bg,
         variantClasses.border
       )}

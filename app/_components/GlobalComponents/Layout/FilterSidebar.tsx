@@ -31,14 +31,18 @@ export const FilterSidebar = ({
   className = "",
 }: FilterSidebarProps) => {
   return (
-    <div className={`lg:sticky lg:top-20 space-y-6 ${className}`}>
-      <div className="bg-card border border-border rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-4">
+    <div
+      className={`jotty-filter-sidebar lg:sticky lg:top-20 space-y-6 ${className}`}
+    >
+      <div className="jotty-filter-sidebar-header bg-card border border-border rounded-lg p-4">
+        <div className="jotty-filter-sidebar-header-icon flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium text-foreground">Filters</span>
+          <span className="jotty-filter-sidebar-header-title font-medium text-foreground">
+            Filters
+          </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="jotty-filter-sidebar-content space-y-4">
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">
               {title}

@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Settings, Monitor, Archive } from "lucide-react";
+import { User, Settings, Monitor, Archive, Link } from "lucide-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
-import { User as UserType, Category } from "@/app/_types";
-import { useRouter } from "next/navigation";
-import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
+import { Category } from "@/app/_types";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
 import { ProfileTab } from "./Parts/ProfileTab";
 import { SessionsTab } from "./Parts/SessionsTab";
@@ -14,29 +12,64 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Button } from "../../GlobalComponents/Buttons/Button";
 import { ArchiveTab } from "./Parts/ArchiveTab";
 import { ArchivedItem } from "@/app/_server/actions/archived";
+import { LinkIndex } from "@/app/_server/actions/link";
+import { LinksTab } from "@/app/_components/FeatureComponents/Profile/Parts/LinksTab";
+import { ProfileTabs } from "@/app/_types/enums";
 
 interface UserProfileClientProps {
   isSsoUser: boolean;
   isAdmin: boolean;
-  avatarUrl?: string | null;
   archivedItems: ArchivedItem[];
   listsCategories: Category[];
   notesCategories: Category[];
+  linkIndex: LinkIndex;
 }
 
 export const UserProfileClient = ({
   isSsoUser,
   isAdmin,
-  avatarUrl,
   archivedItems,
   listsCategories,
   notesCategories,
+  linkIndex,
 }: UserProfileClientProps) => {
-  const { user } = useAppMode();
+  const { user, appSettings } = useAppMode();
   const [activeTab, setActiveTab] = useState<
-    "profile" | "sessions" | "archive" | "settings"
-  >("profile");
+    ProfileTabs
+  >(ProfileTabs.PROFILE);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  const handleTabChange = (newTab: ProfileTabs) => {
+    setActiveTab(newTab);
+    if (typeof window !== 'undefined') {
+      window.location.hash = newTab;
+    }
+  };
+
+  useEffect(() => {
+    setIsHydrated(true);
+    const hash = window.location.hash.replace('#', '');
+    const validTabs = Object.values(ProfileTabs);
+    if (validTabs.includes(hash as ProfileTabs)) {
+      setActiveTab(hash as ProfileTabs);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      const validTabs = Object.values(ProfileTabs);
+      if (validTabs.includes(hash as ProfileTabs)) {
+        setActiveTab(hash as ProfileTabs);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [isHydrated]);
 
   return (
     <div className="space-y-6">
@@ -48,10 +81,11 @@ export const UserProfileClient = ({
       <div className="bg-muted p-1 rounded-lg">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {[
-            { id: "profile", label: "Profile", icon: User },
-            { id: "sessions", label: "Sessions", icon: Monitor },
-            { id: "archive", label: "Archive", icon: Archive },
-            { id: "settings", label: "Settings", icon: Settings },
+            { id: ProfileTabs.PROFILE, label: "Profile", icon: User },
+            { id: ProfileTabs.SESSIONS, label: "Sessions", icon: Monitor },
+            { id: ProfileTabs.ARCHIVE, label: "Archive", icon: Archive },
+            ...(appSettings?.editor?.enableBilateralLinks ? [{ id: ProfileTabs.CONNECTIONS, label: "Connections", icon: Link }] : []),
+            { id: ProfileTabs.SETTINGS, label: "Settings", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -60,8 +94,8 @@ export const UserProfileClient = ({
                 variant={activeTab === tab.id ? "default" : "ghost"}
                 size="sm"
                 onClick={() =>
-                  setActiveTab(
-                    tab.id as "profile" | "sessions" | "archive" | "settings"
+                  handleTabChange(
+                    tab.id as ProfileTabs
                   )
                 }
                 className="flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap flex-shrink-0"
@@ -75,16 +109,16 @@ export const UserProfileClient = ({
       </div>
 
       <div className="min-h-[600px]">
-        {activeTab === "profile" && (
+        {activeTab === ProfileTabs.PROFILE && (
           <ProfileTab
             user={user}
             isAdmin={isAdmin}
-            setUser={() => {}}
+            setUser={() => { }}
             isSsoUser={isSsoUser}
           />
         )}
-        {activeTab === "sessions" && <SessionsTab />}
-        {activeTab === "archive" && (
+        {activeTab === ProfileTabs.SESSIONS && <SessionsTab />}
+        {activeTab === ProfileTabs.ARCHIVE && (
           <ArchiveTab
             user={user}
             archivedItems={archivedItems}
@@ -92,7 +126,10 @@ export const UserProfileClient = ({
             notesCategories={notesCategories}
           />
         )}
-        {activeTab === "settings" && (
+        {activeTab === ProfileTabs.CONNECTIONS && (
+          <LinksTab linkIndex={linkIndex} />
+        )}
+        {activeTab === ProfileTabs.SETTINGS && (
           <SettingsTab setShowDeleteModal={setShowDeleteModal} />
         )}
       </div>

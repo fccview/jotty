@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Download, X } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { getLatestGitHubRelease } from "@/app/_server/actions/github";
+import { useGitHubRelease } from "@/app/_hooks/useGitHubRelease";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
@@ -20,6 +20,7 @@ export const UpdatePrompt = () => {
   const [currentAppVersion, setCurrentAppVersion] = useState<string | null>(
     null
   );
+  const { release: latestRelease, error: releaseError } = useGitHubRelease();
 
   useEffect(() => {
     const checkforUpdates = async () => {
@@ -35,28 +36,30 @@ export const UpdatePrompt = () => {
       const currentVersion = currentVersionResult.data;
       setCurrentAppVersion(currentVersion);
 
-      const latestReleaseResult = await getLatestGitHubRelease();
-      if (!latestReleaseResult.success || !latestReleaseResult.data) {
-        console.error("Failed to fetch latest GitHub release");
+      if (!latestRelease) {
+        if (releaseError) {
+          console.error("Failed to fetch latest GitHub release:", releaseError);
+        }
         return;
       }
-      const latestGithubVersion = latestReleaseResult.data.tag_name.replace(
-        /^v/,
-        ""
-      );
+
+      const latestGithubVersion = latestRelease.tag_name.replace(/^v/, "");
 
       if (
         compareVersions(dismissedVersion || "0.0.0", currentVersion) < 0 &&
         compareVersions(currentVersion, latestGithubVersion) < 0
       ) {
         setLatestVersion(latestGithubVersion);
-        setReleaseUrl(latestReleaseResult.data.html_url);
-        setReleaseNotes(latestReleaseResult.data.body);
+        setReleaseUrl(latestRelease.html_url);
+        setReleaseNotes(latestRelease.body);
         setShowUpdatePrompt(true);
       }
     };
-    checkforUpdates();
-  }, []);
+
+    if (latestRelease || releaseError) {
+      checkforUpdates();
+    }
+  }, [latestRelease, releaseError]);
 
   const compareVersions = (v1: string, v2: string): number => {
     const parts1 = v1.split(".").map(Number);
