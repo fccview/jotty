@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {

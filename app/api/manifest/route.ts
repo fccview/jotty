@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { readJsonFile } from "@/app/_server/actions/file";
 import path from "path";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const overrideManifest = await readJsonFile(
     path.join("config", "site.webmanifest")
