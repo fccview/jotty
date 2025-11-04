@@ -76,7 +76,6 @@ That said for the sake of sanity let's all follow the same structure:
 
 Please bear with on reviews, it may take a bit of time for me to go through it all on top of life/work/hobbies :)
 
-
 <a id="features"></a>
 
 ## Features
@@ -124,7 +123,7 @@ The recommended way to run `jotty·page` is with Docker.
           - "1122:3000"
         volumes:
           - ./data:/app/data:rw
-          - ./config:/app/config:ro
+          - ./config:/app/config:rw
           - ./cache:/app/.next/cache:rw
         restart: unless-stopped
         #platform: linux/arm64
@@ -209,11 +208,11 @@ This project uses a `[STABLE].[FEATURE].[FIX]` versioning scheme, not strict [Se
 
 My format is `1.10.1`, which breaks down as:
 
-* **`1.x.x` (Stable):** The `1` represents the current stable generation. I will only change this (e.g., to `2.0.0`) for a complete rewrite or a fundamental shift in the product or seriously breaking changes.
+- **`1.x.x` (Stable):** The `1` represents the current stable generation. I will only change this (e.g., to `2.0.0`) for a complete rewrite or a fundamental shift in the product or seriously breaking changes.
 
-* **`x.10.x` (Feature):** This is the main release number. I increment this for new features, code refactors, or significant changes (e.g., `1.9.0` -> `1.10.0`). This is the equivalent of a SemVer `MINOR` bump.
+- **`x.10.x` (Feature):** This is the main release number. I increment this for new features, code refactors, or significant changes (e.g., `1.9.0` -> `1.10.0`). This is the equivalent of a SemVer `MINOR` bump.
 
-* **`x.x.1` (Fix):** This is incremented *only* for hotfixes, bug-fix-only and very minor feature releases (e.g., `1.10.0` -> `1.10.1`). This is the equivalent of a SemVer `PATCH` bump.
+- **`x.x.1` (Fix):** This is incremented _only_ for hotfixes, bug-fix-only and very minor feature releases (e.g., `1.10.0` -> `1.10.1`). This is the equivalent of a SemVer `PATCH` bump.
 
 ### A Note on "Breaking" Changes
 
@@ -221,7 +220,7 @@ A **Feature** release (like `1.10.0`) may include major backend or data structur
 
 Because the migration is automatic, I do not consider this a "breaking" change that requires a `2.0.0` version.
 
-I will always detail these migrations in the release notes. I *highly recommend* you **back up your data** before any feature update, just in case.
+I will always detail these migrations in the release notes. I _highly recommend_ you **back up your data** before any feature update, just in case.
 
 <a id="updating"></a>
 

@@ -33,3 +33,21 @@ export enum PermissionTypes {
   EDIT = "canEdit",
   DELETE = "canDelete",
 }
+
+export enum AdminTabs {
+  OVERVIEW = "overview",
+  USERS = "users",
+  CONTENT = "content",
+  SHARING = "sharing",
+  SETTINGS = "settings",
+  EDITOR = "editor",
+  STYLING = "styling",
+}
+
+export enum ProfileTabs {
+  PROFILE = "profile",
+  SESSIONS = "sessions",
+  ARCHIVE = "archive",
+  CONNECTIONS = "connections",
+  SETTINGS = "settings",
+}

@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { X } from "lucide-react";
 
 interface SimpleSharedItem {
@@ -7,21 +6,13 @@ interface SimpleSharedItem {
 }
 
 export const AdminSharedItemsList = ({
-  title,
   items,
-  icon,
   onUnshare,
 }: {
-  title: string;
   items: SimpleSharedItem[];
-  icon: ReactNode;
   onUnshare?: (item: SimpleSharedItem) => void;
 }) => (
-  <div className="p-6 rounded-lg border border-border bg-card">
-    <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-      {icon}
-      {title} ({items?.length || 0})
-    </h3>
+  <div className="">
     <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
       {items?.length > 0 ? (
         items.map((item: SimpleSharedItem) => (
@@ -43,7 +34,7 @@ export const AdminSharedItemsList = ({
         ))
       ) : (
         <p className="text-sm text-muted-foreground">
-          No shared {title.toLowerCase()}
+          No shared items
         </p>
       )}
     </div>

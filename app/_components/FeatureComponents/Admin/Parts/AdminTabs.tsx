@@ -4,62 +4,53 @@ import {
   Users,
   FileText,
   Activity,
-  Shield,
+  Globe,
   Settings,
   Edit3,
   Palette,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
-
-type AdminTab =
-  | "overview"
-  | "users"
-  | "content"
-  | "sharing"
-  | "settings"
-  | "editor"
-  | "styling";
-
+import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
 interface AdminTabsProps {
-  activeTab: AdminTab;
-  onTabChange: (tab: AdminTab) => void;
+  activeTab: AdminTabsEnum;
+  onTabChange: (tab: AdminTabsEnum) => void;
 }
 
 export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
   const tabs = [
     {
-      id: "overview" as AdminTab,
+      id: AdminTabsEnum.OVERVIEW,
       label: "Overview",
       icon: Activity,
     },
     {
-      id: "users" as AdminTab,
+      id: AdminTabsEnum.USERS,
       label: "Users",
       icon: Users,
     },
     {
-      id: "content" as AdminTab,
+      id: AdminTabsEnum.CONTENT,
       label: "Content",
       icon: FileText,
     },
     {
-      id: "sharing" as AdminTab,
+      id: AdminTabsEnum.SHARING,
       label: "Sharing",
-      icon: Shield,
+      icon: Globe,
     },
     {
-      id: "editor" as AdminTab,
+      id: AdminTabsEnum.EDITOR,
       label: "Editor",
       icon: Edit3,
     },
     {
-      id: "styling" as AdminTab,
+      id: AdminTabsEnum.STYLING,
       label: "Styling",
       icon: Palette,
     },
     {
-      id: "settings" as AdminTab,
+      id: AdminTabsEnum.SETTINGS,
       label: "Settings",
       icon: Settings,
     },

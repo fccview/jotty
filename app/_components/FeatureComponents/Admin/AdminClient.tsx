@@ -11,26 +11,27 @@ import { AdminTabs } from "./Parts/AdminTabs";
 import { AdminOverview } from "./Parts/AdminOverview";
 import { AdminUsers } from "./Parts/AdminUsers";
 import { AdminContent } from "./Parts/AdminContent";
-import { AdminSharing } from "./Parts/AdminSharing";
+import { AdminSharing } from "./Parts/Sharing/AdminSharing";
 import { AppSettingsTab } from "./Parts/AppSettingsTab";
 import { EditorSettingsTab } from "./Parts/EditorSettingsTab";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
 import { StylingTab } from "./Parts/StylingTab";
+import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
 
 interface AdminClientProps {
   username: string;
 }
 
-const getInitialTab = (): "overview" | "users" | "content" | "sharing" | "settings" | "editor" | "styling" => {
+const getInitialTab = (): AdminTabsEnum => {
   if (typeof window !== 'undefined') {
     const hash = window.location.hash.replace('#', '');
-    const validTabs = ["overview", "users", "content", "sharing", "settings", "editor", "styling"];
-    if (validTabs.includes(hash)) {
-      return hash as any;
+    const validTabs = Object.values(AdminTabsEnum);
+    if (validTabs.includes(hash as AdminTabsEnum)) {
+      return hash as AdminTabsEnum;
     }
   }
-  return "overview";
+  return AdminTabsEnum.OVERVIEW;
 };
 
 export const AdminClient = ({ username }: AdminClientProps) => {
@@ -39,8 +40,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   const [allDocs, setAllDocs] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "content" | "sharing" | "settings" | "editor"
-    | "styling"
+    AdminTabsEnum
   >(getInitialTab());
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
@@ -48,7 +48,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
 
-  const handleTabChange = (newTab: "overview" | "users" | "content" | "sharing" | "settings" | "editor" | "styling") => {
+  const handleTabChange = (newTab: AdminTabsEnum) => {
     setActiveTab(newTab);
     if (typeof window !== 'undefined') {
       window.location.hash = newTab;
@@ -58,9 +58,9 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      const validTabs = ["overview", "users", "content", "sharing", "settings", "editor", "styling"];
-      if (validTabs.includes(hash)) {
-        setActiveTab(hash as any);
+      const validTabs = Object.values(AdminTabsEnum);
+      if (validTabs.includes(hash as AdminTabsEnum)) {
+        setActiveTab(hash as AdminTabsEnum);
       }
     };
 
@@ -164,8 +164,8 @@ export const AdminClient = ({ username }: AdminClientProps) => {
       <AdminTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
       <div className="min-h-[600px]">
-        {activeTab === "overview" && <AdminOverview stats={stats} />}
-        {activeTab === "users" && (
+        {activeTab === AdminTabsEnum.OVERVIEW && <AdminOverview stats={stats} />}
+        {activeTab === AdminTabsEnum.USERS && (
           <AdminUsers
             users={users}
             searchQuery={searchQuery}
@@ -179,13 +179,13 @@ export const AdminClient = ({ username }: AdminClientProps) => {
             deletingUser={deletingUser}
           />
         )}
-        {activeTab === "content" && (
+        {activeTab === AdminTabsEnum.CONTENT && (
           <AdminContent allLists={allLists} allDocs={allDocs} users={users} />
         )}
-        {activeTab === "sharing" && <AdminSharing />}
-        {activeTab === "settings" && <AppSettingsTab />}
-        {activeTab === "editor" && <EditorSettingsTab />}
-        {activeTab === "styling" && <StylingTab />}
+        {activeTab === AdminTabsEnum.SHARING && <AdminSharing />}
+        {activeTab === AdminTabsEnum.SETTINGS && <AppSettingsTab />}
+        {activeTab === AdminTabsEnum.EDITOR && <EditorSettingsTab />}
+        {activeTab === AdminTabsEnum.STYLING && <StylingTab />}
       </div>
 
       <UserManagementModal

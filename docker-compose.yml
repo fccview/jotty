@@ -10,7 +10,7 @@ services:
       - "1122:3000"
     volumes:
       - ./data:/app/data:rw
-      - ./config:/app/config:ro
+      - ./config:/app/config:rw
       - ./cache:/app/.next/cache:rw
     restart: unless-stopped
     #platform: linux/arm64
