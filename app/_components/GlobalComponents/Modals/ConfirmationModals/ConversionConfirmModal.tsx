@@ -30,7 +30,6 @@ const ENHANCED_FEATURES = [
   "Kanban board with drag & drop",
   "Task status tracking (Todo, In Progress, etc.)",
   "Time tracking with a built-in timer",
-  "Set estimated times and target dates",
 ];
 
 const TypeDisplay = ({ type }: { type: ChecklistType }) => {

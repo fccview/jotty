@@ -44,7 +44,7 @@ export const SharingMigrationView = ({
           description={
             isMigrationComplete
               ? "Your sharing data has been successfully migrated to the new format."
-              : `I${"'ve"} improved how sharing works in your app but you need to update your sharing data structure.`
+              : `I${"'ve"} improved how sharing works in your app which means we need to update your sharing data structure. This is an automatic process and will take a few seconds to complete.`
           }
         />
 
@@ -199,7 +199,7 @@ export const SharingMigrationView = ({
             >
               <p className="text-sm">
                 {migrationResult.migrated
-                  ? "Your sharing data has been successfully migrated. All users will be logged out to ensure they get fresh sessions with the updated sharing system."
+                  ? "Your sharing data has been successfully migrated."
                   : "No migration was needed - your system is already up to date."}
               </p>
             </InfoCard>

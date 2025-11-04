@@ -110,15 +110,46 @@ export const migrateToNewSharingFormat = async (): Promise<
   try {
     let metadata: OldSharedItemsData;
 
-    try {
-      const content = await fs.readFile(SHARED_ITEMS_FILE, "utf-8");
-      metadata = JSON.parse(content);
-    } catch (error) {
+    if (!existsSync(SHARED_ITEMS_FILE)) {
       return {
         success: true,
         data: {
           migrated: false,
           changes: ["No shared-items.json file found - nothing to migrate"],
+        },
+      };
+    }
+
+    try {
+      const content = await fs.readFile(SHARED_ITEMS_FILE, "utf-8");
+      if (!content.trim()) {
+        const backupPath = `${SHARED_ITEMS_FILE}.backup`;
+        await fs.copyFile(SHARED_ITEMS_FILE, backupPath);
+        await fs.unlink(SHARED_ITEMS_FILE);
+        return {
+          success: true,
+          data: {
+            migrated: true,
+            changes: [
+              `Backed up empty shared-items.json to ${backupPath}`,
+              "Removed deprecated shared-items.json file"
+            ],
+          },
+        };
+      }
+      metadata = JSON.parse(content);
+    } catch (error) {
+      const backupPath = `${SHARED_ITEMS_FILE}.backup`;
+      await fs.copyFile(SHARED_ITEMS_FILE, backupPath);
+      await fs.unlink(SHARED_ITEMS_FILE);
+      return {
+        success: true,
+        data: {
+          migrated: true,
+          changes: [
+            `Backed up invalid shared-items.json to ${backupPath}`,
+            "Removed deprecated shared-items.json file"
+          ],
         },
       };
     }
@@ -212,8 +243,7 @@ export const migrateToNewSharingFormat = async (): Promise<
         JSON.stringify(notesSharingData, null, 2)
       );
       changes.push(
-        `Created notes sharing file with ${
-          Object.keys(notesSharingData).length
+        `Created notes sharing file with ${Object.keys(notesSharingData).length
         } user entries`
       );
     }
@@ -227,8 +257,7 @@ export const migrateToNewSharingFormat = async (): Promise<
         JSON.stringify(checklistsSharingData, null, 2)
       );
       changes.push(
-        `Created checklists sharing file with ${
-          Object.keys(checklistsSharingData).length
+        `Created checklists sharing file with ${Object.keys(checklistsSharingData).length
         } user entries`
       );
     }
