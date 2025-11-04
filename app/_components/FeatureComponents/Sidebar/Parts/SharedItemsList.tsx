@@ -140,17 +140,16 @@ export const SharedItemsList = ({
                           key={`${item.id}-${item.category}`}
                           onClick={() => onItemClick(minimalItem)}
                           className={cn(
-                            "flex items-center gap-2 py-2 pr-2 text-sm rounded-md transition-colors w-full text-left",
-                            "hover:bg-muted/50 cursor-pointer",
-                            isSelected && "bg-accent"
+                            "flex items-center gap-2 py-2 px-3 text-sm rounded-md transition-colors w-full text-left",
+                            isSelected ? "bg-primary/60 text-primary-foreground" : "hover:bg-muted/50 text-foreground"
                           )}
                         >
                           {mode === "checklists" ? (
-                            <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                            <CheckSquare className="h-4 w-4" />
                           ) : (
-                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <FileText className="h-4 w-4" />
                           )}
-                          <span className="truncate text-foreground">
+                          <span className="truncate flex-1">
                             {capitalize(item.id.replace(/-/g, " "))}
                           </span>
                         </button>

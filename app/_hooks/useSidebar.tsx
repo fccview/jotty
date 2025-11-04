@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Checklist, Category, Note, AppMode, User } from "../_types";
 import { ItemTypes, Modes } from "../_types/enums";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
-import { buildCategoryPath } from "../_utils/global-utils";
+import { buildCategoryPath, encodeId } from "../_utils/global-utils";
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -221,7 +221,7 @@ export const useSidebar = (props: SidebarProps) => {
   const isItemSelected = (item: Checklist | Note) => {
     const expectedPath = buildCategoryPath(
       item.category || "Uncategorized",
-      item.id
+      encodeId(item.id)
     );
 
     return (
