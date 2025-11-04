@@ -210,6 +210,7 @@ export interface AppSettings {
   "512x512Icon": string;
   "192x192Icon": string;
   notifyNewUpdates: "yes" | "no";
+  parseContent: "yes" | "no";
   maximumFileSize: number;
   editor: {
     enableSlashCommands: boolean;

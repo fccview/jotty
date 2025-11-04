@@ -50,7 +50,7 @@ export const SidebarItem = ({
   user,
 }: SidebarItemProps) => {
   const router = useRouter();
-  const { globalSharing } = useAppMode();
+  const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
   const itemDetails = sharingInfo(globalSharing, item.id, encodedCategory);
 
@@ -196,7 +196,7 @@ export const SidebarItem = ({
           </>
         )}
         <span className="truncate flex-1">
-          {capitalize(item.title.replace(/-/g, " "))}
+          {appSettings?.parseContent === "yes" ? item.title : capitalize(item.title.replace(/-/g, " "))}
         </span>
 
         <div className="flex items-center gap-1 flex-shrink-0">

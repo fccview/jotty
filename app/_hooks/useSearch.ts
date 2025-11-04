@@ -24,7 +24,7 @@ export const useSearch = ({
   onResultSelect,
 }: useSearchProps) => {
   const router = useRouter();
-  const { checklists, notes } = useAppMode();
+  const { checklists, notes, appSettings } = useAppMode();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -55,13 +55,13 @@ export const useSearch = ({
     () => [
       ...checklists.map((c) => ({
         id: c.id || "",
-        title: capitalize(c.title?.replace(/-/g, " ")),
+        title: appSettings?.parseContent === "yes" ? c.title : capitalize(c.title?.replace(/-/g, " ")),
         type: ItemTypes.CHECKLIST,
         content: c?.items?.map((i) => i.text).join(" ") || "".toLowerCase(),
       })),
       ...notes.map((n) => ({
         id: n.id || "",
-        title: capitalize(n.title?.replace(/-/g, " ")),
+        title: appSettings?.parseContent === "yes" ? n.title : capitalize(n.title?.replace(/-/g, " ")),
         type: ItemTypes.NOTE,
         content: n.content?.toLowerCase() || "",
       })),
@@ -80,12 +80,12 @@ export const useSearch = ({
       const searchResults = processedItems
         .filter(
           (item) =>
-            item.title.toLowerCase().includes(lowerCaseQuery) ||
+            item.title?.toLowerCase().includes(lowerCaseQuery) ||
             item.content.includes(lowerCaseQuery)
         )
         .slice(0, 8);
 
-      setResults(searchResults);
+      setResults(searchResults as SearchResult[]);
       setSelectedIndex(0);
     };
 

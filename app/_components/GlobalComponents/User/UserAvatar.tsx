@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { getDeterministicColor } from "@/app/_utils/color-utils";
 
@@ -50,9 +50,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         />
       ) : (
         <span
-          className={`${sizeClasses[size]}${
-            size === "xs" ? " !text-[8px]" : ""
-          } flex items-center justify-center`}
+          className={`${sizeClasses[size]}${size === "xs" ? " !text-[8px]" : ""
+            } flex items-center justify-center`}
         >
           {initials}
         </span>

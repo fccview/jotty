@@ -37,7 +37,7 @@ export const SharedItemsList = ({
   mode,
 }: SharedItemsListProps) => {
   const [collapsedUsers, setCollapsedUsers] = useState<Set<string>>(new Set());
-  const { userSharedItems } = useAppMode();
+  const { userSharedItems, appSettings } = useAppMode();
 
   if (!userSharedItems) {
     return null;
@@ -150,7 +150,7 @@ export const SharedItemsList = ({
                             <FileText className="h-4 w-4" />
                           )}
                           <span className="truncate flex-1">
-                            {capitalize(item.id.replace(/-/g, " "))}
+                            {appSettings?.parseContent === "yes" ? item.id : capitalize(item.id.replace(/-/g, " "))}
                           </span>
                         </button>
                       );

@@ -124,11 +124,11 @@ const _readNotesRecursively = async (
     .map((e) => e.name);
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -142,11 +142,11 @@ const _readNotesRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -166,9 +166,9 @@ const _readNotesRecursively = async (
               fileName
             )
           );
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subDocs = await _readNotesRecursively(
       categoryDir,
@@ -217,7 +217,7 @@ export const getNoteById = async (
       d.id === id &&
       (!category ||
         encodeCategoryPath(d.category || "Uncategorized")?.toLowerCase() ===
-          encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
+        encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
   );
 
   if (note && "rawContent" in note) {
@@ -266,7 +266,7 @@ export const getNotes = async (username?: string, allowArchived?: boolean) => {
       const fileName = `${sharedItem.id}.md`;
 
       // Decode the category path since it's URL-encoded in the sharing data
-      const decodedCategory = decodeURIComponent(
+      const decodedCategory = decodeCategoryPath(
         sharedItem.category || "Uncategorized"
       );
 
@@ -347,11 +347,11 @@ export const getRawNotes = async (
         .map((e) => e.name);
       const orderedDirNames: string[] = order?.categories
         ? [
-            ...order.categories.filter((n) => dirNames.includes(n)),
-            ...dirNames
-              .filter((n) => !order.categories!.includes(n))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...order.categories.filter((n) => dirNames.includes(n)),
+          ...dirNames
+            .filter((n) => !order.categories!.includes(n))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : dirNames.sort((a, b) => a.localeCompare(b));
 
       // Read files in current directory
@@ -360,11 +360,11 @@ export const getRawNotes = async (
       const categoryOrder = await readOrderFile(dirPath);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -385,7 +385,7 @@ export const getRawNotes = async (
             rawContent: content,
           };
           docs.push(rawNote as Note);
-        } catch {}
+        } catch { }
       }
 
       // Recursively read subdirectories
@@ -620,9 +620,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     try {
       const links = parseInternalLinks(updatedDoc.content);
-      const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
-        updatedDoc.id
-      }`;
+      const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
+        }`;
 
       const oldItemKey = `${doc.category || "Uncategorized"}/${id}`;
       if (oldItemKey !== newItemKey) {
