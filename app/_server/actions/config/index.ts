@@ -4,7 +4,6 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import path from "path";
 import fs from "fs/promises";
-import sharp from "sharp";
 import { Result } from "@/app/_types";
 import { getCurrentUser, isAdmin } from "../users";
 import { revalidatePath } from "next/cache";
@@ -287,14 +286,6 @@ export const updateAppSettings = async (
   }
 };
 
-const ICON_SIZES = {
-  "16x16Icon": { width: 16, height: 16 },
-  "32x32Icon": { width: 32, height: 32 },
-  "180x180Icon": { width: 180, height: 180 },
-  "192x192Icon": { width: 192, height: 192 },
-  "512x512Icon": { width: 512, height: 512 },
-} as const;
-
 export const uploadAppIcon = async (
   formData: FormData
 ): Promise<Result<{ url: string; filename: string }>> => {
@@ -311,9 +302,7 @@ export const uploadAppIcon = async (
       return { success: false, error: "No file provided" };
     }
 
-    if (!Object.keys(ICON_SIZES).includes(iconType)) {
-      return { success: false, error: "Invalid icon type" };
-    }
+    // Icon type validation removed - client handles sizing
 
     if (!file.type.startsWith("image/")) {
       return { success: false, error: "File must be an image" };
@@ -331,23 +320,15 @@ export const uploadAppIcon = async (
     }
 
     const timestamp = Date.now();
-    const filename = `${iconType}-${timestamp}.png`;
+    const extension = path.extname(file.name) || ".png";
+    const filename = `${iconType}-${timestamp}${extension}`;
     const filepath = path.join(uploadsDir, filename);
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Resize image using Sharp
-    const { width, height } = ICON_SIZES[iconType as keyof typeof ICON_SIZES];
-    const resizedBuffer = await sharp(buffer)
-      .resize(width, height, {
-        fit: "contain",
-        background: { r: 255, g: 255, b: 255, alpha: 0 },
-      })
-      .png()
-      .toBuffer();
-
-    await fs.writeFile(filepath, resizedBuffer);
+    // Save the uploaded image (already resized on client side)
+    await fs.writeFile(filepath, buffer);
 
     const publicUrl = `/api/app-icons/${filename}`;
 

@@ -17,6 +17,69 @@ interface ImageUploadProps {
   ) => Promise<{ success: boolean; data?: { url: string }; error?: string }>;
 }
 
+type IconSizeKey =
+  | "16x16Icon"
+  | "32x32Icon"
+  | "180x180Icon"
+  | "192x192Icon"
+  | "512x512Icon";
+
+const ICON_SIZES: Record<IconSizeKey, { width: number; height: number }> = {
+  "16x16Icon": { width: 16, height: 16 },
+  "32x32Icon": { width: 32, height: 32 },
+  "180x180Icon": { width: 180, height: 180 },
+  "192x192Icon": { width: 192, height: 192 },
+  "512x512Icon": { width: 512, height: 512 },
+} as const;
+
+const resizeImage = (
+  file: File,
+  targetWidth: number,
+  targetHeight: number
+): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      reject(new Error("Canvas not supported"));
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      const scale = Math.min(
+        targetWidth / img.width,
+        targetHeight / img.height
+      );
+      const scaledWidth = img.width * scale;
+      const scaledHeight = img.height * scale;
+
+      const x = (targetWidth - scaledWidth) / 2;
+      const y = (targetHeight - scaledHeight) / 2;
+
+      ctx.clearRect(0, 0, targetWidth, targetHeight);
+      ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Failed to resize image"));
+          }
+        },
+        "image/png",
+        0.9
+      );
+    };
+    img.onerror = () => reject(new Error("Failed to load image"));
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 export const ImageUpload: FC<ImageUploadProps> = ({
   label,
   description,
@@ -48,8 +111,27 @@ export const ImageUpload: FC<ImageUploadProps> = ({
     }
 
     setIsUploading(true);
+
+    let processedFile = file;
+
+    if (iconType && (iconType as IconSizeKey) in ICON_SIZES) {
+      try {
+        const { width, height } = ICON_SIZES[iconType as IconSizeKey];
+        const resizedBlob = await resizeImage(file, width, height);
+        processedFile = new File([resizedBlob], `${iconType}.png`, {
+          type: "image/png",
+        });
+      } catch (error) {
+        showToast({
+          type: "error",
+          title: "Resize Failed",
+          message: "Failed to resize image. Using original.",
+        });
+      }
+    }
+
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", processedFile);
     if (iconType) {
       formData.append("iconType", iconType);
     }
