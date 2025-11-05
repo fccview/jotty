@@ -121,6 +121,36 @@ export const loadCustomEmojis = async () => {
   }
 };
 
+export const saveCustomEmojis = async (
+  emojis: EmojiConfig
+): Promise<Result<null>> => {
+  try {
+    const admin = await isAdmin();
+    if (!admin) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (!validateEmojiConfig(emojis)) {
+      return { success: false, error: "Invalid emoji configuration" };
+    }
+
+    const emojisPath = path.join(process.cwd(), "config", "emojis.json");
+
+    try {
+      await fs.access(path.dirname(emojisPath));
+    } catch {
+      await fs.mkdir(path.dirname(emojisPath), { recursive: true });
+    }
+
+    await fs.writeFile(emojisPath, JSON.stringify(emojis, null, 2), "utf-8");
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error saving custom emojis:", error);
+    return { success: false, error: "Failed to save custom emojis" };
+  }
+};
+
 export const getSettings = async () => {
   try {
     const dataSettingsPath = path.join(process.cwd(), "data", "settings.json");

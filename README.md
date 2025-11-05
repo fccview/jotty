@@ -289,9 +289,9 @@ yarn start
 
 <a id="custom-themes-and-emojis"></a>
 
-## Custom Emojis & Manifest
+## Custom Manifest
 
-You can easily add custom emojis and manually define your PWA manifest by creating configuration files in the `config/` directory. These will be automatically loaded and merged with the built-in themes and emojis.
+You can completely customize your PWA by creating an override manifest file. This allows you to change the app name, description, icons, colors, and more. Custom themes and emojis can be managed through the admin UI.
 
 📖 **For the complete customisation documentation, see [howto/CUSTOMISATIONS.md](howto/CUSTOMISATIONS.md)**
 📖 **For better understanding on how the PWA works see [howto/PWA.md](howto/PWA.md)**

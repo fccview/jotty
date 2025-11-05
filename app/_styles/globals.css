@@ -478,11 +478,11 @@ code span {
   }
 
 .hide-scrollbar::-webkit-scrollbar {
-    display: none;
+    display: none!important;
 }
 .hide-scrollbar {
-    -ms-overflow-style: none; 
-    scrollbar-width: none;  
+    -ms-overflow-style: none!important; 
+    scrollbar-width: none!important;  
 }
 
 .scroll-fade-right {
@@ -927,4 +927,28 @@ pre.text-foreground span,
         font-weight: normal;
         color: #333;
     }
+}
+
+
+.overflow-y-auto {
+    scrollbar-width: auto !important;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
+    background-color: rgb(var(--muted)/0.5) !important;
+    border-radius: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--primary)/0.3) !important;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 20px !important;
+    height: 20px !important;
+    width: 4px !important;
 }

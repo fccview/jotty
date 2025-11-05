@@ -112,7 +112,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   }, [linkIndex, checklist.id, checklist.category, checklists, notes]);
 
   return (
-    <div className="h-full flex flex-col bg-background overflow-y-auto">
+    <div className="h-full flex flex-col bg-background overflow-y-auto hide-scrollbar">
       {permissions?.canEdit && (
         <ChecklistHeading
           key={focusKey}

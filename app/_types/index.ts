@@ -190,8 +190,16 @@ export interface GlobalSharingReturn {
   error?: string;
 }
 
+export type EmojiMatchMode = "exact" | "word" | "prefix" | "suffix" | "substring";
+
+export interface EmojiConfig {
+  emoji: string;
+  match: EmojiMatchMode;
+  caseSensitive?: boolean;
+}
+
 export interface EmojiDictionary {
-  [key: string]: string;
+  [key: string]: EmojiConfig | string; // Support both old string format and new config format
 }
 
 export type AppMode = "checklists" | "notes";

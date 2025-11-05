@@ -82,7 +82,7 @@ export const ChecklistHome = ({
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-background pb-16 lg:pb-0">
+    <div className="h-full overflow-y-auto hide-scrollbar bg-background pb-16 lg:pb-0">
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>

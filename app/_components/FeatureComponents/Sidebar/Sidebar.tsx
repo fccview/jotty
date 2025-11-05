@@ -127,7 +127,7 @@ export const Sidebar = (props: SidebarProps) => {
             mode={mode}
             onModeChange={sidebar.handleModeSwitch}
           />
-          <div className="jotty-sidebar-categories flex-1 overflow-y-auto p-2 space-y-4">
+          <div className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-4">
             <div className="px-2 pt-2">
               <div className="flex items-center justify-between">
                 <h3 className="jotty-sidebar-categories-title text-xs font-bold uppercase text-muted-foreground tracking-wider">

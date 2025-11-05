@@ -90,7 +90,7 @@ export const parseInternalLinks = (content: string): LinkTarget[] => {
 
     links.push({
       type: type as ItemType,
-      path: category ? `${category}/${id}` : id,
+      path: category ? `${encodeCategoryPath(category)}/${id}` : id,
     });
   }
 
@@ -513,30 +513,12 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
     newIndex.notes[itemKey].isLinkedTo = {
       notes: links
         .filter((l) => l.type === ItemTypes.NOTE)
-        .map((l) => {
-          const resolvedPath = resolveLinkPath(
-            l.path,
-            l.type as ItemType,
-            newIndex
-          );
-          return (
-            resolvedPath ||
-            encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`)
-          );
-        }),
+        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
+        .filter((path): path is string => path !== null),
       checklists: links
         .filter((l) => l.type === ItemTypes.CHECKLIST)
-        .map((l) => {
-          const resolvedPath = resolveLinkPath(
-            l.path,
-            l.type as ItemType,
-            newIndex
-          );
-          return (
-            resolvedPath ||
-            encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`)
-          );
-        }),
+        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
+        .filter((path): path is string => path !== null),
     };
   }
 
@@ -553,30 +535,12 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
     newIndex.checklists[itemKey].isLinkedTo = {
       notes: links
         .filter((l) => l.type === ItemTypes.NOTE)
-        .map((l) => {
-          const resolvedPath = resolveLinkPath(
-            l.path,
-            l.type as ItemType,
-            newIndex
-          );
-          return (
-            resolvedPath ||
-            encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`)
-          );
-        }),
+        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
+        .filter((path): path is string => path !== null),
       checklists: links
         .filter((l) => l.type === ItemTypes.CHECKLIST)
-        .map((l) => {
-          const resolvedPath = resolveLinkPath(
-            l.path,
-            l.type as ItemType,
-            newIndex
-          );
-          return (
-            resolvedPath ||
-            encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`)
-          );
-        }),
+        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
+        .filter((path): path is string => path !== null),
     };
   }
 

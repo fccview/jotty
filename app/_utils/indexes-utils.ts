@@ -6,7 +6,10 @@ import { encodeCategoryPath } from "./global-utils";
 export const createItemMap = (itemsArray: Note[] | Checklist[]) => {
   return itemsArray.reduce(
     (map: Map<string, Note | Checklist>, item: Note | Checklist) => {
-      const itemKey = `${item.category || "Uncategorized"}/${item.id}`;
+      const itemKey = `${encodeCategoryPath(
+        item.category || "Uncategorized"
+      )}/${item.id}`;
+
       map.set(itemKey, item);
       return map;
     },
@@ -21,12 +24,13 @@ export const getReferencingItems = (
 ) => {
   return keys
     .map((key) => {
-      const item = map.get(key);
+      const encodedKey = encodeCategoryPath(key);
+      const item = map.get(encodedKey);
 
       if (item) {
         return {
           type,
-          path: key,
+          path: encodedKey,
           title: item.title,
           category: item.category || "Uncategorized",
           owner: item.owner,
@@ -47,7 +51,9 @@ export const getReferences = (
 ) => {
   if (!linkIndex || !itemId) return [];
 
-  const itemKey = `${encodeCategoryPath(itemCategory || "Uncategorized")}/${itemId}`;
+  const itemKey = `${encodeCategoryPath(
+    itemCategory || "Uncategorized"
+  )}/${itemId}`;
   const currentItemData =
     itemType === ItemTypes.NOTE
       ? linkIndex.notes[itemKey]

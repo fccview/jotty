@@ -40,6 +40,7 @@ import {
   removeItemFromIndex,
   updateItemCategory,
   updateReferencingContent,
+  rebuildLinkIndex,
 } from "@/app/_server/actions/link";
 import {
   shouldRefreshRecurringItem,
@@ -656,6 +657,8 @@ export const updateList = async (formData: FormData) => {
           encodeCategoryPath(newItemKey),
           updatedList.title
         );
+        await rebuildLinkIndex(currentList.owner!);
+        revalidatePath("/");
       }
 
       await updateIndexForItem(

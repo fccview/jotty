@@ -23,7 +23,7 @@ import {
 } from "@/app/_server/actions/file";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { DEPRECATED_DOCS_FOLDER, NOTES_FOLDER } from "@/app/_consts/notes";
+import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { readJsonFile } from "../file";
 import {
   ARCHIVED_DIR_NAME,
@@ -44,6 +44,7 @@ import {
   removeItemFromIndex,
   updateItemCategory,
   updateReferencingContent,
+  rebuildLinkIndex,
 } from "@/app/_server/actions/link";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import { checkUserPermission } from "@/app/_server/actions/sharing";
@@ -624,7 +625,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       const oldItemKey = `${doc.category || "Uncategorized"}/${id}`;
 
       if (oldItemKey !== newItemKey) {
-        await updateItemCategory(doc.owner!, "note", oldItemKey, newItemKey);
         await updateReferencingContent(
           doc.owner!,
           "note",
@@ -632,6 +632,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
           encodeCategoryPath(newItemKey),
           updatedDoc.title
         );
+        await updateItemCategory(doc.owner!, "note", oldItemKey, newItemKey);
+        await rebuildLinkIndex(doc.owner!);
+        revalidatePath("/");
       }
 
       await updateIndexForItem(doc.owner!, "note", newItemKey, links);

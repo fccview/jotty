@@ -5,6 +5,7 @@ import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Loader2, Plus, Edit, Trash2, Palette } from "lucide-react";
 import { useStyling } from "@/app/_hooks/useStyling";
 import { ThemePreview } from "@/app/_components/FeatureComponents/Admin/Parts/ThemePreview";
+import { EmojiManager } from "@/app/_components/FeatureComponents/Admin/Parts/EmojiManager";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { DynamicIcon } from "@/app/_components/GlobalComponents/Icons/DynamicIcon";
 import { useState } from "react";
@@ -53,6 +54,34 @@ export const StylingTab = () => {
               Configure the styling of the application.
             </p>
           </div>
+
+          <FormWrapper
+            title="Custom CSS"
+            action={
+              <Button
+                onClick={handleSaveCss}
+                disabled={isSavingCss || !hasCssChanges || isLoadingCss}
+                size="sm"
+              >
+                {isSavingCss ? <></> : "Save CSS"}
+              </Button>
+            }
+          >
+            <div className="w-full max-h-[600px] overflow-auto">
+              {isLoadingCss ? (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : (
+                <CssEditor value={css} onChange={handleCssChange} />
+              )}
+            </div>
+            {hasCssChanges && (
+              <p className="text-xs text-muted-foreground">
+                You have unsaved CSS changes.
+              </p>
+            )}
+          </FormWrapper>
 
           <FormWrapper
             title="Custom Themes"
@@ -106,33 +135,7 @@ export const StylingTab = () => {
             </div>
           </FormWrapper>
 
-          <FormWrapper
-            title="Custom CSS"
-            action={
-              <Button
-                onClick={handleSaveCss}
-                disabled={isSavingCss || !hasCssChanges || isLoadingCss}
-                size="sm"
-              >
-                {isSavingCss ? <></> : "Save CSS"}
-              </Button>
-            }
-          >
-            <div className="w-full max-h-[600px] overflow-auto">
-              {isLoadingCss ? (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-              ) : (
-                <CssEditor value={css} onChange={handleCssChange} />
-              )}
-            </div>
-            {hasCssChanges && (
-              <p className="text-xs text-muted-foreground">
-                You have unsaved CSS changes.
-              </p>
-            )}
-          </FormWrapper>
+          <EmojiManager />
         </div>
       </div>
 
@@ -171,7 +174,9 @@ export const StylingTab = () => {
                     id="themeIcon"
                     type="text"
                     defaultValue={themeForm.icon}
-                    onChange={(e) => handleThemeFormChange("icon", e.target.value)}
+                    onChange={(e) =>
+                      handleThemeFormChange("icon", e.target.value)
+                    }
                     placeholder="Palette"
                     className="pl-10"
                   />
@@ -202,12 +207,12 @@ export const StylingTab = () => {
                       value={
                         value
                           ? `#${value
-                            .split(" ")
-                            .map((v) => {
-                              const num = parseInt(v);
-                              return num.toString(16).padStart(2, "0");
-                            })
-                            .join("")}`
+                              .split(" ")
+                              .map((v) => {
+                                const num = parseInt(v);
+                                return num.toString(16).padStart(2, "0");
+                              })
+                              .join("")}`
                           : "#000000"
                       }
                       onChange={(e) => {
@@ -265,7 +270,10 @@ export const StylingTab = () => {
           <div className="space-y-4">
             <h4 className="text-sm font-medium">Live Preview</h4>
             <div className="border border-border rounded-lg">
-              <ThemePreview colors={themeForm.colors} focusedColor={focusedColor} />
+              <ThemePreview
+                colors={themeForm.colors}
+                focusedColor={focusedColor}
+              />
             </div>
           </div>
         </div>

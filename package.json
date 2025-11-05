@@ -67,6 +67,7 @@
         "rrule": "^2.8.1",
         "slugify": "^1.6.6",
         "tailwind-merge": "^2.2.0",
+        "tailwind-scrollbar": "^4.0.2",
         "tippy.js": "^6.3.7",
         "turndown": "^7.2.0",
         "turndown-plugin-gfm": "^1.0.2",
