@@ -32,12 +32,14 @@ import { revalidatePath } from "next/cache";
 import {
   buildCategoryPath,
   decodeCategoryPath,
+  encodeCategoryPath,
 } from "@/app/_utils/global-utils";
 import {
   updateIndexForItem,
   parseInternalLinks,
   removeItemFromIndex,
   updateItemCategory,
+  updateReferencingContent,
 } from "@/app/_server/actions/link";
 import {
   shouldRefreshRecurringItem,
@@ -60,11 +62,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-      ...order.categories.filter((n) => dirNames.includes(n)),
-      ...dirNames
-        .filter((n) => !order.categories!.includes(n))
-        .sort((a, b) => a.localeCompare(b)),
-    ]
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -83,11 +85,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -99,9 +101,9 @@ const readListsRecursively = async (
           lists.push(
             parseMarkdown(content, id, categoryPath, owner, false, stats)
           );
-        } catch { }
+        } catch {}
       }
-    } catch { }
+    } catch {}
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -289,11 +291,11 @@ export const getRawLists = async (
 
       const orderedDirNames: string[] = order?.categories
         ? [
-          ...order.categories.filter((n) => dirNames.includes(n)),
-          ...dirNames
-            .filter((n) => !order.categories!.includes(n))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...order.categories.filter((n) => dirNames.includes(n)),
+            ...dirNames
+              .filter((n) => !order.categories!.includes(n))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : dirNames.sort((a, b) => a.localeCompare(b));
 
       const files = entries.filter((e) => e.isFile() && e.name.endsWith(".md"));
@@ -301,11 +303,11 @@ export const getRawLists = async (
       const categoryOrder = await readOrderFile(dirPath);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -328,7 +330,7 @@ export const getRawLists = async (
             rawContent: content,
           };
           lists.push(rawList as Checklist);
-        } catch { }
+        } catch {}
       }
 
       for (const dirName of orderedDirNames) {
@@ -440,7 +442,7 @@ export const getListById = async (
       list.id === id &&
       (!category ||
         list.category?.toLowerCase() ===
-        decodeCategoryPath(category).toLowerCase())
+          decodeCategoryPath(category).toLowerCase())
   );
 
   if (list && "rawContent" in list) {
@@ -635,8 +637,9 @@ export const updateList = async (formData: FormData) => {
     try {
       const content = updatedList.items.map((i) => i.text).join("\n");
       const links = parseInternalLinks(content);
-      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
-        }`;
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${
+        updatedList.id
+      }`;
 
       const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
       if (oldItemKey !== newItemKey) {
@@ -645,6 +648,13 @@ export const updateList = async (formData: FormData) => {
           ItemTypes.CHECKLIST,
           oldItemKey,
           newItemKey
+        );
+        await updateReferencingContent(
+          currentList.owner!,
+          ItemTypes.CHECKLIST,
+          encodeCategoryPath(oldItemKey),
+          encodeCategoryPath(newItemKey),
+          updatedList.title
         );
       }
 
