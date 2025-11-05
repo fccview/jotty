@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { getDeterministicColor } from "@/app/_utils/color-utils";
+import { getUserByUsername } from "@/app/_server/actions/users";
 
 interface UserAvatarProps {
   username: string;
@@ -15,6 +16,12 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   className,
   size = "md",
 }) => {
+  const storedAvatars =
+    typeof window !== "undefined" && localStorage.getItem(`avatars`);
+
+  const [avatar, setAvatar] = useState<string | null>(
+    avatarUrl || (storedAvatars ? JSON.parse(storedAvatars)?.[username] : null)
+  );
   const sizeClasses = {
     xs: "h-4 w-4 text-xs",
     sm: "h-6 w-6 text-sm",
@@ -33,6 +40,29 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 
   const backgroundColor = getDeterministicColor(username);
 
+  useEffect(() => {
+    if (!avatarUrl) {
+      const fetchAvatarUrl = async () => {
+        const user = await getUserByUsername(username);
+        return user?.avatarUrl || "";
+      };
+
+      fetchAvatarUrl().then((url) => {
+        if (url !== avatar) {
+          setAvatar(url);
+
+          localStorage.setItem(
+            `avatars`,
+            JSON.stringify({
+              ...(storedAvatars ? JSON.parse(storedAvatars) : {}),
+              [username]: url,
+            })
+          );
+        }
+      });
+    }
+  }, [avatarUrl]);
+
   return (
     <div
       className={cn(
@@ -42,16 +72,17 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
       )}
       style={{ backgroundColor }}
     >
-      {avatarUrl ? (
+      {avatar ? (
         <img
-          src={avatarUrl}
+          src={avatar}
           alt={`${username}'s avatar`}
           className="w-full h-full object-cover rounded-full"
         />
       ) : (
         <span
-          className={`${sizeClasses[size]}${size === "xs" ? " !text-[8px]" : ""
-            } flex items-center justify-center`}
+          className={`${sizeClasses[size]}${
+            size === "xs" ? " !text-[8px]" : ""
+          } flex items-center justify-center`}
         >
           {initials}
         </span>
