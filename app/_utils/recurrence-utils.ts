@@ -167,7 +167,7 @@ const resetChildren = (children?: Item[]): Item[] | undefined => {
     ...child,
     completed: false,
     status: child.status ? TaskStatus.TODO : undefined,
-    children: resetChildren(child.children), // Recursive call for nested children
+    children: resetChildren(child.children),
   }));
 };
 

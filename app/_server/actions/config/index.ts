@@ -187,7 +187,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
           "512x512Icon": "",
           "192x192Icon": "",
           notifyNewUpdates: "yes",
-          parseContent: "no",
+          parseContent: "yes",
           maximumFileSize: MAX_FILE_SIZE,
           editor: {
             enableSlashCommands: true,
@@ -234,7 +234,7 @@ export const updateAppSettings = async (
     const notifyNewUpdates =
       (formData.get("notifyNewUpdates") as "yes" | "no") || "yes";
     const parseContent =
-      (formData.get("parseContent") as "yes" | "no") || "no";
+      (formData.get("parseContent") as "yes" | "no") || "yes";
     const maximumFileSize =
       Number(formData.get("maximumFileSize")) || MAX_FILE_SIZE;
 

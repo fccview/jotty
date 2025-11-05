@@ -172,7 +172,7 @@ export const AppSettingsTab = () => {
             Always show parsed content
           </Label>
           <Dropdown
-            value={settings?.parseContent || "no"}
+            value={settings?.parseContent || "yes"}
             onChange={(value) => handleInputChange("parseContent", value)}
             options={[
               { id: "yes", name: "Yes" },
@@ -182,7 +182,7 @@ export const AppSettingsTab = () => {
           <span className="text-xs text-muted-foreground">
             When enabled this setting will show the parsed titles in the sidebar, search results, and overall across the app. <br />
             When disabled, the original file names will be sanitised, made human readable and shown instead.<br />
-            <span className="font-bold">This setting WILL impact performance on large datasets.</span>
+            <span className="font-bold">Setting this to &quot;no&quot; will improve performance on large datasets but may impact readability - especially on filenames with non latin characters.</span>
           </span>
         </div>
         <div>

@@ -161,7 +161,6 @@ export const useStyling = () => {
           message: "Custom CSS saved successfully.",
         });
         setHasCssChanges(false);
-        // Notify ThemeProvider to reload CSS
         window.dispatchEvent(new CustomEvent("css-updated"));
       } else {
         throw new Error(result.error || "Failed to save CSS");
@@ -340,9 +339,8 @@ export const useStyling = () => {
         showToast({
           type: "success",
           title: "Success",
-          message: `Theme ${
-            editingTheme ? "updated" : "created"
-          } successfully.`,
+          message: `Theme ${editingTheme ? "updated" : "created"
+            } successfully.`,
         });
         setThemeModalOpen(false);
         const allThemes = await getAllThemes();

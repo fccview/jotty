@@ -2,7 +2,7 @@
 
 import { Filter } from "lucide-react";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { CategoryPills } from "@/app/_components/GlobalComponents/Filters/CategoryPills";
+import { CategoryMultiselect } from "@/app/_components/GlobalComponents/Dropdowns/CategoryMultiselect";
 import { Category } from "@/app/_types";
 
 interface FilterSidebarProps {
@@ -12,8 +12,10 @@ interface FilterSidebarProps {
   onFilterChange: (value: string) => void;
   categories: Category[];
   selectedCategories: string[];
-  onCategoryToggle: (category: string) => void;
+  onCategorySelectionChange: (selectedPaths: string[]) => void;
   onClearAllCategories: () => void;
+  recursive?: boolean;
+  onRecursiveChange?: (recursive: boolean) => void;
   pagination?: React.ReactNode;
   className?: string;
 }
@@ -25,8 +27,10 @@ export const FilterSidebar = ({
   onFilterChange,
   categories,
   selectedCategories,
-  onCategoryToggle,
+  onCategorySelectionChange,
   onClearAllCategories,
+  recursive,
+  onRecursiveChange,
   pagination,
   className = "",
 }: FilterSidebarProps) => {
@@ -55,11 +59,13 @@ export const FilterSidebar = ({
             />
           </div>
 
-          <CategoryPills
+          <CategoryMultiselect
             categories={categories}
             selectedCategories={selectedCategories}
-            onCategoryToggle={onCategoryToggle}
+            onSelectionChange={onCategorySelectionChange}
             onClearAll={onClearAllCategories}
+            recursive={recursive}
+            onRecursiveChange={onRecursiveChange}
           />
         </div>
       </div>

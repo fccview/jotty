@@ -435,5 +435,4 @@ export const updateReceiverUsername = async (
   }
 };
 
-// Re-export for convenience
 export type { SharingPermissions };
