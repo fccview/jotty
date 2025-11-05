@@ -132,7 +132,7 @@ export const migrateToNewSharingFormat = async (): Promise<
             migrated: true,
             changes: [
               `Backed up empty shared-items.json to ${backupPath}`,
-              "Removed deprecated shared-items.json file"
+              "Removed deprecated shared-items.json file",
             ],
           },
         };
@@ -148,7 +148,7 @@ export const migrateToNewSharingFormat = async (): Promise<
           migrated: true,
           changes: [
             `Backed up invalid shared-items.json to ${backupPath}`,
-            "Removed deprecated shared-items.json file"
+            "Removed deprecated shared-items.json file",
           ],
         },
       };
@@ -243,7 +243,8 @@ export const migrateToNewSharingFormat = async (): Promise<
         JSON.stringify(notesSharingData, null, 2)
       );
       changes.push(
-        `Created notes sharing file with ${Object.keys(notesSharingData).length
+        `Created notes sharing file with ${
+          Object.keys(notesSharingData).length
         } user entries`
       );
     }
@@ -257,24 +258,23 @@ export const migrateToNewSharingFormat = async (): Promise<
         JSON.stringify(checklistsSharingData, null, 2)
       );
       changes.push(
-        `Created checklists sharing file with ${Object.keys(checklistsSharingData).length
+        `Created checklists sharing file with ${
+          Object.keys(checklistsSharingData).length
         } user entries`
       );
     }
 
-    if (totalMigrations > 0) {
-      const backupPath = `${SHARED_ITEMS_FILE}.backup`;
-      await fs.copyFile(SHARED_ITEMS_FILE, backupPath);
-      changes.push(`Backed up old shared-items.json to ${backupPath}`);
+    const backupPath = `${SHARED_ITEMS_FILE}.backup`;
+    await fs.copyFile(SHARED_ITEMS_FILE, backupPath);
+    changes.push(`Backed up old shared-items.json to ${backupPath}`);
 
-      await fs.unlink(SHARED_ITEMS_FILE);
-      changes.push("Removed deprecated shared-items.json file");
-    }
+    await fs.unlink(SHARED_ITEMS_FILE);
+    changes.push("Removed deprecated shared-items.json file");
 
     return {
       success: true,
       data: {
-        migrated: totalMigrations > 0,
+        migrated: true,
         changes,
       },
     };

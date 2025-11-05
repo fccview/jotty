@@ -19,6 +19,7 @@ import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
+import { PluginKey } from "@tiptap/pm/state";
 
 export interface SlashCommandItem {
   title: string;
@@ -271,8 +272,9 @@ export const SlashCommands = Extension.create({
           props: AtMentionItem;
         }) => {
           const encodedCategory = encodeCategoryPath(props.category);
-          const url = `/${props.type}/${encodedCategory ? `${encodedCategory}/` : ""
-            }${props.id}`;
+          const url = `/${props.type}/${
+            encodedCategory ? `${encodedCategory}/` : ""
+          }${props.id}`;
           editor
             .chain()
             .focus()
@@ -298,7 +300,7 @@ export const SlashCommands = Extension.create({
               ...checklist,
               type: ItemTypes.CHECKLIST as const,
             })),
-          ]
+          ];
 
           if (!query.trim()) return allItems.slice(0, 8);
 
@@ -394,25 +396,52 @@ export const SlashCommands = Extension.create({
   /** @ts-ignore */
   addCommands() {
     return {
-      updateAtMentionData: (notes: any[], checklists: any[], username: string) => () => {
-        atMentionData.notes = notes?.filter((note: any) => note.owner === username) || [];
-        atMentionData.checklists = checklists?.filter((checklist: any) => checklist.owner === username) || [];
+      updateAtMentionData:
+        (notes: any[], checklists: any[], username: string) => () => {
+          atMentionData.notes =
+            notes?.filter((note: any) => note.owner === username) || [];
+          atMentionData.checklists =
+            checklists?.filter(
+              (checklist: any) => checklist.owner === username
+            ) || [];
 
-        return true;
-      },
+          return true;
+        },
     };
   },
 
   addProseMirrorPlugins() {
-    atMentionData.notes = this.options.notes?.filter((note: any) => note.owner === this.options.username) || [];
-    atMentionData.checklists = this.options.checklists?.filter((checklist: any) => checklist.owner === this.options.username) || [];
+    atMentionData.notes =
+      this.options.notes?.filter(
+        (note: any) => note.owner === this.options.username
+      ) || [];
+    atMentionData.checklists =
+      this.options.checklists?.filter(
+        (checklist: any) => checklist.owner === this.options.username
+      ) || [];
 
-    return [
-      Suggestion({
-        editor: this.editor,
-        ...(this.options.enableSlashCommands ? this.options.suggestion : {}),
-        ...(this.options.enableBilateralLinks ? this.options.atSuggestion : {}),
-      }),
-    ];
+    const plugins = [];
+
+    if (this.options.enableSlashCommands) {
+      plugins.push(
+        Suggestion({
+          editor: this.editor,
+          ...this.options.suggestion,
+          pluginKey: new PluginKey("slashSuggestion"),
+        })
+      );
+    }
+
+    if (this.options.enableBilateralLinks) {
+      plugins.push(
+        Suggestion({
+          editor: this.editor,
+          ...this.options.atSuggestion,
+          pluginKey: new PluginKey("atSuggestion"),
+        })
+      );
+    }
+
+    return plugins;
   },
 });

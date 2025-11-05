@@ -1,4 +1,4 @@
-import { EmojiDictionary } from "@/app/_types";
+import { EmojiDictionary, EmojiConfig } from "@/app/_types";
 
 export const EMOJIS: EmojiDictionary = {
     "abacus": "🧮",
@@ -468,7 +468,7 @@ export const EMOJIS: EmojiDictionary = {
     "keyboard": "⌨️",
     "kick scooter": "🛴",
     "kimono": "👘",
-    "kiss": "💋",
+    "kiss": { emoji: "💋", match: "word", caseSensitive: false },
     "kitchen": "🔪",
     "kite": "🪁",
     "kiwi": "🥝",
@@ -652,9 +652,9 @@ export const EMOJIS: EmojiDictionary = {
     "pickup truck": "🛻",
     "pie": "🥧",
     "pig": "🐖",
-    "pill": "💊",
+    "pill": { emoji: "💊", match: "word", caseSensitive: false },
     "pilot": "🧑‍✈️",
-    "pin": "📌",
+    "pin": { emoji: "📌", match: "word", caseSensitive: false },
     "pineapple": "🍍",
     "ping pong": "🏓",
     "pisces": "♓",

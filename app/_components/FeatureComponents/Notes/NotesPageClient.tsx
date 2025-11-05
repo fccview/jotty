@@ -36,6 +36,7 @@ export const NotesPageClient = ({
   const [noteFilter, setNoteFilter] = useState<NoteFilter>("all");
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+  const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
     { id: "all", name: "All Notes" },
@@ -62,13 +63,19 @@ export const NotesPageClient = ({
     }
 
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((note) =>
-        selectedCategories.includes(note.category || "Uncategorized")
-      );
+      filtered = filtered.filter((note) => {
+        const noteCategory = note.category || "Uncategorized";
+        if (recursive) {
+          return selectedCategories.some(selected =>
+            noteCategory === selected || noteCategory.startsWith(selected + "/")
+          );
+        }
+        return selectedCategories.includes(noteCategory);
+      });
     }
 
     return filtered;
-  }, [initialNotes, noteFilter, selectedCategories, user?.pinnedNotes]);
+  }, [initialNotes, noteFilter, selectedCategories, recursive, user?.pinnedNotes]);
 
   const {
     currentPage,
@@ -83,13 +90,6 @@ export const NotesPageClient = ({
     onItemsPerPageChange: setItemsPerPage,
   });
 
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
 
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
@@ -158,14 +158,16 @@ export const NotesPageClient = ({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
           <FilterSidebar
-            title="Filter by type"
+            title="By type"
             filterValue={noteFilter}
             filterOptions={filterOptions}
             onFilterChange={(value) => setNoteFilter(value as NoteFilter)}
             categories={initialCategories}
             selectedCategories={selectedCategories}
-            onCategoryToggle={handleCategoryToggle}
+            onCategorySelectionChange={setSelectedCategories}
             onClearAllCategories={handleClearAllCategories}
+            recursive={recursive}
+            onRecursiveChange={setRecursive}
             pagination={
               <Pagination
                 currentPage={currentPage}
@@ -202,9 +204,8 @@ export const NotesPageClient = ({
                     <NoteCard
                       note={note}
                       onSelect={(note) => {
-                        const categoryPath = `${
-                          note.category || "Uncategorized"
-                        }/${note.id}`;
+                        const categoryPath = `${note.category || "Uncategorized"
+                          }/${note.id}`;
                         router.push(`/note/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedNotes?.includes(

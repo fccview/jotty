@@ -4,6 +4,7 @@
 @import 'highlight.js/styles/github-dark-dimmed.css';
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Intel+One+Mono:ital,wght@0,300..700;1,300..700&display=swap');
 
 @layer base {
     :root {
@@ -470,12 +471,18 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     overflow-wrap: break-word;
 }
 
+pre, code, 
+code span {
+    font-family: "Intel One Mono", monospace;
+    font-size: small;
+  }
+
 .hide-scrollbar::-webkit-scrollbar {
-    display: none;
+    display: none!important;
 }
 .hide-scrollbar {
-    -ms-overflow-style: none; 
-    scrollbar-width: none;  
+    -ms-overflow-style: none!important; 
+    scrollbar-width: none!important;  
 }
 
 .scroll-fade-right {
@@ -920,4 +927,28 @@ pre.text-foreground span,
         font-weight: normal;
         color: #333;
     }
+}
+
+
+.overflow-y-auto {
+    scrollbar-width: auto !important;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
+    background-color: rgb(var(--muted)/0.5) !important;
+    border-radius: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--primary)/0.3) !important;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 20px !important;
+    height: 20px !important;
+    width: 4px !important;
 }

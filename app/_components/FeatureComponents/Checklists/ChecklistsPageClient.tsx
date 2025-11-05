@@ -50,6 +50,7 @@ export const ChecklistsPageClient = ({
     useState<ChecklistFilter>("all");
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+  const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
     { id: "all", name: "All Checklists" },
@@ -88,16 +89,22 @@ export const ChecklistsPageClient = ({
     }
 
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((list) =>
-        selectedCategories.includes(list.category || "Uncategorized")
-      );
+      filtered = filtered.filter((list) => {
+        const listCategory = list.category || "Uncategorized";
+        if (recursive) {
+          return selectedCategories.some(selected =>
+            listCategory === selected || listCategory.startsWith(selected + "/")
+          );
+        }
+        return selectedCategories.includes(listCategory);
+      });
     }
 
     return filtered.sort(
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
-  }, [initialLists, checklistFilter, selectedCategories, user?.pinnedLists]);
+  }, [initialLists, checklistFilter, selectedCategories, recursive, user?.pinnedLists]);
 
   const {
     currentPage,
@@ -112,13 +119,6 @@ export const ChecklistsPageClient = ({
     onItemsPerPageChange: setItemsPerPage,
   });
 
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
 
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
@@ -255,7 +255,7 @@ export const ChecklistsPageClient = ({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-8">
           <div className="lg:col-span-1">
             <FilterSidebar
-              title="Filter by status"
+              title="By status"
               filterValue={checklistFilter}
               filterOptions={filterOptions}
               onFilterChange={(value) =>
@@ -263,8 +263,10 @@ export const ChecklistsPageClient = ({
               }
               categories={initialCategories}
               selectedCategories={selectedCategories}
-              onCategoryToggle={handleCategoryToggle}
+              onCategorySelectionChange={setSelectedCategories}
               onClearAllCategories={handleClearAllCategories}
+              recursive={recursive}
+              onRecursiveChange={setRecursive}
               pagination={
                 <Pagination
                   currentPage={currentPage}
@@ -297,9 +299,8 @@ export const ChecklistsPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${
-                          list.category || "Uncategorized"
-                        }/${list.id}`;
+                        const categoryPath = `${list.category || "Uncategorized"
+                          }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(

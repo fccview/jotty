@@ -32,12 +32,15 @@ import { revalidatePath } from "next/cache";
 import {
   buildCategoryPath,
   decodeCategoryPath,
+  encodeCategoryPath,
 } from "@/app/_utils/global-utils";
 import {
   updateIndexForItem,
   parseInternalLinks,
   removeItemFromIndex,
   updateItemCategory,
+  updateReferencingContent,
+  rebuildLinkIndex,
 } from "@/app/_server/actions/link";
 import {
   shouldRefreshRecurringItem,
@@ -276,7 +279,6 @@ export const getRawLists = async (
 
     const lists: Checklist[] = [];
 
-    // Recursive function to read checklists from directories
     const readListsFromDir = async (
       dirPath: string,
       categoryPrefix: string
@@ -648,6 +650,15 @@ export const updateList = async (formData: FormData) => {
           oldItemKey,
           newItemKey
         );
+        await updateReferencingContent(
+          currentList.owner!,
+          ItemTypes.CHECKLIST,
+          encodeCategoryPath(oldItemKey),
+          encodeCategoryPath(newItemKey),
+          updatedList.title
+        );
+        await rebuildLinkIndex(currentList.owner!);
+        revalidatePath("/");
       }
 
       await updateIndexForItem(

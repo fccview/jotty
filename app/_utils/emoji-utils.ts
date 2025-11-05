@@ -1,25 +1,37 @@
 import { EMOJIS } from "@/app/_consts/emojis";
+import { EmojiConfig } from "@/app/_types";
 import {
   loadCustomEmojis,
   processCustomEmojis,
 } from "@/app/_utils/config-loader";
 
-let customEmojisCache: { [key: string]: string } = {};
-let cacheInitialized = false;
+let emojiDictCache: { [key: string]: EmojiConfig };
 
-const loadCustomEmojisOnce = async () => {
-  if (!cacheInitialized) {
+const initializeEmojiDict = (): void => {
+  const emojiDict: { [key: string]: EmojiConfig } = {};
+
+  for (const [key, value] of Object.entries(EMOJIS)) {
+    emojiDict[key] = normalizeEmojiConfig(value);
+  }
+
+  emojiDictCache = emojiDict;
+};
+
+let customEmojisLoaded = false;
+const loadCustomEmojisAsync = async () => {
+  if (!customEmojisLoaded) {
     try {
       const customConfig = await loadCustomEmojis();
-      customEmojisCache = processCustomEmojis(customConfig);
-      cacheInitialized = true;
+      const customEmojis = processCustomEmojis(customConfig);
+
+      for (const [key, value] of Object.entries(customEmojis)) {
+        emojiDictCache[key] = normalizeEmojiConfig(value);
+      }
     } catch (error) {
       console.warn("Failed to load custom emojis:", error);
-      customEmojisCache = {};
-      cacheInitialized = true;
     }
+    customEmojisLoaded = true;
   }
-  return customEmojisCache;
 };
 
 const getSingular = (word: string): string => {
@@ -35,51 +47,44 @@ const getSingular = (word: string): string => {
   return word;
 };
 
-const getWordVariations = (word: string): string[] => {
-  const variations = [
-    word.toLowerCase(),
-    getSingular(word.toLowerCase()),
-    word.toLowerCase().replace(/[^a-z]/g, ""),
-  ];
-
-  return variations.filter((v, i, a) => a.indexOf(v) === i);
+const normalizeEmojiConfig = (value: EmojiConfig | string): EmojiConfig => {
+  if (typeof value === "string") {
+    return {
+      emoji: value,
+      match: "word",
+      caseSensitive: false,
+    };
+  }
+  return value;
 };
+
+initializeEmojiDict();
 
 export const findMatchingEmoji = async (text: string): Promise<string> => {
   try {
-    const customEmojis = await loadCustomEmojisOnce();
-    const emojiDict = { ...customEmojis, ...EMOJIS };
+    loadCustomEmojisAsync();
+
+    const emojiDict = emojiDictCache;
 
     const words = text.split(/\s+/);
-    const allWordVariations = words.map(getWordVariations).flat();
 
-    for (const word of allWordVariations) {
-      const emoji = emojiDict[word];
-      if (emoji) {
-        return emoji;
+    for (const word of words) {
+      const cleanWord = word.toLowerCase().replace(/[^a-z]/g, "");
+
+      const config = emojiDict[cleanWord];
+      if (config && config.emoji && config.match === "word") {
+        return config.emoji;
       }
-    }
 
-    for (const [key, emoji] of Object.entries(emojiDict)) {
-      for (const word of allWordVariations) {
+      const singular = getSingular(cleanWord);
+      if (singular !== cleanWord) {
+        const singularConfig = emojiDict[singular];
         if (
-          word.length >= 3 &&
-          (key === word ||
-            key.startsWith(word + " ") ||
-            key.endsWith(" " + word) ||
-            key.includes(" " + word + " "))
+          singularConfig &&
+          singularConfig.emoji &&
+          singularConfig.match === "word"
         ) {
-          return emoji;
-        }
-      }
-    }
-
-    for (const word of allWordVariations) {
-      if (word.length > 5) {
-        for (const [key, emoji] of Object.entries(emojiDict)) {
-          if (word.includes(key) && key.length > 3) {
-            return emoji;
-          }
+          return singularConfig.emoji;
         }
       }
     }

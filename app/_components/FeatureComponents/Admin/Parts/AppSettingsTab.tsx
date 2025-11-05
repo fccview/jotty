@@ -168,6 +168,24 @@ export const AppSettingsTab = () => {
           />
         </div>
         <div>
+          <Label htmlFor="parseContent" className="block mb-3">
+            Always show parsed content
+          </Label>
+          <Dropdown
+            value={settings?.parseContent || "yes"}
+            onChange={(value) => handleInputChange("parseContent", value)}
+            options={[
+              { id: "yes", name: "Yes" },
+              { id: "no", name: "No" },
+            ]}
+          />
+          <span className="text-xs text-muted-foreground">
+            When enabled this setting will show the parsed titles in the sidebar, search results, and overall across the app. <br />
+            When disabled, the original file names will be sanitised, made human readable and shown instead.<br />
+            <span className="font-bold">Setting this to &quot;no&quot; will improve performance on large datasets but may impact readability - especially on filenames with non latin characters.</span>
+          </span>
+        </div>
+        <div>
           <Input
             label="Maximum file upload size"
             description="The maximum file size allowed for uploads in MB (applies to images, videos, and files)"

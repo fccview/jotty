@@ -3,6 +3,8 @@ import fs from "fs/promises";
 import path from "path";
 import { EXPORT_TEMP_DIR } from "@/app/_consts/files";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { filename: string } }

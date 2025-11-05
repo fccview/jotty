@@ -51,14 +51,18 @@ export const NoteEditorContent = ({
       editorRef.current &&
       (isEditing || notesDefaultMode === "edit" || editor === "true")
     ) {
-      editorRef.current.updateAtMentionData(notes, checklists, user?.username || "");
+      editorRef.current.updateAtMentionData(
+        notes,
+        checklists,
+        user?.username || ""
+      );
     }
   }, [notes, checklists, isEditing, notesDefaultMode, editor, editorRef]);
 
   return (
     <div className="flex-1 h-full pb-14 lg:pb-0">
       {(notesDefaultMode === "edit" || editor === "true" || isEditing) &&
-        permissions?.canEdit ? (
+      permissions?.canEdit ? (
         <TiptapEditor
           ref={editorRef}
           content={editorContent}
@@ -69,8 +73,9 @@ export const NoteEditorContent = ({
         />
       ) : (
         <div
-          className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
-            }`}
+          className={`px-6 pt-6 pb-12 ${
+            compactMode ? "max-w-[900px] mx-auto" : ""
+          }`}
         >
           <UnifiedMarkdownRenderer content={noteContent || ""} />
 

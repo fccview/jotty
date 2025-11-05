@@ -4,6 +4,7 @@ import { AppMode, Checklist, ItemType, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
 import { ItemTypes } from "@/app/_types/enums";
+import { encodeCategoryPath, encodeId } from "@/app/_utils/global-utils";
 
 interface useSearchProps {
   mode: AppMode;
@@ -16,6 +17,7 @@ interface SearchResult {
   title: string;
   type: ItemType;
   content?: string;
+  category?: string;
 }
 
 export const useSearch = ({
@@ -24,7 +26,7 @@ export const useSearch = ({
   onResultSelect,
 }: useSearchProps) => {
   const router = useRouter();
-  const { checklists, notes } = useAppMode();
+  const { checklists, notes, appSettings } = useAppMode();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -35,7 +37,9 @@ export const useSearch = ({
 
   const handleSelectResult = useCallback(
     (result: SearchResult) => {
-      const targetPath = `/${result.type}/${result.id}`;
+      const targetPath = `/${result.type}/${encodeCategoryPath(
+        result.category || "Uncategorized"
+      )}/${encodeId(result.id)}`;
       const targetMode = `${result.type}s` as AppMode;
 
       if (mode !== targetMode && onModeChange) {
@@ -55,15 +59,23 @@ export const useSearch = ({
     () => [
       ...checklists.map((c) => ({
         id: c.id || "",
-        title: capitalize(c.title?.replace(/-/g, " ")),
+        title:
+          appSettings?.parseContent === "yes"
+            ? c.title
+            : capitalize(c.title?.replace(/-/g, " ")),
         type: ItemTypes.CHECKLIST,
         content: c?.items?.map((i) => i.text).join(" ") || "".toLowerCase(),
+        category: c.category || "Uncategorized",
       })),
       ...notes.map((n) => ({
         id: n.id || "",
-        title: capitalize(n.title?.replace(/-/g, " ")),
+        title:
+          appSettings?.parseContent === "yes"
+            ? n.title
+            : capitalize(n.title?.replace(/-/g, " ")),
         type: ItemTypes.NOTE,
         content: n.content?.toLowerCase() || "",
+        category: n.category || "Uncategorized",
       })),
     ],
     [checklists, notes]
@@ -80,12 +92,12 @@ export const useSearch = ({
       const searchResults = processedItems
         .filter(
           (item) =>
-            item.title.toLowerCase().includes(lowerCaseQuery) ||
+            item.title?.toLowerCase().includes(lowerCaseQuery) ||
             item.content.includes(lowerCaseQuery)
         )
         .slice(0, 8);
 
-      setResults(searchResults);
+      setResults(searchResults as SearchResult[]);
       setSelectedIndex(0);
     };
 

@@ -23,7 +23,7 @@ import {
 } from "@/app/_server/actions/file";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { DEPRECATED_DOCS_FOLDER, NOTES_FOLDER } from "@/app/_consts/notes";
+import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { readJsonFile } from "../file";
 import {
   ARCHIVED_DIR_NAME,
@@ -43,6 +43,8 @@ import {
   parseInternalLinks,
   removeItemFromIndex,
   updateItemCategory,
+  updateReferencingContent,
+  rebuildLinkIndex,
 } from "@/app/_server/actions/link";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import { checkUserPermission } from "@/app/_server/actions/sharing";
@@ -265,8 +267,7 @@ export const getNotes = async (username?: string, allowArchived?: boolean) => {
     for (const sharedItem of sharedData.notes) {
       const fileName = `${sharedItem.id}.md`;
 
-      // Decode the category path since it's URL-encoded in the sharing data
-      const decodedCategory = decodeURIComponent(
+      const decodedCategory = decodeCategoryPath(
         sharedItem.category || "Uncategorized"
       );
 
@@ -329,7 +330,6 @@ export const getRawNotes = async (
 
     const docs: Note[] = [];
 
-    // Recursive function to read notes from directories
     const readNotesFromDir = async (
       dirPath: string,
       categoryPrefix: string
@@ -354,7 +354,6 @@ export const getRawNotes = async (
           ]
         : dirNames.sort((a, b) => a.localeCompare(b));
 
-      // Read files in current directory
       const files = entries.filter((e) => e.isFile() && e.name.endsWith(".md"));
       const ids = files.map((f) => path.basename(f.name, ".md"));
       const categoryOrder = await readOrderFile(dirPath);
@@ -388,7 +387,6 @@ export const getRawNotes = async (
         } catch {}
       }
 
-      // Recursively read subdirectories
       for (const dirName of orderedDirNames) {
         const subDirPath = path.join(dirPath, dirName);
         const subCategoryPrefix = categoryPrefix
@@ -625,8 +623,18 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       }`;
 
       const oldItemKey = `${doc.category || "Uncategorized"}/${id}`;
+
       if (oldItemKey !== newItemKey) {
+        await updateReferencingContent(
+          doc.owner!,
+          "note",
+          encodeCategoryPath(oldItemKey),
+          encodeCategoryPath(newItemKey),
+          updatedDoc.title
+        );
         await updateItemCategory(doc.owner!, "note", oldItemKey, newItemKey);
+        await rebuildLinkIndex(doc.owner!);
+        revalidatePath("/");
       }
 
       await updateIndexForItem(doc.owner!, "note", newItemKey, links);

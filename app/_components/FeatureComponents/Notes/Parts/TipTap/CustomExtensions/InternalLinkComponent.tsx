@@ -10,6 +10,7 @@ import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/Checklis
 import { decodeCategoryPath } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
 import { ItemTypes } from "@/app/_types/enums";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface InternalLinkComponentProps {
   node: {
@@ -28,7 +29,7 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
   const [fullNote, setFullNote] = useState<Note | undefined>(undefined);
   const [fullList, setFullList] = useState<Checklist | undefined>(undefined);
   const [showPopup, setShowPopup] = useState(false);
-
+  const { appSettings } = useAppMode();
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!href) return;
@@ -97,7 +98,7 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
           <CheckSquare className="h-3 w-3 text-foreground" />
         )}
       </span>
-      <span className="text-sm font-medium text-foreground">{capitalize(title.replace(/-/g, ' '))}</span>
+      <span className="text-sm font-medium text-foreground">{appSettings?.parseContent === "yes" ? title : capitalize(title.replace(/-/g, ' '))}</span>
 
 
       <span className="text-xs text-muted-foreground">•</span>

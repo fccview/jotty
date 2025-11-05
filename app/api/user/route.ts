@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {

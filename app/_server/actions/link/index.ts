@@ -5,10 +5,17 @@ import fs from "fs/promises";
 import { getUserModeDir } from "@/app/_server/actions/file";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
-import { getNotes } from "@/app/_server/actions/note";
-import { getLists } from "@/app/_server/actions/checklist";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { getNotes, getNoteById } from "@/app/_server/actions/note";
+import { getLists, getListById } from "@/app/_server/actions/checklist";
+import {
+  encodeCategoryPath,
+  decodeCategoryPath,
+  encodeId,
+  decodeId,
+} from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
+import { NOTES_FOLDER } from "@/app/_consts/notes";
+import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 
 export interface LinkIndex {
   notes: Record<string, ItemLinks>;
@@ -83,7 +90,7 @@ export const parseInternalLinks = (content: string): LinkTarget[] => {
 
     links.push({
       type: type as ItemType,
-      path: category ? `${category}/${id}` : id,
+      path: category ? `${encodeCategoryPath(category)}/${id}` : id,
     });
   }
 
@@ -107,7 +114,9 @@ const resolveLinkPath = (
     return linkPath;
   }
 
-  const uncategorizedPath = encodeCategoryPath(`Uncategorized/${decodeURIComponent(linkPath)}`);
+  const uncategorizedPath = encodeCategoryPath(
+    `Uncategorized/${decodeURIComponent(linkPath)}`
+  );
   if (index[targetKey][uncategorizedPath]) {
     return uncategorizedPath;
   }
@@ -147,10 +156,12 @@ export const updateIndexForItem = async (
   }
 
   const newOutgoingLinks = {
-    notes: currentLinks.filter((l) => l.type === ItemTypes.NOTE).map((l) => {
-      const resolvedPath = resolveLinkPath(l.path, l.type, index);
-      return resolvedPath || `Uncategorized/${l.path}`;
-    }),
+    notes: currentLinks
+      .filter((l) => l.type === ItemTypes.NOTE)
+      .map((l) => {
+        const resolvedPath = resolveLinkPath(l.path, l.type, index);
+        return resolvedPath || `Uncategorized/${l.path}`;
+      }),
     checklists: currentLinks
       .filter((l) => l.type === ItemTypes.CHECKLIST)
       .map((l) => {
@@ -161,7 +172,11 @@ export const updateIndexForItem = async (
 
   for (const link of currentLinks) {
     const resolvedPath = resolveLinkPath(link.path, link.type, index);
-    const targetPath = resolvedPath ? (resolvedPath.includes("/") ? resolvedPath : `Uncategorized/${resolvedPath}`) : link.path;
+    const targetPath = resolvedPath
+      ? resolvedPath.includes("/")
+        ? resolvedPath
+        : `Uncategorized/${resolvedPath}`
+      : link.path;
     const targetKey = `${link.type}s`;
     if (!index[targetKey][targetPath]) {
       index[targetKey][targetPath] = {
@@ -282,6 +297,173 @@ export const updateItemCategory = async (
   await writeLinkIndex(username, index);
 };
 
+export const updateReferencingContent = async (
+  username: string,
+  itemType: ItemType,
+  oldItemId: string,
+  newItemId: string,
+  newTitle: string
+): Promise<void> => {
+  const index = await readLinkIndex(username);
+  const itemKey = `${itemType}s`;
+
+  if (!index[itemKey][oldItemId]) return;
+
+  const referencingNotes = index[itemKey][oldItemId].isReferencedIn.notes || [];
+  const referencingChecklists =
+    index[itemKey][oldItemId].isReferencedIn.checklists || [];
+
+  const oldHref = `/${itemType}/${oldItemId}`;
+  const newHref = `/${itemType}/${newItemId}`;
+
+  for (const noteId of referencingNotes) {
+    try {
+      const note = await getNoteById(
+        decodeId(noteId.split("/").pop() || ""),
+        decodeCategoryPath(noteId.split("/").slice(0, -1).join("/")),
+        username
+      );
+      if (!note) continue;
+
+      let updatedContent = note.content;
+
+      const markdownRegex = new RegExp(`\\[([^\\]]+)\\]\\(${oldHref}\\)`, "g");
+      updatedContent = updatedContent.replace(
+        markdownRegex,
+        `[${newTitle}](${newHref})`
+      );
+
+      const htmlHrefRegex = new RegExp(`href="${oldHref}"`, "g");
+      updatedContent = updatedContent.replace(
+        htmlHrefRegex,
+        `href="${newHref}"`
+      );
+      const htmlTitleRegex = new RegExp(`data-title="[^"]*"`, "g");
+      updatedContent = updatedContent.replace(
+        htmlTitleRegex,
+        `data-title="${newTitle}"`
+      );
+
+      if (updatedContent !== note.content) {
+        const updatedNote = { ...note, content: updatedContent };
+        const markdown = `# ${updatedNote.title}\n\n${updatedNote.content}`;
+        const ownerDir = path.join(
+          process.cwd(),
+          "data",
+          NOTES_FOLDER,
+          note.owner!
+        );
+        const categoryDir = path.join(
+          ownerDir,
+          updatedNote.category || "Uncategorized"
+        );
+        await fs.mkdir(categoryDir, { recursive: true });
+        const filePath = path.join(
+          categoryDir,
+          `${encodeId(updatedNote.id)}.md`
+        );
+        await serverWriteFile(filePath, markdown);
+
+        const links = parseInternalLinks(updatedContent);
+        await updateIndexForItem(username, "note", noteId, links);
+      }
+    } catch (error) {
+      console.warn(`Failed to update referencing note ${noteId}:`, error);
+    }
+  }
+
+  // Update referencing checklists
+  for (const checklistId of referencingChecklists) {
+    try {
+      const checklist = await getListById(
+        decodeId(checklistId.split("/").pop() || ""),
+        username,
+        decodeCategoryPath(checklistId.split("/").slice(0, -1).join("/"))
+      );
+      if (!checklist) continue;
+
+      let contentChanged = false;
+      const updatedItems = checklist.items.map((item) => {
+        let updatedText = item.text;
+
+        // Update markdown links: [title](href)
+        const markdownRegex = new RegExp(
+          `\\[([^\\]]+)\\]\\(${oldHref}\\)`,
+          "g"
+        );
+        updatedText = updatedText.replace(
+          markdownRegex,
+          `[${newTitle}](${newHref})`
+        );
+
+        // Update HTML links: href="..." and data-title="..."
+        const htmlHrefRegex = new RegExp(`href="${oldHref}"`, "g");
+        updatedText = updatedText.replace(htmlHrefRegex, `href="${newHref}"`);
+        const htmlTitleRegex = new RegExp(`data-title="[^"]*"`, "g");
+        updatedText = updatedText.replace(
+          htmlTitleRegex,
+          `data-title="${newTitle}"`
+        );
+
+        if (updatedText !== item.text) {
+          contentChanged = true;
+          return { ...item, text: updatedText };
+        }
+        return item;
+      });
+
+      if (contentChanged) {
+        // Save the checklist
+        const updatedChecklist = { ...checklist, items: updatedItems };
+        const header =
+          updatedChecklist.type === "task"
+            ? `# ${updatedChecklist.title}\n<!-- type:task -->\n`
+            : `# ${updatedChecklist.title}\n`;
+        const itemsMarkdown = updatedItems
+          .sort((a, b) => a.order - b.order)
+          .map((item) => {
+            const prefix =
+              updatedChecklist.type === "task"
+                ? item.status === "completed"
+                  ? "- [x] "
+                  : "- [ ] "
+                : "- ";
+            return prefix + item.text;
+          })
+          .join("\n");
+        const markdown = `${header}\n${itemsMarkdown}`;
+
+        const ownerDir = path.join(
+          process.cwd(),
+          "data",
+          CHECKLISTS_FOLDER,
+          checklist.owner!
+        );
+        const categoryDir = path.join(
+          ownerDir,
+          updatedChecklist.category || "Uncategorized"
+        );
+        await fs.mkdir(categoryDir, { recursive: true });
+        const filePath = path.join(
+          categoryDir,
+          `${encodeId(updatedChecklist.id)}.md`
+        );
+        await serverWriteFile(filePath, markdown);
+
+        // Update the link index for this checklist
+        const content = updatedItems.map((i) => i.text).join("\n");
+        const links = parseInternalLinks(content);
+        await updateIndexForItem(username, "checklist", checklistId, links);
+      }
+    } catch (error) {
+      console.warn(
+        `Failed to update referencing checklist ${checklistId}:`,
+        error
+      );
+    }
+  }
+};
+
 export const rebuildLinkIndex = async (username: string): Promise<void> => {
   const [notesResult, checklistsResult] = await Promise.all([
     getNotes(username),
@@ -296,7 +478,10 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   const newIndex: LinkIndex = { notes: {}, checklists: {} };
 
   for (const note of allNotes) {
-    const category = note.category && note.category !== "" && note.category !== "/" ? note.category : "Uncategorized";
+    const category =
+      note.category && note.category !== "" && note.category !== "/"
+        ? note.category
+        : "Uncategorized";
     const itemKey = encodeCategoryPath(`${category}/${note.id}`);
     newIndex.notes[itemKey] = {
       isLinkedTo: { notes: [], checklists: [] },
@@ -305,7 +490,12 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   }
 
   for (const checklist of allChecklists) {
-    const category = checklist.category && checklist.category !== "" && checklist.category !== "/" ? checklist.category : "Uncategorized";
+    const category =
+      checklist.category &&
+      checklist.category !== "" &&
+      checklist.category !== "/"
+        ? checklist.category
+        : "Uncategorized";
     const itemKey = encodeCategoryPath(`${category}/${checklist.id}`);
     newIndex.checklists[itemKey] = {
       isLinkedTo: { notes: [], checklists: [] },
@@ -314,39 +504,43 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   }
 
   for (const note of allNotes) {
-    const category = note.category && note.category !== "" && note.category !== "/" ? note.category : "Uncategorized";
+    const category =
+      note.category && note.category !== "" && note.category !== "/"
+        ? note.category
+        : "Uncategorized";
     const itemKey = encodeCategoryPath(`${category}/${note.id}`);
     const links = parseInternalLinks(note.content);
     newIndex.notes[itemKey].isLinkedTo = {
-      notes: links.filter((l) => l.type === ItemTypes.NOTE).map((l) => {
-        const resolvedPath = resolveLinkPath(l.path, l.type as ItemType, newIndex);
-        return resolvedPath || encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`);
-      }),
+      notes: links
+        .filter((l) => l.type === ItemTypes.NOTE)
+        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
+        .filter((path): path is string => path !== null),
       checklists: links
         .filter((l) => l.type === ItemTypes.CHECKLIST)
-        .map((l) => {
-          const resolvedPath = resolveLinkPath(l.path, l.type as ItemType, newIndex);
-          return resolvedPath || encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`);
-        }),
+        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
+        .filter((path): path is string => path !== null),
     };
   }
 
   for (const checklist of allChecklists) {
-    const category = checklist.category && checklist.category !== "" && checklist.category !== "/" ? checklist.category : "Uncategorized";
+    const category =
+      checklist.category &&
+      checklist.category !== "" &&
+      checklist.category !== "/"
+        ? checklist.category
+        : "Uncategorized";
     const itemKey = encodeCategoryPath(`${category}/${checklist.id}`);
     const content = checklist.items.map((i) => i.text).join("\n");
     const links = parseInternalLinks(content);
     newIndex.checklists[itemKey].isLinkedTo = {
-      notes: links.filter((l) => l.type === ItemTypes.NOTE).map((l) => {
-        const resolvedPath = resolveLinkPath(l.path, l.type as ItemType, newIndex);
-        return resolvedPath || encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`);
-      }),
+      notes: links
+        .filter((l) => l.type === ItemTypes.NOTE)
+        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
+        .filter((path): path is string => path !== null),
       checklists: links
         .filter((l) => l.type === ItemTypes.CHECKLIST)
-        .map((l) => {
-          const resolvedPath = resolveLinkPath(l.path, l.type as ItemType, newIndex);
-          return resolvedPath || encodeCategoryPath(`Uncategorized/${decodeURIComponent(l.path)}`);
-        }),
+        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
+        .filter((path): path is string => path !== null),
     };
   }
 
@@ -363,17 +557,26 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   for (const [itemType, items] of Object.entries(newIndex)) {
     for (const [itemId, itemLinks] of Object.entries(items)) {
       for (const link of [
-        ...itemLinks.isLinkedTo.notes.map((path) => ({ type: ItemTypes.NOTE, path })),
+        ...itemLinks.isLinkedTo.notes.map((path) => ({
+          type: ItemTypes.NOTE,
+          path,
+        })),
         ...itemLinks.isLinkedTo.checklists.map((path) => ({
           type: ItemTypes.CHECKLIST,
           path,
         })),
       ]) {
-        const resolvedPath = resolveLinkPath(link.path, link.type as ItemType, newIndex);
+        const resolvedPath = resolveLinkPath(
+          link.path,
+          link.type as ItemType,
+          newIndex
+        );
 
         if (resolvedPath) {
           const targetKey = `${link.type}s`;
-          const finalResolvedPath = resolvedPath.includes("/") ? resolvedPath : `Uncategorized/${resolvedPath}`;
+          const finalResolvedPath = resolvedPath.includes("/")
+            ? resolvedPath
+            : `Uncategorized/${resolvedPath}`;
           newIndex[targetKey][finalResolvedPath].isReferencedIn[
             itemType === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS
           ].push(itemId);

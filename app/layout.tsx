@@ -21,8 +21,8 @@ import {
   getThemeBackgroundColor,
   rgbToHex,
 } from "./_consts/themes";
-import { getProjectedLists } from "./_server/actions/checklist";
-import { getProjectedNotes } from "./_server/actions/note";
+import { getProjectedLists, getLists } from "./_server/actions/checklist";
+import { getProjectedNotes, getNotes } from "./_server/actions/note";
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
   getAllSharedItems,
@@ -146,6 +146,8 @@ export default async function RootLayout({
   const users = await getUsers();
   const linkIndex = user?.username ? await readLinkIndex(user.username) : null;
 
+  const shouldParseContent = settings?.parseContent === "yes";
+
   const [
     notesResult,
     checklistsResult,
@@ -153,8 +155,12 @@ export default async function RootLayout({
     userSharedItems,
     globalSharing,
   ] = await Promise.all([
-    getProjectedNotes(["id", "title", "category", "owner"]),
-    getProjectedLists(["id", "title", "category", "owner", "type"]),
+    shouldParseContent
+      ? getNotes()
+      : getProjectedNotes(["id", "title", "category", "owner"]),
+    shouldParseContent
+      ? getLists()
+      : getProjectedLists(["id", "title", "category", "owner", "type"]),
     getAllSharedItems(),
     user
       ? getAllSharedItemsForUser(user.username)
