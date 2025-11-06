@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/app/_providers/ThemeProvider";
 import { AppModeProvider } from "@/app/_providers/AppModeProvider";
 import { ToastProvider } from "@/app/_providers/ToastProvider";
 import { NavigationGuardProvider } from "@/app/_providers/NavigationGuardProvider";
+import { EmojiProvider } from "@/app/_providers/EmojiProvider";
 import { InstallPrompt } from "@/app/_components/GlobalComponents/Prompts/InstallPrompt";
 import { UpdatePrompt } from "@/app/_components/GlobalComponents/Pwa/UpdatePrompt";
 import { getSettings } from "@/app/_server/actions/config";
@@ -137,7 +138,8 @@ export default async function RootLayout({
 }) {
   const pathname = headers().get("x-pathname");
   const settings = await getSettings();
-  const appName = settings.appName || (settings.isRwMarkable ? "rwMarkable" : "jotty·page");
+  const appName =
+    settings.appName || (settings.isRwMarkable ? "rwMarkable" : "jotty·page");
   const noteCategories = await getCategories(Modes.NOTES);
   const checklistCategories = await getCategories(Modes.CHECKLISTS);
   const user = await getCurrentUser();
@@ -217,26 +219,28 @@ export default async function RootLayout({
           globalSharing={globalSharing}
         >
           <ThemeProvider user={user || {}}>
-            <NavigationGuardProvider>
-              <ToastProvider>
-                <ShortcutProvider
-                  user={user}
-                  noteCategories={noteCategories.data || []}
-                  checklistCategories={checklistCategories.data || []}
-                >
-                  <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                    <DynamicFavicon />
-                    {children}
+            <EmojiProvider>
+              <NavigationGuardProvider>
+                <ToastProvider>
+                  <ShortcutProvider
+                    user={user}
+                    noteCategories={noteCategories.data || []}
+                    checklistCategories={checklistCategories.data || []}
+                  >
+                    <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                      <DynamicFavicon />
+                      {children}
 
-                    {!pathname?.includes("/public") && <InstallPrompt />}
+                      {!pathname?.includes("/public") && <InstallPrompt />}
 
-                    {serveUpdates && !pathname?.includes("/public") && (
-                      <UpdatePrompt />
-                    )}
-                  </div>
-                </ShortcutProvider>
-              </ToastProvider>
-            </NavigationGuardProvider>
+                      {serveUpdates && !pathname?.includes("/public") && (
+                        <UpdatePrompt />
+                      )}
+                    </div>
+                  </ShortcutProvider>
+                </ToastProvider>
+              </NavigationGuardProvider>
+            </EmojiProvider>
           </ThemeProvider>
         </AppModeProvider>
       </body>

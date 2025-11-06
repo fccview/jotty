@@ -11,11 +11,8 @@ import {
   ChevronDown,
   ChevronRight,
   MoreHorizontal,
-  PencilIcon,
-  PlusIcon,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { cn } from "@/app/_utils/global-utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";

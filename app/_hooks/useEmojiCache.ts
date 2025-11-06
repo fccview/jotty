@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { findMatchingEmoji } from "@/app/_utils/emoji-utils";
+import {
+  findMatchingEmojiSync,
+  findMatchingEmoji,
+} from "@/app/_utils/emoji-utils";
 
 interface EmojiCache {
   [key: string]: string;
@@ -20,6 +23,13 @@ export const useEmojiCache = (text: string, showEmojis: boolean) => {
 
     if (globalEmojiCache[text]) {
       setEmoji(globalEmojiCache[text]);
+      return;
+    }
+
+    const syncResult = findMatchingEmojiSync(text);
+    if (syncResult) {
+      globalEmojiCache[text] = syncResult;
+      setEmoji(syncResult);
       return;
     }
 
