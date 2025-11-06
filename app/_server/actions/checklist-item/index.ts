@@ -41,14 +41,6 @@ export const updateItem = async (
 
     const currentUser = username || (await getUsername());
 
-    console.log("updateItem - currentUser", currentUser);
-    console.log("updateItem - listId", listId);
-    console.log("updateItem - category", category);
-    console.log("updateItem - itemId", itemId);
-    console.log("updateItem - completed", completed);
-    console.log("updateItem - text", text);
-    console.log("updateItem - description", description);
-
     const canEdit = await checkUserPermission(
       listId,
       category || "Uncategorized",

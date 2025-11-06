@@ -22,6 +22,7 @@ import {
   getThemeBackgroundColor,
   rgbToHex,
 } from "./_consts/themes";
+import { loadCustomThemes } from "./_server/actions/config";
 import { getProjectedLists, getLists } from "./_server/actions/checklist";
 import { getProjectedNotes, getNotes } from "./_server/actions/note";
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
@@ -144,6 +145,7 @@ export default async function RootLayout({
   const checklistCategories = await getCategories(Modes.CHECKLISTS);
   const user = await getCurrentUser();
   const appVersion = await readPackageVersion();
+  const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
   const users = await getUsers();
   const linkIndex = user?.username ? await readLinkIndex(user.username) : null;
@@ -200,7 +202,11 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
         <meta name="mobile-web-app-capable" content="yes" />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeInitScript(JSON.stringify(customThemes["custom-themes"] || {}))
+          }}
+        />
       </head>
       <body className={`${inter.className} jotty-body`}>
         <AppModeProvider

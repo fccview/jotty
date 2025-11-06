@@ -112,6 +112,17 @@ export const ThemeProvider = ({
       `;
 
       styleElement.textContent = cssContent;
+
+      Object.keys(customThemeColors[resolvedTheme]).forEach((key) => {
+        document.documentElement.style.removeProperty(key);
+      });
+
+      const initStyleElement = document.getElementById(
+        "custom-theme-init-styles"
+      ) as HTMLStyleElement;
+      if (initStyleElement) {
+        initStyleElement.remove();
+      }
     }
 
     if (customCSS) {
