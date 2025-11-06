@@ -12,6 +12,7 @@ import {
   decodeCategoryPath,
   encodeId,
   decodeId,
+  buildCategoryPath,
 } from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
@@ -477,7 +478,7 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
       note.category && note.category !== "" && note.category !== "/"
         ? note.category
         : "Uncategorized";
-    const itemKey = encodeCategoryPath(`${category}/${note.id}`);
+    const itemKey = buildCategoryPath(category, note.id);
     newIndex.notes[itemKey] = {
       isLinkedTo: { notes: [], checklists: [] },
       isReferencedIn: { notes: [], checklists: [] },
@@ -491,7 +492,7 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
       checklist.category !== "/"
         ? checklist.category
         : "Uncategorized";
-    const itemKey = encodeCategoryPath(`${category}/${checklist.id}`);
+    const itemKey = buildCategoryPath(category, checklist.id);
     newIndex.checklists[itemKey] = {
       isLinkedTo: { notes: [], checklists: [] },
       isReferencedIn: { notes: [], checklists: [] },
@@ -503,7 +504,7 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
       note.category && note.category !== "" && note.category !== "/"
         ? note.category
         : "Uncategorized";
-    const itemKey = encodeCategoryPath(`${category}/${note.id}`);
+    const itemKey = buildCategoryPath(category, note.id);
     const links = parseInternalLinks(note.content);
     newIndex.notes[itemKey].isLinkedTo = {
       notes: links
@@ -524,7 +525,7 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
       checklist.category !== "/"
         ? checklist.category
         : "Uncategorized";
-    const itemKey = encodeCategoryPath(`${category}/${checklist.id}`);
+    const itemKey = buildCategoryPath(category, checklist.id);
     const content = checklist.items.map((i) => i.text).join("\n");
     const links = parseInternalLinks(content);
     newIndex.checklists[itemKey].isLinkedTo = {

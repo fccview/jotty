@@ -90,7 +90,7 @@ export function decodeCategoryPath(encodedPath: string): string {
 
 export function buildCategoryPath(category: string, id: string): string {
   const encodedCategory = encodeCategoryPath(category);
-  return encodedCategory ? `${encodedCategory}/${id}` : id;
+  return encodedCategory ? `${encodedCategory}/${encodeId(id)}` : encodeId(id);
 }
 
 export function decodeId(encodedId: string): string {
