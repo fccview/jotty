@@ -5,8 +5,6 @@ import {
   DATA_DIR,
   SESSION_DATA_FILE,
   SESSIONS_FILE,
-  SHARED_ITEMS_FILE,
-  SHARING_DIR,
   USERS_DIR,
   USERS_FILE,
 } from "@/app/_consts/files";
@@ -24,8 +22,8 @@ export const ensureCorDirsAndFiles = async (): Promise<{
   error?: string;
 }> => {
   const coreDirAndFiles = {
-    dirs: [USERS_DIR, SHARING_DIR],
-    files: [USERS_FILE, SESSIONS_FILE, SESSION_DATA_FILE, SHARED_ITEMS_FILE],
+    dirs: [USERS_DIR],
+    files: [USERS_FILE, SESSIONS_FILE, SESSION_DATA_FILE],
   };
 
   try {

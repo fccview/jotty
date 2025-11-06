@@ -137,7 +137,7 @@ export default async function RootLayout({
 }) {
   const pathname = headers().get("x-pathname");
   const settings = await getSettings();
-  const appName = settings.appName || "rwMarkable";
+  const appName = settings.appName || (settings.isRwMarkable ? "rwMarkable" : "jotty·page");
   const noteCategories = await getCategories(Modes.NOTES);
   const checklistCategories = await getCategories(Modes.CHECKLISTS);
   const user = await getCurrentUser();
@@ -188,7 +188,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      data-rwmarkable={settings?.rwmarkable ? "true" : "false"}
+      data-rwmarkable={settings?.isRwMarkable ? "true" : "false"}
       data-user-theme={user?.preferredTheme || ""}
     >
       <head>
@@ -203,7 +203,7 @@ export default async function RootLayout({
       <body className={`${inter.className} jotty-body`}>
         <AppModeProvider
           isDemoMode={settings?.isDemo || false}
-          isRwMarkable={settings?.rwmarkable || false}
+          isRwMarkable={settings?.isRwMarkable || false}
           user={user}
           appVersion={appVersion.data || ""}
           pathname={pathname || ""}

@@ -76,7 +76,8 @@ export async function GET(request: NextRequest) {
   const shouldIncludeGroupsScope =
     process.env.OIDC_ADMIN_GROUPS &&
     groupsScope &&
-    groupsScope.toLowerCase() !== "no";
+    groupsScope.toLowerCase() !== "no" &&
+    groupsScope.toLowerCase() !== "false";
 
   if (shouldIncludeGroupsScope) {
     url.searchParams.set("scope", `${baseScope} ${groupsScope}`);
