@@ -1,14 +1,20 @@
-import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  DragStartEvent,
+  closestCenter,
+} from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { ChecklistProgress } from "./ChecklistProgress";
 import { ChecklistItemsWrapper } from "./ChecklistItemsWrapper";
-import { NestedChecklistItem } from "./NestedChecklistItem";
+import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
+import VirtualizedChecklistItems from "./VirtualizedChecklistItems";
 import { Checklist, Item } from "@/app/_types";
 import { ItemTypes, TaskStatusLabels } from "@/app/_types/enums";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
@@ -23,6 +29,7 @@ interface ChecklistBodyProps {
   handleAddSubItem: (parentId: string, text: string) => void;
   handleBulkToggle: (completed: boolean) => void;
   handleDragEnd: (event: DragEndEvent) => void;
+  handleDragStart?: (event: DragStartEvent) => void;
   sensors: any;
   isLoading: boolean;
   isDeletingItem: boolean;
@@ -38,11 +45,13 @@ export const ChecklistBody = ({
   handleAddSubItem,
   handleBulkToggle,
   handleDragEnd,
+  handleDragStart,
   sensors,
   isLoading,
   isDeletingItem,
 }: ChecklistBodyProps) => {
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
+  const [isDragging, setIsDragging] = useState(false);
 
   const referencingItems = useMemo(() => {
     return getReferences(
@@ -86,7 +95,14 @@ export const ChecklistBody = ({
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+          onDragStart={(event) => {
+            setIsDragging(true);
+            handleDragStart?.(event);
+          }}
+          onDragEnd={(event) => {
+            setIsDragging(false);
+            handleDragEnd(event);
+          }}
         >
           <SortableContext
             items={localList.items.flatMap((item) => [
@@ -103,21 +119,34 @@ export const ChecklistBody = ({
                   onBulkToggle={() => handleBulkToggle(true)}
                   isLoading={isLoading}
                 >
-                  {incompleteItems.map((item, index) => (
-                    <NestedChecklistItem
-                      key={item.id}
-                      item={item}
-                      index={index.toString()}
-                      level={0}
+                  {incompleteItems.length >= 50 ? (
+                    <VirtualizedChecklistItems
+                      items={incompleteItems}
                       onToggle={handleToggleItem}
                       onDelete={handleDeleteItem}
-                      isDeletingItem={isDeletingItem}
                       onEdit={handleEditItem}
                       onAddSubItem={handleAddSubItem}
-                      isDragDisabled={false}
+                      isDeletingItem={isDeletingItem}
                       checklist={localList}
+                      isDragging={isDragging}
                     />
-                  ))}
+                  ) : (
+                    incompleteItems.map((item, index) => (
+                      <NestedChecklistItem
+                        key={item.id}
+                        item={item}
+                        index={index.toString()}
+                        level={0}
+                        onToggle={handleToggleItem}
+                        onDelete={handleDeleteItem}
+                        onEdit={handleEditItem}
+                        onAddSubItem={handleAddSubItem}
+                        isDeletingItem={isDeletingItem}
+                        isDragDisabled={false}
+                        checklist={localList}
+                      />
+                    ))
+                  )}
                 </ChecklistItemsWrapper>
               )}
               {completedItems.length > 0 && (
@@ -128,22 +157,35 @@ export const ChecklistBody = ({
                   isLoading={isLoading}
                   isCompleted
                 >
-                  {completedItems.map((item, index) => (
-                    <NestedChecklistItem
-                      key={item.id}
-                      item={item}
-                      index={(incompleteItems.length + index).toString()}
-                      level={0}
+                  {completedItems.length >= 50 ? (
+                    <VirtualizedChecklistItems
+                      items={completedItems}
                       onToggle={handleToggleItem}
                       onDelete={handleDeleteItem}
-                      isDeletingItem={isDeletingItem}
                       onEdit={handleEditItem}
                       onAddSubItem={handleAddSubItem}
-                      completed
-                      isDragDisabled={false}
+                      isDeletingItem={isDeletingItem}
                       checklist={localList}
+                      isDragging={isDragging}
                     />
-                  ))}
+                  ) : (
+                    completedItems.map((item, index) => (
+                      <NestedChecklistItem
+                        key={item.id}
+                        item={item}
+                        index={(incompleteItems.length + index).toString()}
+                        level={0}
+                        onToggle={handleToggleItem}
+                        onDelete={handleDeleteItem}
+                        onEdit={handleEditItem}
+                        onAddSubItem={handleAddSubItem}
+                        completed
+                        isDeletingItem={isDeletingItem}
+                        isDragDisabled={false}
+                        checklist={localList}
+                      />
+                    ))
+                  )}
                 </ChecklistItemsWrapper>
               )}
             </div>

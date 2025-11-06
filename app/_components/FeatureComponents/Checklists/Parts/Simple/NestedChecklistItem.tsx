@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import {
   Plus,
   Trash2,
@@ -41,7 +41,7 @@ interface NestedChecklistItemProps {
   checklist: Checklist;
 }
 
-export const NestedChecklistItem = ({
+const NestedChecklistItemComponent = ({
   item,
   index,
   level,
@@ -94,6 +94,7 @@ export const NestedChecklistItem = ({
   const [showAddSubItem, setShowAddSubItem] = useState(false);
   const [newSubItemText, setNewSubItemText] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -217,7 +218,8 @@ export const NestedChecklistItem = ({
           "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         isChild &&
           "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
-        "first:mt-0",
+        "first:mt-0 transition-colors duration-150",
+        isActive && "bg-muted/20",
         isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50",
         isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
       )}
@@ -256,7 +258,7 @@ export const NestedChecklistItem = ({
             }}
             className={cn(
               "h-5 w-5 rounded border-input focus:ring-2 focus:ring-offset-2 focus:ring-ring",
-              "transition-colors duration-200",
+              "transition-all duration-150",
               (item.completed || completed) && "bg-primary border-primary"
             )}
           />
@@ -317,10 +319,14 @@ export const NestedChecklistItem = ({
                 htmlFor={item.id}
                 className={cn(
                   "text-sm transition-all duration-200 cursor-pointer items-center flex",
+                  isActive && "scale-95",
                   item.completed || completed
                     ? "line-through text-muted-foreground checked"
                     : "text-foreground"
                 )}
+                onMouseDown={() => setIsActive(true)}
+                onMouseUp={() => setIsActive(false)}
+                onMouseLeave={() => setIsActive(false)}
               >
                 {item.recurrence && user?.enableRecurrence === "enable" && (
                   <RecurrenceIndicator recurrence={item.recurrence} />
@@ -472,3 +478,5 @@ export const NestedChecklistItem = ({
     </div>
   );
 };
+
+export const NestedChecklistItem = memo(NestedChecklistItemComponent);

@@ -372,7 +372,6 @@ export const updateReferencingContent = async (
     }
   }
 
-  // Update referencing checklists
   for (const checklistId of referencingChecklists) {
     try {
       const checklist = await getListById(
@@ -386,7 +385,6 @@ export const updateReferencingContent = async (
       const updatedItems = checklist.items.map((item) => {
         let updatedText = item.text;
 
-        // Update markdown links: [title](href)
         const markdownRegex = new RegExp(
           `\\[([^\\]]+)\\]\\(${oldHref}\\)`,
           "g"
@@ -396,7 +394,6 @@ export const updateReferencingContent = async (
           `[${newTitle}](${newHref})`
         );
 
-        // Update HTML links: href="..." and data-title="..."
         const htmlHrefRegex = new RegExp(`href="${oldHref}"`, "g");
         updatedText = updatedText.replace(htmlHrefRegex, `href="${newHref}"`);
         const htmlTitleRegex = new RegExp(`data-title="[^"]*"`, "g");
@@ -413,7 +410,6 @@ export const updateReferencingContent = async (
       });
 
       if (contentChanged) {
-        // Save the checklist
         const updatedChecklist = { ...checklist, items: updatedItems };
         const header =
           updatedChecklist.type === "task"
@@ -450,7 +446,6 @@ export const updateReferencingContent = async (
         );
         await serverWriteFile(filePath, markdown);
 
-        // Update the link index for this checklist
         const content = updatedItems.map((i) => i.text).join("\n");
         const links = parseInternalLinks(content);
         await updateIndexForItem(username, "checklist", checklistId, links);

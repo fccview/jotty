@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Checklist, RecurrenceRule } from "@/app/_types";
@@ -46,6 +46,9 @@ export const useChecklist = ({
   const [focusKey, setFocusKey] = useState(0);
   const [copied, setCopied] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<string[]>([]);
+  const [pendingToggles, setPendingToggles] = useState<Map<string, boolean>>(
+    new Map()
+  );
   const isInitialMount = useRef(true);
 
   useEffect(() => {
@@ -88,6 +91,48 @@ export const useChecklist = ({
 
     return () => clearTimeout(timer);
   }, [itemsToDelete, localList.id, localList.category, router]);
+
+  useEffect(() => {
+    if (pendingToggles.size === 0) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      const togglesToProcess = new Map(pendingToggles);
+      setPendingToggles(new Map());
+
+      const syncPromises = Array.from(togglesToProcess.entries()).map(
+        async ([itemId, completed]) => {
+          try {
+            const formData = new FormData();
+            formData.append("listId", localList.id);
+            formData.append("itemId", itemId);
+            formData.append("completed", String(completed));
+            formData.append("category", localList.category || "Uncategorized");
+
+            const result = await updateItem(
+              localList,
+              formData,
+              undefined,
+              true
+            );
+            if (!result.success) {
+              throw new Error("Server action failed");
+            }
+          } catch (error) {
+            console.error(`Failed to sync toggle for ${itemId}:`, error);
+            setPendingToggles((prev) => new Map(prev).set(itemId, completed));
+          }
+        }
+      );
+
+      await Promise.all(syncPromises);
+
+      router.refresh();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [pendingToggles, localList.id, localList.category, localList]);
 
   const handleDeleteItem = (itemId: string) => {
     setLocalList((currentList) => {
@@ -223,69 +268,69 @@ export const useChecklist = ({
   };
 
   const handleToggleItem = async (itemId: string, completed: boolean) => {
-    const formData = new FormData();
-    formData.append("listId", localList.id);
-    formData.append("itemId", itemId);
-    formData.append("completed", String(completed));
-    formData.append("category", localList.category || "Uncategorized");
-    const result = await updateItem(localList, formData);
+    const now = new Date().toISOString();
+    const currentUser = await getCurrentUser();
 
-    if (result.success && result.data) {
-      setLocalList(result.data);
-    } else if (result.success) {
-      setLocalList((currentList) => {
-        const updateNestedWithSync = (items: any[]): any[] => {
-          return items.map((item) => {
-            let updatedItem = { ...item };
+    setLocalList((currentList) => {
+      const findAndUpdateItem = (
+        items: any[],
+        itemId: string,
+        updates: any
+      ): any[] => {
+        return items.map((item) => {
+          if (item.id === itemId) {
+            let updatedItem = { ...item, ...updates };
 
-            if (item.id === itemId) {
-              updatedItem.completed = completed;
-
-              if (completed && item.children && item.children.length > 0) {
-                updatedItem.children = updateAllChildren(item.children, true);
-              } else if (
-                !completed &&
-                item.children &&
-                item.children.length > 0
-              ) {
-                updatedItem.children = updateAllChildren(item.children, false);
-              }
-            }
-
-            if (item.children && item.children.length > 0) {
-              updatedItem.children = updateNestedWithSync(item.children);
-
-              updatedItem = updateParentBasedOnChildren(updatedItem);
+            if (
+              updates.completed &&
+              item.children &&
+              item.children.length > 0
+            ) {
+              updatedItem.children = updateAllChildren(item.children, true);
+            } else if (
+              updates.completed === false &&
+              item.children &&
+              item.children.length > 0
+            ) {
+              updatedItem.children = updateAllChildren(item.children, false);
             }
 
             return updatedItem;
-          });
-        };
+          }
 
-        const updatedItems = updateNestedWithSync(currentList.items);
+          if (item.children && item.children.length > 0) {
+            const updatedChildren = findAndUpdateItem(
+              item.children,
+              itemId,
+              updates
+            );
+            const updatedItem = updateParentBasedOnChildren({
+              ...item,
+              children: updatedChildren,
+            });
+            return updatedItem;
+          }
 
-        const updateParentsForSiblings = (items: any[]): any[] => {
-          return items.map((item) => {
-            if (item.children && item.children.length > 0) {
-              const updatedChildren = updateParentsForSiblings(item.children);
-              const updatedItem = updateParentBasedOnChildren({
-                ...item,
-                children: updatedChildren,
-              });
-              return updatedItem;
-            }
-            return item;
-          });
-        };
+          return item;
+        });
+      };
 
-        return {
-          ...currentList,
-          items: updateParentsForSiblings(updatedItems),
-        };
+      const updatedItems = findAndUpdateItem(currentList.items, itemId, {
+        completed,
+        ...(currentUser && {
+          lastModifiedBy: currentUser.username,
+          lastModifiedAt: now,
+        }),
       });
-    } else {
-      console.error("Failed to update item:", result.error);
-    }
+
+      return {
+        ...currentList,
+        items: updatedItems,
+        updatedAt: now,
+      };
+    });
+
+    setPendingToggles((prev) => new Map(prev).set(itemId, completed));
   };
 
   const handleEditItem = async (itemId: string, text: string) => {
@@ -605,5 +650,6 @@ export const useChecklist = ({
     completedItems,
     totalCount: localList.items.length,
     deletingItemsCount: itemsToDelete.length,
+    pendingTogglesCount: pendingToggles.size,
   };
 };

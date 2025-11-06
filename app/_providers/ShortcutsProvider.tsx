@@ -6,6 +6,7 @@ import {
   useState,
   ReactNode,
   useCallback,
+  useMemo,
 } from "react";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { CreateNoteModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/CreateNoteModal";
@@ -85,97 +86,119 @@ export const ShortcutProvider = ({
     setIsSearchOpen(false);
   }, []);
 
-  const shortcuts = [
-    {
-      code: "ArrowLeft",
-      modKey: true,
-      altKey: true,
-      shiftKey: true,
-      handler: () =>
-        checkNavigation(() => {
-          setMode(Modes.CHECKLISTS);
-          router.push("/");
-        }),
-    },
-    {
-      code: "ArrowRight",
-      modKey: true,
-      altKey: true,
-      shiftKey: true,
-      handler: () =>
-        checkNavigation(() => {
-          setMode(Modes.NOTES);
-          router.push("/");
-        }),
-    },
-    {
-      code: "KeyK",
-      modKey: true,
-      handler: () => setIsSearchOpen(true),
-    },
-    {
-      code: "KeyS",
-      modKey: true,
-      altKey: true,
-      shiftKey: true,
-      handler: () => setIsSettingsOpen(true),
-    },
-    {
-      code: "KeyN",
-      modKey: true,
-      altKey: true,
-      shiftKey: true,
-      handler: () => {
-        if (mode === Modes.NOTES) openCreateNoteModal();
-        else openCreateChecklistModal();
+  const shortcuts = useMemo(
+    () => [
+      {
+        code: "ArrowLeft",
+        modKey: true,
+        altKey: true,
+        shiftKey: true,
+        handler: () =>
+          checkNavigation(() => {
+            setMode(Modes.CHECKLISTS);
+            router.push("/");
+          }),
       },
-    },
-    {
-      code: "KeyC",
-      modKey: true,
-      altKey: true,
-      shiftKey: true,
-      handler: () => openCreateCategoryModal(),
-    },
-    {
-      code: "Escape",
-      handler: closeAllModals,
-    },
-    {
-      code: "KeyA",
-      modKey: true,
-      altKey: true,
-      shiftKey: true,
-      handler: () => {
-        if (user?.isAdmin) router.push("/admin");
+      {
+        code: "ArrowRight",
+        modKey: true,
+        altKey: true,
+        shiftKey: true,
+        handler: () =>
+          checkNavigation(() => {
+            setMode(Modes.NOTES);
+            router.push("/");
+          }),
       },
-    },
-    {
-      code: "KeyP",
-      modKey: true,
-      altKey: true,
-      shiftKey: true,
-      handler: () => router.push("/profile"),
-    },
-  ];
+      {
+        code: "KeyK",
+        modKey: true,
+        handler: () => setIsSearchOpen(true),
+      },
+      {
+        code: "KeyS",
+        modKey: true,
+        altKey: true,
+        shiftKey: true,
+        handler: () => setIsSettingsOpen(true),
+      },
+      {
+        code: "KeyN",
+        modKey: true,
+        altKey: true,
+        shiftKey: true,
+        handler: () => {
+          if (mode === Modes.NOTES) openCreateNoteModal();
+          else openCreateChecklistModal();
+        },
+      },
+      {
+        code: "KeyC",
+        modKey: true,
+        altKey: true,
+        shiftKey: true,
+        handler: () => openCreateCategoryModal(),
+      },
+      {
+        code: "Escape",
+        handler: closeAllModals,
+      },
+      {
+        code: "KeyA",
+        modKey: true,
+        altKey: true,
+        shiftKey: true,
+        handler: () => {
+          if (user?.isAdmin) router.push("/admin");
+        },
+      },
+      {
+        code: "KeyP",
+        modKey: true,
+        altKey: true,
+        shiftKey: true,
+        handler: () => router.push("/profile"),
+      },
+    ],
+    [
+      checkNavigation,
+      setMode,
+      mode,
+      openCreateNoteModal,
+      openCreateChecklistModal,
+      openCreateCategoryModal,
+      closeAllModals,
+      user?.isAdmin,
+      router,
+    ]
+  );
 
   useShortcuts(shortcuts);
 
+  const contextValue = useMemo(
+    () => ({
+      openCreateNoteModal,
+      openCreateCategoryModal,
+      openCreateChecklistModal,
+      isSearchOpen,
+      openSearch: () => setIsSearchOpen(true),
+      closeSearch: () => setIsSearchOpen(false),
+      toggleSearch: () => setIsSearchOpen((prev) => !prev),
+      isSettingsOpen,
+      openSettings: () => setIsSettingsOpen(true),
+      closeSettings: () => setIsSettingsOpen(false),
+    }),
+    [
+      openCreateNoteModal,
+      openCreateCategoryModal,
+      openCreateChecklistModal,
+      isSearchOpen,
+      isSettingsOpen,
+    ]
+  );
+
   return (
-    <ShortcutContext.Provider
-      value={{
-        openCreateNoteModal,
-        openCreateCategoryModal,
-        openCreateChecklistModal,
-        isSearchOpen,
-        openSearch: () => setIsSearchOpen(true),
-        closeSearch: () => setIsSearchOpen(false),
-        toggleSearch: () => setIsSearchOpen((prev) => !prev),
-        isSettingsOpen,
-        openSettings: () => setIsSettingsOpen(true),
-        closeSettings: () => setIsSettingsOpen(false),
-      }}
-    >
+    <ShortcutContext.Provider value={contextValue}>
       {children}
       {showCreateNoteModal && (
         <CreateNoteModal

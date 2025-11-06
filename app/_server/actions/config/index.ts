@@ -332,8 +332,6 @@ export const uploadAppIcon = async (
       return { success: false, error: "No file provided" };
     }
 
-    // Icon type validation removed - client handles sizing
-
     if (!file.type.startsWith("image/")) {
       return { success: false, error: "File must be an image" };
     }
@@ -357,7 +355,6 @@ export const uploadAppIcon = async (
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Save the uploaded image (already resized on client side)
     await fs.writeFile(filepath, buffer);
 
     const publicUrl = `/api/app-icons/${filename}`;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSettings } from "@/app/_utils/settings-store";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
