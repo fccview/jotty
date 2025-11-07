@@ -468,17 +468,34 @@ const markdownProcessor = unified()
 
         if (node.tagName === "a" && node.properties?.href) {
           const href = String(node.properties.href);
-          if (href.startsWith("/note/") || href.startsWith("/checklist/")) {
+          if (href.startsWith("/note/") || href.startsWith("/checklist/") || href.startsWith("jotty://")) {
             const textContent =
               node.children?.[0]?.type === "text"
                 ? String(node.children[0].value)
                 : "";
 
-            const parts = href.split("/").filter(Boolean);
-            const type = parts.length >= 1 ? parts[0] : "note";
+            let type = "note";
+            let category = "";
 
-            const category =
-              parts.length >= 3 ? parts.slice(1, -1).join("/") : "";
+            if (href.startsWith("jotty://")) {
+              // For UUID links: jotty://type:uuid
+              const uuidPart = href.substring(8); // Remove "jotty://"
+              const colonIndex = uuidPart.indexOf(":");
+              if (colonIndex > 0) {
+                type = uuidPart.substring(0, colonIndex);
+                // category will be resolved by component
+                category = "";
+              } else {
+                // Legacy format without type, assume note
+                type = "note";
+                category = "";
+              }
+            } else {
+              // For path-based links
+              const parts = href.split("/").filter(Boolean);
+              type = parts.length >= 1 ? parts[0] : "note";
+              category = parts.length >= 3 ? parts.slice(1, -1).join("/") : "";
+            }
 
             const newChildren: any[] = [];
 
@@ -512,7 +529,7 @@ const markdownProcessor = unified()
 
             node.tagName = "span";
             node.properties = {
-              "data-internal-link": "",
+              "data-internal-link": href,
               "data-href": href,
               "data-title": textContent,
               "data-type": type,

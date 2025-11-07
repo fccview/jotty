@@ -63,6 +63,7 @@ export interface Checklist {
   isShared?: boolean;
   isDeleted?: boolean;
   rawContent?: string;
+  uuid?: string; // Immutable identifier for linking
 }
 
 export interface Note {
@@ -75,6 +76,7 @@ export interface Note {
   owner?: string;
   isShared?: boolean;
   rawContent?: string;
+  uuid?: string; // Immutable identifier for linking
 }
 
 export interface NoteEditorViewModel {

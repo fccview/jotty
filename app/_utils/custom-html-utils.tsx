@@ -120,6 +120,22 @@ export const generateCustomHtmlExtensions = (): Mark[] => {
 };
 
 export const addCustomHtmlTurndownRules = (service: TurndownService) => {
+  // Handle internal link spans
+  service.addRule("internalLink", {
+    filter: "span",
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      if (element.hasAttribute("data-internal-link")) {
+        const href = element.getAttribute("data-href");
+        const title = element.getAttribute("data-title");
+        if (href && title) {
+          return `[${title}](${href})`;
+        }
+      }
+      return content;
+    },
+  });
+
   customHtmlMarks.forEach((markDef) => {
     service.addRule(markDef.name, {
       filter: (node) => {

@@ -5,6 +5,7 @@ import {
   parseRecurrenceFromMarkdown,
   recurrenceToMarkdown,
 } from "./recurrence-utils";
+import { extractUUIDFromMarkdown, addUUIDToMarkdown, generateUUID } from "./global-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (checklistType === ChecklistsTypes.TASK) {
@@ -41,6 +42,9 @@ export const parseMarkdown = (
   isShared?: boolean,
   fileStats?: { birthtime: Date; mtime: Date }
 ): Checklist => {
+  // Extract UUID from markdown if present
+  const uuid = extractUUIDFromMarkdown(content);
+
   const lines = content.split("\n");
   const title = lines[0]?.replace(/^#\s*/, "") || "Untitled";
 
@@ -268,6 +272,7 @@ export const parseMarkdown = (
       : new Date().toISOString(),
     owner,
     isShared,
+    uuid, // Include UUID if found in markdown
   };
 };
 
@@ -387,14 +392,21 @@ export const listToMarkdown = (list: Checklist): string => {
       ? `# ${list.title}\n<!-- type:task -->\n`
       : `# ${list.title}\n`;
 
+  let markdown: string;
   if (list.items.length === 0) {
-    return header.trim();
+    markdown = header.trim();
+  } else {
+    const items = list.items
+      .sort((a, b) => a.order - b.order)
+      .map((item) => generateItemMarkdown(item, list.type))
+      .join("\n");
+    markdown = `${header}\n${items}`;
   }
 
-  const items = list.items
-    .sort((a, b) => a.order - b.order)
-    .map((item) => generateItemMarkdown(item, list.type))
-    .join("\n");
+  // Ensure UUID is present in markdown
+  // Generate new UUID if checklist doesn't have one
+  const uuid = list.uuid || generateUUID();
+  markdown = addUUIDToMarkdown(markdown, uuid);
 
-  return `${header}\n${items}`;
+  return markdown;
 };

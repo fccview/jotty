@@ -37,14 +37,16 @@ import {
   buildCategoryPath,
   decodeCategoryPath,
   encodeCategoryPath,
+  extractUUIDFromMarkdown,
+  addUUIDToMarkdown,
+  generateUUID,
 } from "@/app/_utils/global-utils";
 import {
-  updateIndexForItem,
   parseInternalLinks,
-  removeItemFromIndex,
   updateItemCategory,
   updateReferencingContent,
   rebuildLinkIndex,
+  readLinkIndex,
 } from "@/app/_server/actions/link";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import { checkUserPermission } from "@/app/_server/actions/sharing";
@@ -71,6 +73,9 @@ const _parseMarkdownNote = (
   fileStats?: { birthtime: Date; mtime: Date },
   fileName?: string
 ): Note => {
+  // Extract UUID from markdown if present
+  const uuid = extractUUIDFromMarkdown(content);
+
   const lines = content.split("\n");
   const titleLine = lines.find((line) => line.startsWith("# "));
   const titleFallback = fileName
@@ -96,14 +101,21 @@ const _parseMarkdownNote = (
       : new Date().toISOString(),
     owner,
     isShared,
+    uuid, // Include UUID if found in markdown
   };
 };
 
 const _noteToMarkdown = (doc: Note): string => {
   const header = `# ${doc.title}`;
   const content = doc.content || "";
+  let markdown = `${header}\n\n${content}`;
 
-  return `${header}\n\n${content}`;
+  // Ensure UUID is present in markdown
+  // Generate new UUID if note doesn't have one
+  const uuid = doc.uuid || generateUUID();
+  markdown = addUUIDToMarkdown(markdown, uuid);
+
+  return markdown;
 };
 
 const _readNotesRecursively = async (
@@ -126,11 +138,11 @@ const _readNotesRecursively = async (
     .map((e) => e.name);
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -144,11 +156,11 @@ const _readNotesRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -168,9 +180,9 @@ const _readNotesRecursively = async (
               fileName
             )
           );
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subDocs = await _readNotesRecursively(
       categoryDir,
@@ -192,6 +204,83 @@ const _checkForMigrationNeeded = async (): Promise<boolean> => {
   } catch {
     return false;
   }
+};
+
+export const getNoteMetadataByUuid = async (
+  uuid: string,
+  username?: string
+): Promise<{ title: string; category: string; path: string } | undefined> => {
+  if (!username) {
+    const user = await getCurrentUser();
+    if (!user?.username) return undefined;
+    username = user.username;
+  }
+
+  // Use the uuidLookup to get the path directly
+  const index = await readLinkIndex(username);
+  const itemPath = index.uuidLookup[uuid];
+
+  if (!itemPath) {
+    return undefined;
+  }
+
+  // Parse path to get id and category
+  const parts = itemPath.split("/");
+  const id = parts[parts.length - 1];
+  const category = parts.slice(0, -1).join("/") || "Uncategorized";
+
+  // Read just the first part of the note file to extract title
+  const userDir = USER_NOTES_DIR(username);
+  const categoryDir = path.join(userDir, category);
+  const filePath = path.join(categoryDir, `${id}.md`);
+
+  try {
+    // Read only first 2048 bytes to find the title line
+    const buffer = Buffer.alloc(2048);
+    const fd = await fs.open(filePath, 'r');
+    const { bytesRead } = await fd.read(buffer, 0, 2048, 0);
+    await fd.close();
+
+    if (bytesRead === 0) return undefined;
+
+    const content = buffer.subarray(0, bytesRead).toString('utf-8');
+    const lines = content.split('\n');
+
+    // Find the first # line
+    const titleLine = lines.find((line) => line.startsWith("# "));
+    const title = titleLine?.replace(/^#\s*/, "") || id;
+
+    return { title, category, path: itemPath };
+  } catch (error) {
+    return undefined;
+  }
+};
+
+export const getNoteByUuid = async (
+  uuid: string,
+  username?: string
+): Promise<Note | undefined> => {
+  if (!username) {
+    const user = await getCurrentUser();
+    if (!user?.username) return undefined;
+    username = user.username;
+  }
+
+  // Use the uuidLookup to get the path directly
+  const index = await readLinkIndex(username);
+  const path = index.uuidLookup[uuid];
+
+  if (!path) {
+    return undefined;
+  }
+
+  // Parse path to get id and category
+  const parts = path.split("/");
+  const id = parts[parts.length - 1];
+  const category = parts.slice(0, -1).join("/") || "Uncategorized";
+
+  // Get the note by id and category
+  return getNoteById(id, category, username);
 };
 
 export const getNoteById = async (
@@ -219,7 +308,7 @@ export const getNoteById = async (
       d.id === id &&
       (!category ||
         encodeCategoryPath(d.category || "Uncategorized")?.toLowerCase() ===
-          encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
+        encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
   );
 
   if (note && "rawContent" in note) {
@@ -347,11 +436,11 @@ export const getRawNotes = async (
         .map((e) => e.name);
       const orderedDirNames: string[] = order?.categories
         ? [
-            ...order.categories.filter((n) => dirNames.includes(n)),
-            ...dirNames
-              .filter((n) => !order.categories!.includes(n))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...order.categories.filter((n) => dirNames.includes(n)),
+          ...dirNames
+            .filter((n) => !order.categories!.includes(n))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : dirNames.sort((a, b) => a.localeCompare(b));
 
       const files = entries.filter((e) => e.isFile() && e.name.endsWith(".md"));
@@ -359,11 +448,11 @@ export const getRawNotes = async (
       const categoryOrder = await readOrderFile(dirPath);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -372,6 +461,7 @@ export const getRawNotes = async (
         try {
           const content = await serverReadFile(filePath);
           const stats = await fs.stat(filePath);
+          const uuid = extractUUIDFromMarkdown(content);
           const rawNote: Note & { rawContent: string } = {
             id,
             title: id,
@@ -382,9 +472,10 @@ export const getRawNotes = async (
             owner: currentUser.username,
             isShared: false,
             rawContent: content,
+            uuid,
           };
           docs.push(rawNote as Note);
-        } catch {}
+        } catch { }
       }
 
       for (const dirName of orderedDirNames) {
@@ -507,17 +598,16 @@ export const createNote = async (formData: FormData) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       owner: currentUser.username,
+      uuid: generateUUID(), // Generate UUID on creation
     };
 
     await serverWriteFile(filePath, _noteToMarkdown(newDoc));
 
     try {
-      const links = parseInternalLinks(newDoc.content);
-      const itemKey = `${newDoc.category || "Uncategorized"}/${newDoc.id}`;
-      await updateIndexForItem(currentUser.username, "note", itemKey, links);
+      await rebuildLinkIndex(currentUser.username);
     } catch (error) {
       console.warn(
-        "Failed to update link index for new note:",
+        "Failed to rebuild link index for new note:",
         newDoc.id,
         error
       );
@@ -617,30 +707,28 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     await serverWriteFile(filePath, _noteToMarkdown(updatedDoc));
 
     try {
-      const links = parseInternalLinks(updatedDoc.content);
-      const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
-        updatedDoc.id
-      }`;
-
+      const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
+        }`;
       const oldItemKey = `${doc.category || "Uncategorized"}/${id}`;
 
+      // If category or id changed, update references in other files
       if (oldItemKey !== newItemKey) {
         await updateReferencingContent(
           doc.owner!,
           "note",
           encodeCategoryPath(oldItemKey),
           encodeCategoryPath(newItemKey),
-          updatedDoc.title
+          updatedDoc.title,
+          updatedDoc.uuid
         );
-        await updateItemCategory(doc.owner!, "note", oldItemKey, newItemKey);
-        await rebuildLinkIndex(doc.owner!);
         revalidatePath("/");
       }
 
-      await updateIndexForItem(doc.owner!, "note", newItemKey, links);
+      // Always rebuild index to keep links in sync
+      await rebuildLinkIndex(doc.owner!);
     } catch (error) {
       console.warn(
-        "Failed to update link index for note:",
+        "Failed to rebuild link index for note:",
         updatedDoc.id,
         error
       );
@@ -739,12 +827,7 @@ export const deleteNote = async (formData: FormData) => {
 
     await serverDeleteFile(filePath);
 
-    try {
-      const itemKey = `${doc.category || "Uncategorized"}/${id}`;
-      await removeItemFromIndex(doc.owner!, "note", itemKey);
-    } catch (error) {
-      console.warn("Failed to remove note from link index:", id, error);
-    }
+    // Note: Index will be rebuilt automatically and will exclude deleted items
 
     if (doc.owner) {
       const { updateSharingData } = await import(

@@ -59,7 +59,7 @@ export const InternalLink = Node.create({
     return [
       "span",
       {
-        "data-internal-link": "",
+        "data-internal-link": href,
         "data-href": href,
         "data-title": title,
         "data-type": type,

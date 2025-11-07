@@ -148,7 +148,7 @@ export const setCategoryOrder = async (formData: FormData) => {
 
     try {
       revalidatePath("/");
-    } catch {}
+    } catch { }
     return { success: true };
   } catch {
     return { error: "Failed to set category order" };
@@ -172,7 +172,7 @@ export const setChecklistOrderInCategory = async (formData: FormData) => {
 
     try {
       revalidatePath("/");
-    } catch {}
+    } catch { }
     return { success: true };
   } catch {
     return { error: "Failed to set item order" };
@@ -413,6 +413,8 @@ export const moveNode = async (formData: FormData) => {
           const fileContent = await fs.readFile(newPath, "utf-8");
           const titleMatch = fileContent.match(/^# (.+)$/m);
           const title = titleMatch ? titleMatch[1] : activeId;
+          const uuidMatch = fileContent.match(/<!-- jotty_id: ([a-f0-9-]+) -->/);
+          const uuid = uuidMatch ? uuidMatch[1] : undefined;
 
           const oldCategory = activeParentPath || "Uncategorized";
           const newCategory = newParentPath || "Uncategorized";
@@ -427,7 +429,8 @@ export const moveNode = async (formData: FormData) => {
             itemType as "note" | "checklist",
             oldItemKey,
             newItemKey,
-            title
+            title,
+            uuid
           );
           await updateItemCategory(
             username,
@@ -507,7 +510,8 @@ export const moveNode = async (formData: FormData) => {
               "note",
               oldItemKey,
               newItemKey,
-              note.title
+              note.title,
+              note.uuid
             );
 
             await updateItemCategory(username, "note", oldItemKey, newItemKey);
@@ -535,7 +539,8 @@ export const moveNode = async (formData: FormData) => {
               "checklist",
               oldItemKey,
               newItemKey,
-              checklist.title
+              checklist.title,
+              checklist.uuid
             );
 
             await updateItemCategory(

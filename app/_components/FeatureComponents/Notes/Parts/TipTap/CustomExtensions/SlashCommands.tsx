@@ -20,6 +20,7 @@ import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { PluginKey } from "@tiptap/pm/state";
+import { ensureItemHasUuid } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLinkComponent";
 
 export interface SlashCommandItem {
   title: string;
@@ -262,7 +263,7 @@ export const SlashCommands = Extension.create({
       },
       atSuggestion: {
         char: "@",
-        command: ({
+        command: async ({
           editor,
           range,
           props,
@@ -271,10 +272,13 @@ export const SlashCommands = Extension.create({
           range: any;
           props: AtMentionItem;
         }) => {
-          const encodedCategory = encodeCategoryPath(props.category);
-          const url = `/${props.type}/${
-            encodedCategory ? `${encodedCategory}/` : ""
-          }${props.id}`;
+          const uuid = await ensureItemHasUuid(
+            props.type,
+            props.id,
+            props.category
+          );
+
+          const url = `jotty://${props.type}:${uuid}`;
           editor
             .chain()
             .focus()

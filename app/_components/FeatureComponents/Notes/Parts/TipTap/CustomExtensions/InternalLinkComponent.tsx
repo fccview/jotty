@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { FileText, CheckSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { getNoteById } from "@/app/_server/actions/note";
+import { getNoteById, getNoteByUuid, getNoteMetadataByUuid } from "@/app/_server/actions/note";
 import { Checklist, ItemType, Note } from "@/app/_types";
 import { getListById } from "@/app/_server/actions/checklist";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
@@ -11,6 +11,41 @@ import { decodeCategoryPath } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
 import { ItemTypes } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { resolveUuidToPath } from "@/app/_server/actions/link";
+import { getCurrentUser } from "@/app/_server/actions/users";
+
+
+// Function to ensure an item has a UUID before linking
+export const ensureItemHasUuid = async (
+  itemType: ItemType,
+  itemId: string,
+  category?: string
+): Promise<string | null> => {
+  const user = await getCurrentUser();
+
+  try {
+    const response = await fetch("/api/admin/migrate-links", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": user?.apiKey || "ck_8ee78e125bbf48287c9f8814dd29cbad",
+      },
+      body: JSON.stringify({
+        username: user?.username || "fccview",
+        action: "ensure-uuid",
+        itemType,
+        itemId,
+        category,
+      }),
+    });
+
+    const result = await response.json();
+    return result.success ? result.uuid : null;
+  } catch (error) {
+    console.error("Failed to ensure UUID:", error);
+    return null;
+  }
+};
 
 interface InternalLinkComponentProps {
   node: {
@@ -29,39 +64,121 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
   const [fullNote, setFullNote] = useState<Note | undefined>(undefined);
   const [fullList, setFullList] = useState<Checklist | undefined>(undefined);
   const [showPopup, setShowPopup] = useState(false);
-  const { appSettings } = useAppMode();
+  const [resolvedPath, setResolvedPath] = useState<string | null>(null);
+  const [resolvedTitle, setResolvedTitle] = useState<string>(title);
+  const [isResolving, setIsResolving] = useState<boolean>(false);
+  const [resolvedCategory, setResolvedCategory] = useState<string | null>(category);
+  const { appSettings, user } = useAppMode();
+
+  // Resolve UUID links directly by UUID
+  React.useEffect(() => {
+    const resolveLink = async () => {
+      if (href.startsWith("jotty://")) {
+        setIsResolving(true);
+        const uuidPart = href.substring(8); // Remove "jotty://" prefix
+        const colonIndex = uuidPart.indexOf(":");
+        const uuid = colonIndex > 0 ? uuidPart.substring(colonIndex + 1) : uuidPart; // Extract UUID after type:
+        try {
+          const username = user?.username || "";
+
+          // Get just metadata for display (fast)
+          if (type === ItemTypes.NOTE) {
+            const metadata = await getNoteMetadataByUuid(uuid, username);
+            if (metadata) {
+              setResolvedTitle(metadata.title);
+              setResolvedCategory(metadata.category);
+              setResolvedPath(metadata.path);
+            }
+          } else {
+            // For checklists, we still need to use the old method since there's no getListByUuid
+            const path = await resolveUuidToPath(username, uuid);
+            if (path) {
+              setResolvedPath(path);
+              const parts = path.split("/");
+              const itemId = parts[parts.length - 1];
+              const categoryPath = parts.slice(0, -1).join("/");
+              setResolvedCategory(categoryPath || "Uncategorized");
+
+              const list = await getListById(
+                itemId,
+                username,
+                categoryPath || undefined
+              );
+              setFullList(list);
+              if (list) {
+                setResolvedTitle(list.title);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Failed to resolve UUID link:", error);
+          // Keep original title if resolution fails
+          setResolvedTitle(title);
+        } finally {
+          setIsResolving(false);
+        }
+      } else {
+        // Legacy path-based link
+        setResolvedPath(href);
+        setResolvedTitle(title);
+        setResolvedCategory(category);
+        setIsResolving(false);
+      }
+    };
+
+    resolveLink();
+  }, [href, title, type, category]);
+
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!href) return;
+    if (!resolvedPath) return;
 
+    const parts = resolvedPath.split("/");
+    const itemId = parts[parts.length - 1];
+    const categoryPath = parts.slice(0, -1).join("/");
 
-    const parts = href.split("/");
-    const type = parts[1];
-    const categoryAndId = parts.slice(2).join("/");
-    const lastSlashIndex = categoryAndId.lastIndexOf("/");
-    const encodedCategoryPath = lastSlashIndex > 0 ? categoryAndId.substring(0, lastSlashIndex) : "";
-    const id = categoryAndId.substring(lastSlashIndex + 1);
-
-    const decodedCategoryPath = decodeCategoryPath(encodedCategoryPath);
-    const decodedHref = `/${type}/${decodedCategoryPath ? `${decodedCategoryPath}/` : ""}${id}`;
-
+    const decodedHref = `/${type}/${categoryPath ? `${categoryPath}/` : ""}${itemId}`;
     router.push(decodedHref.toLowerCase().replace("uncategorized/", ""));
   };
 
   const fetchFullItem = async () => {
-    if (type === ItemTypes.NOTE) {
-      const note = await getNoteById(
-        href.split("/").pop() || "",
-        decodeCategoryPath(category || "") || undefined
-      );
-      setFullNote(note);
+    // For UUID links, fetch full content only when popup is shown
+    if (href.startsWith("jotty://")) {
+      const uuidPart = href.substring(8);
+      const colonIndex = uuidPart.indexOf(":");
+      const uuid = colonIndex > 0 ? uuidPart.substring(colonIndex + 1) : uuidPart;
+
+      if (type === ItemTypes.NOTE) {
+        const note = await getNoteByUuid(uuid, user?.username || "");
+        setFullNote(note);
+      } else {
+        // For checklists, get the path first
+        const username = user?.username || "";
+        const path = await resolveUuidToPath(username, uuid);
+        if (path) {
+          const parts = path.split("/");
+          const itemId = parts[parts.length - 1];
+          const categoryPath = parts.slice(0, -1).join("/");
+          const list = await getListById(itemId, username, categoryPath || undefined);
+          setFullList(list);
+        }
+      }
     } else {
-      const list = await getListById(
-        href.split("/").pop() || "",
-        undefined,
-        decodeCategoryPath(category || "") || undefined
-      );
-      setFullList(list);
+      // For legacy links, fetch item
+      if (type === ItemTypes.NOTE) {
+        const note = await getNoteById(
+          href.split("/").pop() || "",
+          decodeCategoryPath(category || "") || undefined
+        );
+        setFullNote(note);
+      } else {
+        const list = await getListById(
+          href.split("/").pop() || "",
+          user?.username || "",
+          decodeCategoryPath(category || "") || undefined
+        );
+        setFullList(list);
+      }
     }
   };
 
@@ -98,12 +215,19 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
           <CheckSquare className="h-3 w-3 text-foreground" />
         )}
       </span>
-      <span className="text-sm font-medium text-foreground">{appSettings?.parseContent === "yes" ? title : capitalize(title.replace(/-/g, ' '))}</span>
-
+      <span className="text-sm font-medium text-foreground">
+        {isResolving ? (
+          <span className="inline-flex items-center">
+            <span className="animate-pulse">Loading...</span>
+          </span>
+        ) : (
+          appSettings?.parseContent === "yes" ? resolvedTitle : capitalize(resolvedTitle.replace(/-/g, ' '))
+        )}
+      </span>
 
       <span className="text-xs text-muted-foreground">•</span>
       <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
-        {decodeCategoryPath(category || "Uncategorized").split("/").pop()}
+        {decodeCategoryPath(resolvedCategory || "Uncategorized").split("/").pop()}
       </span>
     </NodeViewWrapper>
   );

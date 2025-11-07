@@ -19,9 +19,9 @@ import { ImageAttachment } from "@/app/_components/GlobalComponents/FormElements
 import { VideoAttachment } from "@/app/_components/GlobalComponents/FormElements/VideoAttachment";
 import { lowlight } from "@/app/_utils/lowlight-utils";
 import { toHtml } from "hast-util-to-html";
-import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
+import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -46,6 +46,7 @@ export const UnifiedMarkdownRenderer = ({
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
+  const htmlContent = convertMarkdownToHtml(content);
 
   useEffect(() => {
     setIsClient(true);
@@ -76,6 +77,15 @@ export const UnifiedMarkdownRenderer = ({
       </div>
     );
   }
+
+
+  // Preprocess content to replace jotty:// links with placeholders
+  const preprocessContent = (content: string): string => {
+    return content.replace(
+      /\[([^\]]+)\]\((jotty:\/\/[^)]+)\)/g,
+      (match, text, url) => `[${text}](__jotty_link_${btoa(url)}__)`
+    );
+  };
 
   const components: Partial<Components> = {
     pre: ({ node, children, ...props }) => {
@@ -120,30 +130,48 @@ export const UnifiedMarkdownRenderer = ({
         </abbr>
       );
     },
-    a({ href, children, ...props }) {
+    a({ href, children, ...props }: any) {
       const childText = String(children);
       const isFileAttachment = childText.startsWith("📎 ") && href;
       const isVideoAttachment = childText.startsWith("🎥 ") && href;
+
+      // Decode jotty placeholder URLs
+      let actualHref = href;
+      if (href && href.startsWith("__jotty_link_") && href.endsWith("__")) {
+        try {
+          const encoded = href.replace("__jotty_link_", "").replace("__", "");
+          actualHref = atob(encoded);
+        } catch (e) {
+          actualHref = href;
+        }
+      }
+
       const isInternalLink =
-        href && (href?.includes("/note/") || href?.includes("/checklist/"));
+        actualHref && (actualHref.includes("/note/") || actualHref.includes("/checklist/") || actualHref.startsWith("jotty://"));
+
 
       if (isInternalLink) {
         return (
           <InternalLinkComponent
             node={{
               attrs: {
-                href: href || "",
+                href: actualHref,
                 title: childText,
-                type: href?.includes("/note/") ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
-                category:
-                  href?.includes("/note/") || href?.includes("/checklist/")
-                    ? href
+                type: actualHref.startsWith("jotty://")
+                  ? ItemTypes.NOTE
+                  : actualHref.includes("/note/")
+                    ? ItemTypes.NOTE
+                    : ItemTypes.CHECKLIST,
+                category: actualHref.startsWith("jotty://")
+                  ? null
+                  : actualHref.includes("/note/") || actualHref.includes("/checklist/")
+                    ? actualHref
                       .replace("checklist/", "")
                       .replace("note/", "")
                       .split("/")
                       .slice(1, -1)
                       .join("/")
-                    : (null as string | null),
+                    : null,
               },
             }}
           />
@@ -253,7 +281,7 @@ export const UnifiedMarkdownRenderer = ({
         rehypePlugins={[rehypeSlug, rehypeRaw]}
         components={components}
       >
-        {content}
+        {preprocessContent(content)}
       </ReactMarkdown>
     </div>
   );

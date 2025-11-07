@@ -1,4 +1,4 @@
-import { LinkIndex } from "../_server/actions/link";
+import { LinkIndex, ItemReference } from "../_server/actions/link";
 import { Checklist, ItemType, Note } from "../_types";
 import { ItemTypes } from "../_types/enums";
 import { encodeCategoryPath } from "./global-utils";
@@ -17,14 +17,19 @@ export const createItemMap = (itemsArray: Note[] | Checklist[]) => {
   );
 };
 
+/**
+ * Get referencing items from ItemReference array
+ * Handles both UUID-based and path-based references
+ */
 export const getReferencingItems = (
-  keys: string[],
+  refs: ItemReference[],
   map: Map<string, Note | Checklist>,
   type: ItemType
 ) => {
-  return keys
-    .map((key) => {
-      const encodedKey = encodeCategoryPath(key);
+  return refs
+    .map((ref) => {
+      // Try to find by path (which is always present)
+      const encodedKey = encodeCategoryPath(ref.path);
       const item = map.get(encodedKey);
 
       if (item) {

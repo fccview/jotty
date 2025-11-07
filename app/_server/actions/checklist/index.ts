@@ -33,11 +33,11 @@ import {
   buildCategoryPath,
   decodeCategoryPath,
   encodeCategoryPath,
+  extractUUIDFromMarkdown,
+  generateUUID,
 } from "@/app/_utils/global-utils";
 import {
-  updateIndexForItem,
   parseInternalLinks,
-  removeItemFromIndex,
   updateItemCategory,
   updateReferencingContent,
   rebuildLinkIndex,
@@ -63,11 +63,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -86,11 +86,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -102,9 +102,9 @@ const readListsRecursively = async (
           lists.push(
             parseMarkdown(content, id, categoryPath, owner, false, stats)
           );
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -292,11 +292,11 @@ export const getRawLists = async (
 
       const orderedDirNames: string[] = order?.categories
         ? [
-            ...order.categories.filter((n) => dirNames.includes(n)),
-            ...dirNames
-              .filter((n) => !order.categories!.includes(n))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...order.categories.filter((n) => dirNames.includes(n)),
+          ...dirNames
+            .filter((n) => !order.categories!.includes(n))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : dirNames.sort((a, b) => a.localeCompare(b));
 
       const files = entries.filter((e) => e.isFile() && e.name.endsWith(".md"));
@@ -304,11 +304,11 @@ export const getRawLists = async (
       const categoryOrder = await readOrderFile(dirPath);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -318,6 +318,7 @@ export const getRawLists = async (
           const content = await serverReadFile(filePath);
           const stats = await fs.stat(filePath);
           const type = getChecklistType(content);
+          const uuid = extractUUIDFromMarkdown(content);
           const rawList: Checklist & { rawContent: string } = {
             id,
             title: id,
@@ -329,9 +330,10 @@ export const getRawLists = async (
             owner: currentUser.username,
             isShared: false,
             rawContent: content,
+            uuid,
           };
           lists.push(rawList as Checklist);
-        } catch {}
+        } catch { }
       }
 
       for (const dirName of orderedDirNames) {
@@ -443,7 +445,7 @@ export const getListById = async (
       list.id === id &&
       (!category ||
         list.category?.toLowerCase() ===
-          decodeCategoryPath(category).toLowerCase())
+        decodeCategoryPath(category).toLowerCase())
   );
 
   if (list && "rawContent" in list) {
@@ -515,26 +517,19 @@ export const createList = async (formData: FormData) => {
       items: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      uuid: generateUUID(), // Generate UUID on creation
     };
 
     await serverWriteFile(filePath, listToMarkdown(newList));
 
     try {
-      const content = newList.items.map((i) => i.text).join("\n");
-      const links = parseInternalLinks(content);
       const currentUser = await getCurrentUser();
       if (currentUser?.username) {
-        const itemKey = `${newList.category || "Uncategorized"}/${newList.id}`;
-        await updateIndexForItem(
-          currentUser.username,
-          ItemTypes.CHECKLIST,
-          itemKey,
-          links
-        );
+        await rebuildLinkIndex(currentUser.username);
       }
     } catch (error) {
       console.warn(
-        "Failed to update link index for new checklist:",
+        "Failed to rebuild link index for new checklist:",
         newList.id,
         error
       );
@@ -636,40 +631,28 @@ export const updateList = async (formData: FormData) => {
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
-      const content = updatedList.items.map((i) => i.text).join("\n");
-      const links = parseInternalLinks(content);
-      const newItemKey = `${updatedList.category || "Uncategorized"}/${
-        updatedList.id
-      }`;
-
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
+        }`;
       const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
+
+      // If category or id changed, update references in other files
       if (oldItemKey !== newItemKey) {
-        await updateItemCategory(
-          currentList.owner!,
-          ItemTypes.CHECKLIST,
-          oldItemKey,
-          newItemKey
-        );
         await updateReferencingContent(
           currentList.owner!,
           ItemTypes.CHECKLIST,
           encodeCategoryPath(oldItemKey),
           encodeCategoryPath(newItemKey),
-          updatedList.title
+          updatedList.title,
+          updatedList.uuid
         );
-        await rebuildLinkIndex(currentList.owner!);
         revalidatePath("/");
       }
 
-      await updateIndexForItem(
-        currentList.owner!,
-        ItemTypes.CHECKLIST,
-        newItemKey,
-        links
-      );
+      // Always rebuild index to keep links in sync
+      await rebuildLinkIndex(currentList.owner!);
     } catch (error) {
       console.warn(
-        "Failed to update link index for checklist:",
+        "Failed to rebuild link index for checklist:",
         updatedList.id,
         error
       );
@@ -771,12 +754,7 @@ export const deleteList = async (formData: FormData) => {
 
     await serverDeleteFile(filePath);
 
-    try {
-      const itemKey = `${list.category || "Uncategorized"}/${id}`;
-      await removeItemFromIndex(list.owner!, ItemTypes.CHECKLIST, itemKey);
-    } catch (error) {
-      console.warn("Failed to remove checklist from link index:", id, error);
-    }
+    // Note: Index will be rebuilt automatically and will exclude deleted items
 
     if (list.owner) {
       const { updateSharingData } = await import(

@@ -156,3 +156,76 @@ export const generateWebManifest = (
     version: appVersion,
   });
 };
+
+// ============================================================================
+// UUID Utilities for Item Identification
+// ============================================================================
+
+/**
+ * Generate a new UUIDv4
+ * Uses crypto.randomUUID() in modern environments
+ */
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  // Fallback for older environments (should rarely be needed)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+/**
+ * Validate if a string is a valid UUIDv4
+ */
+export function validateUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
+/**
+ * Extract UUID from markdown content
+ * Looks for <!-- jotty_id: <uuid> --> comment at the start of the file
+ */
+export function extractUUIDFromMarkdown(markdown: string): string | undefined {
+  const uuidRegex = /<!--\s*jotty_id:\s*([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\s*-->/i;
+  const match = markdown.match(uuidRegex);
+
+  if (match && validateUUID(match[1])) {
+    return match[1];
+  }
+
+  return undefined;
+}
+
+/**
+ * Add or update UUID comment in markdown content
+ * Adds <!-- jotty_id: <uuid> --> at the very top of the file
+ * If UUID already exists, updates it
+ */
+export function addUUIDToMarkdown(markdown: string, uuid: string): string {
+  const uuidComment = `<!-- jotty_id: ${uuid} -->\n`;
+
+  // Check if UUID comment already exists
+  const existingUUIDRegex = /<!--\s*jotty_id:\s*[0-9a-f-]+\s*-->\n?/i;
+
+  if (existingUUIDRegex.test(markdown)) {
+    // Replace existing UUID
+    return markdown.replace(existingUUIDRegex, uuidComment);
+  } else {
+    // Add new UUID at the top
+    return uuidComment + markdown;
+  }
+}
+
+/**
+ * Remove UUID comment from markdown content
+ * Useful for display purposes or when exporting
+ */
+export function removeUUIDFromMarkdown(markdown: string): string {
+  const uuidRegex = /<!--\s*jotty_id:\s*[0-9a-f-]+\s*-->\n?/i;
+  return markdown.replace(uuidRegex, '');
+}
