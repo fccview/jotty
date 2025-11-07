@@ -14,7 +14,7 @@ import { arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Checklist, User } from "@/app/_types";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { useHomeFilter } from "@/app/_utils/home-filter-store";
-import { togglePin, updatePinnedOrder } from "@/app/_server/actions/users";
+import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
 
 interface UseChecklistHomeProps {
@@ -55,7 +55,10 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     );
 
     try {
-      const result = await updatePinnedOrder(newPinnedPaths, ItemTypes.CHECKLIST);
+      const result = await updatePinnedOrder(
+        newPinnedPaths,
+        ItemTypes.CHECKLIST
+      );
       if (result.success) {
         router.refresh();
       }

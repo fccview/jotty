@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getNotes, createNote } from "@/app/_server/actions/note";
+import { getUserNotes, createNote } from "@/app/_server/actions/note";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {
-      const docs = await getNotes(user.username);
-      if (!docs.success || !docs.data) {
+      const notes = await getUserNotes({ username: user.username });
+      if (!notes.success || !notes.data) {
         return NextResponse.json(
-          { error: docs.error || "Failed to fetch notes" },
+          { error: notes.error || "Failed to fetch notes" },
           { status: 500 }
         );
       }
 
-      return NextResponse.json({ notes: docs.data });
+      return NextResponse.json({ notes: notes.data });
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(

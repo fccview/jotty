@@ -4,6 +4,7 @@ import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPa
 import { Checklist } from "@/app/_types";
 import { useRouter } from "next/navigation";
 import { ItemTypes } from "@/app/_types/enums";
+import { useMetadata } from "@/app/_providers/MetadataProvider";
 
 interface ChecklistModalsProps {
   localList: Checklist;
@@ -32,6 +33,7 @@ export const ChecklistModals = ({
   handleBulkPaste,
   isLoading,
 }: ChecklistModalsProps) => {
+  const metadata = useMetadata();
   const router = useRouter();
   return (
     <>
@@ -42,11 +44,6 @@ export const ChecklistModals = ({
             setShowShareModal(false);
             router.refresh();
           }}
-          itemId={localList.id}
-          itemTitle={localList.title}
-          itemType={ItemTypes.CHECKLIST}
-          itemCategory={localList.category}
-          itemOwner={localList.owner || ""}
         />
       )}
       {showConversionModal && (

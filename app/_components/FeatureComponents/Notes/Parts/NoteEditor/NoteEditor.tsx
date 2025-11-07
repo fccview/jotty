@@ -46,7 +46,7 @@ export const NoteEditor = ({
             noteContent={note.content}
             editorContent={viewModel.editorContent}
             onEditorContentChange={viewModel.handleEditorContentChange}
-            noteId={note.id}
+            noteId={note.uuid}
             noteCategory={note.category}
           />
         </div>

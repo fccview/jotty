@@ -22,6 +22,7 @@ import { toHtml } from "hast-util-to-html";
 import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
+import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -46,6 +47,7 @@ export const UnifiedMarkdownRenderer = ({
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
+  const { contentWithoutMetadata } = extractYamlMetadata(content);
 
   useEffect(() => {
     setIsClient(true);
@@ -125,25 +127,40 @@ export const UnifiedMarkdownRenderer = ({
       const isFileAttachment = childText.startsWith("📎 ") && href;
       const isVideoAttachment = childText.startsWith("🎥 ") && href;
       const isInternalLink =
-        href && (href?.includes("/note/") || href?.includes("/checklist/"));
+        href &&
+        (href?.includes("/note/") ||
+          href?.includes("/checklist/") ||
+          href?.startsWith("/jotty/"));
 
       if (isInternalLink) {
+        let linkType: ItemTypes;
+        let linkCategory: string | null = null;
+        let linkUuid: string | null = null;
+
+        if (href?.startsWith("/jotty/")) {
+          linkUuid = href.replace("/jotty/", "");
+          linkType = ItemTypes.NOTE;
+        } else {
+          linkType = href?.includes("/note/")
+            ? ItemTypes.NOTE
+            : ItemTypes.CHECKLIST;
+          linkCategory = href
+            ?.replace("checklist/", "")
+            .replace("note/", "")
+            .split("/")
+            .slice(1, -1)
+            .join("/");
+        }
+
         return (
           <InternalLinkComponent
             node={{
               attrs: {
                 href: href || "",
                 title: childText,
-                type: href?.includes("/note/") ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
-                category:
-                  href?.includes("/note/") || href?.includes("/checklist/")
-                    ? href
-                      .replace("checklist/", "")
-                      .replace("note/", "")
-                      .split("/")
-                      .slice(1, -1)
-                      .join("/")
-                    : (null as string | null),
+                type: linkType,
+                category: linkCategory || "Uncategorized",
+                uuid: linkUuid || "",
               },
             }}
           />
@@ -253,7 +270,7 @@ export const UnifiedMarkdownRenderer = ({
         rehypePlugins={[rehypeSlug, rehypeRaw]}
         components={components}
       >
-        {content}
+        {contentWithoutMetadata}
       </ReactMarkdown>
     </div>
   );

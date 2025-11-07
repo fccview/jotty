@@ -13,13 +13,9 @@ import fs from "fs/promises";
 import { Modes } from "@/app/_types/enums";
 import { buildCategoryTree } from "@/app/_utils/category-utils";
 import { getUsername } from "@/app/_server/actions/users";
-import { getRawNotes } from "@/app/_server/actions/note";
-import { getRawLists } from "@/app/_server/actions/checklist";
-import {
-  updateReferencingContent,
-  updateItemCategory,
-  rebuildLinkIndex,
-} from "@/app/_server/actions/link";
+import { getUserNotes } from "@/app/_server/actions/note";
+import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import {
   buildCategoryPath,
   encodeCategoryPath,
@@ -148,7 +144,7 @@ export const setCategoryOrder = async (formData: FormData) => {
 
     try {
       revalidatePath("/");
-    } catch {}
+    } catch { }
     return { success: true };
   } catch {
     return { error: "Failed to set category order" };
@@ -172,7 +168,7 @@ export const setChecklistOrderInCategory = async (formData: FormData) => {
 
     try {
       revalidatePath("/");
-    } catch {}
+    } catch { }
     return { success: true };
   } catch {
     return { error: "Failed to set item order" };
@@ -422,19 +418,6 @@ export const moveNode = async (formData: FormData) => {
 
           const itemType = mode === Modes.CHECKLISTS ? "checklist" : "note";
 
-          await updateReferencingContent(
-            username,
-            itemType as "note" | "checklist",
-            oldItemKey,
-            newItemKey,
-            title
-          );
-          await updateItemCategory(
-            username,
-            itemType as "note" | "checklist",
-            oldItemKey,
-            newItemKey
-          );
           await rebuildLinkIndex(username);
 
           try {
@@ -467,8 +450,8 @@ export const moveNode = async (formData: FormData) => {
             : activeName;
 
           const [notesResult, checklistsResult] = await Promise.all([
-            getRawNotes(username),
-            getRawLists(username),
+            getUserNotes({ username, isRaw: true }),
+            getUserChecklists({ username, isRaw: true }),
           ]);
 
           const allNotes = notesResult.success ? notesResult.data || [] : [];
@@ -499,18 +482,8 @@ export const moveNode = async (formData: FormData) => {
               newCategoryPath
             );
 
-            const oldItemKey = buildCategoryPath(oldCategory, note.id);
-            const newItemKey = buildCategoryPath(newCategory, note.id);
-
-            await updateReferencingContent(
-              username,
-              "note",
-              oldItemKey,
-              newItemKey,
-              note.title
-            );
-
-            await updateItemCategory(username, "note", oldItemKey, newItemKey);
+            const oldItemKey = buildCategoryPath(oldCategory, note.id!);
+            const newItemKey = buildCategoryPath(newCategory, note.id!);
 
             try {
               revalidatePath(`/note/${oldItemKey}`);
@@ -527,23 +500,8 @@ export const moveNode = async (formData: FormData) => {
               newCategoryPath
             );
 
-            const oldItemKey = buildCategoryPath(oldCategory, checklist.id);
-            const newItemKey = buildCategoryPath(newCategory, checklist.id);
-
-            await updateReferencingContent(
-              username,
-              "checklist",
-              oldItemKey,
-              newItemKey,
-              checklist.title
-            );
-
-            await updateItemCategory(
-              username,
-              "checklist",
-              oldItemKey,
-              newItemKey
-            );
+            const oldItemKey = buildCategoryPath(oldCategory, checklist.id!);
+            const newItemKey = buildCategoryPath(newCategory, checklist.id!);
 
             try {
               revalidatePath(`/checklist/${oldItemKey}`);

@@ -1,6 +1,6 @@
 {
     "name": "jotty.page",
-    "version": "1.10.2",
+    "version": "1.10.3",
     "private": true,
     "scripts": {
         "dev": "next dev",
@@ -40,6 +40,7 @@
         "hast-util-to-html": "^9.0.5",
         "jose": "^6.1.0",
         "js-beautify": "^1.15.4",
+        "js-yaml": "^4.1.0",
         "jsonwebtoken": "^9.0.2",
         "loadash": "^1.0.0",
         "lowlight": "^3.3.0",
@@ -81,6 +82,7 @@
         "@types/archiver": "^6.0.3",
         "@types/bcryptjs": "^3.0.0",
         "@types/js-beautify": "^1.14.3",
+        "@types/js-yaml": "^4.0.9",
         "@types/jsonwebtoken": "^9.0.10",
         "@types/lodash": "^4.17.20",
         "@types/node": "^20",

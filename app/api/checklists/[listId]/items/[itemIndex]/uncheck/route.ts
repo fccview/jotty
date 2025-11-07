@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { updateItem } from "@/app/_server/actions/checklist-item";
-import { getLists } from "@/app/_server/actions/checklist";
+import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { Checklist, Result } from "@/app/_types";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export async function PUT(
         );
       }
 
-      const lists = await getLists(user.username);
+      const lists = await getUserChecklists({ username: user.username }) as Result<Checklist[]>;
       if (!lists.success || !lists.data) {
         return NextResponse.json(
           { error: "Failed to fetch lists" },

@@ -468,17 +468,17 @@ const markdownProcessor = unified()
 
         if (node.tagName === "a" && node.properties?.href) {
           const href = String(node.properties.href);
-          if (href.startsWith("/note/") || href.startsWith("/checklist/")) {
+          if (href.startsWith("/jotty/")) {
             const textContent =
               node.children?.[0]?.type === "text"
                 ? String(node.children[0].value)
                 : "";
 
-            const parts = href.split("/").filter(Boolean);
-            const type = parts.length >= 1 ? parts[0] : "note";
+            let uuid = "";
 
-            const category =
-              parts.length >= 3 ? parts.slice(1, -1).join("/") : "";
+            if (href.startsWith("/jotty/")) {
+              uuid = href.replace("/jotty/", "");
+            }
 
             const newChildren: any[] = [];
 
@@ -489,34 +489,12 @@ const markdownProcessor = unified()
               children: [{ type: "text", value: textContent }],
             });
 
-            if (category && category !== "Uncategorized") {
-              newChildren.push({
-                type: "element",
-                tagName: "span",
-                properties: { class: "separator" },
-                children: [{ type: "text", value: "•" }],
-              });
-
-              newChildren.push({
-                type: "element",
-                tagName: "span",
-                properties: { class: "category" },
-                children: [
-                  {
-                    type: "text",
-                    value: category.split("/").pop() || category,
-                  },
-                ],
-              });
-            }
-
             node.tagName = "span";
             node.properties = {
               "data-internal-link": "",
               "data-href": href,
               "data-title": textContent,
-              "data-type": type,
-              "data-category": category,
+              "data-uuid": uuid,
             };
 
             node.children = newChildren;

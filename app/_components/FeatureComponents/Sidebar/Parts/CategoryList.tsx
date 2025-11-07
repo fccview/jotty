@@ -1,6 +1,6 @@
 "use client";
 
-import { AppMode, Category, Checklist, Note } from "@/app/_types";
+import { AppMode, Category, Checklist, Note, User } from "@/app/_types";
 import {
   DndContext,
   DragEndEvent,
@@ -32,7 +32,7 @@ interface CategoryListProps {
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
-  user?: any;
+  user?: User;
 }
 
 export const CategoryList = (props: CategoryListProps) => {
@@ -157,13 +157,6 @@ export const CategoryList = (props: CategoryListProps) => {
 
       router.push(newItemPath);
     } else if (activeNode.type === "category" && pathname) {
-      console.log("Category move navigation:", {
-        activeNode,
-        overNode,
-        pathname,
-        mode,
-      });
-
       const routePrefix = mode === Modes.CHECKLISTS ? "/checklist" : "/note";
       const oldCategoryPath = activeNode.categoryPath;
       const categoryName = activeNode.categoryPath.split("/").pop() || "";
@@ -184,19 +177,11 @@ export const CategoryList = (props: CategoryListProps) => {
         routePrefix,
       });
 
-      // Try both encoded and decoded versions
       const encodedPrefix = `${routePrefix}/${encodeURIComponent(
         oldCategoryPath
       )}/`;
       const decodedPathname = decodeURIComponent(pathname);
       const decodedPrefix = `${routePrefix}/${oldCategoryPath}/`;
-
-      console.log("Checking matches:", {
-        pathname,
-        decodedPathname,
-        encodedPrefix,
-        decodedPrefix,
-      });
 
       let itemPart = "";
       let matched = false;
@@ -204,11 +189,9 @@ export const CategoryList = (props: CategoryListProps) => {
       if (pathname.startsWith(encodedPrefix)) {
         itemPart = pathname.substring(encodedPrefix.length);
         matched = true;
-        console.log("Matched encoded prefix, itemPart:", itemPart);
       } else if (decodedPathname.startsWith(decodedPrefix)) {
         itemPart = decodedPathname.substring(decodedPrefix.length);
         matched = true;
-        console.log("Matched decoded prefix, itemPart:", itemPart);
       }
 
       if (matched) {

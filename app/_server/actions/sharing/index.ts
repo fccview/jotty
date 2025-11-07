@@ -1,6 +1,7 @@
 "use server";
 
 import { ItemType, Result, SharingPermissions } from "@/app/_types";
+import { extractUuid } from "@/app/_utils/yaml-metadata-utils";
 import {
   ensureDir,
   readJsonFile,
@@ -10,20 +11,47 @@ import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import path from "path";
 import { DATA_DIR } from "@/app/_consts/files";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
-import { isAdmin, getUserByChecklist, getUserByNote } from "@/app/_server/actions/users";
+import {
+  isAdmin,
+  getUserByChecklist,
+  getUserByNote,
+} from "@/app/_server/actions/users";
 import { CHECKLISTS_DIR, NOTES_DIR } from "@/app/_consts/files";
 import fs from "fs/promises";
 
+const getItemUuid = async (
+  user: string,
+  itemType: "note" | "checklist",
+  itemId: string,
+  category: string
+): Promise<string | undefined> => {
+  try {
+    const dataDir = path.join(process.cwd(), "data");
+    const modeDir = itemType === "checklist" ? "checklists" : "notes";
+    const userDir = path.join(dataDir, modeDir, user);
+    const categoryDir = path.join(userDir, category || "Uncategorized");
+    const filePath = path.join(categoryDir, `${itemId}.md`);
+
+    const content = await fs.readFile(filePath, "utf-8");
+    return extractUuid(content);
+  } catch (error) {
+    console.warn(`Could not get UUID for item ${itemId}:`, error);
+    return undefined;
+  }
+};
+
 interface SharedItemEntry {
-  id: string;
-  category: string;
+  uuid?: string;
+  id?: string;
+  category?: string;
   sharer: string;
   permissions: SharingPermissions;
 }
 
 interface SharingItemUpdate {
-  id: string;
-  category: string;
+  uuid?: string;
+  id?: string;
+  category?: string;
   itemType: ItemType;
   sharer?: string;
 }
@@ -31,7 +59,8 @@ interface SharingItemUpdate {
 type SharingData = Record<string, SharedItemEntry[]>;
 
 const getSharingFilePath = (itemType: ItemType): string => {
-  const folderName = itemType === ItemTypes.CHECKLIST ? Modes.CHECKLISTS : Modes.NOTES;
+  const folderName =
+    itemType === ItemTypes.CHECKLIST ? Modes.CHECKLISTS : Modes.NOTES;
   return path.join(DATA_DIR, folderName, ".sharing.json");
 };
 
@@ -43,7 +72,7 @@ export const readShareFile = async (
     const checklistSharingData = await readShareFile(ItemTypes.CHECKLIST);
     return {
       notes: noteSharingData,
-      checklists: checklistSharingData
+      checklists: checklistSharingData,
     } as any;
   } else {
     const filePath = getSharingFilePath(itemType);
@@ -68,36 +97,57 @@ export const shareWith = async (
   sharerUsername: string,
   receiverUsername: string,
   itemType: ItemType,
-  permissions: SharingPermissions = { canRead: true, canEdit: false, canDelete: false }
+  permissions: SharingPermissions = {
+    canRead: true,
+    canEdit: false,
+    canDelete: false,
+  }
 ): Promise<Result<null>> => {
-  const sharingData = await readShareFile(itemType);
-
-  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
-
-  const newEntry: SharedItemEntry = {
-    id: item,
-    category: encodedCategory,
-    sharer: sharerUsername,
-    permissions,
-  };
-
-  if (!sharingData[receiverUsername]) {
-    sharingData[receiverUsername] = [];
-  }
-
-  sharingData[receiverUsername] = sharingData[receiverUsername].filter(
-    (entry) => !(entry.id === item && entry.sharer === sharerUsername)
-  );
-
-  sharingData[receiverUsername].push(newEntry);
-
   try {
-    await writeShareFile(itemType, sharingData);
-  } catch (error) {
-    return { success: false, error: "Failed to write share file" };
-  }
+    const sharingData = await readShareFile(itemType);
 
-  return { success: true, data: null };
+    const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
+
+    const itemUuid = await getItemUuid(
+      sharerUsername,
+      itemType === ItemTypes.CHECKLIST ? "checklist" : "note",
+      item,
+      categoryPath || "Uncategorized"
+    );
+
+    if (!itemUuid) {
+      return {
+        success: false,
+        error:
+          "This item needs to be saved first before it can be shared. Please edit and save the item to generate the required metadata.",
+      };
+    }
+
+    const newEntry: SharedItemEntry = {
+      uuid: itemUuid,
+      id: item,
+      category: encodedCategory,
+      sharer: sharerUsername,
+      permissions,
+    };
+
+    if (!sharingData[receiverUsername]) {
+      sharingData[receiverUsername] = [];
+    }
+
+    sharingData[receiverUsername] = sharingData[receiverUsername].filter(
+      (entry) => !(entry.id === item && entry.sharer === sharerUsername)
+    );
+
+    sharingData[receiverUsername].push(newEntry);
+
+    await writeShareFile(itemType, sharingData);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error in shareWith:", error);
+    return { success: false, error: "Failed to share item" };
+  }
 };
 
 export const isItemSharedWith = async (
@@ -107,12 +157,19 @@ export const isItemSharedWith = async (
   username: string
 ): Promise<boolean> => {
   const sharingData = await readShareFile(itemType);
-  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
 
   const userShares = sharingData[username] || [];
-  return userShares.some(
-    (entry) => entry.id === item && entry.category === encodedCategory
-  );
+
+  let found = userShares.some((entry) => entry.uuid === item);
+
+  if (!found && categoryPath) {
+    const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
+    found = userShares.some(
+      (entry) => entry.id === item && entry.category === encodedCategory
+    );
+  }
+
+  return found;
 };
 
 export const getItemPermissions = async (
@@ -122,12 +179,17 @@ export const getItemPermissions = async (
   username: string
 ): Promise<SharingPermissions | null> => {
   const sharingData = await readShareFile(itemType);
-  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
 
   const userShares = sharingData[username] || [];
-  const entry = userShares.find(
-    (entry) => entry.id === item && entry.category === encodedCategory
-  );
+
+  let entry = userShares.find((entry) => entry.uuid === item);
+
+  if (!entry && categoryPath) {
+    const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
+    entry = userShares.find(
+      (entry) => entry.id === item && entry.category === encodedCategory
+    );
+  }
 
   return entry ? entry.permissions : null;
 };
@@ -138,7 +200,12 @@ export const canUserReadItem = async (
   itemType: ItemType,
   username: string
 ): Promise<boolean> => {
-  const permissions = await getItemPermissions(item, categoryPath, itemType, username);
+  const permissions = await getItemPermissions(
+    item,
+    categoryPath,
+    itemType,
+    username
+  );
   return permissions ? permissions.canRead : false;
 };
 
@@ -148,7 +215,12 @@ export const canUserWriteItem = async (
   itemType: ItemType,
   username: string
 ): Promise<boolean> => {
-  const permissions = await getItemPermissions(item, categoryPath, itemType, username);
+  const permissions = await getItemPermissions(
+    item,
+    categoryPath,
+    itemType,
+    username
+  );
   return permissions ? permissions.canEdit : false;
 };
 
@@ -158,7 +230,12 @@ export const canUserDeleteItem = async (
   itemType: ItemType,
   username: string
 ): Promise<boolean> => {
-  const permissions = await getItemPermissions(item, categoryPath, itemType, username);
+  const permissions = await getItemPermissions(
+    item,
+    categoryPath,
+    itemType,
+    username
+  );
   return permissions ? permissions.canDelete : false;
 };
 
@@ -186,23 +263,57 @@ export const checkUserPermission = async (
     } catch {
     }
 
-    const ownerResult =
-      itemType === ItemTypes.CHECKLIST
-        ? await getUserByChecklist(itemId, itemCategory)
-        : await getUserByNote(itemId, itemCategory);
+    let owner = null;
+    if (itemType === ItemTypes.CHECKLIST) {
+      const { getUserByChecklistUuid } = await import(
+        "@/app/_server/actions/users"
+      );
+      const ownerResult = await getUserByChecklistUuid(itemId);
+      if (ownerResult.success) {
+        owner = ownerResult.data;
+      }
+    } else {
+      const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
+      const ownerResult = await getUserByNoteUuid(itemId);
+      if (ownerResult.success) {
+        owner = ownerResult.data;
+      }
+    }
 
-    if (!ownerResult.success) return false;
+    if (!owner) {
+      const ownerResult =
+        itemType === ItemTypes.CHECKLIST
+          ? await getUserByChecklist(itemId, itemCategory)
+          : await getUserByNote(itemId, itemCategory);
 
-    const owner = ownerResult.data;
+      if (!ownerResult.success) return false;
+      owner = ownerResult.data;
+    }
+
     if (owner?.username === currentUsername) return true;
 
     switch (permission) {
       case PermissionTypes.READ:
-        return await canUserReadItem(itemId, itemCategory, itemType, currentUsername);
+        return await canUserReadItem(
+          itemId,
+          itemCategory,
+          itemType,
+          currentUsername
+        );
       case PermissionTypes.EDIT:
-        return await canUserWriteItem(itemId, itemCategory, itemType, currentUsername);
+        return await canUserWriteItem(
+          itemId,
+          itemCategory,
+          itemType,
+          currentUsername
+        );
       case PermissionTypes.DELETE:
-        return await canUserDeleteItem(itemId, itemCategory, itemType, currentUsername);
+        return await canUserDeleteItem(
+          itemId,
+          itemCategory,
+          itemType,
+          currentUsername
+        );
       default:
         return false;
     }
@@ -223,14 +334,22 @@ export const unshareWith = async (
   const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
 
   if (sharingData[receiverUsername]) {
-    sharingData[receiverUsername] = sharingData[receiverUsername].filter(
-      (entry) =>
-        !(
-          entry.id === item &&
-          entry.sharer === sharerUsername &&
-          entry.category === encodedCategory
-        )
+    const entryIndex = sharingData[receiverUsername].findIndex(
+      (entry) => entry.uuid === item
     );
+
+    if (entryIndex !== -1) {
+      sharingData[receiverUsername].splice(entryIndex, 1);
+    } else {
+      sharingData[receiverUsername] = sharingData[receiverUsername].filter(
+        (entry) =>
+          !(
+            entry.id === item &&
+            entry.sharer === sharerUsername &&
+            entry.category === encodedCategory
+          )
+      );
+    }
 
     if (sharingData[receiverUsername].length === 0) {
       delete sharingData[receiverUsername];
@@ -277,25 +396,33 @@ export const getAllSharedItems = async (): Promise<{
 
   Object.values(notesSharing).forEach((userShares) => {
     userShares.forEach((entry) => {
-      allNotes.push({ id: entry.id, category: entry.category });
+      if (entry.id && entry.category) {
+        allNotes.push({ id: entry.id, category: entry.category });
+      }
     });
   });
 
   Object.values(checklistsSharing).forEach((userShares) => {
     userShares.forEach((entry) => {
-      allChecklists.push({ id: entry.id, category: entry.category });
+      if (entry.id && entry.category) {
+        allChecklists.push({ id: entry.id, category: entry.category });
+      }
     });
   });
 
   if (notesSharing.public) {
     notesSharing.public.forEach((entry) => {
-      publicNotes.push({ id: entry.id, category: entry.category });
+      if (entry.uuid && entry.id && entry.category) {
+        publicNotes.push({ id: entry.id, category: entry.category });
+      }
     });
   }
 
   if (checklistsSharing.public) {
     checklistsSharing.public.forEach((entry) => {
-      publicChecklists.push({ id: entry.id, category: entry.category });
+      if (entry.uuid && entry.id && entry.category) {
+        publicChecklists.push({ id: entry.id, category: entry.category });
+      }
     });
   }
 
@@ -325,12 +452,15 @@ export const updateSharingData = async (
   let hasChanges = false;
 
   if (newItem === null) {
-    Object.keys(sharingData).forEach(username => {
+    Object.keys(sharingData).forEach((username) => {
       const originalLength = sharingData[username].length;
       sharingData[username] = sharingData[username].filter(
-        entry =>
-          !(entry.id === previousItem.id &&
-            entry.category === encodeCategoryPath(previousItem.category || "Uncategorized"))
+        (entry) =>
+          !(
+            entry.id === previousItem.id &&
+            entry.category ===
+            encodeCategoryPath(previousItem.category || "Uncategorized")
+          )
       );
       if (sharingData[username].length !== originalLength) {
         hasChanges = true;
@@ -340,37 +470,57 @@ export const updateSharingData = async (
       }
     });
   } else {
-    const prevCategory = previousItem.category ? encodeCategoryPath(previousItem.category) : null;
-    const newCategory = newItem.category ? encodeCategoryPath(newItem.category) : null;
+    const prevCategory = previousItem.category
+      ? encodeCategoryPath(previousItem.category)
+      : null;
+    const newCategory = newItem.category
+      ? encodeCategoryPath(newItem.category)
+      : null;
 
-    Object.keys(sharingData).forEach(username => {
-      sharingData[username].forEach(entry => {
+    Object.keys(sharingData).forEach((username) => {
+      sharingData[username].forEach((entry) => {
         let updated = false;
 
-        if (!previousItem.id && newItem.sharer && entry.sharer === previousItem.sharer) {
+        if (
+          !previousItem.id &&
+          newItem.sharer &&
+          entry.sharer === previousItem.sharer
+        ) {
           entry.sharer = newItem.sharer;
           updated = true;
-        }
-        else if (previousItem.id) {
-          if (entry.id === previousItem.id &&
-            entry.category === (prevCategory || encodeCategoryPath("Uncategorized")) &&
-            newItem.id !== previousItem.id) {
+        } else if (previousItem.id) {
+          if (
+            entry.id === previousItem.id &&
+            entry.category ===
+            (prevCategory || encodeCategoryPath("Uncategorized")) &&
+            newItem.id !== previousItem.id
+          ) {
             entry.id = newItem.id;
             updated = true;
           }
 
-          if (entry.id === (newItem.id || previousItem.id) &&
-            entry.category === (prevCategory || encodeCategoryPath("Uncategorized")) &&
-            newCategory && newCategory !== (prevCategory || encodeCategoryPath("Uncategorized"))) {
+          if (
+            entry.id === (newItem.id || previousItem.id) &&
+            entry.category ===
+            (prevCategory || encodeCategoryPath("Uncategorized")) &&
+            newCategory &&
+            newCategory !==
+            (prevCategory || encodeCategoryPath("Uncategorized"))
+          ) {
             entry.category = newCategory;
             updated = true;
           }
 
-          if (newItem.sharer &&
+          if (
+            newItem.sharer &&
             entry.sharer === previousItem.sharer &&
             entry.id === (newItem.id || previousItem.id) &&
-            entry.category === (newCategory || prevCategory || encodeCategoryPath("Uncategorized")) &&
-            newItem.sharer !== previousItem.sharer) {
+            entry.category ===
+            (newCategory ||
+              prevCategory ||
+              encodeCategoryPath("Uncategorized")) &&
+            newItem.sharer !== previousItem.sharer
+          ) {
             entry.sharer = newItem.sharer;
             updated = true;
           }
@@ -402,9 +552,15 @@ export const updateItemPermissions = async (
     return { success: false, error: "Item not shared with this user" };
   }
 
-  const entryIndex = sharingData[username].findIndex(
-    (entry) => entry.id === item && entry.category === encodedCategory
+  let entryIndex = sharingData[username].findIndex(
+    (entry) => entry.uuid === item
   );
+
+  if (entryIndex === -1) {
+    entryIndex = sharingData[username].findIndex(
+      (entry) => entry.id === item && entry.category === encodedCategory
+    );
+  }
 
   if (entryIndex === -1) {
     return { success: false, error: "Item not shared with this user" };

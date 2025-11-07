@@ -437,6 +437,7 @@ export const useChecklist = ({
     formData.append("listId", localList.id);
     formData.append("newType", newType);
     formData.append("category", localList.category || "Uncategorized");
+    formData.append("uuid", localList.uuid || "");
     const result = await convertChecklistType(formData);
     setIsLoading(false);
 
@@ -584,8 +585,7 @@ export const useChecklist = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${encodeCategoryPath(localList.category || "Uncategorized")}/${
-        localList.id
+      `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id
       }`
     );
     if (success) {

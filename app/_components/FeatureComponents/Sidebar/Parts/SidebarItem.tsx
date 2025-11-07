@@ -18,11 +18,11 @@ import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
-import { togglePin } from "@/app/_server/actions/users";
+import { togglePin } from "@/app/_server/actions/dashboard";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
-import { toggleArchive } from "@/app/_server/actions/users";
+import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
 import { capitalize } from "lodash";
@@ -93,12 +93,12 @@ export const SidebarItem = ({
   const dropdownItems = [
     ...(onEditItem
       ? [
-        {
-          label: "Edit",
-          onClick: () => onEditItem(item),
-          icon: <Edit className="h-4 w-4" />,
-        },
-      ]
+          {
+            label: "Edit",
+            onClick: () => onEditItem(item),
+            icon: <Edit className="h-4 w-4" />,
+          },
+        ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
@@ -113,17 +113,17 @@ export const SidebarItem = ({
     },
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
-        {
-          label: "Archive",
-          onClick: async () => {
-            const result = await toggleArchive(item, mode);
-            if (result.success) {
-              router.refresh();
-            }
+          {
+            label: "Archive",
+            onClick: async () => {
+              const result = await toggleArchive(item, mode);
+              if (result.success) {
+                router.refresh();
+              }
+            },
+            icon: <Archive className="h-4 w-4" />,
           },
-          icon: <Archive className="h-4 w-4" />,
-        },
-      ]
+        ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
@@ -196,12 +196,22 @@ export const SidebarItem = ({
           </>
         )}
         <span className="truncate flex-1">
-          {appSettings?.parseContent === "yes" ? item.title : capitalize(item.title.replace(/-/g, " "))}
+          {appSettings?.parseContent === "yes"
+            ? item.title
+            : capitalize(item.title.replace(/-/g, " "))}
         </span>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          {isShared && <span title={sharedWith.join(", ")}><Users className="h-4 w-4 text-primary" /></span>}
-          {isPubliclyShared && <span title="Publicly shared"><Globe className="h-4 w-4 text-primary" /></span>}
+          {isShared && (
+            <span title={sharedWith.join(", ")}>
+              <Users className="h-4 w-4 text-primary" />
+            </span>
+          )}
+          {isPubliclyShared && (
+            <span title="Publicly shared">
+              <Globe className="h-4 w-4 text-primary" />
+            </span>
+          )}
         </div>
       </button>
 

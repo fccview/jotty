@@ -20,7 +20,7 @@ import { usePagination } from "@/app/_hooks/usePagination";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { togglePin } from "@/app/_server/actions/users";
+import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 
 interface ChecklistsPageClientProps {
@@ -92,8 +92,10 @@ export const ChecklistsPageClient = ({
       filtered = filtered.filter((list) => {
         const listCategory = list.category || "Uncategorized";
         if (recursive) {
-          return selectedCategories.some(selected =>
-            listCategory === selected || listCategory.startsWith(selected + "/")
+          return selectedCategories.some(
+            (selected) =>
+              listCategory === selected ||
+              listCategory.startsWith(selected + "/")
           );
         }
         return selectedCategories.includes(listCategory);
@@ -104,7 +106,13 @@ export const ChecklistsPageClient = ({
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
-  }, [initialLists, checklistFilter, selectedCategories, recursive, user?.pinnedLists]);
+  }, [
+    initialLists,
+    checklistFilter,
+    selectedCategories,
+    recursive,
+    user?.pinnedLists,
+  ]);
 
   const {
     currentPage,
@@ -118,7 +126,6 @@ export const ChecklistsPageClient = ({
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
   });
-
 
   const handleClearAllCategories = () => {
     setSelectedCategories([]);

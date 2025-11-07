@@ -59,6 +59,7 @@ export const useSearch = ({
     () => [
       ...checklists.map((c) => ({
         id: c.id || "",
+        uuid: c.uuid || "",
         title:
           appSettings?.parseContent === "yes"
             ? c.title
@@ -69,6 +70,7 @@ export const useSearch = ({
       })),
       ...notes.map((n) => ({
         id: n.id || "",
+        uuid: n.uuid || "",
         title:
           appSettings?.parseContent === "yes"
             ? n.title
@@ -93,7 +95,8 @@ export const useSearch = ({
         .filter(
           (item) =>
             item.title?.toLowerCase().includes(lowerCaseQuery) ||
-            item.content.includes(lowerCaseQuery)
+            item.content.includes(lowerCaseQuery) ||
+            item.uuid?.toLowerCase().includes(lowerCaseQuery)
         )
         .slice(0, 8);
 

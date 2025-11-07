@@ -38,7 +38,7 @@ export const NoteCard = ({
     transition,
     isDragging,
   } = useSortable({
-    id: note.id,
+    id: note?.uuid || note?.id,
     disabled: !isDraggable,
   });
 
@@ -50,14 +50,18 @@ export const NoteCard = ({
   const { showMarkdownPreview } = useSettings();
 
   const parsedData = useMemo(() => {
+    if (!note) {
+      return null;
+    }
+
     if ("rawContent" in note) {
       return parseNoteContent((note as any).rawContent, note.id);
     }
     return null;
   }, [note]);
 
-  const displayTitle = parsedData?.title || note.title;
-  const displayContent = parsedData?.content || note.content || "";
+  const displayTitle = parsedData?.title || note?.title;
+  const displayContent = parsedData?.content || note?.content || "";
 
   const { previewText, wordCount } = useMemo(() => {
     const content = displayContent;
@@ -74,15 +78,19 @@ export const NoteCard = ({
       previewText: fullScrollableContent
         ? content
         : plainText.length > 550
-        ? plainText.substring(0, 550) + "..."
-        : plainText,
+          ? plainText.substring(0, 550) + "..."
+          : plainText,
       wordCount: words.length,
     };
   }, [displayContent, fullScrollableContent]);
 
   const categoryName = useMemo(() => {
-    return note.category ? note.category.split("/").pop() : null;
-  }, [note.category]);
+    return note?.category ? note?.category.split("/").pop() : null;
+  }, [note?.category]);
+
+  if (!note) {
+    return null;
+  }
 
   return (
     <div
@@ -90,9 +98,8 @@ export const NoteCard = ({
       style={style}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
       onClick={() => onSelect(note)}
-      className={`jotty-note-card bg-card border border-border rounded-xl cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${
-        isDragging ? "opacity-50" : ""
-      }`}
+      className={`jotty-note-card bg-card border border-border rounded-xl cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${isDragging ? "opacity-50" : ""
+        }`}
     >
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
@@ -107,9 +114,8 @@ export const NoteCard = ({
                 e.stopPropagation();
                 onTogglePin(note);
               }}
-              className={`${
-                isPinned ? "opacity-100" : "opacity-0"
-              } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-lg flex-shrink-0`}
+              className={`${isPinned ? "opacity-100" : "opacity-0"
+                } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-lg flex-shrink-0`}
               title={isPinned ? "Unpin" : "Pin"}
             >
               {isPinned ? (
@@ -127,11 +133,10 @@ export const NoteCard = ({
           {showMarkdownPreview ? (
             <div className="text-sm text-muted-foreground prose prose-sm max-w-none">
               <div
-                className={`${
-                  fullScrollableContent
-                    ? "max-h-[200px] overflow-y-auto"
-                    : "line-clamp-4"
-                } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
+                className={`${fullScrollableContent
+                  ? "max-h-[200px] overflow-y-auto"
+                  : "line-clamp-4"
+                  } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
               >
                 <UnifiedMarkdownRenderer content={displayContent} />
               </div>

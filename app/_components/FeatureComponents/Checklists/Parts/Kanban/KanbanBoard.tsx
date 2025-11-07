@@ -103,13 +103,13 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const referencingItems = useMemo(() => {
     return getReferences(
       linkIndex,
-      checklist.id,
+      checklist.uuid,
       checklist.category,
       ItemTypes.CHECKLIST,
       notes,
       checklists
     );
-  }, [linkIndex, checklist.id, checklist.category, checklists, notes]);
+  }, [linkIndex, checklist.uuid, checklist.category, checklists, notes]);
 
   return (
     <div className="h-full flex flex-col bg-background overflow-y-auto hide-scrollbar">

@@ -6,11 +6,9 @@ import { encodeCategoryPath } from "./global-utils";
 export const createItemMap = (itemsArray: Note[] | Checklist[]) => {
   return itemsArray.reduce(
     (map: Map<string, Note | Checklist>, item: Note | Checklist) => {
-      const itemKey = `${encodeCategoryPath(
-        item.category || "Uncategorized"
-      )}/${item.id}`;
-
-      map.set(itemKey, item);
+      if (item.uuid) {
+        map.set(item.uuid, item);
+      }
       return map;
     },
     new Map()
@@ -18,20 +16,22 @@ export const createItemMap = (itemsArray: Note[] | Checklist[]) => {
 };
 
 export const getReferencingItems = (
-  keys: string[],
+  uuids: string[],
   map: Map<string, Note | Checklist>,
   type: ItemType
 ) => {
-  return keys
-    .map((key) => {
-      const encodedKey = encodeCategoryPath(key);
-      const item = map.get(encodedKey);
+  return uuids
+    .map((uuid) => {
+      const item = map.get(uuid);
 
       if (item) {
+        const path = `${encodeCategoryPath(item.category || "Uncategorized")}/${item.id
+          }`;
         return {
           type,
-          path: encodedKey,
+          path,
           title: item.title,
+          uuid: item.uuid || "",
           category: item.category || "Uncategorized",
           owner: item.owner,
         };
@@ -43,21 +43,18 @@ export const getReferencingItems = (
 
 export const getReferences = (
   linkIndex: LinkIndex | null,
-  itemId: string | undefined,
+  itemUuid: string | undefined,
   itemCategory: string | undefined,
   itemType: ItemType,
   notes: Partial<Note>[],
   checklists: Partial<Checklist>[]
 ) => {
-  if (!linkIndex || !itemId) return [];
+  if (!linkIndex || !itemUuid) return [];
 
-  const itemKey = `${encodeCategoryPath(
-    itemCategory || "Uncategorized"
-  )}/${itemId}`;
   const currentItemData =
     itemType === ItemTypes.NOTE
-      ? linkIndex.notes[itemKey]
-      : linkIndex.checklists[itemKey];
+      ? linkIndex.notes[itemUuid]
+      : linkIndex.checklists[itemUuid];
 
   const items: Array<{
     type: ItemType;

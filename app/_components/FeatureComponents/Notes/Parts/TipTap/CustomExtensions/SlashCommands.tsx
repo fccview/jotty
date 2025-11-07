@@ -33,6 +33,7 @@ export interface AtMentionItem {
   type: ItemType;
   category: string;
   id: string;
+  uuid?: string;
 }
 
 let atMentionData = {
@@ -271,10 +272,10 @@ export const SlashCommands = Extension.create({
           range: any;
           props: AtMentionItem;
         }) => {
-          const encodedCategory = encodeCategoryPath(props.category);
-          const url = `/${props.type}/${
-            encodedCategory ? `${encodedCategory}/` : ""
-          }${props.id}`;
+
+          console.log("atSuggestion props", props);
+
+          const linkTarget = props.uuid ? `/jotty/${props.uuid}` : ``;
           editor
             .chain()
             .focus()
@@ -282,15 +283,20 @@ export const SlashCommands = Extension.create({
             .insertContent({
               type: "internalLink",
               attrs: {
-                href: url,
+                href: linkTarget,
                 title: props.title,
                 type: props.type,
                 category: props.category,
+                uuid: props.uuid,
               },
             })
             .run();
         },
         items: ({ query }: { query: string }) => {
+          console.log("atSuggestion items query", query);
+
+          console.log("atSuggestion items atMentionData", atMentionData);
+
           const allItems = [
             ...atMentionData.notes.map((note: any) => ({
               ...note,

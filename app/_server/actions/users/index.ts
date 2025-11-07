@@ -33,6 +33,8 @@ import { updateNote } from "@/app/_server/actions/note";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { AppMode } from "@/app/_types";
 import { updateList } from "@/app/_server/actions/checklist";
+import { getFormData } from "@/app/_utils/global-utils";
+import { capitalize } from "lodash";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -41,11 +43,153 @@ export type UserUpdatePayload = {
   avatarUrl?: string;
 };
 
+const _findFileRecursively = async (
+  dir: string,
+  targetFileName: string,
+  targetCategory: string
+): Promise<string | null> => {
+  const categoryParts = targetCategory.split("/");
+  const currentCategoryPart = categoryParts[0];
+  const remainingCategoryParts = categoryParts.slice(1);
+
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      if (entry.name === currentCategoryPart) {
+        if (remainingCategoryParts.length === 0) {
+          const categoryPath = path.join(dir, entry.name);
+          const categoryEntries = await fs.readdir(categoryPath, {
+            withFileTypes: true,
+          });
+
+          for (const fileEntry of categoryEntries) {
+            if (fileEntry.isFile() && fileEntry.name === targetFileName) {
+              return path.join(categoryPath, fileEntry.name);
+            }
+          }
+        } else {
+          const result = await _findFileRecursively(
+            path.join(dir, entry.name),
+            targetFileName,
+            remainingCategoryParts.join("/")
+          );
+          if (result) return result;
+        }
+      } else {
+        const result = await _findFileRecursively(
+          path.join(dir, entry.name),
+          targetFileName,
+          targetCategory
+        );
+        if (result) return result;
+      }
+    }
+  }
+
+  return null;
+};
+
+const _getUserIndex = async (username: string): Promise<number> => {
+  const allUsers = await readJsonFile(USERS_FILE);
+  return allUsers.findIndex((user: User) => user.username === username);
+};
+
+const _getUserByItem = async (
+  itemID: string,
+  itemCategory: string,
+  itemType: ItemType
+): Promise<Result<User>> => {
+  try {
+    const baseDir = path.join(
+      process.cwd(),
+      "data",
+      itemType === ItemTypes.CHECKLIST ? Modes.CHECKLISTS : Modes.NOTES
+    );
+    const targetFileName = `${itemID}.md`;
+    const foundFile = await _findFileRecursively(
+      baseDir,
+      targetFileName,
+      itemCategory
+    );
+
+    if (!foundFile) {
+      return {
+        success: false,
+        error: `${itemType === ItemTypes.CHECKLIST
+          ? capitalize(ItemTypes.CHECKLIST)
+          : capitalize(ItemTypes.NOTE)
+          } not found`,
+      };
+    }
+
+    const pathParts = foundFile.split(path.sep);
+    const typeIndex = pathParts.indexOf(
+      itemType === ItemTypes.CHECKLIST ? Modes.CHECKLISTS : Modes.NOTES
+    );
+    const username = pathParts[typeIndex + 1];
+
+    const foundUser = await getUserByUsername(username);
+
+    if (!foundUser) {
+      return { success: false, error: "Invalid user" };
+    }
+
+    return { success: true, data: foundUser };
+  } catch (error) {
+    console.error(`Error in getUserBy${itemType}:`, error);
+    return { success: false, error: `Failed to find ${itemType} owner` };
+  }
+};
+
+const _getUserByItemUuid = async (
+  uuid: string,
+  itemType: ItemType
+): Promise<Result<User>> => {
+  try {
+    const users = await readJsonFile(USERS_FILE);
+
+    for (const user of users) {
+      try {
+        const { getUserNotes } = await import("@/app/_server/actions/note");
+        const { getUserChecklists } = await import("@/app/_server/actions/checklist");
+
+        const result =
+          itemType === ItemTypes.NOTE
+            ? await getUserNotes({ username: user.username, isRaw: true, allowArchived: true })
+            : await getUserChecklists({ username: user.username, isRaw: true, allowArchived: true });
+
+        if (result.success && result.data) {
+          const item = result.data.find((item) => item.uuid === uuid);
+          if (item) {
+            return { success: true, data: user };
+          }
+        } else {
+          console.log("Failed to get items for user", user.username, "result:", result);
+        }
+      } catch (error) {
+        console.log("Error checking user", user.username, ":", error);
+        // Continue to next user
+        continue;
+      }
+    }
+
+    return {
+      success: false,
+      error: `${itemType === ItemTypes.NOTE
+        ? capitalize(ItemTypes.NOTE)
+        : capitalize(ItemTypes.CHECKLIST)
+        } not found`,
+    };
+  } catch (error) {
+    console.error(`Error in getUserBy${itemType}Uuid:`, error);
+    return { success: false, error: `Failed to find ${itemType} owner` };
+  }
+};
+
 async function _deleteUserCore(username: string): Promise<Result<null>> {
   const allUsers = await readJsonFile(USERS_FILE);
-  const userIndex = allUsers.findIndex(
-    (user: User) => user.username === username
-  );
+  const userIndex = await _getUserIndex(username);
 
   if (userIndex === -1) {
     return { success: false, error: "User not found" };
@@ -95,13 +239,7 @@ async function _updateUserCore(
   }
 
   const allUsers = await readJsonFile(USERS_FILE);
-  const userIndex = allUsers.findIndex(
-    (user: User) => user.username === targetUsername
-  );
-
-  if (userIndex === -1) {
-    return { success: false, error: "User not found" };
-  }
+  const userIndex = await _getUserIndex(targetUsername);
 
   if (updates.username && updates.username !== targetUsername) {
     const usernameExists = allUsers.some(
@@ -211,9 +349,7 @@ export const createUser = async (
     }
 
     const existingUsers = await readJsonFile(USERS_FILE);
-    const userExists = existingUsers.find(
-      (user: User) => user.username === username
-    );
+    const userExists = await getUserByUsername(username);
 
     if (userExists) {
       return {
@@ -262,11 +398,7 @@ export const getCurrentUser = async (
 
   if (!currentUsername && !username) return null;
 
-  return (
-    users.find(
-      (u: User) => u.username === currentUsername || u.username === username
-    ) || null
-  );
+  return (await getUserByUsername(currentUsername || username || "")) || null;
 };
 
 export const deleteUser = async (formData: FormData): Promise<Result<null>> => {
@@ -302,10 +434,8 @@ export const deleteAccount = async (
       return { success: false, error: "Password confirmation is required" };
     }
 
-    const users = await readJsonFile(USERS_FILE);
-    const userRecord = users.find(
-      (user: User) => user.username === currentUser.username
-    );
+    const userRecord = await getUserByUsername(currentUser.username);
+
     if (!userRecord) {
       return { success: false, error: "User not found" };
     }
@@ -342,10 +472,13 @@ export const updateProfile = async (
       return { success: false, error: "Not authenticated" };
     }
 
-    const newUsername = formData.get("newUsername") as string;
-    const currentPassword = formData.get("currentPassword") as string;
-    const newPassword = formData.get("newPassword") as string;
-    const avatarUrl = formData.get("avatarUrl") as string | undefined;
+    const { newUsername, currentPassword, newPassword, avatarUrl } =
+      getFormData(formData, [
+        "newUsername",
+        "currentPassword",
+        "newPassword",
+        "avatarUrl",
+      ]);
     const updates: UserUpdatePayload = {};
 
     if (!newUsername || newUsername.length < 3) {
@@ -376,10 +509,7 @@ export const updateProfile = async (
         };
       }
 
-      const users = await readJsonFile(USERS_FILE);
-      const userRecord = users.find(
-        (u: User) => u.username === currentUser.username
-      );
+      const userRecord = await getUserByUsername(currentUser.username);
       const currentPasswordHash = createHash("sha256")
         .update(currentPassword)
         .digest("hex");
@@ -418,10 +548,11 @@ export const updateUser = async (
       return { success: false, error: "Unauthorized: Admin access required" };
     }
 
-    const targetUsername = formData.get("username") as string;
-    const newUsername = formData.get("newUsername") as string;
-    const password = formData.get("password") as string;
-    const isAdmin = formData.get("isAdmin") === "true";
+    const { targetUsername, newUsername, password, admin } = getFormData(
+      formData,
+      ["username", "newUsername", "password", "isAdmin"]
+    );
+    const isAdmin = admin === "true";
     const updates: UserUpdatePayload = {};
 
     if (!targetUsername || !newUsername || newUsername.length < 3) {
@@ -485,30 +616,6 @@ export const getUsers = async () => {
   }));
 };
 
-export const toggleAdmin = async (formData: FormData) => {
-  const adminCheck = await isAdmin();
-  if (!adminCheck) {
-    return { error: "Unauthorized" };
-  }
-
-  const username = formData.get("username") as string;
-  if (!username) {
-    return { error: "Username is required" };
-  }
-
-  const users = await readJsonFile(USERS_FILE);
-  const userToUpdate = users.find((u: User) => u.username === username);
-
-  if (!userToUpdate) {
-    return { error: "User not found" };
-  }
-
-  userToUpdate.isAdmin = !userToUpdate.isAdmin;
-  await writeJsonFile(users, USERS_FILE);
-
-  return { success: true };
-};
-
 export const updateUserSettings = async ({
   preferredTheme,
   imageSyntax,
@@ -535,13 +642,7 @@ export const updateUserSettings = async ({
     }
 
     const allUsers = await readJsonFile(USERS_FILE);
-    const userIndex = allUsers.findIndex(
-      (user: User) => user.username === currentUser.username
-    );
-
-    if (userIndex === -1) {
-      return { success: false, error: "User not found" };
-    }
+    const userIndex = await _getUserIndex(currentUser.username);
 
     const updates: Partial<User> = {};
 
@@ -573,264 +674,28 @@ export const updateUserSettings = async ({
   }
 };
 
-const findFileRecursively = async (
-  dir: string,
-  targetFileName: string,
-  targetCategory: string
-): Promise<string | null> => {
-  const categoryParts = targetCategory.split("/");
-  const currentCategoryPart = categoryParts[0];
-  const remainingCategoryParts = categoryParts.slice(1);
+export const getUserByNoteUuid = async (
+  uuid: string
+): Promise<Result<User>> => {
+  return _getUserByItemUuid(uuid, ItemTypes.NOTE);
+};
 
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      if (entry.name === currentCategoryPart) {
-        if (remainingCategoryParts.length === 0) {
-          const categoryPath = path.join(dir, entry.name);
-          const categoryEntries = await fs.readdir(categoryPath, {
-            withFileTypes: true,
-          });
-
-          for (const fileEntry of categoryEntries) {
-            if (fileEntry.isFile() && fileEntry.name === targetFileName) {
-              return path.join(categoryPath, fileEntry.name);
-            }
-          }
-        } else {
-          const result = await findFileRecursively(
-            path.join(dir, entry.name),
-            targetFileName,
-            remainingCategoryParts.join("/")
-          );
-          if (result) return result;
-        }
-      } else {
-        const result = await findFileRecursively(
-          path.join(dir, entry.name),
-          targetFileName,
-          targetCategory
-        );
-        if (result) return result;
-      }
-    }
-  }
-
-  return null;
+export const getUserByChecklistUuid = async (
+  uuid: string
+): Promise<Result<User>> => {
+  return _getUserByItemUuid(uuid, ItemTypes.CHECKLIST);
 };
 
 export const getUserByChecklist = async (
   checklistID: string,
   checklistCategory: string
 ): Promise<Result<User>> => {
-  try {
-    const checklistsBaseDir = path.join(process.cwd(), "data", "checklists");
-    const targetFileName = `${checklistID}.md`;
-    const foundFile = await findFileRecursively(
-      checklistsBaseDir,
-      targetFileName,
-      checklistCategory
-    );
-
-    if (!foundFile) {
-      return { success: false, error: "Checklist not found" };
-    }
-
-    const pathParts = foundFile.split(path.sep);
-    const checklistsIndex = pathParts.indexOf("checklists");
-    const username = pathParts[checklistsIndex + 1];
-
-    const allUsers = await readJsonFile(USERS_FILE);
-    const foundUser = allUsers.find((user: User) => user.username === username);
-
-    if (!foundUser) {
-      return { success: false, error: "Invalid user" };
-    }
-
-    return { success: true, data: foundUser };
-  } catch (error) {
-    console.error("Error in getUserByChecklist:", error);
-    return { success: false, error: "Failed to find checklist owner" };
-  }
+  return _getUserByItem(checklistID, checklistCategory, ItemTypes.CHECKLIST);
 };
 
 export const getUserByNote = async (
   noteID: string,
   noteCategory: string
 ): Promise<Result<User>> => {
-  try {
-    const notesBaseDir = path.join(process.cwd(), "data", "notes");
-    const targetFileName = `${noteID}.md`;
-    const foundFile = await findFileRecursively(
-      notesBaseDir,
-      targetFileName,
-      noteCategory
-    );
-
-    if (!foundFile) {
-      return { success: false, error: "Note not found" };
-    }
-
-    const pathParts = foundFile.split(path.sep);
-    const notesIndex = pathParts.indexOf("notes");
-    const username = pathParts[notesIndex + 1];
-
-    const allUsers = await readJsonFile(USERS_FILE);
-    const foundUser = allUsers.find((user: User) => user.username === username);
-
-    if (!foundUser) {
-      return { success: false, error: "Invalid user" };
-    }
-
-    return { success: true, data: foundUser };
-  } catch (error) {
-    console.error("Error in getUserByNote:", error);
-    return { success: false, error: "Failed to find note owner" };
-  }
-};
-
-export const togglePin = async (
-  itemId: string,
-  category: string,
-  type: ItemType
-): Promise<Result<null>> => {
-  try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const allUsers = await readJsonFile(USERS_FILE);
-    const userIndex = allUsers.findIndex(
-      (user: User) => user.username === currentUser.username
-    );
-
-    if (userIndex === -1) {
-      return { success: false, error: "User not found" };
-    }
-
-    const user = allUsers[userIndex];
-    const itemPath = `${category}/${itemId}`;
-
-    if (type === ItemTypes.CHECKLIST) {
-      const pinnedLists = user.pinnedLists || [];
-      const isPinned = pinnedLists.includes(itemPath);
-
-      if (isPinned) {
-        user.pinnedLists = pinnedLists.filter(
-          (path: string) => path !== itemPath
-        );
-      } else {
-        user.pinnedLists = [...pinnedLists, itemPath];
-      }
-    } else {
-      const pinnedNotes = user.pinnedNotes || [];
-      const isPinned = pinnedNotes.includes(itemPath);
-
-      if (isPinned) {
-        user.pinnedNotes = pinnedNotes.filter(
-          (path: string) => path !== itemPath
-        );
-      } else {
-        user.pinnedNotes = [...pinnedNotes, itemPath];
-      }
-    }
-
-    allUsers[userIndex] = user;
-    await writeJsonFile(allUsers, USERS_FILE);
-
-    return { success: true, data: null };
-  } catch (error) {
-    console.error(`Error toggling pin for ${type}:`, error);
-    return { success: false, error: "Failed to toggle pin" };
-  }
-};
-
-export const updatePinnedOrder = async (
-  newOrder: string[],
-  type: ItemType
-): Promise<Result<null>> => {
-  try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    const allUsers = await readJsonFile(USERS_FILE);
-    const userIndex = allUsers.findIndex(
-      (user: User) => user.username === currentUser.username
-    );
-
-    if (userIndex === -1) {
-      return { success: false, error: "User not found" };
-    }
-
-    const user = allUsers[userIndex];
-
-    if (type === ItemTypes.CHECKLIST) {
-      user.pinnedLists = newOrder;
-    } else {
-      user.pinnedNotes = newOrder;
-    }
-
-    allUsers[userIndex] = user;
-    await writeJsonFile(allUsers, USERS_FILE);
-
-    return { success: true, data: null };
-  } catch (error) {
-    console.error(`Error updating pinned order for ${type}:`, error);
-    return { success: false, error: "Failed to update pinned order" };
-  }
-};
-
-export const toggleArchive = async (
-  item: Checklist | Note,
-  mode: AppMode,
-  newCategory?: string
-): Promise<{ success: boolean; data?: Checklist | Note; error?: string }> => {
-  const isOwner = await getCurrentUser();
-  const formData = new FormData();
-
-  formData.append("id", item.id);
-  formData.append("title", item.title);
-
-  if (!formData.get("user") && mode === Modes.NOTES) {
-    const owner = await getUserByNote(
-      item.id,
-      item.category || "Uncategorized"
-    );
-    formData.append("user", owner.data?.username || "");
-  }
-
-  if (!formData.get("user") && mode === Modes.CHECKLISTS) {
-    const owner = await getUserByChecklist(
-      item.id,
-      item.category || "Uncategorized"
-    );
-    formData.append("user", owner.data?.username || "");
-  }
-
-  if (mode === Modes.NOTES) {
-    formData.append("content", (item as Note).content);
-  }
-
-  if (isOwner) {
-    formData.append("category", newCategory || ARCHIVED_DIR_NAME);
-  }
-
-  formData.append("originalCategory", item.category || "Uncategorized");
-
-  let result: Result<Checklist | Note>;
-  if (mode === Modes.NOTES) {
-    result = (await updateNote(formData, false)) as Result<Note>;
-  } else {
-    result = (await updateList(formData)) as Result<Checklist>;
-  }
-
-  if (result.success) {
-    return { success: true, data: result.data };
-  }
-
-  return { success: false, error: result.error };
+  return _getUserByItem(noteID, noteCategory, ItemTypes.NOTE);
 };

@@ -1,4 +1,5 @@
-import { TaskStatus, Modes } from "./enums";
+import { TaskStatus, Modes, ItemTypes } from "./enums";
+import { LinkIndex } from "../_server/actions/link";
 
 export type ChecklistType = "simple" | "task";
 export type ItemType = "checklist" | "note";
@@ -53,6 +54,7 @@ export interface List {
 
 export interface Checklist {
   id: string;
+  uuid?: string;
   title: string;
   type: ChecklistType;
   category?: string;
@@ -61,14 +63,17 @@ export interface Checklist {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  itemType?: ItemTypes;
   isDeleted?: boolean;
   rawContent?: string;
 }
 
 export interface Note {
   id: string;
+  uuid?: string;
   title: string;
   content: string;
+  itemType?: ItemTypes;
   category?: string;
   createdAt: string;
   updatedAt: string;
@@ -258,3 +263,51 @@ export type ExportType =
   | "user_checklists_notes"
   | "all_users_data"
   | "whole_data_folder";
+
+export interface SharedItemSummary {
+  id?: string;
+  uuid?: string;
+  category?: string;
+}
+
+export interface AllSharedItems {
+  notes: SharedItemSummary[];
+  checklists: SharedItemSummary[];
+  public: {
+    notes: SharedItemSummary[];
+    checklists: SharedItemSummary[];
+  };
+}
+
+export interface UserSharedItem {
+  id?: string;
+  uuid?: string;
+  category?: string;
+  sharer: string;
+}
+
+export interface UserSharedItems {
+  notes: UserSharedItem[];
+  checklists: UserSharedItem[];
+}
+
+export interface AppModeContextType {
+  mode: AppMode;
+  setMode: (mode: AppMode) => void;
+  selectedNote: string | null;
+  setSelectedNote: (id: string | null) => void;
+  isInitialized: boolean;
+  isDemoMode: boolean;
+  isRwMarkable: boolean;
+  user: User | null;
+  setUser: (user: User | null) => void;
+  appVersion: string;
+  appSettings: AppSettings | null;
+  usersPublicData: Partial<User>[];
+  linkIndex: LinkIndex | null;
+  notes: Partial<Note>[];
+  checklists: Partial<Checklist>[];
+  allSharedItems: AllSharedItems | null;
+  userSharedItems: UserSharedItems | null;
+  globalSharing: any;
+}

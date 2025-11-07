@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react";
 import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist, RecurrenceRule } from "@/app/_types";
+import { Checklist, RecurrenceRule, Result } from "@/app/_types";
 import {
   createItem,
   updateItemStatus,
   createBulkItems,
   reorderItems,
 } from "@/app/_server/actions/checklist-item";
-import { getListById, getLists } from "@/app/_server/actions/checklist";
+import { getListById, getUserChecklists } from "@/app/_server/actions/checklist";
 import { TaskStatus } from "@/app/_types/enums";
 import { getCurrentUser, getUserByChecklist } from "../_server/actions/users";
 
@@ -35,7 +35,7 @@ export const useKanbanBoard = ({
   }, [checklist]);
 
   const refreshChecklist = async () => {
-    const result = await getLists();
+    const result = await getUserChecklists() as Result<Checklist[]>;
     if (result.success && result.data) {
       const updatedChecklist = result.data.find(
         (list) => list.id === checklist.id

@@ -8,40 +8,10 @@ import {
   useEffect,
   useMemo,
 } from "react";
-import { AppMode, AppSettings, Checklist, Note, User } from "@/app/_types";
+import { AppMode, AppSettings, Checklist, Note, User, AppModeContextType, AllSharedItems, UserSharedItems } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { LinkIndex } from "../_server/actions/link";
 
-interface AppModeContextType {
-  mode: AppMode;
-  setMode: (mode: AppMode) => void;
-  selectedNote: string | null;
-  setSelectedNote: (id: string | null) => void;
-  isInitialized: boolean;
-  isDemoMode: boolean;
-  isRwMarkable: boolean;
-  user: User | null;
-  setUser: (user: User | null) => void;
-  appVersion: string;
-  appSettings: AppSettings | null;
-  usersPublicData: Partial<User>[];
-  linkIndex: LinkIndex | null;
-  notes: Partial<Note>[];
-  checklists: Partial<Checklist>[];
-  allSharedItems: {
-    notes: Array<{ id: string; category: string }>;
-    checklists: Array<{ id: string; category: string }>;
-    public: {
-      notes: Array<{ id: string; category: string }>;
-      checklists: Array<{ id: string; category: string }>;
-    };
-  } | null;
-  userSharedItems: {
-    notes: Array<{ id: string; category: string; sharer: string }>;
-    checklists: Array<{ id: string; category: string; sharer: string }>;
-  } | null;
-  globalSharing: any;
-}
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
@@ -72,18 +42,8 @@ export const AppModeProvider = ({
   linkIndex?: LinkIndex | null;
   notes?: Partial<Note>[];
   checklists?: Partial<Checklist>[];
-  allSharedItems?: {
-    notes: Array<{ id: string; category: string }>;
-    checklists: Array<{ id: string; category: string }>;
-    public: {
-      notes: Array<{ id: string; category: string }>;
-      checklists: Array<{ id: string; category: string }>;
-    };
-  } | null;
-  userSharedItems?: {
-    notes: Array<{ id: string; category: string; sharer: string }>;
-    checklists: Array<{ id: string; category: string; sharer: string }>;
-  } | null;
+  allSharedItems?: AllSharedItems | null;
+  userSharedItems?: UserSharedItems | null;
   globalSharing?: any;
 }) => {
   const [appSettings, _] = useState<AppSettings | null>(

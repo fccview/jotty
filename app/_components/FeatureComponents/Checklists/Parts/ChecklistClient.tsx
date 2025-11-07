@@ -14,12 +14,9 @@ import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/C
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { useChecklist } from "@/app/_hooks/useChecklist";
-import { ItemTypes, Modes } from "@/app/_types/enums";
+import { Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
-import { toggleArchive } from "@/app/_server/actions/users";
-import { getPermissions } from "@/app/_utils/sharing-utils";
-import { decodeCategoryPath } from "@/app/_utils/global-utils";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { toggleArchive } from "@/app/_server/actions/dashboard";
 
 interface ChecklistClientProps {
   checklist: Checklist;
@@ -142,11 +139,6 @@ export const ChecklistClient = ({
             setShowShareModal(false);
             router.refresh();
           }}
-          itemId={localChecklist.id}
-          itemTitle={localChecklist.title}
-          itemType={ItemTypes.CHECKLIST}
-          itemCategory={localChecklist.category}
-          itemOwner={localChecklist.owner || ""}
         />
       )}
 

@@ -23,12 +23,13 @@ import { useEffect, useState } from "react";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { toggleArchive } from "@/app/_server/actions/users";
+import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
+import { useMetadata } from "@/app/_providers/MetadataProvider";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -49,6 +50,7 @@ export const NoteEditorHeader = ({
   showTOC,
   setShowTOC,
 }: NoteEditorHeaderProps) => {
+  const metadata = useMetadata();
   const {
     title,
     setTitle,
@@ -77,8 +79,8 @@ export const NoteEditorHeader = ({
   };
 
   const { globalSharing } = useAppMode();
-  const encodedCategory = encodeCategoryPath(note.category || "Uncategorized");
-  const itemDetails = sharingInfo(globalSharing, note.id, encodedCategory);
+  const encodedCategory = encodeCategoryPath(metadata.category);
+  const itemDetails = sharingInfo(globalSharing, metadata.id, encodedCategory);
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
   const sharedWith = itemDetails.sharedWith;
   const isPubliclyShared = itemDetails.isPublic;
@@ -278,11 +280,6 @@ export const NoteEditorHeader = ({
             setShowShareModal(false);
             router.refresh();
           }}
-          itemId={note.id}
-          itemTitle={note.title}
-          itemType="note"
-          itemCategory={note.category}
-          itemOwner={note.owner || ""}
         />
       )}
 

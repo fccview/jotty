@@ -1,67 +1,96 @@
+"use client";
+
 import React, { useState } from "react";
 import { NodeViewWrapper } from "@tiptap/react";
-import { FileText, CheckSquare } from "lucide-react";
+import { FileText, CheckSquare, BarChart3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getNoteById } from "@/app/_server/actions/note";
-import { Checklist, ItemType, Note } from "@/app/_types";
 import { getListById } from "@/app/_server/actions/checklist";
+import { buildCategoryPath, decodeCategoryPath } from "@/app/_utils/global-utils";
+import { capitalize } from "lodash";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
-import { decodeCategoryPath } from "@/app/_utils/global-utils";
-import { capitalize } from "lodash";
+import { Checklist, Note } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface InternalLinkComponentProps {
   node: {
     attrs: {
       href: string;
       title: string;
-      type: ItemType;
-      category: string | null;
+      type: string;
+      category: string;
+      uuid: string;
     };
   };
 }
 
+const _returnNote = async (uuid: string, router: any, note?: Note) => {
+  const finalNote = note || await getNoteById(uuid);
+
+  if (finalNote) {
+    router.push(`/note/${buildCategoryPath(finalNote.category || "Uncategorized", finalNote.id)}`);
+
+    console.log(`/note/${buildCategoryPath(finalNote.category || "Uncategorized", finalNote.id)}`)
+    return;
+  }
+
+  return undefined;
+};
+
+const _returnChecklist = async (uuid: string, router: any, checklist?: Checklist) => {
+  const finalChecklist = checklist || await getListById(uuid);
+
+  console.log("finalChecklist", finalChecklist);
+
+  if (finalChecklist) {
+    router.push(`/checklist/${buildCategoryPath(finalChecklist.category || "Uncategorized", finalChecklist.id)}`);
+    return;
+  }
+  return undefined;
+};
+
 export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
   const router = useRouter();
-  const { href, title, type, category } = node.attrs;
-  const [fullNote, setFullNote] = useState<Note | undefined>(undefined);
-  const [fullList, setFullList] = useState<Checklist | undefined>(undefined);
+  const { href, title, uuid } = node.attrs;
+  const potentialCategory = href?.replace("/jotty/", "").replace("/note/", "").replace("/checklist/", "").split("/").slice(1, -1).join("/");
+
+  const { appSettings, notes, checklists } = useAppMode();
+
+  const [fullItem, setFullItem] = useState<Note | Checklist | undefined>(
+    notes.find((n) => n.uuid === uuid) as Note | undefined || checklists.find((c) => c.uuid === uuid) as Checklist | undefined
+  );
+
+  console.log("fullItem", fullItem);
+
   const [showPopup, setShowPopup] = useState(false);
-  const { appSettings } = useAppMode();
-  const handleClick = (e: React.MouseEvent) => {
+
+  console.log("InternalLinkComponent fullItem", fullItem);
+
+  const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!href) return;
 
+    if (href.startsWith("/jotty/")) {
+      const uuidFromPath = href.replace("/jotty/", "");
 
-    const parts = href.split("/");
-    const type = parts[1];
-    const categoryAndId = parts.slice(2).join("/");
-    const lastSlashIndex = categoryAndId.lastIndexOf("/");
-    const encodedCategoryPath = lastSlashIndex > 0 ? categoryAndId.substring(0, lastSlashIndex) : "";
-    const id = categoryAndId.substring(lastSlashIndex + 1);
+      if (fullItem) {
+        router.push(`/${fullItem && "type" in fullItem && fullItem.type ?
+          ItemTypes.CHECKLIST : ItemTypes.NOTE}/${buildCategoryPath(fullItem.category || "Uncategorized", fullItem.id)}`);
+        return;
+      }
 
-    const decodedCategoryPath = decodeCategoryPath(encodedCategoryPath);
-    const decodedHref = `/${type}/${decodedCategoryPath ? `${decodedCategoryPath}/` : ""}${id}`;
-
-    router.push(decodedHref.toLowerCase().replace("uncategorized/", ""));
-  };
-
-  const fetchFullItem = async () => {
-    if (type === ItemTypes.NOTE) {
-      const note = await getNoteById(
-        href.split("/").pop() || "",
-        decodeCategoryPath(category || "") || undefined
-      );
-      setFullNote(note);
+      try {
+        await _returnNote(uuidFromPath, router);
+        await _returnChecklist(uuidFromPath, router);
+      } catch (error) {
+        console.warn("Failed to resolve /jotty/ link:", error);
+      }
     } else {
-      const list = await getListById(
-        href.split("/").pop() || "",
-        undefined,
-        decodeCategoryPath(category || "") || undefined
-      );
-      setFullList(list);
+      console.log("href", href);
+      router.push(href);
+      return;
     }
   };
 
@@ -70,7 +99,6 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
       as="span"
       onClick={handleClick}
       onMouseEnter={() => {
-        fetchFullItem();
         setShowPopup(true);
       }}
       onMouseLeave={() => {
@@ -78,32 +106,32 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
       }}
       className="inline-flex items-center gap-1.5 mx-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-md hover:bg-primary/15 transition-colors cursor-pointer group relative"
     >
-      {showPopup && (
+      {showPopup && href && href.startsWith("/jotty/") && (
         <span className="block absolute top-[110%] left-0 min-w-[300px] max-w-[400px] z-10">
-          {fullNote && (
-            <NoteCard
-              note={fullNote}
-              onSelect={() => { }}
-              fullScrollableContent
-            />
+          {fullItem && "type" in fullItem && fullItem.type ? (
+            <ChecklistCard list={fullItem as Checklist} onSelect={() => { }} />
+          ) : (
+            <NoteCard note={fullItem as Note} onSelect={() => { }} fullScrollableContent />
           )}
-
-          {fullList && <ChecklistCard list={fullList} onSelect={() => { }} />}
         </span>
       )}
       <span className="flex-shrink-0">
-        {type === ItemTypes.NOTE ? (
-          <FileText className="h-3 w-3 text-foreground" />
+        {fullItem && "type" in fullItem && fullItem.type ? (
+          <>
+            {fullItem.type === "task" ? <BarChart3 className="h-5 w-5" /> : <CheckSquare className="h-5 w-5" />}
+          </>
         ) : (
-          <CheckSquare className="h-3 w-3 text-foreground" />
+          <FileText className="h-5 w-5" />
         )}
       </span>
-      <span className="text-sm font-medium text-foreground">{appSettings?.parseContent === "yes" ? title : capitalize(title.replace(/-/g, ' '))}</span>
-
-
-      <span className="text-xs text-muted-foreground">•</span>
-      <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">
-        {decodeCategoryPath(category || "Uncategorized").split("/").pop()}
+      <span className="text-sm font-medium text-foreground">
+        {appSettings?.parseContent === "yes"
+          ? title
+          : capitalize(title.replace(/-/g, " "))}
+      </span>
+      ·
+      <span className="text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-md">
+        {fullItem?.category || decodeCategoryPath(potentialCategory) || "not-found"}
       </span>
     </NodeViewWrapper>
   );

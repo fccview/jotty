@@ -24,6 +24,9 @@ export const InternalLink = Node.create({
       category: {
         default: null,
       },
+      uuid: {
+        default: null,
+      },
     };
   },
 
@@ -38,6 +41,7 @@ export const InternalLink = Node.create({
             title: element.getAttribute("data-title"),
             type: element.getAttribute("data-type"),
             category: element.getAttribute("data-category"),
+            uuid: element.getAttribute("data-uuid"),
           };
         },
       },
@@ -45,7 +49,7 @@ export const InternalLink = Node.create({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const { href, title, type, category } = node.attrs;
+    const { href, title, type, category, uuid } = node.attrs;
 
     const children: DOMOutputSpec[] = [];
 
@@ -64,6 +68,7 @@ export const InternalLink = Node.create({
         "data-title": title,
         "data-type": type,
         "data-category": category || "",
+        "data-uuid": uuid || "",
         ...HTMLAttributes,
       },
       ...children,

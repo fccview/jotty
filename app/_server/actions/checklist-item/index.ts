@@ -8,9 +8,8 @@ import {
   ensureDir,
 } from "@/app/_server/actions/file";
 import {
-  getLists,
   getAllLists,
-  getRawLists,
+  getUserChecklists,
   getListById,
 } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
@@ -330,7 +329,7 @@ export const deleteItem = async (formData: FormData) => {
     const itemId = formData.get("itemId") as string;
     const category = formData.get("category") as string;
 
-    const lists = await getLists();
+    const lists = await getUserChecklists();
     if (!lists.success || !lists.data) {
       throw new Error(lists.error || "Failed to fetch lists");
     }
@@ -366,14 +365,14 @@ export const deleteItem = async (formData: FormData) => {
         .filter((item) => item.children?.length > 0 || item.id !== undefined);
     };
 
-    const itemExists = findItemExists(list.items, itemId);
+    const itemExists = findItemExists(list.items || [], itemId);
     if (!itemExists) {
       return { success: true };
     }
 
     const updatedList = {
       ...list,
-      items: filterOutItem(list.items, itemId),
+      items: filterOutItem(list.items || [], itemId),
       updatedAt: new Date().toISOString(),
     };
 
@@ -400,7 +399,7 @@ export const deleteItem = async (formData: FormData) => {
       );
     }
 
-    await serverWriteFile(filePath, listToMarkdown(updatedList));
+    await serverWriteFile(filePath, listToMarkdown(updatedList as Checklist));
 
     try {
       revalidatePath("/");
@@ -428,7 +427,7 @@ export const reorderItems = async (formData: FormData) => {
     const category = formData.get("category") as string;
 
     const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists());
+    const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
     if (!lists.success || !lists.data) {
       throw new Error(lists.error || "Failed to fetch lists");
     }
@@ -465,7 +464,7 @@ export const reorderItems = async (formData: FormData) => {
 
     const filePath = path.join(categoryDir, `${listId}.md`);
 
-    const markdownContent = listToMarkdown(updatedList);
+    const markdownContent = listToMarkdown(updatedList as Checklist);
 
     await serverWriteFile(filePath, markdownContent);
 
@@ -596,7 +595,7 @@ export const createBulkItems = async (formData: FormData) => {
     const itemsText = formData.get("itemsText") as string;
     const category = formData.get("category") as string;
 
-    const lists = await getLists();
+    const lists = await getUserChecklists();
     if (!lists.success || !lists.data) {
       throw new Error(lists.error || "Failed to fetch lists");
     }
@@ -616,7 +615,7 @@ export const createBulkItems = async (formData: FormData) => {
       id: `${listId}-${Date.now()}-${index}`,
       text: text.trim(),
       completed: false,
-      order: list.items.length + index,
+      order: list?.items?.length || 0 + index,
       createdBy: currentUser,
       createdAt: now,
       lastModifiedBy: currentUser,
@@ -636,7 +635,7 @@ export const createBulkItems = async (formData: FormData) => {
 
     const updatedList = {
       ...list,
-      items: [...list.items, ...newItems],
+      items: [...(list.items || []), ...newItems],
       updatedAt: new Date().toISOString(),
     };
 
@@ -985,7 +984,7 @@ export const createSubItem = async (formData: FormData) => {
     const category = formData.get("category") as string;
 
     const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists());
+    const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
     if (!lists.success || !lists.data) {
       throw new Error(lists.error || "Failed to fetch lists");
     }
@@ -1047,7 +1046,7 @@ export const createSubItem = async (formData: FormData) => {
       ];
     }
 
-    if (!addSubItemToParent(list.items, parentId, newSubItem)) {
+    if (!addSubItemToParent(list.items || [], parentId, newSubItem)) {
       throw new Error("Parent item not found");
     }
 
@@ -1060,11 +1059,11 @@ export const createSubItem = async (formData: FormData) => {
       });
     };
 
-    updateChildrenOrder(list.items);
+    updateChildrenOrder(list.items || []);
 
     const updatedList = {
       ...list,
-      items: list.items,
+      items: list.items || [],
       updatedAt: new Date().toISOString(),
     };
 
@@ -1079,7 +1078,7 @@ export const createSubItem = async (formData: FormData) => {
 
     const filePath = path.join(categoryDir, `${listId}.md`);
 
-    await serverWriteFile(filePath, listToMarkdown(updatedList));
+    await serverWriteFile(filePath, listToMarkdown(updatedList as Checklist));
 
     try {
       revalidatePath("/");

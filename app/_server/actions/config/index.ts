@@ -435,7 +435,6 @@ export const loadCustomCSS = async (): Promise<Result<string>> => {
       const css = await fs.readFile(cssPath, "utf-8");
       return { success: true, data: css };
     } catch {
-      // File doesn't exist, return empty CSS
       return { success: true, data: "" };
     }
   } catch (error) {

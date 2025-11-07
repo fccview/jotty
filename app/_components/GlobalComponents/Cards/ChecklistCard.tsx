@@ -34,7 +34,7 @@ export const ChecklistCard = ({
     transition,
     isDragging,
   } = useSortable({
-    id: list.id,
+    id: list?.uuid || list.id,
     disabled: !isDraggable,
   });
 
@@ -53,8 +53,8 @@ export const ChecklistCard = ({
   const displayTitle = parsedData?.title || list.title;
   const displayItems = parsedData?.items || list.items;
 
-  const totalItems = displayItems.length;
-  const completedItems = displayItems.filter((item) =>
+  const totalItems = displayItems?.length || 0;
+  const completedItems = displayItems?.filter((item) =>
     isItemCompleted(item, list.type)
   ).length;
   const completionRate =
@@ -66,9 +66,8 @@ export const ChecklistCard = ({
       style={style}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
       onClick={() => onSelect(list)}
-      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${
-        isDragging ? "opacity-50" : ""
-      }`}
+      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${isDragging ? "opacity-50" : ""
+        }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -83,9 +82,8 @@ export const ChecklistCard = ({
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${
-                isPinned ? "opacity-100" : "opacity-0"
-              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              className={`${isPinned ? "opacity-100" : "opacity-0"
+                } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
               title={isPinned ? "Unpin" : "Pin"}
             >
               {isPinned ? (

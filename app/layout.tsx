@@ -23,8 +23,8 @@ import {
   rgbToHex,
 } from "./_consts/themes";
 import { loadCustomThemes } from "./_server/actions/config";
-import { getProjectedLists, getLists } from "./_server/actions/checklist";
-import { getProjectedNotes, getNotes } from "./_server/actions/note";
+import { getUserChecklists } from "./_server/actions/checklist";
+import { getUserNotes } from "./_server/actions/note";
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
   getAllSharedItems,
@@ -160,11 +160,11 @@ export default async function RootLayout({
     globalSharing,
   ] = await Promise.all([
     shouldParseContent
-      ? getNotes()
-      : getProjectedNotes(["id", "title", "category", "owner"]),
+      ? getUserNotes()
+      : getUserNotes({ projection: ["id", "title", "category", "owner", "uuid"] }),
     shouldParseContent
-      ? getLists()
-      : getProjectedLists(["id", "title", "category", "owner", "type"]),
+      ? getUserChecklists()
+      : getUserChecklists({ projection: ["id", "title", "category", "owner", "uuid", "type", "items"] }),
     getAllSharedItems(),
     user
       ? getAllSharedItemsForUser(user.username)

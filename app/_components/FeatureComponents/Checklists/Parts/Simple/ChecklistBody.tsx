@@ -56,13 +56,13 @@ export const ChecklistBody = ({
   const referencingItems = useMemo(() => {
     return getReferences(
       linkIndex,
-      localList.id,
+      localList.uuid,
       localList.category,
       ItemTypes.CHECKLIST,
       notes,
       checklists
     );
-  }, [linkIndex, localList.id, localList.category, notes, checklists]);
+  }, [linkIndex, localList.uuid, localList.category, notes, checklists]);
 
   if (localList.items.length === 0) {
     return (

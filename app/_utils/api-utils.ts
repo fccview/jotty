@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey } from "@/app/_server/actions/api";
-import { getLists } from "@/app/_server/actions/checklist";
-import { getNotes } from "@/app/_server/actions/note";
+import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { getUserNotes } from "@/app/_server/actions/note";
 import { TaskStatus } from "@/app/_types/enums";
+import { Checklist, Result } from "../_types";
 
 export const withApiAuth = async (
   request: NextRequest,
@@ -27,7 +28,7 @@ export const withApiAuth = async (
 };
 
 export const getChecklistsForUser = async (username: string) => {
-  const lists = await getLists(username);
+  const lists = await getUserChecklists({ username }) as Result<Checklist[]>;
   if (!lists.success || !lists.data) {
     throw new Error(lists.error || "Failed to fetch checklists");
   }
@@ -65,7 +66,7 @@ export const getChecklistsForUser = async (username: string) => {
 };
 
 export const getNotesForUser = async (username: string) => {
-  const docs = await getNotes(username);
+  const docs = await getUserNotes({ username });
   if (!docs.success || !docs.data) {
     throw new Error(docs.error || "Failed to fetch notes");
   }
@@ -88,7 +89,7 @@ export const findItemByIndex = async (
   username: string,
   category?: string
 ) => {
-  const lists = await getLists(username);
+  const lists = await getUserChecklists({ username }) as Result<Checklist[]>;
   if (!lists.success || !lists.data) {
     throw new Error(lists.error || "Failed to fetch lists");
   }

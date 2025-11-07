@@ -25,6 +25,7 @@ import { ChecklistsTypes } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useState } from "react";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
+import { useMetadata } from "@/app/_providers/MetadataProvider";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -45,6 +46,7 @@ export const ChecklistHeader = ({
   onConvertType,
   onArchive,
 }: ChecklistHeaderProps) => {
+  const metadata = useMetadata();
   const { handleCopyId, copied } = useChecklist({
     list: checklist,
     onUpdate: () => {},
@@ -54,10 +56,8 @@ export const ChecklistHeader = ({
   const { permissions } = usePermissions();
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
 
-  const encodedCategory = encodeCategoryPath(
-    checklist.category || "Uncategorized"
-  );
-  const itemDetails = sharingInfo(globalSharing, checklist.id, encodedCategory);
+  const encodedCategory = encodeCategoryPath(metadata.category);
+  const itemDetails = sharingInfo(globalSharing, metadata.id, encodedCategory);
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
 
   const sharedWith = itemDetails.sharedWith;
