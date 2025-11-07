@@ -15,7 +15,7 @@ import {
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { isAdmin, getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { Checklist } from "@/app/_types";
+import { Checklist, Result } from "@/app/_types";
 import {
   ItemTypes,
   Modes,
@@ -29,7 +29,7 @@ export const updateItem = async (
   formData: FormData,
   username?: string,
   skipRevalidation = false
-) => {
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
@@ -183,7 +183,7 @@ export const updateItem = async (
       }
     }
 
-    return { success: true, data: updatedList };
+    return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error(
       "Error updating item:",
@@ -193,7 +193,7 @@ export const updateItem = async (
       "Error updating item:",
       error instanceof Error ? error.message : String(error)
     );
-    return { error: "Failed to update item" };
+    return { success: false, error: "Failed to update item" };
   }
 };
 
@@ -319,11 +319,11 @@ export const createItem = async (
       "Error creating item:",
       error instanceof Error ? error.stack : "No stack trace"
     );
-    return { error: "Failed to create item" };
+    return { success: false, error: "Failed to create item" };
   }
 };
 
-export const deleteItem = async (formData: FormData) => {
+export const deleteItem = async (formData: FormData): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
@@ -411,9 +411,9 @@ export const deleteItem = async (formData: FormData) => {
       );
     }
 
-    return { success: true, data: updatedList };
+    return { success: true, data: updatedList as Checklist };
   } catch (error) {
-    return { error: "Failed to delete item" };
+    return { success: false, error: "Failed to delete item" };
   }
 };
 
@@ -482,11 +482,11 @@ export const reorderItems = async (formData: FormData) => {
 
     return { success: true };
   } catch (error) {
-    return { error: "Failed to reorder items" };
+    return { success: false, error: "Failed to reorder items" };
   }
 };
 
-export const updateItemStatus = async (formData: FormData) => {
+export const updateItemStatus = async (formData: FormData): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
@@ -497,11 +497,11 @@ export const updateItemStatus = async (formData: FormData) => {
     const username = await getUsername();
 
     if (!listId || !itemId) {
-      return { error: "List ID and item ID are required" };
+      return { success: false, error: "List ID and item ID are required" };
     }
 
     if (!status && !timeEntriesStr) {
-      return { error: "Either status or timeEntries must be provided" };
+      return { success: false, error: "Either status or timeEntries must be provided" };
     }
 
     const list = await getListById(listId, username, category);
@@ -514,11 +514,11 @@ export const updateItemStatus = async (formData: FormData) => {
     );
 
     if (!canEdit) {
-      return { error: "Permission denied" };
+      return { success: false, error: "Permission denied" };
     }
 
     if (!list) {
-      return { error: "List not found" };
+      return { success: false, error: "List not found" };
     }
 
     const now = new Date().toISOString();
@@ -582,14 +582,14 @@ export const updateItemStatus = async (formData: FormData) => {
         error
       );
     }
-    return { success: true, data: updatedList };
+    return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error updating item status:", error);
-    return { error: "Failed to update item status" };
+    return { success: false, error: "Failed to update item status" };
   }
 };
 
-export const createBulkItems = async (formData: FormData) => {
+export const createBulkItems = async (formData: FormData): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemsText = formData.get("itemsText") as string;
@@ -673,13 +673,13 @@ export const createBulkItems = async (formData: FormData) => {
       );
     }
 
-    return { success: true, data: updatedList };
+    return { success: true, data: updatedList as Checklist };
   } catch (error) {
-    return { error: "Failed to create bulk items" };
+    return { success: false, error: "Failed to create bulk items" };
   }
 };
 
-export const bulkToggleItems = async (formData: FormData) => {
+export const bulkToggleItems = async (formData: FormData): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const completed = formData.get("completed") === "true";
@@ -693,7 +693,7 @@ export const bulkToggleItems = async (formData: FormData) => {
     }
 
     if (!listId || !itemIdsStr) {
-      return { error: "List ID and item IDs are required" };
+      return { success: false, error: "List ID and item IDs are required" };
     }
 
     const itemIds = JSON.parse(itemIdsStr);
@@ -711,11 +711,11 @@ export const bulkToggleItems = async (formData: FormData) => {
     );
 
     if (!canEdit) {
-      return { error: "Permission denied" };
+      return { success: false, error: "Permission denied" };
     }
 
     if (!list) {
-      return { error: "List not found" };
+      return { success: false, error: "List not found" };
     }
 
     const now = new Date().toISOString();
@@ -875,14 +875,14 @@ export const bulkToggleItems = async (formData: FormData) => {
         error
       );
     }
-    return { success: true, data: updatedList };
+    return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error bulk toggling items:", error);
-    return { error: "Failed to bulk toggle items" };
+    return { success: false, error: "Failed to bulk toggle items" };
   }
 };
 
-export const bulkDeleteItems = async (formData: FormData) => {
+export const bulkDeleteItems = async (formData: FormData): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemIdsStr = formData.get("itemIds") as string;
@@ -908,11 +908,11 @@ export const bulkDeleteItems = async (formData: FormData) => {
     );
 
     if (!canEdit) {
-      return { error: "Permission denied" };
+      return { success: false, error: "Permission denied" };
     }
 
     if (!list) {
-      return { error: "List not found" };
+      return { success: false, error: "List not found" };
     }
 
     const itemIdsSet = new Set(itemIdsToDelete);
@@ -972,11 +972,11 @@ export const bulkDeleteItems = async (formData: FormData) => {
     return { success: true };
   } catch (error) {
     console.error("Error during bulk delete:", error);
-    return { error: "Failed to bulk delete items" };
+    return { success: false, error: "Failed to bulk delete items" };
   }
 };
 
-export const createSubItem = async (formData: FormData) => {
+export const createSubItem = async (formData: FormData): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const parentId = formData.get("parentId") as string;
@@ -1090,9 +1090,9 @@ export const createSubItem = async (formData: FormData) => {
       );
     }
 
-    return { success: true, data: updatedList };
+    return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error creating sub-item:", error);
-    return { error: "Failed to create sub-item" };
+    return { success: false, error: "Failed to create sub-item" };
   }
 };

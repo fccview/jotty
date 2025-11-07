@@ -265,9 +265,9 @@ export type ExportType =
   | "whole_data_folder";
 
 export interface SharedItemSummary {
-  id?: string;
+  id: string;
   uuid?: string;
-  category?: string;
+  category: string;
 }
 
 export interface AllSharedItems {
