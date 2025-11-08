@@ -18,6 +18,8 @@ import {
   Result,
   TableSyntax,
   EnableRecurrence,
+  ShowCompletedSuggestions,
+  FileRenameMode,
   ItemType,
 } from "@/app/_types";
 import { User } from "@/app/_types";
@@ -616,25 +618,9 @@ export const getUsers = async () => {
   }));
 };
 
-export const updateUserSettings = async ({
-  preferredTheme,
-  imageSyntax,
-  tableSyntax,
-  landingPage,
-  notesDefaultEditor,
-  notesDefaultMode,
-  enableRecurrence,
-  notesAutoSaveInterval,
-}: {
-  preferredTheme?: string;
-  imageSyntax?: ImageSyntax;
-  tableSyntax?: TableSyntax;
-  landingPage?: LandingPage;
-  notesDefaultEditor?: NotesDefaultEditor;
-  notesDefaultMode?: NotesDefaultMode;
-  enableRecurrence?: EnableRecurrence;
-  notesAutoSaveInterval?: NotesAutoSaveInterval;
-}): Promise<Result<{ user: User }>> => {
+export const updateUserSettings = async (
+  settings: Partial<User>
+): Promise<Result<{ user: User }>> => {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
@@ -645,19 +631,11 @@ export const updateUserSettings = async ({
     const userIndex = await _getUserIndex(currentUser.username);
 
     const updates: Partial<User> = {};
-
-    if (preferredTheme !== undefined) updates.preferredTheme = preferredTheme;
-    if (imageSyntax !== undefined) updates.imageSyntax = imageSyntax;
-    if (tableSyntax !== undefined) updates.tableSyntax = tableSyntax;
-    if (landingPage !== undefined) updates.landingPage = landingPage;
-    if (notesAutoSaveInterval !== undefined)
-      updates.notesAutoSaveInterval = notesAutoSaveInterval;
-    if (notesDefaultEditor !== undefined)
-      updates.notesDefaultEditor = notesDefaultEditor;
-    if (notesDefaultMode !== undefined)
-      updates.notesDefaultMode = notesDefaultMode;
-    if (enableRecurrence !== undefined)
-      updates.enableRecurrence = enableRecurrence;
+    for (const [key, value] of Object.entries(settings)) {
+      if (value !== undefined) {
+        (updates as any)[key] = value;
+      }
+    }
 
     const updatedUser: User = {
       ...allUsers[userIndex],

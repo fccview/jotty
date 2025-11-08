@@ -221,8 +221,8 @@ export const useSidebar = (props: SidebarProps) => {
   const isItemSelected = (item: Checklist | Note) => {
     const expectedPath = buildCategoryPath(
       item.category || "Uncategorized",
-      encodeId(item.id)
-    );
+      item.id
+    )?.toLowerCase();
 
     return (
       pathname?.toLowerCase() ===

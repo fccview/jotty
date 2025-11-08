@@ -11,10 +11,6 @@ export const userSettingsSchema = z.object({
   }),
 });
 
-export const themeSettingsSchema = z.object({
-  preferredTheme: z.string().min(1, "Theme is required"),
-});
-
 export const editorSettingsSchema = z.object({
   notesDefaultEditor: z.enum(["wysiwyg", "markdown"], {
     message: "Notes default editor must be either 'wysiwyg' or 'markdown'",
@@ -30,12 +26,6 @@ export const editorSettingsSchema = z.object({
     .min(0, "Notes auto save interval must be greater than 0"),
 });
 
-export const navigationSettingsSchema = z.object({
-  landingPage: z.enum([Modes.CHECKLISTS, Modes.NOTES, "last-visited"], {
-    message: "Landing page must be 'checklists', 'notes', or 'last-visited'",
-  }),
-});
-
 export const checklistSettingsSchema = z.object({
   enableRecurrence: z.enum(["enable", "disable"], {
     message: "Enable recurrence must be either 'enable' or 'disable'",
@@ -45,8 +35,24 @@ export const checklistSettingsSchema = z.object({
   }),
 });
 
+export const fileSettingsSchema = z.object({
+  fileRenameMode: z.enum(["dash-case", "minimal", "none"], {
+    message: "File rename mode must be 'dash-case', 'minimal', or 'none'",
+  }),
+});
+
+export const generalSettingsSchema = z.object({
+  preferredTheme: z.string().min(1, "Theme is required"),
+  landingPage: z.enum([Modes.CHECKLISTS, Modes.NOTES, "last-visited"], {
+    message: "Landing page must be 'checklists', 'notes', or 'last-visited'",
+  }),
+  fileRenameMode: z.enum(["dash-case", "minimal", "none"], {
+    message: "File rename mode must be 'dash-case', 'minimal', or 'none'",
+  }),
+});
+
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;
-export type ThemeSettingsInput = z.infer<typeof themeSettingsSchema>;
 export type EditorSettingsInput = z.infer<typeof editorSettingsSchema>;
-export type NavigationSettingsInput = z.infer<typeof navigationSettingsSchema>;
 export type ChecklistSettingsInput = z.infer<typeof checklistSettingsSchema>;
+export type FileSettingsInput = z.infer<typeof fileSettingsSchema>;
+export type GeneralSettingsInput = z.infer<typeof generalSettingsSchema>;

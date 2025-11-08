@@ -1,32 +1,51 @@
 import { promises as fs } from "fs";
 import path from "path";
 import slugify from "slugify";
+import { FileRenameMode } from "@/app/_types";
 
 const invalidFilenameChars = /[<>:"/\\|?*\x00-\x1F]/g;
 const leadingTrailingJunk = /^[. ]+|[. ]+$/g;
 
-
-export const sanitizeFilename = (title: string): string => {
+export const sanitizeFilename = (title: string, mode: FileRenameMode = "none"): string => {
   if (!title) return "";
 
-  const transliterated = slugify(title, {
-    lower: false,
-    strict: false,
-    locale: "en",
-  });
+  switch (mode) {
+    case "dash-case":
+      const transliterated = slugify(title, {
+        lower: true,
+        strict: false,
+        replacement: '-',
+        locale: "en",
+      });
+      return transliterated
+        .replace(invalidFilenameChars, "")
+        .replace(leadingTrailingJunk, "")
+        .trim();
 
-  return transliterated
-    .replace(invalidFilenameChars, "")
-    .replace(leadingTrailingJunk, "")
-    .trim();
+    case "minimal":
+      return title
+        .replace(invalidFilenameChars, "")
+        .replace(leadingTrailingJunk, "")
+        .trim();
+
+    case "none":
+      return title;
+
+    default:
+      return title
+        .replace(invalidFilenameChars, "")
+        .replace(leadingTrailingJunk, "")
+        .trim();
+  }
 };
 
 export const generateUniqueFilename = async (
   directory: string,
   baseTitle: string,
-  extension: string = ".md"
+  extension: string = ".md",
+  mode: FileRenameMode = "minimal"
 ): Promise<string> => {
-  let sanitizedTitle = sanitizeFilename(baseTitle);
+  let sanitizedTitle = sanitizeFilename(baseTitle, mode);
 
   if (!sanitizedTitle) {
     const uid = `${Date.now().toString(36)}${Math.random()

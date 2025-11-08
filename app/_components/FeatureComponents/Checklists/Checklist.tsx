@@ -132,7 +132,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 
@@ -152,7 +152,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 

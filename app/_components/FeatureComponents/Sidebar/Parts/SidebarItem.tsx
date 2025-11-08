@@ -93,12 +93,12 @@ export const SidebarItem = ({
   const dropdownItems = [
     ...(onEditItem
       ? [
-          {
-            label: "Edit",
-            onClick: () => onEditItem(item),
-            icon: <Edit className="h-4 w-4" />,
-          },
-        ]
+        {
+          label: "Edit",
+          onClick: () => onEditItem(item),
+          icon: <Edit className="h-4 w-4" />,
+        },
+      ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
@@ -113,17 +113,17 @@ export const SidebarItem = ({
     },
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
-          {
-            label: "Archive",
-            onClick: async () => {
-              const result = await toggleArchive(item, mode);
-              if (result.success) {
-                router.refresh();
-              }
-            },
-            icon: <Archive className="h-4 w-4" />,
+        {
+          label: "Archive",
+          onClick: async () => {
+            const result = await toggleArchive(item, mode);
+            if (result.success) {
+              router.refresh();
+            }
           },
-        ]
+          icon: <Archive className="h-4 w-4" />,
+        },
+      ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
@@ -215,21 +215,20 @@ export const SidebarItem = ({
         </div>
       </button>
 
-      {!isSelected && (
-        <DropdownMenu
-          align="right"
-          items={dropdownItems}
-          trigger={
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 opacity-40 lg:opacity-0 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          }
-        />
-      )}
+
+      <DropdownMenu
+        align="right"
+        items={dropdownItems}
+        trigger={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 opacity-40 lg:opacity-0 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        }
+      />
     </div>
   );
 };

@@ -77,7 +77,7 @@ const NestedChecklistItemComponent = ({
     transition,
     isDragging,
   } = isDragDisabled
-    ? {
+      ? {
         attributes: {},
         listeners: {},
         setNodeRef: null,
@@ -85,7 +85,7 @@ const NestedChecklistItemComponent = ({
         transition: null,
         isDragging: false,
       }
-    : sortableProps;
+      : sortableProps;
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -211,13 +211,13 @@ const NestedChecklistItemComponent = ({
       className={cn(
         "relative my-1",
         hasChildren &&
-          !isChild &&
-          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+        !isChild &&
+        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         !hasChildren &&
-          !isChild &&
-          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+        !isChild &&
+        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         isChild &&
-          "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
+        "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
         "first:mt-0 transition-colors duration-150",
         isActive && "bg-muted/20",
         isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50",
@@ -231,7 +231,7 @@ const NestedChecklistItemComponent = ({
           isChild ? "px-2.5 py-2" : "p-3",
           completed && "opacity-80",
           !permissions?.canEdit &&
-            "opacity-50 cursor-not-allowed pointer-events-none"
+          "opacity-50 cursor-not-allowed pointer-events-none"
         )}
       >
         {!isPublicView &&

@@ -143,6 +143,7 @@ export interface User {
   pinnedNotes?: string[];
   enableRecurrence?: EnableRecurrence;
   showCompletedSuggestions?: ShowCompletedSuggestions;
+  fileRenameMode?: FileRenameMode;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -153,6 +154,7 @@ export type NotesDefaultEditor = "wysiwyg" | "markdown";
 export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
 export type NotesDefaultMode = "edit" | "view";
 export type NotesAutoSaveInterval = 0 | 1000 | 5000 | 10000 | 15000 | 20000;
+export type FileRenameMode = "dash-case" | "minimal" | "none";
 
 export interface SharedItem {
   id: string;

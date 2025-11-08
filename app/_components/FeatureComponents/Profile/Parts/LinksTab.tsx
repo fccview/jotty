@@ -4,11 +4,12 @@ import { useMemo, useState } from "react";
 import { LinkIndex } from "@/app/_server/actions/link";
 import dynamic from "next/dynamic";
 import { FileText, Link, Network, RefreshCw } from "lucide-react";
-import { ItemType } from "@/app/_types";
+import { Checklist, ItemType, Note } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 const ResponsiveNetwork = dynamic(
   () => import("@nivo/network").then((mod) => mod.ResponsiveNetwork),
@@ -20,7 +21,17 @@ const CHECKLISTS_COLOR = "#10b981";
 const TEXT_COLOR = "rgb(var(--foreground))";
 const BORDER_COLOR = "rgb(var(--muted-foreground))";
 
+
+const getLabel = (node: any, notes: Partial<Note>[], checklists: Partial<Checklist>[]) => {
+  const fullItem = notes.find((n) => n.uuid === node.data.id) as Note | undefined
+    || checklists.find((c) => c.uuid === node.data.id) as Checklist | undefined;
+  return `${fullItem?.id}.md`;
+};
+
 const CustomNode = ({ node, onHover, onLeave }: any) => {
+  const { notes, checklists } = useAppMode();
+  const label = getLabel(node, notes, checklists);
+
   const nodeColors: Record<string, string> = {
     note: NOTES_COLOR,
     checklist: CHECKLISTS_COLOR,
@@ -54,9 +65,7 @@ const CustomNode = ({ node, onHover, onLeave }: any) => {
         fontWeight="500"
         style={{ pointerEvents: "none" }}
       >
-        {node.data.label.length > 25
-          ? node.data.label.substring(0, 22) + "..."
-          : node.data.label}
+        {label.length > 25 ? label.substring(0, 22) + "..." : label}
       </text>
     </g>
   );
@@ -82,6 +91,7 @@ interface NetworkLink {
 }
 
 export const LinksTab = ({ linkIndex }: LinksTabProps) => {
+  const { notes, checklists } = useAppMode();
   const [hoveredNode, setHoveredNode] = useState<any>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [rebuildingIndex, setRebuildingIndex] = useState(false);
@@ -118,17 +128,10 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
     const nodes = new Map<string, NetworkNode>();
     const links: NetworkLink[] = [];
 
-    Object.entries(linkIndex.notes).forEach(([path, itemLinks]) => {
-      if (!nodes.has(path)) {
-        const rawLabel = path.split("/").pop() || path;
-        const processedLabel = rawLabel
-          .replace(/-/gi, " ")
-          .split(" ")
-          .map(
-            (word: string) =>
-              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-          )
-          .join(" ");
+    Object.entries(linkIndex.notes).forEach(([uuid, itemLinks]) => {
+      if (!nodes.has(uuid)) {
+        const item = notes.find((n) => n.uuid === uuid);
+        const label = item?.title || `Note ${uuid.slice(0, 8)}`;
 
         const connectionCount =
           itemLinks.isLinkedTo.notes.length +
@@ -136,9 +139,9 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           itemLinks.isReferencedIn.notes.length +
           itemLinks.isReferencedIn.checklists.length;
         const size = Math.max(5, Math.min(25, 5 + connectionCount * 2));
-        nodes.set(path, {
-          id: path,
-          label: processedLabel,
+        nodes.set(uuid, {
+          id: uuid,
+          label: label,
           type: ItemTypes.NOTE,
           size: size,
           color: NOTES_COLOR,
@@ -147,17 +150,10 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
       }
     });
 
-    Object.entries(linkIndex.checklists).forEach(([path, itemLinks]) => {
-      if (!nodes.has(path)) {
-        const rawLabel = path.split("/").pop() || path;
-        const processedLabel = rawLabel
-          .replace(/-/gi, " ")
-          .split(" ")
-          .map(
-            (word: string) =>
-              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-          )
-          .join(" ");
+    Object.entries(linkIndex.checklists).forEach(([uuid, itemLinks]) => {
+      if (!nodes.has(uuid)) {
+        const item = checklists.find((c) => c.uuid === uuid);
+        const label = item?.title || `Checklist ${uuid.slice(0, 8)}`;
 
         const connectionCount =
           itemLinks.isLinkedTo.notes.length +
@@ -165,9 +161,9 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           itemLinks.isReferencedIn.notes.length +
           itemLinks.isReferencedIn.checklists.length;
         const size = Math.max(5, Math.min(25, 5 + connectionCount * 2));
-        nodes.set(path, {
-          id: path,
-          label: processedLabel,
+        nodes.set(uuid, {
+          id: uuid,
+          label: label,
           type: ItemTypes.CHECKLIST,
           size: size,
           color: CHECKLISTS_COLOR,
@@ -242,7 +238,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
       nodes: Array.from(nodes.values()),
       links: links,
     };
-  }, [linkIndex]);
+  }, [linkIndex, notes, checklists]);
 
   const totalNodes = networkData.nodes.length;
   const totalLinks = networkData.links.length;
@@ -452,10 +448,10 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 {hoveredNode.data.connectionCount >= 5
                   ? " (highly connected)"
                   : hoveredNode.data.connectionCount >= 2
-                  ? " (moderately connected)"
-                  : hoveredNode.data.connectionCount === 0
-                  ? " (isolated)"
-                  : ""}
+                    ? " (moderately connected)"
+                    : hoveredNode.data.connectionCount === 0
+                      ? " (isolated)"
+                      : ""}
               </div>
               <div className="text-xs text-muted-foreground mt-1 font-mono line-clamp-1">
                 {hoveredNode.data.id}
