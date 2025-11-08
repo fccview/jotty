@@ -777,8 +777,7 @@ export const deleteList = async (formData: FormData) => {
 
 export const convertChecklistType = async (formData: FormData) => {
   try {
-    const { listId, type, uuid } = getFormData(formData, ["listId", "newType", "uuid"]);
-    const newType = type as ChecklistType;
+    const { listId, newType, uuid } = getFormData(formData, ["listId", "newType", "uuid"]);
 
     if (!listId || !newType) {
       return { error: "List ID and type are required" };

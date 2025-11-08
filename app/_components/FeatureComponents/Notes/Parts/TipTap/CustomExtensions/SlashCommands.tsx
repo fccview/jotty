@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommandsList";
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { PluginKey } from "@tiptap/pm/state";
@@ -272,9 +271,6 @@ export const SlashCommands = Extension.create({
           range: any;
           props: AtMentionItem;
         }) => {
-
-          console.log("atSuggestion props", props);
-
           const linkTarget = props.uuid ? `/jotty/${props.uuid}` : ``;
           editor
             .chain()
@@ -293,10 +289,6 @@ export const SlashCommands = Extension.create({
             .run();
         },
         items: ({ query }: { query: string }) => {
-          console.log("atSuggestion items query", query);
-
-          console.log("atSuggestion items atMentionData", atMentionData);
-
           const allItems = [
             ...atMentionData.notes.map((note: any) => ({
               ...note,

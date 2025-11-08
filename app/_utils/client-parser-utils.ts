@@ -7,7 +7,7 @@ import { extractYamlMetadata, extractTitle } from "./yaml-metadata-utils";
 export const parseChecklistContent = (
   rawContent: string,
   id: string
-): { title: string; items: Item[]; uuid?: string } => {
+): { title: string; items: Item[]; uuid?: string; type?: ChecklistType } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
 
   let title: string;
@@ -18,6 +18,9 @@ export const parseChecklistContent = (
     title =
       formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
   }
+
+  const checklistType = (metadata.type as ChecklistType) ||
+    (rawContent.includes("<!-- type:task -->") ? "task" : "simple");
 
   const lines = contentWithoutMetadata.split("\n");
   const itemLines = lines.filter(
@@ -82,12 +85,7 @@ export const parseChecklistContent = (
         let item: Item;
         let recurrence = undefined;
 
-        const isTask =
-          rawContent.includes("<!-- type:task -->") ||
-          rawContent.includes(" | status:") ||
-          rawContent.includes(" | time:") ||
-          rawContent.includes(" | estimated:") ||
-          rawContent.includes(" | target:");
+        const isTask = checklistType === "task";
 
         if (isTask && text.includes(" | ")) {
           const parts = text.split(" | ");
@@ -219,7 +217,7 @@ export const parseChecklistContent = (
 
   const { items } = buildNestedItems(itemLines, 0, 0, 0);
 
-  return { title, items, uuid: metadata.uuid };
+  return { title, items, uuid: metadata.uuid, type: checklistType };
 };
 
 export const parseNoteContent = (

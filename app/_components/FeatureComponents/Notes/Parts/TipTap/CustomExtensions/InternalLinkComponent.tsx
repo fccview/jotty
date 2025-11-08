@@ -31,8 +31,6 @@ const _returnNote = async (uuid: string, router: any, note?: Note) => {
 
   if (finalNote) {
     router.push(`/note/${buildCategoryPath(finalNote.category || "Uncategorized", finalNote.id)}`);
-
-    console.log(`/note/${buildCategoryPath(finalNote.category || "Uncategorized", finalNote.id)}`)
     return;
   }
 
@@ -41,8 +39,6 @@ const _returnNote = async (uuid: string, router: any, note?: Note) => {
 
 const _returnChecklist = async (uuid: string, router: any, checklist?: Checklist) => {
   const finalChecklist = checklist || await getListById(uuid);
-
-  console.log("finalChecklist", finalChecklist);
 
   if (finalChecklist) {
     router.push(`/checklist/${buildCategoryPath(finalChecklist.category || "Uncategorized", finalChecklist.id)}`);
