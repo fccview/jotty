@@ -642,7 +642,6 @@ export const deleteNote = async (formData: FormData) => {
     await serverDeleteFile(filePath);
 
     try {
-      const itemKey = `${note.category || "Uncategorized"}/${id}`;
       await removeItemFromIndex(note.owner!, "note", note.uuid!);
     } catch (error) {
       console.warn("Failed to remove note from link index:", id, error);

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
-import { useSortable } from "@dnd-kit/sortable";
+import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
@@ -68,24 +68,16 @@ const NestedChecklistItemComponent = ({
     );
   };
 
-  const sortableProps = useSortable({ id: item.id });
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = isDragDisabled
-      ? {
-        attributes: {},
-        listeners: {},
-        setNodeRef: null,
-        transform: null,
-        transition: null,
-        isDragging: false,
-      }
-      : sortableProps;
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: item.id,
+      data: {
+        type: "item",
+        item: item,
+        completed: item.completed,
+      },
+      disabled: isDragDisabled,
+    });
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -173,11 +165,6 @@ const NestedChecklistItemComponent = ({
     }
   };
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   const cleanText = item.text.split(" | metadata:")[0].trim();
   const displayText = showEmojis ? `${emoji}  ${cleanText}` : cleanText;
   const hasChildren = item.children && item.children.length > 0;
@@ -206,8 +193,9 @@ const NestedChecklistItemComponent = ({
 
   return (
     <div
-      ref={setNodeRef}
-      style={style as React.CSSProperties}
+      style={{
+        transform: CSS.Transform.toString(transform),
+      }}
       className={cn(
         "relative my-1",
         hasChildren &&
@@ -220,7 +208,7 @@ const NestedChecklistItemComponent = ({
         "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
         "first:mt-0 transition-colors duration-150",
         isActive && "bg-muted/20",
-        isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50",
+        isDragging && "opacity-50 z-50",
         isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
       )}
     >
@@ -243,6 +231,7 @@ const NestedChecklistItemComponent = ({
               {...attributes}
               {...listeners}
               className="text-muted-foreground hidden lg:block hover:text-foreground cursor-move touch-manipulation"
+              ref={setNodeRef}
             >
               <GripVertical className="h-4 w-4" />
             </button>
