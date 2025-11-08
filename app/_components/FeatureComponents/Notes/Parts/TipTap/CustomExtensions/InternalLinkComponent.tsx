@@ -54,19 +54,13 @@ const _returnChecklist = async (uuid: string, router: any, checklist?: Checklist
 export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
   const router = useRouter();
   const { href, title, uuid } = node.attrs;
+  const [showPopup, setShowPopup] = useState(false);
   const potentialCategory = href?.replace("/jotty/", "").replace("/note/", "").replace("/checklist/", "").split("/").slice(1, -1).join("/");
-
   const { appSettings, notes, checklists } = useAppMode();
 
-  const [fullItem, setFullItem] = useState<Note | Checklist | undefined>(
-    notes.find((n) => n.uuid === uuid) as Note | undefined || checklists.find((c) => c.uuid === uuid) as Checklist | undefined
-  );
-
-  console.log("fullItem", fullItem);
-
-  const [showPopup, setShowPopup] = useState(false);
-
-  console.log("InternalLinkComponent fullItem", fullItem);
+  const fullItem = notes.find((n) =>
+    n.uuid === uuid) as Note | undefined
+    || checklists.find((c) => c.uuid === uuid) as Checklist | undefined;
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -83,12 +77,17 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
 
       try {
         await _returnNote(uuidFromPath, router);
+        return;
+      } catch (error) {
+        console.warn("Failed to resolve /jotty/ link:", error);
+      }
+      try {
         await _returnChecklist(uuidFromPath, router);
+        return;
       } catch (error) {
         console.warn("Failed to resolve /jotty/ link:", error);
       }
     } else {
-      console.log("href", href);
       router.push(href);
       return;
     }

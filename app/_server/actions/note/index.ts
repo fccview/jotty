@@ -54,6 +54,7 @@ import {
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { extractYamlMetadata as stripYaml } from "@/app/_utils/yaml-metadata-utils";
+import { getAppSettings } from "../config";
 
 interface GetNotesOptions {
   username?: string;
@@ -440,6 +441,7 @@ export const createNote = async (formData: FormData) => {
 export const updateNote = async (formData: FormData, autosaveNotes = false) => {
   try {
     const { id, title, content, category, originalCategory, unarchive, user, uuid } = getFormData(formData, ["id", "title", "content", "category", "originalCategory", "unarchive", "user", "uuid"]);
+    const settings = await getAppSettings();
 
     let currentUser = user;
 
@@ -448,13 +450,13 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     }
 
     const sanitizedContent = sanitizeMarkdown(content);
-
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
-    const convertedContent = await convertInternalLinksToNewFormat(
+
+    const convertedContent = settings?.data?.editor?.enableBilateralLinks ? await convertInternalLinksToNewFormat(
       contentWithoutMetadata,
       currentUser,
       originalCategory
-    );
+    ) : contentWithoutMetadata;
 
     const note = await getNoteById(uuid || id, originalCategory, currentUser);
 
@@ -492,10 +494,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     let newFilename: string;
     let newId = id;
 
-    console.log("title", title, note.title);
-
     if (title !== note.title) {
-      console.log("renaming file", title, note.title);
       newFilename = await generateUniqueFilename(categoryDir, title);
       newId = path.basename(newFilename, ".md");
     } else {
@@ -525,25 +524,28 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     await serverWriteFile(filePath, _noteToMarkdown(updatedDoc));
 
-    try {
-      const links = parseInternalLinks(updatedDoc.content);
-      const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
-        }`;
 
-      const oldItemKey = `${note.category || "Uncategorized"}/${id}`;
+    if (settings?.data?.editor?.enableBilateralLinks) {
+      try {
+        const links = parseInternalLinks(updatedDoc.content);
+        const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
+          }`;
 
-      if (oldItemKey !== newItemKey) {
-        await rebuildLinkIndex(note.owner!);
-        revalidatePath("/");
+        const oldItemKey = `${note.category || "Uncategorized"}/${id}`;
+
+        if (oldItemKey !== newItemKey) {
+          await rebuildLinkIndex(note.owner!);
+          revalidatePath("/");
+        }
+
+        await updateIndexForItem(note.owner!, "note", updatedDoc.uuid!, links);
+      } catch (error) {
+        console.warn(
+          "Failed to update link index for note:",
+          updatedDoc.id,
+          error
+        );
       }
-
-      await updateIndexForItem(note.owner!, "note", updatedDoc.uuid!, links);
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for note:",
-        updatedDoc.id,
-        error
-      );
     }
 
     if (newId !== id || (category && category !== note.category)) {

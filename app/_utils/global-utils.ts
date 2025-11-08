@@ -160,7 +160,11 @@ export const generateWebManifest = (
 export const getFormData = (formData: FormData, keys: string[]) => {
   const data: Record<string, string> = {};
   keys.forEach((key) => {
-    data[key] = formData.get(key) as string;
+    if (key === "category" && formData.get(key) === "") {
+      data[key] = "Uncategorized";
+    } else {
+      data[key] = formData.get(key) as string;
+    }
   });
 
   return data;
