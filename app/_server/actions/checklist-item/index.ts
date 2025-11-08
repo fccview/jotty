@@ -7,15 +7,22 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import { getLists, getAllLists, getRawLists, getListById } from "@/app/_server/actions/checklist";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import {
-  isAdmin,
-  getUsername,
-} from "@/app/_server/actions/users";
+  getLists,
+  getAllLists,
+  getRawLists,
+  getListById,
+} from "@/app/_server/actions/checklist";
+import { listToMarkdown } from "@/app/_utils/checklist-utils";
+import { isAdmin, getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { Checklist } from "@/app/_types";
-import { ItemTypes, Modes, PermissionTypes, TaskStatus } from "@/app/_types/enums";
+import {
+  ItemTypes,
+  Modes,
+  PermissionTypes,
+  TaskStatus,
+} from "@/app/_types/enums";
 import { checkUserPermission } from "../sharing";
 
 export const updateItem = async (
@@ -499,7 +506,13 @@ export const updateItemStatus = async (formData: FormData) => {
     }
 
     const list = await getListById(listId, username, category);
-    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, username, PermissionTypes.EDIT);
+    const canEdit = await checkUserPermission(
+      listId,
+      category,
+      ItemTypes.CHECKLIST,
+      username,
+      PermissionTypes.EDIT
+    );
 
     if (!canEdit) {
       return { error: "Permission denied" };
@@ -511,7 +524,8 @@ export const updateItemStatus = async (formData: FormData) => {
 
     const now = new Date().toISOString();
     const updatedList = {
-      ...list, items: list.items.map((item) => {
+      ...list,
+      items: list.items.map((item) => {
         if (item.id === itemId) {
           const updates: any = {};
           if (status) {
@@ -671,6 +685,7 @@ export const bulkToggleItems = async (formData: FormData) => {
     const listId = formData.get("listId") as string;
     const completed = formData.get("completed") === "true";
     const itemIdsStr = formData.get("itemIds") as string;
+    const completedStatesStr = formData.get("completedStates") as string;
     const category = formData.get("category") as string;
     let currentUser = formData.get("username") as string;
 
@@ -683,9 +698,18 @@ export const bulkToggleItems = async (formData: FormData) => {
     }
 
     const itemIds = JSON.parse(itemIdsStr);
+    const completedStates = completedStatesStr
+      ? JSON.parse(completedStatesStr)
+      : null;
 
     const list = await getListById(listId, currentUser, category);
-    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, currentUser, PermissionTypes.EDIT);
+    const canEdit = await checkUserPermission(
+      listId,
+      category,
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.EDIT
+    );
 
     if (!canEdit) {
       return { error: "Permission denied" };
@@ -755,26 +779,34 @@ export const bulkToggleItems = async (formData: FormData) => {
     const bulkUpdateItems = (
       items: any[],
       itemIds: string[],
-      completed: boolean,
+      completedStates: boolean[] | null,
       currentUser: string,
       now: string
     ): any[] => {
       return items.map((item) => {
         let updatedItem = { ...item };
 
-        if (itemIds.includes(item.id)) {
-          updatedItem.completed = completed;
+        const itemIndex = itemIds.indexOf(item.id);
+        if (itemIndex !== -1) {
+          const itemCompleted = completedStates
+            ? completedStates[itemIndex]
+            : completed;
+          updatedItem.completed = itemCompleted;
           updatedItem.lastModifiedBy = currentUser;
           updatedItem.lastModifiedAt = now;
 
-          if (completed && item.children && item.children.length > 0) {
+          if (itemCompleted && item.children && item.children.length > 0) {
             updatedItem.children = updateAllChildren(
               item.children,
               true,
               currentUser,
               now
             );
-          } else if (!completed && item.children && item.children.length > 0) {
+          } else if (
+            !itemCompleted &&
+            item.children &&
+            item.children.length > 0
+          ) {
             updatedItem.children = updateAllChildren(
               item.children,
               false,
@@ -788,7 +820,7 @@ export const bulkToggleItems = async (formData: FormData) => {
           updatedItem.children = bulkUpdateItems(
             item.children,
             itemIds,
-            completed,
+            completedStates,
             currentUser,
             now
           );
@@ -801,7 +833,13 @@ export const bulkToggleItems = async (formData: FormData) => {
 
     const updatedList = {
       ...list,
-      items: bulkUpdateItems(list.items, itemIds, completed, currentUser, now),
+      items: bulkUpdateItems(
+        list.items,
+        itemIds,
+        completedStates,
+        currentUser,
+        now
+      ),
       updatedAt: new Date().toISOString(),
     };
 
@@ -862,7 +900,13 @@ export const bulkDeleteItems = async (formData: FormData) => {
     }
 
     const list = await getListById(listId, currentUser, category);
-    const canEdit = await checkUserPermission(listId, category, ItemTypes.CHECKLIST, currentUser, PermissionTypes.EDIT);
+    const canEdit = await checkUserPermission(
+      listId,
+      category,
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.EDIT
+    );
 
     if (!canEdit) {
       return { error: "Permission denied" };

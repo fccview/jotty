@@ -190,7 +190,12 @@ export interface GlobalSharingReturn {
   error?: string;
 }
 
-export type EmojiMatchMode = "exact" | "word" | "prefix" | "suffix" | "substring";
+export type EmojiMatchMode =
+  | "exact"
+  | "word"
+  | "prefix"
+  | "suffix"
+  | "substring";
 
 export interface EmojiConfig {
   emoji: string;
@@ -199,7 +204,7 @@ export interface EmojiConfig {
 }
 
 export interface EmojiDictionary {
-  [key: string]: EmojiConfig | string; // Support both old string format and new config format
+  [key: string]: EmojiConfig | string;
 }
 
 export type AppMode = "checklists" | "notes";

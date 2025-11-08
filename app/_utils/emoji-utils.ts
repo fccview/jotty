@@ -6,6 +6,8 @@ import {
 } from "@/app/_utils/config-loader";
 
 let emojiDictCache: { [key: string]: EmojiConfig };
+let customEmojisLoaded = false;
+let emojiLoadingPromise: Promise<void> | null = null;
 
 const initializeEmojiDict = (): void => {
   const emojiDict: { [key: string]: EmojiConfig } = {};
@@ -17,9 +19,11 @@ const initializeEmojiDict = (): void => {
   emojiDictCache = emojiDict;
 };
 
-let customEmojisLoaded = false;
-const loadCustomEmojisAsync = async () => {
-  if (!customEmojisLoaded) {
+export const preloadCustomEmojis = async (): Promise<void> => {
+  if (customEmojisLoaded) return;
+  if (emojiLoadingPromise) return emojiLoadingPromise;
+
+  emojiLoadingPromise = (async () => {
     try {
       const customConfig = await loadCustomEmojis();
       const customEmojis = processCustomEmojis(customConfig);
@@ -31,7 +35,14 @@ const loadCustomEmojisAsync = async () => {
       console.warn("Failed to load custom emojis:", error);
     }
     customEmojisLoaded = true;
-  }
+    emojiLoadingPromise = null;
+  })();
+
+  return emojiLoadingPromise;
+};
+
+const loadCustomEmojisAsync = async () => {
+  return preloadCustomEmojis();
 };
 
 const getSingular = (word: string): string => {
@@ -60,9 +71,11 @@ const normalizeEmojiConfig = (value: EmojiConfig | string): EmojiConfig => {
 
 initializeEmojiDict();
 
-export const findMatchingEmoji = async (text: string): Promise<string> => {
+export const findMatchingEmojiSync = (text: string): string => {
   try {
-    loadCustomEmojisAsync();
+    if (!customEmojisLoaded) {
+      return "";
+    }
 
     const emojiDict = emojiDictCache;
 
@@ -90,6 +103,16 @@ export const findMatchingEmoji = async (text: string): Promise<string> => {
     }
 
     return "";
+  } catch (error) {
+    console.warn("Error finding emoji:", error);
+    return "";
+  }
+};
+
+export const findMatchingEmoji = async (text: string): Promise<string> => {
+  try {
+    await loadCustomEmojisAsync();
+    return findMatchingEmojiSync(text);
   } catch (error) {
     console.warn("Error finding emoji:", error);
     return "";

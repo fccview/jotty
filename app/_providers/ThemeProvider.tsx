@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSettings } from "@/app/_utils/settings-store";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
@@ -112,6 +112,17 @@ export const ThemeProvider = ({
       `;
 
       styleElement.textContent = cssContent;
+
+      Object.keys(customThemeColors[resolvedTheme]).forEach((key) => {
+        document.documentElement.style.removeProperty(key);
+      });
+
+      const initStyleElement = document.getElementById(
+        "custom-theme-init-styles"
+      ) as HTMLStyleElement;
+      if (initStyleElement) {
+        initStyleElement.remove();
+      }
     }
 
     if (customCSS) {

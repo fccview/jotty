@@ -102,7 +102,6 @@ export const useEmojis = () => {
         return;
       }
 
-      // Check if keyword already exists (when creating new)
       if (!editingEmoji && emojis[emojiForm.keyword.trim()]) {
         showToast({
           type: "error",
@@ -114,7 +113,6 @@ export const useEmojis = () => {
 
       const newEmojis = { ...emojis };
 
-      // Remove old keyword if editing
       if (editingEmoji && editingEmoji !== emojiForm.keyword.trim()) {
         delete newEmojis[editingEmoji];
       }

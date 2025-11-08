@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/app/_providers/ThemeProvider";
 import { AppModeProvider } from "@/app/_providers/AppModeProvider";
 import { ToastProvider } from "@/app/_providers/ToastProvider";
 import { NavigationGuardProvider } from "@/app/_providers/NavigationGuardProvider";
+import { EmojiProvider } from "@/app/_providers/EmojiProvider";
 import { InstallPrompt } from "@/app/_components/GlobalComponents/Prompts/InstallPrompt";
 import { UpdatePrompt } from "@/app/_components/GlobalComponents/Pwa/UpdatePrompt";
 import { getSettings } from "@/app/_server/actions/config";
@@ -21,6 +22,7 @@ import {
   getThemeBackgroundColor,
   rgbToHex,
 } from "./_consts/themes";
+import { loadCustomThemes } from "./_server/actions/config";
 import { getProjectedLists, getLists } from "./_server/actions/checklist";
 import { getProjectedNotes, getNotes } from "./_server/actions/note";
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
@@ -137,11 +139,13 @@ export default async function RootLayout({
 }) {
   const pathname = headers().get("x-pathname");
   const settings = await getSettings();
-  const appName = settings.appName || "rwMarkable";
+  const appName =
+    settings.appName || (settings.isRwMarkable ? "rwMarkable" : "jotty·page");
   const noteCategories = await getCategories(Modes.NOTES);
   const checklistCategories = await getCategories(Modes.CHECKLISTS);
   const user = await getCurrentUser();
   const appVersion = await readPackageVersion();
+  const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
   const users = await getUsers();
   const linkIndex = user?.username ? await readLinkIndex(user.username) : null;
@@ -188,7 +192,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      data-rwmarkable={settings?.rwmarkable ? "true" : "false"}
+      data-rwmarkable={settings?.isRwMarkable ? "true" : "false"}
       data-user-theme={user?.preferredTheme || ""}
     >
       <head>
@@ -198,12 +202,16 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
         <meta name="mobile-web-app-capable" content="yes" />
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeInitScript(JSON.stringify(customThemes["custom-themes"] || {}))
+          }}
+        />
       </head>
       <body className={`${inter.className} jotty-body`}>
         <AppModeProvider
           isDemoMode={settings?.isDemo || false}
-          isRwMarkable={settings?.rwmarkable || false}
+          isRwMarkable={settings?.isRwMarkable || false}
           user={user}
           appVersion={appVersion.data || ""}
           pathname={pathname || ""}
@@ -217,26 +225,28 @@ export default async function RootLayout({
           globalSharing={globalSharing}
         >
           <ThemeProvider user={user || {}}>
-            <NavigationGuardProvider>
-              <ToastProvider>
-                <ShortcutProvider
-                  user={user}
-                  noteCategories={noteCategories.data || []}
-                  checklistCategories={checklistCategories.data || []}
-                >
-                  <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                    <DynamicFavicon />
-                    {children}
+            <EmojiProvider>
+              <NavigationGuardProvider>
+                <ToastProvider>
+                  <ShortcutProvider
+                    user={user}
+                    noteCategories={noteCategories.data || []}
+                    checklistCategories={checklistCategories.data || []}
+                  >
+                    <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                      <DynamicFavicon />
+                      {children}
 
-                    {!pathname?.includes("/public") && <InstallPrompt />}
+                      {!pathname?.includes("/public") && <InstallPrompt />}
 
-                    {serveUpdates && !pathname?.includes("/public") && (
-                      <UpdatePrompt />
-                    )}
-                  </div>
-                </ShortcutProvider>
-              </ToastProvider>
-            </NavigationGuardProvider>
+                      {serveUpdates && !pathname?.includes("/public") && (
+                        <UpdatePrompt />
+                      )}
+                    </div>
+                  </ShortcutProvider>
+                </ToastProvider>
+              </NavigationGuardProvider>
+            </EmojiProvider>
           </ThemeProvider>
         </AppModeProvider>
       </body>

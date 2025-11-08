@@ -364,8 +364,9 @@ export const SubtaskModal = ({
         ) : (
           <div className="space-y-4">
             <div
-              className={`bg-card border border-border rounded-lg p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""
-                }`}
+              className={`bg-card border border-border rounded-lg p-4 shadow-sm ${
+                permissions?.canEdit ? "cursor-pointer" : ""
+              }`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
               <div

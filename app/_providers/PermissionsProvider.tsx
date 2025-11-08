@@ -1,10 +1,16 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { Checklist, Note } from "@/app/_types";
 import { getPermissions } from "@/app/_utils/sharing-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
+
+const permissionsCache = new Map<
+  string,
+  { permissions: any; timestamp: number }
+>();
+const CACHE_TTL = 5 * 60 * 1000;
 
 interface PermissionsContextType {
   permissions: {
@@ -27,29 +33,53 @@ export const PermissionsProvider = ({
   item: Checklist | Note;
 }) => {
   const { globalSharing, user } = useAppMode();
-  const permissions = getPermissions(
+
+  const permissionsResult = useMemo(() => {
+    const cacheKey = `${user?.username || ""}-${item.id}-${encodeCategoryPath(
+      item.category || "Uncategorized"
+    )}`;
+    const now = Date.now();
+
+    const cached = permissionsCache.get(cacheKey);
+    if (cached && now - cached.timestamp < CACHE_TTL) {
+      return cached.permissions;
+    }
+
+    const permissions = getPermissions(
+      globalSharing,
+      user?.username || "",
+      item.id,
+      encodeCategoryPath(item.category || "Uncategorized")
+    );
+
+    const canEdit =
+      user?.isAdmin ||
+      (user?.username && user.username === item.owner) ||
+      permissions?.canEdit;
+    const canDelete =
+      user?.isAdmin ||
+      (user?.username && user.username === item.owner) ||
+      permissions?.canDelete;
+    const canRead =
+      user?.isAdmin ||
+      (user?.username && user.username === item.owner) ||
+      permissions?.canRead;
+
+    const isOwner = (user?.username && user.username === item.owner) || false;
+
+    const result = { canEdit, canDelete, canRead, isOwner };
+
+    permissionsCache.set(cacheKey, { permissions: result, timestamp: now });
+
+    return result;
+  }, [
     globalSharing,
-    user?.username || "",
+    user?.username,
+    user?.isAdmin,
     item.id,
-    encodeCategoryPath(item.category || "Uncategorized")
-  );
-
-  const canEdit =
-    user?.isAdmin ||
-    (user?.username && user.username === item.owner) ||
-    permissions?.canEdit;
-  const canDelete =
-    user?.isAdmin ||
-    (user?.username && user.username === item.owner) ||
-    permissions?.canDelete;
-  const canRead =
-    user?.isAdmin ||
-    (user?.username && user.username === item.owner) ||
-    permissions?.canRead;
-
-  const isOwner = (user?.username && user.username === item.owner) || false;
-
-  const permissionsResult = { canEdit, canDelete, canRead, isOwner };
+    item.category,
+    item.owner,
+  ]);
 
   return (
     <PermissionsContext.Provider value={{ permissions: permissionsResult }}>

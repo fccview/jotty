@@ -6,6 +6,7 @@ import {
   useState,
   ReactNode,
   useEffect,
+  useMemo,
 } from "react";
 import { AppMode, AppSettings, Checklist, Note, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
@@ -118,29 +119,49 @@ export const AppModeProvider = ({
     localStorage.setItem("app-mode", newMode);
   };
 
+  const contextValue = useMemo(
+    () => ({
+      mode,
+      setMode: handleSetMode,
+      selectedNote,
+      setSelectedNote,
+      isInitialized,
+      isDemoMode,
+      isRwMarkable,
+      user,
+      setUser,
+      appSettings,
+      appVersion: appVersion || "",
+      usersPublicData,
+      linkIndex: linkIndex || null,
+      notes: notes || [],
+      checklists: checklists || [],
+      allSharedItems: allSharedItems || null,
+      userSharedItems: userSharedItems || null,
+      globalSharing: globalSharing || null,
+    }),
+    [
+      mode,
+      handleSetMode,
+      selectedNote,
+      isInitialized,
+      isDemoMode,
+      isRwMarkable,
+      user,
+      appSettings,
+      appVersion,
+      usersPublicData,
+      linkIndex,
+      notes,
+      checklists,
+      allSharedItems,
+      userSharedItems,
+      globalSharing,
+    ]
+  );
+
   return (
-    <AppModeContext.Provider
-      value={{
-        mode,
-        setMode: handleSetMode,
-        selectedNote,
-        setSelectedNote,
-        isInitialized,
-        isDemoMode,
-        isRwMarkable,
-        user,
-        setUser,
-        appSettings,
-        appVersion: appVersion || "",
-        usersPublicData,
-        linkIndex: linkIndex || null,
-        notes: notes || [],
-        checklists: checklists || [],
-        allSharedItems: allSharedItems || null,
-        userSharedItems: userSharedItems || null,
-        globalSharing: globalSharing || null,
-      }}
-    >
+    <AppModeContext.Provider value={contextValue}>
       {children}
     </AppModeContext.Provider>
   );

@@ -63,6 +63,7 @@ export const ChecklistView = ({
     setShowBulkPasteModal,
     isLoading,
     deletingItemsCount,
+    pendingTogglesCount,
   } = checklistHookProps;
 
   const sensors = useSensors(
@@ -125,6 +126,26 @@ export const ChecklistView = ({
                 <>
                   <label className="block">
                     Deleting {deletingItemsCount} item(s)
+                  </label>
+                  <label>Do not refresh the page.</label>
+                </>
+              ),
+            },
+          ]}
+          onRemove={() => {}}
+        ></ToastContainer>
+      )}
+
+      {pendingTogglesCount > 0 && (
+        <ToastContainer
+          toasts={[
+            {
+              id: "pending-toggles",
+              type: "info",
+              title: (
+                <>
+                  <label className="block">
+                    Syncing {pendingTogglesCount} item(s)
                   </label>
                   <label>Do not refresh the page.</label>
                 </>

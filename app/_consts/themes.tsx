@@ -159,14 +159,14 @@ export const getThemeBackgroundColor = (themeId: string): string => {
   return THEME_BACKGROUND_COLORS[themeId] || THEME_BACKGROUND_COLORS["dark"];
 };
 
-export const themeInitScript = `
+export const themeInitScript = (customThemesData?: string) => `
 (function() {
   try {
     const isRwMarkable = document.documentElement.getAttribute('data-rwmarkable') === 'true';
     const userPreferredTheme = document.documentElement.getAttribute('data-user-theme') || '';
 
     const settings = localStorage.getItem('checklist-settings');
-    let localStorageTheme = 'system'; 
+    let localStorageTheme = 'system';
 
     if (settings) {
       const parsed = JSON.parse(settings);
@@ -186,6 +186,16 @@ export const themeInitScript = `
       } else {
         resolvedTheme = isDark ? 'dark' : 'light';
       }
+    }
+
+    const customThemes = ${customThemesData || "{}"};
+
+    if (customThemes[resolvedTheme]) {
+      const colors = customThemes[resolvedTheme].colors;
+
+      Object.entries(colors).forEach(([key, value]) => {
+        document.documentElement.style.setProperty(key, value);
+      });
     }
 
     document.documentElement.classList.add(resolvedTheme);
