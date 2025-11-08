@@ -7,7 +7,7 @@ import {
   DragOverEvent,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
+  closestCorners,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -16,7 +16,7 @@ import { CategoryRenderer } from "@/app/_components/FeatureComponents/Sidebar/Pa
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { buildCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
 import { Modes } from "@/app/_types/enums";
 
 interface CategoryListProps {
@@ -42,7 +42,11 @@ export const CategoryList = (props: CategoryListProps) => {
   const router = useRouter();
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor)
   );
 
@@ -91,12 +95,16 @@ export const CategoryList = (props: CategoryListProps) => {
   const handleDragEnd = async (event: DragEndEvent) => {
     clearOverTimeout();
     const { active, over } = event;
-    if (!over || !active || active.id === over.id) return;
+    if (!over || !active || active.id === over.id) {
+      return;
+    }
 
     const activeNode = active.data.current;
     const overNode = over?.data.current;
 
-    if (!activeNode || !overNode) return;
+    if (!activeNode || !overNode) {
+      return;
+    }
 
     let currentItemPath: string | null = null;
     if (activeNode.type === "item") {
@@ -131,7 +139,7 @@ export const CategoryList = (props: CategoryListProps) => {
       formData.append("targetCategoryPath", overNode.categoryPath);
     }
 
-    await moveNode(formData);
+    const result = await moveNode(formData);
 
     if (
       activeNode.type === "item" &&
@@ -170,39 +178,26 @@ export const CategoryList = (props: CategoryListProps) => {
           parentPath === "" ? categoryName : `${parentPath}/${categoryName}`;
       }
 
-      console.log("Calculated paths:", {
-        oldCategoryPath,
-        newCategoryPath,
-        categoryName,
-        routePrefix,
-      });
-
-      const encodedPrefix = `${routePrefix}/${encodeURIComponent(
-        oldCategoryPath
-      )}/`;
-      const decodedPathname = decodeURIComponent(pathname);
-      const decodedPrefix = `${routePrefix}/${oldCategoryPath}/`;
+      const oldCategoryUrl = `${routePrefix}/${encodeCategoryPath(oldCategoryPath)}/`;
+      const pathnameParts = pathname.split("/");
 
       let itemPart = "";
       let matched = false;
 
-      if (pathname.startsWith(encodedPrefix)) {
-        itemPart = pathname.substring(encodedPrefix.length);
-        matched = true;
-      } else if (decodedPathname.startsWith(decodedPrefix)) {
-        itemPart = decodedPathname.substring(decodedPrefix.length);
+      if (pathname.startsWith(oldCategoryUrl) && pathnameParts.length > 3) {
+        const categoryPathParts = encodeCategoryPath(oldCategoryPath).split("/");
+        const startIndex = routePrefix.split("/").length + categoryPathParts.length;
+        itemPart = pathnameParts.slice(startIndex).join("/");
         matched = true;
       }
 
       if (matched) {
         const newPath = `${routePrefix}/${buildCategoryPath(
           newCategoryPath,
-          itemPart
+          decodeURIComponent(itemPart)
         )}`;
-        console.log("Navigating to:", newPath);
         router.push(newPath);
       } else {
-        console.log("No match found");
         router.refresh();
       }
     } else {
@@ -213,7 +208,7 @@ export const CategoryList = (props: CategoryListProps) => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={closestCorners}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
       onDragCancel={handleDragCancel}

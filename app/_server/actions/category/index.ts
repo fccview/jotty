@@ -236,6 +236,12 @@ const insertIntoArray = (
   activeType: "item" | "category"
 ) => {
   const newArr = [...arr];
+
+  const existingIndex = newArr.indexOf(item);
+  if (existingIndex !== -1) {
+    newArr.splice(existingIndex, 1);
+  }
+
   if (!targetDndId) {
     if (position === "before") newArr.unshift(item);
     else newArr.push(item);
@@ -255,7 +261,7 @@ const insertIntoArray = (
 
   const realTargetId = getRealIdForList(targetDndId, activeType);
 
-  if (realTargetId) {
+  if (realTargetId && realTargetId !== item) {
     const targetIndex = newArr.indexOf(realTargetId);
     if (targetIndex !== -1) {
       newArr.splice(
@@ -307,8 +313,14 @@ export const moveNode = async (formData: FormData) => {
 
     let newParentPath: string | null = null;
     if (overType === "category") {
+      if (activeType === "category" && activeCategoryPath === targetCategoryPath) {
+        return { success: true };
+      }
       newParentPath = targetCategoryPath;
     } else if (overType === "drop-indicator") {
+      if (activeType === "category" && activeCategoryPath === targetParentPath) {
+        return { success: true };
+      }
       newParentPath = targetParentPath;
     }
 
@@ -348,20 +360,35 @@ export const moveNode = async (formData: FormData) => {
         return { success: true };
       }
 
-      const targetIndex = newList.indexOf(realTargetId);
-      if (oldIndex === -1 || targetIndex === -1) {
-        return { success: false, error: "Item or target not found in order" };
+      if (oldIndex === -1) {
+        oldList.unshift(activeName);
+        newOrder[listKey] = oldList;
+        const newOldIndex = oldList.indexOf(activeName);
+        if (newOldIndex === -1) {
+          return { success: false, error: "Failed to add dragged item to order" };
+        }
       }
-      const toIndex =
-        targetPosition === "before" ? targetIndex : targetIndex + 1;
-      const finalIndex = toIndex > oldIndex ? toIndex - 1 : toIndex;
 
-      const reorderedList = arrayMove(oldList, oldIndex, finalIndex);
+      const targetIndex = newList.indexOf(realTargetId);
+      if (targetIndex === -1) {
+        const insertIndex = oldIndex !== -1 ? oldIndex : 0;
+        newList.splice(insertIndex, 0, realTargetId);
+      }
+
+      const finalOldIndex = oldList.indexOf(activeName);
+      const finalTargetIndex = newList.indexOf(realTargetId);
+
+      if (finalOldIndex === -1 || finalTargetIndex === -1) {
+        return { success: false, error: "Item or target not found in order after sync" };
+      }
+
+      const toIndex =
+        targetPosition === "before" ? finalTargetIndex : finalTargetIndex + 1;
+      const finalIndex = toIndex > finalOldIndex ? toIndex - 1 : toIndex;
+
+      const reorderedList = arrayMove(oldList, finalOldIndex, finalIndex);
       newOrder[listKey] = reorderedList;
     } else {
-      if (oldIndex !== -1) {
-        oldList.splice(oldIndex, 1);
-      }
       newOrder[listKey] = insertIntoArray(
         newList,
         activeName,
@@ -370,12 +397,6 @@ export const moveNode = async (formData: FormData) => {
         targetType,
         activeType
       );
-    }
-
-    if (overType === "category") {
-      if (!newOrder[listKey].includes(activeName)) {
-        newOrder[listKey].push(activeName);
-      }
     }
 
     const newName = activeType === "item" ? `${activeId}.md` : activeName;
