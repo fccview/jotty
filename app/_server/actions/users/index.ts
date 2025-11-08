@@ -21,6 +21,8 @@ import {
   ShowCompletedSuggestions,
   FileRenameMode,
   ItemType,
+  PreferredDateFormat,
+  PreferredTimeFormat,
 } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
@@ -368,6 +370,8 @@ export const createUser = async (
       isAdmin,
       createdAt: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
+      preferredDateFormat: "dd/mm/yyyy",
+      preferredTimeFormat: "12-hours",
     };
 
     const updatedUsers = [...existingUsers, newUser];

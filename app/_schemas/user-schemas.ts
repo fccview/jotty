@@ -11,6 +11,15 @@ export const userSettingsSchema = z.object({
   }),
 });
 
+export const themeSettingsSchema = z.object({
+  preferredTheme: z.string().min(1, "Theme is required"),
+});
+
+export const dateTimeSettingsSchema = z.object({
+  preferredDateFormat: z.enum(["dd/mm/yyyy", "mm/dd/yyyy"]),
+  preferredTimeFormat: z.enum(["12-hours", "24-hours"]),
+});
+
 export const editorSettingsSchema = z.object({
   notesDefaultEditor: z.enum(["wysiwyg", "markdown"], {
     message: "Notes default editor must be either 'wysiwyg' or 'markdown'",

@@ -14,6 +14,8 @@ import {
   NotesDefaultMode,
   NotesAutoSaveInterval,
   FileRenameMode,
+  PreferredTimeFormat,
+  PreferredDateFormat,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -25,6 +27,7 @@ import {
   editorSettingsSchema,
   checklistSettingsSchema,
   generalSettingsSchema,
+  dateTimeSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 
 interface SettingsTabProps {
@@ -41,6 +44,8 @@ const getSettingsFromUser = (user: User | null): Partial<User> => ({
   enableRecurrence: user?.enableRecurrence || "disable",
   showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
   fileRenameMode: user?.fileRenameMode || "dash-case",
+  preferredDateFormat: user?.preferredDateFormat || "dd/mm/yyyy",
+  preferredTimeFormat: user?.preferredTimeFormat || "12-hours",
 });
 
 const pick = <T extends object, K extends keyof T>(
@@ -103,6 +108,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     return keys.some((key) => currentSettings[key] !== initialSettings[key]);
   };
 
+  const hasDateTimeFormatChanges = hasChanges([
+    "preferredDateFormat",
+    "preferredTimeFormat",
+  ]);
   const hasGeneralChanges = hasChanges([
     "preferredTheme",
     "landingPage",
@@ -182,13 +191,21 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   ) => {
     const settingsToSave = pick(currentSettings, keys);
 
-    validateAndSave(
-      settingsToSave,
-      schema,
-      sectionName,
-      (prev) => ({ ...prev, ...settingsToSave })
-    );
+    validateAndSave(settingsToSave, schema, sectionName, (prev) => ({
+      ...prev,
+      ...settingsToSave,
+    }));
   };
+
+  const dateFormatOptions = [
+    { id: "dd/mm/yyyy", name: "DD/MM/YYYY" },
+    { id: "mm/dd/yyyy", name: "MM/DD/YYYY" },
+  ];
+
+  const timeFormatOptions = [
+    { id: "12-hours", name: "12 hours" },
+    { id: "24-hours", name: "24 hours" },
+  ];
 
   const tableSyntaxOptions = [
     { id: "markdown", name: "Markdown (e.g., | Header |)" },
@@ -335,6 +352,62 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               Choose how files are renamed when saving notes and checklists.
             </p>
           </div>
+        </div>
+      </FormWrapper>
+
+      <FormWrapper
+        title="Date/Time Preferences"
+        action={
+          <Button
+            onClick={() => {
+              handleSaveSection(
+                ["preferredDateFormat", "preferredTimeFormat"],
+                dateTimeSettingsSchema,
+                "Date Time Preferences"
+              );
+            }}
+            disabled={!hasDateTimeFormatChanges}
+            size="sm"
+          >
+            Save
+          </Button>
+        }
+      >
+        <div className="space-y-2">
+          <Label htmlFor="preferred-theme">Preferred Date Format</Label>
+          <Dropdown
+            value={currentSettings.preferredDateFormat || "dd/mm/yyyy"}
+            onChange={(value) =>
+              handleSettingChange(
+                "preferredDateFormat",
+                value as PreferredDateFormat
+              )
+            }
+            options={dateFormatOptions}
+            placeholder="Select date format"
+            className="w-full"
+          />
+          <p className="text-sm text-muted-foreground">
+            Choose your preferred date format.
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="preferred-theme">Preferred Time Format</Label>
+          <Dropdown
+            value={currentSettings.preferredTimeFormat || "12-hours"}
+            onChange={(value) =>
+              handleSettingChange(
+                "preferredTimeFormat",
+                value as PreferredTimeFormat
+              )
+            }
+            options={timeFormatOptions}
+            placeholder="Select time format"
+            className="w-full"
+          />
+          <p className="text-sm text-muted-foreground">
+            Choose your preferred time format.
+          </p>
         </div>
       </FormWrapper>
 
