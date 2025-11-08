@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   DragEndEvent,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   closestCenter,
@@ -26,32 +27,50 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   const router = useRouter();
   const { checklistFilter, setChecklistFilter } = useHomeFilter();
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [draggedItemWidth, setDraggedItemWidth] = useState<number | null>(null);
   const pinnedLists = user?.pinnedLists || [];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
-        delay: 100,
+        delay: 150,
         tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor)
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+    const rect = event.active.rect?.current || event.active.data?.current?.sortable?.rect;
+    if (rect) {
+      setDraggedItemWidth(rect.initial?.width || 0);
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
+    setDraggedItemWidth(null);
+
     if (!over || active.id === over.id) return;
 
     const pinned = getPinnedLists();
-    const oldIndex = pinned.findIndex((list) => list.id === active.id);
-    const newIndex = pinned.findIndex((list) => list.id === over.id);
+    const oldIndex = pinned.findIndex(
+      (list) => (list.uuid || list.id) === active.id
+    );
+    const newIndex = pinned.findIndex(
+      (list) => (list.uuid || list.id) === over.id
+    );
 
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newOrder = arrayMove(pinned, oldIndex, newIndex);
     const newPinnedPaths = newOrder.map(
-      (list) => `${list.category || "Uncategorized"}/${list.id}`
+      (list) =>
+        `${list.category || "Uncategorized"}/${list.uuid || list.id}`
     );
 
     try {
@@ -71,8 +90,9 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     const pinned = pinnedLists
       .map((path) => {
         return lists.find((list) => {
-          const itemPath = `${list.category || "Uncategorized"}/${list.id}`;
-          return itemPath === path;
+          const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
+          const idPath = `${list.category || "Uncategorized"}/${list.id}`;
+          return uuidPath === path || idPath === path;
         });
       })
       .filter(Boolean) as Checklist[];
@@ -134,7 +154,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     setIsTogglingPin(list.id);
     try {
       const result = await togglePin(
-        list.id,
+        list.uuid || list.id,
         list.category || "Uncategorized",
         ItemTypes.CHECKLIST
       );
@@ -149,8 +169,9 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   };
 
   const isListPinned = (list: Checklist) => {
-    const itemPath = `${list.category || "Uncategorized"}/${list.id}`;
-    return pinnedLists.includes(itemPath);
+    const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
+    const idPath = `${list.category || "Uncategorized"}/${list.id}`;
+    return pinnedLists.includes(uuidPath) || pinnedLists.includes(idPath);
   };
 
   const stats = useMemo(() => {
@@ -185,8 +206,13 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     { id: "incomplete", name: "Incomplete" },
   ];
 
+  const activeList = activeId
+    ? pinned.find((list) => (list.uuid || list.id) === activeId)
+    : null;
+
   return {
     sensors,
+    handleDragStart,
     handleDragEnd,
     pinned,
     recent,
@@ -200,5 +226,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     handleTogglePin,
     isListPinned,
     isTogglingPin,
+    activeList,
+    draggedItemWidth,
   };
 };

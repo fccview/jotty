@@ -19,6 +19,7 @@ interface NoteCardProps {
   isDraggable?: boolean;
   fullScrollableContent?: boolean;
   sharer?: string;
+  fixedWidth?: number;
 }
 
 export const NoteCard = ({
@@ -29,6 +30,7 @@ export const NoteCard = ({
   isDraggable = false,
   fullScrollableContent = false,
   sharer,
+  fixedWidth,
 }: NoteCardProps) => {
   const {
     attributes,
@@ -41,11 +43,6 @@ export const NoteCard = ({
     id: note?.uuid || note?.id,
     disabled: !isDraggable,
   });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
 
   const { showMarkdownPreview } = useSettings();
 
@@ -92,18 +89,36 @@ export const NoteCard = ({
     return null;
   }
 
+  const style = isDragging
+    ? { opacity: 0.4 }
+    : {
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
+
+  const cardStyle = {
+    ...style,
+    ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
+    ...(fixedWidth ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth } : {}),
+  };
+
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      onClick={() => onSelect(note)}
-      className={`jotty-note-card bg-card border border-border rounded-xl cursor-pointer hover:shadow-md transition-all duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${isDragging ? "opacity-50" : ""
-        }`}
+      className={`jotty-note-card bg-card border border-border rounded-xl hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${
+        isDragging ? "border-primary/30" : ""
+      }`}
     >
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
-          <div className="jotty-note-card-title flex-1 min-w-0">
+          <div
+            className="jotty-note-card-title flex-1 min-w-0 cursor-pointer"
+            onClick={() => onSelect(note)}
+            onPointerDown={(e) => isDraggable && e.stopPropagation()}
+            onMouseDown={(e) => isDraggable && e.stopPropagation()}
+          >
             <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
               {displayTitle}
             </h3>

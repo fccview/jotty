@@ -392,7 +392,6 @@ export const useChecklist = ({
       return;
     }
 
-    // Prevent moving between todo and completed contexts
     if (activeData.type === "item" && overData.type === "drop-indicator") {
       const activeCompleted = activeData.completed;
       const targetContext = overData.parentPath;
@@ -403,7 +402,6 @@ export const useChecklist = ({
       }
     }
 
-    // Handle reordering within the same context
     if (overData.type === "drop-indicator") {
       const allItems = localList.items;
       const activeItem = allItems.find(item => item.id === active.id);
@@ -414,7 +412,6 @@ export const useChecklist = ({
       const isTargetTodo = targetContext === "todo";
       const isTargetCompleted = targetContext === "completed";
 
-      // Get items in the target context
       const contextItems = isTargetTodo
         ? allItems.filter(item => !item.completed)
         : allItems.filter(item => item.completed);
@@ -422,12 +419,10 @@ export const useChecklist = ({
       let newItems: typeof allItems;
 
       if (overData.targetDndId) {
-        // Insert relative to another item
         const targetIndex = contextItems.findIndex(item => item.id === overData.targetDndId);
         if (targetIndex !== -1) {
           const insertIndex = overData.position === "before" ? targetIndex : targetIndex + 1;
 
-          // Remove from current position and insert at new position within the target context
           const otherItems = allItems.filter(item => item.id !== active.id);
           const todoItems = otherItems.filter(item => !item.completed);
           const completedItems = otherItems.filter(item => item.completed);
@@ -440,7 +435,6 @@ export const useChecklist = ({
             newItems = [...todoItems, ...completedItems];
           }
         } else {
-          // Fallback: add to end of context
           const otherItems = allItems.filter(item => item.id !== active.id);
           const todoItems = otherItems.filter(item => !item.completed);
           const completedItems = otherItems.filter(item => item.completed);
@@ -450,7 +444,6 @@ export const useChecklist = ({
             : [...todoItems, ...completedItems, { ...activeItem, completed: true }];
         }
       } else {
-        // Add to start of context
         const otherItems = allItems.filter(item => item.id !== active.id);
         const todoItems = otherItems.filter(item => !item.completed);
         const completedItems = otherItems.filter(item => item.completed);
@@ -460,10 +453,8 @@ export const useChecklist = ({
           : [...todoItems, { ...activeItem, completed: true }, ...completedItems];
       }
 
-      // Update local state
       setLocalList({ ...localList, items: newItems });
 
-      // Send to server
       const itemIds = newItems.map((item) => item.id);
       const formData = new FormData();
       formData.append("listId", localList.id);

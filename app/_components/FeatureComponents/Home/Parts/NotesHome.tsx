@@ -13,7 +13,7 @@ import { Note, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import Masonry from "react-masonry-css";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -41,6 +41,7 @@ export const NotesHome = ({
 
   const {
     sensors,
+    handleDragStart,
     handleDragEnd,
     pinned,
     recent,
@@ -48,6 +49,8 @@ export const NotesHome = ({
     breakpointColumnsObj,
     handleTogglePin,
     isNotePinned,
+    activeNote,
+    draggedItemWidth,
   } = useNotesHome({ notes, categories, user });
 
   const getNoteSharer = (note: Note) => {
@@ -122,10 +125,11 @@ export const NotesHome = ({
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={pinned.map((note) => note.id)}
+                items={pinned.map((note) => note.uuid || note.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <Masonry
@@ -135,7 +139,7 @@ export const NotesHome = ({
                 >
                   {pinned.map((note) => (
                     <div
-                      key={`pinned-${note.category}-${note.id}`}
+                      key={`pinned-${note.category}-${note.uuid || note.id}`}
                       className="mb-6"
                     >
                       <NoteCard
@@ -150,6 +154,19 @@ export const NotesHome = ({
                   ))}
                 </Masonry>
               </SortableContext>
+
+              <DragOverlay>
+                {activeNote ? (
+                  <NoteCard
+                    note={activeNote}
+                    onSelect={() => {}}
+                    isPinned={true}
+                    isDraggable={false}
+                    sharer={getNoteSharer(activeNote)}
+                    fixedWidth={draggedItemWidth || undefined}
+                  />
+                ) : null}
+              </DragOverlay>
             </DndContext>
           </div>
         )}

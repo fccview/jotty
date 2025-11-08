@@ -269,7 +269,7 @@ const NestedChecklistItemComponent = ({
         )}
 
         {isEditing ? (
-          <div className="flex-1 flex items-center gap-2">
+          <div className="flex-1 flex items-center gap-2 w-full">
             {permissions?.canEdit && (
               <>
                 <Input

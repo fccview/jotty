@@ -11,7 +11,6 @@ interface ChecklistDropIndicatorProps {
 export const ChecklistDropIndicator = ({ id, data }: ChecklistDropIndicatorProps) => {
     const { setNodeRef, isOver, active } = useDroppable({ id, data });
 
-    // Check if the dragged item is valid for this drop zone
     const activeData = active?.data.current;
     const isValidDrop = activeData?.type === "item" &&
         ((data.parentPath === "todo" && !activeData.completed) ||
