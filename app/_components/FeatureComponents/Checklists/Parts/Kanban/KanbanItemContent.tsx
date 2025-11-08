@@ -6,6 +6,7 @@ import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/Progr
 import { Item } from "@/app/_types";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface KanbanItemContentProps {
   item: Item;
@@ -39,6 +40,7 @@ export const KanbanItemContent = ({
   onDelete,
 }: KanbanItemContentProps) => {
   const { permissions } = usePermissions();
+  const { formatDateString, formatDateTimeString } = usePreferredDateTime();
 
   return (
     <div className="space-y-2">
@@ -133,7 +135,7 @@ export const KanbanItemContent = ({
           <div
             className="flex items-center gap-1"
             title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
-              ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
+              ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
               : ""
               }`}
           >
@@ -144,7 +146,7 @@ export const KanbanItemContent = ({
             />
             <span className="text-[10px] text-muted-foreground">
               {item.lastModifiedAt
-                ? new Date(item.lastModifiedAt).toLocaleDateString()
+                ? formatDateString(item.lastModifiedAt)
                 : ""}
             </span>
           </div>
