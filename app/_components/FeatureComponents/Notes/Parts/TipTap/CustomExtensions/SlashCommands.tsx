@@ -284,8 +284,8 @@ export const SlashCommands = Extension.create({
                 type: props.type,
                 category: props.category,
                 uuid: props.uuid,
-                itemId: props.id, // Store id so we can convert back to path
-                convertToBidirectional: false, // Already in UUID format
+                itemId: props.id,
+                convertToBidirectional: false,
               },
             })
             .run();

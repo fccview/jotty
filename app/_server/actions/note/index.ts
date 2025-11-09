@@ -106,6 +106,7 @@ const convertInternalLinksToNewFormat = async (
 ): Promise<string> => {
   let convertedContent = content;
 
+  // @ts-ignore
   const spanRegex = /<span[^>]*data-internal-link[^>]*>.*?<\/span>/gs;
   const spanMatches = Array.from(content.matchAll(spanRegex));
 
