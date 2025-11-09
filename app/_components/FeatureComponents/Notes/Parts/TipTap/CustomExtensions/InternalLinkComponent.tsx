@@ -6,13 +6,14 @@ import { FileText, CheckSquare, BarChart3, Link2, Link } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getNoteById } from "@/app/_server/actions/note";
 import { getListById } from "@/app/_server/actions/checklist";
-import { buildCategoryPath, decodeCategoryPath } from "@/app/_utils/global-utils";
+import { buildCategoryPath, decodeCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { Checklist, Note } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
+import { encodeId } from "@/app/_utils/global-utils";
 
 interface InternalLinkComponentProps {
   node: {
@@ -131,8 +132,8 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
           convertToBidirectional: false,
         });
       } else if (itemId && category) {
-        const foundItem = notes.find((n) => n.id === itemId && n.category === category)
-          || checklists.find((c) => c.id === itemId && c.category === category);
+        const foundItem = notes.find((n) => encodeId(n.id || "") === encodeId(itemId) && encodeCategoryPath(n?.category || "") === encodeCategoryPath(category))
+          || checklists.find((c) => encodeId(c.id || "") === encodeId(itemId) && encodeCategoryPath(c?.category || "") === encodeCategoryPath(category));
 
         if (foundItem?.uuid) {
           updateAttributes({
@@ -195,10 +196,10 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
           <button
             onClick={handleToggleConversion}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${isJottyLink
+              ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
+              : convertToBidirectional
                 ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
-                : convertToBidirectional
-                  ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
+                : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
               }`}
             title={isJottyLink
               ? "Click to convert to path-based link (cross-platform compatible)"

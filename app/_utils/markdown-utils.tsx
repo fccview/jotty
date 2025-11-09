@@ -10,6 +10,7 @@ import { Element } from "hast";
 import { addCustomHtmlTurndownRules } from "@/app/_utils/custom-html-utils";
 import { html as beautifyHtml } from "js-beautify";
 import { TableSyntax } from "@/app/_types";
+import { decodeCategoryPath, decodeId } from "./global-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
@@ -484,13 +485,13 @@ const markdownProcessor = unified()
             } else if (href.startsWith("/note/")) {
               type = "note";
               const pathParts = href.replace("/note/", "").split("/");
-              itemId = pathParts.pop() || "";
-              category = pathParts.join("/");
+              itemId = decodeId(pathParts.pop() || "");
+              category = decodeCategoryPath(pathParts.join("/"));
             } else if (href.startsWith("/checklist/")) {
               type = "checklist";
               const pathParts = href.replace("/checklist/", "").split("/");
-              itemId = pathParts.pop() || "";
-              category = pathParts.join("/");
+              itemId = decodeId(pathParts.pop() || "");
+              category = decodeCategoryPath(pathParts.join("/"));
             }
 
             const newChildren: any[] = [];
@@ -509,7 +510,7 @@ const markdownProcessor = unified()
               "data-title": textContent,
               "data-uuid": uuid,
               "data-type": type,
-              "data-category": decodeURIComponent(category),
+              "data-category": category,
               "data-item-id": itemId,
               "data-convert-to-bidirectional": "false",
             };

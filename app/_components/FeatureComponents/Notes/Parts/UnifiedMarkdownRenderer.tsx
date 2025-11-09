@@ -23,6 +23,7 @@ import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -149,8 +150,8 @@ export const UnifiedMarkdownRenderer = ({
             ?.replace("/checklist/", "")
             .replace("/note/", "")
             .split("/");
-          linkItemId = pathParts?.[pathParts.length - 1] || "";
-          linkCategory = pathParts?.slice(0, -1).join("/");
+          linkItemId = decodeId(pathParts?.[pathParts.length - 1] || "");
+          linkCategory = decodeCategoryPath(pathParts?.slice(0, -1).join("/") || "");
         }
 
         return (
@@ -167,7 +168,7 @@ export const UnifiedMarkdownRenderer = ({
               },
             }}
             editor={undefined as any}
-            updateAttributes={() => {}}
+            updateAttributes={() => { }}
           />
         );
       }

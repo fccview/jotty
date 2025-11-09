@@ -101,6 +101,9 @@ export function decodeId(encodedId: string): string {
 }
 
 export function encodeId(id: string): string {
+  if (id.includes("%20") || id.includes("%2F")) {
+    return id;
+  }
   return encodeURIComponent(id);
 }
 
