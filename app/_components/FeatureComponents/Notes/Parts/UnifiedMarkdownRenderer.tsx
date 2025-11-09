@@ -12,6 +12,8 @@ import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import rehypeRaw from "rehype-raw";
 import { CodeBlockRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockRenderer";
+import { MermaidRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/MermaidRenderer";
+import { DrawioRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/DrawioRenderer";
 import { FileAttachment } from "@/app/_components/GlobalComponents/FormElements/FileAttachment";
 import type { Components } from "react-markdown";
 import { QUOTES } from "@/app/_consts/notes";
@@ -49,6 +51,20 @@ export const UnifiedMarkdownRenderer = ({
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
   const { contentWithoutMetadata } = extractYamlMetadata(content);
+
+  const processedContent = contentWithoutMetadata.replace(
+    /<!--\s*drawio-diagram\s+data:\s*([^\n]+)\s+svg:\s*([^\n]+)\s*-->/g,
+    (match, dataBase64, svgBase64) => {
+      try {
+        const diagramData = atob(dataBase64.trim());
+        const svgData = atob(svgBase64.trim());
+        return `<div data-drawio="" data-drawio-data="${diagramData.replace(/"/g, '&quot;')}" data-drawio-svg="${svgData.replace(/"/g, '&quot;')}">[Draw.io Diagram]</div>`;
+      } catch (e) {
+        console.error('Failed to process Draw.io comment:', e);
+        return match;
+      }
+    }
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -89,6 +105,10 @@ export const UnifiedMarkdownRenderer = ({
         const language =
           codeElement.props.className?.replace("language-", "") || "plaintext";
         const rawCode = getRawTextFromChildren(codeElement.props.children);
+
+        if (language === "mermaid") {
+          return <MermaidRenderer code={rawCode} />;
+        }
 
         let highlightedHtml: string;
 
@@ -265,6 +285,27 @@ export const UnifiedMarkdownRenderer = ({
         </li>
       );
     },
+    div({ node, ...props }: any) {
+      const isDrawio = props["data-drawio"] !== undefined ||
+        props.dataDrawio !== undefined ||
+        (node && node.properties && node.properties["data-drawio"] !== undefined);
+
+      if (isDrawio) {
+        const svgData = props["data-drawio-svg"] ||
+          props.dataDrawioSvg ||
+          (node?.properties?.["data-drawio-svg"]);
+        return <DrawioRenderer svgData={svgData} />;
+      }
+
+      if (props["data-mermaid"] !== undefined || props.dataMermaid !== undefined) {
+        const mermaidContent = props["data-mermaid-content"] ||
+          props.dataMermaidContent ||
+          (node?.properties?.["data-mermaid-content"]) || "";
+        return <MermaidRenderer code={mermaidContent} />;
+      }
+
+      return <div {...props} />;
+    },
   };
 
   return (
@@ -276,7 +317,7 @@ export const UnifiedMarkdownRenderer = ({
         rehypePlugins={[rehypeSlug, rehypeRaw]}
         components={components}
       >
-        {contentWithoutMetadata}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );

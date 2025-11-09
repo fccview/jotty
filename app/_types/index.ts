@@ -253,6 +253,7 @@ export interface AppSettings {
     enableBubbleMenu: boolean;
     enableTableToolbar: boolean;
     enableBilateralLinks: boolean;
+    drawioUrl?: string;
   };
 }
 

@@ -333,6 +333,40 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     },
   });
 
+  service.addRule("mermaid", {
+    filter: (node) => {
+      return (
+        node.nodeName === "DIV" &&
+        (node as HTMLElement).hasAttribute("data-mermaid")
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const mermaidContent = element.getAttribute("data-mermaid-content") || "";
+
+      return `\n\`\`\`mermaid\n${mermaidContent}\n\`\`\`\n`;
+    },
+  });
+
+  service.addRule("drawio", {
+    filter: (node) => {
+      return (
+        node.nodeName === "DIV" &&
+        (node as HTMLElement).hasAttribute("data-drawio")
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const diagramData = element.getAttribute("data-drawio-data") || "";
+      const svgData = element.getAttribute("data-drawio-svg") || "";
+
+      const dataBase64 = typeof btoa !== 'undefined' ? btoa(diagramData) : Buffer.from(diagramData).toString('base64');
+      const svgBase64 = typeof btoa !== 'undefined' ? btoa(svgData) : Buffer.from(svgData).toString('base64');
+
+      return `\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\n-->\n`;
+    },
+  });
+
   return service;
 };
 
@@ -354,7 +388,43 @@ const markdownProcessor = unified()
   .use(rehypeRaw)
   .use(() => {
     return (tree) => {
-      visit(tree, "element", (node: Element) => {
+      visit(tree, (node: any) => {
+        if (node.type !== "element" && node.type !== "comment") return;
+        if (node.type === "comment") {
+          const commentValue = String(node.value || "");
+          if (commentValue.includes("drawio-diagram")) {
+            const dataMatch = commentValue.match(/data:\s*([^\n]+)/);
+            const svgMatch = commentValue.match(/svg:\s*([^\n]+)/);
+
+            if (dataMatch && svgMatch) {
+              const dataBase64 = dataMatch[1].trim();
+              const svgBase64 = svgMatch[1].trim();
+
+              try {
+                const diagramData = typeof atob !== 'undefined' ? atob(dataBase64) : Buffer.from(dataBase64, 'base64').toString();
+                const svgData = typeof atob !== 'undefined' ? atob(svgBase64) : Buffer.from(svgBase64, 'base64').toString();
+
+                node.type = "element";
+                node.tagName = "div";
+                node.properties = {
+                  "data-drawio": "",
+                  "data-drawio-data": diagramData,
+                  "data-drawio-svg": svgData,
+                };
+                node.children = [
+                  {
+                    type: "text",
+                    value: "[Draw.io Diagram]",
+                  },
+                ];
+              } catch (e) {
+                console.error('Failed to transform Draw.io comment:', e);
+              }
+            }
+          }
+          return;
+        }
+
         if (node.tagName === "img" && node.properties?.style) {
           const style = node.properties.style as string;
           const widthMatch = style.match(/width:\s*(\d+)px/);
@@ -520,6 +590,47 @@ const markdownProcessor = unified()
             node.children = newChildren;
 
             delete node.properties.href;
+          }
+        }
+
+        if (
+          node.tagName === "pre" &&
+          node.children?.length > 0 &&
+          node.children[0].type === "element" &&
+          node.children[0].tagName === "code"
+        ) {
+          const codeNode = node.children[0] as Element;
+          const classList = codeNode.properties?.className;
+          let isMermaid = false;
+
+          if (Array.isArray(classList)) {
+            isMermaid = classList.some(
+              (cn) => String(cn) === "language-mermaid"
+            );
+          } else if (typeof classList === "string") {
+            isMermaid = classList.split(" ").includes("language-mermaid");
+          }
+
+          if (isMermaid) {
+            let mermaidContent = "";
+            if (codeNode.children?.length > 0) {
+              const textNode = codeNode.children[0];
+              if (textNode.type === "text") {
+                mermaidContent = String(textNode.value).trim();
+              }
+            }
+
+            node.tagName = "div";
+            node.properties = {
+              "data-mermaid": "",
+              "data-mermaid-content": mermaidContent,
+            };
+            node.children = [
+              {
+                type: "text",
+                value: "[Mermaid Diagram]",
+              },
+            ];
           }
         }
       });

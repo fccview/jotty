@@ -17,6 +17,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
 import { ImageSizeModal } from "@/app/_components/GlobalComponents/Modals/ImageSizeModal";
 import { CodeBlockDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/CodeBlocksDropdown";
+import { DiagramsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/DiagramsDropdown";
 import { TableInsertModal } from "@/app/_components/FeatureComponents/Notes/Parts/Table/TableInsertModal";
 import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
 import { useState } from "react";
@@ -133,6 +134,7 @@ export const TiptapToolbar = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={toggleMode}
             className="flex-shrink-0 hidden lg:flex"
+            title="Toggle editor mode"
           >
             {isMarkdownMode ? (
               <>
@@ -156,6 +158,7 @@ export const TiptapToolbar = ({
               size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={toggleMode}
+              title="Toggle rich text mode"
             >
               <Eye className="h-4 w-4 mr-2" />
               <span>Rich Text</span>
@@ -167,6 +170,7 @@ export const TiptapToolbar = ({
               size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={toggleMode}
+              title="Toggle markdown mode"
             >
               <FileText className="h-4 w-4 mr-2" />
               <span>Markdown</span>
@@ -188,6 +192,7 @@ export const TiptapToolbar = ({
             onClick={() =>
               handleButtonClick(() => editor.chain().focus().toggleBold().run())
             }
+            title="Toggle bold"
           >
             <Bold className="h-4 w-4" />
           </Button>
@@ -200,6 +205,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleItalic().run()
               )
             }
+            title="Toggle italic"
           >
             <Italic className="h-4 w-4" />
           </Button>
@@ -212,6 +218,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleUnderline().run()
               )
             }
+            title="Toggle underline"
           >
             <Underline className="h-4 w-4" />
           </Button>
@@ -224,6 +231,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleStrike().run()
               )
             }
+            title="Toggle strikethrough"
           >
             <Strikethrough className="h-4 w-4" />
           </Button>
@@ -234,6 +242,7 @@ export const TiptapToolbar = ({
             onClick={() =>
               handleButtonClick(() => editor.chain().focus().toggleCode().run())
             }
+            title="Toggle inline code"
           >
             <Code className="h-4 w-4" />
           </Button>
@@ -251,6 +260,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleHeading({ level: 2 }).run()
               )
             }
+            title="Toggle heading 2"
           >
             <Heading2 className="h-4 w-4" />
           </Button>
@@ -263,6 +273,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleBulletList().run()
               )
             }
+            title="Toggle bullet list"
           >
             <List className="h-4 w-4" />
           </Button>
@@ -275,6 +286,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleBlockquote().run()
               )
             }
+            title="Toggle blockquote"
           >
             <Quote className="h-4 w-4" />
           </Button>
@@ -283,6 +295,7 @@ export const TiptapToolbar = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleButtonClick(setLink)}
+            title="Toggle link"
           >
             <LinkIcon className="h-4 w-4" />
           </Button>
@@ -304,6 +317,7 @@ export const TiptapToolbar = ({
           )}
           <div className="w-px h-6 bg-border mx-2" />
           <CodeBlockDropdown editor={editor} />
+          <DiagramsDropdown editor={editor} />
           <div className="w-px h-6 bg-border mx-2" />
           <ExtraItemsDropdown
             editor={editor}

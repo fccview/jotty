@@ -26,6 +26,8 @@ import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Par
 import { OverlayExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
 import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
+import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
+import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { getContrastColor } from "@/app/_utils/color-utils";
 
@@ -39,6 +41,7 @@ interface EditorSettings {
   enableBubbleMenu: boolean;
   enableTableToolbar: boolean;
   enableBilateralLinks: boolean;
+  drawioUrl?: string;
 }
 
 interface EditorData {
@@ -146,6 +149,10 @@ export const createEditorExtensions = (
       HTMLAttributes: {
         class: "file-attachment",
       },
+    }),
+    MermaidExtension,
+    DrawioExtension.configure({
+      drawioUrl: settings.drawioUrl || "https://embed.diagrams.net",
     }),
     Table.extend({
       content: "tableRow+",

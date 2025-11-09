@@ -13,6 +13,8 @@ import {
   Image as ImageIcon,
   Paperclip,
   BookText,
+  Network,
+  PenTool,
 } from "lucide-react";
 import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommandsList";
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
@@ -153,6 +155,28 @@ const slashCommands: SlashCommandItem[] = [
         .deleteRange(range)
         .toggleWrap("details", { summary: selectedText || "Summary" })
         .run();
+    },
+  },
+  {
+    title: "Mermaid Diagram",
+    description: "Create a Mermaid diagram",
+    icon: <Network className="h-4 w-4" />,
+    command: ({ editor, range }) => {
+      const defaultMermaid = `graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Option 1]
+    B -->|No| D[Option 2]
+    C --> E[End]
+    D --> E`;
+      editor.chain().focus().deleteRange(range).setMermaid(defaultMermaid).run();
+    },
+  },
+  {
+    title: "Draw.io Diagram",
+    description: "Create a visual diagram",
+    icon: <PenTool className="h-4 w-4" />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).insertDrawIo().run();
     },
   },
 ];
