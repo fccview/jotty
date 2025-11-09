@@ -27,6 +27,7 @@ import { OverlayExtension } from "@/app/_components/FeatureComponents/Notes/Part
 import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
 import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
+import { getContrastColor } from "@/app/_utils/color-utils";
 
 interface OverlayCallbacks {
   onImageClick: (position: any) => void;
@@ -78,6 +79,26 @@ export const createEditorExtensions = (
     Color,
     Highlight.configure({
       multicolor: true,
+    }).extend({
+      addAttributes() {
+        return {
+          color: {
+            default: null,
+            parseHTML: element => element.getAttribute('data-color') || element.style.backgroundColor,
+            renderHTML: attributes => {
+              if (!attributes.color) {
+                return {};
+              }
+              const bgColor = attributes.color;
+              const textColor = getContrastColor(bgColor);
+              return {
+                'data-color': bgColor,
+                style: `background-color: ${bgColor}; color: ${textColor}`,
+              };
+            },
+          },
+        };
+      },
     }),
     SlashCommands.configure({
       notes: editorData?.notes || [],

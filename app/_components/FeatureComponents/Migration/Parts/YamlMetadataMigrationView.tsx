@@ -48,7 +48,7 @@ export const YamlMetadataMigrationView = ({
           description={
             isMigrationComplete
               ? "Your documents have been successfully migrated to use YAML metadata format."
-              : `We&apos;ve improved how document titles and checklist types are stored. This update introduces YAML metadata at the top of documents for better organization and future extensibility.`
+              : `I've improved how document titles and checklist types are stored. This update introduces YAML metadata at the top of documents for better organization and future extensibility.`
           }
         />
 

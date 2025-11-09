@@ -11,6 +11,7 @@ import { addCustomHtmlTurndownRules } from "@/app/_utils/custom-html-utils";
 import { html as beautifyHtml } from "js-beautify";
 import { TableSyntax } from "@/app/_types";
 import { decodeCategoryPath, decodeId } from "./global-utils";
+import { getContrastColor } from "./color-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
@@ -323,8 +324,9 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const bgColorMatch = style.match(/background-color:\s*([^;]+)/);
 
       if (bgColorMatch) {
-        const color = bgColorMatch[1].trim();
-        return `<mark style="background-color: ${color}">${content}</mark>`;
+        const bgColor = bgColorMatch[1].trim();
+        const textColor = getContrastColor(bgColor);
+        return `<mark style="background-color: ${bgColor}; color: ${textColor}">${content}</mark>`;
       }
 
       return `<mark>${content}</mark>`;
