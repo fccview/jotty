@@ -468,16 +468,29 @@ const markdownProcessor = unified()
 
         if (node.tagName === "a" && node.properties?.href) {
           const href = String(node.properties.href);
-          if (href.startsWith("/jotty/")) {
+          if (href.startsWith("/jotty/") || href.startsWith("/note/") || href.startsWith("/checklist/")) {
             const textContent =
               node.children?.[0]?.type === "text"
                 ? String(node.children[0].value)
                 : "";
 
             let uuid = "";
+            let type = "note";
+            let category = "";
+            let itemId = "";
 
             if (href.startsWith("/jotty/")) {
               uuid = href.replace("/jotty/", "");
+            } else if (href.startsWith("/note/")) {
+              type = "note";
+              const pathParts = href.replace("/note/", "").split("/");
+              itemId = pathParts.pop() || "";
+              category = pathParts.join("/");
+            } else if (href.startsWith("/checklist/")) {
+              type = "checklist";
+              const pathParts = href.replace("/checklist/", "").split("/");
+              itemId = pathParts.pop() || "";
+              category = pathParts.join("/");
             }
 
             const newChildren: any[] = [];
@@ -495,6 +508,10 @@ const markdownProcessor = unified()
               "data-href": href,
               "data-title": textContent,
               "data-uuid": uuid,
+              "data-type": type,
+              "data-category": decodeURIComponent(category),
+              "data-item-id": itemId,
+              "data-convert-to-bidirectional": "false",
             };
 
             node.children = newChildren;
