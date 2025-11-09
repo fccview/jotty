@@ -136,6 +136,7 @@ export const UnifiedMarkdownRenderer = ({
         let linkType: ItemTypes;
         let linkCategory: string | null = null;
         let linkUuid: string | null = null;
+        let linkItemId: string = "";
 
         if (href?.startsWith("/jotty/")) {
           linkUuid = href.replace("/jotty/", "");
@@ -144,12 +145,12 @@ export const UnifiedMarkdownRenderer = ({
           linkType = href?.includes("/note/")
             ? ItemTypes.NOTE
             : ItemTypes.CHECKLIST;
-          linkCategory = href
-            ?.replace("checklist/", "")
-            .replace("note/", "")
-            .split("/")
-            .slice(1, -1)
-            .join("/");
+          const pathParts = href
+            ?.replace("/checklist/", "")
+            .replace("/note/", "")
+            .split("/");
+          linkItemId = pathParts?.[pathParts.length - 1] || "";
+          linkCategory = pathParts?.slice(0, -1).join("/");
         }
 
         return (
@@ -161,8 +162,12 @@ export const UnifiedMarkdownRenderer = ({
                 type: linkType,
                 category: linkCategory || "Uncategorized",
                 uuid: linkUuid || "",
+                itemId: linkItemId,
+                convertToBidirectional: false,
               },
             }}
+            editor={undefined as any}
+            updateAttributes={() => {}}
           />
         );
       }
