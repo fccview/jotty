@@ -156,6 +156,8 @@ export interface User {
   enableRecurrence?: EnableRecurrence;
   showCompletedSuggestions?: ShowCompletedSuggestions;
   fileRenameMode?: FileRenameMode;
+  preferredDateFormat: PreferredDateFormat;
+  preferredTimeFormat: PreferredTimeFormat;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -167,6 +169,8 @@ export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
 export type NotesDefaultMode = "edit" | "view";
 export type NotesAutoSaveInterval = 0 | 1000 | 5000 | 10000 | 15000 | 20000;
 export type FileRenameMode = "dash-case" | "minimal" | "none";
+export type PreferredDateFormat = "dd/mm/yyyy" | "mm/dd/yyyy";
+export type PreferredTimeFormat = "12-hours" | "24-hours";
 
 export interface SharedItem {
   id: string;

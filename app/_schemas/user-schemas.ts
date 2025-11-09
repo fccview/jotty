@@ -49,6 +49,8 @@ export const generalSettingsSchema = z.object({
   fileRenameMode: z.enum(["dash-case", "minimal", "none"], {
     message: "File rename mode must be 'dash-case', 'minimal', or 'none'",
   }),
+  preferredDateFormat: z.enum(["dd/mm/yyyy", "mm/dd/yyyy"]),
+  preferredTimeFormat: z.enum(["12-hours", "24-hours"]),
 });
 
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;
