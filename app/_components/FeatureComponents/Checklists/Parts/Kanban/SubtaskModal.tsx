@@ -13,6 +13,7 @@ import { Plus, Save, X } from "lucide-react";
 import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface SubtaskModalProps {
   checklist: Checklist;
@@ -44,6 +45,7 @@ export const SubtaskModal = ({
   isShared,
 }: SubtaskModalProps) => {
   const { permissions } = usePermissions();
+  const { formatDateTimeString } = usePreferredDateTime();
 
   const [item, setItem] = useState(initialItem);
   const [isEditing, setIsEditing] = useState(false);
@@ -227,17 +229,17 @@ export const SubtaskModal = ({
 
     if (item.createdBy) {
       metadata.push(
-        `Created by ${item.createdBy} on ${new Date(
+        `Created by ${item.createdBy} on ${formatDateTimeString(
           item.createdAt!
-        ).toLocaleString()}`
+        )}`
       );
     }
 
     if (item.lastModifiedBy) {
       metadata.push(
-        `Last modified by ${item.lastModifiedBy} on ${new Date(
+        `Last modified by ${item.lastModifiedBy} on ${formatDateTimeString(
           item.lastModifiedAt!
-        ).toLocaleString()}`
+        )}`
       );
     }
 

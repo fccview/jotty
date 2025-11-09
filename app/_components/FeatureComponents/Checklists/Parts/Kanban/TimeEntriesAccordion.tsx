@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Clock, ChevronDown, ChevronRight } from "lucide-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface TimeEntriesAccordionProps {
   timeEntries: any[];
@@ -17,6 +18,7 @@ export const TimeEntriesAccordion = ({
   formatTimerTime,
 }: TimeEntriesAccordionProps) => {
   const { usersPublicData } = useAppMode();
+  const { formatDateString, formatTimeString } = usePreferredDateTime();
 
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
@@ -74,13 +76,13 @@ export const TimeEntriesAccordion = ({
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(entry.startTime).toLocaleTimeString()}
+                  {formatTimeString(entry.startTime)}
                 </span>
               </div>
               {entry.endTime && (
                 <div className="text-xs text-muted-foreground/70 mt-0.5">
-                  {new Date(entry.startTime).toLocaleDateString()} •{" "}
-                  {new Date(entry.endTime).toLocaleTimeString()}
+                  {formatDateString(entry.startTime)} •{" "}
+                  {formatTimeString(entry.endTime)}
                 </div>
               )}
             </div>

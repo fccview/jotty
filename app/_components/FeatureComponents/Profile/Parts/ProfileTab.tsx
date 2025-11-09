@@ -23,6 +23,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { generateApiKey, getApiKey } from "@/app/_server/actions/api";
 import { User as UserData } from "@/app/_types";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface ProfileTabProps {
   user: UserData | null;
@@ -54,6 +55,7 @@ export const ProfileTab = ({
   const [hasFormChanged, setHasFormChanged] = useState(false);
 
   const { isDemoMode } = useAppMode();
+  const { formatDateString } = usePreferredDateTime();
 
   useEffect(() => {
     setEditedUsername(user?.username || "");
@@ -373,7 +375,7 @@ export const ProfileTab = ({
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {user?.createdAt
-                    ? new Date(user.createdAt).toLocaleDateString()
+                    ? formatDateString(user.createdAt)
                     : "Unknown"}
                 </p>
               </div>
