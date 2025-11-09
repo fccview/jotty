@@ -19,8 +19,7 @@ export const parseChecklistContent = (
       formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
   }
 
-  const checklistType = (metadata.type as ChecklistType) ||
-    (rawContent.includes("<!-- type:task -->") ? "task" : "simple");
+  const checklistType = metadata?.checklistType || (rawContent.includes("<!-- type:task -->") ? "task" : "simple");
 
   const lines = contentWithoutMetadata.split("\n");
   const itemLines = lines.filter(

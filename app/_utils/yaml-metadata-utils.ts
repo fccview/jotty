@@ -114,15 +114,6 @@ export const extractChecklistType = (content: string): "task" | "simple" => {
     return "task";
   }
 
-  if (
-    contentWithoutMetadata.includes(" | status:") ||
-    contentWithoutMetadata.includes(" | time:") ||
-    contentWithoutMetadata.includes(" | estimated:") ||
-    contentWithoutMetadata.includes(" | target:")
-  ) {
-    return "task";
-  }
-
   return "simple";
 };
 

@@ -2,7 +2,7 @@ name: Build and Publish Multi-Platform Docker Image
 
 on:
   push:
-    branches: ["main", "develop", "uuid-migration"]
+    branches: ["main", "develop"]
     tags: ["*"]
 
 jobs:
