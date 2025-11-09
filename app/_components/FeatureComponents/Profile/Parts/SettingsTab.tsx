@@ -27,7 +27,6 @@ import {
   editorSettingsSchema,
   checklistSettingsSchema,
   generalSettingsSchema,
-  dateTimeSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 
 interface SettingsTabProps {
@@ -108,14 +107,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     return keys.some((key) => currentSettings[key] !== initialSettings[key]);
   };
 
-  const hasDateTimeFormatChanges = hasChanges([
-    "preferredDateFormat",
-    "preferredTimeFormat",
-  ]);
   const hasGeneralChanges = hasChanges([
     "preferredTheme",
     "landingPage",
     "fileRenameMode",
+    "preferredDateFormat",
+    "preferredTimeFormat",
   ]);
   const hasEditorChanges = hasChanges([
     "notesDefaultEditor",
@@ -267,7 +264,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <Button
             onClick={() =>
               handleSaveSection(
-                ["preferredTheme", "landingPage", "fileRenameMode"],
+                ["preferredTheme", "landingPage", "fileRenameMode", "preferredDateFormat", "preferredTimeFormat"],
                 generalSettingsSchema,
                 "General"
               )
@@ -352,62 +349,54 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               Choose how files are renamed when saving notes and checklists.
             </p>
           </div>
-        </div>
-      </FormWrapper>
 
-      <FormWrapper
-        title="Date/Time Preferences"
-        action={
-          <Button
-            onClick={() => {
-              handleSaveSection(
-                ["preferredDateFormat", "preferredTimeFormat"],
-                dateTimeSettingsSchema,
-                "Date Time Preferences"
-              );
-            }}
-            disabled={!hasDateTimeFormatChanges}
-            size="sm"
-          >
-            Save
-          </Button>
-        }
-      >
-        <div className="space-y-2">
-          <Label htmlFor="preferred-theme">Preferred Date Format</Label>
-          <Dropdown
-            value={currentSettings.preferredDateFormat || "dd/mm/yyyy"}
-            onChange={(value) =>
-              handleSettingChange(
-                "preferredDateFormat",
-                value as PreferredDateFormat
-              )
-            }
-            options={dateFormatOptions}
-            placeholder="Select date format"
-            className="w-full"
-          />
-          <p className="text-sm text-muted-foreground">
-            Choose your preferred date format.
-          </p>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="preferred-theme">Preferred Time Format</Label>
-          <Dropdown
-            value={currentSettings.preferredTimeFormat || "12-hours"}
-            onChange={(value) =>
-              handleSettingChange(
-                "preferredTimeFormat",
-                value as PreferredTimeFormat
-              )
-            }
-            options={timeFormatOptions}
-            placeholder="Select time format"
-            className="w-full"
-          />
-          <p className="text-sm text-muted-foreground">
-            Choose your preferred time format.
-          </p>
+          <div className="space-y-2">
+            <Label htmlFor="preferred-date-format">Preferred Date Format</Label>
+            <Dropdown
+              value={currentSettings.preferredDateFormat || "dd/mm/yyyy"}
+              onChange={(value) =>
+                handleSettingChange(
+                  "preferredDateFormat",
+                  value as PreferredDateFormat
+                )
+              }
+              options={dateFormatOptions}
+              placeholder="Select date format"
+              className="w-full"
+            />
+            {validationErrors.preferredDateFormat && (
+              <p className="text-sm text-destructive">
+                {validationErrors.preferredDateFormat}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Choose your preferred date format.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="preferred-time-format">Preferred Time Format</Label>
+            <Dropdown
+              value={currentSettings.preferredTimeFormat || "12-hours"}
+              onChange={(value) =>
+                handleSettingChange(
+                  "preferredTimeFormat",
+                  value as PreferredTimeFormat
+                )
+              }
+              options={timeFormatOptions}
+              placeholder="Select time format"
+              className="w-full"
+            />
+            {validationErrors.preferredTimeFormat && (
+              <p className="text-sm text-destructive">
+                {validationErrors.preferredTimeFormat}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Choose your preferred time format.
+            </p>
+          </div>
         </div>
       </FormWrapper>
 
