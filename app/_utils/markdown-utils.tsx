@@ -359,11 +359,12 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const element = node as HTMLElement;
       const diagramData = element.getAttribute("data-drawio-data") || "";
       const svgData = element.getAttribute("data-drawio-svg") || "";
+      const themeMode = element.getAttribute("data-drawio-theme") || "light";
 
       const dataBase64 = typeof btoa !== 'undefined' ? btoa(diagramData) : Buffer.from(diagramData).toString('base64');
       const svgBase64 = typeof btoa !== 'undefined' ? btoa(svgData) : Buffer.from(svgData).toString('base64');
 
-      return `\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\n-->\n`;
+      return `\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n`;
     },
   });
 
@@ -395,10 +396,12 @@ const markdownProcessor = unified()
           if (commentValue.includes("drawio-diagram")) {
             const dataMatch = commentValue.match(/data:\s*([^\n]+)/);
             const svgMatch = commentValue.match(/svg:\s*([^\n]+)/);
+            const themeMatch = commentValue.match(/theme:\s*([^\n]+)/);
 
             if (dataMatch && svgMatch) {
               const dataBase64 = dataMatch[1].trim();
               const svgBase64 = svgMatch[1].trim();
+              const themeMode = themeMatch ? themeMatch[1].trim() : "light";
 
               try {
                 const diagramData = typeof atob !== 'undefined' ? atob(dataBase64) : Buffer.from(dataBase64, 'base64').toString();
@@ -410,6 +413,7 @@ const markdownProcessor = unified()
                   "data-drawio": "",
                   "data-drawio-data": diagramData,
                   "data-drawio-svg": svgData,
+                  "data-drawio-theme": themeMode,
                 };
                 node.children = [
                   {
@@ -418,7 +422,7 @@ const markdownProcessor = unified()
                   },
                 ];
               } catch (e) {
-                console.error('Failed to transform Draw.io comment:', e);
+                // Silently ignore invalid base64 (happens with empty diagrams)
               }
             }
           }

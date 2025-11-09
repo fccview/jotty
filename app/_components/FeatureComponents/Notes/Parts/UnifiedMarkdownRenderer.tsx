@@ -53,14 +53,14 @@ export const UnifiedMarkdownRenderer = ({
   const { contentWithoutMetadata } = extractYamlMetadata(content);
 
   const processedContent = contentWithoutMetadata.replace(
-    /<!--\s*drawio-diagram\s+data:\s*([^\n]+)\s+svg:\s*([^\n]+)\s*-->/g,
-    (match, dataBase64, svgBase64) => {
+    /<!--\s*drawio-diagram\s+data:\s*([^\n]+)\s+svg:\s*([^\n]+)(?:\s+theme:\s*([^\n]+))?\s*-->/g,
+    (match, dataBase64, svgBase64, theme) => {
       try {
         const diagramData = atob(dataBase64.trim());
         const svgData = atob(svgBase64.trim());
-        return `<div data-drawio="" data-drawio-data="${diagramData.replace(/"/g, '&quot;')}" data-drawio-svg="${svgData.replace(/"/g, '&quot;')}">[Draw.io Diagram]</div>`;
+        const themeMode = theme ? theme.trim() : "light";
+        return `<div data-drawio="" data-drawio-data="${diagramData.replace(/"/g, '&quot;')}" data-drawio-svg="${svgData.replace(/"/g, '&quot;')}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
       } catch (e) {
-        console.error('Failed to process Draw.io comment:', e);
         return match;
       }
     }
@@ -294,7 +294,10 @@ export const UnifiedMarkdownRenderer = ({
         const svgData = props["data-drawio-svg"] ||
           props.dataDrawioSvg ||
           (node?.properties?.["data-drawio-svg"]);
-        return <DrawioRenderer svgData={svgData} />;
+        const themeMode = props["data-drawio-theme"] ||
+          props.dataDrawioTheme ||
+          (node?.properties?.["data-drawio-theme"]) || "light";
+        return <DrawioRenderer svgData={svgData} themeMode={themeMode} />;
       }
 
       if (props["data-mermaid"] !== undefined || props.dataMermaid !== undefined) {

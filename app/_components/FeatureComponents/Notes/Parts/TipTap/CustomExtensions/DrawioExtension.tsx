@@ -4,10 +4,12 @@ import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
+import { Sun, Moon } from "lucide-react";
 
 export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, extension }: any) => {
   const [isEditing, setIsEditing] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const themeMode = node.attrs.themeMode || "light";
 
   const drawioBaseUrl = extension.storage?.drawioUrl || "https://embed.diagrams.net";
   const drawioUrl = `${drawioBaseUrl}/?embed=1&ui=kennedy&spin=1&proto=json&saveAndExit=1&noSaveBtn=0`;
@@ -100,6 +102,12 @@ export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, ext
     }
   };
 
+  const toggleTheme = () => {
+    updateAttributes({
+      themeMode: themeMode === "light" ? "dark" : "light",
+    });
+  };
+
   return (
     <NodeViewWrapper className="drawio-node-wrapper">
       {isEditing && (
@@ -128,6 +136,13 @@ export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, ext
           <>
             <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 flex gap-1 z-10">
               <button
+                onClick={toggleTheme}
+                className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
+                title={`Switch to ${themeMode === "light" ? "dark" : "light"} mode`}
+              >
+                {themeMode === "light" ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+              </button>
+              <button
                 onClick={openDrawio}
                 className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
                 title="Edit diagram"
@@ -144,6 +159,9 @@ export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, ext
             </div>
             <div
               className="drawio-svg-container flex justify-center items-center"
+              style={{
+                filter: themeMode === "dark" ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)" : "none",
+              }}
               dangerouslySetInnerHTML={{ __html: node.attrs.svgData }}
             />
           </>
@@ -204,6 +222,16 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
           };
         },
       },
+      themeMode: {
+        default: "light",
+        parseHTML: (element) =>
+          element.getAttribute("data-drawio-theme") || "light",
+        renderHTML: (attributes) => {
+          return {
+            "data-drawio-theme": attributes.themeMode || "light",
+          };
+        },
+      },
     };
   },
 
@@ -214,6 +242,7 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
         getAttrs: (element) => ({
           diagramData: (element as HTMLElement).getAttribute("data-drawio-data") || null,
           svgData: (element as HTMLElement).getAttribute("data-drawio-svg") || null,
+          themeMode: (element as HTMLElement).getAttribute("data-drawio-theme") || "light",
         }),
       },
     ];
@@ -226,6 +255,7 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
         "data-drawio": "",
         "data-drawio-data": node.attrs.diagramData || "",
         "data-drawio-svg": node.attrs.svgData || "",
+        "data-drawio-theme": node.attrs.themeMode || "light",
       }),
       "[Draw.io Diagram]",
     ];
