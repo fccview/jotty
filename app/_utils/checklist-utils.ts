@@ -135,7 +135,7 @@ export const parseMarkdown = (
           const itemText = parts[0].replace(/∣/g, "|");
           const metadata = parts.slice(1);
 
-          let status: TaskStatus = TaskStatus.TODO;
+          let status: string = TaskStatus.TODO;
           let timeEntries: any[] = [];
           let estimatedTime: number | undefined;
           let targetDate: string | undefined;
@@ -144,17 +144,7 @@ export const parseMarkdown = (
 
           metadata.forEach((meta) => {
             if (meta.startsWith("status:")) {
-              const statusValue = meta.substring(7) as TaskStatus;
-              if (
-                [
-                  TaskStatus.TODO,
-                  TaskStatus.IN_PROGRESS,
-                  TaskStatus.COMPLETED,
-                  TaskStatus.PAUSED,
-                ].includes(statusValue)
-              ) {
-                status = statusValue;
-              }
+              status = meta.substring(7);
             } else if (meta.startsWith("time:")) {
               const timeValue = meta.substring(5);
               if (timeValue && timeValue !== "0") {
@@ -260,6 +250,11 @@ export const parseMarkdown = (
 
   const { items } = buildNestedItems(itemLines, 0, 0, 0);
 
+  let statuses = undefined;
+  if (metadata.statuses && Array.isArray(metadata.statuses)) {
+    statuses = metadata.statuses;
+  }
+
   return {
     id,
     uuid: metadata.uuid || generateUuid(),
@@ -275,6 +270,7 @@ export const parseMarkdown = (
       : new Date().toISOString(),
     owner,
     isShared,
+    ...(statuses && { statuses }),
   };
 };
 
@@ -308,6 +304,12 @@ const generateItemMarkdown = (
     }
     if (item.history?.length) {
       itemMetadata.history = item.history;
+    }
+    if (item.isArchived) {
+      itemMetadata.isArchived = item.isArchived;
+      itemMetadata.archivedAt = item.archivedAt;
+      itemMetadata.archivedBy = item.archivedBy;
+      itemMetadata.previousStatus = item.previousStatus;
     }
 
     const timeEntries = item.timeEntries;
@@ -357,6 +359,12 @@ const generateItemMarkdown = (
     if (item.history?.length) {
       itemMetadata.history = item.history;
     }
+    if (item.isArchived) {
+      itemMetadata.isArchived = item.isArchived;
+      itemMetadata.archivedAt = item.archivedAt;
+      itemMetadata.archivedBy = item.archivedBy;
+      itemMetadata.previousStatus = item.previousStatus;
+    }
 
     const metadata: string[] = [];
 
@@ -395,6 +403,10 @@ export const listToMarkdown = (list: Checklist): string => {
   if (list.type === ChecklistsTypes.TASK) metadata.checklistType = "task";
   else if (list.type === ChecklistsTypes.SIMPLE)
     metadata.checklistType = "simple";
+
+  if (list.statuses && list.statuses.length > 0) {
+    metadata.statuses = list.statuses;
+  }
 
   const frontmatter = generateYamlFrontmatter(metadata);
 

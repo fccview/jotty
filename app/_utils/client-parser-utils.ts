@@ -1,4 +1,4 @@
-import { Checklist, Note, Item, ChecklistType } from "@/app/_types";
+import { Checklist, Note, Item, ChecklistType, KanbanStatus } from "@/app/_types";
 
 import { TaskStatus } from "@/app/_types/enums";
 import { parseRecurrenceFromMarkdown } from "@/app/_utils/recurrence-utils";
@@ -7,7 +7,7 @@ import { extractYamlMetadata, extractTitle } from "./yaml-metadata-utils";
 export const parseChecklistContent = (
   rawContent: string,
   id: string
-): { title: string; items: Item[]; uuid?: string; type?: ChecklistType } => {
+): { title: string; items: Item[]; uuid?: string; type?: ChecklistType; statuses?: KanbanStatus[] } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
 
   let title: string;
@@ -100,17 +100,7 @@ export const parseChecklistContent = (
 
           metadataParts.forEach((meta) => {
             if (meta.startsWith("status:")) {
-              const statusValue = meta.substring(7) as TaskStatus;
-              if (
-                [
-                  TaskStatus.TODO,
-                  TaskStatus.IN_PROGRESS,
-                  TaskStatus.COMPLETED,
-                  TaskStatus.PAUSED,
-                ].includes(statusValue)
-              ) {
-                status = statusValue;
-              }
+              status = meta.substring(7) as TaskStatus;
             } else if (meta.startsWith("time:")) {
               const timeValue = meta.substring(5);
               if (timeValue && timeValue !== "0") {
@@ -216,7 +206,18 @@ export const parseChecklistContent = (
 
   const { items } = buildNestedItems(itemLines, 0, 0, 0);
 
-  return { title, items, uuid: metadata.uuid, type: checklistType };
+  let statuses = undefined;
+  if (metadata.statuses && Array.isArray(metadata.statuses)) {
+    statuses = metadata.statuses;
+  }
+
+  return {
+    title,
+    items,
+    uuid: metadata.uuid,
+    type: checklistType,
+    ...(statuses && { statuses }),
+  };
 };
 
 export const parseNoteContent = (

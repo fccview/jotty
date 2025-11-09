@@ -490,7 +490,7 @@ export const updateItemStatus = async (formData: FormData): Promise<Result<Check
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
-    const status = formData.get("status") as TaskStatus;
+    const status = formData.get("status") as string;
     const timeEntriesStr = formData.get("timeEntries") as string;
     const category = formData.get("category") as string;
 
@@ -1094,5 +1094,179 @@ export const createSubItem = async (formData: FormData): Promise<Result<Checklis
   } catch (error) {
     console.error("Error creating sub-item:", error);
     return { success: false, error: "Failed to create sub-item" };
+  }
+};
+
+export const archiveItem = async (formData: FormData): Promise<Result<Checklist>> => {
+  try {
+    const listId = formData.get("listId") as string;
+    const itemId = formData.get("itemId") as string;
+    const category = formData.get("category") as string;
+
+    const currentUser = await getUsername();
+
+    if (!listId || !itemId) {
+      return { success: false, error: "List ID and item ID are required" };
+    }
+
+    const list = await getListById(listId, currentUser, category);
+    const canEdit = await checkUserPermission(
+      listId,
+      category,
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      return { success: false, error: "Permission denied" };
+    }
+
+    if (!list) {
+      return { success: false, error: "List not found" };
+    }
+
+    const now = new Date().toISOString();
+
+    const archiveItemRecursive = (items: any[]): any[] => {
+      return items.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            isArchived: true,
+            archivedAt: now,
+            archivedBy: currentUser,
+            previousStatus: item.status,
+          };
+        }
+        if (item.children && item.children.length > 0) {
+          return {
+            ...item,
+            children: archiveItemRecursive(item.children),
+          };
+        }
+        return item;
+      });
+    };
+
+    const updatedList = {
+      ...list,
+      items: archiveItemRecursive(list.items),
+      updatedAt: now,
+    };
+
+    const ownerDir = path.join(
+      process.cwd(),
+      "data",
+      CHECKLISTS_FOLDER,
+      list.owner!
+    );
+    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+    await ensureDir(categoryDir);
+
+    const filePath = path.join(categoryDir, `${listId}.md`);
+
+    await serverWriteFile(filePath, listToMarkdown(updatedList));
+
+    try {
+      revalidatePath("/");
+      revalidatePath(`/checklist/${listId}`);
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but data was saved successfully:",
+        error
+      );
+    }
+
+    return { success: true, data: updatedList as Checklist };
+  } catch (error) {
+    console.error("Error archiving item:", error);
+    return { success: false, error: "Failed to archive item" };
+  }
+};
+
+export const unarchiveItem = async (formData: FormData): Promise<Result<Checklist>> => {
+  try {
+    const listId = formData.get("listId") as string;
+    const itemId = formData.get("itemId") as string;
+    const category = formData.get("category") as string;
+
+    const currentUser = await getUsername();
+
+    if (!listId || !itemId) {
+      return { success: false, error: "List ID and item ID are required" };
+    }
+
+    const list = await getListById(listId, currentUser, category);
+    const canEdit = await checkUserPermission(
+      listId,
+      category,
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      return { success: false, error: "Permission denied" };
+    }
+
+    if (!list) {
+      return { success: false, error: "List not found" };
+    }
+
+    const now = new Date().toISOString();
+
+    const unarchiveItemRecursive = (items: any[]): any[] => {
+      return items.map((item) => {
+        if (item.id === itemId) {
+          const { isArchived, archivedAt, archivedBy, previousStatus, ...rest } = item;
+          return {
+            ...rest,
+            status: previousStatus || item.status,
+          };
+        }
+        if (item.children && item.children.length > 0) {
+          return {
+            ...item,
+            children: unarchiveItemRecursive(item.children),
+          };
+        }
+        return item;
+      });
+    };
+
+    const updatedList = {
+      ...list,
+      items: unarchiveItemRecursive(list.items),
+      updatedAt: now,
+    };
+
+    const ownerDir = path.join(
+      process.cwd(),
+      "data",
+      CHECKLISTS_FOLDER,
+      list.owner!
+    );
+    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+    await ensureDir(categoryDir);
+
+    const filePath = path.join(categoryDir, `${listId}.md`);
+
+    await serverWriteFile(filePath, listToMarkdown(updatedList));
+
+    try {
+      revalidatePath("/");
+      revalidatePath(`/checklist/${listId}`);
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but data was saved successfully:",
+        error
+      );
+    }
+
+    return { success: true, data: updatedList as Checklist };
+  } catch (error) {
+    console.error("Error unarchiving item:", error);
+    return { success: false, error: "Failed to unarchive item" };
   }
 };

@@ -20,9 +20,16 @@ export interface RecurrenceRule {
 }
 
 export interface StatusChange {
-  status: TaskStatus;
+  status: string;
   timestamp: string;
   user: string;
+}
+
+export interface KanbanStatus {
+  id: string;
+  label: string;
+  color?: string;
+  order: number;
 }
 
 export interface Item {
@@ -31,7 +38,7 @@ export interface Item {
   text: string;
   completed: boolean;
   order: number;
-  status?: TaskStatus;
+  status?: string;
   timeEntries?: TimeEntry[];
   estimatedTime?: number;
   targetDate?: string;
@@ -43,6 +50,10 @@ export interface Item {
   history?: StatusChange[];
   description?: string;
   recurrence?: RecurrenceRule;
+  isArchived?: boolean;
+  archivedAt?: string;
+  archivedBy?: string;
+  previousStatus?: string;
 }
 
 export interface List {
@@ -66,6 +77,7 @@ export interface Checklist {
   itemType?: ItemTypes;
   isDeleted?: boolean;
   rawContent?: string;
+  statuses?: KanbanStatus[];
 }
 
 export interface Note {

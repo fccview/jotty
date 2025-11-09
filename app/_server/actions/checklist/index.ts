@@ -152,17 +152,16 @@ const readListsRecursively = async (
             };
             lists.push(rawList);
           } else {
-            lists.push(
-              parseMarkdown(
-                content,
-                id,
-                categoryPath,
-                owner,
-                false,
-                stats,
-                fileName
-              )
+            const parsedList = parseMarkdown(
+              content,
+              id,
+              categoryPath,
+              owner,
+              false,
+              stats,
+              fileName
             );
+            lists.push(parsedList);
           }
 
         } catch { }
@@ -338,7 +337,12 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       );
     }
 
-    return { success: true, data: lists as Checklist[] };
+    const serializedLists = lists.map(list => ({
+      ...list,
+      statuses: list.statuses ? JSON.parse(JSON.stringify(list.statuses)) : undefined
+    }));
+
+    return { success: true, data: serializedLists as Checklist[] };
 
   } catch (error) {
     console.error("Error in getUserChecklists:", error);
@@ -422,6 +426,7 @@ export const getListById = async (
       title: parsedData.title,
       items: parsedData.items,
       uuid: finalUuid,
+      ...(parsedData.statuses && { statuses: parsedData.statuses }),
     };
     return result as Checklist;
   }
@@ -872,5 +877,116 @@ export const convertChecklistType = async (formData: FormData) => {
   } catch (error) {
     console.error("Error converting checklist type:", error);
     return { error: "Failed to convert checklist type" };
+  }
+};
+
+export const updateChecklistStatuses = async (formData: FormData) => {
+  try {
+    const { uuid, statusesStr } = getFormData(formData, ["uuid", "statusesStr"]);
+
+    if (!uuid || !statusesStr) {
+      console.error("Missing uuid or statusesStr");
+      return { error: "UUID and statuses are required" };
+    }
+
+    const lists = await getUserChecklists();
+    if (!lists.success || !lists.data) {
+      console.error("Failed to fetch lists:", lists.error);
+      throw new Error(lists.error || "Failed to fetch lists");
+    }
+
+    const list = lists.data.find((l) => l.uuid === uuid) as Checklist;
+
+    if (!list || !list.id || !list.createdAt) {
+      console.error("List not found or malformed:", { list });
+      throw new Error("List not found or is malformed");
+    }
+
+    const statuses = JSON.parse(statusesStr);
+
+    const oldStatusIds = (list.statuses || []).map(s => s.id);
+    const newStatusIds = statuses.map((s: any) => s.id);
+    const removedStatusIds = oldStatusIds.filter(id => !newStatusIds.includes(id));
+
+    const sortedStatuses = [...statuses].sort((a: any, b: any) => a.order - b.order);
+    const firstStatus = sortedStatuses[0];
+    const defaultStatusId = firstStatus?.id || 'todo';
+
+    const currentUser = await getCurrentUser();
+    const username = currentUser?.username;
+    if (!username) {
+      throw new Error("Username not found");
+    }
+
+    const now = new Date().toISOString();
+    const updatedItems = list.items.map(item => {
+      if (removedStatusIds.includes(item.status || '')) {
+        const history = item.history || [];
+        history.push({
+          status: defaultStatusId,
+          timestamp: now,
+          user: username,
+        });
+
+        return {
+          ...item,
+          status: defaultStatusId,
+          lastModifiedBy: username,
+          lastModifiedAt: now,
+          history,
+        };
+      }
+      return item;
+    });
+
+    let filePath: string;
+
+    if (list.isShared) {
+      const ownerDir = path.join(
+        process.cwd(),
+        "data",
+        CHECKLISTS_FOLDER,
+        list.owner!
+      );
+      filePath = path.join(
+        ownerDir,
+        list.category || "Uncategorized",
+        `${list.id}.md`
+      );
+    } else {
+      const userDir = await getUserModeDir(Modes.CHECKLISTS);
+      filePath = path.join(
+        userDir,
+        list.category || "Uncategorized",
+        `${list.id}.md`
+      );
+    }
+
+    const updatedList: Checklist = {
+      ...list,
+      items: updatedItems,
+      statuses,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const markdown = listToMarkdown(updatedList);
+    await serverWriteFile(filePath, markdown);
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath(`/checklist/${list.id}`);
+      if (list.category) {
+        revalidatePath(`/category/${list.category}`);
+      }
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but data was saved successfully:",
+        error
+      );
+    }
+    return { success: true, data: updatedList };
+  } catch (error) {
+    console.error("Error updating checklist statuses:", error);
+    return { error: "Failed to update checklist statuses" };
   }
 };

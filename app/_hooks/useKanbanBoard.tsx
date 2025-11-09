@@ -29,6 +29,8 @@ export const useKanbanBoard = ({
   const [showBulkPasteModal, setShowBulkPasteModal] = useState(false);
   const [focusKey, setFocusKey] = useState(0);
 
+  const validStatusIds = (localChecklist.statuses || []).map(s => s.id);
+
   useEffect(() => {
     setLocalChecklist(checklist);
     setFocusKey((prev) => prev + 1);
@@ -47,8 +49,8 @@ export const useKanbanBoard = ({
     }
   };
 
-  const getItemsByStatus = (status: TaskStatus) => {
-    return localChecklist.items.filter((item) => item.status === status);
+  const getItemsByStatus = (status: string) => {
+    return localChecklist.items.filter((item) => item.status === status && !item.isArchived);
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -71,15 +73,10 @@ export const useKanbanBoard = ({
     );
     if (!activeItem) return;
 
-    let newStatus: TaskStatus;
+    let newStatus: string;
     let isReordering = false;
 
-    if (
-      overId === TaskStatus.TODO ||
-      overId === TaskStatus.IN_PROGRESS ||
-      overId === TaskStatus.COMPLETED ||
-      overId === TaskStatus.PAUSED
-    ) {
+    if (validStatusIds.includes(overId)) {
       newStatus = overId;
     } else {
       const overItem = localChecklist.items.find((item) => item.id === overId);
@@ -198,7 +195,7 @@ export const useKanbanBoard = ({
 
   const handleItemStatusUpdate = async (
     itemId: string,
-    newStatus: TaskStatus
+    newStatus: string
   ) => {
     const item = localChecklist.items.find((item) => item.id === itemId);
     if (!item) {

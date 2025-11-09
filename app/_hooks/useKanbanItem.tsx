@@ -7,6 +7,7 @@ import {
   updateItem,
   deleteItem,
   updateItemStatus,
+  archiveItem,
 } from "@/app/_server/actions/checklist-item";
 
 interface UseKanbanItemProps {
@@ -189,7 +190,7 @@ export const useKanbanItem = ({
     }
   };
 
-  const handleStatusChange = async (newStatus: TaskStatus) => {
+  const handleStatusChange = async (newStatus: string) => {
     const formData = new FormData();
     formData.append("listId", checklistId);
     formData.append("itemId", item.id);
@@ -224,6 +225,18 @@ export const useKanbanItem = ({
     }
   };
 
+  const handleArchive = async () => {
+    const formData = new FormData();
+    formData.append("listId", checklistId);
+    formData.append("itemId", item.id);
+    formData.append("category", category || "Uncategorized");
+
+    const result = await archiveItem(formData);
+    if (result.success && result.data) {
+      onUpdate(result.data as Checklist);
+    }
+  };
+
   return {
     isRunning,
     currentTime,
@@ -242,5 +255,6 @@ export const useKanbanItem = ({
     handleKeyDown,
     handleStatusChange,
     handleDelete,
+    handleArchive,
   };
 };

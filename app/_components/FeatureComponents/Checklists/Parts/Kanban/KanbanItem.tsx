@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Item, Checklist } from "@/app/_types";
+import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { useState, useEffect } from "react";
@@ -20,6 +20,7 @@ import { KanbanItemTimer } from "./KanbanItemTimer";
 import { KanbanItemContent } from "./KanbanItemContent";
 import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { Circle } from "lucide-react";
 
 interface KanbanItemProps {
   checklist: Checklist;
@@ -29,6 +30,7 @@ interface KanbanItemProps {
   category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
   isShared: boolean;
+  statuses: KanbanStatus[];
 }
 
 export const KanbanItem = ({
@@ -39,6 +41,7 @@ export const KanbanItem = ({
   category,
   onUpdate,
   isShared,
+  statuses,
 }: KanbanItemProps) => {
   const { usersPublicData } = useAppMode();
   const { permissions } = usePermissions();
@@ -86,12 +89,15 @@ export const KanbanItem = ({
     }
   }, [isSortableDragging]);
 
-  const statusOptions = [
-    { id: TaskStatus.TODO, name: TaskStatusLabels.TODO },
-    { id: TaskStatus.IN_PROGRESS, name: TaskStatusLabels.IN_PROGRESS },
-    { id: TaskStatus.COMPLETED, name: TaskStatusLabels.COMPLETED },
-    { id: TaskStatus.PAUSED, name: TaskStatusLabels.PAUSED },
-  ];
+  const statusOptions = statuses?.map((status) => ({
+    id: status.id,
+    name: status.label,
+    color: status.color,
+    order: status.order,
+    icon: Circle
+  }));
+
+  statusOptions?.sort((a, b) => a.order - b.order);
 
   return (
     <>
@@ -125,6 +131,7 @@ export const KanbanItem = ({
           <div className="space-y-2">
             <KanbanItemContent
               item={item}
+              statuses={statuses}
               isEditing={kanbanItemHook.isEditing}
               editText={kanbanItemHook.editText}
               isShared={isShared}
@@ -137,6 +144,7 @@ export const KanbanItem = ({
               onShowSubtaskModal={() => setShowSubtaskModal(true)}
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
+              onArchive={kanbanItemHook.handleArchive}
             />
 
             <KanbanItemTimer
