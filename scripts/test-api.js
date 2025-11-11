@@ -147,6 +147,64 @@ async function runTests() {
         };
     });
 
+    await test(`PUT /api/notes/${testNoteId} (update note)`, async () => {
+        if (!testNoteId) {
+            return { success: false, error: 'No test note ID available for update test' };
+        }
+
+        console.log(`  ✏️  Updating note: ${testNoteId}`);
+        const response = await makeRequest('PUT', `/api/notes/${testNoteId}`, {
+            title: 'Updated Test Note - API',
+            content: 'This note has been updated via API',
+            category: 'Work',
+            originalCategory: 'Uncategorized'
+        });
+
+        if (response.status !== 200) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        console.log(`  📝 Update response: ${response.status}`);
+
+        const checkResponse = await makeRequest('GET', '/api/notes');
+        const updatedNote = checkResponse.body.notes.find(note => note.id === testNoteId);
+
+        const isUpdated = updatedNote &&
+            updatedNote.title === 'Updated Test Note - API' &&
+            updatedNote.content === 'This note has been updated via API' &&
+            updatedNote.category === 'Work';
+
+        console.log(`  ✅ Note updated: ${isUpdated ? 'YES' : 'NO'}`);
+        return {
+            success: isUpdated,
+            error: isUpdated ? null : 'Note not properly updated'
+        };
+    });
+
+    await test(`DELETE /api/notes/${testNoteId} (delete note)`, async () => {
+        if (!testNoteId) {
+            return { success: false, error: 'No test note ID available for delete test' };
+        }
+
+        console.log(`  🗑️  Deleting note: ${testNoteId}`);
+        const response = await makeRequest('DELETE', `/api/notes/${testNoteId}`);
+
+        if (response.status !== 200) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        console.log(`  📝 Delete response: ${response.status}`);
+
+        const checkResponse = await makeRequest('GET', '/api/notes');
+        const noteExists = checkResponse.body.notes.some(note => note.id === testNoteId);
+
+        console.log(`  ✅ Note deleted: ${!noteExists ? 'YES' : 'NO'}`);
+        return {
+            success: !noteExists,
+            error: noteExists ? 'Note still exists after deletion' : null
+        };
+    });
+
     await test(`GET /api/user/${testUsername} (user info)`, async () => {
         console.log(`  👤 Fetching user info for ${testUsername}`);
         const response = await makeRequest('GET', `/api/user/${testUsername}`);
@@ -173,9 +231,9 @@ async function runTests() {
             console.log(`    Checklists categories: ${categories.checklists.length}`);
         }
         return {
-            success: response.status === 200 && response.body.categories && 
-                     response.body.categories.notes !== undefined && 
-                     response.body.categories.checklists !== undefined,
+            success: response.status === 200 && response.body.categories &&
+                response.body.categories.notes !== undefined &&
+                response.body.categories.checklists !== undefined,
             error: response.status !== 200 ? `Status ${response.status}` : 'No categories returned'
         };
     });

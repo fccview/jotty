@@ -3,7 +3,7 @@
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Archive, ArrowLeft } from "lucide-react";
+import { Archive, ArrowLeft, Check, Hash } from "lucide-react";
 import {
   Globe,
   Users,
@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { copyTextToClipboard, encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
@@ -66,7 +66,7 @@ export const NoteEditorHeader = ({
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
-
+  const [copied, setCopied] = useState(false);
   const { user } = useAppMode();
   const router = useRouter();
   const { permissions } = usePermissions();
@@ -75,6 +75,16 @@ export const NoteEditorHeader = ({
     const result = await toggleArchive(note, Modes.NOTES);
     if (result.success) {
       router.refresh();
+    }
+  };
+
+  const handleCopyId = async () => {
+    const success = await copyTextToClipboard(
+      `${note?.uuid ? note?.uuid : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id}`}`
+    );
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -113,6 +123,22 @@ export const NoteEditorHeader = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold truncate">{title}</h1>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        handleCopyId();
+                      }}
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      title={`Copy ID: ${note?.uuid ? note?.uuid : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id}`}`}
+                    >
+                      {copied ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Hash className="h-3 w-3" />
+                      )}
+                    </Button>
+
                     {isPubliclyShared && (
                       <span title="Publicly shared">
                         <Globe className="h-4 w-4 text-primary" />
@@ -219,13 +245,13 @@ export const NoteEditorHeader = ({
                     items={[
                       ...(permissions?.isOwner
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Share",
-                              icon: <Share2 className="h-4 w-4" />,
-                              onClick: () => setShowShareModal(true),
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Share",
+                            icon: <Share2 className="h-4 w-4" />,
+                            onClick: () => setShowShareModal(true),
+                          },
+                        ]
                         : []),
                       {
                         type: "item" as const,
@@ -246,24 +272,24 @@ export const NoteEditorHeader = ({
                       },
                       ...(permissions?.canDelete
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Archive",
-                              icon: <Archive className="h-4 w-4" />,
-                              onClick: handleArchive,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Archive",
+                            icon: <Archive className="h-4 w-4" />,
+                            onClick: handleArchive,
+                          },
+                        ]
                         : []),
                       ...(canDelete
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Delete",
-                              icon: <Trash2 className="h-4 w-4" />,
-                              onClick: handleDelete,
-                              variant: "destructive" as const,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Delete",
+                            icon: <Trash2 className="h-4 w-4" />,
+                            onClick: handleDelete,
+                            variant: "destructive" as const,
+                          },
+                        ]
                         : []),
                     ]}
                   />

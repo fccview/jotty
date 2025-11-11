@@ -92,9 +92,9 @@ export const NoteCard = ({
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-        transform: CSS.Transform.toString(transform),
-        transition,
-      };
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
 
   const cardStyle = {
     ...style,
@@ -107,9 +107,8 @@ export const NoteCard = ({
       ref={setNodeRef}
       style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-note-card bg-card border border-border rounded-xl hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${
-        isDragging ? "border-primary/30" : ""
-      }`}
+      className={`jotty-note-card bg-card border border-border rounded-xl hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${isDragging ? "border-primary/30" : ""
+        }`}
     >
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
@@ -144,7 +143,7 @@ export const NoteCard = ({
       </div>
 
       <div className="px-4 pb-4 flex-1">
-        <div className="jotty-note-card-content relative">
+        <div className="jotty-note-card-content relative max-h-72 overflow-y-auto">
           {showMarkdownPreview ? (
             <div className="text-sm text-muted-foreground prose prose-sm max-w-none">
               <div

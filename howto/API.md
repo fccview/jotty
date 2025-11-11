@@ -23,6 +23,12 @@ x-api-key: ck_your_api_key_here
 
 **Note**: Replace `ck_your_api_key_here` with your actual API key.
 
+## Identification
+
+All checklists and notes are identified using UUIDs (Universally Unique Identifiers). UUIDs are 36-character strings that uniquely identify each item in the system, for example: `f47ac10b-58cc-4372-a567-0e02b2c3d479`.
+
+When referencing checklists or notes in API endpoints, you must use their UUID rather than titles or other identifiers.
+
 ## Organization Features
 
 ### Categories
@@ -96,7 +102,7 @@ Retrieves all checklists for the authenticated user.
 {
   "checklists": [
     {
-      "id": "<checklistID>",
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
       "title": "My Tasks",
       "category": "Work",
       "type": "regular",
@@ -116,7 +122,7 @@ Retrieves all checklists for the authenticated user.
       "updatedAt": "2024-01-01T00:00:00.000Z"
     },
     {
-      "id": "<taskChecklistID>",
+      "id": "550e8400-e29b-41d4-a716-446655440000",
       "title": "Project Tasks",
       "category": "Work",
       "type": "task",
@@ -230,7 +236,7 @@ Retrieves all notes/documents for the authenticated user.
 {
   "notes": [
     {
-      "id": "note-123",
+      "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
       "title": "My Note",
       "category": "Personal",
       "content": "Note content here...",
@@ -282,7 +288,62 @@ Creates a new note for the authenticated user.
 }
 ```
 
-### 8. Get User Information
+### 8. Update Note
+
+**PUT** `/api/notes/{noteId}`
+
+Updates an existing note for the authenticated user.
+
+**Request Body:**
+
+```json
+{
+  "title": "Updated Note Title",
+  "content": "Updated note content...",
+  "category": "Work",
+  "originalCategory": "Personal"
+}
+```
+
+**Parameters:**
+
+- `title` (required): The updated title of the note
+- `content` (optional): The updated content of the note in markdown format
+- `category` (optional): New category for the note (defaults to "Uncategorized")
+- `originalCategory` (optional): The original category of the note (used to locate the existing note)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    "title": "Updated Note Title",
+    "content": "Updated note content...",
+    "category": "Work",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-02T10:30:00.000Z",
+    "owner": "username"
+  }
+}
+```
+
+### 9. Delete Note
+
+**DELETE** `/api/notes/{noteId}`
+
+Deletes an existing note for the authenticated user.
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
+### 10. Get User Information
 
 **GET** `/api/user/{username}`
 
@@ -325,7 +386,7 @@ Retrieves user information. Returns full user data if authenticated as the user 
 
 **Note**: Sensitive fields like `passwordHash` and `apiKey` are never returned.
 
-### 9. Get All Categories
+### 11. Get All Categories
 
 **GET** `/api/categories`
 
@@ -381,7 +442,7 @@ Retrieves all categories for notes and checklists for the authenticated user. Ar
 - `count`: Number of items in this category
 - `level`: Nesting level (0 for root categories)
 
-### 10. Rebuild Link Index
+### 12. Rebuild Link Index
 
 **POST** `/api/admin/rebuild-index`
 
@@ -415,7 +476,7 @@ Rebuilds the internal link index for a specific user. This is useful when the li
 - This operation may take time for users with large amounts of content
 - The link index tracks internal references between notes and checklists (e.g., when one note links to another)
 
-### 11. Get User Summary Statistics
+### 13. Get User Summary Statistics
 
 **GET** `/api/summary`
 

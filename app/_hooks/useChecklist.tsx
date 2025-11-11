@@ -646,8 +646,7 @@ export const useChecklist = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id
-      }`
+      `${localList.uuid ? localList.uuid : `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id}`}`
     );
     if (success) {
       setCopied(true);

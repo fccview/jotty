@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { updateItem } from "@/app/_server/actions/checklist-item";
-import { getUserChecklists } from "@/app/_server/actions/checklist";
-import { Checklist, Result } from "@/app/_types";
+import { getListById } from "@/app/_server/actions/checklist";
 
 export const dynamic = "force-dynamic";
 
@@ -20,15 +19,7 @@ export async function PUT(
         );
       }
 
-      const lists = await getUserChecklists({ username: user.username }) as Result<Checklist[]>;
-      if (!lists.success || !lists.data) {
-        return NextResponse.json(
-          { error: "Failed to fetch lists" },
-          { status: 500 }
-        );
-      }
-
-      const list = lists.data.find((l) => l.id === params.listId);
+      const list = await getListById(params.listId, user.username);
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }

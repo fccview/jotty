@@ -85,7 +85,7 @@ export const ChecklistHeader = ({
               size="sm"
               onClick={handleCopyId}
               className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              title={`Copy ID: ${checklist.id}`}
+              title={`Copy ID: ${checklist?.uuid || checklist?.id}`}
             >
               {copied ? (
                 <Check className="h-3 w-3 text-green-500" />

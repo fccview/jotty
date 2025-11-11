@@ -15,7 +15,16 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ notes: notes.data });
+      const transformedNotes = notes.data.map((note) => ({
+        id: note.uuid || note.id,
+        title: note.title,
+        category: note.category || "Uncategorized",
+        content: note.content,
+        createdAt: note.createdAt,
+        updatedAt: note.updatedAt,
+      }));
+
+      return NextResponse.json({ notes: transformedNotes });
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(
@@ -51,7 +60,17 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }
 
-      return NextResponse.json({ success: true, data: result.data });
+      const transformedNote = {
+        id: result.data?.uuid || result.data?.id,
+        title: result.data?.title,
+        category: result.data?.category || "Uncategorized",
+        content: result.data?.content,
+        createdAt: result.data?.createdAt,
+        updatedAt: result.data?.updatedAt,
+        owner: result.data?.owner,
+      };
+
+      return NextResponse.json({ success: true, data: transformedNote });
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(

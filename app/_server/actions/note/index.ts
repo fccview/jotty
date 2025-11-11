@@ -640,17 +640,28 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
   }
 };
 
-export const deleteNote = async (formData: FormData) => {
+export const deleteNote = async (formData: FormData, username?: string) => {
   try {
     const { id, category } = getFormData(formData, ["id", "category"]);
 
-    const currentUser = await getCurrentUser();
+    let currentUser: any = null;
+    if (username) {
+      const { getUserByUsername } = await import("@/app/_server/actions/users");
+      const userResult = await getUserByUsername(username);
+      if (userResult) {
+        currentUser = userResult;
+      }
+    }
+
+    if (!currentUser) {
+      currentUser = await getCurrentUser();
+    }
+
     if (!currentUser) {
       return { error: "Not authenticated" };
     }
 
-    const isAdminUser = await isAdmin();
-    const notes = await (isAdminUser ? getAllNotes() : getUserNotes());
+    const notes = await getUserNotes({ username: currentUser.username });
 
     if (!notes.success || !notes.data) {
       return { error: "Failed to fetch notes" };
@@ -671,7 +682,7 @@ export const deleteNote = async (formData: FormData) => {
       const ownerDir = USER_NOTES_DIR(note.owner!);
       filePath = path.join(ownerDir, category || "Uncategorized", `${id}.md`);
     } else {
-      const userDir = await getUserModeDir(Modes.NOTES);
+      const userDir = await getUserModeDir(Modes.NOTES, currentUser.username);
       filePath = path.join(userDir, category || "Uncategorized", `${id}.md`);
     }
 
