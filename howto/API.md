@@ -23,6 +23,80 @@ x-api-key: ck_your_api_key_here
 
 **Note**: Replace `ck_your_api_key_here` with your actual API key.
 
+## API Documentation Access
+
+The jotty API includes interactive documentation that allows you to explore and test all endpoints directly in your browser. The documentation is powered by ReDoc and provides a complete reference with request/response examples.
+
+### Running the API Documentation
+
+The API documentation runs as a separate Docker service and requires the main jotty application to be running.
+
+#### Method 1: Using Docker Compose
+
+1. **Enable API Documentation**: Set the `ENABLE_API_DOCS` environment variable to `true` in your `docker-compose.yml`:
+
+   ```yaml
+   environment:
+     - ENABLE_API_DOCS=true
+   ```
+
+   **Add the configuration** for the frontend in your docker compose file underneath your jotty settings
+
+   ```yml
+    api-docs:
+        image: redocly/redoc:latest
+        container_name: jotty-api-docs
+        ports:
+          - "40126:80"
+        environment:
+          SPEC_URL: http://your-jotty-url.com/api/docs
+        extra_hosts:
+          - "host.docker.internal:host-gateway"
+        depends_on:
+          - jotty
+        profiles:
+          - api-docs
+    ```
+
+
+    **Important Notes**:
+    - The `SPEC_URL` must point to the `/api/docs` endpoint of your running jotty instance
+    - The documentation will only work if `ENABLE_API_DOCS=true` is set in the jotty environment variables
+
+2. **Start the API Docs Service**: Run docker-compose with the `api-docs` profile:
+
+   ```bash
+   docker-compose --profile api-docs up -d
+   ```
+
+3. **Access the Documentation**: Open your browser and navigate to:
+   - **Local**: `http://localhost:40126` (or your custom port)
+   - **Remote**: `http://your-domain.com`
+
+
+### Features of the API Documentation
+
+- **Request/Response Examples**: See formatted JSON examples for all endpoints
+- **Schema Validation**: View detailed request/response schemas
+- **Real-time Updates**: Documentation updates automatically when the API changes
+
+### Troubleshooting
+
+**Documentation shows "Failed to load"**:
+- Ensure `ENABLE_API_DOCS=true` is set in jotty's environment variables
+- Check that the jotty service is running and accessible
+- Verify the `SPEC_URL` is correct for your environment
+
+**Cannot access on expected port**:
+- Check if the port is already in use: `netstat -tlnp | grep :8080`
+- Verify the port mapping in your docker-compose.yml
+- Ensure the api-docs service is running: `docker ps | grep api-docs`
+
+**Authentication fails in interactive docs**:
+- Make sure you're using a valid API key
+- Check that the API key has the required permissions
+- Verify the API key header format: `x-api-key: ck_your_key_here`
+
 ## Identification
 
 All checklists and notes are identified using UUIDs (Universally Unique Identifiers). UUIDs are 36-character strings that uniquely identify each item in the system, for example: `f47ac10b-58cc-4372-a567-0e02b2c3d479`.

@@ -27,3 +27,4 @@ services:
       #- OIDC_CLIENT_SECRET=your_client_secret
       #- SSO_FALLBACK_LOCAL=yes
       #- OIDC_ADMIN_GROUPS=admins
+      #- ENABLE_API_DOCS=true
