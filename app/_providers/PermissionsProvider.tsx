@@ -47,7 +47,7 @@ export const PermissionsProvider = ({
       };
     }
 
-    const cacheKey = `${user.username || ""}-${item.id}-${encodeCategoryPath(
+    const cacheKey = `${user?.username || ""}-${item.id}-${encodeCategoryPath(
       item.category || "Uncategorized"
     )}-${JSON.stringify(globalSharing || {})}`;
     const now = Date.now();
@@ -59,7 +59,7 @@ export const PermissionsProvider = ({
 
     const permissions = getPermissions(
       globalSharing,
-      user.username || "",
+      user?.username || "",
       item.id,
       encodeCategoryPath(item.category || "Uncategorized")
     );
