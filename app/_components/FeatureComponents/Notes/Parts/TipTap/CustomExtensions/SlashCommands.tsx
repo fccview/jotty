@@ -13,10 +13,11 @@ import {
   Image as ImageIcon,
   Paperclip,
   BookText,
+  Network,
+  PenTool,
 } from "lucide-react";
 import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommandsList";
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { PluginKey } from "@tiptap/pm/state";
@@ -33,6 +34,7 @@ export interface AtMentionItem {
   type: ItemType;
   category: string;
   id: string;
+  uuid?: string;
 }
 
 let atMentionData = {
@@ -155,6 +157,28 @@ const slashCommands: SlashCommandItem[] = [
         .run();
     },
   },
+  {
+    title: "Mermaid Diagram",
+    description: "Create a Mermaid diagram",
+    icon: <Network className="h-4 w-4" />,
+    command: ({ editor, range }) => {
+      const defaultMermaid = `graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Option 1]
+    B -->|No| D[Option 2]
+    C --> E[End]
+    D --> E`;
+      editor.chain().focus().deleteRange(range).setMermaid(defaultMermaid).run();
+    },
+  },
+  {
+    title: "Draw.io Diagram",
+    description: "Create a visual diagram",
+    icon: <PenTool className="h-4 w-4" />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).insertDrawIo().run();
+    },
+  },
 ];
 
 export const SlashCommands = Extension.create({
@@ -271,10 +295,7 @@ export const SlashCommands = Extension.create({
           range: any;
           props: AtMentionItem;
         }) => {
-          const encodedCategory = encodeCategoryPath(props.category);
-          const url = `/${props.type}/${
-            encodedCategory ? `${encodedCategory}/` : ""
-          }${props.id}`;
+          const linkTarget = props.uuid ? `/jotty/${props.uuid}` : ``;
           editor
             .chain()
             .focus()
@@ -282,10 +303,13 @@ export const SlashCommands = Extension.create({
             .insertContent({
               type: "internalLink",
               attrs: {
-                href: url,
+                href: linkTarget,
                 title: props.title,
                 type: props.type,
                 category: props.category,
+                uuid: props.uuid,
+                itemId: props.id,
+                convertToBidirectional: false,
               },
             })
             .run();

@@ -9,6 +9,8 @@ import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { isItemSharedWith } from "@/app/_server/actions/sharing";
+import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 
 interface PublicChecklistPageProps {
   params: {
@@ -21,7 +23,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
-  searchParams
+  searchParams,
 }: PublicChecklistPageProps): Promise<Metadata> {
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
@@ -78,13 +80,35 @@ export default async function PublicChecklistPage({
       : undefined;
   }
 
-  const isPubliclyShared = await isItemSharedWith(id, category, "checklist", "public");
+  const isPubliclyShared = await isItemSharedWith(
+    id,
+    category,
+    "checklist",
+    "public"
+  );
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.username === checklist.owner;
   const isPrintView = searchParams?.view_mode === "print";
 
   if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
-    return <PublicChecklistView checklist={checklist} user={user} />;
+    const metadata = {
+      id: checklist.id,
+      uuid: checklist.uuid,
+      title: checklist.title,
+      category: checklist.category || "Uncategorized",
+      owner: checklist.owner,
+      createdAt: checklist.createdAt,
+      updatedAt: checklist.updatedAt,
+      type: "checklist" as const,
+    };
+
+    return (
+      <MetadataProvider metadata={metadata}>
+        <PermissionsProvider item={checklist}>
+          <PublicChecklistView checklist={checklist} user={user} />
+        </PermissionsProvider>
+      </MetadataProvider>
+    );
   }
 
   redirect("/");

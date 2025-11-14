@@ -7,6 +7,8 @@ import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { lock, unlock } from "proper-lockfile";
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import { createSession } from "@/app/_server/actions/session";
+import { ensureCorDirsAndFiles, readJsonFile } from "@/app/_server/actions/file";
+import { USERS_FILE } from "@/app/_consts/files";
 
 function base64UrlEncode(buffer: Buffer) {
   return buffer
@@ -28,7 +30,7 @@ async function ensureUser(username: string, isAdmin: boolean) {
       if (content) {
         users = JSON.parse(content);
       }
-    } catch {}
+    } catch { }
 
     if (users.length === 0) {
       users.push({
@@ -224,6 +226,11 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  const users = (await readJsonFile(USERS_FILE)) || [];
+  if (users.length === 0) {
+    await ensureCorDirsAndFiles();
+  }
+
   await ensureUser(username, isAdmin);
 
   const sessionId = base64UrlEncode(crypto.randomBytes(32));
@@ -257,7 +264,7 @@ export async function GET(request: NextRequest) {
       if (content) {
         sessions = JSON.parse(content);
       }
-    } catch {}
+    } catch { }
     sessions[sessionId] = username;
     await fs.writeFile(sessionsFile, JSON.stringify(sessions, null, 2));
   } finally {

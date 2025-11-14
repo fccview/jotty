@@ -1,0 +1,770 @@
+openapi: 3.0.3
+info:
+  title: Jotty API
+  description: |
+    Programmatic access to your checklists and notes with full CRUD operations.
+
+    ## Authentication
+    All endpoints require authentication via API key in the `x-api-key` header.
+
+    Get your API key from: Profile → Settings → API Key → Generate
+  version: "1.0.0"
+  contact:
+    name: Jotty
+    url: https://github.com/fccview/jotty
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Returns the application health status and version information
+      tags:
+        - System
+      security: []  # Public endpoint
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, unhealthy]
+                    example: healthy
+                  version:
+                    type: string
+                    example: "1.9.3"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-10-31T21:15:57.009Z"
+                  error:
+                    type: string
+                    description: Only present when status is unhealthy
+
+  /checklists:
+    get:
+      summary: Get All Checklists
+      description: Retrieves all checklists for the authenticated user
+      tags:
+        - Checklists
+      responses:
+        '200':
+          description: List of checklists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checklists:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                        title:
+                          type: string
+                          example: "My Tasks"
+                        category:
+                          type: string
+                          example: "Work"
+                        type:
+                          type: string
+                          enum: [simple, task]
+                          example: "simple"
+                        items:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              index:
+                                type: integer
+                                example: 0
+                              text:
+                                type: string
+                                example: "Task 1"
+                              completed:
+                                type: boolean
+                                example: false
+                              status:
+                                type: string
+                                enum: [todo, in_progress, paused, completed]
+                              time:
+                                oneOf:
+                                  - type: integer
+                                    example: 0
+                                  - type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        id:
+                                          type: string
+                                        startTime:
+                                          type: string
+                                          format: date-time
+                                        endTime:
+                                          type: string
+                                          format: date-time
+                                        duration:
+                                          type: integer
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+
+  /checklists/{listId}/items:
+    post:
+      summary: Create Checklist Item
+      description: Adds a new item to the specified checklist
+      tags:
+        - Checklists
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the checklist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  example: "New task to complete"
+                status:
+                  type: string
+                  enum: [in_progress, paused, completed]
+                  default: in_progress
+                time:
+                  oneOf:
+                    - type: integer
+                      default: 0
+                    - type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          startTime:
+                            type: string
+                            format: date-time
+                          endTime:
+                            type: string
+                            format: date-time
+                          duration:
+                            type: integer
+      responses:
+        '200':
+          description: Item created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Checklist not found
+        '400':
+          description: Invalid request
+
+  /checklists/{listId}/items/{itemIndex}/check:
+    put:
+      summary: Mark Item as Completed
+      description: Marks a checklist item as completed
+      tags:
+        - Checklists
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemIndex
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Item marked as completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Checklist or item not found
+        '400':
+          description: Invalid item index
+
+  /checklists/{listId}/items/{itemIndex}/uncheck:
+    put:
+      summary: Mark Item as Incomplete
+      description: Marks a checklist item as incomplete
+      tags:
+        - Checklists
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemIndex
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Item marked as incomplete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Checklist or item not found
+        '400':
+          description: Invalid item index
+
+  /notes:
+    get:
+      summary: Get All Notes
+      description: Retrieves all notes for the authenticated user
+      tags:
+        - Notes
+      responses:
+        '200':
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          example: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+                        title:
+                          type: string
+                          example: "My Note"
+                        category:
+                          type: string
+                          example: "Personal"
+                        content:
+                          type: string
+                          description: Markdown content
+                          example: "Note content here..."
+                        createdAt:
+                          type: string
+                          format: date-time
+                        updatedAt:
+                          type: string
+                          format: date-time
+
+    post:
+      summary: Create Note
+      description: Creates a new note for the authenticated user
+      tags:
+        - Notes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  example: "My New Note"
+                content:
+                  type: string
+                  description: Markdown content
+                  example: "Note content here..."
+                category:
+                  type: string
+                  default: "Uncategorized"
+                  example: "Personal"
+      responses:
+        '200':
+          description: Note created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      title:
+                        type: string
+                      content:
+                        type: string
+                      category:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                      owner:
+                        type: string
+        '400':
+          description: Invalid request (missing title)
+
+  /notes/{noteId}:
+    put:
+      summary: Update Note
+      description: Updates an existing note
+      tags:
+        - Notes
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the note to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  example: "Updated Note Title"
+                content:
+                  type: string
+                  description: Markdown content
+                  example: "Updated note content..."
+                category:
+                  type: string
+                  example: "Work"
+                originalCategory:
+                  type: string
+                  description: Original category for locating the note
+                  example: "Personal"
+      responses:
+        '200':
+          description: Note updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      title:
+                        type: string
+                      content:
+                        type: string
+                      category:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                      owner:
+                        type: string
+        '404':
+          description: Note not found
+        '400':
+          description: Invalid request
+
+    delete:
+      summary: Delete Note
+      description: Deletes an existing note
+      tags:
+        - Notes
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the note to delete
+      responses:
+        '200':
+          description: Note deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Note not found
+
+  /user/{username}:
+    get:
+      summary: Get User Information
+      description: Retrieves user information (full data if authenticated as user or admin, public data otherwise)
+      tags:
+        - Users
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Username to retrieve information for
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                      isAdmin:
+                        type: boolean
+                      createdAt:
+                        type: string
+                        format: date-time
+                      lastLogin:
+                        type: string
+                        format: date-time
+                      avatarUrl:
+                        type: string
+                      preferredTheme:
+                        type: string
+                      imageSyntax:
+                        type: string
+                      tableSyntax:
+                        type: string
+                      landingPage:
+                        type: string
+                      notesAutoSaveInterval:
+                        type: integer
+                      notesDefaultEditor:
+                        type: string
+                      notesDefaultMode:
+                        type: string
+                      pinnedLists:
+                        type: array
+                        items:
+                          type: string
+                      pinnedNotes:
+                        type: array
+                        items:
+                          type: string
+        '404':
+          description: User not found
+
+  /categories:
+    get:
+      summary: Get All Categories
+      description: Retrieves all categories for notes and checklists
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: Categories organized by type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: object
+                    properties:
+                      notes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            path:
+                              type: string
+                            count:
+                              type: integer
+                            level:
+                              type: integer
+                      checklists:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            path:
+                              type: string
+                            count:
+                              type: integer
+                            level:
+                              type: integer
+
+  /summary:
+    get:
+      summary: Get User Summary Statistics
+      description: Retrieves comprehensive statistics about user content
+      tags:
+        - Statistics
+      parameters:
+        - name: username
+          in: query
+          schema:
+            type: string
+          description: Username to get summary for (admin only)
+      responses:
+        '200':
+          description: User statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                      notes:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          categories:
+                            type: object
+                            additionalProperties:
+                              type: integer
+                      checklists:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          categories:
+                            type: object
+                            additionalProperties:
+                              type: integer
+                          types:
+                            type: object
+                            properties:
+                              simple:
+                                type: integer
+                              task:
+                                type: integer
+                      items:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          completed:
+                            type: integer
+                          pending:
+                            type: integer
+                          completionRate:
+                            type: integer
+                      tasks:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          completed:
+                            type: integer
+                          inProgress:
+                            type: integer
+                          todo:
+                            type: integer
+                          completionRate:
+                            type: integer
+
+  /exports:
+    post:
+      summary: Request Data Export
+      description: Initiates an export of user data
+      tags:
+        - Exports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [all_checklists_notes, user_checklists_notes, all_users_data, whole_data_folder]
+                  example: "all_checklists_notes"
+                username:
+                  type: string
+                  description: Required for user_checklists_notes type
+      responses:
+        '200':
+          description: Export initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  downloadUrl:
+                    type: string
+                    example: "/api/exports/all_checklists_notes_1678886400000.zip"
+
+    get:
+      summary: Get Export Progress
+      description: Retrieves current export operation progress
+      tags:
+        - Exports
+      responses:
+        '200':
+          description: Export progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  progress:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+                    example: 75
+                  message:
+                    type: string
+                    example: "Compressing files: 150/200 bytes"
+
+  /admin/rebuild-index:
+    post:
+      summary: Rebuild Link Index
+      description: Rebuilds internal link index for a user (admin only)
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+              properties:
+                username:
+                  type: string
+                  example: "fccview"
+      responses:
+        '200':
+          description: Index rebuilt successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                  example: "Successfully rebuilt link index for fccview"
+        '403':
+          description: Admin access required
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key obtained from Profile → Settings → API Key
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Error message description"
+
+  responses:
+    UnauthorizedError:
+      description: API key missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ForbiddenError:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequestError:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

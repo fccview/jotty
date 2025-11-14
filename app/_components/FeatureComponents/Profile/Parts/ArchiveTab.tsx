@@ -63,8 +63,8 @@ export const ArchiveTab = ({
   const filteredItems = useMemo(() => {
     return archivedItems.filter((item) => {
       const matchesSearch = item.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        ? item.title.toLowerCase().includes(searchQuery.toLowerCase())
+        : false;
       return matchesSearch;
     });
   }, [archivedItems, searchQuery]);

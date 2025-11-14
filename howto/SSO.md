@@ -49,8 +49,8 @@ Dev verified Providers:
 Other providers will likely work, but I can at least guarantee these do as I have test them both locally.  
 Community verified Providers:
 
-- [Pocket ID](https://github.com/fccview/jotty/issues/6#issuecomment-3350380435)
-- [Authelia](https://github.com/fccview/jotty/issues/6#issuecomment-3369291122) (`OIDC_ISSUER: https://my-pocket-id.domain.com`)
+- [Pocket ID](https://github.com/fccview/jotty/issues/6#issuecomment-3350380435)(`OIDC_ISSUER: https://my-pocket-id.domain.com`)
+- [Authelia](https://github.com/fccview/jotty/issues/6#issuecomment-3369291122) (`OIDC_ISSUER: https://my-authelia.domain.com`)
 - [Google](https://github.com/fccview/jotty/issues/6#issuecomment-3437686494) (`OIDC_ISSUER: https://accounts.google.com`)
 - [Entra ID (Azure AD)](https://github.com/fccview/jotty/issues/6#issuecomment-3464237999) (`OIDC_ISSUER: https://login.microsoftonline.com/{tenant-id}/v2.0`)
 

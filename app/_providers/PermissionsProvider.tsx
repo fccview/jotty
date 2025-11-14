@@ -35,9 +35,21 @@ export const PermissionsProvider = ({
   const { globalSharing, user } = useAppMode();
 
   const permissionsResult = useMemo(() => {
+    const isOwner = (user?.username && user.username === item.owner) || false;
+    const isAdmin = user?.isAdmin || false;
+
+    if (isOwner || isAdmin) {
+      return {
+        canEdit: true,
+        canDelete: true,
+        canRead: true,
+        isOwner,
+      };
+    }
+
     const cacheKey = `${user?.username || ""}-${item.id}-${encodeCategoryPath(
       item.category || "Uncategorized"
-    )}`;
+    )}-${JSON.stringify(globalSharing || {})}`;
     const now = Date.now();
 
     const cached = permissionsCache.get(cacheKey);
@@ -52,22 +64,12 @@ export const PermissionsProvider = ({
       encodeCategoryPath(item.category || "Uncategorized")
     );
 
-    const canEdit =
-      user?.isAdmin ||
-      (user?.username && user.username === item.owner) ||
-      permissions?.canEdit;
-    const canDelete =
-      user?.isAdmin ||
-      (user?.username && user.username === item.owner) ||
-      permissions?.canDelete;
-    const canRead =
-      user?.isAdmin ||
-      (user?.username && user.username === item.owner) ||
-      permissions?.canRead;
-
-    const isOwner = (user?.username && user.username === item.owner) || false;
-
-    const result = { canEdit, canDelete, canRead, isOwner };
+    const result = {
+      canEdit: permissions?.canEdit || false,
+      canDelete: permissions?.canDelete || false,
+      canRead: permissions?.canRead || false,
+      isOwner: false,
+    };
 
     permissionsCache.set(cacheKey, { permissions: result, timestamp: now });
 

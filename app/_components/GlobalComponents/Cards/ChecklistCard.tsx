@@ -16,6 +16,7 @@ interface ChecklistCardProps {
   onTogglePin?: (list: Checklist) => void;
   isDraggable?: boolean;
   sharer?: string;
+  fixedWidth?: number;
 }
 
 export const ChecklistCard = ({
@@ -25,6 +26,7 @@ export const ChecklistCard = ({
   onTogglePin,
   isDraggable = false,
   sharer,
+  fixedWidth,
 }: ChecklistCardProps) => {
   const {
     attributes,
@@ -34,14 +36,9 @@ export const ChecklistCard = ({
     transition,
     isDragging,
   } = useSortable({
-    id: list.id,
+    id: list?.uuid || list.id,
     disabled: !isDraggable,
   });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
 
   const parsedData = useMemo(() => {
     if ("rawContent" in list) {
@@ -53,25 +50,42 @@ export const ChecklistCard = ({
   const displayTitle = parsedData?.title || list.title;
   const displayItems = parsedData?.items || list.items;
 
-  const totalItems = displayItems.length;
-  const completedItems = displayItems.filter((item) =>
+  const totalItems = displayItems?.length || 0;
+  const completedItems = displayItems?.filter((item) =>
     isItemCompleted(item, list.type)
   ).length;
   const completionRate =
     totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
+  const style = isDragging
+    ? { opacity: 0.4 }
+    : {
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
+
+  const cardStyle = {
+    ...style,
+    ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
+    ...(fixedWidth ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth } : {}),
+  };
+
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      onClick={() => onSelect(list)}
-      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-primary/50 transition-all duration-200 group ${
-        isDragging ? "opacity-50" : ""
+      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${
+        isDragging ? "border-primary/30" : ""
       }`}
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div
+          className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+          onClick={() => onSelect(list)}
+          onPointerDown={(e) => isDraggable && e.stopPropagation()}
+          onMouseDown={(e) => isDraggable && e.stopPropagation()}
+        >
           <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
             {displayTitle}
           </span>
@@ -83,9 +97,8 @@ export const ChecklistCard = ({
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${
-                isPinned ? "opacity-100" : "opacity-0"
-              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              className={`${isPinned ? "opacity-100" : "opacity-0"
+                } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
               title={isPinned ? "Unpin" : "Pin"}
             >
               {isPinned ? (

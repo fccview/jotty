@@ -9,22 +9,27 @@ import { ShareTabs } from "./Parts/ShareTabs";
 import { UsersShareTab } from "./Parts/UsersShareTab";
 import { PublicShareTab } from "./Parts/PublicShareTabs";
 import { ItemType } from "@/app/_types";
+import { useMetadata } from "@/app/_providers/MetadataProvider";
 
-interface ShareModalProps {
+export const ShareModal = ({
+  isOpen,
+  onClose,
+}: {
   isOpen: boolean;
   onClose: () => void;
-  itemId: string;
-  itemTitle: string;
-  itemType: ItemType;
-  itemCategory?: string;
-  itemOwner: string;
-}
+}) => {
+  const metadata = useMetadata();
 
-export const ShareModal = (props: ShareModalProps) => {
-  const { isOpen, onClose, itemTitle, itemType } = props;
   const hookResult = useSharingTools({
-    ...props,
+    isOpen,
+    onClose,
     enabled: true,
+    itemId: metadata.id,
+    itemTitle: metadata.title,
+    itemType: metadata.type as ItemType,
+    itemCategory: metadata.category,
+    itemOwner: metadata.owner || "",
+    itemUuid: metadata.uuid,
   });
   const { error, success, activeTab, setActiveTab, resetMessages } = hookResult;
 
@@ -39,11 +44,11 @@ export const ShareModal = (props: ShareModalProps) => {
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={`Share ${itemType}`}
+      title={`Share ${metadata.type}`}
       titleIcon={<Share2 className="h-5 w-5 text-primary" />}
     >
       <div className="space-y-4 py-6">
-        <h3 className="font-semibold text-lg">{itemTitle}</h3>
+        <h3 className="font-semibold text-lg">{metadata.title}</h3>
         <FeedbackMessage error={error} success={success} />
         <ShareTabs activeTab={activeTab} setActiveTab={handleTabChange} />
         {activeTab === "users" ? (
@@ -51,8 +56,8 @@ export const ShareModal = (props: ShareModalProps) => {
         ) : (
           <PublicShareTab
             {...hookResult}
-            itemTitle={itemTitle}
-            itemType={itemType}
+            itemTitle={metadata.title}
+            itemType={metadata.type as ItemType}
           />
         )}
       </div>

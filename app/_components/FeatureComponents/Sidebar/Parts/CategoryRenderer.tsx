@@ -13,27 +13,11 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Category, Checklist, Note } from "@/app/_types";
-import {
-  DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { Draggable } from "./Draggable";
-import {
-  setCategoryOrder,
-  setChecklistOrderInCategory,
-} from "@/app/_server/actions/category";
-import { SidebarItem } from "./SidebarItem";
+import { Draggable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Draggable";
+import { SidebarItem } from "@/app/_components/FeatureComponents/Sidebar/Parts/SidebarItem";
 import { Modes } from "@/app/_types/enums";
+import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
+import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
 
 interface CategoryRendererProps {
   category: Category;
@@ -70,11 +54,6 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     user,
   } = props;
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor)
-  );
-
   const getItemsInCategory = (categoryPath: string) =>
     allItems.filter(
       (item) =>
@@ -99,37 +78,6 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const subCategories = getSubCategories(category.path);
   const isCollapsed = collapsedCategories.has(category.path);
   const hasContent = categoryItems.length > 0 || subCategories.length > 0;
-
-  const handleDragEnd = async (
-    event: DragEndEvent,
-    type: "category" | "item"
-  ) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const formData = new FormData();
-    formData.append("mode", mode);
-
-    if (type === "category") {
-      const ids = subCategories.map((c) => c.name);
-      const oldIndex = ids.indexOf(active.id as string);
-      const newIndex = ids.indexOf(over.id as string);
-      if (oldIndex === -1 || newIndex === -1) return;
-      const newOrder = arrayMove(ids, oldIndex, newIndex);
-      formData.append("parent", category.path);
-      formData.append("categories", JSON.stringify(newOrder));
-      await setCategoryOrder(formData);
-    } else {
-      const ids = categoryItems.map((i) => i.id);
-      const oldIndex = ids.indexOf(active.id as string);
-      const newIndex = ids.indexOf(over.id as string);
-      if (oldIndex === -1 || newIndex === -1) return;
-      const newOrder = arrayMove(ids, oldIndex, newIndex);
-      formData.append("category", category.path);
-      formData.append("items", JSON.stringify(newOrder));
-      await setChecklistOrderInCategory(formData);
-    }
-  };
 
   const dropdownItems = [
     {
@@ -159,109 +107,147 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     },
   ];
 
+  const firstChild = subCategories[0] || categoryItems[0];
+  const firstChildType = subCategories[0] ? "category" : "item";
+  const firstChildId = subCategories[0]
+    ? `category::${subCategories[0].path}`
+    : categoryItems[0]
+      ? `item::${categoryItems[0].category || "Uncategorized"}::${categoryItems[0].id
+      }`
+      : undefined;
+
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between group">
-        <button
-          onClick={() => onToggleCategory(category.path)}
-          className={cn(
-            "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors w-full text-left",
-            hasContent
-              ? "hover:bg-muted/50 cursor-pointer"
-              : "text-muted-foreground cursor-default"
-          )}
-          style={{ paddingLeft: `${category.level * 16}px` }}
+      <Draggable
+        id={`category::${category.path}`}
+        data={{
+          type: "category",
+          categoryPath: category.path,
+        }}
+      >
+        <Droppable
+          id={`drop-into-category::${category.path}`}
+          data={{
+            type: "category",
+            categoryPath: category.path,
+          }}
+          className="group"
         >
-          {hasContent ? (
-            isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )
-          ) : (
-            <div className="w-4" />
-          )}
-          <Folder className="h-4 w-4" />
-          <span className="truncate">{category.name}</span>
-          <span className="text-xs text-muted-foreground ml-auto">
-            {getTotalItemsInCategory(category.path)}
-          </span>
-        </button>
-
-        <DropdownMenu
-          align="right"
-          items={dropdownItems}
-          trigger={
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 opacity-40 lg:opacity-0 group-hover:opacity-100 transition-opacity"
+          {({ isOver }) => (
+            <div
+              className={cn(
+                "flex items-center justify-between",
+                isOver && "bg-primary/10 rounded-md"
+              )}
             >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          }
-        />
-      </div>
+              <button
+                onClick={() => onToggleCategory(category.path)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors w-full text-left",
+                  hasContent
+                    ? "hover:bg-muted/50 cursor-pointer"
+                    : "text-muted-foreground cursor-default"
+                )}
+                style={{ paddingLeft: `${category.level * 16}px` }}
+              >
+                {hasContent ? (
+                  isCollapsed ? (
+                    <ChevronRight className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )
+                ) : (
+                  <div className="w-4" />
+                )}
+                <Folder className="h-4 w-4" />
+                <span className="truncate">{category.name}</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {getTotalItemsInCategory(category.path)}
+                </span>
+              </button>
+
+              <DropdownMenu
+                align="right"
+                items={dropdownItems}
+                trigger={
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 opacity-40 lg:opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                }
+              />
+            </div>
+          )}
+        </Droppable>
+      </Draggable>
 
       {!isCollapsed && (
-        <>
-          {subCategories.length > 0 && (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={(e) => handleDragEnd(e, "category")}
-            >
-              <SortableContext
-                items={subCategories.map((c) => c.name)}
-                strategy={verticalListSortingStrategy}
+        <div className="ml-2 border-l border-border/30 pl-2">
+          <DropIndicator
+            id={`drop-start::${category.path}`}
+            data={{
+              type: "drop-indicator",
+              parentPath: category.path,
+              position: "before",
+              targetDndId: firstChildId,
+              targetType: firstChildType,
+            }}
+          />
+
+          {subCategories.map((subCat) => (
+            <div key={subCat.path}>
+              <CategoryRenderer {...props} category={subCat} />
+              <DropIndicator
+                id={`drop-after-category::${subCat.path}`}
+                data={{
+                  type: "drop-indicator",
+                  parentPath: category.path,
+                  position: "after",
+                  targetDndId: `category::${subCat.path}`,
+                  targetType: "category",
+                }}
+              />
+            </div>
+          ))}
+
+          {categoryItems.map((item) => (
+            <div key={`${category.path}-${item.id}`}>
+              <Draggable
+                id={`item::${item.category || "Uncategorized"}::${item.id}`}
+                data={{
+                  type: "item",
+                  category: item.category || "Uncategorized",
+                  id: item.id,
+                }}
               >
-                <div className="space-y-1 ml-2 border-l border-border/30 pl-2">
-                  {subCategories.map((subCat) => (
-                    <Draggable
-                      key={subCat.name}
-                      id={subCat.name}
-                      data={{ type: "category", parent: category.path }}
-                    >
-                      <CategoryRenderer {...props} category={subCat} />
-                    </Draggable>
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          )}
-          {categoryItems.length > 0 && (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={(e) => handleDragEnd(e, "item")}
-            >
-              <SortableContext
-                items={categoryItems.map((i) => i.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-0.5 ml-2 border-l border-border/30 pl-2">
-                  {categoryItems.map((item) => (
-                    <Draggable
-                      key={`${category.path}-${item.id}`}
-                      id={item.id}
-                      data={{ type: "item", category: category.path }}
-                    >
-                      <SidebarItem
-                        item={item}
-                        mode={mode}
-                        isSelected={isItemSelected(item)}
-                        onItemClick={onItemClick}
-                        onEditItem={onEditItem}
-                        style={{ paddingLeft: `${category.level * 16}px` }}
-                        user={user}
-                      />
-                    </Draggable>
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          )}
-        </>
+                <SidebarItem
+                  item={item}
+                  mode={mode}
+                  isSelected={isItemSelected(item)}
+                  onItemClick={onItemClick}
+                  onEditItem={onEditItem}
+                  style={{ paddingLeft: `${category.level * 16}px` }}
+                  user={user}
+                />
+              </Draggable>
+              <DropIndicator
+                id={`drop-after-item::${item.category || "Uncategorized"}::${item.id
+                  }`}
+                data={{
+                  type: "drop-indicator",
+                  parentPath: category.path,
+                  position: "after",
+                  targetDndId: `item::${item.category || "Uncategorized"}::${item.id
+                    }`,
+                  targetType: "item",
+                }}
+              />
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

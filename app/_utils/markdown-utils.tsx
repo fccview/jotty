@@ -10,6 +10,8 @@ import { Element } from "hast";
 import { addCustomHtmlTurndownRules } from "@/app/_utils/custom-html-utils";
 import { html as beautifyHtml } from "js-beautify";
 import { TableSyntax } from "@/app/_types";
+import { decodeCategoryPath, decodeId } from "./global-utils";
+import { getContrastColor } from "./color-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
@@ -322,11 +324,47 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const bgColorMatch = style.match(/background-color:\s*([^;]+)/);
 
       if (bgColorMatch) {
-        const color = bgColorMatch[1].trim();
-        return `<mark style="background-color: ${color}">${content}</mark>`;
+        const bgColor = bgColorMatch[1].trim();
+        const textColor = getContrastColor(bgColor);
+        return `<mark style="background-color: ${bgColor}; color: ${textColor}">${content}</mark>`;
       }
 
       return `<mark>${content}</mark>`;
+    },
+  });
+
+  service.addRule("mermaid", {
+    filter: (node) => {
+      return (
+        node.nodeName === "DIV" &&
+        (node as HTMLElement).hasAttribute("data-mermaid")
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const mermaidContent = element.getAttribute("data-mermaid-content") || "";
+
+      return `\n\`\`\`mermaid\n${mermaidContent}\n\`\`\`\n`;
+    },
+  });
+
+  service.addRule("drawio", {
+    filter: (node) => {
+      return (
+        node.nodeName === "DIV" &&
+        (node as HTMLElement).hasAttribute("data-drawio")
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const diagramData = element.getAttribute("data-drawio-data") || "";
+      const svgData = element.getAttribute("data-drawio-svg") || "";
+      const themeMode = element.getAttribute("data-drawio-theme") || "light";
+
+      const dataBase64 = typeof btoa !== 'undefined' ? btoa(diagramData) : Buffer.from(diagramData).toString('base64');
+      const svgBase64 = typeof btoa !== 'undefined' ? btoa(svgData) : Buffer.from(svgData).toString('base64');
+
+      return `\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n`;
     },
   });
 
@@ -351,7 +389,46 @@ const markdownProcessor = unified()
   .use(rehypeRaw)
   .use(() => {
     return (tree) => {
-      visit(tree, "element", (node: Element) => {
+      visit(tree, (node: any) => {
+        if (node.type !== "element" && node.type !== "comment") return;
+        if (node.type === "comment") {
+          const commentValue = String(node.value || "");
+          if (commentValue.includes("drawio-diagram")) {
+            const dataMatch = commentValue.match(/data:\s*([^\n]+)/);
+            const svgMatch = commentValue.match(/svg:\s*([^\n]+)/);
+            const themeMatch = commentValue.match(/theme:\s*([^\n]+)/);
+
+            if (dataMatch && svgMatch) {
+              const dataBase64 = dataMatch[1].trim();
+              const svgBase64 = svgMatch[1].trim();
+              const themeMode = themeMatch ? themeMatch[1].trim() : "light";
+
+              try {
+                const diagramData = typeof atob !== 'undefined' ? atob(dataBase64) : Buffer.from(dataBase64, 'base64').toString();
+                const svgData = typeof atob !== 'undefined' ? atob(svgBase64) : Buffer.from(svgBase64, 'base64').toString();
+
+                node.type = "element";
+                node.tagName = "div";
+                node.properties = {
+                  "data-drawio": "",
+                  "data-drawio-data": diagramData,
+                  "data-drawio-svg": svgData,
+                  "data-drawio-theme": themeMode,
+                };
+                node.children = [
+                  {
+                    type: "text",
+                    value: "[Draw.io Diagram]",
+                  },
+                ];
+              } catch (e) {
+                // Silently ignore invalid base64 (happens with empty diagrams)
+              }
+            }
+          }
+          return;
+        }
+
         if (node.tagName === "img" && node.properties?.style) {
           const style = node.properties.style as string;
           const widthMatch = style.match(/width:\s*(\d+)px/);
@@ -468,17 +545,30 @@ const markdownProcessor = unified()
 
         if (node.tagName === "a" && node.properties?.href) {
           const href = String(node.properties.href);
-          if (href.startsWith("/note/") || href.startsWith("/checklist/")) {
+          if (href.startsWith("/jotty/") || href.startsWith("/note/") || href.startsWith("/checklist/")) {
             const textContent =
               node.children?.[0]?.type === "text"
                 ? String(node.children[0].value)
                 : "";
 
-            const parts = href.split("/").filter(Boolean);
-            const type = parts.length >= 1 ? parts[0] : "note";
+            let uuid = "";
+            let type = "note";
+            let category = "";
+            let itemId = "";
 
-            const category =
-              parts.length >= 3 ? parts.slice(1, -1).join("/") : "";
+            if (href.startsWith("/jotty/")) {
+              uuid = href.replace("/jotty/", "");
+            } else if (href.startsWith("/note/")) {
+              type = "note";
+              const pathParts = href.replace("/note/", "").split("/");
+              itemId = decodeId(pathParts.pop() || "");
+              category = decodeCategoryPath(pathParts.join("/"));
+            } else if (href.startsWith("/checklist/")) {
+              type = "checklist";
+              const pathParts = href.replace("/checklist/", "").split("/");
+              itemId = decodeId(pathParts.pop() || "");
+              category = decodeCategoryPath(pathParts.join("/"));
+            }
 
             const newChildren: any[] = [];
 
@@ -489,39 +579,62 @@ const markdownProcessor = unified()
               children: [{ type: "text", value: textContent }],
             });
 
-            if (category && category !== "Uncategorized") {
-              newChildren.push({
-                type: "element",
-                tagName: "span",
-                properties: { class: "separator" },
-                children: [{ type: "text", value: "•" }],
-              });
-
-              newChildren.push({
-                type: "element",
-                tagName: "span",
-                properties: { class: "category" },
-                children: [
-                  {
-                    type: "text",
-                    value: category.split("/").pop() || category,
-                  },
-                ],
-              });
-            }
-
             node.tagName = "span";
             node.properties = {
               "data-internal-link": "",
               "data-href": href,
               "data-title": textContent,
+              "data-uuid": uuid,
               "data-type": type,
               "data-category": category,
+              "data-item-id": itemId,
+              "data-convert-to-bidirectional": "false",
             };
 
             node.children = newChildren;
 
             delete node.properties.href;
+          }
+        }
+
+        if (
+          node.tagName === "pre" &&
+          node.children?.length > 0 &&
+          node.children[0].type === "element" &&
+          node.children[0].tagName === "code"
+        ) {
+          const codeNode = node.children[0] as Element;
+          const classList = codeNode.properties?.className;
+          let isMermaid = false;
+
+          if (Array.isArray(classList)) {
+            isMermaid = classList.some(
+              (cn) => String(cn) === "language-mermaid"
+            );
+          } else if (typeof classList === "string") {
+            isMermaid = classList.split(" ").includes("language-mermaid");
+          }
+
+          if (isMermaid) {
+            let mermaidContent = "";
+            if (codeNode.children?.length > 0) {
+              const textNode = codeNode.children[0];
+              if (textNode.type === "text") {
+                mermaidContent = String(textNode.value).trim();
+              }
+            }
+
+            node.tagName = "div";
+            node.properties = {
+              "data-mermaid": "",
+              "data-mermaid-content": mermaidContent,
+            };
+            node.children = [
+              {
+                type: "text",
+                value: "[Mermaid Diagram]",
+              },
+            ];
           }
         }
       });

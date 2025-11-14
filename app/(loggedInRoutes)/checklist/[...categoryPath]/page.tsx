@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getListById, getRawLists } from "@/app/_server/actions/checklist";
+import { getListById, getUserChecklists } from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getCurrentUser } from "@/app/_server/actions/users";
@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
+import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
 interface ChecklistPageProps {
   params: {
@@ -45,7 +46,7 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
   const isAdminUser = user?.isAdmin || false;
 
   const [listsResult, categoriesResult] = await Promise.all([
-    getRawLists(username),
+    getUserChecklists({ username }),
     getCategories(Modes.CHECKLISTS),
   ]);
 
@@ -73,13 +74,26 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
       ? categoriesResult.data
       : [];
 
+  const metadata = {
+    id: checklist.id,
+    uuid: checklist.uuid,
+    title: checklist.title,
+    category: checklist.category || "Uncategorized",
+    owner: checklist.owner,
+    createdAt: checklist.createdAt,
+    updatedAt: checklist.updatedAt,
+    type: "checklist" as const,
+  };
+
   return (
-    <PermissionsProvider item={checklist}>
-      <ChecklistClient
-        checklist={checklist}
-        categories={categories}
-        user={user}
-      />
-    </PermissionsProvider>
+    <MetadataProvider metadata={metadata}>
+      <PermissionsProvider item={checklist}>
+        <ChecklistClient
+          checklist={checklist}
+          categories={categories}
+          user={user}
+        />
+      </PermissionsProvider>
+    </MetadataProvider>
   );
 }

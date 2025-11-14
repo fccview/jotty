@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   DragEndEvent,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -11,7 +12,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Note, Category, User } from "@/app/_types";
-import { togglePin, updatePinnedOrder } from "@/app/_server/actions/users";
+import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
 
 interface UseNotesHomeProps {
@@ -27,32 +28,51 @@ export const useNotesHome = ({
 }: UseNotesHomeProps) => {
   const router = useRouter();
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [draggedItemWidth, setDraggedItemWidth] = useState<number | null>(null);
   const pinnedNotes = user?.pinnedNotes || [];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
-        delay: 100,
+        delay: 150,
         tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor)
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+
+    const rect = event.active.rect?.current || event.active.data?.current?.sortable?.rect;
+    if (rect) {
+      setDraggedItemWidth(rect.initial?.width || 0);
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
+    setDraggedItemWidth(null);
+
     if (!over || active.id === over.id) return;
 
     const pinned = getPinnedNotes();
-    const oldIndex = pinned.findIndex((note) => note.id === active.id);
-    const newIndex = pinned.findIndex((note) => note.id === over.id);
+    const oldIndex = pinned.findIndex(
+      (note) => (note.uuid || note.id) === active.id
+    );
+    const newIndex = pinned.findIndex(
+      (note) => (note.uuid || note.id) === over.id
+    );
 
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newOrder = arrayMove(pinned, oldIndex, newIndex);
     const newPinnedPaths = newOrder.map(
-      (note) => `${note.category || "Uncategorized"}/${note.id}`
+      (note) =>
+        `${note.category || "Uncategorized"}/${note.uuid || note.id}`
     );
 
     try {
@@ -69,8 +89,9 @@ export const useNotesHome = ({
     return pinnedNotes
       .map((path) => {
         return notes.find((note) => {
-          const itemPath = `${note.category || "Uncategorized"}/${note.id}`;
-          return itemPath === path;
+          const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.id}`;
+          const idPath = `${note.category || "Uncategorized"}/${note.id}`;
+          return uuidPath === path || idPath === path;
         });
       })
       .filter(Boolean) as Note[];
@@ -94,7 +115,7 @@ export const useNotesHome = ({
     setIsTogglingPin(note.id);
     try {
       const result = await togglePin(
-        note.id,
+        note.uuid || note.id,
         note.category || "Uncategorized",
         ItemTypes.NOTE
       );
@@ -109,8 +130,9 @@ export const useNotesHome = ({
   };
 
   const isNotePinned = (note: Note) => {
-    const itemPath = `${note.category || "Uncategorized"}/${note.id}`;
-    return pinnedNotes.includes(itemPath);
+    const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.id}`;
+    const idPath = `${note.category || "Uncategorized"}/${note.id}`;
+    return pinnedNotes.includes(uuidPath) || pinnedNotes.includes(idPath);
   };
 
   const stats = useMemo(() => {
@@ -132,8 +154,13 @@ export const useNotesHome = ({
   const pinned = getPinnedNotes();
   const recent = getRecentNotes();
 
+  const activeNote = activeId
+    ? pinned.find((note) => (note.uuid || note.id) === activeId)
+    : null;
+
   return {
     sensors,
+    handleDragStart,
     handleDragEnd,
     pinned,
     recent,
@@ -142,5 +169,7 @@ export const useNotesHome = ({
     handleTogglePin,
     isNotePinned,
     isTogglingPin,
+    activeNote,
+    draggedItemWidth,
   };
 };

@@ -43,7 +43,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => (
-    <div className="space-y-2">
+    <div className="space-y-2 w-full">
       {label && <Label htmlFor={id}>{label}</Label>}
       <input
         ref={ref}

@@ -55,7 +55,9 @@ export const SharedItemsList = ({
     if (!acc[sharer]) {
       acc[sharer] = [];
     }
-    acc[sharer].push(item);
+    if (item.id) {
+      acc[sharer].push(item as SharedItemEntry);
+    }
     return acc;
   }, {} as Record<string, SharedItemEntry[]>);
 

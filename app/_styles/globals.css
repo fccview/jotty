@@ -934,14 +934,20 @@ pre.text-foreground span,
     scrollbar-width: auto !important;
 }
 
-.overflow-y-auto::-webkit-scrollbar {
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar {
     -webkit-appearance: none;
     width: 8px;
     background-color: rgb(var(--muted)/0.5) !important;
     border-radius: 6px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb {
     background-color: rgb(var(--primary)/0.3) !important;
     border-radius: 6px;
     border: 2px solid transparent;

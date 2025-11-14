@@ -90,7 +90,7 @@ export function decodeCategoryPath(encodedPath: string): string {
 
 export function buildCategoryPath(category: string, id: string): string {
   const encodedCategory = encodeCategoryPath(category);
-  return encodedCategory ? `${encodedCategory}/${id}` : id;
+  return encodedCategory ? `${encodedCategory}/${encodeId(id)}` : encodeId(id);
 }
 
 export function decodeId(encodedId: string): string {
@@ -101,6 +101,9 @@ export function decodeId(encodedId: string): string {
 }
 
 export function encodeId(id: string): string {
+  if (id.includes("%20") || id.includes("%2F")) {
+    return id;
+  }
   return encodeURIComponent(id);
 }
 
@@ -155,4 +158,17 @@ export const generateWebManifest = (
     ],
     version: appVersion,
   });
+};
+
+export const getFormData = (formData: FormData, keys: string[]) => {
+  const data: Record<string, string> = {};
+  keys.forEach((key) => {
+    if (key === "category" && formData.get(key) === "") {
+      data[key] = "Uncategorized";
+    } else {
+      data[key] = formData.get(key) as string;
+    }
+  });
+
+  return data;
 };

@@ -1,21 +1,12 @@
 "use server";
 
 import path from "path";
-import fs from "fs/promises";
 import { getUserModeDir } from "@/app/_server/actions/file";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
-import { getNotes, getNoteById } from "@/app/_server/actions/note";
-import { getLists, getListById } from "@/app/_server/actions/checklist";
-import {
-  encodeCategoryPath,
-  decodeCategoryPath,
-  encodeId,
-  decodeId,
-} from "@/app/_utils/global-utils";
+import { getUserNotes } from "@/app/_server/actions/note";
+import { getUserChecklists } from "@/app/_server/actions/checklist";
 import { ItemType } from "@/app/_types";
-import { NOTES_FOLDER } from "@/app/_consts/notes";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 
 export interface LinkIndex {
   notes: Record<string, ItemLinks>;
@@ -36,7 +27,7 @@ export interface ItemLinks {
 
 export interface LinkTarget {
   type: ItemType;
-  path: string;
+  uuid: string;
 }
 
 const INDEX_FILENAME = ".index.json";
@@ -67,136 +58,120 @@ export const writeLinkIndex = async (
 export const parseInternalLinks = (content: string): LinkTarget[] => {
   const links: LinkTarget[] = [];
 
-  const htmlRegex = /href="\/(note|checklist)\/([^"]+)"/g;
+  const htmlRegex = /data-href="([^"]+)"[^>]*data-type="(note|checklist)"/g;
   let match;
   while ((match = htmlRegex.exec(content)) !== null) {
-    const [, type, categoryPath] = match;
-    const pathParts = categoryPath.split("/");
-    const id = pathParts[pathParts.length - 1];
-    const category = pathParts.slice(0, -1).join("/");
+    const href = match[1];
+    const type = match[2] as ItemType;
 
-    links.push({
-      type: type as ItemType,
-      path: category ? `${category}/${id}` : id,
-    });
+    if (href?.startsWith("/jotty/")) {
+      const uuid = href.replace("/jotty/", "");
+      links.push({
+        type: type || ItemTypes.NOTE,
+        uuid,
+      });
+    } else if (href && !href.includes("/")) {
+      links.push({
+        type,
+        uuid: href,
+      });
+    }
   }
 
-  const markdownRegex = /\[([^\]]+)\]\(\/(note|checklist)\/([^)]+)\)/g;
-  while ((match = markdownRegex.exec(content)) !== null) {
-    const [, , type, categoryPath] = match;
-    const pathParts = categoryPath.split("/");
-    const id = pathParts[pathParts.length - 1];
-    const category = pathParts.slice(0, -1).join("/");
+  if (links.length === 0) {
+    const markdownRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    while ((match = markdownRegex.exec(content)) !== null) {
+      const href = match[2];
 
-    links.push({
-      type: type as ItemType,
-      path: category ? `${encodeCategoryPath(category)}/${id}` : id,
-    });
+      if (href?.startsWith("/jotty/")) {
+        const uuid = href.replace("/jotty/", "");
+        links.push({
+          type: ItemTypes.NOTE,
+          uuid,
+        });
+      }
+    }
   }
 
   const uniqueLinks = links.filter(
     (link, index, self) =>
       index ===
-      self.findIndex((l) => l.type === link.type && l.path === link.path)
+      self.findIndex((l) => l.type === link.type && l.uuid === link.uuid)
   );
 
   return uniqueLinks;
 };
 
-const resolveLinkPath = (
-  linkPath: string,
-  linkType: ItemType,
-  index: LinkIndex
-): string | null => {
-  const targetKey = `${linkType}s`;
-
-  if (index[targetKey][linkPath]) {
-    return linkPath;
-  }
-
-  const uncategorizedPath = encodeCategoryPath(
-    `Uncategorized/${decodeURIComponent(linkPath)}`
-  );
-  if (index[targetKey][uncategorizedPath]) {
-    return uncategorizedPath;
-  }
-
-  return null;
-};
-
 export const updateIndexForItem = async (
   username: string,
   itemType: ItemType,
-  itemId: string,
+  itemUuid: string,
   currentLinks: LinkTarget[]
 ): Promise<void> => {
   const index = await readLinkIndex(username);
 
   const currentItemKey = `${itemType}s`;
-  const currentItemLinks = index[currentItemKey][itemId] || {
+  const currentItemLinks = index[currentItemKey][itemUuid] || {
     isLinkedTo: { notes: [], checklists: [] },
     isReferencedIn: { notes: [], checklists: [] },
   };
 
-  for (const targetItemKey of currentItemLinks.isLinkedTo.notes) {
-    if (index.notes[targetItemKey]) {
-      index.notes[targetItemKey].isReferencedIn.notes = index.notes[
-        targetItemKey
-      ].isReferencedIn.notes.filter((ref) => ref !== itemId);
+  for (const targetUuid of currentItemLinks.isLinkedTo.notes) {
+    if (index.notes[targetUuid]) {
+      index.notes[targetUuid].isReferencedIn.notes = index.notes[
+        targetUuid
+      ].isReferencedIn.notes.filter((ref) => ref !== itemUuid);
     }
   }
 
-  for (const targetItemKey of currentItemLinks.isLinkedTo.checklists) {
-    if (index.checklists[targetItemKey]) {
-      index.checklists[targetItemKey].isReferencedIn.checklists =
-        index.checklists[targetItemKey].isReferencedIn.checklists.filter(
-          (ref) => ref !== itemId
-        );
+  for (const targetUuid of currentItemLinks.isLinkedTo.checklists) {
+    if (index.checklists[targetUuid]) {
+      index.checklists[targetUuid].isReferencedIn.checklists = index.checklists[
+        targetUuid
+      ].isReferencedIn.checklists.filter((ref) => ref !== itemUuid);
     }
   }
 
-  const newOutgoingLinks = {
-    notes: currentLinks
-      .filter((l) => l.type === ItemTypes.NOTE)
-      .map((l) => {
-        const resolvedPath = resolveLinkPath(l.path, l.type, index);
-        return resolvedPath || `Uncategorized/${l.path}`;
-      }),
-    checklists: currentLinks
-      .filter((l) => l.type === ItemTypes.CHECKLIST)
-      .map((l) => {
-        const resolvedPath = resolveLinkPath(l.path, l.type, index);
-        return resolvedPath || `Uncategorized/${l.path}`;
-      }),
+  index[currentItemKey][itemUuid] = {
+    isLinkedTo: { notes: [], checklists: [] },
+    isReferencedIn: { notes: [], checklists: [] },
   };
 
   for (const link of currentLinks) {
-    const resolvedPath = resolveLinkPath(link.path, link.type, index);
-    const targetPath = resolvedPath
-      ? resolvedPath.includes("/")
-        ? resolvedPath
-        : `Uncategorized/${resolvedPath}`
-      : link.path;
     const targetKey = `${link.type}s`;
-    if (!index[targetKey][targetPath]) {
-      index[targetKey][targetPath] = {
+
+    if (!(index[currentItemKey][itemUuid].isLinkedTo as any)[targetKey]) {
+      (index[currentItemKey][itemUuid].isLinkedTo as any)[targetKey] = [];
+    }
+    if (
+      !(index[currentItemKey][itemUuid].isLinkedTo as any)[targetKey].includes(
+        link.uuid
+      )
+    ) {
+      (index[currentItemKey][itemUuid].isLinkedTo as any)[targetKey].push(
+        link.uuid
+      );
+    }
+
+    if (!index[targetKey][link.uuid]) {
+      index[targetKey][link.uuid] = {
         isLinkedTo: { notes: [], checklists: [] },
         isReferencedIn: { notes: [], checklists: [] },
       };
     }
+    if (!(index[targetKey][link.uuid].isReferencedIn as any)[currentItemKey]) {
+      (index[targetKey][link.uuid].isReferencedIn as any)[currentItemKey] = [];
+    }
     if (
-      !index[targetKey][targetPath].isReferencedIn[
-        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
-      ].includes(itemId)
+      !(index[targetKey][link.uuid].isReferencedIn as any)[
+        currentItemKey
+      ].includes(itemUuid)
     ) {
-      index[targetKey][targetPath].isReferencedIn[
-        itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
-      ].push(itemId);
+      (index[targetKey][link.uuid].isReferencedIn as any)[currentItemKey].push(
+        itemUuid
+      );
     }
   }
-
-  currentItemLinks.isLinkedTo = newOutgoingLinks;
-  index[currentItemKey][itemId] = currentItemLinks;
 
   await writeLinkIndex(username, index);
 };
@@ -204,14 +179,14 @@ export const updateIndexForItem = async (
 export const removeItemFromIndex = async (
   username: string,
   itemType: ItemType,
-  itemId: string
+  itemUuid: string
 ): Promise<void> => {
   const index = await readLinkIndex(username);
   const itemKey = `${itemType}s`;
 
-  if (!index[itemKey][itemId]) return;
+  if (!index[itemKey][itemUuid]) return;
 
-  const itemLinks = index[itemKey][itemId];
+  const itemLinks = index[itemKey][itemUuid];
 
   for (const linkedItem of itemLinks.isLinkedTo.notes) {
     if (index.notes[linkedItem]) {
@@ -219,7 +194,7 @@ export const removeItemFromIndex = async (
         itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ] = index.notes[linkedItem].isReferencedIn[
         itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
-      ].filter((ref) => ref !== itemId);
+      ].filter((ref) => ref !== itemUuid);
     }
   }
 
@@ -229,7 +204,7 @@ export const removeItemFromIndex = async (
         itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ] = index.checklists[linkedItem].isReferencedIn[
         itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
-      ].filter((ref) => ref !== itemId);
+      ].filter((ref) => ref !== itemUuid);
     }
   }
 
@@ -239,7 +214,7 @@ export const removeItemFromIndex = async (
         itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ] = index.notes[referencingItem].isLinkedTo[
         itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
-      ].filter((link) => link !== itemId);
+      ].filter((link) => link !== itemUuid);
     }
   }
 
@@ -249,11 +224,11 @@ export const removeItemFromIndex = async (
         itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
       ] = index.checklists[referencingItem].isLinkedTo[
         itemType === ItemTypes.NOTE ? Modes.NOTES : Modes.CHECKLISTS
-      ].filter((link) => link !== itemId);
+      ].filter((link) => link !== itemUuid);
     }
   }
 
-  delete index[itemKey][itemId];
+  delete index[itemKey][itemUuid];
 
   await writeLinkIndex(username, index);
 };
@@ -297,172 +272,11 @@ export const updateItemCategory = async (
   await writeLinkIndex(username, index);
 };
 
-export const updateReferencingContent = async (
-  username: string,
-  itemType: ItemType,
-  oldItemId: string,
-  newItemId: string,
-  newTitle: string
-): Promise<void> => {
-  const index = await readLinkIndex(username);
-  const itemKey = `${itemType}s`;
-
-  if (!index[itemKey][oldItemId]) return;
-
-  const referencingNotes = index[itemKey][oldItemId].isReferencedIn.notes || [];
-  const referencingChecklists =
-    index[itemKey][oldItemId].isReferencedIn.checklists || [];
-
-  const oldHref = `/${itemType}/${oldItemId}`;
-  const newHref = `/${itemType}/${newItemId}`;
-
-  for (const noteId of referencingNotes) {
-    try {
-      const note = await getNoteById(
-        decodeId(noteId.split("/").pop() || ""),
-        decodeCategoryPath(noteId.split("/").slice(0, -1).join("/")),
-        username
-      );
-      if (!note) continue;
-
-      let updatedContent = note.content;
-
-      const markdownRegex = new RegExp(`\\[([^\\]]+)\\]\\(${oldHref}\\)`, "g");
-      updatedContent = updatedContent.replace(
-        markdownRegex,
-        `[${newTitle}](${newHref})`
-      );
-
-      const htmlHrefRegex = new RegExp(`href="${oldHref}"`, "g");
-      updatedContent = updatedContent.replace(
-        htmlHrefRegex,
-        `href="${newHref}"`
-      );
-      const htmlTitleRegex = new RegExp(`data-title="[^"]*"`, "g");
-      updatedContent = updatedContent.replace(
-        htmlTitleRegex,
-        `data-title="${newTitle}"`
-      );
-
-      if (updatedContent !== note.content) {
-        const updatedNote = { ...note, content: updatedContent };
-        const markdown = `# ${updatedNote.title}\n\n${updatedNote.content}`;
-        const ownerDir = path.join(
-          process.cwd(),
-          "data",
-          NOTES_FOLDER,
-          note.owner!
-        );
-        const categoryDir = path.join(
-          ownerDir,
-          updatedNote.category || "Uncategorized"
-        );
-        await fs.mkdir(categoryDir, { recursive: true });
-        const filePath = path.join(
-          categoryDir,
-          `${encodeId(updatedNote.id)}.md`
-        );
-        await serverWriteFile(filePath, markdown);
-
-        const links = parseInternalLinks(updatedContent);
-        await updateIndexForItem(username, "note", noteId, links);
-      }
-    } catch (error) {
-      console.warn(`Failed to update referencing note ${noteId}:`, error);
-    }
-  }
-
-  for (const checklistId of referencingChecklists) {
-    try {
-      const checklist = await getListById(
-        decodeId(checklistId.split("/").pop() || ""),
-        username,
-        decodeCategoryPath(checklistId.split("/").slice(0, -1).join("/"))
-      );
-      if (!checklist) continue;
-
-      let contentChanged = false;
-      const updatedItems = checklist.items.map((item) => {
-        let updatedText = item.text;
-
-        const markdownRegex = new RegExp(
-          `\\[([^\\]]+)\\]\\(${oldHref}\\)`,
-          "g"
-        );
-        updatedText = updatedText.replace(
-          markdownRegex,
-          `[${newTitle}](${newHref})`
-        );
-
-        const htmlHrefRegex = new RegExp(`href="${oldHref}"`, "g");
-        updatedText = updatedText.replace(htmlHrefRegex, `href="${newHref}"`);
-        const htmlTitleRegex = new RegExp(`data-title="[^"]*"`, "g");
-        updatedText = updatedText.replace(
-          htmlTitleRegex,
-          `data-title="${newTitle}"`
-        );
-
-        if (updatedText !== item.text) {
-          contentChanged = true;
-          return { ...item, text: updatedText };
-        }
-        return item;
-      });
-
-      if (contentChanged) {
-        const updatedChecklist = { ...checklist, items: updatedItems };
-        const header =
-          updatedChecklist.type === "task"
-            ? `# ${updatedChecklist.title}\n<!-- type:task -->\n`
-            : `# ${updatedChecklist.title}\n`;
-        const itemsMarkdown = updatedItems
-          .sort((a, b) => a.order - b.order)
-          .map((item) => {
-            const prefix =
-              updatedChecklist.type === "task"
-                ? item.status === "completed"
-                  ? "- [x] "
-                  : "- [ ] "
-                : "- ";
-            return prefix + item.text;
-          })
-          .join("\n");
-        const markdown = `${header}\n${itemsMarkdown}`;
-
-        const ownerDir = path.join(
-          process.cwd(),
-          "data",
-          CHECKLISTS_FOLDER,
-          checklist.owner!
-        );
-        const categoryDir = path.join(
-          ownerDir,
-          updatedChecklist.category || "Uncategorized"
-        );
-        await fs.mkdir(categoryDir, { recursive: true });
-        const filePath = path.join(
-          categoryDir,
-          `${encodeId(updatedChecklist.id)}.md`
-        );
-        await serverWriteFile(filePath, markdown);
-
-        const content = updatedItems.map((i) => i.text).join("\n");
-        const links = parseInternalLinks(content);
-        await updateIndexForItem(username, "checklist", checklistId, links);
-      }
-    } catch (error) {
-      console.warn(
-        `Failed to update referencing checklist ${checklistId}:`,
-        error
-      );
-    }
-  }
-};
 
 export const rebuildLinkIndex = async (username: string): Promise<void> => {
   const [notesResult, checklistsResult] = await Promise.all([
-    getNotes(username),
-    getLists(username),
+    getUserNotes({ username }),
+    getUserChecklists({ username }),
   ]);
 
   const allNotes = notesResult.success ? notesResult.data || [] : [];
@@ -473,108 +287,73 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   const newIndex: LinkIndex = { notes: {}, checklists: {} };
 
   for (const note of allNotes) {
-    const category =
-      note.category && note.category !== "" && note.category !== "/"
-        ? note.category
-        : "Uncategorized";
-    const itemKey = encodeCategoryPath(`${category}/${note.id}`);
-    newIndex.notes[itemKey] = {
-      isLinkedTo: { notes: [], checklists: [] },
-      isReferencedIn: { notes: [], checklists: [] },
-    };
-  }
-
-  for (const checklist of allChecklists) {
-    const category =
-      checklist.category &&
-      checklist.category !== "" &&
-      checklist.category !== "/"
-        ? checklist.category
-        : "Uncategorized";
-    const itemKey = encodeCategoryPath(`${category}/${checklist.id}`);
-    newIndex.checklists[itemKey] = {
-      isLinkedTo: { notes: [], checklists: [] },
-      isReferencedIn: { notes: [], checklists: [] },
-    };
-  }
-
-  for (const note of allNotes) {
-    const category =
-      note.category && note.category !== "" && note.category !== "/"
-        ? note.category
-        : "Uncategorized";
-    const itemKey = encodeCategoryPath(`${category}/${note.id}`);
-    const links = parseInternalLinks(note.content);
-    newIndex.notes[itemKey].isLinkedTo = {
-      notes: links
-        .filter((l) => l.type === ItemTypes.NOTE)
-        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
-        .filter((path): path is string => path !== null),
-      checklists: links
-        .filter((l) => l.type === ItemTypes.CHECKLIST)
-        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
-        .filter((path): path is string => path !== null),
-    };
-  }
-
-  for (const checklist of allChecklists) {
-    const category =
-      checklist.category &&
-      checklist.category !== "" &&
-      checklist.category !== "/"
-        ? checklist.category
-        : "Uncategorized";
-    const itemKey = encodeCategoryPath(`${category}/${checklist.id}`);
-    const content = checklist.items.map((i) => i.text).join("\n");
-    const links = parseInternalLinks(content);
-    newIndex.checklists[itemKey].isLinkedTo = {
-      notes: links
-        .filter((l) => l.type === ItemTypes.NOTE)
-        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
-        .filter((path): path is string => path !== null),
-      checklists: links
-        .filter((l) => l.type === ItemTypes.CHECKLIST)
-        .map((l) => resolveLinkPath(l.path, l.type as ItemType, newIndex))
-        .filter((path): path is string => path !== null),
-    };
-  }
-
-  for (const [itemType, items] of Object.entries(newIndex)) {
-    for (const [itemId, itemLinks] of Object.entries({ ...items })) {
-      if (!itemId.includes("/")) {
-        const newKey = `Uncategorized/${itemId}`;
-        newIndex[itemType][newKey] = itemLinks;
-        delete newIndex[itemType][itemId];
-      }
+    if (note.uuid) {
+      newIndex.notes[note.uuid] = {
+        isLinkedTo: { notes: [], checklists: [] },
+        isReferencedIn: { notes: [], checklists: [] },
+      };
     }
   }
 
-  for (const [itemType, items] of Object.entries(newIndex)) {
-    for (const [itemId, itemLinks] of Object.entries(items)) {
-      for (const link of [
-        ...itemLinks.isLinkedTo.notes.map((path) => ({
-          type: ItemTypes.NOTE,
-          path,
-        })),
-        ...itemLinks.isLinkedTo.checklists.map((path) => ({
-          type: ItemTypes.CHECKLIST,
-          path,
-        })),
-      ]) {
-        const resolvedPath = resolveLinkPath(
-          link.path,
-          link.type as ItemType,
-          newIndex
-        );
+  for (const checklist of allChecklists) {
+    if (checklist.uuid) {
+      newIndex.checklists[checklist.uuid] = {
+        isLinkedTo: { notes: [], checklists: [] },
+        isReferencedIn: { notes: [], checklists: [] },
+      };
+    }
+  }
 
-        if (resolvedPath) {
-          const targetKey = `${link.type}s`;
-          const finalResolvedPath = resolvedPath.includes("/")
-            ? resolvedPath
-            : `Uncategorized/${resolvedPath}`;
-          newIndex[targetKey][finalResolvedPath].isReferencedIn[
-            itemType === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS
-          ].push(itemId);
+  for (const note of allNotes) {
+    if (!note.uuid) continue;
+    const links = parseInternalLinks(note.content || "");
+    newIndex.notes[note.uuid].isLinkedTo = {
+      notes: links.filter((l) => l.type === ItemTypes.NOTE).map((l) => l.uuid),
+      checklists: links
+        .filter((l) => l.type === ItemTypes.CHECKLIST)
+        .map((l) => l.uuid),
+    };
+  }
+
+  for (const checklist of allChecklists) {
+    if (!checklist.uuid) continue;
+    const content = checklist?.items?.map((i) => i.text).join("\n") || "";
+    const links = parseInternalLinks(content);
+    newIndex.checklists[checklist.uuid].isLinkedTo = {
+      notes: links.filter((l) => l.type === ItemTypes.NOTE).map((l) => l.uuid),
+      checklists: links
+        .filter((l) => l.type === ItemTypes.CHECKLIST)
+        .map((l) => l.uuid),
+    };
+  }
+
+  for (const [sourceType, items] of Object.entries(newIndex)) {
+    for (const [sourceUuid, itemLinks] of Object.entries(items)) {
+      for (const targetUuid of itemLinks.isLinkedTo.notes) {
+        if (newIndex.notes[targetUuid]) {
+          const refType = sourceType === "notes" ? "notes" : "checklists";
+          if (
+            !newIndex.notes[targetUuid].isReferencedIn[refType].includes(
+              sourceUuid
+            )
+          ) {
+            newIndex.notes[targetUuid].isReferencedIn[refType].push(sourceUuid);
+          }
+        }
+      }
+
+      for (const targetUuid of itemLinks.isLinkedTo.checklists) {
+        if (newIndex.checklists[targetUuid]) {
+          const refType = sourceType === "notes" ? "notes" : "checklists";
+          if (
+            !newIndex.checklists[targetUuid].isReferencedIn[refType].includes(
+              sourceUuid
+            )
+          ) {
+            newIndex.checklists[targetUuid].isReferencedIn[refType].push(
+              sourceUuid
+            );
+          }
         }
       }
     }

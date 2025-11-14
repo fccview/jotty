@@ -12,6 +12,8 @@ import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import rehypeRaw from "rehype-raw";
 import { CodeBlockRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockRenderer";
+import { MermaidRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/MermaidRenderer";
+import { DrawioRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/DrawioRenderer";
 import { FileAttachment } from "@/app/_components/GlobalComponents/FormElements/FileAttachment";
 import type { Components } from "react-markdown";
 import { QUOTES } from "@/app/_consts/notes";
@@ -22,6 +24,8 @@ import { toHtml } from "hast-util-to-html";
 import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
+import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -46,6 +50,21 @@ export const UnifiedMarkdownRenderer = ({
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
+  const { contentWithoutMetadata } = extractYamlMetadata(content);
+
+  const processedContent = contentWithoutMetadata.replace(
+    /<!--\s*drawio-diagram\s+data:\s*([^\n]+)\s+svg:\s*([^\n]+)(?:\s+theme:\s*([^\n]+))?\s*-->/g,
+    (match, dataBase64, svgBase64, theme) => {
+      try {
+        const diagramData = atob(dataBase64.trim());
+        const svgData = atob(svgBase64.trim());
+        const themeMode = theme ? theme.trim() : "light";
+        return `<div data-drawio="" data-drawio-data="${diagramData.replace(/"/g, '&quot;')}" data-drawio-svg="${svgData.replace(/"/g, '&quot;')}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
+      } catch (e) {
+        return match;
+      }
+    }
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -87,6 +106,10 @@ export const UnifiedMarkdownRenderer = ({
           codeElement.props.className?.replace("language-", "") || "plaintext";
         const rawCode = getRawTextFromChildren(codeElement.props.children);
 
+        if (language === "mermaid") {
+          return <MermaidRenderer code={rawCode} />;
+        }
+
         let highlightedHtml: string;
 
         if (!lowlight.registered(language)) {
@@ -125,27 +148,47 @@ export const UnifiedMarkdownRenderer = ({
       const isFileAttachment = childText.startsWith("📎 ") && href;
       const isVideoAttachment = childText.startsWith("🎥 ") && href;
       const isInternalLink =
-        href && (href?.includes("/note/") || href?.includes("/checklist/"));
+        href &&
+        (href?.includes("/note/") ||
+          href?.includes("/checklist/") ||
+          href?.startsWith("/jotty/"));
 
       if (isInternalLink) {
+        let linkType: ItemTypes;
+        let linkCategory: string | null = null;
+        let linkUuid: string | null = null;
+        let linkItemId: string = "";
+
+        if (href?.startsWith("/jotty/")) {
+          linkUuid = href.replace("/jotty/", "");
+          linkType = ItemTypes.NOTE;
+        } else {
+          linkType = href?.includes("/note/")
+            ? ItemTypes.NOTE
+            : ItemTypes.CHECKLIST;
+          const pathParts = href
+            ?.replace("/checklist/", "")
+            .replace("/note/", "")
+            .split("/");
+          linkItemId = decodeId(pathParts?.[pathParts.length - 1] || "");
+          linkCategory = decodeCategoryPath(pathParts?.slice(0, -1).join("/") || "");
+        }
+
         return (
           <InternalLinkComponent
             node={{
               attrs: {
                 href: href || "",
                 title: childText,
-                type: href?.includes("/note/") ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
-                category:
-                  href?.includes("/note/") || href?.includes("/checklist/")
-                    ? href
-                      .replace("checklist/", "")
-                      .replace("note/", "")
-                      .split("/")
-                      .slice(1, -1)
-                      .join("/")
-                    : (null as string | null),
+                type: linkType,
+                category: linkCategory || "Uncategorized",
+                uuid: linkUuid || "",
+                itemId: linkItemId,
+                convertToBidirectional: false,
               },
             }}
+            editor={undefined as any}
+            updateAttributes={() => { }}
           />
         );
       }
@@ -242,6 +285,30 @@ export const UnifiedMarkdownRenderer = ({
         </li>
       );
     },
+    div({ node, ...props }: any) {
+      const isDrawio = props["data-drawio"] !== undefined ||
+        props.dataDrawio !== undefined ||
+        (node && node.properties && node.properties["data-drawio"] !== undefined);
+
+      if (isDrawio) {
+        const svgData = props["data-drawio-svg"] ||
+          props.dataDrawioSvg ||
+          (node?.properties?.["data-drawio-svg"]);
+        const themeMode = props["data-drawio-theme"] ||
+          props.dataDrawioTheme ||
+          (node?.properties?.["data-drawio-theme"]) || "light";
+        return <DrawioRenderer svgData={svgData} themeMode={themeMode} />;
+      }
+
+      if (props["data-mermaid"] !== undefined || props.dataMermaid !== undefined) {
+        const mermaidContent = props["data-mermaid-content"] ||
+          props.dataMermaidContent ||
+          (node?.properties?.["data-mermaid-content"]) || "";
+        return <MermaidRenderer code={mermaidContent} />;
+      }
+
+      return <div {...props} />;
+    },
   };
 
   return (
@@ -253,7 +320,7 @@ export const UnifiedMarkdownRenderer = ({
         rehypePlugins={[rehypeSlug, rehypeRaw]}
         components={components}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );

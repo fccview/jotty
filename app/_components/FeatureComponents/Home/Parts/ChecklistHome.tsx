@@ -17,7 +17,7 @@ import { Checklist, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -43,6 +43,7 @@ export const ChecklistHome = ({
 
   const {
     sensors,
+    handleDragStart,
     handleDragEnd,
     pinned,
     recent,
@@ -55,6 +56,8 @@ export const ChecklistHome = ({
     setChecklistFilter,
     handleTogglePin,
     isListPinned,
+    activeList,
+    draggedItemWidth,
   } = useChecklistHome({ lists, user });
 
   const getListSharer = (list: Checklist) => {
@@ -196,16 +199,17 @@ export const ChecklistHome = ({
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={pinned.map((list) => list.id)}
+                items={pinned.map((list) => list.uuid || list.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {pinned.map((list) => (
                     <ChecklistCard
-                      key={`pinned-${list.category}-${list.id}`}
+                      key={`pinned-${list.category}-${list.uuid || list.id}`}
                       list={list}
                       onSelect={onSelectChecklist!}
                       isPinned={true}
@@ -216,6 +220,19 @@ export const ChecklistHome = ({
                   ))}
                 </div>
               </SortableContext>
+
+              <DragOverlay>
+                {activeList ? (
+                  <ChecklistCard
+                    list={activeList}
+                    onSelect={() => {}}
+                    isPinned={true}
+                    isDraggable={false}
+                    sharer={getListSharer(activeList)}
+                    fixedWidth={draggedItemWidth || undefined}
+                  />
+                ) : null}
+              </DragOverlay>
             </DndContext>
           </div>
         )}

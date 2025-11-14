@@ -13,24 +13,52 @@ import {
   NotesDefaultEditor,
   NotesDefaultMode,
   NotesAutoSaveInterval,
+  FileRenameMode,
+  PreferredTimeFormat,
+  PreferredDateFormat,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useToast } from "@/app/_providers/ToastProvider";
-import { BUILT_IN_THEMES } from "@/app/_consts/themes";
 import { getAllThemes } from "@/app/_consts/themes";
 import {
-  themeSettingsSchema,
   editorSettingsSchema,
-  navigationSettingsSchema,
   checklistSettingsSchema,
+  generalSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 
 interface SettingsTabProps {
   setShowDeleteModal: (show: boolean) => void;
 }
+
+const getSettingsFromUser = (user: User | null): Partial<User> => ({
+  preferredTheme: user?.preferredTheme || "system",
+  tableSyntax: user?.tableSyntax || "html",
+  landingPage: user?.landingPage || Modes.CHECKLISTS,
+  notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
+  notesDefaultMode: user?.notesDefaultMode || "view",
+  notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
+  enableRecurrence: user?.enableRecurrence || "disable",
+  showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
+  fileRenameMode: user?.fileRenameMode || "dash-case",
+  preferredDateFormat: user?.preferredDateFormat || "dd/mm/yyyy",
+  preferredTimeFormat: user?.preferredTimeFormat || "12-hours",
+});
+
+const pick = <T extends object, K extends keyof T>(
+  obj: T,
+  keys: K[]
+): Pick<T, K> => {
+  const result = {} as Pick<T, K>;
+  keys.forEach((key) => {
+    if (key in obj) {
+      result[key] = obj[key];
+    }
+  });
+  return result;
+};
 
 export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const { isDemoMode, user, setUser } = useAppMode();
@@ -38,6 +66,21 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const { showToast } = useToast();
   const [allThemes, setAllThemes] = useState<any[]>([]);
   const [loadingThemes, setLoadingThemes] = useState(true);
+  const [initialSettings, setInitialSettings] = useState<Partial<User>>(
+    getSettingsFromUser(user)
+  );
+  const [currentSettings, setCurrentSettings] = useState<Partial<User>>(
+    getSettingsFromUser(user)
+  );
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+
+  useEffect(() => {
+    const newSettings = getSettingsFromUser(user);
+    setInitialSettings(newSettings);
+    setCurrentSettings(newSettings);
+  }, [user]);
 
   useEffect(() => {
     const loadThemes = async () => {
@@ -53,57 +96,34 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     loadThemes();
   }, []);
 
-  const [preferredTheme, setPreferredTheme] = useState<string>(
-    user?.preferredTheme || "system"
-  );
-  const [notesDefaultEditor, setNotesDefaultEditor] =
-    useState<NotesDefaultEditor>(user?.notesDefaultEditor || "wysiwyg");
-  const [tableSyntax, setTableSyntax] = useState<TableSyntax>(
-    user?.tableSyntax || "html"
-  );
-  const [landingPage, setLandingPage] = useState<LandingPage>(
-    user?.landingPage || Modes.CHECKLISTS
-  );
-  const [notesDefaultMode, setNotesDefaultMode] = useState<NotesDefaultMode>(
-    user?.notesDefaultMode || "view"
-  );
-  const [notesAutoSaveInterval, setNotesAutoSaveInterval] =
-    useState<NotesAutoSaveInterval>(user?.notesAutoSaveInterval || 5000);
+  const handleSettingChange = <K extends keyof User>(
+    key: K,
+    value: User[K]
+  ) => {
+    setCurrentSettings((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const [enableRecurrence, setEnableRecurrence] = useState<EnableRecurrence>(
-    user?.enableRecurrence || "disable"
-  );
-  const [showCompletedSuggestions, setShowCompletedSuggestions] =
-    useState<ShowCompletedSuggestions>(
-      user?.showCompletedSuggestions || "enable"
-    );
+  const hasChanges = (keys: (keyof Partial<User>)[]) => {
+    return keys.some((key) => currentSettings[key] !== initialSettings[key]);
+  };
 
-  const [initialSettings, setInitialSettings] = useState<Partial<User>>({
-    preferredTheme: user?.preferredTheme || "system",
-    tableSyntax: user?.tableSyntax || "html",
-    landingPage: user?.landingPage || Modes.CHECKLISTS,
-    notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
-    notesDefaultMode: user?.notesDefaultMode || "view",
-    notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
-    enableRecurrence: user?.enableRecurrence || "disable",
-    showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
-  });
-
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string>
-  >({});
-
-  const hasThemeChanges = preferredTheme !== initialSettings.preferredTheme;
-  const hasEditorChanges =
-    notesDefaultEditor !== initialSettings.notesDefaultEditor ||
-    tableSyntax !== initialSettings.tableSyntax ||
-    notesDefaultMode !== initialSettings.notesDefaultMode ||
-    notesAutoSaveInterval !== initialSettings.notesAutoSaveInterval;
-  const hasNavigationChanges = landingPage !== initialSettings.landingPage;
-
-  const hasChecklistsChanges =
-    enableRecurrence !== initialSettings.enableRecurrence ||
-    showCompletedSuggestions !== initialSettings.showCompletedSuggestions;
+  const hasGeneralChanges = hasChanges([
+    "preferredTheme",
+    "landingPage",
+    "fileRenameMode",
+    "preferredDateFormat",
+    "preferredTimeFormat",
+  ]);
+  const hasEditorChanges = hasChanges([
+    "notesDefaultEditor",
+    "tableSyntax",
+    "notesDefaultMode",
+    "notesAutoSaveInterval",
+  ]);
+  const hasChecklistsChanges = hasChanges([
+    "enableRecurrence",
+    "showCompletedSuggestions",
+  ]);
 
   const validateAndSave = async <T extends Record<string, any>>(
     settings: T,
@@ -161,48 +181,28 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     router.refresh();
   };
 
-  const handleSaveThemeSettings = () =>
-    validateAndSave(
-      { preferredTheme },
-      themeSettingsSchema,
-      "Theme",
-      (prev) => ({ ...prev, preferredTheme })
-    );
+  const handleSaveSection = (
+    keys: (keyof User)[],
+    schema: any,
+    sectionName: string
+  ) => {
+    const settingsToSave = pick(currentSettings, keys);
 
-  const handleSaveEditorSettings = () =>
-    validateAndSave(
-      {
-        notesDefaultEditor,
-        tableSyntax,
-        notesDefaultMode,
-        notesAutoSaveInterval,
-      },
-      editorSettingsSchema,
-      "Notes Preferences",
-      (prev) => ({
-        ...prev,
-        notesDefaultEditor,
-        tableSyntax,
-        notesDefaultMode,
-        notesAutoSaveInterval,
-      })
-    );
+    validateAndSave(settingsToSave, schema, sectionName, (prev) => ({
+      ...prev,
+      ...settingsToSave,
+    }));
+  };
 
-  const handleSaveNavigationSettings = () =>
-    validateAndSave(
-      { landingPage },
-      navigationSettingsSchema,
-      "Navigation",
-      (prev) => ({ ...prev, landingPage })
-    );
+  const dateFormatOptions = [
+    { id: "dd/mm/yyyy", name: "DD/MM/YYYY" },
+    { id: "mm/dd/yyyy", name: "MM/DD/YYYY" },
+  ];
 
-  const handleSaveChecklistsSettings = () =>
-    validateAndSave(
-      { enableRecurrence, showCompletedSuggestions },
-      checklistSettingsSchema,
-      "Checklists",
-      (prev) => ({ ...prev, enableRecurrence, showCompletedSuggestions })
-    );
+  const timeFormatOptions = [
+    { id: "12-hours", name: "12 hours" },
+    { id: "24-hours", name: "24 hours" },
+  ];
 
   const tableSyntaxOptions = [
     { id: "markdown", name: "Markdown (e.g., | Header |)" },
@@ -240,6 +240,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     { id: "disable", name: "Disable" },
   ];
 
+  const fileRenameModeOptions = [
+    { id: "dash-case", name: "Dash case (e.g., my-file-name.md)" },
+    { id: "minimal", name: "Minimal (remove invalid characters only)" },
+    { id: "none", name: "No rename (keep original filename)" },
+  ];
+
   const landingPageOptions = [
     { id: "last-visited", name: "Last visited page" },
     { id: Modes.CHECKLISTS, name: "Checklists" },
@@ -253,44 +259,144 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       </div>
 
       <FormWrapper
-        title="Appearance"
+        title="General"
         action={
           <Button
-            onClick={handleSaveThemeSettings}
-            disabled={!hasThemeChanges}
+            onClick={() =>
+              handleSaveSection(
+                ["preferredTheme", "landingPage", "fileRenameMode", "preferredDateFormat", "preferredTimeFormat"],
+                generalSettingsSchema,
+                "General"
+              )
+            }
+            disabled={!hasGeneralChanges}
             size="sm"
           >
-            Save Theme
+            Save General
           </Button>
         }
       >
-        <div className="space-y-2">
-          <Label htmlFor="preferred-theme">Preferred Theme</Label>
-          {loadingThemes ? (
-            <div className="text-sm text-muted-foreground">
-              Loading themes...
-            </div>
-          ) : (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="preferred-theme">Preferred Theme</Label>
+            {loadingThemes ? (
+              <div className="text-sm text-muted-foreground">
+                Loading themes...
+              </div>
+            ) : (
+              <Dropdown
+                value={currentSettings.preferredTheme || "system"}
+                onChange={(value) =>
+                  handleSettingChange("preferredTheme", value)
+                }
+                options={allThemes.map((theme) => ({
+                  id: theme.id,
+                  name: theme.name,
+                  icon: theme.icon,
+                }))}
+                placeholder="Select a theme"
+                className="w-full"
+              />
+            )}
+            {validationErrors.preferredTheme && (
+              <p className="text-sm text-destructive">
+                {validationErrors.preferredTheme}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Choose your preferred theme across all devices.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="landing-page">Initial Landing Page</Label>
             <Dropdown
-              value={preferredTheme}
-              onChange={(value) => setPreferredTheme(value)}
-              options={allThemes.map((theme) => ({
-                id: theme.id,
-                name: theme.name,
-                icon: theme.icon,
-              }))}
-              placeholder="Select a theme"
+              value={currentSettings.landingPage || Modes.CHECKLISTS}
+              onChange={(value) =>
+                handleSettingChange("landingPage", value as LandingPage)
+              }
+              options={landingPageOptions}
+              placeholder="Select landing page"
               className="w-full"
             />
-          )}
-          {validationErrors.preferredTheme && (
-            <p className="text-sm text-destructive">
-              {validationErrors.preferredTheme}
+            {validationErrors.landingPage && (
+              <p className="text-sm text-destructive">
+                {validationErrors.landingPage}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Select the default page to load after logging in.
             </p>
-          )}
-          <p className="text-sm text-muted-foreground">
-            Choose your preferred theme across all devices.
-          </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="file-rename-mode">File Rename Mode</Label>
+            <Dropdown
+              value={currentSettings.fileRenameMode || "dash-case"}
+              onChange={(value) =>
+                handleSettingChange("fileRenameMode", value as FileRenameMode)
+              }
+              options={fileRenameModeOptions}
+              placeholder="Select file rename mode"
+              className="w-full"
+            />
+            {validationErrors.fileRenameMode && (
+              <p className="text-sm text-destructive">
+                {validationErrors.fileRenameMode}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Choose how files are renamed when saving notes and checklists.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="preferred-date-format">Preferred Date Format</Label>
+            <Dropdown
+              value={currentSettings.preferredDateFormat || "dd/mm/yyyy"}
+              onChange={(value) =>
+                handleSettingChange(
+                  "preferredDateFormat",
+                  value as PreferredDateFormat
+                )
+              }
+              options={dateFormatOptions}
+              placeholder="Select date format"
+              className="w-full"
+            />
+            {validationErrors.preferredDateFormat && (
+              <p className="text-sm text-destructive">
+                {validationErrors.preferredDateFormat}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Choose your preferred date format.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="preferred-time-format">Preferred Time Format</Label>
+            <Dropdown
+              value={currentSettings.preferredTimeFormat || "12-hours"}
+              onChange={(value) =>
+                handleSettingChange(
+                  "preferredTimeFormat",
+                  value as PreferredTimeFormat
+                )
+              }
+              options={timeFormatOptions}
+              placeholder="Select time format"
+              className="w-full"
+            />
+            {validationErrors.preferredTimeFormat && (
+              <p className="text-sm text-destructive">
+                {validationErrors.preferredTimeFormat}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Choose your preferred time format.
+            </p>
+          </div>
         </div>
       </FormWrapper>
 
@@ -298,7 +404,18 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         title="Notes Preferences"
         action={
           <Button
-            onClick={handleSaveEditorSettings}
+            onClick={() =>
+              handleSaveSection(
+                [
+                  "notesAutoSaveInterval",
+                  "notesDefaultMode",
+                  "notesDefaultEditor",
+                  "tableSyntax",
+                ],
+                editorSettingsSchema,
+                "Notes Preferences"
+              )
+            }
             disabled={!hasEditorChanges}
             size="sm"
           >
@@ -309,17 +426,20 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         <div className="space-y-2">
           <Label htmlFor="auto-save-interval">Auto Save Interval</Label>
           <Dropdown
-            value={notesAutoSaveInterval}
+            value={currentSettings.notesAutoSaveInterval || 5000}
             onChange={(value) =>
-              setNotesAutoSaveInterval(parseInt(value) as NotesAutoSaveInterval)
+              handleSettingChange(
+                "notesAutoSaveInterval",
+                parseInt(value) as NotesAutoSaveInterval
+              )
             }
             options={autoSaveIntervalOptions}
             placeholder="Select auto save interval"
             className="w-full"
           />
-          {validationErrors.autoSaveInterval && (
+          {validationErrors.notesAutoSaveInterval && (
             <p className="text-sm text-destructive">
-              {validationErrors.autoSaveInterval}
+              {validationErrors.notesAutoSaveInterval}
             </p>
           )}
           <p className="text-sm text-muted-foreground">
@@ -330,8 +450,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         <div className="space-y-2">
           <Label htmlFor="notes-default-editor">Default Mode</Label>
           <Dropdown
-            value={notesDefaultMode}
-            onChange={(value) => setNotesDefaultMode(value as NotesDefaultMode)}
+            value={currentSettings.notesDefaultMode || "view"}
+            onChange={(value) =>
+              handleSettingChange("notesDefaultMode", value as NotesDefaultMode)
+            }
             options={notesDefaultModeOptions}
             placeholder="Select notes default mode"
             className="w-full"
@@ -345,7 +467,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             Choose if the note is automatically in edit mode or not{" "}
             {
               notesDefaultModeOptions.find(
-                (option) => option.id !== notesDefaultMode
+                (option) => option.id !== currentSettings.notesDefaultMode
               )?.name
             }{" "}
             button in the note editor).
@@ -355,9 +477,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         <div className="space-y-2">
           <Label htmlFor="notes-default-editor">Default Editor</Label>
           <Dropdown
-            value={notesDefaultEditor}
+            value={currentSettings.notesDefaultEditor || "wysiwyg"}
             onChange={(value) =>
-              setNotesDefaultEditor(value as NotesDefaultEditor)
+              handleSettingChange(
+                "notesDefaultEditor",
+                value as NotesDefaultEditor
+              )
             }
             options={notesDefaultEditorOptions}
             placeholder="Select notes default editor"
@@ -373,7 +498,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             clicking on the{" "}
             {
               notesDefaultEditorOptions.find(
-                (option) => option.id !== notesDefaultEditor
+                (option) => option.id !== currentSettings.notesDefaultEditor
               )?.name
             }{" "}
             button in the note editor).
@@ -383,8 +508,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         <div className="space-y-2">
           <Label htmlFor="table-syntax">Table Syntax in Notes</Label>
           <Dropdown
-            value={tableSyntax}
-            onChange={(value) => setTableSyntax(value as TableSyntax)}
+            value={currentSettings.tableSyntax || "html"}
+            onChange={(value) =>
+              handleSettingChange("tableSyntax", value as TableSyntax)
+            }
             options={tableSyntaxOptions}
             placeholder="Select table syntax"
             className="w-full"
@@ -404,7 +531,13 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         title="Checklists Preferences"
         action={
           <Button
-            onClick={handleSaveChecklistsSettings}
+            onClick={() =>
+              handleSaveSection(
+                ["enableRecurrence", "showCompletedSuggestions"],
+                checklistSettingsSchema,
+                "Checklists"
+              )
+            }
             disabled={!hasChecklistsChanges}
             size="sm"
           >
@@ -418,8 +551,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             <span className="text-sm text-muted-foreground">(Beta)</span>
           </Label>
           <Dropdown
-            value={enableRecurrence}
-            onChange={(value) => setEnableRecurrence(value as EnableRecurrence)}
+            value={currentSettings.enableRecurrence || "disable"}
+            onChange={(value) =>
+              handleSettingChange("enableRecurrence", value as EnableRecurrence)
+            }
             options={enableRecurrenceOptions}
             placeholder="Select enable to add recurring checklists"
             className="w-full"
@@ -431,9 +566,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             Show completed tasks as suggestions
           </Label>
           <Dropdown
-            value={showCompletedSuggestions}
+            value={currentSettings.showCompletedSuggestions || "enable"}
             onChange={(value) =>
-              setShowCompletedSuggestions(value as ShowCompletedSuggestions)
+              handleSettingChange(
+                "showCompletedSuggestions",
+                value as ShowCompletedSuggestions
+              )
             }
             options={showCompletedSuggestionsOptions}
             placeholder="Select whether to show completed tasks as suggestions"
@@ -442,38 +580,6 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <p className="text-sm text-muted-foreground">
             When adding new tasks, show completed tasks as suggestions that can
             be re-enabled.
-          </p>
-        </div>
-      </FormWrapper>
-
-      <FormWrapper
-        title="Navigation"
-        action={
-          <Button
-            onClick={handleSaveNavigationSettings}
-            disabled={!hasNavigationChanges}
-            size="sm"
-          >
-            Save Navigation
-          </Button>
-        }
-      >
-        <div className="space-y-2">
-          <Label htmlFor="landing-page">Initial Landing Page</Label>
-          <Dropdown
-            value={landingPage}
-            onChange={(value) => setLandingPage(value as LandingPage)}
-            options={landingPageOptions}
-            placeholder="Select landing page"
-            className="w-full"
-          />
-          {validationErrors.landingPage && (
-            <p className="text-sm text-destructive">
-              {validationErrors.landingPage}
-            </p>
-          )}
-          <p className="text-sm text-muted-foreground">
-            Select the default page to load after logging in.
           </p>
         </div>
       </FormWrapper>

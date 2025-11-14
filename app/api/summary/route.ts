@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getNotes } from "@/app/_server/actions/note";
-import { getLists } from "@/app/_server/actions/checklist";
+import { getUserNotes } from "@/app/_server/actions/note";
+import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { Checklist, Result } from "@/app/_types";
 import { isAdmin } from "@/app/_server/actions/users";
 import { TaskStatus } from "@/app/_types/enums";
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
 
       const username = requestedUsername || user.username;
 
-      const notesResult = await getNotes(username);
+      const notesResult = await getUserNotes({ username });
       if (!notesResult.success || !notesResult.data) {
         return NextResponse.json(
           { error: notesResult.error || "Failed to fetch notes" },
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
         (note) => note.owner === username
       );
 
-      const listsResult = await getLists(username);
+      const listsResult = await getUserChecklists({ username }) as Result<Checklist[]>;
       if (!listsResult.success || !listsResult.data) {
         return NextResponse.json(
           { error: listsResult.error || "Failed to fetch checklists" },

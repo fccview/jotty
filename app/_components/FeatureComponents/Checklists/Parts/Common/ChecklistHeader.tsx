@@ -25,6 +25,7 @@ import { ChecklistsTypes } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useState } from "react";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
+import { useMetadata } from "@/app/_providers/MetadataProvider";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -45,19 +46,18 @@ export const ChecklistHeader = ({
   onConvertType,
   onArchive,
 }: ChecklistHeaderProps) => {
+  const metadata = useMetadata();
   const { handleCopyId, copied } = useChecklist({
     list: checklist,
-    onUpdate: () => {},
+    onUpdate: () => { },
   });
 
   const { globalSharing } = useAppMode();
   const { permissions } = usePermissions();
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
 
-  const encodedCategory = encodeCategoryPath(
-    checklist.category || "Uncategorized"
-  );
-  const itemDetails = sharingInfo(globalSharing, checklist.id, encodedCategory);
+  const encodedCategory = encodeCategoryPath(metadata.category);
+  const itemDetails = sharingInfo(globalSharing, metadata.id, encodedCategory);
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
 
   const sharedWith = itemDetails.sharedWith;
@@ -85,7 +85,7 @@ export const ChecklistHeader = ({
               size="sm"
               onClick={handleCopyId}
               className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              title={`Copy ID: ${checklist.id}`}
+              title={`Copy ID: ${checklist?.uuid || checklist?.id}`}
             >
               {copied ? (
                 <Check className="h-3 w-3 text-green-500" />
@@ -117,7 +117,9 @@ export const ChecklistHeader = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onConvertType}
+                onClick={() => {
+                  onConvertType();
+                }}
                 className="h-10 w-10 p-0"
                 title={
                   checklist.type === ChecklistsTypes.TASK
@@ -147,12 +149,11 @@ export const ChecklistHeader = ({
 
           {(permissions?.canEdit || permissions?.canDelete) && (
             <div
-              className={`${
-                permissions?.canEdit &&
+              className={`${permissions?.canEdit &&
                 !permissions?.canDelete &&
                 !permissions?.isOwner &&
                 "lg:hidden"
-              }`}
+                }`}
             >
               <DropdownMenu
                 align="right"
@@ -164,64 +165,66 @@ export const ChecklistHeader = ({
                 items={[
                   ...(onConvertType && permissions?.canEdit
                     ? [
-                        {
-                          type: "item" as const,
-                          label:
-                            checklist.type === ChecklistsTypes.TASK
-                              ? "Convert to Simple Checklist"
-                              : "Convert to Task Project",
-                          icon:
-                            checklist.type === ChecklistsTypes.TASK ? (
-                              <CheckSquare className="h-4 w-4" />
-                            ) : (
-                              <BarChart3 className="h-4 w-4" />
-                            ),
-                          onClick: onConvertType,
-                          className: "lg:!hidden",
+                      {
+                        type: "item" as const,
+                        label:
+                          checklist.type === ChecklistsTypes.TASK
+                            ? "Convert to Simple Checklist"
+                            : "Convert to Task Project",
+                        icon:
+                          checklist.type === ChecklistsTypes.TASK ? (
+                            <CheckSquare className="h-4 w-4" />
+                          ) : (
+                            <BarChart3 className="h-4 w-4" />
+                          ),
+                        onClick: () => {
+                          onConvertType();
                         },
-                      ]
+                        className: "lg:!hidden",
+                      },
+                    ]
                     : []),
                   ...(onArchive && permissions?.canDelete
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Archive",
-                          icon: <Archive className="h-4 w-4" />,
-                          onClick: onArchive,
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: "Archive",
+                        icon: <Archive className="h-4 w-4" />,
+                        onClick: onArchive,
+                      },
+                    ]
                     : []),
                   ...(onShare && permissions?.isOwner
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Share",
-                          icon: <Share2 className="h-4 w-4" />,
-                          onClick: onShare,
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: "Share",
+                        icon: <Share2 className="h-4 w-4" />,
+                        onClick: onShare,
+                      },
+                    ]
                     : []),
                   ...(onEdit && permissions?.canEdit
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Edit",
-                          icon: <Edit3 className="h-4 w-4" />,
-                          onClick: onEdit,
-                          className: "lg:!hidden",
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: "Edit",
+                        icon: <Edit3 className="h-4 w-4" />,
+                        onClick: onEdit,
+                        className: "lg:!hidden",
+                      },
+                    ]
                     : []),
                   ...(onDelete && permissions?.canDelete
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Delete",
-                          icon: <Trash2 className="h-4 w-4" />,
-                          onClick: onDelete,
-                          variant: "destructive" as const,
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: "Delete",
+                        icon: <Trash2 className="h-4 w-4" />,
+                        onClick: onDelete,
+                        variant: "destructive" as const,
+                      },
+                    ]
                     : []),
                 ]}
               />

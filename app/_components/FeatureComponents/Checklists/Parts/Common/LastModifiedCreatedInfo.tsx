@@ -3,16 +3,7 @@ import { Edit2Icon, ListPlus } from "lucide-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
-
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
-};
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 const LastModifiedCreatedInfo = ({
   item,
@@ -24,6 +15,7 @@ const LastModifiedCreatedInfo = ({
   checklist: Checklist;
 }) => {
   const { allSharedItems } = useAppMode();
+  const { formatDateTimeString } = usePreferredDateTime();
   const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
 
   const isShared = allSharedItems?.checklists.some(
@@ -39,7 +31,7 @@ const LastModifiedCreatedInfo = ({
             <span
               className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
               title={`Created by ${item.createdBy}${item.createdAt
-                ? ` on ${new Date(item.createdAt).toLocaleString()}`
+                ? ` on ${formatDateTimeString(item.createdAt)}`
                 : ""
                 }`}
             >
@@ -50,7 +42,7 @@ const LastModifiedCreatedInfo = ({
               />
               <span className="flex items-center gap-1">
                 <ListPlus className="h-3 w-3" />
-                {item.createdAt ? formatDate(item.createdAt) : ""}
+                {item.createdAt ? formatDateTimeString(item.createdAt) : ""}
               </span>
             </span>
           )}
@@ -59,7 +51,7 @@ const LastModifiedCreatedInfo = ({
             <span
               className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
               title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
-                ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
+                ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
                 : ""
                 }`}
             >
@@ -70,7 +62,7 @@ const LastModifiedCreatedInfo = ({
               />
               <span className="flex items-center gap-1">
                 <Edit2Icon className="h-3 w-3" />
-                {item.lastModifiedAt ? formatDate(item.lastModifiedAt) : ""}
+                {item.lastModifiedAt ? formatDateTimeString(item.lastModifiedAt) : ""}
               </span>
             </span>
           )}

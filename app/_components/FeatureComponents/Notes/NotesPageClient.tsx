@@ -12,7 +12,7 @@ import { FilterSidebar } from "@/app/_components/GlobalComponents/Layout/FilterS
 import { usePagination } from "@/app/_hooks/usePagination";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { togglePin } from "@/app/_server/actions/users";
+import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 import Masonry from "react-masonry-css";
 
@@ -66,8 +66,10 @@ export const NotesPageClient = ({
       filtered = filtered.filter((note) => {
         const noteCategory = note.category || "Uncategorized";
         if (recursive) {
-          return selectedCategories.some(selected =>
-            noteCategory === selected || noteCategory.startsWith(selected + "/")
+          return selectedCategories.some(
+            (selected) =>
+              noteCategory === selected ||
+              noteCategory.startsWith(selected + "/")
           );
         }
         return selectedCategories.includes(noteCategory);
@@ -75,7 +77,13 @@ export const NotesPageClient = ({
     }
 
     return filtered;
-  }, [initialNotes, noteFilter, selectedCategories, recursive, user?.pinnedNotes]);
+  }, [
+    initialNotes,
+    noteFilter,
+    selectedCategories,
+    recursive,
+    user?.pinnedNotes,
+  ]);
 
   const {
     currentPage,
@@ -89,7 +97,6 @@ export const NotesPageClient = ({
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
   });
-
 
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
@@ -204,8 +211,9 @@ export const NotesPageClient = ({
                     <NoteCard
                       note={note}
                       onSelect={(note) => {
-                        const categoryPath = `${note.category || "Uncategorized"
-                          }/${note.id}`;
+                        const categoryPath = `${
+                          note.category || "Uncategorized"
+                        }/${note.id}`;
                         router.push(`/note/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedNotes?.includes(

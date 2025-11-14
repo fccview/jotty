@@ -3,7 +3,6 @@ import { ConversionConfirmModal } from "@/app/_components/GlobalComponents/Modal
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
 import { Checklist } from "@/app/_types";
 import { useRouter } from "next/navigation";
-import { ItemTypes } from "@/app/_types/enums";
 
 interface ChecklistModalsProps {
   localList: Checklist;
@@ -33,6 +32,7 @@ export const ChecklistModals = ({
   isLoading,
 }: ChecklistModalsProps) => {
   const router = useRouter();
+
   return (
     <>
       {showShareModal && (
@@ -42,11 +42,6 @@ export const ChecklistModals = ({
             setShowShareModal(false);
             router.refresh();
           }}
-          itemId={localList.id}
-          itemTitle={localList.title}
-          itemType={ItemTypes.CHECKLIST}
-          itemCategory={localList.category}
-          itemOwner={localList.owner || ""}
         />
       )}
       {showConversionModal && (

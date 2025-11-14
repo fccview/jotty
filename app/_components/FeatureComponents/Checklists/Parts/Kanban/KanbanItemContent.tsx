@@ -3,13 +3,15 @@
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
-import { Item } from "@/app/_types";
+import { Item, KanbanStatus } from "@/app/_types";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface KanbanItemContentProps {
   item: Item;
   isEditing: boolean;
+  statuses: KanbanStatus[];
   editText: string;
   isShared: boolean;
   getUserAvatarUrl: (username: string) => string;
@@ -21,11 +23,13 @@ interface KanbanItemContentProps {
   onShowSubtaskModal: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onArchive: () => void;
 }
 
 export const KanbanItemContent = ({
   item,
   isEditing,
+  statuses,
   editText,
   isShared,
   getUserAvatarUrl,
@@ -37,8 +41,16 @@ export const KanbanItemContent = ({
   onShowSubtaskModal,
   onEdit,
   onDelete,
+  onArchive,
 }: KanbanItemContentProps) => {
   const { permissions } = usePermissions();
+  const { formatDateString, formatDateTimeString } = usePreferredDateTime();
+
+  const getStatusLabel = (status?: string) => {
+    if (!status) return TaskStatusLabels.TODO;
+
+    return statuses.find((s: KanbanStatus) => s.id === status)?.label;
+  };
 
   return (
     <div className="space-y-2">
@@ -93,6 +105,7 @@ export const KanbanItemContent = ({
                 { id: "view", name: "View Task" },
                 ...(permissions?.canEdit ? [{ id: "add", name: "Add Subtask" }] : []),
                 ...(permissions?.canEdit ? [{ id: "rename", name: "Rename Task" }] : []),
+                ...(permissions?.canEdit ? [{ id: "archive", name: "Archive Task" }] : []),
                 ...(permissions?.canDelete ? [{ id: "delete", name: "Delete Task" }] : []),
               ]}
               onChange={(action) => {
@@ -105,6 +118,9 @@ export const KanbanItemContent = ({
                     break;
                   case "rename":
                     onEdit();
+                    break;
+                  case "archive":
+                    onArchive();
                     break;
                   case "delete":
                     onDelete();
@@ -121,19 +137,14 @@ export const KanbanItemContent = ({
         <div className="flex items-center gap-1.5 text-muted-foreground">
           {getStatusIcon(item.status)}
           <span>
-            {item.status === TaskStatus.TODO && TaskStatusLabels.TODO}
-            {item.status === TaskStatus.IN_PROGRESS &&
-              TaskStatusLabels.IN_PROGRESS}
-            {item.status === TaskStatus.COMPLETED && TaskStatusLabels.COMPLETED}
-            {item.status === TaskStatus.PAUSED && TaskStatusLabels.PAUSED}
-            {!item.status && TaskStatusLabels.TODO}
+            {getStatusLabel(item.status)}
           </span>
         </div>
         {item.lastModifiedBy && isShared && (
           <div
             className="flex items-center gap-1"
             title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
-              ? ` on ${new Date(item.lastModifiedAt).toLocaleString()}`
+              ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
               : ""
               }`}
           >
@@ -144,7 +155,7 @@ export const KanbanItemContent = ({
             />
             <span className="text-[10px] text-muted-foreground">
               {item.lastModifiedAt
-                ? new Date(item.lastModifiedAt).toLocaleDateString()
+                ? formatDateString(item.lastModifiedAt)
                 : ""}
             </span>
           </div>

@@ -8,7 +8,7 @@ interface TaskSpecificDetailsProps {
 }
 
 export const TaskSpecificDetails = ({ items }: TaskSpecificDetailsProps) => {
-  const statusCounts = items.reduce(
+  const statusCounts = items?.reduce(
     (acc, item) => {
       const status = item.status || TaskStatus.TODO;
       acc[status] = (acc[status] || 0) + 1;
@@ -22,7 +22,7 @@ export const TaskSpecificDetails = ({ items }: TaskSpecificDetailsProps) => {
     } as Record<string, number>
   );
 
-  const totalTimeSpent = items.reduce((total, item) => {
+  const totalTimeSpent = items?.reduce((total, item) => {
     const itemTotal =
       item.timeEntries?.reduce(
         (sum, entry) => sum + (entry.duration || 0),
@@ -35,9 +35,8 @@ export const TaskSpecificDetails = ({ items }: TaskSpecificDetailsProps) => {
     <div className="jotty-task-specific-details mb-3">
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div
-          className={`jotty-task-specific-details-item flex items-center gap-1 ${
-            statusCounts[TaskStatus.TODO] > 0 ? "opacity-100" : "opacity-50"
-          }`}
+          className={`jotty-task-specific-details-item flex items-center gap-1 ${statusCounts[TaskStatus.TODO] > 0 ? "opacity-100" : "opacity-50"
+            }`}
         >
           <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
           <span className="text-muted-foreground">
@@ -45,11 +44,10 @@ export const TaskSpecificDetails = ({ items }: TaskSpecificDetailsProps) => {
           </span>
         </div>
         <div
-          className={`jotty-task-specific-details-item flex items-center gap-1 ${
-            statusCounts[TaskStatus.IN_PROGRESS] > 0
+          className={`jotty-task-specific-details-item flex items-center gap-1 ${statusCounts[TaskStatus.IN_PROGRESS] > 0
               ? "opacity-100"
               : "opacity-50"
-          }`}
+            }`}
         >
           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           <span className="text-muted-foreground">
@@ -58,11 +56,10 @@ export const TaskSpecificDetails = ({ items }: TaskSpecificDetailsProps) => {
           </span>
         </div>
         <div
-          className={`jotty-task-specific-details-item flex items-center gap-1 ${
-            statusCounts[TaskStatus.COMPLETED] > 0
+          className={`jotty-task-specific-details-item flex items-center gap-1 ${statusCounts[TaskStatus.COMPLETED] > 0
               ? "opacity-100"
               : "opacity-50"
-          }`}
+            }`}
         >
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
           <span className="text-muted-foreground">
@@ -71,9 +68,8 @@ export const TaskSpecificDetails = ({ items }: TaskSpecificDetailsProps) => {
         </div>
         {statusCounts.paused > 0 && (
           <div
-            className={`jotty-task-specific-details-item flex items-center gap-1 ${
-              statusCounts[TaskStatus.PAUSED] > 0 ? "opacity-100" : "opacity-50"
-            }`}
+            className={`jotty-task-specific-details-item flex items-center gap-1 ${statusCounts[TaskStatus.PAUSED] > 0 ? "opacity-100" : "opacity-50"
+              }`}
           >
             <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
             <span className="text-muted-foreground">

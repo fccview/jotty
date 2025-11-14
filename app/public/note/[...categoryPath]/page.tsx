@@ -7,6 +7,8 @@ import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { Modes } from "@/app/_types/enums";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { isItemSharedWith } from "@/app/_server/actions/sharing";
+import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 
 interface PublicNotePageProps {
   params: {
@@ -73,14 +75,36 @@ export default async function PublicNotePage({
       : undefined;
   }
 
-  const isPubliclyShared = await isItemSharedWith(id, category, "note", "public");
+  const isPubliclyShared = await isItemSharedWith(
+    id,
+    category,
+    "note",
+    "public"
+  );
   const isPrintView = searchParams.view_mode === "print";
 
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.username === note.owner;
 
   if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
-    return <PublicNoteView note={note} user={user} />;
+    const metadata = {
+      id: note.id,
+      uuid: note.uuid,
+      title: note.title,
+      category: note.category || "Uncategorized",
+      owner: note.owner,
+      createdAt: note.createdAt,
+      updatedAt: note.updatedAt,
+      type: "note" as const,
+    };
+
+    return (
+      <MetadataProvider metadata={metadata}>
+        <PermissionsProvider item={note}>
+          <PublicNoteView note={note} user={user} />
+        </PermissionsProvider>
+      </MetadataProvider>
+    );
   }
 
   redirect("/");

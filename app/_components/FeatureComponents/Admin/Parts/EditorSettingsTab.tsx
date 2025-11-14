@@ -39,6 +39,7 @@ export const EditorSettingsTab = () => {
               typeof result.data.editor?.enableBilateralLinks === "boolean"
                 ? result.data.editor?.enableBilateralLinks
                 : true,
+            drawioUrl: result.data.editor?.drawioUrl || "",
           };
           setSettings({
             ...result.data,
@@ -64,6 +65,26 @@ export const EditorSettingsTab = () => {
   const handleToggleChange = (
     field: keyof AppSettings["editor"],
     value: boolean
+  ) => {
+    if (!settings) return;
+
+    setSettings((prev) =>
+      prev
+        ? {
+            ...prev,
+            editor: {
+              ...prev.editor,
+              [field]: value,
+            },
+          }
+        : null
+    );
+    setHasChanges(true);
+  };
+
+  const handleInputChange = (
+    field: keyof AppSettings["editor"],
+    value: string
   ) => {
     if (!settings) return;
 
@@ -276,6 +297,36 @@ export const EditorSettingsTab = () => {
                 </div>
               </div>
             </label>
+          </div>
+
+          <div className="pt-4 border-t border-border">
+            <h3 className="text-lg font-semibold mb-2">External Services</h3>
+            <p className="text-muted-foreground text-sm mb-4">
+              Configure external service URLs for editor integrations.
+            </p>
+
+            <div className="space-y-2">
+              <label className="block">
+                <div className="text-sm font-medium mb-1">
+                  Draw.io URL
+                  <span className="ml-1 text-xs text-muted-foreground">(Optional)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Specify a custom Draw.io instance URL. Leave empty to use the default public instance (https://embed.diagrams.net).
+                  <span className="mt-1 block text-xs italic">
+                    Example for self-hosted: https://your-domain.com/drawio
+                  </span>
+                </p>
+                <Input
+                  id="drawioUrl"
+                  type="text"
+                  value={settings.editor.drawioUrl || ""}
+                  onChange={(e) => handleInputChange("drawioUrl", e.target.value)}
+                  placeholder="https://embed.diagrams.net"
+                  className="w-full"
+                />
+              </label>
+            </div>
           </div>
         </div>
       </div>

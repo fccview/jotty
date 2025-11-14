@@ -17,7 +17,7 @@ import { ChecklistHeading } from "@/app/_components/FeatureComponents/Checklists
 import { ChecklistBody } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/ChecklistBody";
 import { ChecklistModals } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistModals";
 import { ToastContainer } from "../../GlobalComponents/Feedback/ToastContainer";
-import { toggleArchive } from "@/app/_server/actions/users";
+import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
 import { useRouter } from "next/navigation";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
@@ -132,7 +132,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 
@@ -152,7 +152,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 

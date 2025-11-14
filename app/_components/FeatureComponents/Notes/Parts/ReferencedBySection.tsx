@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, CheckSquare, Router } from "lucide-react";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { buildCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
@@ -24,8 +24,8 @@ export const ReferencedBySection = ({
   if (referencingItems.length === 0) return null;
 
   const handleItemClick = (item: ReferencingItem) => {
-    const url = `/${item.type}/${item.path}`;
-    router.push(url.toLowerCase().replace("uncategorized/", ""));
+    const url = `/${item.type}/${encodeCategoryPath(item.path)}`;
+    router.push(url);
   };
 
   return (

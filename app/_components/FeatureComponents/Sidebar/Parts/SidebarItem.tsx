@@ -18,11 +18,11 @@ import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
-import { togglePin } from "@/app/_server/actions/users";
+import { togglePin } from "@/app/_server/actions/dashboard";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
-import { toggleArchive } from "@/app/_server/actions/users";
+import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
 import { capitalize } from "lodash";
@@ -196,30 +196,39 @@ export const SidebarItem = ({
           </>
         )}
         <span className="truncate flex-1">
-          {appSettings?.parseContent === "yes" ? item.title : capitalize(item.title.replace(/-/g, " "))}
+          {appSettings?.parseContent === "yes"
+            ? item.title
+            : capitalize(item.title.replace(/-/g, " "))}
         </span>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          {isShared && <span title={sharedWith.join(", ")}><Users className="h-4 w-4 text-primary" /></span>}
-          {isPubliclyShared && <span title="Publicly shared"><Globe className="h-4 w-4 text-primary" /></span>}
+          {isShared && (
+            <span title={sharedWith.join(", ")}>
+              <Users className="h-4 w-4 text-primary" />
+            </span>
+          )}
+          {isPubliclyShared && (
+            <span title="Publicly shared">
+              <Globe className="h-4 w-4 text-primary" />
+            </span>
+          )}
         </div>
       </button>
 
-      {!isSelected && (
-        <DropdownMenu
-          align="right"
-          items={dropdownItems}
-          trigger={
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 opacity-40 lg:opacity-0 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          }
-        />
-      )}
+
+      <DropdownMenu
+        align="right"
+        items={dropdownItems}
+        trigger={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 opacity-40 lg:opacity-0 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        }
+      />
     </div>
   );
 };

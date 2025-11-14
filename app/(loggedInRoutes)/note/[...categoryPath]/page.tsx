@@ -3,7 +3,7 @@ import {
   getAllNotes,
   CheckForNeedsMigration,
   getNoteById,
-  getRawNotes,
+  getUserNotes,
 } from "@/app/_server/actions/note";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { NoteClient } from "@/app/_components/FeatureComponents/Notes/NoteClient";
@@ -13,6 +13,7 @@ import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
+import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
 interface NotePageProps {
   params: {
@@ -51,7 +52,7 @@ export default async function NotePage({ params }: NotePageProps) {
   await CheckForNeedsMigration();
 
   const [docsResult, categoriesResult] = await Promise.all([
-    getRawNotes(username),
+    getUserNotes({ isRaw: true }),
     getCategories(Modes.NOTES),
   ]);
 
@@ -79,9 +80,22 @@ export default async function NotePage({ params }: NotePageProps) {
       ? categoriesResult.data
       : [];
 
+  const metadata = {
+    id: note.id,
+    uuid: note.uuid,
+    title: note.title,
+    category: note.category || "Uncategorized",
+    owner: note.owner,
+    createdAt: note.createdAt,
+    updatedAt: note.updatedAt,
+    type: "note" as const,
+  };
+
   return (
-    <PermissionsProvider item={note}>
-      <NoteClient note={note} categories={docsCategories} />
-    </PermissionsProvider>
+    <MetadataProvider metadata={metadata}>
+      <PermissionsProvider item={note}>
+        <NoteClient note={note} categories={docsCategories} />
+      </PermissionsProvider>
+    </MetadataProvider>
   );
 }

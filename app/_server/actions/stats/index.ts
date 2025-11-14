@@ -1,10 +1,10 @@
 "use server";
 
-import { getNotes } from "@/app/_server/actions/note";
-import { getLists } from "@/app/_server/actions/checklist";
+import { getUserNotes } from "@/app/_server/actions/note";
+import { getUserChecklists } from "@/app/_server/actions/checklist";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { TaskStatus } from "@/app/_types/enums";
-import { Result } from "@/app/_types";
+import { Checklist, Result } from "@/app/_types";
 
 export interface UserStats {
     username: string;
@@ -41,7 +41,7 @@ export const getUserStats = async (username?: string): Promise<Result<UserStats>
 
         const targetUsername = username || currentUser.username;
 
-        const notesResult = await getNotes(targetUsername);
+        const notesResult = await getUserNotes({ username: targetUsername });
         if (!notesResult.success || !notesResult.data) {
             return { success: false, error: notesResult.error || "Failed to fetch notes" };
         }
@@ -50,7 +50,7 @@ export const getUserStats = async (username?: string): Promise<Result<UserStats>
             (note) => note.owner === targetUsername
         );
 
-        const listsResult = await getLists(targetUsername);
+        const listsResult = await getUserChecklists({ username: targetUsername }) as Result<Checklist[]>;
         if (!listsResult.success || !listsResult.data) {
             return { success: false, error: listsResult.error || "Failed to fetch checklists" };
         }
