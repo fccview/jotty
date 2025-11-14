@@ -8,10 +8,18 @@ import {
   useEffect,
   useMemo,
 } from "react";
-import { AppMode, AppSettings, Checklist, Note, User, AppModeContextType, AllSharedItems, UserSharedItems } from "@/app/_types";
+import {
+  AppMode,
+  AppSettings,
+  Checklist,
+  Note,
+  User,
+  AppModeContextType,
+  AllSharedItems,
+  UserSharedItems,
+} from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { LinkIndex } from "../_server/actions/link";
-
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
@@ -74,6 +82,12 @@ export const AppModeProvider = ({
     setIsInitialized(true);
   }, []);
 
+  useEffect(() => {
+    if (initialUser && (!user || user.username !== initialUser.username)) {
+      setUser(initialUser);
+    }
+  }, [initialUser]);
+
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);
     localStorage.setItem("app-mode", newMode);
@@ -88,7 +102,7 @@ export const AppModeProvider = ({
       isInitialized,
       isDemoMode,
       isRwMarkable,
-      user,
+      user: user || initialUser || null,
       setUser,
       appSettings,
       appVersion: appVersion || "",
@@ -108,6 +122,7 @@ export const AppModeProvider = ({
       isDemoMode,
       isRwMarkable,
       user,
+      initialUser,
       appSettings,
       appVersion,
       usersPublicData,

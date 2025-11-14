@@ -178,6 +178,7 @@ export const getSettings = async () => {
       "192x192Icon": "",
       notifyNewUpdates: "yes",
       maximumFileSize: MAX_FILE_SIZE,
+      parseContent: "yes",
       editor: {
         enableSlashCommands: true,
         enableBubbleMenu: true,
