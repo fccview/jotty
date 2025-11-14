@@ -17,6 +17,8 @@ import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { readLinkIndex } from "@/app/_server/actions/link";
 import { headers } from "next/headers";
+import { Locales } from "./_consts/global";
+import { NextIntlClientProvider } from "next-intl";
 import {
   themeInitScript,
   getThemeBackgroundColor,
@@ -34,7 +36,6 @@ import {
 import { generateWebManifest } from "./_utils/global-utils";
 import path from "path";
 import { writeJsonFile } from "./_server/actions/file";
-import { Locales } from "./_consts/global";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -232,46 +233,48 @@ export default async function RootLayout({
         />
       </head>
       <body className={`${inter.className} jotty-body`}>
-        <AppModeProvider
-          isDemoMode={settings?.isDemo || false}
-          isRwMarkable={settings?.isRwMarkable || false}
-          user={user}
-          appVersion={appVersion.data || ""}
-          pathname={pathname || ""}
-          initialSettings={settings}
-          usersPublicData={users}
-          linkIndex={linkIndex}
-          notes={notes}
-          checklists={checklists}
-          allSharedItems={allSharedItems}
-          userSharedItems={userSharedItems}
-          globalSharing={globalSharing}
-        >
-          <ThemeProvider user={user || {}}>
-            <EmojiProvider>
-              <NavigationGuardProvider>
-                <ToastProvider>
-                  <ShortcutProvider
-                    user={user}
-                    noteCategories={noteCategories.data || []}
-                    checklistCategories={checklistCategories.data || []}
-                  >
-                    <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                      <DynamicFavicon />
-                      {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AppModeProvider
+            isDemoMode={settings?.isDemo || false}
+            isRwMarkable={settings?.isRwMarkable || false}
+            user={user}
+            appVersion={appVersion.data || ""}
+            pathname={pathname || ""}
+            initialSettings={settings}
+            usersPublicData={users}
+            linkIndex={linkIndex}
+            notes={notes}
+            checklists={checklists}
+            allSharedItems={allSharedItems}
+            userSharedItems={userSharedItems}
+            globalSharing={globalSharing}
+          >
+            <ThemeProvider user={user || {}}>
+              <EmojiProvider>
+                <NavigationGuardProvider>
+                  <ToastProvider>
+                    <ShortcutProvider
+                      user={user}
+                      noteCategories={noteCategories.data || []}
+                      checklistCategories={checklistCategories.data || []}
+                    >
+                      <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                        <DynamicFavicon />
+                        {children}
 
-                      {!pathname?.includes("/public") && <InstallPrompt />}
+                        {!pathname?.includes("/public") && <InstallPrompt />}
 
-                      {serveUpdates && !pathname?.includes("/public") && (
-                        <UpdatePrompt />
-                      )}
-                    </div>
-                  </ShortcutProvider>
-                </ToastProvider>
-              </NavigationGuardProvider>
-            </EmojiProvider>
-          </ThemeProvider>
-        </AppModeProvider>
+                        {serveUpdates && !pathname?.includes("/public") && (
+                          <UpdatePrompt />
+                        )}
+                      </div>
+                    </ShortcutProvider>
+                  </ToastProvider>
+                </NavigationGuardProvider>
+              </EmojiProvider>
+            </ThemeProvider>
+          </AppModeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
