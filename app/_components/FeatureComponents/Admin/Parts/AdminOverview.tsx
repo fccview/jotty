@@ -17,9 +17,6 @@ interface AdminStats {
   totalUsers: number;
   totalChecklists: number;
   totalNotes: number;
-  sharedChecklists: number;
-  sharedNotes: number;
-  totalSharingRelationships: number;
   adminUsers: number;
 }
 
@@ -109,13 +106,17 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">{t("overview.regular_users")}</span>
+              <span className="text-muted-foreground">
+                {t("overview.regular_users")}
+              </span>
               <span className="font-medium">
                 {stats.totalUsers - stats.adminUsers}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">{t("overview.admin_users")}</span>
+              <span className="text-muted-foreground">
+                {t("overview.admin_users")}
+              </span>
               <span className="font-medium">{stats.adminUsers}</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
@@ -135,13 +136,17 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">{t("overview.total_content")}</span>
+              <span className="text-muted-foreground">
+                {t("overview.total_content")}
+              </span>
               <span className="font-medium">
                 {stats.totalChecklists + stats.totalNotes}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">{t("overview.shared_items")}</span>
+              <span className="text-muted-foreground">
+                {t("overview.shared_items")}
+              </span>
               <span className="font-medium">
                 {stats.sharedChecklists + stats.sharedNotes}
               </span>
@@ -158,10 +163,11 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
               <div
                 className="bg-primary h-2 rounded-full"
                 style={{
-                  width: `${((stats.sharedChecklists + stats.sharedNotes) /
-                    (stats.totalChecklists + stats.totalNotes)) *
+                  width: `${
+                    ((stats.sharedChecklists + stats.sharedNotes) /
+                      (stats.totalChecklists + stats.totalNotes)) *
                     100
-                    }%`,
+                  }%`,
                 }}
               />
             </div>

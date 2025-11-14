@@ -1,10 +1,12 @@
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { AppMode, Checklist, ItemType, Note } from "@/app/_types";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { capitalize } from "lodash";
+import { ItemTypes } from "@/app/_types/enums";
+import { encodeCategoryPath, encodeId } from "@/app/_utils/global-utils";
 
 interface useSearchProps {
-  checklists: Checklist[];
-  notes: Note[];
   mode: AppMode;
   onModeChange?: (mode: AppMode) => void;
   onResultSelect?: () => void;
@@ -14,16 +16,17 @@ interface SearchResult {
   id: string;
   title: string;
   type: ItemType;
+  content?: string;
+  category?: string;
 }
 
 export const useSearch = ({
-  checklists,
-  notes,
   mode,
   onModeChange,
   onResultSelect,
 }: useSearchProps) => {
   const router = useRouter();
+  const { checklists, notes, appSettings } = useAppMode();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -34,7 +37,9 @@ export const useSearch = ({
 
   const handleSelectResult = useCallback(
     (result: SearchResult) => {
-      const targetPath = `/${result.type}/${result.id}`;
+      const targetPath = `/${result.type}/${encodeCategoryPath(
+        result.category || "Uncategorized"
+      )}/${encodeId(result.id)}`;
       const targetMode = `${result.type}s` as AppMode;
 
       if (mode !== targetMode && onModeChange) {
@@ -50,6 +55,34 @@ export const useSearch = ({
     [mode, onModeChange, router, onResultSelect]
   );
 
+  const processedItems = useMemo(
+    () => [
+      ...checklists.map((c) => ({
+        id: c.id || "",
+        uuid: c.uuid || "",
+        title:
+          appSettings?.parseContent === "yes"
+            ? c.title
+            : capitalize(c.title?.replace(/-/g, " ")),
+        type: ItemTypes.CHECKLIST,
+        content: c?.items?.map((i) => i.text).join(" ") || "".toLowerCase(),
+        category: c.category || "Uncategorized",
+      })),
+      ...notes.map((n) => ({
+        id: n.id || "",
+        uuid: n.uuid || "",
+        title:
+          appSettings?.parseContent === "yes"
+            ? n.title
+            : capitalize(n.title?.replace(/-/g, " ")),
+        type: ItemTypes.NOTE,
+        content: n.content?.toLowerCase() || "",
+        category: n.category || "Uncategorized",
+      })),
+    ],
+    [checklists, notes]
+  );
+
   useEffect(() => {
     const performSearch = (searchQuery: string) => {
       if (!searchQuery.trim()) {
@@ -58,28 +91,22 @@ export const useSearch = ({
       }
       const lowerCaseQuery = searchQuery.toLowerCase();
 
-      const allItems = [
-        ...checklists.map((c) => ({
-          ...c,
-          type: "checklist" as const,
-          content: c.items.map((i) => i.text).join(" "),
-        })),
-        ...notes.map((n) => ({ ...n, type: "note" as const })),
-      ];
+      const searchResults = processedItems
+        .filter(
+          (item) =>
+            item.title?.toLowerCase().includes(lowerCaseQuery) ||
+            item.content.includes(lowerCaseQuery) ||
+            item.uuid?.toLowerCase().includes(lowerCaseQuery)
+        )
+        .slice(0, 8);
 
-      const searchResults = allItems.filter(
-        (item) =>
-          item.title.toLowerCase().includes(lowerCaseQuery) ||
-          item.content?.toLowerCase().includes(lowerCaseQuery)
-      );
-
-      setResults(searchResults.slice(0, 8));
+      setResults(searchResults as SearchResult[]);
       setSelectedIndex(0);
     };
 
     const debounceTimeout = setTimeout(() => performSearch(query), 100);
     return () => clearTimeout(debounceTimeout);
-  }, [query, checklists, notes]);
+  }, [query, processedItems]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

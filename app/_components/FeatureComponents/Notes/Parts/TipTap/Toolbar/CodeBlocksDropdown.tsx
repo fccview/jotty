@@ -42,9 +42,9 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
       size="sm"
       onMouseDown={(e) => e.preventDefault()}
       className="flex items-center gap-1"
+      title="Code"
     >
       <Code className="h-4 w-4" />
-      <span className="text-xs">Code</span>
       <ChevronDown className="h-3 w-3" />
     </Button>
   );

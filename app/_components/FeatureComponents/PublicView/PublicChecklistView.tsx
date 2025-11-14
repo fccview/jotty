@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Checklist, User } from "@/app/_types";
 import { PublicChecklistHeader } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistHeader";
 import { PublicChecklistBody } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistBody";
@@ -14,11 +15,14 @@ export const PublicChecklistView = ({
   checklist,
   user,
 }: PublicChecklistViewProps) => {
+  const [avatarUrl, setAvatarUrl] = useState("");
   const t = useTranslations();
-  let avatarUrl = "";
-  if (window && user?.avatarUrl) {
-    avatarUrl = window.location.origin + user?.avatarUrl;
-  }
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && user?.avatarUrl) {
+      setAvatarUrl(window.location.origin + user.avatarUrl);
+    }
+  }, [user?.avatarUrl]);
 
   return (
     <div className="min-h-screen bg-background">

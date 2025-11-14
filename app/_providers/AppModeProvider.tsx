@@ -6,24 +6,20 @@ import {
   useState,
   ReactNode,
   useEffect,
+  useMemo,
 } from "react";
-import { AppMode, AppSettings, User } from "@/app/_types";
+import {
+  AppMode,
+  AppSettings,
+  Checklist,
+  Note,
+  User,
+  AppModeContextType,
+  AllSharedItems,
+  UserSharedItems,
+} from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-
-interface AppModeContextType {
-  mode: AppMode;
-  setMode: (mode: AppMode) => void;
-  selectedNote: string | null;
-  setSelectedNote: (id: string | null) => void;
-  isInitialized: boolean;
-  isDemoMode: boolean;
-  isRwMarkable: boolean;
-  user: User | null;
-  setUser: (user: User | null) => void;
-  appVersion: string;
-  appSettings: AppSettings | null;
-  usersPublicData: Partial<User>[];
-}
+import { LinkIndex } from "../_server/actions/link";
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
@@ -36,6 +32,12 @@ export const AppModeProvider = ({
   pathname,
   appVersion,
   initialSettings,
+  linkIndex,
+  notes,
+  checklists,
+  allSharedItems,
+  userSharedItems,
+  globalSharing,
 }: {
   children: ReactNode;
   isDemoMode?: boolean;
@@ -45,13 +47,20 @@ export const AppModeProvider = ({
   pathname?: string;
   appVersion?: string;
   initialSettings?: AppSettings;
+  linkIndex?: LinkIndex | null;
+  notes?: Partial<Note>[];
+  checklists?: Partial<Checklist>[];
+  allSharedItems?: AllSharedItems | null;
+  userSharedItems?: UserSharedItems | null;
+  globalSharing?: any;
 }) => {
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(
+  const [appSettings, _] = useState<AppSettings | null>(
     initialSettings || null
   );
   const isNoteOrChecklistPage =
     pathname?.includes("/checklist") || pathname?.includes("/note");
   let modeToSet: AppMode = Modes.CHECKLISTS;
+
   if (isNoteOrChecklistPage) {
     modeToSet = pathname?.includes("/checklist")
       ? Modes.CHECKLISTS
@@ -73,28 +82,61 @@ export const AppModeProvider = ({
     setIsInitialized(true);
   }, []);
 
+  useEffect(() => {
+    if (initialUser && (!user || user.username !== initialUser.username)) {
+      setUser(initialUser);
+    }
+  }, [initialUser]);
+
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);
     localStorage.setItem("app-mode", newMode);
   };
 
+  const contextValue = useMemo(
+    () => ({
+      mode,
+      setMode: handleSetMode,
+      selectedNote,
+      setSelectedNote,
+      isInitialized,
+      isDemoMode,
+      isRwMarkable,
+      user: user || initialUser || null,
+      setUser,
+      appSettings,
+      appVersion: appVersion || "",
+      usersPublicData,
+      linkIndex: linkIndex || null,
+      notes: notes || [],
+      checklists: checklists || [],
+      allSharedItems: allSharedItems || null,
+      userSharedItems: userSharedItems || null,
+      globalSharing: globalSharing || null,
+    }),
+    [
+      mode,
+      handleSetMode,
+      selectedNote,
+      isInitialized,
+      isDemoMode,
+      isRwMarkable,
+      user,
+      initialUser,
+      appSettings,
+      appVersion,
+      usersPublicData,
+      linkIndex,
+      notes,
+      checklists,
+      allSharedItems,
+      userSharedItems,
+      globalSharing,
+    ]
+  );
+
   return (
-    <AppModeContext.Provider
-      value={{
-        mode,
-        setMode: handleSetMode,
-        selectedNote,
-        setSelectedNote,
-        isInitialized,
-        isDemoMode,
-        isRwMarkable,
-        user,
-        setUser,
-        appSettings,
-        appVersion: appVersion || "",
-        usersPublicData,
-      }}
-    >
+    <AppModeContext.Provider value={contextValue}>
       {children}
     </AppModeContext.Provider>
   );

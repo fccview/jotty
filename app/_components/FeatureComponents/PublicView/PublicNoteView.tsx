@@ -21,10 +21,10 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
   const isPrintView = searchParams.get("view_mode") === "print";
 
   useEffect(() => {
-    if (window && user?.avatarUrl) {
-      setAvatarUrl(window.location.origin + user?.avatarUrl);
+    if (typeof window !== "undefined" && user?.avatarUrl) {
+      setAvatarUrl(window.location.origin + user.avatarUrl);
     }
-  }, [user]);
+  }, [user?.avatarUrl]);
 
   const containerClass = isPrintView
     ? "bg-background"

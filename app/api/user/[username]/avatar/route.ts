@@ -1,6 +1,8 @@
 import { getUserByUsername } from "@/app/_server/actions/users";
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { username: string } }

@@ -3,10 +3,11 @@ import fs from "fs/promises";
 import path from "path";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
+import { withCacheControl } from "@/app/_middleware/caching";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
+export const GET = withCacheControl(async function GET(
   request: NextRequest,
   { params }: { params: { username: string; filename: string } }
 ) {
@@ -54,7 +55,6 @@ export async function GET(
       return new NextResponse(fileBuffer as any, {
         headers: {
           "Content-Type": contentType,
-          "Cache-Control": "public, max-age=31536000",
         },
       });
     } catch (error) {
@@ -63,4 +63,4 @@ export async function GET(
   } catch (error) {
     return new NextResponse("Internal Server Error", { status: 500 });
   }
-}
+});

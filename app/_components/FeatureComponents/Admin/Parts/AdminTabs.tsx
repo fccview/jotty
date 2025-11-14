@@ -1,15 +1,22 @@
 "use client";
 
-import { Users, FileText, Activity, Shield, Settings, Edit3 } from "lucide-react";
+import {
+  Users,
+  FileText,
+  Activity,
+  Globe,
+  Settings,
+  Edit3,
+  Palette,
+} from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
-
-type AdminTab = "overview" | "users" | "content" | "sharing" | "settings" | "editor";
+import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
 
 interface AdminTabsProps {
-  activeTab: AdminTab;
-  onTabChange: (tab: AdminTab) => void;
+  activeTab: AdminTabsEnum;
+  onTabChange: (tab: AdminTabsEnum) => void;
 }
 
 export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
@@ -17,35 +24,40 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
 
   const tabs = [
     {
-      id: "overview" as AdminTab,
+      id: AdminTabsEnum.OVERVIEW,
       label: t("global.overview"),
       icon: Activity,
     },
     {
-      id: "users" as AdminTab,
+      id: AdminTabsEnum.USERS,
       label: t("global.users"),
       icon: Users,
     },
     {
-      id: "content" as AdminTab,
+      id: AdminTabsEnum.CONTENT,
       label: t("global.content"),
       icon: FileText,
     },
     {
-      id: "sharing" as AdminTab,
+      id: AdminTabsEnum.SHARING,
       label: t("global.sharing"),
-      icon: Shield,
+      icon: Globe,
     },
     {
-      id: "editor" as AdminTab,
+      id: AdminTabsEnum.EDITOR,
       label: t("global.editor"),
       icon: Edit3,
     },
     {
-      id: "settings" as AdminTab,
+      id: AdminTabsEnum.STYLING,
+      label: t("global.styling"),
+      icon: Palette,
+    },
+    {
+      id: AdminTabsEnum.SETTINGS,
       label: t("global.settings"),
       icon: Settings,
-    }
+    },
   ];
 
   return (
@@ -59,9 +71,7 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
               variant={activeTab === tab.id ? "default" : "ghost"}
               size="sm"
               onClick={() => onTabChange(tab.id)}
-              className={cn(
-                "flex items-center gap-2 flex-shrink-0"
-              )}
+              className={cn("flex items-center gap-2 flex-shrink-0")}
             >
               <Icon className="h-4 w-4" />
               {tab.label}

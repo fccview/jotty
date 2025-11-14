@@ -22,29 +22,29 @@ export const FileAttachment = ({
   const displayName = fileName.replace(/ \(\d+\)/, "").replace(/\.\w+$/, "");
 
   return (
-    <span className={`inline-block ${className}`}>
-      <span className="bg-card border border-border rounded-lg p-4 max-w-sm hover:shadow-lg transition-all duration-200 hover:border-primary/20 group block">
-        <span className="flex items-center gap-3">
-          <span className="flex-shrink-0 p-2 bg-muted rounded-lg group-hover:bg-accent transition-colors block">
+    <span className={`jotty-file-attachment inline-block ${className}`}>
+      <span className="jotty-file-attachment-container bg-card border border-border rounded-lg p-4 max-w-sm hover:shadow-lg transition-all duration-200 hover:border-primary/20 group block">
+        <span className="jotty-file-attachment-content flex items-center gap-3">
+          <span className="jotty-file-attachment-icon flex-shrink-0 p-2 bg-muted rounded-lg group-hover:bg-accent transition-colors block">
             {getFileIcon(mimeType, fileName)}
           </span>
           <span className="flex-1 min-w-0">
             <span
-              className="font-medium text-sm text-foreground truncate block"
+              className="jotty-file-attachment-title font-medium text-sm text-foreground truncate block"
               title={displayName}
             >
               {displayName}
             </span>
-            <span className="text-xs text-muted-foreground mt-1 !mb-0 block">
+            <span className="jotty-file-attachment-type text-xs text-muted-foreground mt-1 !mb-0 block">
               {getFileTypeDisplay(mimeType, fileName)}
             </span>
           </span>
-          <span className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="jotty-file-attachment-actions flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => window.open(url, "_blank")}
-              className="h-8 w-8 p-0 hover:bg-primary/10"
+              className="jotty-file-attachment-view-button h-8 w-8 p-0 hover:bg-primary/10"
               title={t("cards.open_file")}
             >
               <Eye className="h-4 w-4" />
@@ -58,7 +58,7 @@ export const FileAttachment = ({
                 link.download = fileName;
                 link.click();
               }}
-              className="h-8 w-8 p-0 hover:bg-primary/10"
+              className="jotty-file-attachment-download-button h-8 w-8 p-0 hover:bg-primary/10"
               title={t("cards.download_file")}
             >
               <Download className="h-4 w-4" />

@@ -41,15 +41,39 @@ export const CompactImageResizeOverlay = ({
   }, [isVisible, currentWidth, currentHeight]);
 
   useEffect(() => {
-    if (!isVisible || !targetElement) return;
+    if (!isVisible || !targetElement || !overlayRef.current) return;
 
     const updatePosition = () => {
       if (targetElement && overlayRef.current) {
         const rect = targetElement.getBoundingClientRect();
-        overlayRef.current.style.left = `${rect.left + rect.width / 2}px`;
-        overlayRef.current.style.top = `${rect.top}px`;
+        const overlayRect = overlayRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+
+        let left = rect.left + rect.width / 2;
+        let top = rect.top - overlayRect.height - 8;
+
+        if (left + overlayRect.width / 2 > window.innerWidth) {
+          left = window.innerWidth - overlayRect.width / 2 - 8;
+        }
+        if (left - overlayRect.width / 2 < 0) {
+          left = overlayRect.width / 2 + 8;
+        }
+
+        if (top < 0) {
+          top = rect.bottom + 8;
+        }
+
+        if (top + overlayRect.height > viewportHeight) {
+          top = viewportHeight - overlayRect.height - 8;
+        }
+
+        overlayRef.current.style.left = `${left}px`;
+        overlayRef.current.style.top = `${top}px`;
+        overlayRef.current.style.transform = "translateX(-50%)";
       }
     };
+
+    updatePosition();
 
     const handleScroll = () => updatePosition();
     const handleResize = () => updatePosition();
@@ -95,11 +119,6 @@ export const CompactImageResizeOverlay = ({
       ref={overlayRef}
       data-overlay
       className="fixed z-50 bg-card border border-border rounded-lg shadow-lg p-3 min-w-64"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        transform: "translate(-50%, -120%)",
-      }}
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >

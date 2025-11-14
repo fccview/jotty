@@ -7,6 +7,8 @@ import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { lock, unlock } from "proper-lockfile";
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import { createSession } from "@/app/_server/actions/session";
+import { ensureCorDirsAndFiles, readJsonFile } from "@/app/_server/actions/file";
+import { USERS_FILE } from "@/app/_consts/files";
 
 function base64UrlEncode(buffer: Buffer) {
   return buffer
@@ -28,7 +30,7 @@ async function ensureUser(username: string, isAdmin: boolean) {
       if (content) {
         users = JSON.parse(content);
       }
-    } catch {}
+    } catch { }
 
     if (users.length === 0) {
       users.push({
@@ -38,6 +40,12 @@ async function ensureUser(username: string, isAdmin: boolean) {
         isSuperAdmin: true,
         createdAt: new Date().toISOString(),
       });
+      if (process.env.DEBUGGER) {
+        console.log(
+          "SSO CALLBACK - Created first user as super admin:",
+          username
+        );
+      }
     } else {
       const existing = users.find((u) => u.username === username);
       if (!existing) {
@@ -47,8 +55,30 @@ async function ensureUser(username: string, isAdmin: boolean) {
           isAdmin,
           createdAt: new Date().toISOString(),
         });
-      } else if (isAdmin && !existing.isAdmin) {
-        existing.isAdmin = true;
+        if (process.env.DEBUGGER) {
+          console.log("SSO CALLBACK - Created new user:", {
+            username,
+            isAdmin,
+          });
+        }
+      } else {
+        const wasAdmin = existing.isAdmin;
+        if (isAdmin && !existing.isAdmin) {
+          existing.isAdmin = true;
+          if (process.env.DEBUGGER) {
+            console.log("SSO CALLBACK - Updated existing user to admin:", {
+              username,
+              wasAdmin,
+              nowAdmin: true,
+            });
+          }
+        } else if (process.env.DEBUGGER) {
+          console.log("SSO CALLBACK - User already exists:", {
+            username,
+            currentIsAdmin: existing.isAdmin,
+            requestedAdmin: isAdmin,
+          });
+        }
       }
     }
     await fs.writeFile(usersFile, JSON.stringify(users, null, 2));
@@ -170,13 +200,36 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
-  const groups = (claims.groups || []) as string[];
+  let groups: string[] = [];
+  if (Array.isArray(claims.groups)) {
+    groups = claims.groups;
+  } else if (typeof claims.groups === "string") {
+    groups = claims.groups.split(/[\s,]+/).filter(Boolean);
+  }
+
   const adminGroups = (process.env.OIDC_ADMIN_GROUPS || "")
     .split(",")
     .map((g) => g.trim())
     .filter(Boolean);
+
   const isAdmin =
     adminGroups.length > 0 && groups.some((g) => adminGroups.includes(g));
+
+  if (process.env.DEBUGGER) {
+    console.log("SSO CALLBACK - groups processing:", {
+      rawGroups: claims.groups,
+      processedGroups: groups,
+      adminGroups,
+      isAdmin,
+      groupsType: typeof claims.groups,
+      groupsIsArray: Array.isArray(claims.groups),
+    });
+  }
+
+  const users = (await readJsonFile(USERS_FILE)) || [];
+  if (users.length === 0) {
+    await ensureCorDirsAndFiles();
+  }
 
   await ensureUser(username, isAdmin);
 
@@ -211,7 +264,7 @@ export async function GET(request: NextRequest) {
       if (content) {
         sessions = JSON.parse(content);
       }
-    } catch {}
+    } catch { }
     sessions[sessionId] = username;
     await fs.writeFile(sessionsFile, JSON.stringify(sessions, null, 2));
   } finally {

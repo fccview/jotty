@@ -13,13 +13,15 @@ import { Note, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import Masonry from "react-masonry-css";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useNotesHome } from "@/app/_hooks/useNotesHome";
 import { useTranslations } from "next-intl";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 
 interface NotesHomeProps {
   notes: Note[];
@@ -36,20 +38,35 @@ export const NotesHome = ({
   onCreateModal,
   onSelectNote,
 }: NotesHomeProps) => {
+  const { userSharedItems } = useAppMode();
+
   const {
     sensors,
+    handleDragStart,
     handleDragEnd,
     pinned,
     recent,
     breakpointColumnsObj,
     handleTogglePin,
     isNotePinned,
+    activeNote,
+    draggedItemWidth,
   } = useNotesHome({ notes, categories, user });
   const t = useTranslations();
 
+  const getNoteSharer = (note: Note) => {
+    const encodedCategory = encodeCategoryPath(
+      note.category || "Uncategorized"
+    );
+    const sharedItem = userSharedItems?.notes?.find(
+      (item) => item.id === note.id && item.category === encodedCategory
+    );
+    return sharedItem?.sharer;
+  };
+
   if (notes.length === 0) {
     return (
-      <div className="flex-1 overflow-auto bg-background h-full">
+      <div className="flex-1 overflow-y-auto bg-background h-full">
         <EmptyState
           icon={<FileText className="h-10 w-10 text-muted-foreground" />}
           title={t("notes.no_notes_yet")}
@@ -62,7 +79,7 @@ export const NotesHome = ({
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-background h-full">
+    <div className="flex-1 overflow-y-auto bg-background h-full hide-scrollbar">
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
@@ -109,10 +126,11 @@ export const NotesHome = ({
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={pinned.map((note) => note.id)}
+                items={pinned.map((note) => note.uuid || note.id)}
                 strategy={verticalListSortingStrategy}
               >
                 <Masonry
@@ -122,7 +140,7 @@ export const NotesHome = ({
                 >
                   {pinned.map((note) => (
                     <div
-                      key={`pinned-${note.category}-${note.id}`}
+                      key={`pinned-${note.category}-${note.uuid || note.id}`}
                       className="mb-6"
                     >
                       <NoteCard
@@ -131,11 +149,25 @@ export const NotesHome = ({
                         isPinned={true}
                         onTogglePin={handleTogglePin}
                         isDraggable={true}
+                        sharer={getNoteSharer(note)}
                       />
                     </div>
                   ))}
                 </Masonry>
               </SortableContext>
+
+              <DragOverlay>
+                {activeNote ? (
+                  <NoteCard
+                    note={activeNote}
+                    onSelect={() => {}}
+                    isPinned={true}
+                    isDraggable={false}
+                    sharer={getNoteSharer(activeNote)}
+                    fixedWidth={draggedItemWidth || undefined}
+                  />
+                ) : null}
+              </DragOverlay>
             </DndContext>
           </div>
         )}
@@ -176,6 +208,7 @@ export const NotesHome = ({
                     onSelect={onSelectNote}
                     isPinned={isNotePinned(note)}
                     onTogglePin={handleTogglePin}
+                    sharer={getNoteSharer(note)}
                   />
                 </div>
               ))}
@@ -186,7 +219,10 @@ export const NotesHome = ({
         {notes.length > 12 && (
           <div className="text-center mt-8">
             <p className="text-sm text-muted-foreground">
-              {t("notes.showing_notes", { count: recent.length, total: notes.length })}
+              {t("notes.showing_notes", {
+                count: recent.length,
+                total: notes.length,
+              })}
               {t("notes.use_sidebar_to_browse_all_or_search_above")}
             </p>
           </div>

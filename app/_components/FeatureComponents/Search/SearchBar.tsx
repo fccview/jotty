@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/app/_utils/global-utils";
-import { Checklist, Note, AppMode } from "@/app/_types";
+import { AppMode } from "@/app/_types";
 import { SearchInput } from "./Parts/SearchInput";
 import { SearchResults } from "./Parts/SearchResults";
 import { useSearch } from "@/app/_hooks/useSearch";
@@ -10,8 +10,6 @@ import { useTranslations } from "next-intl";
 
 interface SearchBarProps {
   mode: AppMode;
-  checklists: Checklist[];
-  notes: Note[];
   onModeChange?: (mode: AppMode) => void;
   className?: string;
   autoFocus?: boolean;
@@ -20,8 +18,6 @@ interface SearchBarProps {
 
 export const SearchBar = ({
   mode,
-  checklists,
-  notes,
   onModeChange,
   className,
   autoFocus = false,
@@ -38,7 +34,7 @@ export const SearchBar = ({
     handleSelectResult,
     inputRef,
     containerRef,
-  } = useSearch({ mode, checklists, notes, onModeChange, onResultSelect });
+  } = useSearch({ mode, onModeChange, onResultSelect });
 
   useEffect(() => {
     if (autoFocus && inputRef.current) {
@@ -59,7 +55,9 @@ export const SearchBar = ({
         onQueryChange={setQuery}
         onClear={() => setQuery("")}
         onFocus={() => setIsOpen(true)}
-        placeholder={t("search.placeholder", { mode: mode.charAt(0).toUpperCase() + mode.slice(1) })}
+        placeholder={t("search.placeholder", {
+          mode: mode.charAt(0).toUpperCase() + mode.slice(1),
+        })}
         inputRef={inputRef}
         className={cn("transition-all", isOpen && "border-primary shadow-md")}
       />

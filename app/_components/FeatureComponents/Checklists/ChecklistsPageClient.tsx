@@ -2,7 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Folder, CheckCircle, TrendingUp, Clock } from "lucide-react";
+import {
+  Folder,
+  CheckCircle,
+  TrendingUp,
+  Clock,
+  CheckIcon,
+  CheckSquare,
+} from "lucide-react";
 import { Checklist, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
@@ -14,6 +21,8 @@ import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
+import { togglePin } from "@/app/_server/actions/dashboard";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -42,6 +51,8 @@ export const ChecklistsPageClient = ({
   const [checklistFilter, setChecklistFilter] =
     useState<ChecklistFilter>("all");
   const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+  const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
     { id: "all", name: t("checklists.all_lists") },
@@ -80,33 +91,66 @@ export const ChecklistsPageClient = ({
     }
 
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((list) =>
-        selectedCategories.includes(list.category || "Uncategorized")
-      );
+      filtered = filtered.filter((list) => {
+        const listCategory = list.category || "Uncategorized";
+        if (recursive) {
+          return selectedCategories.some(
+            (selected) =>
+              listCategory === selected ||
+              listCategory.startsWith(selected + "/")
+          );
+        }
+        return selectedCategories.includes(listCategory);
+      });
     }
 
     return filtered.sort(
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
-  }, [initialLists, checklistFilter, selectedCategories, user?.pinnedLists]);
+  }, [
+    initialLists,
+    checklistFilter,
+    selectedCategories,
+    recursive,
+    user?.pinnedLists,
+  ]);
 
-  const { currentPage, totalPages, paginatedItems, goToPage, totalItems, handleItemsPerPageChange } = usePagination({
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems,
+    goToPage,
+    totalItems,
+    handleItemsPerPageChange,
+  } = usePagination({
     items: filteredLists,
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
   });
 
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
-
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
+  };
+
+  const handleTogglePin = async (list: Checklist) => {
+    if (!user || isTogglingPin === list.id) return;
+
+    setIsTogglingPin(list.id);
+    try {
+      const result = await togglePin(
+        list.id,
+        list.category || "Uncategorized",
+        ItemTypes.CHECKLIST
+      );
+      if (result.success) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to toggle pin:", error);
+    } finally {
+      setIsTogglingPin(null);
+    }
   };
 
   const stats = useMemo(() => {
@@ -140,11 +184,12 @@ export const ChecklistsPageClient = ({
   if (initialLists.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <SiteHeader
-          title={t("checklists.all_lists")}
-          description={t("checklists.browse_manage")}
-        />
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <SiteHeader
+            title={t("checklists.all_lists")}
+            description={t("checklists.browse_manage")}
+          />
+
           <EmptyState
             icon={<Folder className="h-10 w-10 text-muted-foreground" />}
             title={t("checklists.no_checklists_yet")}
@@ -174,7 +219,9 @@ export const ChecklistsPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.totalLists}
                 </div>
-                <div className="text-xs text-muted-foreground">{t("checklists.title")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("checklists.title")}
+                </div>
               </div>
             </div>
 
@@ -186,7 +233,9 @@ export const ChecklistsPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completedItems}
                 </div>
-                <div className="text-xs text-muted-foreground">{t("global.completed")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.completed")}
+                </div>
               </div>
             </div>
 
@@ -198,7 +247,9 @@ export const ChecklistsPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completionRate}%
                 </div>
-                <div className="text-xs text-muted-foreground">{t("global.progress")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.progress")}
+                </div>
               </div>
             </div>
 
@@ -210,7 +261,9 @@ export const ChecklistsPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.totalItems}
                 </div>
-                <div className="text-xs text-muted-foreground">{t("global.total_items")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.total_items")}
+                </div>
               </div>
             </div>
           </div>
@@ -227,8 +280,10 @@ export const ChecklistsPageClient = ({
               }
               categories={initialCategories}
               selectedCategories={selectedCategories}
-              onCategoryToggle={handleCategoryToggle}
+              onCategorySelectionChange={setSelectedCategories}
               onClearAllCategories={handleClearAllCategories}
+              recursive={recursive}
+              onRecursiveChange={setRecursive}
               pagination={
                 <Pagination
                   currentPage={currentPage}
@@ -261,18 +316,18 @@ export const ChecklistsPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${list.category || "Uncategorized"
-                          }/${list.id}`;
+                        const categoryPath = `${
+                          list.category || "Uncategorized"
+                        }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(
                         `${list.category || "Uncategorized"}/${list.id}`
                       )}
-                      onTogglePin={() => { }}
+                      onTogglePin={() => handleTogglePin(list)}
                     />
                   ))}
                 </div>
-
               </>
             )}
           </div>

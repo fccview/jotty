@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Shield, User, X } from "lucide-react";
+import { Settings, Shield, User } from "lucide-react";
 import { cn } from "@/app/_utils/global-utils";
 import { DeleteCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/DeleteCategoryModal";
 import { RenameCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/RenameCategoryModal";
@@ -9,7 +9,7 @@ import { EditNoteModal } from "@/app/_components/GlobalComponents/Modals/NotesMo
 import { DynamicLogo } from "@/app/_components/GlobalComponents/Layout/Logo/DynamicLogo";
 import { AppName } from "@/app/_components/GlobalComponents/Layout/AppName";
 import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/SettingsModals/Settings";
-import { Checklist, Note } from "@/app/_types";
+import { AppMode, Checklist, Note } from "@/app/_types";
 import { SidebarNavigation } from "./Parts/SidebarNavigation";
 import { CategoryList } from "./Parts/CategoryList";
 import { SharedItemsList } from "./Parts/SharedItemsList";
@@ -18,21 +18,20 @@ import { Modes } from "@/app/_types/enums";
 import { SidebarProps, useSidebar } from "@/app/_hooks/useSidebar";
 import { Button } from "../../GlobalComponents/Buttons/Button";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationLogoutIcon } from "../Navigation/Parts/NavigationLogoutIcon";
 import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
 import { NavigationHelpIcon } from "../Navigation/Parts/NavigationHelpIcon";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
 
 export const Sidebar = (props: SidebarProps) => {
   const {
     isOpen,
     onClose,
     categories,
-    checklists,
-    notes,
     onOpenCreateModal,
     onOpenCategoryModal,
     user,
@@ -41,21 +40,47 @@ export const Sidebar = (props: SidebarProps) => {
 
   const t = useTranslations();
   const { checkNavigation } = useNavigationGuard();
+  const { checklists, notes } = useAppMode();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const { isDemoMode, isRwMarkable } = useAppMode();
+  const { isDemoMode, isRwMarkable, mode, setMode } = useAppMode();
+  const pathname = usePathname();
+  const isNotesPage = pathname?.includes("/note");
+  const isChecklistsPage = pathname?.includes("/checklist");
+  const isSomePage = isNotesPage || isChecklistsPage;
 
   const sidebar = useSidebar(props);
 
+  useEffect(() => {
+    const searchMode = searchParams?.get("mode") as AppMode;
+    const localStorageMode =
+      mode || (localStorage.getItem("app-mode") as AppMode);
+
+    let updatedMode =
+      user?.landingPage !== "last-visited"
+        ? user?.landingPage
+        : localStorageMode || Modes.CHECKLISTS;
+
+    if (isSomePage) {
+      updatedMode = isNotesPage
+        ? Modes.NOTES
+        : isChecklistsPage
+        ? Modes.CHECKLISTS
+        : sidebar.mode || Modes.CHECKLISTS;
+    }
+
+    setMode(searchMode || updatedMode || Modes.CHECKLISTS);
+  }, []);
+
   if (!sidebar.isInitialized) return null;
 
-  const currentItems =
-    sidebar.mode === Modes.CHECKLISTS ? checklists : notes || [];
+  const currentItems = mode === Modes.CHECKLISTS ? checklists : notes || [];
 
   return (
     <>
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/50 lg:hidden",
+          "jotty-sidebar-overlay fixed inset-0 z-40 bg-black/50 lg:hidden",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -68,7 +93,7 @@ export const Sidebar = (props: SidebarProps) => {
           } as React.CSSProperties
         }
         className={cn(
-          "fixed left-0 top-0 z-50 h-full bg-background border-r border-border flex flex-col lg:static",
+          "jotty-sidebar fixed left-0 top-0 z-50 h-full bg-background border-r border-border flex flex-col lg:static",
           "transition-transform duration-300 ease-in-out",
           "w-[80vw]",
           "lg:w-[var(--sidebar-desktop-width)] lg:min-w-[var(--sidebar-desktop-width)] lg:max-w-[var(--sidebar-desktop-width)]",
@@ -77,11 +102,12 @@ export const Sidebar = (props: SidebarProps) => {
         )}
       >
         <div
-          className="absolute top-0 right-0 w-2 h-full cursor-ew-resize hidden lg:block hover:bg-primary/10"
+          className="jotty-sidebar-resize-handle absolute top-0 right-0 w-2 h-full cursor-ew-resize hidden lg:block hover:bg-primary/10"
           onMouseDown={sidebar.startResizing}
         />
-        <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-border">
+
+        <div className="jotty-sidebar-content flex flex-col h-full">
+          <div className="jotty-sidebar-header p-6 border-b border-border">
             <div className="flex items-center justify-between">
               <a href="/" className="flex items-center gap-3">
                 <DynamicLogo className="h-8 w-8" size="32x32" />
@@ -100,39 +126,37 @@ export const Sidebar = (props: SidebarProps) => {
             </div>
           </div>
           <SidebarNavigation
-            mode={sidebar.mode}
+            mode={mode}
             onModeChange={sidebar.handleModeSwitch}
           />
-          <div className="flex-1 overflow-y-auto p-2 space-y-4">
+          <div className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-4">
             <div className="px-2 pt-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                <h3 className="jotty-sidebar-categories-title text-xs font-bold uppercase text-muted-foreground tracking-wider">
                   {t("global.categories")}
                 </h3>
                 <button
                   onClick={sidebar.handleToggleAllCategories}
-                  className="text-xs font-medium text-primary hover:underline focus:outline-none"
+                  className="jotty-sidebar-categories-toggle-all text-xs font-medium text-primary hover:underline focus:outline-none"
                 >
-                  {sidebar.areAnyCollapsed ? t("global.expand_all") : t("global.collapse_all")}
+                  {sidebar.areAnyCollapsed
+                    ? t("global.expand_all")
+                    : t("global.collapse_all")}
                 </button>
               </div>
             </div>
             <SharedItemsList
-              items={currentItems}
               collapsed={sidebar.sharedItemsCollapsed}
               onToggleCollapsed={() =>
                 sidebar.setSharedItemsCollapsed((p) => !p)
               }
               onItemClick={sidebar.handleItemClick}
-              onEditItem={sidebar.handleEditItem}
               isItemSelected={sidebar.isItemSelected}
               mode={sidebar.mode}
-              getSharingStatus={sidebar.getSharingStatus}
-              user={user}
             />
             <CategoryList
               categories={categories}
-              items={currentItems}
+              items={currentItems as unknown as (Checklist | Note)[]}
               collapsedCategories={sidebar.collapsedCategoriesForMode}
               onToggleCategory={sidebar.toggleCategory}
               onDeleteCategory={(path: string) =>
@@ -147,8 +171,7 @@ export const Sidebar = (props: SidebarProps) => {
               onEditItem={sidebar.handleEditItem}
               isItemSelected={sidebar.isItemSelected}
               mode={sidebar.mode}
-              getSharingStatus={sidebar.getSharingStatus}
-              user={user}
+              user={user || undefined}
             />
           </div>
           <SidebarActions
@@ -157,7 +180,7 @@ export const Sidebar = (props: SidebarProps) => {
             onOpenCategoryModal={onOpenCategoryModal}
           />
 
-          <div className="hidden lg:flex items-center justify-between px-4 pb-4">
+          <div className="jotty-sidebar-footer hidden lg:flex items-center justify-between px-4 pb-4">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -191,7 +214,7 @@ export const Sidebar = (props: SidebarProps) => {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between p-2 lg:hidden">
+          <div className="jotty-sidebar-mobile-footer flex items-center justify-between p-2 lg:hidden">
             <div className="flex">
               <NavigationGlobalIcon
                 icon={
@@ -272,7 +295,7 @@ export const Sidebar = (props: SidebarProps) => {
             note={sidebar.modalState.data as Note}
             categories={categories}
             onClose={sidebar.closeModal}
-            onUpdated={(customFunction: () => void = () => { }) => {
+            onUpdated={(customFunction: () => void = () => {}) => {
               sidebar.closeModal();
               sidebar.router.refresh();
               customFunction?.();

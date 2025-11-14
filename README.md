@@ -39,6 +39,7 @@ Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a
 
 ## Quick nav
 
+- [How to contribute](#contribute)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
@@ -46,6 +47,7 @@ Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a
   - [Initial Setup](#initial-setup)
   - [Local Development (Without Docker)](#local-development-without-docker)
 - [Data Storage](#data-storage)
+- [Versioning Scheme](#versioning)
 - [Updating](#updating)
   - [Docker Compose](#docker-compose-1)
   - [Manual](#manual)
@@ -60,6 +62,19 @@ Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a
     <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" width="150">
   </a>
 </p>
+
+<a id="contribute"></a>
+
+## How to contribute
+
+Hi, it's amazing having a community willing to push new feature to the app, and I am VERY open to contributors pushing their idea, it's what makes open source amazing.
+
+That said for the sake of sanity let's all follow the same structure:
+
+- When creating a new branch, do off from the `develop` branch, this will always be ahead of `main` and it's what gets released
+- When creating a pull request, direct it back into `develop`, I' ll then review it and merge it. Your code will end up in the next release that way and we all avoid conflicts!
+
+Please bear with on reviews, it may take a bit of time for me to go through it all on top of life/work/hobbies :)
 
 <a id="features"></a>
 
@@ -108,7 +123,7 @@ The recommended way to run `jotty·page` is with Docker.
           - "1122:3000"
         volumes:
           - ./data:/app/data:rw
-          - ./config:/app/config:ro
+          - ./config:/app/config:rw
           - ./cache:/app/.next/cache:rw
         restart: unless-stopped
         #platform: linux/arm64
@@ -185,6 +200,28 @@ If you want to run the app locally for development:
 
 **Make sure you back up the `data` directory!**
 
+<a id="versioning"></a>
+
+## Versioning Scheme
+
+This project uses a `[STABLE].[FEATURE].[FIX]` versioning scheme, not strict [SemVer](https://semver.org/). As a product (not a package), this format makes more sense for my specific release cycle.
+
+My format is `1.10.1`, which breaks down as:
+
+- **`1.x.x` (Stable):** The `1` represents the current stable generation. I will only change this (e.g., to `2.0.0`) for a complete rewrite or a fundamental shift in the product or seriously breaking changes.
+
+- **`x.10.x` (Feature):** This is the main release number. I increment this for new features, code refactors, or significant changes (e.g., `1.9.0` -> `1.10.0`). This is the equivalent of a SemVer `MINOR` bump.
+
+- **`x.x.1` (Fix):** This is incremented _only_ for hotfixes, bug-fix-only and very minor feature releases (e.g., `1.10.0` -> `1.10.1`). This is the equivalent of a SemVer `PATCH` bump.
+
+### A Note on "Breaking" Changes
+
+A **Feature** release (like `1.10.0`) may include major backend or data structure changes. When this happens, **I will always provide an automatic migration script** that runs on first launch to update your data seamlessly.
+
+Because the migration is automatic, I do not consider this a "breaking" change that requires a `2.0.0` version.
+
+I will always detail these migrations in the release notes. I _highly recommend_ you **back up your data** before any feature update, just in case.
+
 <a id="updating"></a>
 
 ## Updating
@@ -246,17 +283,18 @@ yarn start
 
 ## Single Sign-On (SSO) with OIDC
 
-`jotty·page` supports any OIDC provider (Authentik, Auth0, Keycloak, Okta, etc.)
+`jotty·page` supports any OIDC provider (Authentik, Auth0, Keycloak, Okta, Google, EntraID, etc.)
 
 📖 **For the complete SSO documentation, see [howto/SSO.md](howto/SSO.md)**
 
 <a id="custom-themes-and-emojis"></a>
 
-## Custom Themes and Emojis
+## Custom Manifest
 
-You can easily add custom themes and emojis by creating configuration files in the `config/` directory. These will be automatically loaded and merged with the built-in themes and emojis.
+You can completely customize your PWA by creating an override manifest file. This allows you to change the app name, description, icons, colors, and more. Custom themes and emojis can be managed through the admin UI.
 
 📖 **For the complete customisation documentation, see [howto/CUSTOMISATIONS.md](howto/CUSTOMISATIONS.md)**
+📖 **For better understanding on how the PWA works see [howto/PWA.md](howto/PWA.md)**
 
 ## Community shouts
 
@@ -330,6 +368,20 @@ I would like to thank the following members for raising issues and help test/deb
       </td>
       <td align="center" valign="top" width="20%">
         <a href="https://github.com/mgrimace"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/55518507?s=100"><br />mgrimace</a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/4rft5"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/74219775?s=100&v=4"><br />4rft5</a>
+      </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/godsking121"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/140371467?s=100&v=4"><br />godsking121</a>
+      </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/pbuzdygan"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/183727077?s=100&v=4"><br />pbuzdygan</a>
+      </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/rcallison"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/535687?s=100&v=4"><br />rcallison</a>
       </td>
     </tr>
   </tbody>

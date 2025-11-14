@@ -1,18 +1,21 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, ClipboardList, Users, Hash, Check, Globe } from "lucide-react";
+import { Plus, ClipboardList, RefreshCw } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Checklist } from "@/app/_types";
-import { buildCategoryPath, isMobileDevice } from "@/app/_utils/global-utils";
-import { useChecklist } from "../../../../../_hooks/useChecklist";
-import { useSharing } from "@/app/_hooks/useSharing";
-import { useRouter } from "next/navigation";
+import { isMobileDevice } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
+import { RecurrenceRule, Item } from "@/app/_types";
+import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useSettings } from "@/app/_utils/settings-store";
+import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
+import { TaskStatus } from "@/app/_types/enums";
 
 interface ChecklistHeadingProps {
-  checklist: Checklist;
-  onSubmit: (text: string) => void;
+  checklist?: Checklist;
+  onSubmit: (text: string, recurrence?: RecurrenceRule) => void;
+  onToggleCompletedItem?: (itemId: string, completed: boolean) => void;
   onBulkSubmit?: () => void;
   isLoading?: boolean;
   autoFocus?: boolean;
@@ -24,6 +27,7 @@ interface ChecklistHeadingProps {
 export const ChecklistHeading = ({
   checklist,
   onSubmit,
+  onToggleCompletedItem,
   onBulkSubmit,
   isLoading = false,
   autoFocus = false,
@@ -33,22 +37,47 @@ export const ChecklistHeading = ({
 }: ChecklistHeadingProps) => {
   const t = useTranslations();
   const [newItemText, setNewItemText] = useState("");
+  const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const { user } = useAppMode();
+  const { showCompletedSuggestions: sessionShowCompletedSuggestions } =
+    useSettings();
 
-  const { handleCopyId, copied } = useChecklist({
-    list: checklist,
-    onUpdate: () => { },
-  });
-  const { sharingStatus } = useSharing({
-    itemId: checklist.id,
-    itemType: "checklist",
-    itemOwner: checklist.owner || "",
-    onClose: () => { },
-    enabled: true,
-    itemTitle: checklist.title,
-    itemCategory: checklist.category,
-    isOpen: true,
-  });
+  const shouldShowSuggestions =
+    (user?.showCompletedSuggestions === "enable" ||
+      sessionShowCompletedSuggestions) &&
+    checklist;
+
+  const getAllCompletedItems = (items: Item[]): Item[] => {
+    if (!shouldShowSuggestions) return [];
+
+    const completedItems: Item[] = [];
+
+    const collectCompleted = (itemList: Item[]) => {
+      for (const item of itemList) {
+        if (item.completed || item.status === TaskStatus.COMPLETED) {
+          completedItems.push(item);
+        }
+        if (item.children && item.children.length > 0) {
+          collectCompleted(item.children);
+        }
+      }
+    };
+
+    if (items) {
+      collectCompleted(items);
+    }
+
+    return completedItems;
+  };
+
+  const completedItems = getAllCompletedItems(checklist?.items || []);
+
+  const filteredSuggestions = completedItems.filter((item) =>
+    item.text.toLowerCase().includes(newItemText.toLowerCase().trim())
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +85,35 @@ export const ChecklistHeading = ({
 
     onSubmit(newItemText.trim());
     setNewItemText("");
+    setShowSuggestions(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewItemText(e.target.value);
+    if (shouldShowSuggestions && completedItems.length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleInputFocus = () => {
+    if (shouldShowSuggestions && completedItems.length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleSuggestionClick = (itemId: string) => {
+    if (onToggleCompletedItem) {
+      onToggleCompletedItem(itemId, false);
+      setShowSuggestions(false);
+      setNewItemText("");
+    }
+  };
+
+  const handleRecurrenceSubmit = (
+    text: string,
+    recurrence?: RecurrenceRule
+  ) => {
+    onSubmit(text, recurrence);
   };
 
   useEffect(() => {
@@ -64,50 +122,58 @@ export const ChecklistHeading = ({
     }
   }, [focusKey, autoFocus]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+
+    if (showSuggestions) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showSuggestions]);
+
   return (
     <>
-      <div className="p-4 lg:p-6 border-b border-border bg-gradient-to-r from-background to-muted/20">
-        <div className="lg:mb-6">
-          <div className="flex items-center gap-3 lg:mb-3">
-            <h2 className="text-xl lg:text-2xl font-bold text-foreground tracking-tight">
-              {checklist.title}
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCopyId}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              title={t("checklists.copy_id", { id: checklist.id })}
-            >
-              {copied ? (
-                <Check className="h-3 w-3 text-green-500" />
-              ) : (
-                <Hash className="h-3 w-3" />
-              )}
-            </Button>
-            {sharingStatus?.isPubliclyShared && (
-              <Globe className="h-3 w-3 text-primary" />
-            )}
-            {sharingStatus?.isShared && !sharingStatus.isPubliclyShared && (
-              <Users className="h-3 w-3 text-primary" />
-            )}
-          </div>
-        </div>
-
+      <div className="lg:p-6 lg:border-b border-border bg-gradient-to-r from-background to-muted/20">
         <div className="fixed bottom-[64px] left-0 right-0 lg:relative lg:bottom-auto lg:left-auto lg:right-auto bg-background border-t lg:border-t-0 border-border p-4 lg:p-0 z-20 lg:z-auto items-center">
           <form
             onSubmit={handleSubmit}
             className="flex gap-3 lg:flex-row lg:items-center"
           >
-            <input
-              ref={inputRef}
-              type="text"
-              value={newItemText}
-              onChange={(e) => setNewItemText(e.target.value)}
-              placeholder={placeholder}
-              className="flex-1 px-4 w-[60%] lg:w-auto py-3 border border-input bg-background rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-ring transition-all duration-200 shadow-sm"
-              disabled={isLoading}
-            />
+            <div className="relative flex-1 w-[60%] lg:w-auto">
+              <input
+                ref={inputRef}
+                type="text"
+                value={newItemText}
+                onChange={handleInputChange}
+                onFocus={handleInputFocus}
+                placeholder={placeholder}
+                className="w-full px-4 py-3 border border-input bg-background rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-ring transition-all duration-200 shadow-sm"
+                disabled={isLoading}
+              />
+              {showSuggestions &&
+                filteredSuggestions.length > 0 &&
+                newItemText.trim() !== "" && (
+                  <div
+                    ref={suggestionsRef}
+                    className="absolute bottom-[110%] lg:bottom-auto lg:top-full w-[calc(100vw-2rem)] lg:w-auto left-0 right-0 mt-1 z-50"
+                  >
+                    <CompletedSuggestionsDropdown
+                      completedItems={filteredSuggestions}
+                      onSuggestionClick={handleSuggestionClick}
+                    />
+                  </div>
+                )}
+            </div>
             <div className="flex gap-2 lg:gap-3 items-center">
               {onBulkSubmit && (
                 <Button
@@ -123,19 +189,47 @@ export const ChecklistHeading = ({
                   <span className="hidden lg:inline">{t("modals.bulk")}</span>
                 </Button>
               )}
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isLoading || !newItemText.trim()}
-                className="px-4 lg:px-6 shadow-sm"
-              >
-                <Plus className="h-4 w-4 lg:mr-2" />
-                <span className="hidden lg:inline">{submitButtonText}</span>
-              </Button>
+              <div className="flex items-center">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={isLoading || !newItemText.trim()}
+                  className={`px-4 lg:px-6 shadow-sm ${
+                    user?.enableRecurrence === "enable"
+                      ? "rounded-tr-none rounded-br-none"
+                      : ""
+                  }`}
+                >
+                  <Plus className="h-4 w-4 lg:mr-2" />
+                  <span className="hidden lg:inline">{submitButtonText}</span>
+                </Button>
+
+                {user?.enableRecurrence === "enable" && (
+                  <Button
+                    type="button"
+                    size="lg"
+                    onClick={() => setShowRecurrenceModal(true)}
+                    disabled={isLoading || !newItemText.trim()}
+                    title="Add recurring item"
+                    className="px-3 lg:px-4 shadow-sm border-l-2 border-border rounded-tl-none rounded-bl-none"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </form>
         </div>
       </div>
+
+      {showRecurrenceModal && user?.enableRecurrence === "enable" && (
+        <AddItemWithRecurrenceModal
+          initialItemText={newItemText.trim()}
+          onClose={() => setShowRecurrenceModal(false)}
+          onSubmit={handleRecurrenceSubmit}
+          isLoading={isLoading}
+        />
+      )}
     </>
   );
 };

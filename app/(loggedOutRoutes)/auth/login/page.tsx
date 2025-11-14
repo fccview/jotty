@@ -8,8 +8,11 @@ export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
   const ssoEnabled = process.env.SSO_MODE === "oidc";
-  const allowLocal = process.env.SSO_FALLBACK_LOCAL && process.env.SSO_FALLBACK_LOCAL !== "no";
   const t = await getTranslations();
+  const allowLocal =
+    process.env.SSO_FALLBACK_LOCAL &&
+    process.env.SSO_FALLBACK_LOCAL !== "no" &&
+    process.env.SSO_FALLBACK_LOCAL !== "false";
 
   const hasExistingUsers = await hasUsers();
   if (

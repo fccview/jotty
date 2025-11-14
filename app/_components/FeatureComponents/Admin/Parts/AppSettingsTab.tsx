@@ -17,6 +17,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { useTranslations } from "next-intl";
+import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 
 export const AppSettingsTab = () => {
   const t = useTranslations();
@@ -121,12 +122,24 @@ export const AppSettingsTab = () => {
       description: t("admin.settings.favicon_180_description"),
       iconType: "180x180Icon",
     },
+    {
+      label: "192x192 Icon",
+      description: "Icon for Android home screen.",
+      iconType: "192x192Icon",
+    },
+    {
+      label: "512x512 Icon",
+      description: "High-resolution icon for PWA splash screens.",
+      iconType: "512x512Icon",
+    },
   ] as const;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">{t("global.settings")}</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          {t("global.settings")}
+        </h2>
         <p className="text-muted-foreground">
           {t("admin.settings.customize_app")}
         </p>
@@ -152,6 +165,9 @@ export const AppSettingsTab = () => {
           >
             {t("admin.settings.notify_updates")}
           </label>
+          <Label htmlFor="notifyNewUpdates" className="block mb-3">
+            Notify me of new updates
+          </Label>
           <Dropdown
             value={settings?.notifyNewUpdates || "yes"}
             onChange={(value) => handleInputChange("notifyNewUpdates", value)}
@@ -162,19 +178,55 @@ export const AppSettingsTab = () => {
           />
         </div>
         <div>
+          <Label htmlFor="parseContent" className="block mb-3">
+            Always show parsed content
+          </Label>
+          <Dropdown
+            value={settings?.parseContent || "yes"}
+            onChange={(value) => handleInputChange("parseContent", value)}
+            options={[
+              { id: "yes", name: "Yes" },
+              { id: "no", name: "No" },
+            ]}
+          />
+          <span className="text-xs text-muted-foreground">
+            When enabled this setting will show the parsed titles in the
+            sidebar, search results, and overall across the app. <br />
+            When disabled, the original file names will be sanitised, made human
+            readable and shown instead.
+            <br />
+            <span className="font-bold">
+              Setting this to &quot;no&quot; will improve performance on large
+              datasets but may impact readability - especially on filenames with
+              non latin characters.
+            </span>
+          </span>
+        </div>
+        <div>
           <Input
             label={t("admin.settings.max_file_size")}
             description={t("admin.settings.max_file_size_description")}
             type="number"
             id="maximumFileSize"
-            defaultValue={(settings?.maximumFileSize ? (settings.maximumFileSize / 1024 / 1024).toString() : (MAX_FILE_SIZE / 1024 / 1024).toString())}
-            onChange={(e) => handleInputChange("maximumFileSize", (Number(e.target.value) * 1024 * 1024).toString())}
+            defaultValue={
+              settings?.maximumFileSize
+                ? (settings.maximumFileSize / 1024 / 1024).toString()
+                : (MAX_FILE_SIZE / 1024 / 1024).toString()
+            }
+            onChange={(e) =>
+              handleInputChange(
+                "maximumFileSize",
+                (Number(e.target.value) * 1024 * 1024).toString()
+              )
+            }
           />
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold mb-4">{t("admin.settings.app_icons")}</h3>
-          <div className="grid gap-6 md:grid-cols-3">
+          <h3 className="text-lg font-semibold mb-4">
+            {t("admin.settings.app_icons")}
+          </h3>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {iconFields.map((field) => (
               <ImageUpload
                 key={field.iconType}
@@ -192,7 +244,8 @@ export const AppSettingsTab = () => {
           <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
             {isSaving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("global.saving")}
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                {t("global.saving")}
               </>
             ) : (
               t("admin.settings.save_changes")

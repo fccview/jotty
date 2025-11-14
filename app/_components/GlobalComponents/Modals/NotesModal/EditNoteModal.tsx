@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
-import { updateNote } from "@/app/_server/actions/note";
+import { getNoteById, updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import { useTranslations } from "next-intl";
 
 interface EditNoteModalProps {
@@ -15,31 +19,57 @@ interface EditNoteModalProps {
   categories: Category[];
   onClose: () => void;
   onUpdated: () => void;
+  unarchive?: boolean;
 }
 
 export const EditNoteModal = ({
-  note,
+  note: initialNote,
   categories,
   onClose,
   onUpdated,
+  unarchive,
 }: EditNoteModalProps) => {
-  const [title, setTitle] = useState(note.title);
-  const [category, setCategory] = useState(note.category || "");
-  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAppMode();
+  const router = useRouter();
+  const [note, setNote] = useState<Note | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const t = useTranslations();
+  const [title, setTitle] = useState(initialNote.title);
+  const initialCategory = unarchive ? "" : initialNote.category || "";
+  const [category, setCategory] = useState(initialCategory);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const checkOwnership = async () => {
-      try {
-        const user = await getCurrentUser();
-        setIsOwner(user?.username === note.owner);
-      } catch (error) {
-        console.error("Error checking ownership:", error);
-      }
+    const fetchNote = async () => {
+      const note = await getNoteById(
+        initialNote.id,
+        initialNote.category || "Uncategorized",
+        user?.username || ""
+      );
+      const parsedNote = parseNoteContent(
+        note?.rawContent || "",
+        note?.id || ""
+      );
+
+      setNote(note || null);
+      setTitle(parsedNote?.title || "");
+      setIsOwner(user?.username === note?.owner);
     };
-    checkOwnership();
-  }, [note.owner]);
+    fetchNote();
+  }, [initialNote]);
+
+  if (!note) {
+    return (
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        title="Note not found"
+        titleIcon={<FileText className="h-5 w-5 text-primary" />}
+      >
+        <p>Note not found</p>
+      </Modal>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,16 +80,32 @@ export const EditNoteModal = ({
     formData.append("id", note.id);
     formData.append("title", title.trim());
     formData.append("content", note.content);
+    formData.append("unarchive", unarchive ? "true" : "false");
+    formData.append("user", note.owner || "");
+
     if (isOwner) {
       formData.append("category", category || "");
+    } else if (unarchive) {
+      formData.append("category", category || "Uncategorized");
     }
+
     formData.append("originalCategory", note.category || "Uncategorized");
 
     const result = await updateNote(formData, false);
 
     setIsLoading(false);
 
-    if (result.success) {
+    if (result.success && result.data) {
+      const updatedNote = result.data;
+
+      const categoryPath = buildCategoryPath(
+        updatedNote.category || "Uncategorized",
+        updatedNote.id
+      );
+
+      if (!unarchive) {
+        router.push(`/note/${categoryPath}`);
+      }
       onUpdated();
     }
   };
@@ -68,11 +114,11 @@ export const EditNoteModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={t("notes.edit_note")}
+      title={unarchive ? "Unarchive Note" : t("notes.edit_note")}
       titleIcon={<FileText className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
+        <div className={unarchive ? "hidden" : ""}>
           <label className="block text-sm font-medium text-foreground mb-2">
             {t("notes.note_name")} *
           </label>
@@ -87,6 +133,10 @@ export const EditNoteModal = ({
           />
         </div>
 
+        {unarchive && (
+          <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>
+        )}
+
         {isOwner && (
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
@@ -94,7 +144,9 @@ export const EditNoteModal = ({
             </label>
             <CategoryTreeSelector
               categories={categories}
-              selectedCategory={category}
+              selectedCategory={
+                category !== ARCHIVED_DIR_NAME ? category : "Uncategorized"
+              }
               onCategorySelect={setCategory}
               className="w-full"
               isInModal={true}
@@ -117,7 +169,11 @@ export const EditNoteModal = ({
             disabled={isLoading || !title.trim()}
             className="flex-1"
           >
-            {isLoading ? t("global.updating") : t("notes.update_note")}
+            {isLoading
+              ? t("global.updating")
+              : unarchive
+              ? "Unarchive Note"
+              : t("notes.update_note")}
           </Button>
         </div>
       </form>

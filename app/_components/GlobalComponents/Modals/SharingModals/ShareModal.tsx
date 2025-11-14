@@ -2,29 +2,34 @@
 
 import { Modal } from "../Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Share2, Copy, Loader2 } from "lucide-react";
-import { useSharing } from "@/app/_hooks/useSharing";
+import { Share2 } from "lucide-react";
+import { useSharingTools } from "@/app/_hooks/useSharingTools";
 import { FeedbackMessage } from "./Parts/SharingFeedbackMessage";
 import { ShareTabs } from "./Parts/ShareTabs";
 import { UsersShareTab } from "./Parts/UsersShareTab";
 import { PublicShareTab } from "./Parts/PublicShareTabs";
 import { ItemType } from "@/app/_types";
+import { useMetadata } from "@/app/_providers/MetadataProvider";
 
-interface ShareModalProps {
+export const ShareModal = ({
+  isOpen,
+  onClose,
+}: {
   isOpen: boolean;
   onClose: () => void;
-  itemId: string;
-  itemTitle: string;
-  itemType: ItemType;
-  itemCategory?: string;
-  itemOwner: string;
-}
+}) => {
+  const metadata = useMetadata();
 
-export const ShareModal = (props: ShareModalProps) => {
-  const { isOpen, onClose, itemTitle, itemType } = props;
-  const hookResult = useSharing({
-    ...props,
+  const hookResult = useSharingTools({
+    isOpen,
+    onClose,
     enabled: true,
+    itemId: metadata.id,
+    itemTitle: metadata.title,
+    itemType: metadata.type as ItemType,
+    itemCategory: metadata.category,
+    itemOwner: metadata.owner || "",
+    itemUuid: metadata.uuid,
   });
   const { error, success, activeTab, setActiveTab, resetMessages } = hookResult;
 
@@ -39,11 +44,11 @@ export const ShareModal = (props: ShareModalProps) => {
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={`Share ${itemType}`}
+      title={`Share ${metadata.type}`}
       titleIcon={<Share2 className="h-5 w-5 text-primary" />}
     >
       <div className="space-y-4 py-6">
-        <h3 className="font-semibold text-lg">{itemTitle}</h3>
+        <h3 className="font-semibold text-lg">{metadata.title}</h3>
         <FeedbackMessage error={error} success={success} />
         <ShareTabs activeTab={activeTab} setActiveTab={handleTabChange} />
         {activeTab === "users" ? (
@@ -51,8 +56,8 @@ export const ShareModal = (props: ShareModalProps) => {
         ) : (
           <PublicShareTab
             {...hookResult}
-            itemTitle={itemTitle}
-            itemType={itemType}
+            itemTitle={metadata.title}
+            itemType={metadata.type as ItemType}
           />
         )}
       </div>
@@ -78,23 +83,6 @@ export const ShareModal = (props: ShareModalProps) => {
           >
             Close
           </Button>
-          {activeTab === "users" && (
-            <Button
-              onClick={hookResult.handleShare}
-              disabled={
-                hookResult.isLoading || hookResult.selectedUsers.length === 0
-              }
-            >
-              {hookResult.isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Updating...
-                </>
-              ) : (
-                "Update Sharing"
-              )}
-            </Button>
-          )}
         </div>
       </div>
     </Modal>

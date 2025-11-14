@@ -2,6 +2,7 @@ import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingMod
 import { ConversionConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConversionConfirmModal";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
 import { Checklist } from "@/app/_types";
+import { useRouter } from "next/navigation";
 
 interface ChecklistModalsProps {
   localList: Checklist;
@@ -30,17 +31,17 @@ export const ChecklistModals = ({
   handleBulkPaste,
   isLoading,
 }: ChecklistModalsProps) => {
+  const router = useRouter();
+
   return (
     <>
       {showShareModal && (
         <ShareModal
           isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
-          itemId={localList.id}
-          itemTitle={localList.title}
-          itemType="checklist"
-          itemCategory={localList.category}
-          itemOwner={localList.owner || ""}
+          onClose={() => {
+            setShowShareModal(false);
+            router.refresh();
+          }}
         />
       )}
       {showConversionModal && (

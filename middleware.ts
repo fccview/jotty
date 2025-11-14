@@ -37,11 +37,28 @@ export const middleware = async (request: NextRequest) => {
   }
 
   try {
-    const baseUrl = process.env.APP_URL
-      ? process.env.APP_URL.replace(/\/$/, "")
-      : new URL(request.url).origin;
+    const internalApiUrl =
+      process.env.INTERNAL_API_URL ||
+      process.env.APP_URL ||
+      request.nextUrl.origin;
 
-    const sessionCheckUrl = new URL(`${baseUrl}/api/auth/check-session`);
+    if (process.env.DEBUGGER) {
+      console.log("MIDDLEWARE - URL Resolution:");
+      console.log(
+        "  INTERNAL_API_URL:",
+        process.env.INTERNAL_API_URL || "(not set)"
+      );
+      console.log("  APP_URL:", process.env.APP_URL || "(not set)");
+      console.log("  request.nextUrl.origin:", request.nextUrl.origin);
+      console.log("  → Using:", internalApiUrl);
+    }
+
+    const sessionCheckUrl = new URL(`${internalApiUrl}/api/auth/check-session`);
+
+    if (process.env.DEBUGGER) {
+      console.log("MIDDLEWARE - Session Check URL:", sessionCheckUrl.href);
+    }
+
     const sessionCheck = await fetch(sessionCheckUrl, {
       headers: {
         Cookie: request.headers.get("Cookie") || "",
@@ -50,8 +67,10 @@ export const middleware = async (request: NextRequest) => {
     });
 
     if (process.env.DEBUGGER) {
-      console.log("MIDDLEWARE - baseUrl:", baseUrl);
-      console.log("MIDDLEWARE - sessionCheck:", sessionCheck);
+      console.log("MIDDLEWARE - Session Check Response:");
+      console.log("  status:", sessionCheck.status);
+      console.log("  statusText:", sessionCheck.statusText);
+      console.log("  ok:", sessionCheck.ok);
     }
 
     if (!sessionCheck.ok) {

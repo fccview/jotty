@@ -15,21 +15,17 @@ interface ConversionConfirmModalProps {
   newType: ChecklistType;
 }
 
-const TypeDisplay = ({ type, t }: { type: ChecklistType; t: any }) => {
-  const labels = {
-    simple: t("checklists.simple_checklist"),
-    task: t("checklists.task_project"),
-  };
-  const Icons = {
-    simple: CheckSquare,
-    task: BarChart3,
-  };
-  const Icon = Icons[type];
-  
+const TYPE_CONFIG = {
+  simple: { label: "Simple Checklist", Icon: CheckSquare },
+  task: { label: "Task Project", Icon: BarChart3 },
+};
+
+const TypeDisplay = ({ type }: { type: ChecklistType }) => {
+  const { label, Icon } = TYPE_CONFIG[type];
   return (
     <div className="flex items-center gap-2">
       <Icon className="h-4 w-4 text-primary" />
-      <span className="text-sm font-medium text-foreground">{labels[type]}</span>
+      <span className="text-sm font-medium text-foreground">{label}</span>
     </div>
   );
 };

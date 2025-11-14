@@ -49,6 +49,7 @@ export const TasksPageClient = ({
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [taskFilter, setTaskFilter] = useState<TaskFilter>("all");
   const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
     { id: "all", name: t("tasks.all_tasks") },
@@ -91,16 +92,30 @@ export const TasksPageClient = ({
     }
 
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((list) =>
-        selectedCategories.includes(list.category || "Uncategorized")
-      );
+      filtered = filtered.filter((list) => {
+        const listCategory = list.category || "Uncategorized";
+        if (recursive) {
+          return selectedCategories.some(
+            (selected) =>
+              listCategory === selected ||
+              listCategory.startsWith(selected + "/")
+          );
+        }
+        return selectedCategories.includes(listCategory);
+      });
     }
 
     return filtered.sort(
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
-  }, [initialLists, taskFilter, selectedCategories, user?.pinnedLists]);
+  }, [
+    initialLists,
+    taskFilter,
+    selectedCategories,
+    recursive,
+    user?.pinnedLists,
+  ]);
 
   const {
     currentPage,
@@ -116,14 +131,6 @@ export const TasksPageClient = ({
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
   });
-
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
 
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
@@ -182,11 +189,11 @@ export const TasksPageClient = ({
   if (initialLists.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <SiteHeader
-          title={t("tasks.all_tasks")}
-          description={t("tasks.browse_manage_tasks")}
-        />
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <SiteHeader
+            title={t("tasks.all_tasks")}
+            description={t("tasks.browse_manage_tasks")}
+          />
           <EmptyState
             icon={<BarChart3 className="h-10 w-10 text-muted-foreground" />}
             title={t("tasks.no_task_lists_yet")}
@@ -200,7 +207,7 @@ export const TasksPageClient = ({
   }
 
   return (
-      <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <SiteHeader
           title={t("tasks.all_tasks")}
@@ -216,7 +223,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.totalTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">{t("tasks.task_lists")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("tasks.task_lists")}
+                </div>
               </div>
             </div>
 
@@ -228,7 +237,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completedTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">{t("global.completed")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.completed")}
+                </div>
               </div>
             </div>
 
@@ -240,7 +251,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completionRate}%
                 </div>
-                <div className="text-xs text-muted-foreground">{t("global.progress")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.progress")}
+                </div>
               </div>
             </div>
 
@@ -252,7 +265,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.todoTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">{t("tasks.todo")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("tasks.todo")}
+                </div>
               </div>
             </div>
 
@@ -264,7 +279,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.inProgressTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">{t("tasks.in_progress")}</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("tasks.in_progress")}
+                </div>
               </div>
             </div>
           </div>
@@ -279,8 +296,10 @@ export const TasksPageClient = ({
               onFilterChange={(value) => setTaskFilter(value as TaskFilter)}
               categories={initialCategories}
               selectedCategories={selectedCategories}
-              onCategoryToggle={handleCategoryToggle}
+              onCategorySelectionChange={setSelectedCategories}
               onClearAllCategories={handleClearAllCategories}
+              recursive={recursive}
+              onRecursiveChange={setRecursive}
               pagination={
                 <Pagination
                   currentPage={currentPage}
@@ -313,18 +332,18 @@ export const TasksPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${list.category || "Uncategorized"
-                          }/${list.id}`;
+                        const categoryPath = `${
+                          list.category || "Uncategorized"
+                        }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(
                         `${list.category || "Uncategorized"}/${list.id}`
                       )}
-                      onTogglePin={() => { }}
+                      onTogglePin={() => {}}
                     />
                   ))}
                 </div>
-
               </>
             )}
           </div>

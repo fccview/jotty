@@ -15,6 +15,8 @@ import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
+import { rebuildLinkIndex } from "@/app/_server/actions/link";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -29,6 +31,7 @@ export const AdminContent = ({
 }: AdminContentProps) => {
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
   const t = useTranslations();
+  const [rebuildingIndex, setRebuildingIndex] = useState<string | null>(null);
 
   const sortedUserContent = useMemo(() => {
     const listsByOwner = new Map<string, Checklist[]>();
@@ -95,23 +98,40 @@ export const AdminContent = ({
 
   const isAllExpanded = expandedUsers?.size === sortedUserContent.length;
 
+  const handleRebuildIndex = async (username: string) => {
+    setRebuildingIndex(username);
+    try {
+      await rebuildLinkIndex(username);
+      alert(`Successfully rebuilt link index for ${username}`);
+    } catch (error) {
+      console.error("Failed to rebuild index:", error);
+      alert(`Failed to rebuild link index for ${username}`);
+    } finally {
+      setRebuildingIndex(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <Accordion title={t("admin.data_export")} defaultOpen={false} className="mb-6">
+      <Accordion
+        title={t("admin.data_export")}
+        defaultOpen={false}
+        className="mb-6"
+      >
         <ExportContent users={users} />
       </Accordion>
 
       <div className="md:flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">{t("admin.all_content")}</h2>
-          <p className="text-muted-foreground">
-            {t("admin.content_by_user")}
-          </p>
+          <h2 className="text-2xl font-bold text-foreground">
+            {t("admin.all_content")}
+          </h2>
+          <p className="text-muted-foreground">{t("admin.content_by_user")}</p>
         </div>
         <div className="flex items-center gap-4 mt-4 md:mt-0">
           <span className="text-sm text-muted-foreground">
-            {allLists.length + allDocs.length} {t("admin.total_items_across")} {users.length}{" "}
-            {t("global.users")}
+            {allLists.length + allDocs.length} {t("admin.total_items_across")}{" "}
+            {users.length} {t("global.users")}
           </span>
           <button
             onClick={toggleAll}
@@ -133,10 +153,10 @@ export const AdminContent = ({
               className="p-6 rounded-lg border border-border bg-card"
             >
               <div
-                className="flex items-center justify-between cursor-pointer"
+                className="lg:flex items-center justify-between cursor-pointer"
                 onClick={() => toggleUser(user.username)}
               >
-                <div className="flex items-center gap-3">
+                <div className="mb-2 lg:mb-0 flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
                     <UserAvatar
                       size="lg"
@@ -154,11 +174,26 @@ export const AdminContent = ({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {checklists.length} {t("checklists.title")} • {notes.length} {t("notes.title")}
+                      {checklists.length} {t("checklists.title")} •{" "}
+                      {notes.length} {t("notes.title")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="default"
+                    size="xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRebuildIndex(user.username);
+                    }}
+                    disabled={rebuildingIndex === user.username}
+                    title="Rebuild link indexex"
+                  >
+                    {rebuildingIndex === user.username
+                      ? "Rebuilding..."
+                      : "Rebuild Indexes"}
+                  </Button>
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                       {totalItems} {t("admin.items")}
@@ -185,7 +220,9 @@ export const AdminContent = ({
                             list.category || t("global.uncategorized"),
                             list.id
                           )}`,
-                          details: `${list.category} • ${list.items.length} ${t("admin.items")}`,
+                          details: `${list.category} • ${list.items.length} ${t(
+                            "admin.items"
+                          )}`,
                         }))}
                       />
                       <AdminContentColumn
@@ -197,7 +234,9 @@ export const AdminContent = ({
                             doc.category || t("global.uncategorized"),
                             doc.id
                           )}`,
-                          details: `${doc.category} • ${doc.content.length} ${t("admin.characters")}`,
+                          details: `${doc.category} • ${doc.content.length} ${t(
+                            "admin.characters"
+                          )}`,
                         }))}
                       />
                     </div>

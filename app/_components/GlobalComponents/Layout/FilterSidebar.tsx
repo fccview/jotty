@@ -2,7 +2,7 @@
 
 import { Filter } from "lucide-react";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { CategoryPills } from "@/app/_components/GlobalComponents/Filters/CategoryPills";
+import { CategoryMultiselect } from "@/app/_components/GlobalComponents/Dropdowns/CategoryMultiselect";
 import { Category } from "@/app/_types";
 
 interface FilterSidebarProps {
@@ -12,8 +12,10 @@ interface FilterSidebarProps {
   onFilterChange: (value: string) => void;
   categories: Category[];
   selectedCategories: string[];
-  onCategoryToggle: (category: string) => void;
+  onCategorySelectionChange: (selectedPaths: string[]) => void;
   onClearAllCategories: () => void;
+  recursive?: boolean;
+  onRecursiveChange?: (recursive: boolean) => void;
   pagination?: React.ReactNode;
   className?: string;
 }
@@ -25,20 +27,26 @@ export const FilterSidebar = ({
   onFilterChange,
   categories,
   selectedCategories,
-  onCategoryToggle,
+  onCategorySelectionChange,
   onClearAllCategories,
+  recursive,
+  onRecursiveChange,
   pagination,
   className = "",
 }: FilterSidebarProps) => {
   return (
-    <div className={`lg:sticky lg:top-20 space-y-6 ${className}`}>
-      <div className="bg-card border border-border rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-4">
+    <div
+      className={`jotty-filter-sidebar lg:sticky lg:top-20 space-y-6 ${className}`}
+    >
+      <div className="jotty-filter-sidebar-header bg-card border border-border rounded-lg p-4">
+        <div className="jotty-filter-sidebar-header-icon flex items-center gap-2 mb-4">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium text-foreground">Filters</span>
+          <span className="jotty-filter-sidebar-header-title font-medium text-foreground">
+            Filters
+          </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="jotty-filter-sidebar-content space-y-4">
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">
               {title}
@@ -51,11 +59,13 @@ export const FilterSidebar = ({
             />
           </div>
 
-          <CategoryPills
+          <CategoryMultiselect
             categories={categories}
             selectedCategories={selectedCategories}
-            onCategoryToggle={onCategoryToggle}
+            onSelectionChange={onCategorySelectionChange}
             onClearAll={onClearAllCategories}
+            recursive={recursive}
+            onRecursiveChange={onRecursiveChange}
           />
         </div>
       </div>

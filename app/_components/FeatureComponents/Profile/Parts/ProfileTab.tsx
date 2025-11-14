@@ -24,6 +24,7 @@ import { generateApiKey, getApiKey } from "@/app/_server/actions/api";
 import { User as UserData } from "@/app/_types";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useTranslations } from "next-intl";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface ProfileTabProps {
   user: UserData | null;
@@ -56,6 +57,7 @@ export const ProfileTab = ({
   const [hasFormChanged, setHasFormChanged] = useState(false);
 
   const { isDemoMode } = useAppMode();
+  const { formatDateString } = usePreferredDateTime();
 
   useEffect(() => {
     setEditedUsername(user?.username || "");
@@ -70,7 +72,13 @@ export const ProfileTab = ({
       newPassword !== "" ||
       confirmPassword !== "";
     setHasFormChanged(hasChanges);
-  }, [editedUsername, currentPassword, newPassword, confirmPassword, user?.username]);
+  }, [
+    editedUsername,
+    currentPassword,
+    newPassword,
+    confirmPassword,
+    user?.username,
+  ]);
 
   useEffect(() => {
     loadApiKey();
@@ -171,7 +179,9 @@ export const ProfileTab = ({
         setError(result.error || t("profile.failed_to_update_profile"));
       }
     } catch (error) {
-      setError(`${t("profile.failed_to_update_profile")} ${t("profile.try_again")}`);
+      setError(
+        `${t("profile.failed_to_update_profile")} ${t("profile.try_again")}`
+      );
     }
   };
 
@@ -197,7 +207,9 @@ export const ProfileTab = ({
         setError(result.error || t("profile.failed_to_update_avatar"));
       }
     } catch (error) {
-      setError(`${t("profile.failed_to_update_avatar")} ${t("profile.try_again")}`);
+      setError(
+        `${t("profile.failed_to_update_avatar")} ${t("profile.try_again")}`
+      );
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -222,14 +234,17 @@ export const ProfileTab = ({
         setError(result.error || t("profile.failed_to_remove_avatar"));
       }
     } catch (error) {
-      setError(`${t("profile.failed_to_remove_avatar")} ${t("profile.try_again")}`);
+      setError(
+        `${t("profile.failed_to_remove_avatar")} ${t("profile.try_again")}`
+      );
     } finally {
       setIsUploadingAvatar(false);
     }
   };
 
   const isUsernameDisabled = isSsoUser || isDemoMode;
-  const isSaveButtonDisabled = isUploadingAvatar || isDemoMode || !hasFormChanged;
+  const isSaveButtonDisabled =
+    isUploadingAvatar || isDemoMode || !hasFormChanged;
   const isAvatarDisabled = isUploadingAvatar || isDemoMode;
   const isCurrentPasswordDisabled = isDemoMode;
   const isNewPasswordDisabled = isDemoMode;
@@ -238,7 +253,9 @@ export const ProfileTab = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t("profile.profile_title", { username: user?.username || "" })}</h2>
+        <h2 className="text-2xl font-bold">
+          {t("profile.profile_title", { username: user?.username || "" })}
+        </h2>
       </div>
 
       {error && (
@@ -305,7 +322,11 @@ export const ProfileTab = ({
                       size="sm"
                       onClick={() => setShowApiKey(!showApiKey)}
                       className="h-8 w-8 p-0"
-                      title={showApiKey ? t("profile.hide_api_key") : t("profile.show_api_key")}
+                      title={
+                        showApiKey
+                          ? t("profile.hide_api_key")
+                          : t("profile.show_api_key")
+                      }
                     >
                       {showApiKey ? (
                         <EyeOff className="h-4 w-4" />
@@ -333,14 +354,22 @@ export const ProfileTab = ({
                     variant="outline"
                     onClick={handleGenerateApiKey}
                     disabled={isGenerating}
-                    title={apiKey ? t("profile.regenerate_api_key") : t("profile.generate_api_key")}
+                    title={
+                      apiKey
+                        ? t("profile.regenerate_api_key")
+                        : t("profile.generate_api_key")
+                    }
                   >
                     {apiKey ? (
                       <RefreshCw className="h-4 w-4" />
                     ) : (
                       <Key className="h-4 w-4 mr-2" />
                     )}
-                    {isGenerating ? t("profile.generating") : apiKey ? "" : t("profile.generate")}
+                    {isGenerating
+                      ? t("profile.generating")
+                      : apiKey
+                      ? ""
+                      : t("profile.generate")}
                   </Button>
                 )}
               </div>
@@ -356,7 +385,9 @@ export const ProfileTab = ({
                 disabled={isSaveButtonDisabled}
                 size="sm"
               >
-                {isDemoMode ? t("profile.disabled_in_demo_mode") : t("profile.save_profile")}
+                {isDemoMode
+                  ? t("profile.disabled_in_demo_mode")
+                  : t("profile.save_profile")}
               </Button>
             }
           >
@@ -367,12 +398,14 @@ export const ProfileTab = ({
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {user?.createdAt
-                    ? new Date(user.createdAt).toLocaleDateString()
+                    ? formatDateString(user.createdAt)
                     : t("profile.unknown")}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">{t("profile.user_type")}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {t("profile.user_type")}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {isAdmin ? t("profile.admin") : t("profile.user")}
                 </p>
@@ -383,7 +416,6 @@ export const ProfileTab = ({
                 id="username"
                 label={t("profile.username")}
                 type="text"
-                value={editedUsername}
                 onChange={(e) => setEditedUsername(e.target.value)}
                 placeholder={t("profile.username_placeholder")}
                 defaultValue={user?.username}

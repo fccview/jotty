@@ -35,7 +35,8 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           {t("auth.title")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {ssoEnabled ? t("auth.choose_access") : t("auth.enter_credentials")} {isRwMarkable ? "rwMarkable" : "jotty·page"}
+          {ssoEnabled ? t("auth.choose_access") : t("auth.enter_credentials")}{" "}
+          {isRwMarkable ? "rwMarkable" : "jotty·page"}
         </p>
       </div>
 
@@ -52,7 +53,9 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs text-muted-foreground">
-              <span className="bg-background px-2">{t("auth.or_continue_with_local_account")}</span>
+              <span className="bg-background px-2">
+                {t("auth.or_continue_with_local_account")}
+              </span>
             </div>
           </div>
         </div>
@@ -83,6 +86,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             className="mt-1"
             placeholder={t("auth.username_placeholder")}
             defaultValue=""
+            autoComplete="username"
           />
         </div>
 
@@ -96,22 +100,28 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             disabled={isLoading}
             className="mt-1"
             placeholder={t("auth.password_placeholder")}
+            autoComplete="current-password"
             defaultValue=""
           />
         </div>
 
         <Button type="submit" className="w-full !mt-8" disabled={isLoading}>
-          {isLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t("auth.signing_in")}</> : t("auth.sign_in")}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />{" "}
+              {t("auth.signing_in")}
+            </>
+          ) : (
+            t("auth.sign_in")
+          )}
         </Button>
       </form>
 
-      {
-        appVersion && (
-          <div className="text-center text-xs text-muted-foreground">
-            {t("auth.version")} {appVersion}
-          </div>
-        )
-      }
-    </div >
+      {appVersion && (
+        <div className="text-center text-xs text-muted-foreground">
+          {t("auth.version")} {appVersion}
+        </div>
+      )}
+    </div>
   );
 }

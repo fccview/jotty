@@ -36,6 +36,7 @@ const results = [];
 let testChecklistId = null;
 let testTaskChecklistId = null;
 let testExportDownloadUrl = null;
+let testNoteId = null;
 
 function makeRequest(method, path, data = null, headers = {}) {
     return new Promise((resolve, reject) => {
@@ -50,6 +51,7 @@ function makeRequest(method, path, data = null, headers = {}) {
                 'Content-Type': 'application/json',
                 ...headers,
             },
+            body: data ? JSON.stringify(data) : undefined,
         };
 
         const req = http.request(options, (res) => {
@@ -116,6 +118,123 @@ async function runTests() {
         return {
             success: response.status === 200 && response.body.notes,
             error: response.status !== 200 ? `Status ${response.status}` : 'No notes returned'
+        };
+    });
+
+    await test('POST /api/notes (create note)', async () => {
+        console.log(`  ➕ Creating test note`);
+        const response = await makeRequest('POST', '/api/notes', {
+            title: 'Test Note - API',
+            content: 'This is a test note created via API',
+            category: 'Uncategorized'
+        });
+
+        if (response.status !== 200) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        console.log(`  📝 Response: ${response.status} - ${response.body.error}`);
+
+        testNoteId = response.body.data.id;
+        console.log(`  ✅ Note created with ID: ${testNoteId}`);
+
+        const checkResponse = await makeRequest('GET', '/api/notes');
+        const noteExists = checkResponse.body.notes.some(note => note.id === testNoteId);
+
+        return {
+            success: noteExists,
+            error: noteExists ? null : 'Note not found after creation'
+        };
+    });
+
+    await test(`PUT /api/notes/${testNoteId} (update note)`, async () => {
+        if (!testNoteId) {
+            return { success: false, error: 'No test note ID available for update test' };
+        }
+
+        console.log(`  ✏️  Updating note: ${testNoteId}`);
+        const response = await makeRequest('PUT', `/api/notes/${testNoteId}`, {
+            title: 'Updated Test Note - API',
+            content: 'This note has been updated via API',
+            category: 'Work',
+            originalCategory: 'Uncategorized'
+        });
+
+        if (response.status !== 200) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        console.log(`  📝 Update response: ${response.status}`);
+
+        const checkResponse = await makeRequest('GET', '/api/notes');
+        const updatedNote = checkResponse.body.notes.find(note => note.id === testNoteId);
+
+        const isUpdated = updatedNote &&
+            updatedNote.title === 'Updated Test Note - API' &&
+            updatedNote.content === 'This note has been updated via API' &&
+            updatedNote.category === 'Work';
+
+        console.log(`  ✅ Note updated: ${isUpdated ? 'YES' : 'NO'}`);
+        return {
+            success: isUpdated,
+            error: isUpdated ? null : 'Note not properly updated'
+        };
+    });
+
+    await test(`DELETE /api/notes/${testNoteId} (delete note)`, async () => {
+        if (!testNoteId) {
+            return { success: false, error: 'No test note ID available for delete test' };
+        }
+
+        console.log(`  🗑️  Deleting note: ${testNoteId}`);
+        const response = await makeRequest('DELETE', `/api/notes/${testNoteId}`);
+
+        if (response.status !== 200) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        console.log(`  📝 Delete response: ${response.status}`);
+
+        const checkResponse = await makeRequest('GET', '/api/notes');
+        const noteExists = checkResponse.body.notes.some(note => note.id === testNoteId);
+
+        console.log(`  ✅ Note deleted: ${!noteExists ? 'YES' : 'NO'}`);
+        return {
+            success: !noteExists,
+            error: noteExists ? 'Note still exists after deletion' : null
+        };
+    });
+
+    await test(`GET /api/user/${testUsername} (user info)`, async () => {
+        console.log(`  👤 Fetching user info for ${testUsername}`);
+        const response = await makeRequest('GET', `/api/user/${testUsername}`);
+        if (response.status === 200 && response.body.user) {
+            const user = response.body.user;
+            console.log(`  ✅ User info retrieved: ${user.username}`);
+            console.log(`    Is Admin: ${user.isAdmin !== undefined ? user.isAdmin : 'N/A (public view)'}`);
+            console.log(`    Avatar URL: ${user.avatarUrl || 'none'}`);
+            console.log(`    Theme: ${user.preferredTheme || 'default'}`);
+        }
+        return {
+            success: response.status === 200 && response.body.user && response.body.user.username === testUsername,
+            error: response.status !== 200 ? `Status ${response.status}` : 'No user data returned'
+        };
+    });
+
+    await test('GET /api/categories', async () => {
+        console.log(`  📁 Fetching all categories`);
+        const response = await makeRequest('GET', '/api/categories');
+        if (response.status === 200 && response.body.categories) {
+            const categories = response.body.categories;
+            console.log(`  ✅ Categories retrieved:`);
+            console.log(`    Notes categories: ${categories.notes.length}`);
+            console.log(`    Checklists categories: ${categories.checklists.length}`);
+        }
+        return {
+            success: response.status === 200 && response.body.categories &&
+                response.body.categories.notes !== undefined &&
+                response.body.categories.checklists !== undefined,
+            error: response.status !== 200 ? `Status ${response.status}` : 'No categories returned'
         };
     });
 
@@ -279,6 +398,16 @@ async function runTests() {
         }
     });
 
+    await test('Validation error (missing note title)', async () => {
+        console.log(`  ❌ Testing validation error for note creation without title`);
+        const response = await makeRequest('POST', '/api/notes', { content: 'No title provided' });
+        console.log(`  📝 Response: ${response.status} - ${response.body.error}`);
+        return {
+            success: response.status === 400 && response.body.error === 'Title is required',
+            error: `Expected 400 Bad Request with 'Title is required', got ${response.status}`
+        };
+    });
+
     await test(`PUT /api/checklists/${testChecklistId}/items/0/check`, async () => {
         if (!testChecklistId) {
             return { success: false, error: 'No simple checklist found for testing' };
@@ -372,6 +501,14 @@ async function runTests() {
         return {
             success: response.status === 400 && response.body.error === 'Item index out of range',
             error: `Expected 400 Bad Request, got ${response.status}`
+        };
+    });
+
+    await test('Not found error (invalid username)', async () => {
+        const response = await makeRequest('GET', '/api/user/nonexistent_user_12345');
+        return {
+            success: response.status === 404 && response.body.error === 'User not found',
+            error: `Expected 404 Not Found, got ${response.status}`
         };
     });
 

@@ -3,13 +3,16 @@
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
-import { Item } from "@/app/_types";
+import { Item, KanbanStatus } from "@/app/_types";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface KanbanItemContentProps {
   item: Item;
   isEditing: boolean;
+  statuses: KanbanStatus[];
   editText: string;
   isShared: boolean;
   getUserAvatarUrl: (username: string) => string;
@@ -21,11 +24,13 @@ interface KanbanItemContentProps {
   onShowSubtaskModal: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onArchive: () => void;
 }
 
 export const KanbanItemContent = ({
   item,
   isEditing,
+  statuses,
   editText,
   isShared,
   getUserAvatarUrl,
@@ -37,8 +42,17 @@ export const KanbanItemContent = ({
   onShowSubtaskModal,
   onEdit,
   onDelete,
+  onArchive,
 }: KanbanItemContentProps) => {
   const t = useTranslations();
+  const { permissions } = usePermissions();
+  const { formatDateString, formatDateTimeString } = usePreferredDateTime();
+
+  const getStatusLabel = (status?: string) => {
+    if (!status) return TaskStatusLabels.TODO;
+
+    return statuses.find((s: KanbanStatus) => s.id === status)?.label;
+  };
 
   return (
     <div className="space-y-2">
@@ -91,9 +105,18 @@ export const KanbanItemContent = ({
               value=""
               options={[
                 { id: "view", name: t("checklists.view_task") },
-                { id: "add", name: t("checklists.add_subtask") },
-                { id: "rename", name: t("checklists.rename_task") },
-                { id: "delete", name: t("checklists.delete_task") },
+                ...(permissions?.canEdit
+                  ? [{ id: "add", name: t("checklists.add_subtask") }]
+                  : []),
+                ...(permissions?.canEdit
+                  ? [{ id: "rename", name: t("checklists.rename_task") }]
+                  : []),
+                ...(permissions?.canEdit
+                  ? [{ id: "archive", name: t("checklists.archive_task") }]
+                  : []),
+                ...(permissions?.canDelete
+                  ? [{ id: "delete", name: t("checklists.delete_task") }]
+                  : []),
               ]}
               onChange={(action) => {
                 switch (action) {
@@ -105,6 +128,9 @@ export const KanbanItemContent = ({
                     break;
                   case "rename":
                     onEdit();
+                    break;
+                  case "archive":
+                    onArchive();
                     break;
                   case "delete":
                     onDelete();
@@ -120,22 +146,20 @@ export const KanbanItemContent = ({
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5 text-muted-foreground">
           {getStatusIcon(item.status)}
-          <span>
-            {item.status === TaskStatus.TODO && TaskStatusLabels.TODO}
-            {item.status === TaskStatus.IN_PROGRESS &&
-              TaskStatusLabels.IN_PROGRESS}
-            {item.status === TaskStatus.COMPLETED && TaskStatusLabels.COMPLETED}
-            {item.status === TaskStatus.PAUSED && TaskStatusLabels.PAUSED}
-            {!item.status && TaskStatusLabels.TODO}
-          </span>
+          <span>{getStatusLabel(item.status)}</span>
         </div>
         {item.lastModifiedBy && isShared && (
           <div
             className="flex items-center gap-1"
-            title={`${t("checklists.last_modified_by", { username: item.lastModifiedBy })}${item.lastModifiedAt
-                ? t("checklists.last_modified_on", { date: new Date(item.lastModifiedAt).toLocaleString() })
+            title={`${t("checklists.last_modified_by", {
+              username: item.lastModifiedBy,
+            })}${
+              item.lastModifiedAt
+                ? t("checklists.last_modified_on", {
+                    date: formatDateTimeString(item.lastModifiedAt),
+                  })
                 : ""
-              }`}
+            }`}
           >
             <UserAvatar
               username={item.lastModifiedBy}
@@ -143,9 +167,7 @@ export const KanbanItemContent = ({
               avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
             />
             <span className="text-[10px] text-muted-foreground">
-              {item.lastModifiedAt
-                ? new Date(item.lastModifiedAt).toLocaleDateString()
-                : ""}
+              {item.lastModifiedAt ? formatDateString(item.lastModifiedAt) : ""}
             </span>
           </div>
         )}
@@ -164,7 +186,7 @@ export const KanbanItemContent = ({
             progress={Math.round(
               (item.children.filter((c) => c.completed).length /
                 item.children.length) *
-              100
+                100
             )}
           />
         </>

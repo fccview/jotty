@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSettings } from "@/app/_utils/settings-store";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
@@ -25,6 +25,21 @@ export const ThemeProvider = ({
     [key: string]: any;
   }>({});
 
+  const [customCSS, setCustomCSS] = useState<string>("");
+
+  const loadCustomCSS = async () => {
+    try {
+      const timestamp = Date.now();
+      const response = await fetch(`/api/custom-css?t=${timestamp}`);
+      if (response.ok) {
+        const css = await response.text();
+        setCustomCSS(css);
+      }
+    } catch (error) {
+      console.error("Failed to load custom CSS:", error);
+    }
+  };
+
   useEffect(() => {
     const loadCustomColors = async () => {
       try {
@@ -36,7 +51,20 @@ export const ThemeProvider = ({
     };
 
     loadCustomColors();
+    loadCustomCSS();
   }, []);
+
+  useEffect(() => {
+    const handleCssUpdate = () => {
+      loadCustomCSS();
+    };
+
+    window.addEventListener("css-updated", handleCssUpdate);
+
+    return () => {
+      window.removeEventListener("css-updated", handleCssUpdate);
+    };
+  }, [loadCustomCSS]);
 
   useEffect(() => {
     const updateResolvedTheme = () => {
@@ -84,8 +112,34 @@ export const ThemeProvider = ({
       `;
 
       styleElement.textContent = cssContent;
+
+      Object.keys(customThemeColors[resolvedTheme]).forEach((key) => {
+        document.documentElement.style.removeProperty(key);
+      });
+
+      const initStyleElement = document.getElementById(
+        "custom-theme-init-styles"
+      ) as HTMLStyleElement;
+      if (initStyleElement) {
+        initStyleElement.remove();
+      }
     }
-  }, [resolvedTheme, customThemeColors]);
+
+    if (customCSS) {
+      const customStyleId = "custom-css-styles";
+      let customStyleElement = document.getElementById(
+        customStyleId
+      ) as HTMLStyleElement;
+
+      if (!customStyleElement) {
+        customStyleElement = document.createElement("style");
+        customStyleElement.id = customStyleId;
+        document.head.appendChild(customStyleElement);
+      }
+
+      customStyleElement.textContent = customCSS;
+    }
+  }, [resolvedTheme, customThemeColors, customCSS]);
 
   return <>{children}</>;
 };

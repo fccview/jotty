@@ -25,7 +25,11 @@ import { DetailsExtension } from "@/app/_components/FeatureComponents/Notes/Part
 import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/KeyboardShortcuts";
 import { OverlayExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
+import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
+import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
+import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
+import { getContrastColor } from "@/app/_utils/color-utils";
 
 interface OverlayCallbacks {
   onImageClick: (position: any) => void;
@@ -36,16 +40,26 @@ interface EditorSettings {
   enableSlashCommands: boolean;
   enableBubbleMenu: boolean;
   enableTableToolbar: boolean;
+  enableBilateralLinks: boolean;
+  drawioUrl?: string;
+}
+
+interface EditorData {
+  notes?: any[];
+  checklists?: any[];
+  username?: string;
 }
 
 export const createEditorExtensions = (
   callbacks: OverlayCallbacks,
-  editorSettings?: EditorSettings
+  editorSettings?: EditorSettings,
+  editorData?: EditorData
 ) => {
   const settings = editorSettings || {
     enableSlashCommands: true,
     enableBubbleMenu: true,
     enableTableToolbar: true,
+    enableBilateralLinks: true,
   };
 
   const extensions = [
@@ -68,8 +82,35 @@ export const createEditorExtensions = (
     Color,
     Highlight.configure({
       multicolor: true,
+    }).extend({
+      addAttributes() {
+        return {
+          color: {
+            default: null,
+            parseHTML: element => element.getAttribute('data-color') || element.style.backgroundColor,
+            renderHTML: attributes => {
+              if (!attributes.color) {
+                return {};
+              }
+              const bgColor = attributes.color;
+              const textColor = getContrastColor(bgColor);
+              return {
+                'data-color': bgColor,
+                style: `background-color: ${bgColor}; color: ${textColor}`,
+              };
+            },
+          },
+        };
+      },
     }),
-    ...(settings.enableSlashCommands ? [SlashCommands] : []),
+    SlashCommands.configure({
+      notes: editorData?.notes || [],
+      checklists: editorData?.checklists || [],
+      username: editorData?.username || "",
+      enableBilateralLinks: settings.enableBilateralLinks,
+      enableSlashCommands: settings.enableSlashCommands,
+    }),
+    InternalLink,
     Underline,
     HardBreak,
     CodeBlockLowlight.configure({
@@ -82,26 +123,6 @@ export const createEditorExtensions = (
     }),
     Link.configure({
       openOnClick: false,
-    }).extend({
-      addInputRules() {
-        return [
-          new InputRule({
-            find: /\[([^\]]+)\]\(([^)]+)\)/,
-            handler: ({ state, range, match }) => {
-              const { tr } = state;
-              const text = match[1];
-              const href = match[2];
-              tr.replaceWith(
-                range.from,
-                range.to,
-                state.schema.text(text, [
-                  state.schema.marks.link.create({ href }),
-                ])
-              );
-            },
-          }),
-        ];
-      },
     }),
     Image.extend({
       addAttributes() {
@@ -128,6 +149,10 @@ export const createEditorExtensions = (
       HTMLAttributes: {
         class: "file-attachment",
       },
+    }),
+    MermaidExtension,
+    DrawioExtension.configure({
+      drawioUrl: settings.drawioUrl || "https://embed.diagrams.net",
     }),
     Table.extend({
       content: "tableRow+",

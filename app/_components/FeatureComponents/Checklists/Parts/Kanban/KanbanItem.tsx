@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Item, Checklist } from "@/app/_types";
+import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { useState, useEffect } from "react";
@@ -18,25 +18,33 @@ import {
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { KanbanItemContent } from "./KanbanItemContent";
+import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { Circle } from "lucide-react";
 
 interface KanbanItemProps {
+  checklist: Checklist;
   item: Item;
   isDragging?: boolean;
   checklistId: string;
   category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
   isShared: boolean;
+  statuses: KanbanStatus[];
 }
 
 export const KanbanItem = ({
+  checklist,
   item,
   isDragging,
   checklistId,
   category,
   onUpdate,
   isShared,
+  statuses,
 }: KanbanItemProps) => {
   const { usersPublicData } = useAppMode();
+  const { permissions } = usePermissions();
 
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
@@ -51,6 +59,7 @@ export const KanbanItem = ({
   const [showSubtaskModal, setShowSubtaskModal] = useState(false);
 
   const kanbanItemHook = useKanbanItem({
+    checklist,
     item,
     checklistId,
     category,
@@ -66,7 +75,7 @@ export const KanbanItem = ({
     isDragging: isSortableDragging,
   } = useSortable({
     id: item.id,
-    disabled: kanbanItemHook.isEditing,
+    disabled: kanbanItemHook.isEditing || !permissions?.canEdit,
   });
 
   const style = {
@@ -80,17 +89,21 @@ export const KanbanItem = ({
     }
   }, [isSortableDragging]);
 
-  const statusOptions = [
-    { id: TaskStatus.TODO, name: TaskStatusLabels.TODO },
-    { id: TaskStatus.IN_PROGRESS, name: TaskStatusLabels.IN_PROGRESS },
-    { id: TaskStatus.COMPLETED, name: TaskStatusLabels.COMPLETED },
-    { id: TaskStatus.PAUSED, name: TaskStatusLabels.PAUSED },
-  ];
+  const statusOptions = statuses?.map((status) => ({
+    id: status.id,
+    name: status.label,
+    color: status.color,
+    order: status.order,
+    icon: Circle
+  }));
+
+  statusOptions?.sort((a, b) => a.order - b.order);
 
   return (
     <>
       {showSubtaskModal && (
         <SubtaskModal
+          checklist={checklist}
           item={item}
           isShared={isShared}
           isOpen={showSubtaskModal}
@@ -112,12 +125,13 @@ export const KanbanItem = ({
             "group relative bg-background border rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
             getStatusColor(item.status),
             (isDragging || isSortableDragging) &&
-              "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+            "opacity-50 scale-95 rotate-1 shadow-lg z-50"
           )}
         >
           <div className="space-y-2">
             <KanbanItemContent
               item={item}
+              statuses={statuses}
               isEditing={kanbanItemHook.isEditing}
               editText={kanbanItemHook.editText}
               isShared={isShared}
@@ -130,6 +144,7 @@ export const KanbanItem = ({
               onShowSubtaskModal={() => setShowSubtaskModal(true)}
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
+              onArchive={kanbanItemHook.handleArchive}
             />
 
             <KanbanItemTimer
@@ -150,6 +165,14 @@ export const KanbanItem = ({
                   }
                   formatTimerTime={formatTimerTime}
                 />
+              </div>
+            )}
+
+            {item.recurrence && (
+              <div className="text-xs flex items-center gap-1 capitalize !mt-2 border bg-muted-foreground/5 border-muted-foreground/20 rounded-md p-2">
+                <span className="text-muted-foreground/80">
+                  Repeats {getRecurrenceDescription(item.recurrence)}
+                </span>
               </div>
             )}
 

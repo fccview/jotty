@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import {
-  getNotes,
   getAllNotes,
   CheckForNeedsMigration,
+  getNoteById,
+  getUserNotes,
 } from "@/app/_server/actions/note";
-import { getAllSharingStatuses } from "@/app/_server/actions/sharing";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { NoteClient } from "@/app/_components/FeatureComponents/Notes/NoteClient";
 import { Modes } from "@/app/_types/enums";
@@ -12,6 +12,8 @@ import { getCategories } from "@/app/_server/actions/category";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
+import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
+import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
 interface NotePageProps {
   params: {
@@ -50,7 +52,7 @@ export default async function NotePage({ params }: NotePageProps) {
   await CheckForNeedsMigration();
 
   const [docsResult, categoriesResult] = await Promise.all([
-    getNotes(username),
+    getUserNotes({ isRaw: true }),
     getCategories(Modes.NOTES),
   ]);
 
@@ -58,26 +60,7 @@ export default async function NotePage({ params }: NotePageProps) {
     redirect("/");
   }
 
-  let note = docsResult.data.find(
-    (doc) => doc.id === id && doc.category === category
-  );
-
-  if (!note) {
-    if (categoryPath.length === 1) {
-      note = docsResult.data.find(
-        (doc) => doc.id === id && doc.category === "Uncategorized"
-      );
-    }
-
-    if (!note) {
-      const searchScope = isAdminUser
-        ? await getAllNotes()
-        : { success: true, data: docsResult.data };
-      if (searchScope.success && searchScope.data) {
-        note = searchScope.data.find((doc) => doc.id === id);
-      }
-    }
-  }
+  let note = await getNoteById(id, category, username);
 
   if (!note && isAdminUser) {
     const allDocsResult = await getAllNotes();
@@ -97,25 +80,22 @@ export default async function NotePage({ params }: NotePageProps) {
       ? categoriesResult.data
       : [];
 
-  const allItems = [...docsResult.data];
-  const itemsToCheck = allItems.map((item) => ({
-    id: item.id,
+  const metadata = {
+    id: note.id,
+    uuid: note.uuid,
+    title: note.title,
+    category: note.category || "Uncategorized",
+    owner: note.owner,
+    createdAt: note.createdAt,
+    updatedAt: note.updatedAt,
     type: "note" as const,
-    owner: item.owner || "",
-  }));
-
-  const sharingStatusesResult = await getAllSharingStatuses(itemsToCheck);
-  const sharingStatuses =
-    sharingStatusesResult.success && sharingStatusesResult.data
-      ? sharingStatusesResult.data
-      : {};
+  };
 
   return (
-    <NoteClient
-      note={note}
-      docs={docsResult.data}
-      categories={docsCategories}
-      sharingStatuses={sharingStatuses}
-    />
+    <MetadataProvider metadata={metadata}>
+      <PermissionsProvider item={note}>
+        <NoteClient note={note} categories={docsCategories} />
+      </PermissionsProvider>
+    </MetadataProvider>
   );
 }

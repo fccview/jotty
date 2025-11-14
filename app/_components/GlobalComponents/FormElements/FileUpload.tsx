@@ -24,13 +24,18 @@ export const FileUpload = ({
   fileSizeError,
 }: FileUploadProps) => {
   const t = useTranslations();
-
   return (
-    <div className="p-6 border-b border-border">
+    <div className="jotty-file-upload p-6 border-b border-border">
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <input
           type="file"
-          accept={activeTab === "images" ? "image/*" : activeTab === "videos" ? "video/*" : "*"}
+          accept={
+            activeTab === "images"
+              ? "image/*"
+              : activeTab === "videos"
+              ? "video/*"
+              : "*"
+          }
           onChange={onFileSelect}
           className="hidden"
           id="file-upload"
@@ -40,7 +45,8 @@ export const FileUpload = ({
           onClick={() => document.getElementById("file-upload")?.click()}
           className="w-full sm:w-auto"
         >
-          <Upload className="h-4 w-4 mr-2" /> {t("upload.choose_file", { type: activeTab === "images" ? t("upload.image") : t("upload.file") })}
+          <Upload className="h-4 w-4 mr-2" /> Choose{" "}
+          {activeTab === "images" ? "Image" : "File"}
         </Button>
         {selectedFile && (
           <div className="flex flex-col gap-3 flex-1">
@@ -70,26 +76,6 @@ export const FileUpload = ({
                 </Button>
               )}
             </div>
-
-            {isUploading && (
-              <div className="w-full text-center">
-                <div className="text-sm text-muted-foreground">
-                  {t("upload.uploading_file")}
-                </div>
-              </div>
-            )}
-
-            {uploadError && (
-              <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                {uploadError}
-              </div>
-            )}
-
-            {fileSizeError && (
-              <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
-                {fileSizeError}
-              </div>
-            )}
           </div>
         )}
       </div>

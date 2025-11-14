@@ -23,10 +23,11 @@ export const SessionCard = ({
   const { isDemoMode } = useAppMode();
   return (
     <div
-      className={`flex items-start justify-between p-4 rounded-lg border ${session.isCurrent
-        ? "bg-primary/5 border-primary/20"
-        : "bg-background border-border"
-        }`}
+      className={`jotty-session-card flex items-start justify-between p-4 rounded-lg border ${
+        session.isCurrent
+          ? "bg-primary/5 border-primary/20"
+          : "bg-background border-border"
+      }`}
     >
       <div className="flex items-start gap-4 flex-1 min-w-0">
         <div className="p-2 bg-muted rounded-lg flex-shrink-0">

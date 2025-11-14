@@ -1,6 +1,18 @@
+import path from "path";
 import { Item } from "@/app/_types";
 import { Checklist, ChecklistType } from "@/app/_types";
 import { ChecklistsTypes, TaskStatus } from "@/app/_types/enums";
+import {
+  parseRecurrenceFromMarkdown,
+  recurrenceToMarkdown,
+} from "./recurrence-utils";
+import {
+  extractYamlMetadata,
+  extractTitle,
+  extractChecklistType,
+  generateYamlFrontmatter,
+  generateUuid,
+} from "./yaml-metadata-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (checklistType === ChecklistsTypes.TASK) {
@@ -35,26 +47,25 @@ export const parseMarkdown = (
   category: string,
   owner?: string,
   isShared?: boolean,
-  fileStats?: { birthtime: Date; mtime: Date }
+  fileStats?: { birthtime: Date; mtime: Date },
+  fileName?: string
 ): Checklist => {
-  const lines = content.split("\n");
-  const title = lines[0]?.replace(/^#\s*/, "") || "Untitled";
+  const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
-  let type = ChecklistsTypes.SIMPLE;
-  if (content.includes("<!-- type:task -->")) {
-    type = ChecklistsTypes.TASK;
-  } else if (
-    content.includes(" | status:") ||
-    content.includes(" | time:") ||
-    content.includes(" | estimated:") ||
-    content.includes(" | target:")
-  ) {
-    type = ChecklistsTypes.TASK;
-  }
+  let title = extractTitle(
+    content,
+    fileName ? path.basename(fileName, ".md") : undefined
+  );
 
-  const itemLines = lines
-    .slice(1)
-    .filter((line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line));
+  const type = extractChecklistType(content);
+
+  const checklistType =
+    type === "task" ? ChecklistsTypes.TASK : ChecklistsTypes.SIMPLE;
+
+  const lines = contentWithoutMetadata.split("\n");
+  const itemLines = lines.filter(
+    (line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line)
+  );
 
   let globalItemCounter = 0;
   const generateItemId = (level: number): string => {
@@ -117,12 +128,14 @@ export const parseMarkdown = (
         let text = cleanLine;
 
         let item: Item;
+        let recurrence = undefined;
+
         if (type === "task" && text.includes(" | ")) {
           const parts = text.split(" | ");
           const itemText = parts[0].replace(/∣/g, "|");
           const metadata = parts.slice(1);
 
-          let status: TaskStatus = TaskStatus.TODO;
+          let status: string = TaskStatus.TODO;
           let timeEntries: any[] = [];
           let estimatedTime: number | undefined;
           let targetDate: string | undefined;
@@ -131,17 +144,7 @@ export const parseMarkdown = (
 
           metadata.forEach((meta) => {
             if (meta.startsWith("status:")) {
-              const statusValue = meta.substring(7) as TaskStatus;
-              if (
-                [
-                  TaskStatus.TODO,
-                  TaskStatus.IN_PROGRESS,
-                  TaskStatus.COMPLETED,
-                  TaskStatus.PAUSED,
-                ].includes(statusValue)
-              ) {
-                status = statusValue;
-              }
+              status = meta.substring(7);
             } else if (meta.startsWith("time:")) {
               const timeValue = meta.substring(5);
               if (timeValue && timeValue !== "0") {
@@ -163,11 +166,13 @@ export const parseMarkdown = (
               } catch (e) {
                 console.warn("Failed to parse item metadata:", e);
               }
+            } else if (meta.startsWith("recurrence:")) {
+              recurrence = parseRecurrenceFromMarkdown([meta]);
             }
           });
 
           item = {
-            id: generateItemId(parentLevel),
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -177,6 +182,7 @@ export const parseMarkdown = (
             targetDate,
             description,
             ...itemMetadata,
+            ...(recurrence ? { recurrence } : {}),
           };
         } else {
           let itemText = text.replace(/∣/g, "|");
@@ -199,16 +205,19 @@ export const parseMarkdown = (
                 }
               }
             });
+
+            recurrence = parseRecurrenceFromMarkdown(parts.slice(1));
           }
 
           item = {
-            id: generateItemId(parentLevel),
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
             description,
             ...metadata,
             ...itemMetadata,
+            ...(recurrence && { recurrence }),
           };
         }
 
@@ -241,10 +250,16 @@ export const parseMarkdown = (
 
   const { items } = buildNestedItems(itemLines, 0, 0, 0);
 
+  let statuses = undefined;
+  if (metadata.statuses && Array.isArray(metadata.statuses)) {
+    statuses = metadata.statuses;
+  }
+
   return {
     id,
+    uuid: metadata.uuid || generateUuid(),
     title,
-    type,
+    type: checklistType,
     category,
     items,
     createdAt: fileStats
@@ -255,6 +270,7 @@ export const parseMarkdown = (
       : new Date().toISOString(),
     owner,
     isShared,
+    ...(statuses && { statuses }),
   };
 };
 
@@ -275,6 +291,9 @@ const generateItemMarkdown = (
     }
 
     const itemMetadata: Record<string, any> = {};
+    if (item.id) {
+      itemMetadata.id = item.id;
+    }
     if (item.createdBy) {
       itemMetadata.createdBy = item.createdBy;
       itemMetadata.createdAt = item.createdAt;
@@ -285,6 +304,12 @@ const generateItemMarkdown = (
     }
     if (item.history?.length) {
       itemMetadata.history = item.history;
+    }
+    if (item.isArchived) {
+      itemMetadata.isArchived = item.isArchived;
+      itemMetadata.archivedAt = item.archivedAt;
+      itemMetadata.archivedBy = item.archivedBy;
+      itemMetadata.previousStatus = item.previousStatus;
     }
 
     const timeEntries = item.timeEntries;
@@ -307,15 +332,22 @@ const generateItemMarkdown = (
       metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
     }
 
+    if (item.recurrence) {
+      const recurrenceParts = recurrenceToMarkdown(item.recurrence);
+      metadata.push(...recurrenceParts);
+    }
+
     if (Object.keys(itemMetadata).length > 0) {
       metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
     }
 
-    itemLine = `${indent}- [${
-      item.completed ? "x" : " "
-    }] ${escapedText} | ${metadata.join(" | ")}`;
+    itemLine = `${indent}- [${item.completed ? "x" : " "
+      }] ${escapedText} | ${metadata.join(" | ")}`;
   } else {
     const itemMetadata: Record<string, any> = {};
+    if (item.id) {
+      itemMetadata.id = item.id;
+    }
     if (item.createdBy) {
       itemMetadata.createdBy = item.createdBy;
       itemMetadata.createdAt = item.createdAt;
@@ -326,6 +358,12 @@ const generateItemMarkdown = (
     }
     if (item.history?.length) {
       itemMetadata.history = item.history;
+    }
+    if (item.isArchived) {
+      itemMetadata.isArchived = item.isArchived;
+      itemMetadata.archivedAt = item.archivedAt;
+      itemMetadata.archivedBy = item.archivedBy;
+      itemMetadata.previousStatus = item.previousStatus;
     }
 
     const metadata: string[] = [];
@@ -338,9 +376,13 @@ const generateItemMarkdown = (
       metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
     }
 
-    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${
-      metadata.length ? ` | ${metadata.join(" | ")}` : ""
-    }`;
+    if (item.recurrence) {
+      const recurrenceParts = recurrenceToMarkdown(item.recurrence);
+      metadata.push(...recurrenceParts);
+    }
+
+    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${metadata.length ? ` | ${metadata.join(" | ")}` : ""
+      }`;
   }
 
   if (item.children && item.children.length > 0) {
@@ -355,13 +397,21 @@ const generateItemMarkdown = (
 };
 
 export const listToMarkdown = (list: Checklist): string => {
-  const header =
-    list.type === "task"
-      ? `# ${list.title}\n<!-- type:task -->\n`
-      : `# ${list.title}\n`;
+  const metadata: any = {};
+  metadata.uuid = list.uuid || generateUuid();
+  metadata.title = list.title || "Untitled Checklist";
+  if (list.type === ChecklistsTypes.TASK) metadata.checklistType = "task";
+  else if (list.type === ChecklistsTypes.SIMPLE)
+    metadata.checklistType = "simple";
+
+  if (list.statuses && list.statuses.length > 0) {
+    metadata.statuses = list.statuses;
+  }
+
+  const frontmatter = generateYamlFrontmatter(metadata);
 
   if (list.items.length === 0) {
-    return header.trim();
+    return frontmatter.trim();
   }
 
   const items = list.items
@@ -369,5 +419,5 @@ export const listToMarkdown = (list: Checklist): string => {
     .map((item) => generateItemMarkdown(item, list.type))
     .join("\n");
 
-  return `${header}\n${items}`;
+  return `${frontmatter}${items}`;
 };

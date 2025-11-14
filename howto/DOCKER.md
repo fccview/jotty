@@ -14,7 +14,7 @@ services:
       - "1122:3000"
     volumes:
       - ./data:/app/data:rw
-      - ./config:/app/config:ro
+      - ./config:/app/config:rw
       - ./cache:/app/.next/cache:rw
     restart: unless-stopped
     environment:
@@ -72,7 +72,7 @@ Maps host port 1122 to container port 3000. You can change `1122` to any availab
 ```yaml
 volumes:
   - ./data:/app/data:rw
-  - ./config:/app/config:ro
+  - ./config:/app/config:rw
   - ./cache:/app/.next/cache:rw
 ```
 
@@ -123,6 +123,32 @@ environment:
 - `- OIDC_CLIENT_SECRET=your_client_secret` Optional. Client secret for confidential OIDC client authentication.
 - `- SSO_FALLBACK_LOCAL=yes` Optional. Allows both SSO and local authentication methods.
 - `- OIDC_ADMIN_GROUPS=admins` Optional. Comma-separated list of OIDC groups that should have admin privileges.
+
+## API Documentation Service
+
+jotty includes an optional API documentation service that provides interactive documentation for all API endpoints using ReDoc.
+
+### Basic Setup
+
+1. **Enable API Docs**: Add `ENABLE_API_DOCS=true` to your jotty environment variables
+2. **Start the Service**: Run `docker-compose --profile api-docs up -d`
+3. **Access**: Visit `http://localhost:8080` (or your configured `API_DOCS_PORT`)
+
+### Service Configuration
+
+```yaml
+api-docs:
+  image: redocly/redoc:latest
+  container_name: jotty-api-docs
+  ports:
+    - "${API_DOCS_PORT:-8080}:80"
+  environment:
+    SPEC_URL: http://your-jotty-url.com/api/docs
+  depends_on:
+    - jotty
+  profiles:
+    - api-docs
+```
 
 ## Platform Configuration
 

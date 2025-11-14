@@ -20,18 +20,20 @@ export const ImageAttachment = ({
   const displayName = fileName.replace(/ \(\d+\)/, "").replace(/\.\w+$/, "");
 
   return (
-    <span className={`inline-block max-w-full ${className}`}>
-      <span className="relative group block">
-        <span className="max-w-sm rounded-lg overflow-hidden border border-border bg-card block">
+    <span
+      className={`jotty-image-attachment inline-block max-w-full ${className}`}
+    >
+      <span className="jotty-image-attachment-container relative group block">
+        <span className="jotty-image-attachment-content max-w-sm rounded-lg overflow-hidden border border-border bg-card block">
           <Image
             src={url}
             alt={displayName}
             width={400}
             height={300}
-            className="w-full h-auto object-cover"
+            className="jotty-image-attachment-image w-full h-auto object-cover"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
           />
-          <span className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <span className="jotty-image-attachment-actions absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <span className="flex gap-2">
               <Button
                 variant="secondary"

@@ -70,10 +70,19 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", redirectUri);
 
-  if (process.env.OIDC_ADMIN_GROUPS) {
-    url.searchParams.set("scope", "openid profile email groups");
+  const groupsScope = process.env.OIDC_GROUPS_SCOPE ?? "groups";
+  const baseScope = "openid profile email";
+
+  const shouldIncludeGroupsScope =
+    process.env.OIDC_ADMIN_GROUPS &&
+    groupsScope &&
+    groupsScope.toLowerCase() !== "no" &&
+    groupsScope.toLowerCase() !== "false";
+
+  if (shouldIncludeGroupsScope) {
+    url.searchParams.set("scope", `${baseScope} ${groupsScope}`);
   } else {
-    url.searchParams.set("scope", "openid profile email");
+    url.searchParams.set("scope", baseScope);
   }
 
   url.searchParams.set("code_challenge", challenge);

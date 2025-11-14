@@ -28,7 +28,7 @@ export const CategoryTreeNode = ({
   const hasSubCategories = subCategories.length > 0;
 
   return (
-    <div key={category.path} className="select-none">
+    <div key={category.path} className="jotty-category-tree-node select-none">
       <div
         className={cn(
           "flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted/50",

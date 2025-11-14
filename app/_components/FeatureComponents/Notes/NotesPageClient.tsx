@@ -12,6 +12,8 @@ import { FilterSidebar } from "@/app/_components/GlobalComponents/Layout/FilterS
 import { usePagination } from "@/app/_hooks/usePagination";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { togglePin } from "@/app/_server/actions/dashboard";
+import { ItemTypes } from "@/app/_types/enums";
 import Masonry from "react-masonry-css";
 import { useTranslations } from "next-intl";
 
@@ -34,7 +36,9 @@ export const NotesPageClient = ({
   const { isInitialized } = useAppMode();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [noteFilter, setNoteFilter] = useState<NoteFilter>("all");
-  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+  const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
     { id: "all", name: "All Notes" },
@@ -61,13 +65,27 @@ export const NotesPageClient = ({
     }
 
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter((note) =>
-        selectedCategories.includes(note.category || "Uncategorized")
-      );
+      filtered = filtered.filter((note) => {
+        const noteCategory = note.category || "Uncategorized";
+        if (recursive) {
+          return selectedCategories.some(
+            (selected) =>
+              noteCategory === selected ||
+              noteCategory.startsWith(selected + "/")
+          );
+        }
+        return selectedCategories.includes(noteCategory);
+      });
     }
 
     return filtered;
-  }, [initialNotes, noteFilter, selectedCategories, user?.pinnedNotes]);
+  }, [
+    initialNotes,
+    noteFilter,
+    selectedCategories,
+    recursive,
+    user?.pinnedNotes,
+  ]);
 
   const {
     currentPage,
@@ -82,16 +100,28 @@ export const NotesPageClient = ({
     onItemsPerPageChange: setItemsPerPage,
   });
 
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
-
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
+  };
+
+  const handleTogglePin = async (note: Note) => {
+    if (!user || isTogglingPin === note.id) return;
+
+    setIsTogglingPin(note.id);
+    try {
+      const result = await togglePin(
+        note.id,
+        note.category || "Uncategorized",
+        ItemTypes.NOTE
+      );
+      if (result.success) {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Failed to toggle pin:", error);
+    } finally {
+      setIsTogglingPin(null);
+    }
   };
 
   const breakpointColumnsObj = {
@@ -143,8 +173,10 @@ export const NotesPageClient = ({
             onFilterChange={(value) => setNoteFilter(value as NoteFilter)}
             categories={initialCategories}
             selectedCategories={selectedCategories}
-            onCategoryToggle={handleCategoryToggle}
+            onCategorySelectionChange={setSelectedCategories}
             onClearAllCategories={handleClearAllCategories}
+            recursive={recursive}
+            onRecursiveChange={setRecursive}
             pagination={
               <Pagination
                 currentPage={currentPage}
@@ -181,19 +213,19 @@ export const NotesPageClient = ({
                     <NoteCard
                       note={note}
                       onSelect={(note) => {
-                        const categoryPath = `${note.category || "Uncategorized"
-                          }/${note.id}`;
+                        const categoryPath = `${
+                          note.category || "Uncategorized"
+                        }/${note.id}`;
                         router.push(`/note/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedNotes?.includes(
                         `${note.category || "Uncategorized"}/${note.id}`
                       )}
-                      onTogglePin={() => { }}
+                      onTogglePin={() => handleTogglePin(note)}
                     />
                   </div>
                 ))}
               </Masonry>
-
             </>
           )}
         </div>

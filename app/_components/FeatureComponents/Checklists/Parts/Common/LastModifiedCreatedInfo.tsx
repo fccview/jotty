@@ -1,19 +1,33 @@
-import { Item } from "@/app/_types";
-import { PencilIcon, PlusIcon } from "lucide-react";
+import { Checklist, Item } from "@/app/_types";
+import { Edit2Icon, ListPlus } from "lucide-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useTranslations } from "next-intl";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 const LastModifiedCreatedInfo = ({
   item,
-  isShared,
   getUserAvatarUrl,
+  checklist,
 }: {
   item: Item;
-  isShared: boolean;
   getUserAvatarUrl: (username: string) => string;
+  checklist: Checklist;
 }) => {
   const t = useTranslations();
 
+  const { allSharedItems } = useAppMode();
+  const { formatDateTimeString } = usePreferredDateTime();
+  const encodedCategory = encodeCategoryPath(
+    checklist.category || "Uncategorized"
+  );
+
+  const isShared = allSharedItems?.checklists.some(
+    (sharedChecklist) =>
+      sharedChecklist.id === checklist.id &&
+      sharedChecklist.category === encodedCategory
+  );
   return (
     <>
       {(item.createdBy || item.lastModifiedBy) && isShared && (
@@ -23,10 +37,15 @@ const LastModifiedCreatedInfo = ({
           {item.createdBy && (
             <span
               className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
-              title={`${t("checklists.created_by", { username: item.createdBy })}${item.createdAt
-                ? t("checklists.created_on", { date: new Date(item.createdAt).toLocaleString() })
-                : ""
-                }`}
+              title={`${t("checklists.created_by", {
+                username: item.createdBy,
+              })}${
+                item.createdAt
+                  ? t("checklists.created_on", {
+                      date: formatDateTimeString(item.createdAt),
+                    })
+                  : ""
+              }`}
             >
               <UserAvatar
                 username={item.createdBy}
@@ -34,8 +53,8 @@ const LastModifiedCreatedInfo = ({
                 avatarUrl={getUserAvatarUrl(item.createdBy) || ""}
               />
               <span className="flex items-center gap-1">
-                <PlusIcon className="h-3 w-3" />
-                {item.createdAt ? new Date(item.createdAt).toDateString() : ""}
+                <ListPlus className="h-3 w-3" />
+                {item.createdAt ? formatDateTimeString(item.createdAt) : ""}
               </span>
             </span>
           )}
@@ -43,10 +62,15 @@ const LastModifiedCreatedInfo = ({
           {item.lastModifiedBy && (
             <span
               className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
-              title={`${t("checklists.last_modified_by", { username: item.lastModifiedBy })}${item.lastModifiedAt
-                ? t("checklists.last_modified_on", { date: new Date(item.lastModifiedAt).toLocaleString() })
-                : ""
-                }`}
+              title={`${t("checklists.last_modified_by", {
+                username: item.lastModifiedBy,
+              })}${
+                item.lastModifiedAt
+                  ? t("checklists.last_modified_on", {
+                      date: formatDateTimeString(item.lastModifiedAt),
+                    })
+                  : ""
+              }`}
             >
               <UserAvatar
                 username={item.lastModifiedBy}
@@ -54,9 +78,9 @@ const LastModifiedCreatedInfo = ({
                 avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
               />
               <span className="flex items-center gap-1">
-                <PencilIcon className="h-3 w-3" />
+                <Edit2Icon className="h-3 w-3" />
                 {item.lastModifiedAt
-                  ? new Date(item.lastModifiedAt).toDateString()
+                  ? formatDateTimeString(item.lastModifiedAt)
                   : ""}
               </span>
             </span>

@@ -1,21 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getNotes, createNote } from "@/app/_server/actions/note";
+import { getUserNotes, createNote } from "@/app/_server/actions/note";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {
-      const docs = await getNotes(user.username);
-      if (!docs.success || !docs.data) {
+      const notes = await getUserNotes({ username: user.username });
+      if (!notes.success || !notes.data) {
         return NextResponse.json(
-          { error: docs.error || "Failed to fetch notes" },
+          { error: notes.error || "Failed to fetch notes" },
           { status: 500 }
         );
       }
 
-      return NextResponse.json({ notes: docs.data });
+      const transformedNotes = notes.data.map((note) => ({
+        id: note.uuid || note.id,
+        title: note.title,
+        category: note.category || "Uncategorized",
+        content: note.content,
+        createdAt: note.createdAt,
+        updatedAt: note.updatedAt,
+      }));
+
+      return NextResponse.json({ notes: transformedNotes });
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(
@@ -43,13 +52,25 @@ export async function POST(request: NextRequest) {
       formData.append("title", title);
       formData.append("content", content);
       formData.append("category", category);
+      formData.append("user", JSON.stringify(user));
 
       const result = await createNote(formData);
       if (result.error) {
+        console.log("result.error", result.error);
         return NextResponse.json({ error: result.error }, { status: 400 });
       }
 
-      return NextResponse.json({ success: true, data: result.data });
+      const transformedNote = {
+        id: result.data?.uuid || result.data?.id,
+        title: result.data?.title,
+        category: result.data?.category || "Uncategorized",
+        content: result.data?.content,
+        createdAt: result.data?.createdAt,
+        updatedAt: result.data?.updatedAt,
+        owner: result.data?.owner,
+      };
+
+      return NextResponse.json({ success: true, data: transformedNote });
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(

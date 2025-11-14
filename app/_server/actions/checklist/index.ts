@@ -1,7 +1,7 @@
 "use server";
 
 import path from "path";
-import { Checklist, User } from "@/app/_types";
+import { Checklist, Item, User } from "@/app/_types";
 import {
   getUserModeDir,
   ensureDir,
@@ -10,13 +10,25 @@ import {
   readOrderFile,
 } from "@/app/_server/actions/file";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getItemsSharedWithUser } from "@/app/_server/actions/sharing";
 import { readJsonFile } from "../file";
 import fs from "fs/promises";
+
 import { parseMarkdown } from "@/app/_utils/checklist-utils";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { USERS_FILE } from "@/app/_consts/files";
-import { Modes, TaskStatus } from "@/app/_types/enums";
+import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
+import {
+  ItemTypes,
+  Modes,
+  PermissionTypes,
+  TaskStatus,
+} from "@/app/_types/enums";
+import {
+  generateUuid,
+  generateYamlFrontmatter,
+  extractChecklistType,
+  updateYamlMetadata,
+} from "@/app/_utils/yaml-metadata-utils";
+import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { ChecklistType } from "@/app/_types";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
 import { sanitizeFilename } from "@/app/_utils/filename-utils";
@@ -26,17 +38,48 @@ import { isAdmin } from "@/app/_server/actions/users";
 import { serverDeleteFile } from "@/app/_server/actions/file";
 import { revalidatePath } from "next/cache";
 import {
-  removeSharedItem,
-  updateSharedItem,
-} from "@/app/_server/actions/sharing";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+  buildCategoryPath,
+  decodeCategoryPath,
+  encodeCategoryPath,
+  getFormData,
+} from "@/app/_utils/global-utils";
+import {
+  updateIndexForItem,
+  parseInternalLinks,
+  removeItemFromIndex,
+  updateItemCategory,
+  rebuildLinkIndex,
+} from "@/app/_server/actions/link";
+import {
+  shouldRefreshRecurringItem,
+  refreshRecurringItem,
+} from "@/app/_utils/recurrence-utils";
+import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
+import { checkUserPermission } from "@/app/_server/actions/sharing";
+
+interface GetChecklistsOptions {
+  username?: string;
+  allowArchived?: boolean;
+  isRaw?: boolean;
+  projection?: string[];
+}
+
+const getChecklistType = (content: string): ChecklistType => {
+  if (content.includes("checklistType: task")) {
+    return "task";
+  }
+
+  return "simple";
+};
 
 const readListsRecursively = async (
   dir: string,
   basePath: string = "",
-  owner: string
-): Promise<Checklist[]> => {
-  const lists: Checklist[] = [];
+  owner: string,
+  allowArchived?: boolean,
+  isRaw: boolean = false
+): Promise<any[]> => {
+  const lists: any[] = [];
   const entries = await serverReadDir(dir);
 
   const order = await readOrderFile(dir);
@@ -52,6 +95,10 @@ const readListsRecursively = async (
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
+    if (dirName === ARCHIVED_DIR_NAME && !allowArchived) {
+      continue;
+    }
+
     const categoryPath = basePath ? `${basePath}/${dirName}` : dirName;
     const categoryDir = path.join(dir, dirName);
 
@@ -76,9 +123,47 @@ const readListsRecursively = async (
         try {
           const content = await serverReadFile(filePath);
           const stats = await fs.stat(filePath);
-          lists.push(
-            parseMarkdown(content, id, categoryPath, owner, false, stats)
-          );
+
+          if (isRaw) {
+            const { metadata } = extractYamlMetadata(content);
+            const type = getChecklistType(content);
+            let uuid = metadata.uuid;
+            if (!uuid) {
+              uuid = generateUuid();
+              try {
+                const updatedContent = updateYamlMetadata(content, { uuid });
+                await serverWriteFile(filePath, updatedContent);
+              } catch (error) {
+                console.warn("Failed to save UUID to checklist file:", error);
+              }
+            }
+            const rawList: Checklist & { rawContent: string } = {
+              id,
+              title: id,
+              uuid,
+              type,
+              category: categoryPath,
+              items: [],
+              createdAt: stats.birthtime.toISOString(),
+              updatedAt: stats.mtime.toISOString(),
+              owner: owner,
+              isShared: false,
+              rawContent: content,
+            };
+            lists.push(rawList);
+          } else {
+            const parsedList = parseMarkdown(
+              content,
+              id,
+              categoryPath,
+              owner,
+              false,
+              stats,
+              fileName
+            );
+            lists.push(parsedList);
+          }
+
         } catch { }
       }
     } catch { }
@@ -86,14 +171,68 @@ const readListsRecursively = async (
     const subLists = await readListsRecursively(
       categoryDir,
       categoryPath,
-      owner
+      owner,
+      allowArchived,
+      isRaw
     );
     lists.push(...subLists);
   }
+
   return lists;
 };
 
-export const getLists = async (username?: string) => {
+const checkAndRefreshRecurringItems = async (
+  checklist: Checklist
+): Promise<{ checklist: Checklist; hasChanges: boolean }> => {
+  let hasChanges = false;
+  const updatedItems = checklist.items.map((item) => {
+    if (shouldRefreshRecurringItem(item)) {
+      hasChanges = true;
+      return refreshRecurringItem(item);
+    }
+    return item;
+  });
+
+  if (!hasChanges) {
+    return { checklist, hasChanges: false };
+  }
+
+  const updatedChecklist: Checklist = {
+    ...checklist,
+    items: updatedItems,
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    const ownerDir = path.join(
+      process.cwd(),
+      "data",
+      CHECKLISTS_FOLDER,
+      checklist.owner!
+    );
+    const categoryDir = path.join(
+      ownerDir,
+      checklist.category || "Uncategorized"
+    );
+    const filePath = path.join(categoryDir, `${checklist.id}.md`);
+
+    await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
+  } catch (error) {
+    console.error("Error saving refreshed recurring items:", error);
+    return { checklist, hasChanges: false };
+  }
+
+  return { checklist: updatedChecklist, hasChanges: true };
+};
+
+export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
+  const {
+    username,
+    allowArchived = false,
+    isRaw = false,
+    projection,
+  } = options;
+
   try {
     let userDir: string;
     let currentUser: any = null;
@@ -110,47 +249,103 @@ export const getLists = async (username?: string) => {
     }
     await ensureDir(userDir);
 
-    const lists = await readListsRecursively(userDir, "", currentUser.username);
+    let lists: any[] = await readListsRecursively(
+      userDir,
+      "",
+      currentUser.username,
+      allowArchived,
+      isRaw
+    );
 
-    const sharedItems = await getItemsSharedWithUser(currentUser.username);
-    for (const sharedItem of sharedItems.checklists) {
+    const { getAllSharedItemsForUser } = await import(
+      "@/app/_server/actions/sharing"
+    );
+    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+
+    for (const sharedItem of sharedData.checklists) {
       try {
-        const sharedFilePath = sharedItem.filePath
-          ? path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.filePath
-          )
-          : path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            sharedItem.owner,
-            sharedItem.category || "Uncategorized",
-            `${sharedItem.id}.md`
-          );
+        const decodedCategory = decodeCategoryPath(
+          sharedItem.category || "Uncategorized"
+        );
+
+        const sharedFilePath = path.join(
+          process.cwd(),
+          "data",
+          CHECKLISTS_FOLDER,
+          sharedItem.sharer,
+          decodedCategory,
+          `${sharedItem.id}.md`
+        );
 
         const content = await fs.readFile(sharedFilePath, "utf-8");
         const stats = await fs.stat(sharedFilePath);
-        lists.push(
-          parseMarkdown(
-            content,
-            sharedItem.id,
-            sharedItem.category || "Uncategorized",
-            sharedItem.owner,
-            true,
-            stats
-          )
-        );
+
+        if (isRaw) {
+          const { metadata } = extractYamlMetadata(content);
+          const type = getChecklistType(content);
+          const rawList: Checklist = {
+            id: sharedItem.id || sharedItem.uuid || "unknown",
+            title: sharedItem.id || sharedItem.uuid || "Unknown Checklist",
+            uuid: metadata.uuid || sharedItem.uuid || generateUuid(),
+            type,
+            category: decodedCategory,
+            items: [],
+            createdAt: stats.birthtime.toISOString(),
+            updatedAt: stats.mtime.toISOString(),
+            owner: sharedItem.sharer,
+            isShared: true,
+            itemType: ItemTypes.CHECKLIST,
+            rawContent: content,
+          };
+          lists.push(rawList);
+        } else {
+          lists.push(
+            parseMarkdown(
+              content,
+              sharedItem.id || sharedItem.uuid || "unknown",
+              decodedCategory,
+              sharedItem.sharer,
+              true,
+              stats
+            )
+          );
+        }
       } catch (error) {
         continue;
       }
     }
 
-    return { success: true, data: lists };
+    if (projection && projection.length > 0) {
+      const projectedLists = lists.map((list: any) => {
+        const projectedList: Partial<Checklist> = {};
+        for (const key of projection) {
+          if (Object.prototype.hasOwnProperty.call(list, key)) {
+            (projectedList as any)[key] = (list as any)[key];
+          }
+        }
+        return projectedList;
+      });
+      return { success: true, data: projectedLists };
+    }
+
+    if (!isRaw) {
+      lists = await Promise.all(
+        lists.map(async (list) => {
+          const { checklist } = await checkAndRefreshRecurringItems(list);
+          return checklist;
+        })
+      );
+    }
+
+    const serializedLists = lists.map(list => ({
+      ...list,
+      statuses: list.statuses ? JSON.parse(JSON.stringify(list.statuses)) : undefined
+    }));
+
+    return { success: true, data: serializedLists as Checklist[] };
+
   } catch (error) {
-    console.error("Error in getLists:", error);
+    console.error("Error in getUserChecklists:", error);
     return { success: false, error: "Failed to fetch lists" };
   }
 };
@@ -158,18 +353,88 @@ export const getLists = async (username?: string) => {
 export const getListById = async (
   id: string,
   username?: string,
-  category?: string
+  category?: string,
+  unarchive?: boolean
 ): Promise<Checklist | undefined> => {
-  const lists = await (username ? getLists(username) : getAllLists());
+  if (!username) {
+    const { getUserByChecklistUuid } = await import(
+      "@/app/_server/actions/users"
+    );
+    const userByUuid = await getUserByChecklistUuid(id);
+    if (userByUuid.success && userByUuid.data) {
+      username = userByUuid.data.username;
+    }
+  }
+
+  const lists = await (username
+    ? getUserChecklists({ username, allowArchived: unarchive, isRaw: true })
+    : getAllLists(unarchive, true));
+
   if (!lists.success || !lists.data) {
     throw new Error(lists.error || "Failed to fetch lists");
   }
-  return lists.data.find(
-    (list) => list.id === id && (!category || list.category === category)
+
+  const list = lists.data.find(
+    (list) =>
+      (list.id === id || list.uuid === id) &&
+      (!category ||
+        list.category?.toLowerCase() ===
+        decodeCategoryPath(category).toLowerCase())
   );
+
+  if (list && "rawContent" in list) {
+    const parsedData = parseChecklistContent((list as any).rawContent, list.id!);
+    const checklistType =
+      extractChecklistType((list as any).rawContent) || "task";
+    const existingUuid = parsedData.uuid || list.uuid;
+
+    let finalUuid = existingUuid;
+    if (!finalUuid && username) {
+      const { generateUuid, updateYamlMetadata } = await import(
+        "@/app/_utils/yaml-metadata-utils"
+      );
+      finalUuid = generateUuid();
+
+      try {
+        const updatedContent = updateYamlMetadata((list as any).rawContent, {
+          uuid: finalUuid,
+          title: parsedData.title || list.id?.replace(/-/g, " "),
+          checklistType: checklistType,
+        });
+
+        const fs = await import("fs/promises");
+        const path = await import("path");
+
+        const dataDir = path.join(process.cwd(), "data");
+        if (username) {
+          const userDir = path.join(dataDir, CHECKLISTS_FOLDER, username);
+          const decodedCategory = decodeURIComponent(
+            list.category || "Uncategorized"
+          );
+          const categoryDir = path.join(userDir, decodedCategory);
+          const filePath = path.join(categoryDir, `${list.id}.md`);
+
+          await fs.writeFile(filePath, updatedContent, "utf-8");
+        }
+      } catch (error) {
+        console.warn("Failed to save UUID to checklist file:", error);
+      }
+    }
+
+    const result = {
+      ...list,
+      title: parsedData.title,
+      items: parsedData.items,
+      uuid: finalUuid,
+      ...(parsedData.statuses && { statuses: parsedData.statuses }),
+    };
+    return result as Checklist;
+  }
+
+  return list as Checklist | undefined;
 };
 
-export const getAllLists = async () => {
+export const getAllLists = async (allowArchived?: boolean, isRaw: boolean = false) => {
   try {
     const allLists: Checklist[] = [];
 
@@ -187,7 +452,9 @@ export const getAllLists = async () => {
         const userLists = await readListsRecursively(
           userDir,
           "",
-          user.username
+          user.username,
+          allowArchived,
+          isRaw
         );
         allLists.push(...userLists);
       } catch (error) {
@@ -218,6 +485,7 @@ export const createList = async (formData: FormData) => {
 
     const newList: Checklist = {
       id,
+      uuid: generateUuid(),
       title,
       type,
       category,
@@ -227,6 +495,27 @@ export const createList = async (formData: FormData) => {
     };
 
     await serverWriteFile(filePath, listToMarkdown(newList));
+
+    try {
+      const content = newList.items.map((i) => i.text).join("\n");
+      const links = parseInternalLinks(content);
+      const currentUser = await getCurrentUser();
+      if (currentUser?.username) {
+        await updateIndexForItem(
+          currentUser.username,
+          ItemTypes.CHECKLIST,
+          newList.uuid!,
+          links
+        );
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to update link index for new checklist:",
+        newList.id,
+        error
+      );
+    }
+
     return { success: true, data: newList };
   } catch (error) {
     console.error("Error creating list:", error);
@@ -240,16 +529,33 @@ export const updateList = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
+    const ownerUsername = formData.get("user") as string | null;
+    const unarchive = formData.get("unarchive") as string;
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists());
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
+    const actingUser = await getCurrentUser();
+    if (!actingUser || !actingUser.username) {
+      return { error: "Not authenticated" };
     }
 
-    const currentList = lists.data.find(
-      (list) => list.id === id && list.category === originalCategory
+    const currentList = await getListById(
+      id,
+      ownerUsername || undefined,
+      originalCategory,
+      unarchive === "true"
     );
+
+    const canEdit = await checkUserPermission(
+      id,
+      originalCategory,
+      ItemTypes.CHECKLIST,
+      actingUser.username,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      return { error: "Permission denied" };
+    }
+
     if (!currentList) {
       throw new Error("List not found");
     }
@@ -258,6 +564,7 @@ export const updateList = async (formData: FormData) => {
       ...currentList,
       title,
       category: category || currentList.category,
+      items: currentList.items,
       updatedAt: new Date().toISOString(),
     };
 
@@ -310,48 +617,51 @@ export const updateList = async (formData: FormData) => {
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
-    const { getItemSharingMetadata } = await import(
-      "@/app/_server/actions/sharing"
-    );
-    const sharingMetadata = await getItemSharingMetadata(
-      id,
-      "checklist",
-      currentList.owner!
-    );
+    try {
+      const content = updatedList.items.map((i) => i.text).join("\n");
+      const links = parseInternalLinks(content);
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
+        }`;
 
-    if (sharingMetadata) {
-      const newFilePath = `${currentList.owner}/${updatedList.category || "Uncategorized"
-        }/${updatedList.id}.md`;
-
-      if (newId !== id) {
-        const { removeSharedItem, addSharedItem } = await import(
-          "@/app/_server/actions/sharing"
-        );
-
-        await removeSharedItem(id, "checklist", currentList.owner!);
-
-        await addSharedItem(
-          updatedList.id,
-          "checklist",
-          updatedList.title,
-          currentList.owner!,
-          sharingMetadata.sharedWith,
-          updatedList.category,
-          newFilePath,
-          sharingMetadata.isPubliclyShared
-        );
-      } else {
-        await updateSharedItem(
-          updatedList.id,
-          "checklist",
-          currentList.owner!,
-          {
-            filePath: newFilePath,
-            category: updatedList.category,
-            title: updatedList.title,
-          }
-        );
+      const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
+      if (oldItemKey !== newItemKey) {
+        await rebuildLinkIndex(currentList.owner!);
+        revalidatePath("/");
       }
+
+      await updateIndexForItem(
+        currentList.owner!,
+        ItemTypes.CHECKLIST,
+        updatedList.uuid!,
+        links
+      );
+    } catch (error) {
+      console.warn(
+        "Failed to update link index for checklist:",
+        updatedList.id,
+        error
+      );
+    }
+
+    if (newId !== id || (category && category !== currentList.category)) {
+      const { updateSharingData } = await import(
+        "@/app/_server/actions/sharing"
+      );
+
+      await updateSharingData(
+        {
+          id,
+          category: currentList.category || "Uncategorized",
+          itemType: ItemTypes.CHECKLIST,
+          sharer: currentList.owner!,
+        },
+        {
+          id: newId,
+          category: updatedList.category || "Uncategorized",
+          itemType: ItemTypes.CHECKLIST,
+          sharer: currentList.owner!,
+        }
+      );
     }
 
     if (oldFilePath && oldFilePath !== filePath) {
@@ -361,7 +671,7 @@ export const updateList = async (formData: FormData) => {
     try {
       revalidatePath("/");
       const oldCategoryPath = buildCategoryPath(
-        currentList.category || "Uncategorized",
+        currentList.category || "UncategorCgorized",
         id
       );
       const newCategoryPath = buildCategoryPath(
@@ -398,7 +708,7 @@ export const deleteList = async (formData: FormData) => {
     }
 
     const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getLists());
+    const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
     if (!lists.success || !lists.data) {
       return { error: "Failed to fetch lists" };
     }
@@ -429,8 +739,26 @@ export const deleteList = async (formData: FormData) => {
 
     await serverDeleteFile(filePath);
 
-    if (list.isShared && list.owner) {
-      await removeSharedItem(id, "checklist", list.owner);
+    try {
+      const itemKey = `${list.category || "Uncategorized"}/${id}`;
+      await removeItemFromIndex(list.owner!, ItemTypes.CHECKLIST, list.uuid!);
+    } catch (error) {
+      console.warn("Failed to remove checklist from link index:", id, error);
+    }
+
+    if (list.owner) {
+      const { updateSharingData } = await import(
+        "@/app/_server/actions/sharing"
+      );
+      await updateSharingData(
+        {
+          id,
+          category: list.category || "Uncategorized",
+          itemType: ItemTypes.CHECKLIST,
+          sharer: list.owner,
+        },
+        null
+      );
     }
 
     try {
@@ -454,24 +782,27 @@ export const deleteList = async (formData: FormData) => {
 
 export const convertChecklistType = async (formData: FormData) => {
   try {
-    const listId = formData.get("listId") as string;
-    const newType = formData.get("newType") as ChecklistType;
-    const category = formData.get("category") as string;
+    const { listId, newType: type, uuid } = getFormData(formData, ["listId", "newType", "uuid"]);
+    const newType = type as ChecklistType;
 
     if (!listId || !newType) {
       return { error: "List ID and type are required" };
     }
 
-    const lists = await getLists();
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
+    let list = await getListById(uuid);
+
+    if (!list) {
+      const lists = await getUserChecklists();
+
+      if (!lists.success || !lists.data) {
+        throw new Error(lists.error || "Failed to fetch lists");
+      }
+
+      list = lists.data.find((l) => l.uuid === uuid) as Checklist;
     }
 
-    const list = lists.data.find(
-      (l) => l.id === listId && l.category === category
-    );
-    if (!list) {
-      throw new Error("List not found");
+    if (!list || !list.id || !list.createdAt) {
+      throw new Error("List not found or is malformed");
     }
 
     if (list.type === newType) {
@@ -504,13 +835,13 @@ export const convertChecklistType = async (formData: FormData) => {
     let convertedItems: any[];
 
     if (newType === "task") {
-      convertedItems = list.items.map((item) => ({
+      convertedItems = (list.items || []).map((item) => ({
         ...item,
         status: item.completed ? TaskStatus.COMPLETED : TaskStatus.TODO,
         timeEntries: [],
       }));
     } else {
-      convertedItems = list.items.map((item) => ({
+      convertedItems = (list.items || []).map((item) => ({
         id: item.id,
         text: item.text,
         completed: item.completed,
@@ -518,10 +849,17 @@ export const convertChecklistType = async (formData: FormData) => {
       }));
     }
 
-    const updatedList = {
-      ...list,
+    const updatedList: Checklist = {
+      id: list.id,
+      uuid: list.uuid,
+      title: list.title || "",
+      category: list.category,
+      createdAt: list.createdAt,
+      owner: list.owner,
+      isShared: list.isShared,
+      isDeleted: list.isDeleted,
       type: newType,
-      items: convertedItems,
+      items: convertedItems as Item[],
       updatedAt: new Date().toISOString(),
     };
 
@@ -539,5 +877,116 @@ export const convertChecklistType = async (formData: FormData) => {
   } catch (error) {
     console.error("Error converting checklist type:", error);
     return { error: "Failed to convert checklist type" };
+  }
+};
+
+export const updateChecklistStatuses = async (formData: FormData) => {
+  try {
+    const { uuid, statusesStr } = getFormData(formData, ["uuid", "statusesStr"]);
+
+    if (!uuid || !statusesStr) {
+      console.error("Missing uuid or statusesStr");
+      return { error: "UUID and statuses are required" };
+    }
+
+    const lists = await getUserChecklists();
+    if (!lists.success || !lists.data) {
+      console.error("Failed to fetch lists:", lists.error);
+      throw new Error(lists.error || "Failed to fetch lists");
+    }
+
+    const list = lists.data.find((l) => l.uuid === uuid) as Checklist;
+
+    if (!list || !list.id || !list.createdAt) {
+      console.error("List not found or malformed:", { list });
+      throw new Error("List not found or is malformed");
+    }
+
+    const statuses = JSON.parse(statusesStr);
+
+    const oldStatusIds = (list.statuses || []).map(s => s.id);
+    const newStatusIds = statuses.map((s: any) => s.id);
+    const removedStatusIds = oldStatusIds.filter(id => !newStatusIds.includes(id));
+
+    const sortedStatuses = [...statuses].sort((a: any, b: any) => a.order - b.order);
+    const firstStatus = sortedStatuses[0];
+    const defaultStatusId = firstStatus?.id || 'todo';
+
+    const currentUser = await getCurrentUser();
+    const username = currentUser?.username;
+    if (!username) {
+      throw new Error("Username not found");
+    }
+
+    const now = new Date().toISOString();
+    const updatedItems = list.items.map(item => {
+      if (removedStatusIds.includes(item.status || '')) {
+        const history = item.history || [];
+        history.push({
+          status: defaultStatusId,
+          timestamp: now,
+          user: username,
+        });
+
+        return {
+          ...item,
+          status: defaultStatusId,
+          lastModifiedBy: username,
+          lastModifiedAt: now,
+          history,
+        };
+      }
+      return item;
+    });
+
+    let filePath: string;
+
+    if (list.isShared) {
+      const ownerDir = path.join(
+        process.cwd(),
+        "data",
+        CHECKLISTS_FOLDER,
+        list.owner!
+      );
+      filePath = path.join(
+        ownerDir,
+        list.category || "Uncategorized",
+        `${list.id}.md`
+      );
+    } else {
+      const userDir = await getUserModeDir(Modes.CHECKLISTS);
+      filePath = path.join(
+        userDir,
+        list.category || "Uncategorized",
+        `${list.id}.md`
+      );
+    }
+
+    const updatedList: Checklist = {
+      ...list,
+      items: updatedItems,
+      statuses,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const markdown = listToMarkdown(updatedList);
+    await serverWriteFile(filePath, markdown);
+
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath(`/checklist/${list.id}`);
+      if (list.category) {
+        revalidatePath(`/category/${list.category}`);
+      }
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but data was saved successfully:",
+        error
+      );
+    }
+    return { success: true, data: updatedList };
+  } catch (error) {
+    console.error("Error updating checklist statuses:", error);
+    return { error: "Failed to update checklist statuses" };
   }
 };

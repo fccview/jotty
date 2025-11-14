@@ -3,7 +3,7 @@
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { ArrowLeft } from "lucide-react";
+import { Archive, ArrowLeft, Check, Hash } from "lucide-react";
 import {
   Globe,
   Users,
@@ -15,19 +15,30 @@ import {
   List,
   Edit3,
   Trash2,
+  MoreHorizontal,
 } from "lucide-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
-import { useSharing } from "@/app/_hooks/useSharing";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
+import { useRouter } from "next/navigation";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { toggleArchive } from "@/app/_server/actions/dashboard";
+import { Modes } from "@/app/_types/enums";
+import {
+  copyTextToClipboard,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
+import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
+import { useMetadata } from "@/app/_providers/MetadataProvider";
 import { useTranslations } from "next-intl";
 
 interface NoteEditorHeaderProps {
   note: Note;
   categories: Category[];
   isOwner: boolean;
-  isAdmin: boolean;
-  currentUsername?: string;
   onBack: () => void;
   showTOC: boolean;
   setShowTOC: (show: boolean) => void;
@@ -38,42 +49,64 @@ export const NoteEditorHeader = ({
   note,
   categories,
   isOwner,
-  isAdmin,
-  currentUsername,
   onBack,
   viewModel,
   showTOC,
   setShowTOC,
 }: NoteEditorHeaderProps) => {
+  const t = useTranslations();
+  const metadata = useMetadata();
   const {
     title,
     setTitle,
     category,
     isEditing,
-    setIsEditing,
     status,
     handleEdit,
     handleCancel,
     handleSave,
     handleDelete,
+    setIsEditing,
     isPrinting,
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
-  const t = useTranslations();
-  const { sharingStatus } = useSharing({
-    itemId: note.id,
-    itemType: "note",
-    itemOwner: note.owner || "",
-    itemTitle: note.title,
-    itemCategory: note.category,
-    isOpen: showShareModal,
-    onClose: () => setShowShareModal(false),
-    enabled: true,
-  });
+  const [showSharedWithModal, setShowSharedWithModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { user } = useAppMode();
+  const router = useRouter();
+  const { permissions } = usePermissions();
 
-  const canDelete = note.isShared
-    ? isAdmin || currentUsername === note.owner
-    : true;
+  const handleArchive = async () => {
+    const result = await toggleArchive(note, Modes.NOTES);
+    if (result.success) {
+      router.refresh();
+    }
+  };
+
+  const handleCopyId = async () => {
+    const success = await copyTextToClipboard(
+      `${
+        note?.uuid
+          ? note?.uuid
+          : `${encodeCategoryPath(note?.category || "Uncategorized")}/${
+              note?.id
+            }`
+      }`
+    );
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const { globalSharing } = useAppMode();
+  const encodedCategory = encodeCategoryPath(metadata.category);
+  const itemDetails = sharingInfo(globalSharing, metadata.id, encodedCategory);
+  const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
+  const sharedWith = itemDetails.sharedWith;
+  const isPubliclyShared = itemDetails.isPublic;
+
+  const canDelete = permissions?.canDelete;
 
   return (
     <>
@@ -101,13 +134,42 @@ export const NoteEditorHeader = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold truncate">{title}</h1>
-                    {sharingStatus?.isPubliclyShared && (
-                      <Globe className="h-4 w-4 text-primary" />
-                    )}
-                    {sharingStatus?.isShared &&
-                      !sharingStatus.isPubliclyShared && (
-                        <Users className="h-4 w-4 text-primary" />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        handleCopyId();
+                      }}
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      title={`Copy ID: ${
+                        note?.uuid
+                          ? note?.uuid
+                          : `${encodeCategoryPath(
+                              note?.category || "Uncategorized"
+                            )}/${note?.id}`
+                      }`}
+                    >
+                      {copied ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Hash className="h-3 w-3" />
                       )}
+                    </Button>
+
+                    {isPubliclyShared && (
+                      <span title="Publicly shared">
+                        <Globe className="h-4 w-4 text-primary" />
+                      </span>
+                    )}
+                    {isShared && (
+                      <span
+                        title={`Shared with ${sharedWith.join(", ")}`}
+                        className="cursor-pointer hover:text-primary"
+                        onClick={() => setShowSharedWithModal(true)}
+                      >
+                        <Users className="h-3 w-3" />
+                      </span>
+                    )}
                   </div>
                   {category && category !== "Uncategorized" && (
                     <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
@@ -139,7 +201,6 @@ export const NoteEditorHeader = ({
                   size="sm"
                   onClick={() => {
                     handleSave();
-                    setIsEditing(false);
                   }}
                   className="fixed bottom-[150px] right-4 rounded-full py-6 lg:py-0 lg:rounded-md lg:relative lg:bottom-auto lg:right-auto z-10"
                   disabled={status.isSaving || status.isAutoSaving}
@@ -147,69 +208,113 @@ export const NoteEditorHeader = ({
                   {status.isSaving ? (
                     <>
                       <Loader2 className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2 animate-spin" />
-                      <span className="hidden lg:inline">{t("global.saving")}</span>
+                      <span className="hidden lg:inline">
+                        {t("global.saving")}
+                      </span>
                     </>
                   ) : (
                     <>
                       <Save className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2" />
-                      <span className="hidden lg:inline">{t("global.save")}</span>
+                      <span className="hidden lg:inline">
+                        {t("global.save")}
+                      </span>
                     </>
                   )}
                 </Button>
               </>
             ) : (
               <>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowShareModal(true)}
-                  title={t("global.share")}
-                >
-                  <Share2 className="h-5 w-5" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  {user?.notesDefaultMode === "edit" &&
+                    permissions?.canEdit && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleSave()}
+                        title="Quick Save"
+                        className="text-primary hover:text-primary/80"
+                      >
+                        {status.isSaving ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-5 w-5" />
+                          </>
+                        )}
+                      </Button>
+                    )}
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={viewModel.handlePrint}
-                  title={t("global.print_save_as_pdf")}
-                  disabled={isPrinting}
-                >
-                  {isPrinting ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Download className="h-5 w-5" />
+                  {permissions?.canEdit && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleEdit}
+                      title="Edit"
+                    >
+                      <Edit3 className="h-5 w-5" />
+                    </Button>
                   )}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setShowTOC(!showTOC)}
-                  className="hidden lg:flex"
-                  title={t("global.table_of_contents")}
-                >
-                  <List className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleEdit}
-                  title={t("global.edit")}
-                >
-                  <Edit3 className="h-5 w-5" />
-                </Button>
-                {canDelete && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleDelete}
-                    className="text-destructive hover:text-destructive"
-                    title={t("global.delete")}
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </Button>
-                )}
+                  <DropdownMenu
+                    align="right"
+                    trigger={
+                      <Button variant="outline" size="icon">
+                        <MoreHorizontal className="h-5 w-5" />
+                      </Button>
+                    }
+                    items={[
+                      ...(permissions?.isOwner
+                        ? [
+                            {
+                              type: "item" as const,
+                              label: "Share",
+                              icon: <Share2 className="h-4 w-4" />,
+                              onClick: () => setShowShareModal(true),
+                            },
+                          ]
+                        : []),
+                      {
+                        type: "item" as const,
+                        label: "Print / Save as PDF",
+                        icon: isPrinting ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Download className="h-4 w-4" />
+                        ),
+                        onClick: viewModel.handlePrint,
+                      },
+                      {
+                        type: "item" as const,
+                        label: "Table of Contents",
+                        icon: <List className="h-4 w-4" />,
+                        onClick: () => setShowTOC(!showTOC),
+                        className: "hidden lg:flex",
+                      },
+                      ...(permissions?.canDelete
+                        ? [
+                            {
+                              type: "item" as const,
+                              label: "Archive",
+                              icon: <Archive className="h-4 w-4" />,
+                              onClick: handleArchive,
+                            },
+                          ]
+                        : []),
+                      ...(canDelete
+                        ? [
+                            {
+                              type: "item" as const,
+                              label: "Delete",
+                              icon: <Trash2 className="h-4 w-4" />,
+                              onClick: handleDelete,
+                              variant: "destructive" as const,
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
+                </div>
               </>
             )}
           </div>
@@ -218,14 +323,18 @@ export const NoteEditorHeader = ({
       {showShareModal && (
         <ShareModal
           isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
-          itemId={note.id}
-          itemTitle={note.title}
-          itemType="note"
-          itemCategory={note.category}
-          itemOwner={note.owner || ""}
+          onClose={() => {
+            setShowShareModal(false);
+            router.refresh();
+          }}
         />
       )}
+
+      <SharedWithModal
+        usernames={itemDetails.sharedWith}
+        isOpen={showSharedWithModal}
+        onClose={() => setShowSharedWithModal(false)}
+      />
     </>
   );
 };

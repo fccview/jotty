@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import {
   Plus,
   Trash2,
@@ -14,15 +14,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
-import { useSortable } from "@dnd-kit/sortable";
+import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
-import { Item } from "@/app/_types";
+import { Checklist, Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
 import { useTranslations } from "next-intl";
+import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -36,11 +38,11 @@ interface NestedChecklistItemProps {
   isPublicView?: boolean;
   isDeletingItem: boolean;
   isDragDisabled?: boolean;
-  isShared?: boolean;
   isSubtask?: boolean;
+  checklist: Checklist;
 }
 
-export const NestedChecklistItem = ({
+const NestedChecklistItemComponent = ({
   item,
   index,
   level,
@@ -52,12 +54,12 @@ export const NestedChecklistItem = ({
   isPublicView = false,
   isDeletingItem,
   isDragDisabled = false,
-  isShared = false,
   isSubtask = false,
+  checklist,
 }: NestedChecklistItemProps) => {
+  const { usersPublicData, user } = useAppMode();
+  const { permissions } = usePermissions();
   const t = useTranslations();
-  const { usersPublicData } = useAppMode();
-
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
 
@@ -68,24 +70,16 @@ export const NestedChecklistItem = ({
     );
   };
 
-  const sortableProps = useSortable({ id: item.id });
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = isDragDisabled
-      ? {
-        attributes: {},
-        listeners: {},
-        setNodeRef: null,
-        transform: null,
-        transition: null,
-        isDragging: false,
-      }
-      : sortableProps;
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: item.id,
+      data: {
+        type: "item",
+        item: item,
+        completed: item.completed,
+      },
+      disabled: isDragDisabled,
+    });
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -94,6 +88,7 @@ export const NestedChecklistItem = ({
   const [showAddSubItem, setShowAddSubItem] = useState(false);
   const [newSubItemText, setNewSubItemText] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -172,71 +167,91 @@ export const NestedChecklistItem = ({
     }
   };
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   const cleanText = item.text.split(" | metadata:")[0].trim();
   const displayText = showEmojis ? `${emoji}  ${cleanText}` : cleanText;
   const hasChildren = item.children && item.children.length > 0;
   const isChild = level > 0;
 
   const dropdownOptions = [
-    ...(onEdit ? [{ id: "edit", name: t("checklists.edit"), icon: Edit2 }] : []),
+    ...(onEdit
+      ? [{ id: "edit", name: t("checklists.edit"), icon: Edit2 }]
+      : []),
     ...(onAddSubItem
       ? [{ id: "add-sub-item", name: t("checklists.add_sub_item"), icon: Plus }]
       : []),
     { id: "delete", name: t("checklists.delete"), icon: Trash2 },
   ];
 
+  useEffect(() => {
+    if (hasChildren && item.children) {
+      const allChildrenCompleted = item.children.every(
+        (child) => child.completed
+      );
+      if (allChildrenCompleted) {
+        setIsExpanded(false);
+      } else {
+        setIsExpanded(true);
+      }
+    }
+  }, [item.children, hasChildren]);
+
   return (
     <div
-      ref={setNodeRef}
-      style={style as React.CSSProperties}
+      style={{
+        transform: CSS.Transform.toString(transform),
+      }}
       className={cn(
-        "group/item relative my-1",
+        "relative my-1",
         hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         !hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         isChild &&
-        "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
-        "first:mt-0",
-        isDragging && "opacity-50 scale-95 rotate-1 shadow-lg z-50",
+          "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
+        "first:mt-0 transition-colors duration-150",
+        isActive && "bg-muted/20",
+        isDragging && "opacity-50 z-50",
         isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
       )}
     >
       <div
         className={cn(
-          "group flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
+          "group/item flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
           "rounded-lg",
           isChild ? "px-2.5 py-2" : "p-3",
-          completed && "opacity-80"
+          completed && "opacity-80",
+          !permissions?.canEdit &&
+            "opacity-50 cursor-not-allowed pointer-events-none"
         )}
       >
-        {!isPublicView && !isDragDisabled && !isChild && (
-          <button
-            type="button"
-            {...attributes}
-            {...listeners}
-            className="text-muted-foreground hidden lg:block hover:text-foreground cursor-move touch-manipulation"
-          >
-            <GripVertical className="h-4 w-4" />
-          </button>
-        )}
+        {!isPublicView &&
+          !isDragDisabled &&
+          !isChild &&
+          permissions?.canEdit && (
+            <button
+              type="button"
+              {...attributes}
+              {...listeners}
+              className="text-muted-foreground hidden lg:block hover:text-foreground cursor-move touch-manipulation"
+              ref={setNodeRef}
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+          )}
 
         <div className="relative flex items-center">
           <input
             type="checkbox"
             checked={item.completed || completed}
             id={item.id}
-            onChange={(e) => onToggle(item.id, e.target.checked)}
+            onChange={(e) => {
+              onToggle(item.id, e.target.checked);
+            }}
             className={cn(
               "h-5 w-5 rounded border-input focus:ring-2 focus:ring-offset-2 focus:ring-ring",
-              "transition-colors duration-200",
+              "transition-all duration-150",
               (item.completed || completed) && "bg-primary border-primary"
             )}
           />
@@ -258,24 +273,28 @@ export const NestedChecklistItem = ({
         )}
 
         {isEditing ? (
-          <div className="flex-1 flex items-center gap-2">
-            <Input
-              id={item.id}
-              ref={inputRef}
-              type="text"
-              defaultValue={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSave}
-              className="h-6 w-6 p-0"
-            >
-              <Check className="h-3 w-3" />
-            </Button>
-            {!isDeletingItem && (
+          <div className="flex-1 flex items-center gap-2 w-full">
+            {permissions?.canEdit && (
+              <>
+                <Input
+                  id={item.id}
+                  ref={inputRef}
+                  type="text"
+                  defaultValue={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSave}
+                  className="h-6 w-6 p-0"
+                >
+                  <Check className="h-3 w-3" />
+                </Button>
+              </>
+            )}
+            {!isDeletingItem && permissions?.canDelete && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -288,27 +307,37 @@ export const NestedChecklistItem = ({
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-between gap-2">
-            <label
-              htmlFor={item.id}
-              className={cn(
-                "text-sm transition-all duration-200 cursor-pointer items-center flex",
-                item.completed || completed
-                  ? "line-through text-muted-foreground checked"
-                  : "text-foreground"
-              )}
-            >
-              {displayText}
-            </label>
+            <div className="flex-1 flex gap-1.5">
+              <label
+                htmlFor={item.id}
+                className={cn(
+                  "text-sm transition-all duration-200 cursor-pointer items-center flex",
+                  isActive && "scale-95",
+                  item.completed || completed
+                    ? "line-through text-muted-foreground checked"
+                    : "text-foreground"
+                )}
+                onMouseDown={() => setIsActive(true)}
+                onMouseUp={() => setIsActive(false)}
+                onMouseLeave={() => setIsActive(false)}
+              >
+                {item.recurrence && user?.enableRecurrence === "enable" && (
+                  <RecurrenceIndicator recurrence={item.recurrence} />
+                )}
+
+                <span>{displayText}</span>
+              </label>
+            </div>
 
             <LastModifiedCreatedInfo
               item={item}
-              isShared={isShared}
+              checklist={checklist}
               getUserAvatarUrl={getUserAvatarUrl}
             />
           </div>
         )}
 
-        {!isEditing && (
+        {!isEditing && permissions?.canEdit && (
           <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
             <span className="text-xs text-muted-foreground mr-1">#{index}</span>
 
@@ -434,7 +463,7 @@ export const NestedChecklistItem = ({
               isDeletingItem={isDeletingItem}
               isDragDisabled={isDragDisabled}
               isPublicView={isPublicView}
-              isShared={isShared}
+              checklist={checklist}
             />
           ))}
         </div>
@@ -442,3 +471,5 @@ export const NestedChecklistItem = ({
     </div>
   );
 };
+
+export const NestedChecklistItem = memo(NestedChecklistItemComponent);

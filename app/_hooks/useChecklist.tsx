@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist } from "@/app/_types";
+import { Checklist, RecurrenceRule } from "@/app/_types";
 import {
   deleteList,
   convertChecklistType,
@@ -23,6 +23,8 @@ import {
   getCurrentUser,
   getUserByChecklist,
 } from "@/app/_server/actions/users";
+import { copyTextToClipboard } from "../_utils/global-utils";
+import { encodeCategoryPath } from "../_utils/global-utils";
 
 interface UseChecklistProps {
   list: Checklist;
@@ -44,6 +46,9 @@ export const useChecklist = ({
   const [focusKey, setFocusKey] = useState(0);
   const [copied, setCopied] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<string[]>([]);
+  const [pendingToggles, setPendingToggles] = useState<Map<string, boolean>>(
+    new Map()
+  );
   const isInitialMount = useRef(true);
 
   useEffect(() => {
@@ -86,6 +91,48 @@ export const useChecklist = ({
 
     return () => clearTimeout(timer);
   }, [itemsToDelete, localList.id, localList.category, router]);
+
+  useEffect(() => {
+    if (pendingToggles.size === 0) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      const togglesToProcess = new Map(pendingToggles);
+      setPendingToggles(new Map());
+
+      const syncPromises = Array.from(togglesToProcess.entries()).map(
+        async ([itemId, completed]) => {
+          try {
+            const formData = new FormData();
+            formData.append("listId", localList.id);
+            formData.append("itemId", itemId);
+            formData.append("completed", String(completed));
+            formData.append("category", localList.category || "Uncategorized");
+
+            const result = await updateItem(
+              localList,
+              formData,
+              undefined,
+              true
+            );
+            if (!result.success) {
+              throw new Error("Server action failed");
+            }
+          } catch (error) {
+            console.error(`Failed to sync toggle for ${itemId}:`, error);
+            setPendingToggles((prev) => new Map(prev).set(itemId, completed));
+          }
+        }
+      );
+
+      await Promise.all(syncPromises);
+
+      router.refresh();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [pendingToggles, localList.id, localList.category, localList]);
 
   const handleDeleteItem = (itemId: string) => {
     setLocalList((currentList) => {
@@ -221,78 +268,84 @@ export const useChecklist = ({
   };
 
   const handleToggleItem = async (itemId: string, completed: boolean) => {
-    const formData = new FormData();
-    formData.append("listId", localList.id);
-    formData.append("itemId", itemId);
-    formData.append("completed", String(completed));
-    formData.append("category", localList.category || "Uncategorized");
-    const result = await updateItem(formData);
+    const now = new Date().toISOString();
+    const currentUser = await getCurrentUser();
 
-    if (result.success && result.data) {
-      setLocalList(result.data);
-    } else if (result.success) {
-      setLocalList((currentList) => {
-        const updateNestedWithSync = (items: any[]): any[] => {
-          return items.map((item) => {
-            let updatedItem = { ...item };
+    setLocalList((currentList) => {
+      const findAndUpdateItem = (
+        items: any[],
+        itemId: string,
+        updates: any
+      ): any[] => {
+        return items.map((item) => {
+          if (item.id === itemId) {
+            let updatedItem = { ...item, ...updates };
 
-            if (item.id === itemId) {
-              updatedItem.completed = completed;
-
-              if (completed && item.children && item.children.length > 0) {
-                updatedItem.children = updateAllChildren(item.children, true);
-              } else if (
-                !completed &&
-                item.children &&
-                item.children.length > 0
-              ) {
-                updatedItem.children = updateAllChildren(item.children, false);
-              }
-            }
-
-            if (item.children && item.children.length > 0) {
-              updatedItem.children = updateNestedWithSync(item.children);
-
-              updatedItem = updateParentBasedOnChildren(updatedItem);
+            if (
+              updates.completed &&
+              item.children &&
+              item.children.length > 0
+            ) {
+              updatedItem.children = updateAllChildren(item.children, true);
+            } else if (
+              updates.completed === false &&
+              item.children &&
+              item.children.length > 0
+            ) {
+              updatedItem.children = updateAllChildren(item.children, false);
             }
 
             return updatedItem;
-          });
-        };
+          }
 
-        const updatedItems = updateNestedWithSync(currentList.items);
+          if (item.children && item.children.length > 0) {
+            const updatedChildren = findAndUpdateItem(
+              item.children,
+              itemId,
+              updates
+            );
+            const updatedItem = updateParentBasedOnChildren({
+              ...item,
+              children: updatedChildren,
+            });
+            return updatedItem;
+          }
 
-        const updateParentsForSiblings = (items: any[]): any[] => {
-          return items.map((item) => {
-            if (item.children && item.children.length > 0) {
-              const updatedChildren = updateParentsForSiblings(item.children);
-              const updatedItem = updateParentBasedOnChildren({
-                ...item,
-                children: updatedChildren,
-              });
-              return updatedItem;
-            }
-            return item;
-          });
-        };
+          return item;
+        });
+      };
 
-        return {
-          ...currentList,
-          items: updateParentsForSiblings(updatedItems),
-        };
+      const updatedItems = findAndUpdateItem(currentList.items, itemId, {
+        completed,
+        ...(currentUser && {
+          lastModifiedBy: currentUser.username,
+          lastModifiedAt: now,
+        }),
       });
-    } else {
-      console.error("Failed to update item:", result.error);
-    }
+
+      return {
+        ...currentList,
+        items: updatedItems,
+        updatedAt: now,
+      };
+    });
+
+    setPendingToggles((prev) => new Map(prev).set(itemId, completed));
   };
 
   const handleEditItem = async (itemId: string, text: string) => {
     const formData = new FormData();
+    const owner = await getUserByChecklist(
+      localList.id,
+      localList.category || "Uncategorized"
+    );
     formData.append("listId", localList.id);
     formData.append("itemId", itemId);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
-    const result = await updateItem(formData);
+    formData.append("user", owner.data?.username || "");
+
+    const result = await updateItem(localList, formData);
 
     if (result.success) {
       if (result.data) {
@@ -328,29 +381,90 @@ export const useChecklist = ({
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const activeData = active.data.current;
+    const overData = over.data.current;
+
+    if (!activeData || !overData) {
+      return;
+    }
+
+    if (activeData.type === "item" && overData.type === "drop-indicator") {
+      const activeCompleted = activeData.completed;
+      const targetContext = overData.parentPath;
+
+      if ((activeCompleted && targetContext === "todo") ||
+        (!activeCompleted && targetContext === "completed")) {
+        return;
+      }
+    }
+
+    if (overData.type === "drop-indicator") {
       const allItems = localList.items;
-      const oldIndex = allItems.findIndex((item) => item.id === active.id);
-      const newIndex = allItems.findIndex((item) => item.id === over?.id);
+      const activeItem = allItems.find(item => item.id === active.id);
 
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const newItems = arrayMove(allItems, oldIndex, newIndex).map(
-          (item, index) => ({ ...item, order: index })
-        );
+      if (!activeItem) return;
 
-        setLocalList({ ...localList, items: newItems });
+      const targetContext = overData.parentPath;
+      const isTargetTodo = targetContext === "todo";
+      const isTargetCompleted = targetContext === "completed";
 
-        const itemIds = newItems.map((item) => item.id);
-        const formData = new FormData();
-        formData.append("listId", localList.id);
-        formData.append("itemIds", JSON.stringify(itemIds));
-        formData.append("currentItems", JSON.stringify(newItems));
-        formData.append("category", localList.category || "Uncategorized");
-        const result = await reorderItems(formData);
+      const contextItems = isTargetTodo
+        ? allItems.filter(item => !item.completed)
+        : allItems.filter(item => item.completed);
 
-        if (!result.success) {
-          setLocalList(list);
+      let newItems: typeof allItems;
+
+      if (overData.targetDndId) {
+        const targetIndex = contextItems.findIndex(item => item.id === overData.targetDndId);
+        if (targetIndex !== -1) {
+          const insertIndex = overData.position === "before" ? targetIndex : targetIndex + 1;
+
+          const otherItems = allItems.filter(item => item.id !== active.id);
+          const todoItems = otherItems.filter(item => !item.completed);
+          const completedItems = otherItems.filter(item => item.completed);
+
+          if (isTargetTodo) {
+            todoItems.splice(insertIndex, 0, { ...activeItem, completed: false });
+            newItems = [...todoItems, ...completedItems];
+          } else {
+            completedItems.splice(insertIndex, 0, { ...activeItem, completed: true });
+            newItems = [...todoItems, ...completedItems];
+          }
+        } else {
+          const otherItems = allItems.filter(item => item.id !== active.id);
+          const todoItems = otherItems.filter(item => !item.completed);
+          const completedItems = otherItems.filter(item => item.completed);
+
+          newItems = isTargetTodo
+            ? [{ ...activeItem, completed: false }, ...todoItems, ...completedItems]
+            : [...todoItems, ...completedItems, { ...activeItem, completed: true }];
         }
+      } else {
+        const otherItems = allItems.filter(item => item.id !== active.id);
+        const todoItems = otherItems.filter(item => !item.completed);
+        const completedItems = otherItems.filter(item => item.completed);
+
+        newItems = isTargetTodo
+          ? [{ ...activeItem, completed: false }, ...todoItems, ...completedItems]
+          : [...todoItems, { ...activeItem, completed: true }, ...completedItems];
+      }
+
+      setLocalList({ ...localList, items: newItems });
+
+      const itemIds = newItems.map((item) => item.id);
+      const formData = new FormData();
+      formData.append("listId", localList.id);
+      formData.append("itemIds", JSON.stringify(itemIds));
+      formData.append("currentItems", JSON.stringify(newItems));
+      formData.append("category", localList.category || "Uncategorized");
+
+      const result = await reorderItems(formData);
+      if (!result.success) {
+        setLocalList(list);
       }
     }
   };
@@ -384,6 +498,7 @@ export const useChecklist = ({
     formData.append("listId", localList.id);
     formData.append("newType", newType);
     formData.append("category", localList.category || "Uncategorized");
+    formData.append("uuid", localList.uuid || "");
     const result = await convertChecklistType(formData);
     setIsLoading(false);
 
@@ -432,7 +547,10 @@ export const useChecklist = ({
     }
   };
 
-  const handleCreateItem = async (text: string) => {
+  const handleCreateItem = async (
+    text: string,
+    recurrence?: RecurrenceRule
+  ) => {
     setIsLoading(true);
     const formData = new FormData();
 
@@ -441,7 +559,10 @@ export const useChecklist = ({
     formData.append("category", localList.category || "Uncategorized");
 
     const currentUser = await getCurrentUser();
-    const result = await createItem(formData, currentUser?.username);
+    if (recurrence) {
+      formData.append("recurrence", JSON.stringify(recurrence));
+    }
+    const result = await createItem(localList, formData, currentUser?.username);
 
     const checklistOwner = await getUserByChecklist(
       localList.id,
@@ -524,12 +645,12 @@ export const useChecklist = ({
   };
 
   const handleCopyId = async () => {
-    try {
-      await navigator.clipboard.writeText(localList.id);
+    const success = await copyTextToClipboard(
+      `${localList.uuid ? localList.uuid : `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id}`}`
+    );
+    if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy ID:", err);
     }
   };
 
@@ -589,5 +710,6 @@ export const useChecklist = ({
     completedItems,
     totalCount: localList.items.length,
     deletingItemsCount: itemsToDelete.length,
+    pendingTogglesCount: pendingToggles.size,
   };
 };

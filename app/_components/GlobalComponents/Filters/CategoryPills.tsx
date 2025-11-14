@@ -52,10 +52,11 @@ export const CategoryPills = ({
               variant={isSelected ? "default" : "outline"}
               size="sm"
               onClick={() => onCategoryToggle(category.name)}
-              className={`h-7 px-3 text-xs transition-all ${isSelected
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "hover:bg-muted"
-                }`}
+              className={`h-7 px-3 text-xs transition-all ${
+                isSelected
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "hover:bg-muted"
+              }`}
             >
               {category.name}
               {isSelected && <X className="ml-1 h-3 w-3" />}

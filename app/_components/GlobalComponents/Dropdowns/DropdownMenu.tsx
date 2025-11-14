@@ -9,6 +9,7 @@ interface DropdownItem {
   onClick?: () => void;
   icon?: React.ReactNode;
   variant?: "default" | "destructive";
+  className?: string;
 }
 
 interface DropdownMenuProps {
@@ -57,7 +58,10 @@ export const DropdownMenu = ({
   };
 
   return (
-    <div ref={dropdownRef} className="relative inline-block">
+    <div
+      ref={dropdownRef}
+      className="jotty-dropdown-menu relative inline-block"
+    >
       <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
         {trigger}
       </div>
@@ -79,9 +83,10 @@ export const DropdownMenu = ({
                 key={index}
                 onClick={() => item.onClick && handleItemClick(item.onClick)}
                 className={cn(
+                  item.className || "",
                   "w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors text-left",
                   item.variant === "destructive" &&
-                    "text-destructive hover:bg-destructive/10"
+                  "text-destructive hover:bg-destructive/10"
                 )}
               >
                 {item.icon && (

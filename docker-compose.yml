@@ -10,7 +10,7 @@ services:
       - "1122:3000"
     volumes:
       - ./data:/app/data:rw
-      - ./config:/app/config:ro
+      - ./config:/app/config:rw
       - ./cache:/app/.next/cache:rw
     restart: unless-stopped
     #platform: linux/arm64
@@ -18,6 +18,7 @@ services:
       - NODE_ENV=production
       #- HTTPS=true
       #- APP_URL=https://your-jotty-domain.com
+      #- INTERNAL_API_URL=http://localhost:3000
       #- SERVE_PUBLIC_IMAGES=yes
       #- SERVE_PUBLIC_FILES=yes
       #- SSO_MODE=oidc
@@ -26,3 +27,4 @@ services:
       #- OIDC_CLIENT_SECRET=your_client_secret
       #- SSO_FALLBACK_LOCAL=yes
       #- OIDC_ADMIN_GROUPS=admins
+      #- ENABLE_API_DOCS=true

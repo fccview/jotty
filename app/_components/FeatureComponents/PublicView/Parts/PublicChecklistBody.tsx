@@ -49,7 +49,7 @@ export const PublicChecklistBody = ({
 
   if (checklist.type === "task" && taskItemsByStatus) {
     return Object.entries(taskItemsByStatus).map(([status, items]) => (
-      <TaskStatusSection key={status} status={status} items={items} />
+      <TaskStatusSection key={status} status={status} items={items} checklist={checklist} />
     ));
   }
 
@@ -66,7 +66,7 @@ export const PublicChecklistBody = ({
           isPublicView={true}
           isDeletingItem={false}
           isDragDisabled={true}
-          isShared={checklist.isShared || false}
+          checklist={checklist}
         />
       ))}
     </div>

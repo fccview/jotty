@@ -3,6 +3,7 @@
 import { Clock, Timer, Pause, Plus } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanItemTimerProps {
   totalTime: number;
@@ -22,6 +23,7 @@ export const KanbanItemTimer = ({
   onAddManualTime,
 }: KanbanItemTimerProps) => {
   const t = useTranslations();
+  const { permissions } = usePermissions();
 
   const handleAddTime = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -43,6 +45,7 @@ export const KanbanItemTimer = ({
             variant="ghost"
             size="sm"
             className="h-5 w-5 p-0"
+            disabled={!permissions?.canEdit}
             onClick={(e) => {
               e.stopPropagation();
               onTimerToggle();
@@ -58,6 +61,7 @@ export const KanbanItemTimer = ({
             variant="ghost"
             size="sm"
             className="h-5 w-5 p-0"
+            disabled={!permissions?.canEdit}
             onClick={handleAddTime}
           >
             <Plus className="h-3 w-3" />

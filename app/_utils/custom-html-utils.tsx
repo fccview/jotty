@@ -12,7 +12,8 @@ export const customHtmlMarks: CustomHtmlMarkDefinition[] = [
   {
     name: "mark",
     tag: "mark",
-    classes: "bg-yellow-200 text-yellow-900 px-1 py-0.5 rounded-sm",
+    classes: "bg-yellow-200 px-1 py-0.5 rounded-sm",
+    attributesToPreserve: ["style"],
   },
   {
     name: "kbd",

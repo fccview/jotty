@@ -23,6 +23,86 @@ x-api-key: ck_your_api_key_here
 
 **Note**: Replace `ck_your_api_key_here` with your actual API key.
 
+## API Documentation Access
+
+The jotty API includes interactive documentation that allows you to explore and test all endpoints directly in your browser. The documentation is powered by ReDoc and provides a complete reference with request/response examples.
+
+### Running the API Documentation
+
+The API documentation runs as a separate Docker service and requires the main jotty application to be running.
+
+#### Method 1: Using Docker Compose
+
+1. **Enable API Documentation**: Set the `ENABLE_API_DOCS` environment variable to `true` in your `docker-compose.yml`:
+
+   ```yaml
+   environment:
+     - ENABLE_API_DOCS=true
+   ```
+
+   **Add the configuration** for the frontend in your docker compose file underneath your jotty settings
+
+   ```yml
+    api-docs:
+        image: redocly/redoc:latest
+        container_name: jotty-api-docs
+        ports:
+          - "40126:80"
+        environment:
+          SPEC_URL: http://your-jotty-url.com/api/docs
+        extra_hosts:
+          - "host.docker.internal:host-gateway"
+        depends_on:
+          - jotty
+        profiles:
+          - api-docs
+    ```
+
+
+    **Important Notes**:
+    - The `SPEC_URL` must point to the `/api/docs` endpoint of your running jotty instance
+    - The documentation will only work if `ENABLE_API_DOCS=true` is set in the jotty environment variables
+
+2. **Start the API Docs Service**: Run docker-compose with the `api-docs` profile:
+
+   ```bash
+   docker-compose --profile api-docs up -d
+   ```
+
+3. **Access the Documentation**: Open your browser and navigate to:
+   - **Local**: `http://localhost:40126` (or your custom port)
+   - **Remote**: `http://your-domain.com`
+
+
+### Features of the API Documentation
+
+- **Request/Response Examples**: See formatted JSON examples for all endpoints
+- **Schema Validation**: View detailed request/response schemas
+- **Real-time Updates**: Documentation updates automatically when the API changes
+
+### Troubleshooting
+
+**Documentation shows "Failed to load"**:
+- Ensure `ENABLE_API_DOCS=true` is set in jotty's environment variables
+- Check that the jotty service is running and accessible
+- Verify the `SPEC_URL` is correct for your environment
+
+**Cannot access on expected port**:
+- Check if the port is already in use: `netstat -tlnp | grep :8080`
+- Verify the port mapping in your docker-compose.yml
+- Ensure the api-docs service is running: `docker ps | grep api-docs`
+
+**Authentication fails in interactive docs**:
+- Make sure you're using a valid API key
+- Check that the API key has the required permissions
+- Verify the API key header format: `x-api-key: ck_your_key_here`
+
+## Identification
+
+All checklists and notes are identified using UUIDs (Universally Unique Identifiers). UUIDs are 36-character strings that uniquely identify each item in the system, for example: `f47ac10b-58cc-4372-a567-0e02b2c3d479`.
+
+When referencing checklists or notes in API endpoints, you must use their UUID rather than titles or other identifiers.
+
 ## Organization Features
 
 ### Categories
@@ -51,9 +131,40 @@ The API supports two types of checklists:
   - `time`: Time tracking data (either `0` or JSON array of time entries)
 - Used for project management and time tracking
 
-## Endpoints
+## Public Endpoints
 
-### 1. Get All Checklists
+These endpoints are publicly accessible and do not require authentication.
+
+### 1. Health Check
+
+**GET** `/api/health`
+
+Returns the application health status and version information. This endpoint is useful for monitoring and load balancers.
+
+**Response:**
+
+```json
+{
+  "status": "healthy",
+  "version": "1.9.3",
+  "timestamp": "2025-10-31T21:15:57.009Z"
+}
+```
+
+**Response Fields:**
+
+- `status`: Either "healthy" or "unhealthy"
+- `version`: Application version from package.json (null if unable to read)
+- `timestamp`: Current server timestamp in ISO 8601 format
+- `error`: Error message (only present when status is "unhealthy")
+
+**Note**: This endpoint does not require authentication and is accessible to anyone.
+
+## Authenticated Endpoints
+
+The following endpoints require authentication via API key.
+
+### 2. Get All Checklists
 
 **GET** `/api/checklists`
 
@@ -65,7 +176,7 @@ Retrieves all checklists for the authenticated user.
 {
   "checklists": [
     {
-      "id": "<checklistID>",
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
       "title": "My Tasks",
       "category": "Work",
       "type": "regular",
@@ -85,7 +196,7 @@ Retrieves all checklists for the authenticated user.
       "updatedAt": "2024-01-01T00:00:00.000Z"
     },
     {
-      "id": "<taskChecklistID>",
+      "id": "550e8400-e29b-41d4-a716-446655440000",
       "title": "Project Tasks",
       "category": "Work",
       "type": "task",
@@ -121,7 +232,7 @@ Retrieves all checklists for the authenticated user.
 
 **Note**: All checklists include a `category` field for organization. If no category is specified when creating a checklist, it defaults to "Uncategorized".
 
-### 2. Create Checklist Item
+### 3. Create Checklist Item
 
 **POST** `/api/checklists/{listId}/items`
 
@@ -159,7 +270,7 @@ Adds a new item to the specified checklist.
 }
 ```
 
-### 3. Check Item
+### 4. Check Item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/check`
 
@@ -173,7 +284,7 @@ Marks an item as completed. Use the item index (0-based) from the checklist resp
 }
 ```
 
-### 4. Uncheck Item
+### 5. Uncheck Item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/uncheck`
 
@@ -187,7 +298,7 @@ Marks an item as incomplete. Use the item index (0-based) from the checklist res
 }
 ```
 
-### 5. Get All Notes
+### 6. Get All Notes
 
 **GET** `/api/notes`
 
@@ -199,7 +310,7 @@ Retrieves all notes/documents for the authenticated user.
 {
   "notes": [
     {
-      "id": "note-123",
+      "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
       "title": "My Note",
       "category": "Personal",
       "content": "Note content here...",
@@ -212,7 +323,234 @@ Retrieves all notes/documents for the authenticated user.
 
 **Note**: All notes include a `category` field for organization. If no category is specified when creating a note, it defaults to "Uncategorized".
 
-### 6. Get User Summary Statistics
+### 7. Create Note
+
+**POST** `/api/notes`
+
+Creates a new note for the authenticated user.
+
+**Request Body:**
+
+```json
+{
+  "title": "My New Note",
+  "content": "Note content here...",
+  "category": "Personal"
+}
+```
+
+**Parameters:**
+
+- `title` (required): The title of the note
+- `content` (optional): The content of the note in markdown format (defaults to empty string)
+- `category` (optional): Category for the note (defaults to "Uncategorized")
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "note-123",
+    "title": "My New Note",
+    "content": "Note content here...",
+    "category": "Personal",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "owner": "username"
+  }
+}
+```
+
+### 8. Update Note
+
+**PUT** `/api/notes/{noteId}`
+
+Updates an existing note for the authenticated user.
+
+**Request Body:**
+
+```json
+{
+  "title": "Updated Note Title",
+  "content": "Updated note content...",
+  "category": "Work",
+  "originalCategory": "Personal"
+}
+```
+
+**Parameters:**
+
+- `title` (required): The updated title of the note
+- `content` (optional): The updated content of the note in markdown format
+- `category` (optional): New category for the note (defaults to "Uncategorized")
+- `originalCategory` (optional): The original category of the note (used to locate the existing note)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    "title": "Updated Note Title",
+    "content": "Updated note content...",
+    "category": "Work",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-02T10:30:00.000Z",
+    "owner": "username"
+  }
+}
+```
+
+### 9. Delete Note
+
+**DELETE** `/api/notes/{noteId}`
+
+Deletes an existing note for the authenticated user.
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
+### 10. Get User Information
+
+**GET** `/api/user/{username}`
+
+Retrieves user information. Returns full user data if authenticated as the user or admin, otherwise returns only public information.
+
+**Response (Own Profile or Admin):**
+
+```json
+{
+  "user": {
+    "username": "fccview",
+    "isAdmin": true,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "lastLogin": "2024-01-15T10:30:00.000Z",
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "preferredTheme": "dark",
+    "imageSyntax": "markdown",
+    "tableSyntax": "markdown",
+    "landingPage": "checklists",
+    "notesAutoSaveInterval": 5000,
+    "notesDefaultEditor": "wysiwyg",
+    "notesDefaultMode": "edit",
+    "pinnedLists": ["Work/project-tasks"],
+    "pinnedNotes": ["Personal/important-note"]
+  }
+}
+```
+
+**Response (Public):**
+
+```json
+{
+  "user": {
+    "username": "fccview",
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "preferredTheme": "dark"
+  }
+}
+```
+
+**Note**: Sensitive fields like `passwordHash` and `apiKey` are never returned.
+
+### 11. Get All Categories
+
+**GET** `/api/categories`
+
+Retrieves all categories for notes and checklists for the authenticated user. Archived categories are excluded.
+
+**Response:**
+
+```json
+{
+  "categories": {
+    "notes": [
+      {
+        "name": "Personal",
+        "path": "Personal",
+        "count": 5,
+        "level": 0
+      },
+      {
+        "name": "Work",
+        "path": "Work",
+        "count": 3,
+        "level": 0
+      },
+      {
+        "name": "Projects",
+        "path": "Work/Projects",
+        "count": 2,
+        "level": 1
+      }
+    ],
+    "checklists": [
+      {
+        "name": "Shopping",
+        "path": "Shopping",
+        "count": 4,
+        "level": 0
+      },
+      {
+        "name": "Work",
+        "path": "Work",
+        "count": 6,
+        "level": 0
+      }
+    ]
+  }
+}
+```
+
+**Response Fields:**
+
+- `name`: The category name
+- `path`: Full path to the category (includes parent categories)
+- `count`: Number of items in this category
+- `level`: Nesting level (0 for root categories)
+
+### 12. Rebuild Link Index
+
+**POST** `/api/admin/rebuild-index`
+
+Rebuilds the internal link index for a specific user. This is useful when the link relationships between notes and checklists become inconsistent due to bulk operations, data migrations, or other maintenance tasks.
+
+**Request Body:**
+
+```json
+{
+  "username": "fccview"
+}
+```
+
+**Parameters:**
+
+- `username` (required): Username whose link index should be rebuilt
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Successfully rebuilt link index for fccview"
+}
+```
+
+**Notes:**
+
+- Only administrators can use this endpoint
+- The rebuild process scans all notes and checklists for the specified user and recreates the link relationships
+- This operation may take time for users with large amounts of content
+- The link index tracks internal references between notes and checklists (e.g., when one note links to another)
+
+### 13. Get User Summary Statistics
 
 **GET** `/api/summary`
 
@@ -350,6 +688,12 @@ Retrieves the current progress of an ongoing export operation.
 
 ## Usage Examples
 
+### Health check (public endpoint)
+
+```bash
+curl https://your-checklist-app.com/api/health
+```
+
 ### Get all checklists
 
 ```bash
@@ -400,6 +744,35 @@ curl -H "x-api-key: ck_your_api_key_here" \
      https://your-checklist-app.com/api/notes
 ```
 
+### Create a note
+
+```bash
+curl -X POST \
+     -H "x-api-key: ck_your_api_key_here" \
+     -H "Content-Type: application/json" \
+     -d '{"title": "My New Note", "content": "This is the content", "category": "Personal"}' \
+     https://your-checklist-app.com/api/notes
+```
+
+### Get user information
+
+```bash
+# Get your own user info
+curl -H "x-api-key: ck_your_api_key_here" \
+     https://your-checklist-app.com/api/user/your_username
+
+# Get another user's public info
+curl -H "x-api-key: ck_your_api_key_here" \
+     https://your-checklist-app.com/api/user/other_username
+```
+
+### Get all categories
+
+```bash
+curl -H "x-api-key: ck_your_api_key_here" \
+     https://your-checklist-app.com/api/categories
+```
+
 ### Get user summary statistics
 
 ```bash
@@ -439,6 +812,129 @@ curl -H "x-api-key: ck_your_api_key_here" \
      https://your-checklist-app.com/api/exports
 ```
 
+### Rebuild link index for a user (admin only)
+
+```bash
+curl -X POST \
+     -H "x-api-key: ck_admin_api_key_here" \
+     -H "Content-Type: application/json" \
+     -d '{"username": "fccview"}' \
+     https://your-checklist-app.com/api/admin/rebuild-index
+```
+
+## Cron Job Automation
+
+The link index rebuild API can be automated using cron jobs to ensure link relationships remain consistent over time. This is particularly useful for:
+
+- Regular maintenance of large installations
+- Ensuring data integrity after bulk operations
+- Preventing link reference issues in production environments
+
+### Example Cron Job Setup
+
+Create a shell script (`rebuild-index.sh`) to rebuild the index for all users:
+
+```bash
+#!/bin/bash
+
+# rebuild-index.sh - Rebuild link indexes for specific users
+API_KEY="ck_your_admin_api_key_here"
+BASE_URL="https://your-checklist-app.com"
+
+# Get all usernames (requires admin API access)
+usernames=("user1" "user2" "user3")
+
+for username in "${usernames[@]}"; do
+    echo "Rebuilding index for user: $username"
+
+    response=$(curl -s -X POST \
+        -H "x-api-key: $API_KEY" \
+        -H "Content-Type: application/json" \
+        -d "{\"username\": \"$username\"}" \
+        "$BASE_URL/api/admin/rebuild-index")
+
+    if echo "$response" | grep -q '"success":true'; then
+        echo "Successfully rebuilt index for $username"
+    else
+        echo "Failed to rebuild index for $username: $response"
+    fi
+
+    # Small delay between requests
+    sleep 1
+done
+
+echo "Index rebuild complete"
+```
+
+Make the script executable:
+
+```bash
+chmod +x rebuild-index.sh
+```
+
+### Cron Job Installation
+
+Add to your crontab to run weekly (every Sunday at 2:00 AM):
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line to run weekly on Sundays at 2:00 AM
+0 2 * * 0 /path/to/rebuild-index.sh >> /var/log/checklist-index-rebuild.log 2>&1
+```
+
+For daily rebuilds (not recommended for large installations):
+
+```bash
+# Daily at 2:00 AM
+0 2 * * * /path/to/rebuild-index.sh >> /var/log/checklist-index-rebuild.log 2>&1
+```
+
+### Alternative: Single User Cron Job
+
+For rebuilding only your own index (non-admin users can only rebuild their own data):
+
+```bash
+#!/bin/bash
+
+# rebuild-my-index.sh - Rebuild link index for current user
+API_KEY="ck_your_api_key_here"
+USERNAME="your_username"
+BASE_URL="https://your-checklist-app.com"
+
+echo "Rebuilding link index for $USERNAME"
+
+response=$(curl -s -X POST \
+    -H "x-api-key: $API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "{\"username\": \"$USERNAME\"}" \
+    "$BASE_URL/api/admin/rebuild-index")
+
+if echo "$response" | grep -q '"success":true'; then
+    echo "✅ Successfully rebuilt index"
+else
+    echo "❌ Failed to rebuild index: $response"
+fi
+```
+
+### Monitoring and Logging
+
+The scripts above include basic logging. For production environments, consider:
+
+1. **Log Rotation**: Use `logrotate` to manage log files
+2. **Monitoring**: Integrate with monitoring systems to alert on failures
+3. **Backup**: Run the rebuild after database backups
+4. **Performance**: Schedule during low-traffic periods
+
+### Best Practices
+
+- **Test First**: Run the script manually before scheduling
+- **Monitor Logs**: Regularly check logs for failures
+- **Resource Usage**: Be aware that rebuilds can be resource-intensive for large datasets
+- **Frequency**: Weekly is usually sufficient; daily may be overkill
+- **Error Handling**: Implement retry logic for transient failures
+
 ## Important Notes
 
 - Item indices are 0-based (first item is index 0)
@@ -451,4 +947,10 @@ curl -H "x-api-key: ck_your_api_key_here" \
 - The summary endpoint provides comprehensive statistics including category breakdowns
 - Admin users can query summary data for any user using the `username` parameter
 - Non-admin users can only query their own summary data
+- The user information endpoint returns different data based on authentication context
+- Categories endpoint excludes archived categories automatically
+- When creating notes, the `content` and `category` fields are optional
+- Admin endpoints require administrator privileges and API key authentication
+- The link index rebuild endpoint can be automated with cron jobs for regular maintenance
+- Link relationships between notes and checklists are maintained automatically, but the rebuild endpoint ensures consistency after bulk operations
 - This is a beta implementation - additional features will be added in future updates

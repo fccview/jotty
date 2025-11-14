@@ -169,7 +169,7 @@ export const ChecklistItem = ({
             "h-5 w-5 rounded border-input focus:ring-2 focus:ring-offset-2 focus:ring-ring",
             "bg-background transition-colors duration-200",
             (item.completed || status === TaskStatus.COMPLETED) &&
-            "bg-primary border-primary"
+              "bg-primary border-primary"
           )}
         />
       </div>

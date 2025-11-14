@@ -81,7 +81,7 @@ export const TableOfContents = ({
       return <p className="text-sm text-muted-foreground">No headings found</p>;
     }
     return (
-      <nav className="flex-1 overflow-hidden">
+      <nav className="flex-1">
         {headings.map((heading) => (
           <button
             key={heading.id}
@@ -114,7 +114,7 @@ export const TableOfContents = ({
           Contents
         </h3>
       </div>
-      <div className="p-3 flex-1 flex flex-col overflow-hidden">
+      <div className="p-3 flex-1 flex flex-col overflow-y-auto hide-scrollbar max-h-[calc(100vh-200px)]">
         {renderContent()}
       </div>
     </aside>

@@ -4,6 +4,7 @@
 @import 'highlight.js/styles/github-dark-dimmed.css';
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Intel+One+Mono:ital,wght@0,300..700;1,300..700&display=swap');
 
 @layer base {
     :root {
@@ -470,12 +471,18 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     overflow-wrap: break-word;
 }
 
+pre, code, 
+code span {
+    font-family: "Intel One Mono", monospace;
+    font-size: small;
+  }
+
 .hide-scrollbar::-webkit-scrollbar {
-    display: none;
+    display: none!important;
 }
 .hide-scrollbar {
-    -ms-overflow-style: none; 
-    scrollbar-width: none;  
+    -ms-overflow-style: none!important; 
+    scrollbar-width: none!important;  
 }
 
 .scroll-fade-right {
@@ -525,26 +532,22 @@ a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
     content: '';
     display: block;
     position: absolute;
-    top: 3px;
+    top: 50%;
     left: 8px;
     width: 7px;
     height: 12px;
     border: solid rgb(var(--primary) / var(--tw-bg-opacity, 1));
     border-width: 0 1px 1px 0;
-    transform: rotate(45deg);
+    transform: translate(0, -60%) rotate(45deg);
   }
-
 
 mark {
     background-color: #fef08a;
-    color: inherit;
     border-radius: 0.25rem;
     padding: 0.125rem 0.25rem;
-  }
+    color: inherit;
+}
   
-  mark[style*="background-color"] {
-    background-color: inherit !important;
-  }
 
 .prose {
     @apply text-foreground;
@@ -656,6 +659,57 @@ mark {
 
 .prose a:hover {
     text-decoration: none;
+}
+
+.prose span[data-internal-link] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background-color: rgb(139 59 208 / 0.1);
+    border: 1px solid rgb(139 59 208 / 0.2);
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.prose span[data-internal-link]:hover {
+    background-color: rgb(139 59 208 / 0.15);
+}
+
+.prose span[data-internal-link] svg {
+    height: 0.75rem;
+    width: 0.75rem;
+    flex-shrink: 0;
+}
+
+.prose span[data-internal-link] svg:first-child {
+    color: rgb(59 130 246);
+}
+
+.prose span[data-internal-link] svg:nth-child(2) {
+    color: rgb(34 197 94);
+}
+
+.prose span[data-internal-link] span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(139 59 208);
+}
+
+.prose span[data-internal-link]:hover span {
+    color: rgb(139 59 208 / 0.8);
+}
+
+.prose span[data-internal-link] span:last-child {
+    font-size: 0.75rem;
+    color: rgb(107 99 139);
+}
+
+.prose span[data-internal-link] span:last-child::before {
+    content: "•";
+    margin-right: 0.25rem;
 }
 
 .prose kbd {
@@ -828,36 +882,79 @@ p > code {
 }
 
 
+
+pre.text-foreground,
+pre.text-foreground *,
+pre.text-foreground span,
+.font-mono textarea {
+    font-family: "JetBrainsMono", "Fira Code", "Monaco", "Consolas", monospace !important;
+    font-size: 14px !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    line-height: 1.5 !important;
+    letter-spacing: normal !important;
+}
+
 @media print {
     .no-print {
-      display: none !important;
+        display: none !important;
     }
-  
+
     body {
-      background: #fff !important;
+        background: #fff !important;
     }
-  
+
     .prose {
-      font-size: 12pt !important;
-      font-family: 'Times New Roman', Times, serif !important;
-      color: #000 !important;
-      max-width: 100% !important;
+        font-size: 12pt !important;
+        font-family: 'Times New Roman', Times, serif !important;
+        color: #000 !important;
+        max-width: 100% !important;
     }
-  
+
     .prose h1, .prose h2, .prose h3, .prose h4,
     .prose pre, .prose blockquote {
-      page-break-after: avoid;
-      page-break-inside: avoid;
+        page-break-after: avoid;
+        page-break-inside: avoid;
     }
-  
+
     .prose img {
-      max-width: 100% !important;
+        max-width: 100% !important;
     }
-  
+
     .prose a[href^="http"]:after {
-      content: " (" attr(href) ")";
-      font-size: 9pt;
-      font-weight: normal;
-      color: #333;
+        content: " (" attr(href) ")";
+        font-size: 9pt;
+        font-weight: normal;
+        color: #333;
     }
-  } 
+}
+
+
+.overflow-y-auto {
+    scrollbar-width: auto !important;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
+    background-color: rgb(var(--muted)/0.5) !important;
+    border-radius: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--primary)/0.3) !important;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 20px !important;
+    height: 20px !important;
+    width: 4px !important;
+}

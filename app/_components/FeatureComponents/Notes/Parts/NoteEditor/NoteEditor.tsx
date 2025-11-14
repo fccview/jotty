@@ -7,14 +7,14 @@ import { NoteEditorHeader } from "@/app/_components/FeatureComponents/Notes/Part
 import { NoteEditorContent } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorContent";
 import { useState } from "react";
 import { TableOfContents } from "../TableOfContents";
+import { useSearchParams } from "next/navigation";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 export interface NoteEditorProps {
   note: Note;
   categories: Category[];
   viewModel: ReturnType<typeof useNoteEditor>;
   onBack: () => void;
-  currentUsername?: string;
-  isAdmin?: boolean;
 }
 
 export const NoteEditor = ({
@@ -22,10 +22,9 @@ export const NoteEditor = ({
   categories,
   viewModel,
   onBack,
-  currentUsername,
-  isAdmin = false,
 }: NoteEditorProps) => {
-  const isOwner = note.owner === currentUsername;
+  const { permissions } = usePermissions();
+  const isOwner = permissions?.isOwner || false;
   const [showTOC, setShowTOC] = useState(false);
 
   return (
@@ -34,8 +33,6 @@ export const NoteEditor = ({
         note={note}
         categories={categories}
         isOwner={isOwner}
-        isAdmin={isAdmin}
-        currentUsername={currentUsername}
         onBack={onBack}
         viewModel={viewModel}
         showTOC={showTOC}
@@ -49,6 +46,8 @@ export const NoteEditor = ({
             noteContent={note.content}
             editorContent={viewModel.editorContent}
             onEditorContentChange={viewModel.handleEditorContentChange}
+            noteId={note.uuid}
+            noteCategory={note.category}
           />
         </div>
 

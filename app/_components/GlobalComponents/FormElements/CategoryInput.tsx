@@ -3,6 +3,7 @@ import { Button } from "../Buttons/Button";
 import { CategoryTreeSelector } from "../Dropdowns/CategoryTreeSelector";
 import { Category } from "@/app/_types";
 import { useTranslations } from "next-intl";
+import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 
 interface CategoryInputProps {
   categories: Category[];
@@ -28,8 +29,13 @@ export const CategoryInput = ({
   const t = useTranslations();
   const selectedCategoryName = selectedCategory
     ? categories.find((c) => c.path === selectedCategory)?.name ||
-    selectedCategory
+      selectedCategory
     : t("global.root_level");
+
+  const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const isNotAllowedName = notAllowedNames.includes(
+    newCategory?.trim()?.toLowerCase()
+  );
 
   return (
     <div>
@@ -56,7 +62,21 @@ export const CategoryInput = ({
               {t("global.cancel")}
             </Button>
           </div>
-          <div className="text-xs text-muted-foreground" dangerouslySetInnerHTML={{ __html: t("modals.new_category_will_be_created_in", { category: `<strong>${selectedCategoryName}</strong>` }) }} />
+          {isNotAllowedName && (
+            <div className="text-xs text-destructive  ">
+              {newCategory} is not allowed. Please choose a different name.
+            </div>
+          )}
+          {!isNotAllowedName && (
+            <div
+              className="text-xs text-muted-foreground"
+              dangerouslySetInnerHTML={{
+                __html: t("modals.new_category_will_be_created_in", {
+                  category: `<strong>${selectedCategoryName}</strong>`,
+                }),
+              }}
+            />
+          )}
         </div>
       ) : (
         <div className="flex gap-2 items-center">

@@ -8,6 +8,7 @@ import {
   ArrowLeftRight,
   ChevronsRightLeft,
   ChevronsLeftRight,
+  CheckSquare,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -16,6 +17,7 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { useEffect, useState } from "react";
 import { getAllThemes } from "@/app/_consts/themes";
 import Link from "next/link";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -23,15 +25,18 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
+  const { user } = useAppMode();
   const {
     theme,
     showEmojis,
     autosaveNotes,
     showMarkdownPreview,
+    showCompletedSuggestions,
     setTheme,
     setShowEmojis,
     setAutosaveNotes,
     setShowMarkdownPreview,
+    setShowCompletedSuggestions,
     setCompactMode,
     compactMode,
   } = useSettings();
@@ -82,31 +87,33 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       <div className="mb-6">
         <h3 className="text-sm font-medium mb-3">Notes</h3>
         <div className="space-y-3">
-          <label className="flex items-center justify-between cursor-pointer">
-            <div className="flex items-center gap-2">
-              <Save className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Autosave Notes</span>
-            </div>
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={autosaveNotes}
-                onChange={(e) => setAutosaveNotes(e.target.checked)}
-                className="sr-only"
-              />
-              <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  autosaveNotes ? "bg-primary" : "bg-muted"
-                }`}
-              >
-                <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    autosaveNotes ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
+          {user?.notesAutoSaveInterval !== 0 && (
+            <label className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center gap-2">
+                <Save className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Autosave Notes</span>
               </div>
-            </div>
-          </label>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={autosaveNotes}
+                  onChange={(e) => setAutosaveNotes(e.target.checked)}
+                  className="sr-only"
+                />
+                <div
+                  className={`block w-10 h-6 rounded-full transition-colors ${
+                    autosaveNotes ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <div
+                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
+                      autosaveNotes ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </div>
+              </div>
+            </label>
+          )}
 
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
@@ -183,6 +190,34 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 <div
                   className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
                     showEmojis ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </div>
+            </div>
+          </label>
+
+          <label className="flex items-center justify-between cursor-pointer">
+            <div className="flex items-center gap-2">
+              <CheckSquare className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm">
+                Show completed tasks as suggestions
+              </span>
+            </div>
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={showCompletedSuggestions}
+                onChange={(e) => setShowCompletedSuggestions(e.target.checked)}
+                className="sr-only"
+              />
+              <div
+                className={`block w-10 h-6 rounded-full transition-colors ${
+                  showCompletedSuggestions ? "bg-primary" : "bg-muted"
+                }`}
+              >
+                <div
+                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
+                    showCompletedSuggestions ? "translate-x-4" : "translate-x-0"
                   }`}
                 />
               </div>
