@@ -16,20 +16,19 @@ interface ConversionConfirmModalProps {
 }
 
 const TYPE_CONFIG = {
-  simple: { label: "Simple Checklist", Icon: CheckSquare },
-  task: { label: "Task Project", Icon: BarChart3 },
+  simple: { label: "simple_checklist", Icon: CheckSquare },
+  task: { label: "task_project", Icon: BarChart3 },
 };
 
-const TypeDisplay = ({ type }: { type: ChecklistType }) => {
+const TypeDisplay = ({ type, t }: { type: ChecklistType, t: ReturnType<typeof useTranslations> }) => {
   const { label, Icon } = TYPE_CONFIG[type];
   return (
     <div className="flex items-center gap-2">
       <Icon className="h-4 w-4 text-primary" />
-      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className="text-sm font-medium text-foreground">{t(label)}</span>
     </div>
   );
 };
-
 export const ConversionConfirmModal = ({
   isOpen,
   onClose,

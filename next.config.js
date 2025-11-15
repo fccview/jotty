@@ -10,8 +10,10 @@ const withPWA = require('next-pwa')({
 
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: []
+    serverComponentsExternalPackages: [],
+    webpackBuildWorker: true
   },
+  swcMinify: true,
   images: {
     unoptimized: true
   }

@@ -5,7 +5,7 @@ import { Plus, ClipboardList, RefreshCw } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { isMobileDevice } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
-import { RecurrenceRule, Item } from "@/app/_types";
+import { RecurrenceRule, Item, Checklist } from "@/app/_types";
 import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
@@ -194,11 +194,10 @@ export const ChecklistHeading = ({
                   type="submit"
                   size="lg"
                   disabled={isLoading || !newItemText.trim()}
-                  className={`px-4 lg:px-6 shadow-sm ${
-                    user?.enableRecurrence === "enable"
+                  className={`px-4 lg:px-6 shadow-sm ${user?.enableRecurrence === "enable"
                       ? "rounded-tr-none rounded-br-none"
                       : ""
-                  }`}
+                    }`}
                 >
                   <Plus className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">{submitButtonText}</span>

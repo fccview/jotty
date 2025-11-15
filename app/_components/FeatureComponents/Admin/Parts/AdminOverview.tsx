@@ -54,21 +54,6 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
       value: stats.totalNotes,
       icon: <FileText className="h-6 w-6 text-primary" />,
     },
-    {
-      title: t("overview.shared_checklists"),
-      value: stats.sharedChecklists,
-      icon: <CheckSquare className="h-6 w-6 text-primary" />,
-    },
-    {
-      title: t("overview.shared_notes"),
-      value: stats.sharedNotes,
-      icon: <FileText className="h-6 w-6 text-primary" />,
-    },
-    {
-      title: t("overview.total_shares"),
-      value: stats.totalSharingRelationships,
-      icon: <Share2 className="h-6 w-6 text-primary" />,
-    },
   ];
 
   return (
@@ -142,34 +127,6 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
               <span className="font-medium">
                 {stats.totalChecklists + stats.totalNotes}
               </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">
-                {t("overview.shared_items")}
-              </span>
-              <span className="font-medium">
-                {stats.sharedChecklists + stats.sharedNotes}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">
-                {t("overview.sharing_relationships")}
-              </span>
-              <span className="font-medium">
-                {stats.totalSharingRelationships}
-              </span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2">
-              <div
-                className="bg-primary h-2 rounded-full"
-                style={{
-                  width: `${
-                    ((stats.sharedChecklists + stats.sharedNotes) /
-                      (stats.totalChecklists + stats.totalNotes)) *
-                    100
-                  }%`,
-                }}
-              />
             </div>
           </div>
         </div>
