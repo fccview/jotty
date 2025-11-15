@@ -13,13 +13,6 @@ export async function PUT(
             const body = await request.json();
             const { title, content, category } = body;
 
-            if (!title) {
-                return NextResponse.json(
-                    { error: "Title is required" },
-                    { status: 400 }
-                );
-            }
-
             const { getUserNotes } = await import("@/app/_server/actions/note");
             const notes = await getUserNotes({ username: user.username });
 

@@ -50,13 +50,12 @@ export async function POST(request: NextRequest) {
 
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("content", content);
+      formData.append("rawContent", content);
       formData.append("category", category);
       formData.append("user", JSON.stringify(user));
 
       const result = await createNote(formData);
       if (result.error) {
-        console.log("result.error", result.error);
         return NextResponse.json({ error: result.error }, { status: 400 });
       }
 
