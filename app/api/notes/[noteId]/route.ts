@@ -31,9 +31,9 @@ export async function PUT(
             const formData = new FormData();
             formData.append("id", note.id || "");
             formData.append("uuid", params.noteId);
-            formData.append("title", title);
-            formData.append("content", content || "");
-            formData.append("category", category || "Uncategorized");
+            formData.append("title", title ?? note.title);
+            formData.append("content", content ?? note.content ?? "");
+            formData.append("category", category ?? note.category ?? "Uncategorized");
             formData.append("originalCategory", note.category || "Uncategorized");
             formData.append("user", user.username);
 

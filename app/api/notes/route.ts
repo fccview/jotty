@@ -7,6 +7,10 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {
+      const { searchParams } = new URL(request.url);
+      const category = searchParams.get('category');
+      const search = searchParams.get('q');
+
       const notes = await getUserNotes({ username: user.username });
       if (!notes.success || !notes.data) {
         return NextResponse.json(
@@ -15,7 +19,20 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      const transformedNotes = notes.data.map((note) => ({
+      let filteredNotes = notes.data;
+
+      if (category) {
+        filteredNotes = filteredNotes.filter((note) => note.category === category);
+      }
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filteredNotes = filteredNotes.filter((note) =>
+          note.title?.toLowerCase().includes(searchLower) ||
+          note.content?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      const transformedNotes = filteredNotes.map((note) => ({
         id: note.uuid || note.id,
         title: note.title,
         category: note.category || "Uncategorized",
@@ -63,7 +80,7 @@ export async function POST(request: NextRequest) {
         id: result.data?.uuid || result.data?.id,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
-        content: result.data?.content,
+        content: result.data?.content || content,
         createdAt: result.data?.createdAt,
         updatedAt: result.data?.updatedAt,
         owner: result.data?.owner,
