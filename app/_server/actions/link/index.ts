@@ -108,6 +108,10 @@ export const updateIndexForItem = async (
   itemUuid: string,
   currentLinks: LinkTarget[]
 ): Promise<void> => {
+  if (!Array.isArray(currentLinks)) {
+    currentLinks = [];
+  }
+
   const index = await readLinkIndex(username);
 
   const currentItemKey = `${itemType}s`;

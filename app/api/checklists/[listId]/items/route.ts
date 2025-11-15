@@ -27,7 +27,7 @@ export async function POST(
       }
 
       const formData = new FormData();
-      formData.append("listId", params.listId);
+      formData.append("listId", list.id);
       formData.append("text", text);
       formData.append("category", list.category || "Uncategorized");
 

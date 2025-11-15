@@ -452,7 +452,7 @@ export const createNote = async (formData: FormData) => {
     await serverWriteFile(filePath, _noteToMarkdown(newDoc));
 
     try {
-      const links = parseInternalLinks(newDoc.content);
+      const links = parseInternalLinks(newDoc.content) || [];
       await updateIndexForItem(
         currentUser.username,
         "note",
@@ -563,7 +563,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     if (settings?.data?.editor?.enableBilateralLinks) {
       try {
-        const links = parseInternalLinks(updatedDoc.content);
+        const links = parseInternalLinks(updatedDoc.content) || [];
         const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
           }`;
 

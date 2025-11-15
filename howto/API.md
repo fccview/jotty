@@ -170,6 +170,12 @@ The following endpoints require authentication via API key.
 
 Retrieves all checklists for the authenticated user.
 
+**Query Parameters:**
+
+- `category` (optional): Filter checklists by category name
+- `type` (optional): Filter checklists by type (`simple` or `task`)
+- `q` (optional): Search checklists by title or item text
+
 **Response:**
 
 ```json
@@ -232,7 +238,96 @@ Retrieves all checklists for the authenticated user.
 
 **Note**: All checklists include a `category` field for organization. If no category is specified when creating a checklist, it defaults to "Uncategorized".
 
-### 3. Create Checklist Item
+### 3. Create Checklist
+
+**POST** `/api/checklists`
+
+Creates a new checklist for the authenticated user.
+
+**Request Body:**
+
+```json
+{
+  "title": "My New Checklist",
+  "category": "Work",
+  "type": "simple"
+}
+```
+
+**Parameters:**
+
+- `title` (required): The title of the checklist
+- `category` (optional): Category for the checklist (defaults to "Uncategorized")
+- `type` (optional): Type of checklist - `simple` or `task` (defaults to "simple")
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "My New Checklist",
+    "category": "Work",
+    "type": "simple",
+    "items": [],
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+### 4. Update Checklist
+
+**PUT** `/api/checklists/{listId}`
+
+Updates an existing checklist's title and/or category.
+
+**Request Body:**
+
+```json
+{
+  "title": "Updated Checklist Title",
+  "category": "Personal"
+}
+```
+
+**Parameters:**
+
+- `title` (optional): The updated title of the checklist
+- `category` (optional): The updated category for the checklist
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "Updated Checklist Title",
+    "category": "Personal",
+    "type": "simple",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T12:30:00.000Z"
+  }
+}
+```
+
+### 5. Delete Checklist
+
+**DELETE** `/api/checklists/{listId}`
+
+Deletes an existing checklist for the authenticated user.
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
+### 6. Create Checklist Item
 
 **POST** `/api/checklists/{listId}/items`
 
@@ -270,7 +365,7 @@ Adds a new item to the specified checklist.
 }
 ```
 
-### 4. Check Item
+### 7. Check Item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/check`
 
@@ -284,7 +379,7 @@ Marks an item as completed. Use the item index (0-based) from the checklist resp
 }
 ```
 
-### 5. Uncheck Item
+### 8. Uncheck Item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/uncheck`
 
@@ -298,11 +393,16 @@ Marks an item as incomplete. Use the item index (0-based) from the checklist res
 }
 ```
 
-### 6. Get All Notes
+### 9. Get All Notes
 
 **GET** `/api/notes`
 
 Retrieves all notes/documents for the authenticated user.
+
+**Query Parameters:**
+
+- `category` (optional): Filter notes by category name
+- `q` (optional): Search notes by title or content
 
 **Response:**
 
@@ -323,7 +423,7 @@ Retrieves all notes/documents for the authenticated user.
 
 **Note**: All notes include a `category` field for organization. If no category is specified when creating a note, it defaults to "Uncategorized".
 
-### 7. Create Note
+### 10. Create Note
 
 **POST** `/api/notes`
 
@@ -362,7 +462,7 @@ Creates a new note for the authenticated user.
 }
 ```
 
-### 8. Update Note
+### 11. Update Note
 
 **PUT** `/api/notes/{noteId}`
 
@@ -403,7 +503,7 @@ Updates an existing note for the authenticated user.
 }
 ```
 
-### 9. Delete Note
+### 12. Delete Note
 
 **DELETE** `/api/notes/{noteId}`
 
@@ -417,7 +517,7 @@ Deletes an existing note for the authenticated user.
 }
 ```
 
-### 10. Get User Information
+### 13. Get User Information
 
 **GET** `/api/user/{username}`
 
@@ -460,7 +560,7 @@ Retrieves user information. Returns full user data if authenticated as the user 
 
 **Note**: Sensitive fields like `passwordHash` and `apiKey` are never returned.
 
-### 11. Get All Categories
+### 14. Get All Categories
 
 **GET** `/api/categories`
 
@@ -516,7 +616,7 @@ Retrieves all categories for notes and checklists for the authenticated user. Ar
 - `count`: Number of items in this category
 - `level`: Nesting level (0 for root categories)
 
-### 12. Rebuild Link Index
+### 15. Rebuild Link Index
 
 **POST** `/api/admin/rebuild-index`
 
@@ -550,7 +650,7 @@ Rebuilds the internal link index for a specific user. This is useful when the li
 - This operation may take time for users with large amounts of content
 - The link index tracks internal references between notes and checklists (e.g., when one note links to another)
 
-### 13. Get User Summary Statistics
+### 16. Get User Summary Statistics
 
 **GET** `/api/summary`
 
@@ -701,6 +801,55 @@ curl -H "x-api-key: ck_your_api_key_here" \
      https://your-checklist-app.com/api/checklists
 ```
 
+### Filter checklists by category
+
+```bash
+curl -H "x-api-key: ck_your_api_key_here" \
+     "https://your-checklist-app.com/api/checklists?category=Work"
+```
+
+### Filter checklists by type
+
+```bash
+curl -H "x-api-key: ck_your_api_key_here" \
+     "https://your-checklist-app.com/api/checklists?type=task"
+```
+
+### Search checklists
+
+```bash
+curl -H "x-api-key: ck_your_api_key_here" \
+     "https://your-checklist-app.com/api/checklists?q=meeting"
+```
+
+### Create a checklist
+
+```bash
+curl -X POST \
+     -H "x-api-key: ck_your_api_key_here" \
+     -H "Content-Type: application/json" \
+     -d '{"title": "My New Checklist", "category": "Work", "type": "simple"}' \
+     https://your-checklist-app.com/api/checklists
+```
+
+### Update a checklist
+
+```bash
+curl -X PUT \
+     -H "x-api-key: ck_your_api_key_here" \
+     -H "Content-Type: application/json" \
+     -d '{"title": "Updated Title", "category": "Personal"}' \
+     https://your-checklist-app.com/api/checklists/<checklist_id>
+```
+
+### Delete a checklist
+
+```bash
+curl -X DELETE \
+     -H "x-api-key: ck_your_api_key_here" \
+     https://your-checklist-app.com/api/checklists/<checklist_id>
+```
+
 ### Add item to regular checklist
 
 ```bash
@@ -742,6 +891,20 @@ curl -X PUT \
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
      https://your-checklist-app.com/api/notes
+```
+
+### Filter notes by category
+
+```bash
+curl -H "x-api-key: ck_your_api_key_here" \
+     "https://your-checklist-app.com/api/notes?category=Personal"
+```
+
+### Search notes
+
+```bash
+curl -H "x-api-key: ck_your_api_key_here" \
+     "https://your-checklist-app.com/api/notes?q=meeting"
 ```
 
 ### Create a note
