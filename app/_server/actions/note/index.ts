@@ -661,7 +661,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       return { error: "Not authenticated" };
     }
 
-    const notes = await getUserNotes({ username: currentUser.username });
+    const notes = await getUserNotes(username ? { username: currentUser.username } : {});
 
     if (!notes.success || !notes.data) {
       return { error: "Failed to fetch notes" };
@@ -964,4 +964,57 @@ export const CheckForNeedsMigration = async (): Promise<boolean> => {
   }
 
   return false;
+};
+
+export const cloneNote = async (formData: FormData) => {
+  try {
+    const id = formData.get("id") as string;
+    const category = formData.get("category") as string;
+    const ownerUsername = formData.get("user") as string | null;
+
+    const note = await getNoteById(id, ownerUsername || undefined, category);
+    if (!note) {
+      return { error: "Note not found" };
+    }
+
+    const currentUser = await getCurrentUser();
+    const userDir = await getUserModeDir(Modes.NOTES);
+
+    const isOwnedByCurrentUser = !note.owner || note.owner === currentUser?.username;
+    const targetCategory = isOwnedByCurrentUser ? (category || "Uncategorized") : "Uncategorized";
+
+    const categoryDir = path.join(userDir, targetCategory);
+    await ensureDir(categoryDir);
+
+    const cloneTitle = `${note.title} (Copy)`;
+    const filename = await generateUniqueFilename(categoryDir, cloneTitle);
+    const filePath = path.join(categoryDir, filename);
+
+    const content = note.content || "";
+    const updatedContent = updateYamlMetadata(content, {
+      uuid: generateUuid(),
+      title: cloneTitle,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    await serverWriteFile(filePath, updatedContent);
+
+    const newId = path.basename(filename, ".md");
+    const clonedNote = await getNoteById(newId, currentUser?.username, targetCategory);
+
+    try {
+      revalidatePath("/");
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but note was cloned successfully:",
+        error
+      );
+    }
+
+    return { success: true, data: clonedNote };
+  } catch (error) {
+    console.error("Error cloning note:", error);
+    return { error: "Failed to clone note" };
+  }
 };

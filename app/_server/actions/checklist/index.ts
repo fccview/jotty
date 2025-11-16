@@ -740,7 +740,7 @@ export const deleteList = async (formData: FormData) => {
     }
 
     const isAdminUser = apiUser ? currentUser.isAdmin : await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getUserChecklists({ username: currentUser.username }));
+    const lists = await (isAdminUser ? getAllLists() : getUserChecklists(apiUser ? { username: currentUser.username } : {}));
     if (!lists.success || !lists.data) {
       return { error: "Failed to fetch lists" };
     }
@@ -1021,5 +1021,58 @@ export const updateChecklistStatuses = async (formData: FormData) => {
   } catch (error) {
     console.error("Error updating checklist statuses:", error);
     return { error: "Failed to update checklist statuses" };
+  }
+};
+
+export const cloneChecklist = async (formData: FormData) => {
+  try {
+    const id = formData.get("id") as string;
+    const category = formData.get("category") as string;
+    const ownerUsername = formData.get("user") as string | null;
+
+    const checklist = await getListById(id, ownerUsername || undefined, category);
+    if (!checklist) {
+      return { error: "Checklist not found" };
+    }
+
+    const currentUser = await getCurrentUser();
+    const userDir = await getUserModeDir(Modes.CHECKLISTS);
+
+    const isOwnedByCurrentUser = !checklist.owner || checklist.owner === currentUser?.username;
+    const targetCategory = isOwnedByCurrentUser ? (category || "Uncategorized") : "Uncategorized";
+
+    const categoryDir = path.join(userDir, targetCategory);
+    await ensureDir(categoryDir);
+
+    const cloneTitle = `${checklist.title} (Copy)`;
+    const filename = await generateUniqueFilename(categoryDir, cloneTitle);
+    const filePath = path.join(categoryDir, filename);
+
+    const content = listToMarkdown(checklist);
+    const updatedContent = updateYamlMetadata(content, {
+      uuid: generateUuid(),
+      title: cloneTitle,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    await serverWriteFile(filePath, updatedContent);
+
+    const newId = path.basename(filename, ".md");
+    const clonedChecklist = await getListById(newId, currentUser?.username, targetCategory);
+
+    try {
+      revalidatePath("/");
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but checklist was cloned successfully:",
+        error
+      );
+    }
+
+    return { success: true, data: clonedChecklist };
+  } catch (error) {
+    console.error("Error cloning checklist:", error);
+    return { error: "Failed to clone checklist" };
   }
 };

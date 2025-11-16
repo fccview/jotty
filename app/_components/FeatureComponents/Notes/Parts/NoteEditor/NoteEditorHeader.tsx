@@ -16,6 +16,7 @@ import {
   Edit3,
   Trash2,
   MoreHorizontal,
+  Copy,
 } from "lucide-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -25,7 +26,10 @@ import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
-import { copyTextToClipboard, encodeCategoryPath } from "@/app/_utils/global-utils";
+import {
+  copyTextToClipboard,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
@@ -36,6 +40,7 @@ interface NoteEditorHeaderProps {
   categories: Category[];
   isOwner: boolean;
   onBack: () => void;
+  onClone?: () => void;
   showTOC: boolean;
   setShowTOC: (show: boolean) => void;
   viewModel: NoteEditorViewModel;
@@ -46,6 +51,7 @@ export const NoteEditorHeader = ({
   categories,
   isOwner,
   onBack,
+  onClone,
   viewModel,
   showTOC,
   setShowTOC,
@@ -80,7 +86,13 @@ export const NoteEditorHeader = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${note?.uuid ? note?.uuid : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id}`}`
+      `${
+        note?.uuid
+          ? note?.uuid
+          : `${encodeCategoryPath(note?.category || "Uncategorized")}/${
+              note?.id
+            }`
+      }`
     );
     if (success) {
       setCopied(true);
@@ -130,7 +142,13 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      title={`Copy ID: ${note?.uuid ? note?.uuid : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id}`}`}
+                      title={`Copy ID: ${
+                        note?.uuid
+                          ? note?.uuid
+                          : `${encodeCategoryPath(
+                              note?.category || "Uncategorized"
+                            )}/${note?.id}`
+                      }`}
                     >
                       {copied ? (
                         <Check className="h-3 w-3 text-green-500" />
@@ -245,13 +263,23 @@ export const NoteEditorHeader = ({
                     items={[
                       ...(permissions?.isOwner
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Share",
-                            icon: <Share2 className="h-4 w-4" />,
-                            onClick: () => setShowShareModal(true),
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Share",
+                              icon: <Share2 className="h-4 w-4" />,
+                              onClick: () => setShowShareModal(true),
+                            },
+                          ]
+                        : []),
+                      ...(onClone
+                        ? [
+                            {
+                              type: "item" as const,
+                              label: "Clone",
+                              icon: <Copy className="h-4 w-4" />,
+                              onClick: onClone,
+                            },
+                          ]
                         : []),
                       {
                         type: "item" as const,
@@ -272,24 +300,24 @@ export const NoteEditorHeader = ({
                       },
                       ...(permissions?.canDelete
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Archive",
-                            icon: <Archive className="h-4 w-4" />,
-                            onClick: handleArchive,
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Archive",
+                              icon: <Archive className="h-4 w-4" />,
+                              onClick: handleArchive,
+                            },
+                          ]
                         : []),
                       ...(canDelete
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Delete",
-                            icon: <Trash2 className="h-4 w-4" />,
-                            onClick: handleDelete,
-                            variant: "destructive" as const,
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Delete",
+                              icon: <Trash2 className="h-4 w-4" />,
+                              onClick: handleDelete,
+                              variant: "destructive" as const,
+                            },
+                          ]
                         : []),
                     ]}
                   />
