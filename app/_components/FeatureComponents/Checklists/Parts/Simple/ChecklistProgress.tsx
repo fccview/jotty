@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckCircle, ChevronDown, ChevronRight, Circle } from "lucide-react";
 import { Checklist, Item } from "@/app/_types";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
+import { useTranslations } from "next-intl";
 import { cn } from "@/app/_utils/global-utils";
 
 interface ChecklistProgressProps {
@@ -31,8 +32,11 @@ const countItems = (items: Item[]): { total: number; completed: number } => {
 };
 
 export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
-  const { total: totalCount, completed: completedCount } = countItems(checklist.items);
+  const { total: totalCount, completed: completedCount } = countItems(
+    checklist.items
+  );
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
@@ -42,7 +46,11 @@ export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
         className="w-full flex items-center justify-between py-1.5 px-3 hover:bg-muted/40 transition-colors group"
       >
         <div className="flex items-center gap-2">
-          {progress === 100 ? <CheckCircle className="h-3.5 w-3.5 transition-all duration-300 text-primary" /> : <Circle className="h-3.5 w-3.5 transition-all duration-300 text-primary/60" />}
+          {progress === 100 ? (
+            <CheckCircle className="h-3.5 w-3.5 transition-all duration-300 text-primary" />
+          ) : (
+            <Circle className="h-3.5 w-3.5 transition-all duration-300 text-primary/60" />
+          )}
           <span className="text-xs font-medium text-foreground">
             {completedCount}/{totalCount}
           </span>
@@ -70,7 +78,9 @@ export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Overall progress</span>
-              <span className="font-semibold text-foreground">{Math.round(progress)}%</span>
+              <span className="font-semibold text-foreground">
+                {Math.round(progress)}%
+              </span>
             </div>
             <ProgressBar progress={progress} />
           </div>

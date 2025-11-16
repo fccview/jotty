@@ -9,11 +9,10 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { getNoteById, updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
-import { buildCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
-import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { getPermissions } from "@/app/_utils/sharing-utils";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
+import { useTranslations } from "next-intl";
 
 interface EditNoteModalProps {
   note: Note;
@@ -34,6 +33,7 @@ export const EditNoteModal = ({
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const t = useTranslations();
   const [title, setTitle] = useState(initialNote.title);
   const initialCategory = unarchive ? "" : initialNote.category || "";
   const [category, setCategory] = useState(initialCategory);
@@ -41,8 +41,15 @@ export const EditNoteModal = ({
 
   useEffect(() => {
     const fetchNote = async () => {
-      const note = await getNoteById(initialNote.id, initialNote.category || "Uncategorized", user?.username || "");
-      const parsedNote = parseNoteContent(note?.rawContent || "", note?.id || "");
+      const note = await getNoteById(
+        initialNote.id,
+        initialNote.category || "Uncategorized",
+        user?.username || ""
+      );
+      const parsedNote = parseNoteContent(
+        note?.rawContent || "",
+        note?.id || ""
+      );
 
       setNote(note || null);
       setTitle(parsedNote?.title || "");
@@ -63,7 +70,6 @@ export const EditNoteModal = ({
       </Modal>
     );
   }
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,13 +114,13 @@ export const EditNoteModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={unarchive ? "Unarchive Note" : "Edit Note"}
+      title={unarchive ? "Unarchive Note" : t("notes.edit_note")}
       titleIcon={<FileText className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Note Name *
+            {t("notes.note_name")} *
           </label>
           <input
             type="text"
@@ -134,7 +140,7 @@ export const EditNoteModal = ({
         {isOwner && (
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Category
+              {t("global.category")}
             </label>
             <CategoryTreeSelector
               categories={categories}
@@ -156,7 +162,7 @@ export const EditNoteModal = ({
             disabled={isLoading}
             className="flex-1"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="submit"
@@ -164,10 +170,10 @@ export const EditNoteModal = ({
             className="flex-1"
           >
             {isLoading
-              ? "Updating..."
+              ? t("global.updating")
               : unarchive
-                ? "Unarchive Note"
-                : "Update Note"}
+              ? "Unarchive Note"
+              : t("notes.update_note")}
           </Button>
         </div>
       </form>

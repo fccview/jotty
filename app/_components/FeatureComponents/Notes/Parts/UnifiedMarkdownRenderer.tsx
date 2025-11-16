@@ -21,6 +21,7 @@ import { ImageAttachment } from "@/app/_components/GlobalComponents/FormElements
 import { VideoAttachment } from "@/app/_components/GlobalComponents/FormElements/VideoAttachment";
 import { lowlight } from "@/app/_utils/lowlight-utils";
 import { toHtml } from "hast-util-to-html";
+import { useTranslations } from "next-intl";
 import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
@@ -50,6 +51,7 @@ export const UnifiedMarkdownRenderer = ({
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
+  const t = useTranslations();
   const { contentWithoutMetadata } = extractYamlMetadata(content);
 
   const processedContent = contentWithoutMetadata.replace(
@@ -59,7 +61,13 @@ export const UnifiedMarkdownRenderer = ({
         const diagramData = atob(dataBase64.trim());
         const svgData = atob(svgBase64.trim());
         const themeMode = theme ? theme.trim() : "light";
-        return `<div data-drawio="" data-drawio-data="${diagramData.replace(/"/g, '&quot;')}" data-drawio-svg="${svgData.replace(/"/g, '&quot;')}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
+        return `<div data-drawio="" data-drawio-data="${diagramData.replace(
+          /"/g,
+          "&quot;"
+        )}" data-drawio-svg="${svgData.replace(
+          /"/g,
+          "&quot;"
+        )}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
       } catch (e) {
         return match;
       }
@@ -89,7 +97,7 @@ export const UnifiedMarkdownRenderer = ({
             &quot;{displayQuote}&quot;
           </p>
           <p className="text-sm text-muted-foreground mt-4">
-            Start writing your note above!
+            {t("notes.start_writing")}
           </p>
         </div>
       </div>
@@ -171,7 +179,9 @@ export const UnifiedMarkdownRenderer = ({
             .replace("/note/", "")
             .split("/");
           linkItemId = decodeId(pathParts?.[pathParts.length - 1] || "");
-          linkCategory = decodeCategoryPath(pathParts?.slice(0, -1).join("/") || "");
+          linkCategory = decodeCategoryPath(
+            pathParts?.slice(0, -1).join("/") || ""
+          );
         }
 
         return (
@@ -188,7 +198,7 @@ export const UnifiedMarkdownRenderer = ({
               },
             }}
             editor={undefined as any}
-            updateAttributes={() => { }}
+            updateAttributes={() => {}}
           />
         );
       }
@@ -200,8 +210,8 @@ export const UnifiedMarkdownRenderer = ({
         const mimeType = isImage
           ? "image/jpeg"
           : isVideo
-            ? "video/mp4"
-            : "application/octet-stream";
+          ? "video/mp4"
+          : "application/octet-stream";
 
         if (isImage) {
           return (
@@ -286,24 +296,35 @@ export const UnifiedMarkdownRenderer = ({
       );
     },
     div({ node, ...props }: any) {
-      const isDrawio = props["data-drawio"] !== undefined ||
+      const isDrawio =
+        props["data-drawio"] !== undefined ||
         props.dataDrawio !== undefined ||
-        (node && node.properties && node.properties["data-drawio"] !== undefined);
+        (node &&
+          node.properties &&
+          node.properties["data-drawio"] !== undefined);
 
       if (isDrawio) {
-        const svgData = props["data-drawio-svg"] ||
+        const svgData =
+          props["data-drawio-svg"] ||
           props.dataDrawioSvg ||
-          (node?.properties?.["data-drawio-svg"]);
-        const themeMode = props["data-drawio-theme"] ||
+          node?.properties?.["data-drawio-svg"];
+        const themeMode =
+          props["data-drawio-theme"] ||
           props.dataDrawioTheme ||
-          (node?.properties?.["data-drawio-theme"]) || "light";
+          node?.properties?.["data-drawio-theme"] ||
+          "light";
         return <DrawioRenderer svgData={svgData} themeMode={themeMode} />;
       }
 
-      if (props["data-mermaid"] !== undefined || props.dataMermaid !== undefined) {
-        const mermaidContent = props["data-mermaid-content"] ||
+      if (
+        props["data-mermaid"] !== undefined ||
+        props.dataMermaid !== undefined
+      ) {
+        const mermaidContent =
+          props["data-mermaid-content"] ||
           props.dataMermaidContent ||
-          (node?.properties?.["data-mermaid-content"]) || "";
+          node?.properties?.["data-mermaid-content"] ||
+          "";
         return <MermaidRenderer code={mermaidContent} />;
       }
 

@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface DeleteCategoryModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const DeleteCategoryModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const categoryName = categoryPath.split("/").pop() || categoryPath;
   const router = useRouter();
+  const t = useTranslations();
 
   const handleConfirm = async () => {
     setIsLoading(true);
@@ -37,30 +39,29 @@ export const DeleteCategoryModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Delete Category"
+      title={t("modals.delete_category")}
       titleIcon={<Trash2 className="h-5 w-5 text-destructive" />}
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Are you sure you want to delete the category &quot;{categoryName}
+          {t("modals.confirm_delete_category")} &quot;{categoryName}
           &quot;?
           <br /> <br />
           <span className="text-destructive">
-            This WILL delete everything within this category and cannot be
-            undone.
+            {t("modals.will_delete_everything")}
           </span>
         </p>
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             variant="destructive"
             onClick={handleConfirm}
             disabled={isLoading}
           >
-            {isLoading ? "Deleting..." : "Delete"}
+            {isLoading ? t("modals.deleting") : t("global.delete")}
           </Button>
         </div>
       </div>

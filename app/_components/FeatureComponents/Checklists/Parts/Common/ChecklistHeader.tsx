@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
+import { useTranslations } from "next-intl";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
@@ -46,10 +47,11 @@ export const ChecklistHeader = ({
   onConvertType,
   onArchive,
 }: ChecklistHeaderProps) => {
+  const t = useTranslations();
   const metadata = useMetadata();
   const { handleCopyId, copied } = useChecklist({
     list: checklist,
-    onUpdate: () => { },
+    onUpdate: () => {},
   });
 
   const { globalSharing } = useAppMode();
@@ -123,8 +125,8 @@ export const ChecklistHeader = ({
                 className="h-10 w-10 p-0"
                 title={
                   checklist.type === ChecklistsTypes.TASK
-                    ? "Convert to Simple Checklist"
-                    : "Convert to Task Project"
+                    ? t("modals.convert_to_simple")
+                    : t("modals.convert_to_task")
                 }
               >
                 {checklist.type === ChecklistsTypes.TASK ? (
@@ -149,11 +151,12 @@ export const ChecklistHeader = ({
 
           {(permissions?.canEdit || permissions?.canDelete) && (
             <div
-              className={`${permissions?.canEdit &&
+              className={`${
+                permissions?.canEdit &&
                 !permissions?.canDelete &&
                 !permissions?.isOwner &&
                 "lg:hidden"
-                }`}
+              }`}
             >
               <DropdownMenu
                 align="right"
@@ -165,66 +168,66 @@ export const ChecklistHeader = ({
                 items={[
                   ...(onConvertType && permissions?.canEdit
                     ? [
-                      {
-                        type: "item" as const,
-                        label:
-                          checklist.type === ChecklistsTypes.TASK
-                            ? "Convert to Simple Checklist"
-                            : "Convert to Task Project",
-                        icon:
-                          checklist.type === ChecklistsTypes.TASK ? (
-                            <CheckSquare className="h-4 w-4" />
-                          ) : (
-                            <BarChart3 className="h-4 w-4" />
-                          ),
-                        onClick: () => {
-                          onConvertType();
+                        {
+                          type: "item" as const,
+                          label:
+                            checklist.type === ChecklistsTypes.TASK
+                              ? t("modals.convert_to_simple")
+                              : t("modals.convert_to_task"),
+                          icon:
+                            checklist.type === ChecklistsTypes.TASK ? (
+                              <CheckSquare className="h-4 w-4" />
+                            ) : (
+                              <BarChart3 className="h-4 w-4" />
+                            ),
+                          onClick: () => {
+                            onConvertType();
+                          },
+                          className: "lg:!hidden",
                         },
-                        className: "lg:!hidden",
-                      },
-                    ]
+                      ]
                     : []),
                   ...(onArchive && permissions?.canDelete
                     ? [
-                      {
-                        type: "item" as const,
-                        label: "Archive",
-                        icon: <Archive className="h-4 w-4" />,
-                        onClick: onArchive,
-                      },
-                    ]
+                        {
+                          type: "item" as const,
+                          label: t("checklists.archive"),
+                          icon: <Archive className="h-4 w-4" />,
+                          onClick: onArchive,
+                        },
+                      ]
                     : []),
                   ...(onShare && permissions?.isOwner
                     ? [
-                      {
-                        type: "item" as const,
-                        label: "Share",
-                        icon: <Share2 className="h-4 w-4" />,
-                        onClick: onShare,
-                      },
-                    ]
+                        {
+                          type: "item" as const,
+                          label: t("checklists.share"),
+                          icon: <Share2 className="h-4 w-4" />,
+                          onClick: onShare,
+                        },
+                      ]
                     : []),
                   ...(onEdit && permissions?.canEdit
                     ? [
-                      {
-                        type: "item" as const,
-                        label: "Edit",
-                        icon: <Edit3 className="h-4 w-4" />,
-                        onClick: onEdit,
-                        className: "lg:!hidden",
-                      },
-                    ]
+                        {
+                          type: "item" as const,
+                          label: t("checklists.edit"),
+                          icon: <Edit3 className="h-4 w-4" />,
+                          onClick: onEdit,
+                          className: "lg:!hidden",
+                        },
+                      ]
                     : []),
                   ...(onDelete && permissions?.canDelete
                     ? [
-                      {
-                        type: "item" as const,
-                        label: "Delete",
-                        icon: <Trash2 className="h-4 w-4" />,
-                        onClick: onDelete,
-                        variant: "destructive" as const,
-                      },
-                    ]
+                        {
+                          type: "item" as const,
+                          label: t("checklists.delete"),
+                          icon: <Trash2 className="h-4 w-4" />,
+                          onClick: onDelete,
+                          variant: "destructive" as const,
+                        },
+                      ]
                     : []),
                 ]}
               />

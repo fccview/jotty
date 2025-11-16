@@ -16,6 +16,7 @@ import { AppSettingsTab } from "./Parts/AppSettingsTab";
 import { EditorSettingsTab } from "./Parts/EditorSettingsTab";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
+import { useTranslations } from "next-intl";
 import { StylingTab } from "./Parts/StylingTab";
 import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
 
@@ -24,8 +25,8 @@ interface AdminClientProps {
 }
 
 const getInitialTab = (): AdminTabsEnum => {
-  if (typeof window !== 'undefined') {
-    const hash = window.location.hash.replace('#', '');
+  if (typeof window !== "undefined") {
+    const hash = window.location.hash.replace("#", "");
     const validTabs = Object.values(AdminTabsEnum);
     if (validTabs.includes(hash as AdminTabsEnum)) {
       return hash as AdminTabsEnum;
@@ -35,13 +36,12 @@ const getInitialTab = (): AdminTabsEnum => {
 };
 
 export const AdminClient = ({ username }: AdminClientProps) => {
+  const t = useTranslations();
   const [users, setUsers] = useState<User[]>([]);
   const [allLists, setAllLists] = useState<Checklist[]>([]);
   const [allDocs, setAllDocs] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<
-    AdminTabsEnum
-  >(getInitialTab());
+  const [activeTab, setActiveTab] = useState<AdminTabsEnum>(getInitialTab());
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
   const [userModalMode, setUserModalMode] = useState<"add" | "edit">("add");
@@ -50,22 +50,22 @@ export const AdminClient = ({ username }: AdminClientProps) => {
 
   const handleTabChange = (newTab: AdminTabsEnum) => {
     setActiveTab(newTab);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.location.hash = newTab;
     }
   };
 
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
+      const hash = window.location.hash.replace("#", "");
       const validTabs = Object.values(AdminTabsEnum);
       if (validTabs.includes(hash as AdminTabsEnum)) {
         setActiveTab(hash as AdminTabsEnum);
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
   useEffect(() => {
@@ -106,7 +106,9 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   const handleDeleteUser = async (user: User) => {
     if (
       !confirm(
-        `Are you sure you want to delete user "${user.username}"? This action cannot be undone.`
+        t("admin.delete_user_confirmation_with_name", {
+          username: user.username,
+        })
       )
     ) {
       return;
@@ -122,11 +124,11 @@ export const AdminClient = ({ username }: AdminClientProps) => {
       if (result.success) {
         setUsers((prev) => prev.filter((u) => u.username !== user.username));
       } else {
-        alert(result.error || "Failed to delete user");
+        alert(result.error || t("admin.failed_to_delete_user"));
       }
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("Failed to delete user");
+      alert(t("admin.failed_to_delete_user"));
     } finally {
       setDeletingUser(null);
     }
@@ -148,7 +150,9 @@ export const AdminClient = ({ username }: AdminClientProps) => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading admin dashboard...</p>
+          <p className="text-muted-foreground">
+            {t("admin.loading_dashboard")}
+          </p>
         </div>
       </div>
     );
@@ -157,14 +161,16 @@ export const AdminClient = ({ username }: AdminClientProps) => {
   return (
     <div className="space-y-6">
       <SiteHeader
-        title="Admin Dashboard"
-        description="Manage users, content, and system settings"
+        title={t("admin.dashboard_title")}
+        description={t("admin.dashboard_description")}
       />
 
       <AdminTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
       <div className="min-h-[600px]">
-        {activeTab === AdminTabsEnum.OVERVIEW && <AdminOverview stats={stats} />}
+        {activeTab === AdminTabsEnum.OVERVIEW && (
+          <AdminOverview stats={stats} />
+        )}
         {activeTab === AdminTabsEnum.USERS && (
           <AdminUsers
             users={users}

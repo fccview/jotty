@@ -14,6 +14,7 @@ import { AppMode, Checklist, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useTranslations } from "next-intl";
 
 interface SharedItemsListProps {
   collapsed: boolean;
@@ -36,6 +37,7 @@ export const SharedItemsList = ({
   isItemSelected,
   mode,
 }: SharedItemsListProps) => {
+  const t = useTranslations();
   const [collapsedUsers, setCollapsedUsers] = useState<Set<string>>(new Set());
   const { userSharedItems, appSettings } = useAppMode();
 
@@ -90,7 +92,7 @@ export const SharedItemsList = ({
           )}
           <Users className="h-4 w-4 text-primary" />
           <span className="truncate font-medium text-primary">
-            Shared with you
+            {t("sidebar.shared_with_you")}
           </span>
           <span className="text-xs text-muted-foreground ml-auto">
             {modeItems.length}
@@ -143,7 +145,9 @@ export const SharedItemsList = ({
                           onClick={() => onItemClick(minimalItem)}
                           className={cn(
                             "flex items-center gap-2 py-2 px-3 text-sm rounded-md transition-colors w-full text-left",
-                            isSelected ? "bg-primary/60 text-primary-foreground" : "hover:bg-muted/50 text-foreground"
+                            isSelected
+                              ? "bg-primary/60 text-primary-foreground"
+                              : "hover:bg-muted/50 text-foreground"
                           )}
                         >
                           {mode === "checklists" ? (
@@ -152,7 +156,9 @@ export const SharedItemsList = ({
                             <FileText className="h-4 w-4" />
                           )}
                           <span className="truncate flex-1">
-                            {appSettings?.parseContent === "yes" ? item.id : capitalize(item.id.replace(/-/g, " "))}
+                            {appSettings?.parseContent === "yes"
+                              ? item.id
+                              : capitalize(item.id.replace(/-/g, " "))}
                           </span>
                         </button>
                       );

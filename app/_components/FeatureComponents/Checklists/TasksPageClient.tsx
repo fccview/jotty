@@ -21,6 +21,7 @@ import { usePagination } from "@/app/_hooks/usePagination";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
+import { useTranslations } from "next-intl";
 
 interface TasksPageClientProps {
   initialLists: Checklist[];
@@ -41,6 +42,7 @@ export const TasksPageClient = ({
   initialCategories,
   user,
 }: TasksPageClientProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { openCreateChecklistModal } = useShortcut();
   const { isInitialized } = useAppMode();
@@ -50,12 +52,12 @@ export const TasksPageClient = ({
   const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
-    { id: "all", name: "All Tasks" },
-    { id: "completed", name: "Completed" },
-    { id: "incomplete", name: "Incomplete" },
-    { id: "pinned", name: "Pinned" },
-    { id: "todo", name: "To Do" },
-    { id: "in-progress", name: "In Progress" },
+    { id: "all", name: t("tasks.all_tasks") },
+    { id: "completed", name: t("global.completed") },
+    { id: "incomplete", name: t("global.incomplete") },
+    { id: "pinned", name: t("global.pinned") },
+    { id: "todo", name: t("tasks.todo") },
+    { id: "in-progress", name: t("tasks.in_progress") },
   ];
 
   const filteredLists = useMemo(() => {
@@ -93,8 +95,10 @@ export const TasksPageClient = ({
       filtered = filtered.filter((list) => {
         const listCategory = list.category || "Uncategorized";
         if (recursive) {
-          return selectedCategories.some(selected =>
-            listCategory === selected || listCategory.startsWith(selected + "/")
+          return selectedCategories.some(
+            (selected) =>
+              listCategory === selected ||
+              listCategory.startsWith(selected + "/")
           );
         }
         return selectedCategories.includes(listCategory);
@@ -105,7 +109,13 @@ export const TasksPageClient = ({
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     );
-  }, [initialLists, taskFilter, selectedCategories, recursive, user?.pinnedLists]);
+  }, [
+    initialLists,
+    taskFilter,
+    selectedCategories,
+    recursive,
+    user?.pinnedLists,
+  ]);
 
   const {
     currentPage,
@@ -121,7 +131,6 @@ export const TasksPageClient = ({
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
   });
-
 
   const handleClearAllCategories = () => {
     setSelectedCategories([]);
@@ -182,14 +191,14 @@ export const TasksPageClient = ({
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <SiteHeader
-            title="All Tasks"
-            description="Browse and manage all your task lists"
+            title={t("tasks.all_tasks")}
+            description={t("tasks.browse_manage_tasks")}
           />
           <EmptyState
             icon={<BarChart3 className="h-10 w-10 text-muted-foreground" />}
-            title="No task lists yet"
-            description="Create your first task list to start managing your projects."
-            buttonText="New Task List"
+            title={t("tasks.no_task_lists_yet")}
+            description={t("tasks.create_first_task_list")}
+            buttonText={t("tasks.new_task_list")}
             onButtonClick={() => openCreateChecklistModal()}
           />
         </div>
@@ -201,8 +210,8 @@ export const TasksPageClient = ({
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <SiteHeader
-          title="All Tasks"
-          description="Browse and manage all your task lists"
+          title={t("tasks.all_tasks")}
+          description={t("tasks.browse_manage_tasks")}
         />
         <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-6">
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
@@ -214,7 +223,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.totalTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">Task Lists</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("tasks.task_lists")}
+                </div>
               </div>
             </div>
 
@@ -226,7 +237,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completedTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">Completed</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.completed")}
+                </div>
               </div>
             </div>
 
@@ -238,7 +251,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completionRate}%
                 </div>
-                <div className="text-xs text-muted-foreground">Progress</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.progress")}
+                </div>
               </div>
             </div>
 
@@ -250,7 +265,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.todoTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">To Do</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("tasks.todo")}
+                </div>
               </div>
             </div>
 
@@ -262,7 +279,9 @@ export const TasksPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.inProgressTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">In Progress</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("tasks.in_progress")}
+                </div>
               </div>
             </div>
           </div>
@@ -271,7 +290,7 @@ export const TasksPageClient = ({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
             <FilterSidebar
-              title="By status"
+              title={t("tasks.filter_by_status")}
               filterValue={taskFilter}
               filterOptions={filterOptions}
               onFilterChange={(value) => setTaskFilter(value as TaskFilter)}
@@ -299,10 +318,10 @@ export const TasksPageClient = ({
               <div className="text-center py-12">
                 <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">
-                  No task lists found
+                  {t("tasks.no_task_lists_found")}
                 </h3>
                 <p className="text-muted-foreground">
-                  Try adjusting your filters or create a new task list.
+                  {t("tasks.adjust_filters_or_create")}
                 </p>
               </div>
             ) : (
@@ -313,14 +332,15 @@ export const TasksPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${list.category || "Uncategorized"
-                          }/${list.id}`;
+                        const categoryPath = `${
+                          list.category || "Uncategorized"
+                        }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(
                         `${list.category || "Uncategorized"}/${list.id}`
                       )}
-                      onTogglePin={() => { }}
+                      onTogglePin={() => {}}
                     />
                   ))}
                 </div>

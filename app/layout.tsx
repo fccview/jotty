@@ -17,6 +17,8 @@ import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { readLinkIndex } from "@/app/_server/actions/link";
 import { headers } from "next/headers";
+import { Locales } from "./_consts/global";
+import { NextIntlClientProvider } from "next-intl";
 import {
   themeInitScript,
   getThemeBackgroundColor,
@@ -137,6 +139,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  let locale = process.env.LOCALE || "en";
   const pathname = headers().get("x-pathname");
   const settings = await getSettings();
   const appName =
@@ -161,10 +164,22 @@ export default async function RootLayout({
   ] = await Promise.all([
     shouldParseContent
       ? getUserNotes()
-      : getUserNotes({ projection: ["id", "title", "category", "owner", "uuid"] }),
+      : getUserNotes({
+          projection: ["id", "title", "category", "owner", "uuid"],
+        }),
     shouldParseContent
       ? getUserChecklists()
-      : getUserChecklists({ projection: ["id", "title", "category", "owner", "uuid", "type", "items"] }),
+      : getUserChecklists({
+          projection: [
+            "id",
+            "title",
+            "category",
+            "owner",
+            "uuid",
+            "type",
+            "items",
+          ],
+        }),
     getAllSharedItems(),
     user
       ? getAllSharedItemsForUser(user.username)
@@ -177,7 +192,14 @@ export default async function RootLayout({
     ? checklistsResult.data || []
     : [];
 
+  let messages;
   let serveUpdates = true;
+
+  if (!Locales.some((item) => item.locale === locale)) {
+    locale = "en";
+  }
+
+  messages = (await import(`./_translations/${locale}.json`)).default;
 
   if (
     (stopCheckUpdates &&
@@ -204,51 +226,55 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <script
           dangerouslySetInnerHTML={{
-            __html: themeInitScript(JSON.stringify(customThemes["custom-themes"] || {}))
+            __html: themeInitScript(
+              JSON.stringify(customThemes["custom-themes"] || {})
+            ),
           }}
         />
       </head>
       <body className={`${inter.className} jotty-body`}>
-        <AppModeProvider
-          isDemoMode={settings?.isDemo || false}
-          isRwMarkable={settings?.isRwMarkable || false}
-          user={user}
-          appVersion={appVersion.data || ""}
-          pathname={pathname || ""}
-          initialSettings={settings}
-          usersPublicData={users}
-          linkIndex={linkIndex}
-          notes={notes}
-          checklists={checklists}
-          allSharedItems={allSharedItems}
-          userSharedItems={userSharedItems}
-          globalSharing={globalSharing}
-        >
-          <ThemeProvider user={user || {}}>
-            <EmojiProvider>
-              <NavigationGuardProvider>
-                <ToastProvider>
-                  <ShortcutProvider
-                    user={user}
-                    noteCategories={noteCategories.data || []}
-                    checklistCategories={checklistCategories.data || []}
-                  >
-                    <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                      <DynamicFavicon />
-                      {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AppModeProvider
+            isDemoMode={settings?.isDemo || false}
+            isRwMarkable={settings?.isRwMarkable || false}
+            user={user}
+            appVersion={appVersion.data || ""}
+            pathname={pathname || ""}
+            initialSettings={settings}
+            usersPublicData={users}
+            linkIndex={linkIndex}
+            notes={notes}
+            checklists={checklists}
+            allSharedItems={allSharedItems}
+            userSharedItems={userSharedItems}
+            globalSharing={globalSharing}
+          >
+            <ThemeProvider user={user || {}}>
+              <EmojiProvider>
+                <NavigationGuardProvider>
+                  <ToastProvider>
+                    <ShortcutProvider
+                      user={user}
+                      noteCategories={noteCategories.data || []}
+                      checklistCategories={checklistCategories.data || []}
+                    >
+                      <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                        <DynamicFavicon />
+                        {children}
 
-                      {!pathname?.includes("/public") && <InstallPrompt />}
+                        {!pathname?.includes("/public") && <InstallPrompt />}
 
-                      {serveUpdates && !pathname?.includes("/public") && (
-                        <UpdatePrompt />
-                      )}
-                    </div>
-                  </ShortcutProvider>
-                </ToastProvider>
-              </NavigationGuardProvider>
-            </EmojiProvider>
-          </ThemeProvider>
-        </AppModeProvider>
+                        {serveUpdates && !pathname?.includes("/public") && (
+                          <UpdatePrompt />
+                        )}
+                      </div>
+                    </ShortcutProvider>
+                  </ToastProvider>
+                </NavigationGuardProvider>
+              </EmojiProvider>
+            </ThemeProvider>
+          </AppModeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

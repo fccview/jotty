@@ -17,6 +17,7 @@ import { ChecklistHeading } from "@/app/_components/FeatureComponents/Checklists
 import { ChecklistBody } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/ChecklistBody";
 import { ChecklistModals } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistModals";
 import { ToastContainer } from "../../GlobalComponents/Feedback/ToastContainer";
+import { useTranslations } from "next-intl";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
 import { useRouter } from "next/navigation";
@@ -41,6 +42,7 @@ export const ChecklistView = ({
   currentUsername,
   isAdmin = false,
 }: ChecklistViewProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -98,7 +100,7 @@ export const ChecklistView = ({
           onEdit={() => onEdit?.(list)}
         />
         <div className="flex-1 flex items-center justify-center">
-          <p>Loading checklist...</p>
+          <p>{t("checklists.loading_checklist")}</p>
         </div>
       </div>
     );
@@ -125,14 +127,16 @@ export const ChecklistView = ({
               title: (
                 <>
                   <label className="block">
-                    Deleting {deletingItemsCount} item(s)
+                    {t("checklists.deleting_items", {
+                      count: deletingItemsCount,
+                    })}
                   </label>
-                  <label>Do not refresh the page.</label>
+                  <label>{t("checklists.do_not_refresh")}</label>
                 </>
               ),
             },
           ]}
-          onRemove={() => { }}
+          onRemove={() => {}}
         ></ToastContainer>
       )}
 
@@ -152,7 +156,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => { }}
+          onRemove={() => {}}
         ></ToastContainer>
       )}
 
@@ -166,8 +170,8 @@ export const ChecklistView = ({
           isLoading={isLoading}
           autoFocus={true}
           focusKey={focusKey}
-          placeholder="Add new item..."
-          submitButtonText="Add Item"
+          placeholder={t("modals.add_new_item")}
+          submitButtonText={t("modals.add_item")}
         />
       )}
 

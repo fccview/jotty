@@ -4,7 +4,7 @@ import { Plus, FolderPlus } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { AppMode } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-
+import { useTranslations } from "next-intl";
 interface SidebarActionsProps {
   mode: AppMode;
   onOpenCreateModal: (initialCategory?: string) => void;
@@ -16,6 +16,7 @@ export const SidebarActions = ({
   onOpenCreateModal,
   onOpenCategoryModal,
 }: SidebarActionsProps) => {
+  const t = useTranslations();
   return (
     <div className="px-4 pt-4 pb-2 lg:pt-4 lg:pb-4 space-y-2 border-t border-border">
       <div className="flex gap-2 items-center">
@@ -28,7 +29,7 @@ export const SidebarActions = ({
           className="flex-1"
         >
           <Plus className="h-4 w-4 mr-2" />
-          New {mode === Modes.CHECKLISTS ? "Checklist" : "Note"}
+          {mode === Modes.CHECKLISTS ? t("checklists.new_checklist") : t("notes.new_note")}
         </Button>
         <Button
           onClick={(e) => {

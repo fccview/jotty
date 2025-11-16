@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import { Button } from "../Buttons/Button";
 import { CategoryTreeSelector } from "../Dropdowns/CategoryTreeSelector";
 import { Category } from "@/app/_types";
+import { useTranslations } from "next-intl";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 
 interface CategoryInputProps {
@@ -25,10 +26,11 @@ export const CategoryInput = ({
   onShowNewCategoryChange,
   disabled,
 }: CategoryInputProps) => {
+  const t = useTranslations();
   const selectedCategoryName = selectedCategory
     ? categories.find((c) => c.path === selectedCategory)?.name ||
       selectedCategory
-    : "Root level";
+    : t("global.root_level");
 
   const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
   const isNotAllowedName = notAllowedNames.includes(
@@ -38,7 +40,7 @@ export const CategoryInput = ({
   return (
     <div>
       <label className="block text-sm font-medium text-foreground mb-2">
-        Category
+        {t("global.categories")}
       </label>
       {showNewCategory ? (
         <div className="space-y-2">
@@ -48,7 +50,7 @@ export const CategoryInput = ({
               value={newCategory}
               onChange={(e) => onNewCategoryChange(e.target.value)}
               className="flex-1 px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Enter new category name..."
+              placeholder={t("modals.enter_category_name")}
               disabled={disabled}
             />
             <Button
@@ -57,7 +59,7 @@ export const CategoryInput = ({
               onClick={() => onShowNewCategoryChange(false)}
               disabled={disabled}
             >
-              Cancel
+              {t("global.cancel")}
             </Button>
           </div>
           {isNotAllowedName && (
@@ -66,10 +68,14 @@ export const CategoryInput = ({
             </div>
           )}
           {!isNotAllowedName && (
-            <div className="text-xs text-muted-foreground">
-              New category will be created in:{" "}
-              <strong>{selectedCategoryName}</strong>
-            </div>
+            <div
+              className="text-xs text-muted-foreground"
+              dangerouslySetInnerHTML={{
+                __html: t("modals.new_category_will_be_created_in", {
+                  category: `<strong>${selectedCategoryName}</strong>`,
+                }),
+              }}
+            />
           )}
         </div>
       ) : (

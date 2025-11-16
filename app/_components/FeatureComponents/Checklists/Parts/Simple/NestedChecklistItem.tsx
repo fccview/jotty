@@ -22,6 +22,7 @@ import { Checklist, Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
+import { useTranslations } from "next-intl";
 import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
@@ -58,6 +59,7 @@ const NestedChecklistItemComponent = ({
 }: NestedChecklistItemProps) => {
   const { usersPublicData, user } = useAppMode();
   const { permissions } = usePermissions();
+  const t = useTranslations();
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
 
@@ -171,11 +173,13 @@ const NestedChecklistItemComponent = ({
   const isChild = level > 0;
 
   const dropdownOptions = [
-    ...(onEdit ? [{ id: "edit", name: "Edit", icon: Edit2 }] : []),
-    ...(onAddSubItem
-      ? [{ id: "add-sub-item", name: "Add sub-item", icon: Plus }]
+    ...(onEdit
+      ? [{ id: "edit", name: t("checklists.edit"), icon: Edit2 }]
       : []),
-    { id: "delete", name: "Delete", icon: Trash2 },
+    ...(onAddSubItem
+      ? [{ id: "add-sub-item", name: t("checklists.add_sub_item"), icon: Plus }]
+      : []),
+    { id: "delete", name: t("checklists.delete"), icon: Trash2 },
   ];
 
   useEffect(() => {
@@ -199,13 +203,13 @@ const NestedChecklistItemComponent = ({
       className={cn(
         "relative my-1",
         hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         !hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
         isChild &&
-        "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
+          "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
         "first:mt-0 transition-colors duration-150",
         isActive && "bg-muted/20",
         isDragging && "opacity-50 z-50",
@@ -219,7 +223,7 @@ const NestedChecklistItemComponent = ({
           isChild ? "px-2.5 py-2" : "p-3",
           completed && "opacity-80",
           !permissions?.canEdit &&
-          "opacity-50 cursor-not-allowed pointer-events-none"
+            "opacity-50 cursor-not-allowed pointer-events-none"
         )}
       >
         {!isPublicView &&
@@ -344,7 +348,7 @@ const NestedChecklistItemComponent = ({
                   size="sm"
                   onClick={() => setShowAddSubItem(!showAddSubItem)}
                   className="h-8 w-8 p-0"
-                  title="Add sub-item"
+                  title={t("checklists.add_sub_item")}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -416,7 +420,7 @@ const NestedChecklistItemComponent = ({
                 type="text"
                 value={newSubItemText}
                 onChange={(e) => setNewSubItemText(e.target.value)}
-                placeholder="Add sub-item..."
+                placeholder={t("checklists.add_sub_item_input")}
                 className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-2 focus:ring-ring"
                 autoFocus
               />
@@ -427,7 +431,7 @@ const NestedChecklistItemComponent = ({
               disabled={!newSubItemText.trim()}
               className="px-3"
             >
-              Add
+              {t("checklists.add")}
             </Button>
             <Button
               type="button"

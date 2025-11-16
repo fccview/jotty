@@ -3,6 +3,7 @@
 import { Download, Eye } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 interface ImageAttachmentProps {
   url: string;
@@ -15,6 +16,7 @@ export const ImageAttachment = ({
   fileName,
   className = "",
 }: ImageAttachmentProps) => {
+  const t = useTranslations();
   const displayName = fileName.replace(/ \(\d+\)/, "").replace(/\.\w+$/, "");
 
   return (
@@ -40,7 +42,7 @@ export const ImageAttachment = ({
                 className="bg-white/90 hover:bg-white text-black"
               >
                 <Eye className="h-4 w-4 mr-1" />
-                View
+                {t("upload.view")}
               </Button>
               <Button
                 variant="secondary"
@@ -54,7 +56,7 @@ export const ImageAttachment = ({
                 className="bg-white/90 hover:bg-white text-black"
               >
                 <Download className="h-4 w-4 mr-1" />
-                Download
+                {t("upload.download")}
               </Button>
             </span>
           </span>

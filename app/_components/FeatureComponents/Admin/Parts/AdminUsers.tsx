@@ -4,6 +4,7 @@ import { Search, Plus, Edit3, Trash2, Shield, User } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { User as UserType, Checklist, Note } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useTranslations } from "next-intl";
 
 interface AdminUsersProps {
   users: UserType[];
@@ -30,6 +31,7 @@ export const AdminUsers = ({
   username,
   deletingUser,
 }: AdminUsersProps) => {
+  const t = useTranslations();
   const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -39,15 +41,15 @@ export const AdminUsers = ({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            User Management
+            {t("admin.users.user_management")}
           </h2>
           <p className="text-muted-foreground">
-            Manage user accounts and permissions.
+            {t("admin.users.manage_accounts")}
           </p>
         </div>
         <Button onClick={onAddUser} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
-          Add User
+          {t("admin.users.add_user")}
         </Button>
       </div>
 
@@ -55,7 +57,7 @@ export const AdminUsers = ({
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Search users..."
+          placeholder={t("admin.users.search_users")}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
@@ -88,7 +90,7 @@ export const AdminUsers = ({
                       </h3>
                       {user.username === username && (
                         <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
-                          You
+                          {t("global.you")}
                         </span>
                       )}
                       {user.isAdmin && (
@@ -96,8 +98,8 @@ export const AdminUsers = ({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {user.isAdmin ? "Admin" : "User"} • {userChecklists}{" "}
-                      checklists, {userDocs} notes
+                      {user.isAdmin ? t("global.admin") : t("global.user")} • {userChecklists}{" "}
+                      {t("checklists.title")}, {userDocs} {t("notes.title")}
                     </p>
                   </div>
                 </div>
@@ -107,7 +109,7 @@ export const AdminUsers = ({
                     size="sm"
                     onClick={() => onEditUser(user)}
                     className="h-8 w-8 p-0"
-                    title="Edit User"
+                    title={t("admin.users.edit_user")}
                   >
                     <Edit3 className="h-4 w-4" />
                   </Button>
@@ -118,7 +120,7 @@ export const AdminUsers = ({
                       onClick={() => onDeleteUser(user)}
                       disabled={deletingUser === user.username}
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                      title="Delete User"
+                      title={t("admin.users.delete_user")}
                     >
                       {deletingUser === user.username ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-destructive mx-auto"></div>
@@ -139,12 +141,12 @@ export const AdminUsers = ({
               <User className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              {searchQuery ? "No users found" : "No users yet"}
+              {searchQuery ? t("admin.users.no_users_found") : t("admin.users.no_users_yet")}
             </h3>
             <p className="text-muted-foreground">
               {searchQuery
-                ? "No users match your search criteria."
-                : "Users will appear here once they register."}
+                ? t("admin.users.no_match")
+                : t("admin.users.will_appear")}
             </p>
           </div>
         )}

@@ -15,6 +15,7 @@ import { ArchivedItem } from "@/app/_server/actions/archived";
 import { LinkIndex } from "@/app/_server/actions/link";
 import { LinksTab } from "@/app/_components/FeatureComponents/Profile/Parts/LinksTab";
 import { ProfileTabs } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface UserProfileClientProps {
   isSsoUser: boolean;
@@ -34,22 +35,21 @@ export const UserProfileClient = ({
   linkIndex,
 }: UserProfileClientProps) => {
   const { user, appSettings } = useAppMode();
-  const [activeTab, setActiveTab] = useState<
-    ProfileTabs
-  >(ProfileTabs.PROFILE);
+  const t = useTranslations();
+  const [activeTab, setActiveTab] = useState<ProfileTabs>(ProfileTabs.PROFILE);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
   const handleTabChange = (newTab: ProfileTabs) => {
     setActiveTab(newTab);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.location.hash = newTab;
     }
   };
 
   useEffect(() => {
     setIsHydrated(true);
-    const hash = window.location.hash.replace('#', '');
+    const hash = window.location.hash.replace("#", "");
     const validTabs = Object.values(ProfileTabs);
     if (validTabs.includes(hash as ProfileTabs)) {
       setActiveTab(hash as ProfileTabs);
@@ -60,15 +60,15 @@ export const UserProfileClient = ({
     if (!isHydrated) return;
 
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
+      const hash = window.location.hash.replace("#", "");
       const validTabs = Object.values(ProfileTabs);
       if (validTabs.includes(hash as ProfileTabs)) {
         setActiveTab(hash as ProfileTabs);
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, [isHydrated]);
 
   return (
@@ -84,7 +84,15 @@ export const UserProfileClient = ({
             { id: ProfileTabs.PROFILE, label: "Profile", icon: User },
             { id: ProfileTabs.SESSIONS, label: "Sessions", icon: Monitor },
             { id: ProfileTabs.ARCHIVE, label: "Archive", icon: Archive },
-            ...(appSettings?.editor?.enableBilateralLinks ? [{ id: ProfileTabs.CONNECTIONS, label: "Connections", icon: Link }] : []),
+            ...(appSettings?.editor?.enableBilateralLinks
+              ? [
+                  {
+                    id: ProfileTabs.CONNECTIONS,
+                    label: "Connections",
+                    icon: Link,
+                  },
+                ]
+              : []),
             { id: ProfileTabs.SETTINGS, label: "Settings", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -93,11 +101,7 @@ export const UserProfileClient = ({
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "ghost"}
                 size="sm"
-                onClick={() =>
-                  handleTabChange(
-                    tab.id as ProfileTabs
-                  )
-                }
+                onClick={() => handleTabChange(tab.id as ProfileTabs)}
                 className="flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap flex-shrink-0"
               >
                 <Icon className="h-4 w-4" />
@@ -113,7 +117,7 @@ export const UserProfileClient = ({
           <ProfileTab
             user={user}
             isAdmin={isAdmin}
-            setUser={() => { }}
+            setUser={() => {}}
             isSsoUser={isSsoUser}
           />
         )}

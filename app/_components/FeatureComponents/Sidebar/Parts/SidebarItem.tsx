@@ -29,6 +29,7 @@ import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { useTranslations } from "next-intl";
 
 interface SidebarItemProps {
   item: Checklist | Note;
@@ -49,6 +50,7 @@ export const SidebarItem = ({
   style,
   user,
 }: SidebarItemProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
@@ -93,16 +95,18 @@ export const SidebarItem = ({
   const dropdownItems = [
     ...(onEditItem
       ? [
-        {
-          label: "Edit",
-          onClick: () => onEditItem(item),
-          icon: <Edit className="h-4 w-4" />,
-        },
-      ]
+          {
+            label: t("global.edit"),
+            onClick: () => onEditItem(item),
+            icon: <Edit className="h-4 w-4" />,
+          },
+        ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
+      label: isItemPinned()
+        ? t("sidebar.unpin_from_home")
+        : t("sidebar.pin_to_home"),
       onClick: handleTogglePin,
       icon: isItemPinned() ? (
         <PinOff className="h-4 w-4" />
@@ -113,21 +117,21 @@ export const SidebarItem = ({
     },
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
-        {
-          label: "Archive",
-          onClick: async () => {
-            const result = await toggleArchive(item, mode);
-            if (result.success) {
-              router.refresh();
-            }
+          {
+            label: t("global.archive"),
+            onClick: async () => {
+              const result = await toggleArchive(item, mode);
+              if (result.success) {
+                router.refresh();
+              }
+            },
+            icon: <Archive className="h-4 w-4" />,
           },
-          icon: <Archive className="h-4 w-4" />,
-        },
-      ]
+        ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: "Delete",
+      label: t("global.delete"),
       onClick: async () => {
         const confirmed = window.confirm(
           `Are you sure you want to delete "${item.title}"?`
@@ -214,7 +218,6 @@ export const SidebarItem = ({
           )}
         </div>
       </button>
-
 
       <DropdownMenu
         align="right"

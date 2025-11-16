@@ -25,11 +25,15 @@ import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
-import { copyTextToClipboard, encodeCategoryPath } from "@/app/_utils/global-utils";
+import {
+  copyTextToClipboard,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
+import { useTranslations } from "next-intl";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -50,6 +54,7 @@ export const NoteEditorHeader = ({
   showTOC,
   setShowTOC,
 }: NoteEditorHeaderProps) => {
+  const t = useTranslations();
   const metadata = useMetadata();
   const {
     title,
@@ -80,7 +85,13 @@ export const NoteEditorHeader = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${note?.uuid ? note?.uuid : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id}`}`
+      `${
+        note?.uuid
+          ? note?.uuid
+          : `${encodeCategoryPath(note?.category || "Uncategorized")}/${
+              note?.id
+            }`
+      }`
     );
     if (success) {
       setCopied(true);
@@ -130,7 +141,13 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      title={`Copy ID: ${note?.uuid ? note?.uuid : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id}`}`}
+                      title={`Copy ID: ${
+                        note?.uuid
+                          ? note?.uuid
+                          : `${encodeCategoryPath(
+                              note?.category || "Uncategorized"
+                            )}/${note?.id}`
+                      }`}
                     >
                       {copied ? (
                         <Check className="h-3 w-3 text-green-500" />
@@ -178,7 +195,7 @@ export const NoteEditorHeader = ({
                 )}
 
                 <Button variant="outline" size="sm" onClick={handleCancel}>
-                  Cancel
+                  {t("global.cancel")}
                 </Button>
                 <Button
                   size="sm"
@@ -191,12 +208,16 @@ export const NoteEditorHeader = ({
                   {status.isSaving ? (
                     <>
                       <Loader2 className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2 animate-spin" />
-                      <span className="hidden lg:inline">Saving...</span>
+                      <span className="hidden lg:inline">
+                        {t("global.saving")}
+                      </span>
                     </>
                   ) : (
                     <>
                       <Save className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2" />
-                      <span className="hidden lg:inline">Save</span>
+                      <span className="hidden lg:inline">
+                        {t("global.save")}
+                      </span>
                     </>
                   )}
                 </Button>
@@ -245,13 +266,13 @@ export const NoteEditorHeader = ({
                     items={[
                       ...(permissions?.isOwner
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Share",
-                            icon: <Share2 className="h-4 w-4" />,
-                            onClick: () => setShowShareModal(true),
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Share",
+                              icon: <Share2 className="h-4 w-4" />,
+                              onClick: () => setShowShareModal(true),
+                            },
+                          ]
                         : []),
                       {
                         type: "item" as const,
@@ -272,24 +293,24 @@ export const NoteEditorHeader = ({
                       },
                       ...(permissions?.canDelete
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Archive",
-                            icon: <Archive className="h-4 w-4" />,
-                            onClick: handleArchive,
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Archive",
+                              icon: <Archive className="h-4 w-4" />,
+                              onClick: handleArchive,
+                            },
+                          ]
                         : []),
                       ...(canDelete
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Delete",
-                            icon: <Trash2 className="h-4 w-4" />,
-                            onClick: handleDelete,
-                            variant: "destructive" as const,
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Delete",
+                              icon: <Trash2 className="h-4 w-4" />,
+                              onClick: handleDelete,
+                              variant: "destructive" as const,
+                            },
+                          ]
                         : []),
                     ]}
                   />

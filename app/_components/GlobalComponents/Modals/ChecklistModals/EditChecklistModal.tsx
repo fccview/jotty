@@ -10,6 +10,7 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Category, Checklist } from "@/app/_types";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 
@@ -35,12 +36,20 @@ export const EditChecklistModal = ({
   const [category, setCategory] = useState(initialCategory);
   const [isLoading, setIsLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const t = useTranslations();
   const [checklist, setChecklist] = useState<Checklist | null>(null);
 
   useEffect(() => {
     const fetchChecklist = async () => {
-      const checklist = await getListById(initialChecklist.id, user?.username || "", initialChecklist.category || "Uncategorized");
-      const parsedChecklist = parseChecklistContent(checklist?.rawContent || "", checklist?.id || "");
+      const checklist = await getListById(
+        initialChecklist.id,
+        user?.username || "",
+        initialChecklist.category || "Uncategorized"
+      );
+      const parsedChecklist = parseChecklistContent(
+        checklist?.rawContent || "",
+        checklist?.id || ""
+      );
 
       setChecklist(checklist || null);
       setTitle(parsedChecklist?.title || "");
@@ -70,7 +79,10 @@ export const EditChecklistModal = ({
     const formData = new FormData();
     formData.append("id", initialChecklist.id);
     formData.append("title", title.trim());
-    formData.append("originalCategory", initialChecklist.category || "Uncategorized");
+    formData.append(
+      "originalCategory",
+      initialChecklist.category || "Uncategorized"
+    );
     formData.append("unarchive", unarchive ? "true" : "false");
 
     if (isOwner) {
@@ -102,13 +114,13 @@ export const EditChecklistModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={unarchive ? "Unarchive Checklist" : "Edit Checklist"}
+      title={unarchive ? "Unarchive Checklist" : t("checklists.edit_checklist")}
       titleIcon={<ListTodo className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Checklist Name *
+            {t("checklists.checklist_name")} *
           </label>
           <input
             type="text"
@@ -128,7 +140,7 @@ export const EditChecklistModal = ({
         {isOwner && (
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Category
+              {t("global.category")}
             </label>
             <CategoryTreeSelector
               categories={categories}
@@ -148,7 +160,7 @@ export const EditChecklistModal = ({
             disabled={isLoading}
             className="flex-1"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="submit"
@@ -156,10 +168,10 @@ export const EditChecklistModal = ({
             className="flex-1"
           >
             {isLoading
-              ? "Updating..."
+              ? `${t("global.updating")}...`
               : unarchive
-                ? "Unarchive Checklist"
-                : "Update Checklist"}
+              ? "Unarchive Checklist"
+              : t("checklists.update_checklist")}
           </Button>
         </div>
       </form>

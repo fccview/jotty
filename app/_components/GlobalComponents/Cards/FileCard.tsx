@@ -3,6 +3,7 @@ import { getFileIcon, formatFileSize } from "@/app/_utils/file-icon-utils";
 import Image from "next/image";
 import { Button } from "../Buttons/Button";
 import { Eye, Download, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface FileCardProps {
   file: FileItem;
@@ -11,6 +12,8 @@ interface FileCardProps {
 }
 
 export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
+  const t = useTranslations();
+
   const handleAction = (e: React.MouseEvent, action: () => void) => {
     e.stopPropagation();
     action();
@@ -54,7 +57,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
           onClick={(e) =>
             handleAction(e, () => window.open(file.url, "_blank"))
           }
-          title="Open file"
+          title={t("cards.open_file")}
         >
           <Eye className="h-4 w-4" />
         </Button>
@@ -70,7 +73,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
               a.click();
             })
           }
-          title="Download file"
+          title={t("cards.download_file")}
         >
           <Download className="h-4 w-4" />
         </Button>
@@ -79,7 +82,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
           size="icon"
           className="h-7 w-7 sm:h-8 sm:w-8 bg-destructive/80 backdrop-blur-sm hover:bg-destructive"
           onClick={(e) => handleAction(e, onDelete)}
-          title="Delete file"
+          title={t("cards.delete_file")}
         >
           <Trash2 className="h-4 w-4" />
         </Button>

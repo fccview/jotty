@@ -17,7 +17,9 @@ import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPa
 import { StatusManagementModal } from "./StatusManagementModal";
 import { ArchivedItemsModal } from "./ArchivedItemsModal";
 import { useKanbanBoard } from "../../../../../_hooks/useKanbanBoard";
-import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
+import { ItemTypes } from "@/app/_types/enums";
 import { ReferencedBySection } from "../../../Notes/Parts/ReferencedBySection";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -26,7 +28,10 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { Settings, Archive } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { updateChecklistStatuses } from "@/app/_server/actions/checklist";
-import { archiveItem, unarchiveItem } from "@/app/_server/actions/checklist-item";
+import {
+  archiveItem,
+  unarchiveItem,
+} from "@/app/_server/actions/checklist-item";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -57,6 +62,7 @@ const defaultStatuses: KanbanStatus[] = [
 ];
 
 export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
+  const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
@@ -90,11 +96,13 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
   const statuses = localChecklist.statuses || defaultStatuses;
 
-  const columns = statuses.sort((a, b) => a.order - b.order).map((status) => ({
-    id: status.id,
-    title: status.label,
-    status: status.id,
-  }));
+  const columns = statuses
+    .sort((a, b) => a.order - b.order)
+    .map((status) => ({
+      id: status.id,
+      title: status.label,
+      status: status.id,
+    }));
 
   const handleSaveStatuses = async (newStatuses: KanbanStatus[]) => {
     const formData = new FormData();
@@ -110,7 +118,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
   const itemsByStatus = statuses.reduce((acc, status) => {
     acc[status.id] = localChecklist.items.filter(
-      item => item.status === status.id && !item.isArchived
+      (item) => item.status === status.id && !item.isArchived
     ).length;
     return acc;
   }, {} as Record<string, number>);
@@ -173,8 +181,8 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           isLoading={isLoading}
           autoFocus={true}
           focusKey={focusKey}
-          placeholder="Add new task..."
-          submitButtonText="Add Task"
+          placeholder={t("checklists.add_new_task")}
+          submitButtonText={t("checklists.add_task")}
         />
       )}
       <div className="flex gap-2 px-4 pt-4 pb-2 w-full justify-end">
@@ -206,16 +214,23 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className={columns.length <= 4
-              ? "h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4"
-              : "h-full lg:flex lg:gap-4 p-2 sm:p-4 overflow-x-auto"
-            }>
+            <div
+              className={
+                columns.length <= 4
+                  ? "h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4"
+                  : "h-full lg:flex lg:gap-4 p-2 sm:p-4 overflow-x-auto"
+              }
+            >
               {columns.map((column) => {
                 const items = getItemsByStatus(column.status);
                 return (
                   <div
                     key={column.id}
-                    className={`${columns.length > 4 ? "flex-shrink-0 min-w-[20%]" : "min-w-[24%] "}`}
+                    className={`${
+                      columns.length > 4
+                        ? "flex-shrink-0 min-w-[20%]"
+                        : "min-w-[24%] "
+                    }`}
                   >
                     <KanbanColumn
                       checklist={localChecklist}
@@ -227,7 +242,9 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                       category={localChecklist.category || "Uncategorized"}
                       onUpdate={refreshChecklist}
                       isShared={isShared}
-                      statusColor={statuses.find(s => s.id === column.id)?.color}
+                      statusColor={
+                        statuses.find((s) => s.id === column.id)?.color
+                      }
                       statuses={statuses}
                     />
                   </div>
@@ -251,10 +268,13 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             </DragOverlay>
           </DndContext>
         ) : (
-          <div className={columns.length <= 4
-            ? "h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4"
-            : "h-full flex gap-4 p-2 sm:p-4 overflow-x-auto"
-          }>
+          <div
+            className={
+              columns.length <= 4
+                ? "h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4"
+                : "h-full flex gap-4 p-2 sm:p-4 overflow-x-auto"
+            }
+          >
             {columns.map((column) => {
               const items = getItemsByStatus(column.status);
               return (
@@ -273,7 +293,9 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                     category={localChecklist.category || "Uncategorized"}
                     onUpdate={refreshChecklist}
                     isShared={isShared}
-                    statusColor={statuses.find(s => s.id === column.id)?.color}
+                    statusColor={
+                      statuses.find((s) => s.id === column.id)?.color
+                    }
                     statuses={statuses}
                   />
                 </div>
