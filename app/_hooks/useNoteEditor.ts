@@ -113,9 +113,9 @@ export const useNoteEditor = ({
 
       const formData = new FormData();
       formData.append("id", note.id);
-      formData.append("title", title);
+      formData.append("title", useAutosave ? note.title : title);
       formData.append("content", cleanContent);
-      formData.append("category", category);
+      formData.append("category", useAutosave ? (note.category || "Uncategorized") : category);
       formData.append("originalCategory", note.category || "Uncategorized");
       formData.append("user", owner.data?.username || "");
       formData.append("uuid", note.uuid || "");
@@ -205,6 +205,7 @@ export const useNoteEditor = ({
       formData.append("category", note.category || "");
       await deleteNote(formData);
       onDelete?.(note.id);
+      router.refresh();
       onBack();
     }
   };
