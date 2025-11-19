@@ -4,6 +4,7 @@ import {
 } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
+import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useSearchParams } from "next/navigation";
@@ -46,6 +47,8 @@ export const NoteEditorContent = ({
     );
   }, [linkIndex, noteId, noteCategory, notes, checklists]);
 
+  console.log("referencingItems", referencingItems);
+
   useEffect(() => {
     if (
       editorRef.current &&
@@ -72,18 +75,20 @@ export const NoteEditorContent = ({
           checklists={checklists}
         />
       ) : (
-        <div
-          className={`px-6 pt-6 pb-12 ${
-            compactMode ? "max-w-[900px] mx-auto" : ""
-          }`}
-        >
-          <UnifiedMarkdownRenderer content={noteContent || ""} />
-
-          {referencingItems.length > 0 &&
-            appSettings?.editor?.enableBilateralLinks && (
-              <ReferencedBySection referencingItems={referencingItems} />
-            )}
-        </div>
+        <>
+          <ReadingProgressBar />
+          <div
+            className={`px-6 pt-6 pb-12 ${
+              compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
+          >
+            <UnifiedMarkdownRenderer content={noteContent || ""} />
+            {referencingItems.length > 0 &&
+              appSettings?.editor?.enableBilateralLinks && (
+                <ReferencedBySection referencingItems={referencingItems} />
+              )}
+          </div>
+        </>
       )}
     </div>
   );

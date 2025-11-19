@@ -6,6 +6,7 @@ import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Not
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { ReadingProgressBar } from "../../GlobalComponents/Layout/ReadingProgressBar";
 
 interface PublicNoteViewProps {
   note: Note;
@@ -26,7 +27,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
 
   const containerClass = isPrintView
     ? "bg-background"
-    : "min-h-screen bg-background";
+    : "min-h-screen bg-background relative";
 
   const mainContainerClass = isPrintView
     ? ""
@@ -39,6 +40,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
   return (
     <div className={containerClass}>
       <div className={mainContainerClass}>
+        <ReadingProgressBar fixed />
         <div className="mb-8 no-print">
           <div className="flex items-center gap-3 mb-4">
             <UserAvatar

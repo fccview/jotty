@@ -42,7 +42,7 @@ export const NoteEditor = ({
         setShowTOC={setShowTOC}
       />
 
-      <div className="flex h-full w-full">
+      <div className="flex h-full w-full relative">
         <div className="flex-1 overflow-y-auto mb-[70px]">
           <NoteEditorContent
             isEditing={viewModel.isEditing}
