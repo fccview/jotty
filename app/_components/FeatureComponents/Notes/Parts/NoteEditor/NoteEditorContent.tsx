@@ -47,8 +47,6 @@ export const NoteEditorContent = ({
     );
   }, [linkIndex, noteId, noteCategory, notes, checklists]);
 
-  console.log("referencingItems", referencingItems);
-
   useEffect(() => {
     if (
       editorRef.current &&

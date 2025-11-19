@@ -10,7 +10,6 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
   useEffect(() => {
     const calculateProgress = () => {
       if (fixed) {
-        // For fixed progress bars (public notes), track window scroll
         const scrollTop = window.scrollY;
         const windowHeight = window.innerHeight;
         const documentHeight = document.documentElement.scrollHeight;
@@ -21,7 +20,6 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
 
         setProgress(Math.min(scrollProgress, 100));
       } else {
-        // For non-fixed progress bars (private notes), find scrollable parent
         const findScrollableParent = (
           element: HTMLElement | null
         ): HTMLElement | null => {
@@ -57,7 +55,6 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
     calculateProgress();
 
     if (fixed) {
-      // Listen to window scroll for fixed progress bars
       window.addEventListener("scroll", calculateProgress);
       window.addEventListener("resize", calculateProgress);
 
@@ -66,7 +63,6 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
         window.removeEventListener("resize", calculateProgress);
       };
     } else {
-      // Listen to container scroll for non-fixed progress bars
       const findScrollableParent = (
         element: HTMLElement | null
       ): HTMLElement | null => {

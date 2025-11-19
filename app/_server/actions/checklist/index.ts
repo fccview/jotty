@@ -512,7 +512,7 @@ export const createList = async (formData: FormData) => {
 
     try {
       const content = newList.items.map((i) => i.text).join("\n");
-      const links = parseInternalLinks(content);
+      const links = await parseInternalLinks(content);
       const indexUsername = username || (await getCurrentUser())?.username;
       if (indexUsername) {
         await updateIndexForItem(
@@ -642,7 +642,7 @@ export const updateList = async (formData: FormData) => {
 
     try {
       const content = updatedList.items.map((i) => i.text).join("\n");
-      const links = parseInternalLinks(content);
+      const links = await parseInternalLinks(content);
       const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
         }`;
 

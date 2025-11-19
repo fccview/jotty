@@ -122,17 +122,17 @@ export const updateIndexForItem = async (
 
   for (const targetUuid of currentItemLinks.isLinkedTo.notes) {
     if (index.notes[targetUuid]) {
-      index.notes[targetUuid].isReferencedIn.notes = index.notes[
+      index.notes[targetUuid].isReferencedIn[currentItemKey] = index.notes[
         targetUuid
-      ].isReferencedIn.notes.filter((ref) => ref !== itemUuid);
+      ].isReferencedIn[currentItemKey].filter((ref) => ref !== itemUuid);
     }
   }
 
   for (const targetUuid of currentItemLinks.isLinkedTo.checklists) {
     if (index.checklists[targetUuid]) {
-      index.checklists[targetUuid].isReferencedIn.checklists = index.checklists[
+      index.checklists[targetUuid].isReferencedIn[currentItemKey] = index.checklists[
         targetUuid
-      ].isReferencedIn.checklists.filter((ref) => ref !== itemUuid);
+      ].isReferencedIn[currentItemKey].filter((ref) => ref !== itemUuid);
     }
   }
 
