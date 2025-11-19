@@ -1,25 +1,37 @@
-import { Checklist, Note, Item, ChecklistType, KanbanStatus } from "@/app/_types";
+import {
+  Checklist,
+  Note,
+  Item,
+  ChecklistType,
+  KanbanStatus,
+} from "@/app/_types";
 
 import { TaskStatus } from "@/app/_types/enums";
 import { parseRecurrenceFromMarkdown } from "@/app/_utils/recurrence-utils";
-import { extractYamlMetadata, extractTitle } from "./yaml-metadata-utils";
+import { extractYamlMetadata } from "./yaml-metadata-utils";
 
 export const parseChecklistContent = (
   rawContent: string,
   id: string
-): { title: string; items: Item[]; uuid?: string; type?: ChecklistType; statuses?: KanbanStatus[] } => {
+): {
+  title: string;
+  items: Item[];
+  uuid?: string;
+  type?: ChecklistType;
+  statuses?: KanbanStatus[];
+} => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
 
   let title: string;
   if (metadata.title) {
     title = metadata.title;
   } else {
-    const formatted = id.replace(/-/g, " ");
-    title =
-      formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
+    title = id.replace(/-/g, " ");
   }
 
-  const checklistType = metadata?.checklistType || (rawContent.includes("<!-- type:task -->") ? "task" : "simple");
+  const checklistType =
+    metadata?.checklistType ||
+    (rawContent.includes("<!-- type:task -->") ? "task" : "simple");
 
   const lines = contentWithoutMetadata.split("\n");
   const itemLines = lines.filter(
@@ -234,9 +246,7 @@ export const parseNoteContent = (
     };
   }
 
-  const formatted = id.replace(/-/g, " ");
-  const title =
-    formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
+  const title = id.replace(/-/g, " ");
 
   return { title, content: contentWithoutMetadata, uuid: metadata.uuid };
 };

@@ -96,8 +96,7 @@ export const extractTitle = (content: string, filename?: string): string => {
   }
 
   if (filename) {
-    const formatted = filename.replace(/-/g, " ");
-    return formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
+    return filename.replace(/-/g, " ");
   }
 
   return "Untitled";

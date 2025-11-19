@@ -236,10 +236,10 @@ export const ChecklistBody = ({
                   item={activeItem}
                   index={0}
                   level={0}
-                  onToggle={() => { }}
-                  onDelete={() => { }}
-                  onEdit={() => { }}
-                  onAddSubItem={() => { }}
+                  onToggle={() => {}}
+                  onDelete={() => {}}
+                  onEdit={() => {}}
+                  onAddSubItem={() => {}}
                   isDeletingItem={false}
                   isDragDisabled={true}
                   checklist={localList}

@@ -1,7 +1,10 @@
 "use client";
 
 import { FileText, CheckSquare, Router } from "lucide-react";
-import { buildCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
+import {
+  buildCategoryPath,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";

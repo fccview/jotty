@@ -34,7 +34,7 @@ export async function PUT(
       const item = list.items[itemIndex];
 
       const formData = new FormData();
-      formData.append("listId", params.listId);
+      formData.append("listId", list.id);
       formData.append("itemId", item.id);
       formData.append("completed", "true");
       formData.append("category", list.category || "Uncategorized");

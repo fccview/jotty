@@ -28,6 +28,7 @@ interface ChecklistViewProps {
   onBack: () => void;
   onEdit?: (checklist: Checklist) => void;
   onDelete?: (deletedId: string) => void;
+  onClone?: () => void;
   currentUsername?: string;
   isAdmin?: boolean;
 }
@@ -38,6 +39,7 @@ export const ChecklistView = ({
   onBack,
   onEdit,
   onDelete,
+  onClone,
   currentUsername,
   isAdmin = false,
 }: ChecklistViewProps) => {
@@ -114,6 +116,7 @@ export const ChecklistView = ({
         onArchive={archiveHandler}
         onShare={() => setShowShareModal(true)}
         onConvertType={handleConvertType}
+        onClone={onClone}
       />
 
       {deletingItemsCount > 0 && (
