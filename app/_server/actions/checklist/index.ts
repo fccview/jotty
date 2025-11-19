@@ -474,8 +474,21 @@ export const createList = async (formData: FormData) => {
     const title = formData.get("title") as string;
     const category = (formData.get("category") as string) || "Uncategorized";
     const type = (formData.get("type") as ChecklistType) || "simple";
+    const userParam = formData.get("user") as string | null;
 
-    const userDir = await getUserModeDir(Modes.CHECKLISTS);
+    let username: string | undefined;
+    if (userParam) {
+      try {
+        const parsedUser = JSON.parse(userParam);
+        username = parsedUser.username;
+      } catch {
+        username = undefined;
+      }
+    }
+
+    const userDir = username
+      ? path.join(process.cwd(), "data", CHECKLISTS_FOLDER, username)
+      : await getUserModeDir(Modes.CHECKLISTS);
     const categoryDir = path.join(userDir, category);
     await ensureDir(categoryDir);
 
@@ -492,17 +505,18 @@ export const createList = async (formData: FormData) => {
       items: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      owner: username,
     };
 
     await serverWriteFile(filePath, listToMarkdown(newList));
 
     try {
       const content = newList.items.map((i) => i.text).join("\n");
-      const links = parseInternalLinks(content);
-      const currentUser = await getCurrentUser();
-      if (currentUser?.username) {
+      const links = await parseInternalLinks(content);
+      const indexUsername = username || (await getCurrentUser())?.username;
+      if (indexUsername) {
         await updateIndexForItem(
-          currentUser.username,
+          indexUsername,
           ItemTypes.CHECKLIST,
           newList.uuid!,
           links
@@ -531,8 +545,17 @@ export const updateList = async (formData: FormData) => {
     const originalCategory = formData.get("originalCategory") as string;
     const ownerUsername = formData.get("user") as string | null;
     const unarchive = formData.get("unarchive") as string;
+    const apiUser = formData.get("apiUser") as string | null;
 
-    const actingUser = await getCurrentUser();
+    let actingUser = await getCurrentUser();
+    if (!actingUser && apiUser) {
+      try {
+        actingUser = JSON.parse(apiUser);
+      } catch {
+        return { error: "Invalid user data" };
+      }
+    }
+
     if (!actingUser || !actingUser.username) {
       return { error: "Not authenticated" };
     }
@@ -619,7 +642,7 @@ export const updateList = async (formData: FormData) => {
 
     try {
       const content = updatedList.items.map((i) => i.text).join("\n");
-      const links = parseInternalLinks(content);
+      const links = await parseInternalLinks(content);
       const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
         }`;
 
@@ -701,14 +724,23 @@ export const deleteList = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
     const category = (formData.get("category") as string) || "Uncategorized";
+    const apiUser = formData.get("apiUser") as string | null;
 
-    const currentUser = await getCurrentUser();
+    let currentUser = await getCurrentUser();
+    if (!currentUser && apiUser) {
+      try {
+        currentUser = JSON.parse(apiUser);
+      } catch {
+        return { error: "Invalid user data" };
+      }
+    }
+
     if (!currentUser) {
       return { error: "Not authenticated" };
     }
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
+    const isAdminUser = apiUser ? currentUser.isAdmin : await isAdmin();
+    const lists = await (isAdminUser ? getAllLists() : getUserChecklists(apiUser ? { username: currentUser.username } : {}));
     if (!lists.success || !lists.data) {
       return { error: "Failed to fetch lists" };
     }
@@ -733,14 +765,15 @@ export const deleteList = async (formData: FormData) => {
       );
       filePath = path.join(ownerDir, category, `${id}.md`);
     } else {
-      const userDir = await getUserModeDir(Modes.CHECKLISTS);
+      const userDir = apiUser
+        ? path.join(process.cwd(), "data", CHECKLISTS_FOLDER, currentUser.username)
+        : await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(userDir, category, `${id}.md`);
     }
 
     await serverDeleteFile(filePath);
 
     try {
-      const itemKey = `${list.category || "Uncategorized"}/${id}`;
       await removeItemFromIndex(list.owner!, ItemTypes.CHECKLIST, list.uuid!);
     } catch (error) {
       console.warn("Failed to remove checklist from link index:", id, error);
@@ -988,5 +1021,58 @@ export const updateChecklistStatuses = async (formData: FormData) => {
   } catch (error) {
     console.error("Error updating checklist statuses:", error);
     return { error: "Failed to update checklist statuses" };
+  }
+};
+
+export const cloneChecklist = async (formData: FormData) => {
+  try {
+    const id = formData.get("id") as string;
+    const category = formData.get("category") as string;
+    const ownerUsername = formData.get("user") as string | null;
+
+    const checklist = await getListById(id, ownerUsername || undefined, category);
+    if (!checklist) {
+      return { error: "Checklist not found" };
+    }
+
+    const currentUser = await getCurrentUser();
+    const userDir = await getUserModeDir(Modes.CHECKLISTS);
+
+    const isOwnedByCurrentUser = !checklist.owner || checklist.owner === currentUser?.username;
+    const targetCategory = isOwnedByCurrentUser ? (category || "Uncategorized") : "Uncategorized";
+
+    const categoryDir = path.join(userDir, targetCategory);
+    await ensureDir(categoryDir);
+
+    const cloneTitle = `${checklist.title} (Copy)`;
+    const filename = await generateUniqueFilename(categoryDir, cloneTitle);
+    const filePath = path.join(categoryDir, filename);
+
+    const content = listToMarkdown(checklist);
+    const updatedContent = updateYamlMetadata(content, {
+      uuid: generateUuid(),
+      title: cloneTitle,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    await serverWriteFile(filePath, updatedContent);
+
+    const newId = path.basename(filename, ".md");
+    const clonedChecklist = await getListById(newId, currentUser?.username, targetCategory);
+
+    try {
+      revalidatePath("/");
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but checklist was cloned successfully:",
+        error
+      );
+    }
+
+    return { success: true, data: clonedChecklist };
+  } catch (error) {
+    console.error("Error cloning checklist:", error);
+    return { error: "Failed to clone checklist" };
   }
 };

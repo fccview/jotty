@@ -10,6 +10,7 @@ import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 
 interface NoteClientProps {
   note: Note;
@@ -40,6 +41,28 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
     checkNavigation(() => {
       router.push("/");
     });
+  };
+
+  const handleClone = async () => {
+    const formData = new FormData();
+    formData.append("id", localNote.id);
+    formData.append("category", localNote.category || "Uncategorized");
+    if (localNote.owner) {
+      formData.append("user", localNote.owner);
+    }
+
+    const { cloneNote } = await import("@/app/_server/actions/note");
+    const result = await cloneNote(formData);
+
+    if (result.success && result.data) {
+      router.push(
+        `/note/${buildCategoryPath(
+          result.data.category || "Uncategorized",
+          result.data.id
+        )}`
+      );
+      router.refresh();
+    }
   };
 
   const handleDelete = () => {
@@ -83,6 +106,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
         categories={categories}
         viewModel={viewModel}
         onBack={handleBack}
+        onClone={handleClone}
       />
     </Layout>
   );

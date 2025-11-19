@@ -108,6 +108,10 @@ export const updateIndexForItem = async (
   itemUuid: string,
   currentLinks: LinkTarget[]
 ): Promise<void> => {
+  if (!Array.isArray(currentLinks)) {
+    currentLinks = [];
+  }
+
   const index = await readLinkIndex(username);
 
   const currentItemKey = `${itemType}s`;
@@ -118,17 +122,20 @@ export const updateIndexForItem = async (
 
   for (const targetUuid of currentItemLinks.isLinkedTo.notes) {
     if (index.notes[targetUuid]) {
-      index.notes[targetUuid].isReferencedIn.notes = index.notes[
+      const refKey = currentItemKey as keyof ItemLinks['isReferencedIn'];
+      index.notes[targetUuid].isReferencedIn[refKey] = index.notes[
         targetUuid
-      ].isReferencedIn.notes.filter((ref) => ref !== itemUuid);
+      ].isReferencedIn[refKey].filter((ref: string) => ref !== itemUuid);
     }
   }
 
   for (const targetUuid of currentItemLinks.isLinkedTo.checklists) {
     if (index.checklists[targetUuid]) {
-      index.checklists[targetUuid].isReferencedIn.checklists = index.checklists[
-        targetUuid
-      ].isReferencedIn.checklists.filter((ref) => ref !== itemUuid);
+      const refKey = currentItemKey as keyof ItemLinks['isReferencedIn'];
+      index.checklists[targetUuid].isReferencedIn[refKey] =
+        index.checklists[targetUuid].isReferencedIn[refKey].filter(
+          (ref: string) => ref !== itemUuid
+        );
     }
   }
 
@@ -272,7 +279,6 @@ export const updateItemCategory = async (
   await writeLinkIndex(username, index);
 };
 
-
 export const rebuildLinkIndex = async (username: string): Promise<void> => {
   const [notesResult, checklistsResult] = await Promise.all([
     getUserNotes({ username }),
@@ -306,7 +312,7 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
 
   for (const note of allNotes) {
     if (!note.uuid) continue;
-    const links = parseInternalLinks(note.content || "");
+    const links = await parseInternalLinks(note.content || "");
     newIndex.notes[note.uuid].isLinkedTo = {
       notes: links.filter((l) => l.type === ItemTypes.NOTE).map((l) => l.uuid),
       checklists: links
@@ -318,7 +324,7 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   for (const checklist of allChecklists) {
     if (!checklist.uuid) continue;
     const content = checklist?.items?.map((i) => i.text).join("\n") || "";
-    const links = parseInternalLinks(content);
+    const links = await parseInternalLinks(content);
     newIndex.checklists[checklist.uuid].isLinkedTo = {
       notes: links.filter((l) => l.type === ItemTypes.NOTE).map((l) => l.uuid),
       checklists: links

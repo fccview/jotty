@@ -15,6 +15,7 @@ export interface NoteEditorProps {
   categories: Category[];
   viewModel: ReturnType<typeof useNoteEditor>;
   onBack: () => void;
+  onClone?: () => void;
 }
 
 export const NoteEditor = ({
@@ -22,6 +23,7 @@ export const NoteEditor = ({
   categories,
   viewModel,
   onBack,
+  onClone,
 }: NoteEditorProps) => {
   const { permissions } = usePermissions();
   const isOwner = permissions?.isOwner || false;
@@ -34,12 +36,13 @@ export const NoteEditor = ({
         categories={categories}
         isOwner={isOwner}
         onBack={onBack}
+        onClone={onClone}
         viewModel={viewModel}
         showTOC={showTOC}
         setShowTOC={setShowTOC}
       />
 
-      <div className="flex h-full w-full">
+      <div className="flex h-full w-full relative">
         <div className="flex-1 overflow-y-auto mb-[70px]">
           <NoteEditorContent
             isEditing={viewModel.isEditing}

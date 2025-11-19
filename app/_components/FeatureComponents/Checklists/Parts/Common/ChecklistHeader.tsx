@@ -13,6 +13,7 @@ import {
   Check,
   MoreHorizontal,
   Archive,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
@@ -36,6 +37,7 @@ interface ChecklistHeaderProps {
   onShare?: () => void;
   onConvertType?: () => void;
   onArchive?: () => void;
+  onClone?: () => void;
 }
 
 export const ChecklistHeader = ({
@@ -46,6 +48,7 @@ export const ChecklistHeader = ({
   onShare,
   onConvertType,
   onArchive,
+  onClone,
 }: ChecklistHeaderProps) => {
   const t = useTranslations();
   const metadata = useMetadata();
@@ -187,11 +190,21 @@ export const ChecklistHeader = ({
                         },
                       ]
                     : []),
+                  ...(onClone
+                    ? [
+                        {
+                          type: "item" as const,
+                          label: t("global.clone"),
+                          icon: <Copy className="h-4 w-4" />,
+                          onClick: onClone,
+                        },
+                      ]
+                    : []),
                   ...(onArchive && permissions?.canDelete
                     ? [
                         {
                           type: "item" as const,
-                          label: t("checklists.archive"),
+                          label: t("global.archive"),
                           icon: <Archive className="h-4 w-4" />,
                           onClick: onArchive,
                         },
@@ -201,7 +214,7 @@ export const ChecklistHeader = ({
                     ? [
                         {
                           type: "item" as const,
-                          label: t("checklists.share"),
+                          label: t("global.share"),
                           icon: <Share2 className="h-4 w-4" />,
                           onClick: onShare,
                         },
@@ -211,7 +224,7 @@ export const ChecklistHeader = ({
                     ? [
                         {
                           type: "item" as const,
-                          label: t("checklists.edit"),
+                          label: t("global.edit"),
                           icon: <Edit3 className="h-4 w-4" />,
                           onClick: onEdit,
                           className: "lg:!hidden",
@@ -222,7 +235,7 @@ export const ChecklistHeader = ({
                     ? [
                         {
                           type: "item" as const,
-                          label: t("checklists.delete"),
+                          label: t("global.delete"),
                           icon: <Trash2 className="h-4 w-4" />,
                           onClick: onDelete,
                           variant: "destructive" as const,

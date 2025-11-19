@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist, RecurrenceRule, Result } from "@/app/_types";
+import { Checklist, KanbanStatus, RecurrenceRule, Result } from "@/app/_types";
 import {
   createItem,
   updateItemStatus,
@@ -11,13 +11,36 @@ import {
   reorderItems,
 } from "@/app/_server/actions/checklist-item";
 import { getListById, getUserChecklists } from "@/app/_server/actions/checklist";
-import { TaskStatus } from "@/app/_types/enums";
+import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { getCurrentUser, getUserByChecklist } from "../_server/actions/users";
 
 interface UseKanbanBoardProps {
   checklist: Checklist;
   onUpdate: (updatedChecklist: Checklist) => void;
 }
+
+const defaultStatuses: KanbanStatus[] = [
+  {
+    id: TaskStatus.TODO,
+    label: TaskStatusLabels.TODO,
+    order: 0,
+  },
+  {
+    id: TaskStatus.IN_PROGRESS,
+    label: TaskStatusLabels.IN_PROGRESS,
+    order: 1,
+  },
+  {
+    id: TaskStatus.COMPLETED,
+    label: TaskStatusLabels.COMPLETED,
+    order: 2,
+  },
+  {
+    id: TaskStatus.PAUSED,
+    label: TaskStatusLabels.PAUSED,
+    order: 3,
+  },
+];
 
 export const useKanbanBoard = ({
   checklist,
@@ -29,7 +52,7 @@ export const useKanbanBoard = ({
   const [showBulkPasteModal, setShowBulkPasteModal] = useState(false);
   const [focusKey, setFocusKey] = useState(0);
 
-  const validStatusIds = (localChecklist.statuses || []).map(s => s.id);
+  const validStatusIds = (localChecklist.statuses || defaultStatuses).map(s => s.id);
 
   useEffect(() => {
     setLocalChecklist(checklist);

@@ -50,9 +50,26 @@ paths:
   /checklists:
     get:
       summary: Get All Checklists
-      description: Retrieves all checklists for the authenticated user
+      description: Retrieves all checklists for the authenticated user. Supports filtering and search.
       tags:
         - Checklists
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter checklists by category
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [simple, task]
+          description: Filter checklists by type
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Search checklists by title or item text
       responses:
         '200':
           description: List of checklists
@@ -121,6 +138,67 @@ paths:
                         updatedAt:
                           type: string
                           format: date-time
+
+    post:
+      summary: Create Checklist
+      description: Creates a new checklist for the authenticated user
+      tags:
+        - Checklists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  example: "My New Checklist"
+                category:
+                  type: string
+                  default: "Uncategorized"
+                  example: "Work"
+                type:
+                  type: string
+                  enum: [simple, task]
+                  default: simple
+                  example: "simple"
+      responses:
+        '200':
+          description: Checklist created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      title:
+                        type: string
+                      category:
+                        type: string
+                      type:
+                        type: string
+                      items:
+                        type: array
+                        items: {}
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+        '400':
+          description: Invalid request (missing title or invalid type)
 
   /checklists/{listId}/items:
     post:
@@ -259,9 +337,20 @@ paths:
   /notes:
     get:
       summary: Get All Notes
-      description: Retrieves all notes for the authenticated user
+      description: Retrieves all notes for the authenticated user. Supports filtering and search.
       tags:
         - Notes
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter notes by category
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Search notes by title or content
       responses:
         '200':
           description: List of notes
@@ -358,7 +447,7 @@ paths:
   /notes/{noteId}:
     put:
       summary: Update Note
-      description: Updates an existing note
+      description: Updates an existing note. All fields are optional - unspecified fields will preserve their current values.
       tags:
         - Notes
       parameters:
@@ -375,8 +464,6 @@ paths:
           application/json:
             schema:
               type: object
-              required:
-                - title
               properties:
                 title:
                   type: string
@@ -388,10 +475,6 @@ paths:
                 category:
                   type: string
                   example: "Work"
-                originalCategory:
-                  type: string
-                  description: Original category for locating the note
-                  example: "Personal"
       responses:
         '200':
           description: Note updated successfully

@@ -153,7 +153,7 @@ export const SidebarItem = ({
           formData.append("category", item.category || "Uncategorized");
           const result = await deleteNote(formData);
           if (result.success) {
-            router.push("/");
+            router.refresh();
           }
         }
       },

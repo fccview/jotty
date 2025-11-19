@@ -27,6 +27,7 @@ import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkCom
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
+import { NoteFooterStats } from "@/app/_components/GlobalComponents/Statistics/NoteFooterStats";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -333,16 +334,19 @@ export const UnifiedMarkdownRenderer = ({
   };
 
   return (
-    <div
-      className={`prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 ${className}`}
-    >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSlug, rehypeRaw]}
-        components={components}
+    <>
+      <div
+        className={`prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 ${className}`}
       >
-        {processedContent}
-      </ReactMarkdown>
-    </div>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeSlug, rehypeRaw]}
+          components={components}
+        >
+          {processedContent}
+        </ReactMarkdown>
+      </div>
+      <NoteFooterStats content={content} />
+    </>
   );
 };

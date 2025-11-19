@@ -17,6 +17,7 @@ import { useChecklist } from "@/app/_hooks/useChecklist";
 import { Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 
 interface ChecklistClientProps {
   checklist: Checklist;
@@ -68,6 +69,28 @@ export const ChecklistClient = ({
     }
   };
 
+  const handleClone = async () => {
+    const formData = new FormData();
+    formData.append("id", localChecklist.id);
+    formData.append("category", localChecklist.category || "Uncategorized");
+    if (localChecklist.owner) {
+      formData.append("user", localChecklist.owner);
+    }
+
+    const { cloneChecklist } = await import("@/app/_server/actions/checklist");
+    const result = await cloneChecklist(formData);
+
+    if (result.success && result.data) {
+      router.push(
+        `/checklist/${buildCategoryPath(
+          result.data.category || "Uncategorized",
+          result.data.id
+        )}`
+      );
+      router.refresh();
+    }
+  };
+
   const handleEdit = () => {
     setShowEditModal(true);
   };
@@ -103,6 +126,7 @@ export const ChecklistClient = ({
             onShare={() => setShowShareModal(true)}
             onConvertType={() => setShowConversionModal(true)}
             onArchive={handleArchive}
+            onClone={handleClone}
           />
           <KanbanBoard checklist={localChecklist} onUpdate={handleUpdate} />
         </div>
@@ -116,6 +140,7 @@ export const ChecklistClient = ({
         onBack={handleBack}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onClone={handleClone}
         currentUsername={user?.username}
         isAdmin={user?.isAdmin}
       />

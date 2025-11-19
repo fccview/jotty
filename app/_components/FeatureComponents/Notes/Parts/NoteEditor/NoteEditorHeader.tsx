@@ -16,6 +16,7 @@ import {
   Edit3,
   Trash2,
   MoreHorizontal,
+  Copy,
 } from "lucide-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -40,6 +41,7 @@ interface NoteEditorHeaderProps {
   categories: Category[];
   isOwner: boolean;
   onBack: () => void;
+  onClone?: () => void;
   showTOC: boolean;
   setShowTOC: (show: boolean) => void;
   viewModel: NoteEditorViewModel;
@@ -50,6 +52,7 @@ export const NoteEditorHeader = ({
   categories,
   isOwner,
   onBack,
+  onClone,
   viewModel,
   showTOC,
   setShowTOC,
@@ -268,15 +271,25 @@ export const NoteEditorHeader = ({
                         ? [
                             {
                               type: "item" as const,
-                              label: "Share",
+                              label: t("global.share"),
                               icon: <Share2 className="h-4 w-4" />,
                               onClick: () => setShowShareModal(true),
                             },
                           ]
                         : []),
+                      ...(onClone
+                        ? [
+                            {
+                              type: "item" as const,
+                              label: t("global.clone"),
+                              icon: <Copy className="h-4 w-4" />,
+                              onClick: onClone,
+                            },
+                          ]
+                        : []),
                       {
                         type: "item" as const,
-                        label: "Print / Save as PDF",
+                        label: t("global.print_save_as_pdf"),
                         icon: isPrinting ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
@@ -286,7 +299,7 @@ export const NoteEditorHeader = ({
                       },
                       {
                         type: "item" as const,
-                        label: "Table of Contents",
+                        label: t("global.table_of_contents"),
                         icon: <List className="h-4 w-4" />,
                         onClick: () => setShowTOC(!showTOC),
                         className: "hidden lg:flex",
@@ -295,7 +308,7 @@ export const NoteEditorHeader = ({
                         ? [
                             {
                               type: "item" as const,
-                              label: "Archive",
+                              label: t("global.archive"),
                               icon: <Archive className="h-4 w-4" />,
                               onClick: handleArchive,
                             },
@@ -305,7 +318,7 @@ export const NoteEditorHeader = ({
                         ? [
                             {
                               type: "item" as const,
-                              label: "Delete",
+                              label: t("global.delete"),
                               icon: <Trash2 className="h-4 w-4" />,
                               onClick: handleDelete,
                               variant: "destructive" as const,

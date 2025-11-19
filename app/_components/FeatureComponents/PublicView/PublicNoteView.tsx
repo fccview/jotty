@@ -7,6 +7,7 @@ import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { ReadingProgressBar } from "../../GlobalComponents/Layout/ReadingProgressBar";
 
 interface PublicNoteViewProps {
   note: Note;
@@ -28,7 +29,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
 
   const containerClass = isPrintView
     ? "bg-background"
-    : "min-h-screen bg-background";
+    : "min-h-screen bg-background relative";
 
   const mainContainerClass = isPrintView
     ? ""
@@ -41,6 +42,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
   return (
     <div className={containerClass}>
       <div className={mainContainerClass}>
+        <ReadingProgressBar fixed />
         <div className="mb-8 no-print">
           <div className="flex items-center gap-3 mb-4">
             <UserAvatar
@@ -54,13 +56,17 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
               </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
                 <div className="flex items-center gap-1">
-                  <span>{t("public.by", { username: user?.username || "" })}</span>
+                  <span>
+                    {t("public.by", { username: user?.username || "" })}
+                  </span>
                 </div>
                 {note.category && <span>• {note.category}</span>}
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
                   <span>
-                    {t("public.updated", { date: new Date(note.updatedAt).toLocaleDateString() })}
+                    {t("public.updated", {
+                      date: new Date(note.updatedAt).toLocaleDateString(),
+                    })}
                   </span>
                 </div>
               </div>
