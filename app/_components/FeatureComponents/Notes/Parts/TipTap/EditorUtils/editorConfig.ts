@@ -13,6 +13,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
+import { LowlightPlugin } from "./lowlightPlugin";
 import { BubbleMenu } from "@tiptap/extension-bubble-menu";
 import { Color } from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -119,6 +120,15 @@ export const createEditorExtensions = (
     }).extend({
       addNodeView() {
         return ReactNodeViewRenderer(CodeBlockNodeView);
+      },
+      addProseMirrorPlugins() {
+        return [
+          LowlightPlugin({
+            name: this.name,
+            lowlight,
+            defaultLanguage: this.options.defaultLanguage,
+          }),
+        ];
       },
     }),
     Link.configure({
