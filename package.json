@@ -63,6 +63,7 @@
         "remark-parse": "^11.0.0",
         "remark-rehype": "^11.1.2",
         "rrule": "^2.8.1",
+        "sanitize-html": "^2.17.0",
         "slugify": "^1.6.6",
         "tailwind-merge": "^2.2.0",
         "tailwind-scrollbar": "^4.0.2",

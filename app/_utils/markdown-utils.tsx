@@ -12,8 +12,34 @@ import { html as beautifyHtml } from "js-beautify";
 import { TableSyntax } from "@/app/_types";
 import { decodeCategoryPath, decodeId } from "./global-utils";
 import { getContrastColor } from "./color-utils";
+import sanitizeHtml from "sanitize-html";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
+
+const hasComplexTableContent = (table: HTMLElement): boolean => {
+  const complexSelectors = ["ul", "ol", "pre", "table", "details", "hr"];
+
+  for (const selector of complexSelectors) {
+    if (table.querySelector(`td ${selector}, th ${selector}`)) {
+      return true;
+    }
+  }
+
+  const cells = table.querySelectorAll("td, th");
+  for (const cell of Array.from(cells)) {
+    const paragraphs = cell.querySelectorAll("p");
+    if (paragraphs.length > 1) {
+      return true;
+    }
+
+    const lineBreaks = cell.querySelectorAll("br");
+    if (lineBreaks.length > 1) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 export const createTurndownService = (tableSyntax?: TableSyntax) => {
   const service = new TurndownService({
@@ -91,58 +117,22 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
 
   addCustomHtmlTurndownRules(service);
 
-  if (tableSyntax === "html") {
-    service.addRule("table", {
-      filter: "table",
-      replacement: function (content, node) {
-        const unformattedHtml = (node as HTMLElement).outerHTML;
+  service.addRule("table", {
+    filter: "table",
+    replacement: function (content, node) {
+      const table = node as HTMLElement;
+
+      const shouldUseHtml =
+        tableSyntax === "html" || hasComplexTableContent(table);
+
+      if (shouldUseHtml) {
+        const unformattedHtml = table.outerHTML;
         const formattedHtml = beautifyHtml(unformattedHtml, {
           indent_size: 2,
           unformatted: [],
         });
         return `\n\n${formattedHtml}\n\n`;
-      },
-    });
-
-    service.addRule("thead", {
-      filter: "thead",
-      replacement: function (content, node) {
-        return (node as HTMLElement).outerHTML;
-      },
-    });
-
-    service.addRule("tbody", {
-      filter: "tbody",
-      replacement: function (content, node) {
-        return (node as HTMLElement).outerHTML;
-      },
-    });
-
-    service.addRule("tr", {
-      filter: "tr",
-      replacement: function (content, node) {
-        return (node as HTMLElement).outerHTML;
-      },
-    });
-
-    service.addRule("th", {
-      filter: "th",
-      replacement: function (content, node) {
-        return (node as HTMLElement).outerHTML;
-      },
-    });
-
-    service.addRule("td", {
-      filter: "td",
-      replacement: function (content, node) {
-        return (node as HTMLElement).outerHTML;
-      },
-    });
-  } else if (tableSyntax === "markdown" || tableSyntax === undefined) {
-    service.addRule("table", {
-      filter: "table",
-      replacement: function (content, node) {
-        const table = node as HTMLElement;
+      } else {
         let markdown = "";
         const rows: string[][] = [];
 
@@ -185,9 +175,9 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
         });
 
         return `\n${markdown}\n`;
-      },
-    });
-  }
+      }
+    },
+  });
 
   service.addRule("details", {
     filter: "details",
@@ -361,8 +351,14 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const svgData = element.getAttribute("data-drawio-svg") || "";
       const themeMode = element.getAttribute("data-drawio-theme") || "light";
 
-      const dataBase64 = typeof btoa !== 'undefined' ? btoa(diagramData) : Buffer.from(diagramData).toString('base64');
-      const svgBase64 = typeof btoa !== 'undefined' ? btoa(svgData) : Buffer.from(svgData).toString('base64');
+      const dataBase64 =
+        typeof btoa !== "undefined"
+          ? btoa(diagramData)
+          : Buffer.from(diagramData).toString("base64");
+      const svgBase64 =
+        typeof btoa !== "undefined"
+          ? btoa(svgData)
+          : Buffer.from(svgData).toString("base64");
 
       return `\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n`;
     },
@@ -404,8 +400,14 @@ const markdownProcessor = unified()
               const themeMode = themeMatch ? themeMatch[1].trim() : "light";
 
               try {
-                const diagramData = typeof atob !== 'undefined' ? atob(dataBase64) : Buffer.from(dataBase64, 'base64').toString();
-                const svgData = typeof atob !== 'undefined' ? atob(svgBase64) : Buffer.from(svgBase64, 'base64').toString();
+                const diagramData =
+                  typeof atob !== "undefined"
+                    ? atob(dataBase64)
+                    : Buffer.from(dataBase64, "base64").toString();
+                const svgData =
+                  typeof atob !== "undefined"
+                    ? atob(svgBase64)
+                    : Buffer.from(svgBase64, "base64").toString();
 
                 node.type = "element";
                 node.tagName = "div";
@@ -483,7 +485,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-              checkbox.properties.checked !== false
+                checkbox.properties.checked !== false
             );
 
             if (isInsideP) {
@@ -545,7 +547,11 @@ const markdownProcessor = unified()
 
         if (node.tagName === "a" && node.properties?.href) {
           const href = String(node.properties.href);
-          if (href.startsWith("/jotty/") || href.startsWith("/note/") || href.startsWith("/checklist/")) {
+          if (
+            href.startsWith("/jotty/") ||
+            href.startsWith("/note/") ||
+            href.startsWith("/checklist/")
+          ) {
             const textContent =
               node.children?.[0]?.type === "text"
                 ? String(node.children[0].value)
@@ -686,8 +692,75 @@ export const getMarkdownPreviewContent = (
 export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  const sanitizedHtml = convertMarkdownToHtml(markdown);
-  let result = convertHtmlToMarkdown(sanitizedHtml);
+  let result = sanitizeHtml(markdown, {
+    allowedTags: [
+      "table",
+      "thead",
+      "tbody",
+      "tfoot",
+      "tr",
+      "th",
+      "td",
+      "colgroup",
+      "col",
+      "ul",
+      "ol",
+      "li",
+      "p",
+      "br",
+      "strong",
+      "b",
+      "em",
+      "i",
+      "u",
+      "code",
+      "pre",
+      "mark",
+      "span",
+      "div",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "a",
+      "img",
+      "blockquote",
+      "hr",
+      "details",
+      "summary",
+    ],
+    allowedAttributes: {
+      "*": [
+        "style",
+        "class",
+        "colspan",
+        "rowspan",
+        "align",
+        "data-type",
+        "data-checked",
+        "data-color",
+        "data-highlight",
+        "data-mermaid",
+        "data-mermaid-content",
+        "data-drawio",
+        "data-drawio-data",
+        "data-drawio-svg",
+        "data-drawio-theme",
+        "data-file-url",
+        "data-file-name",
+        "data-file-type",
+        "data-file-mime-type",
+      ],
+      a: ["href", "title"],
+      img: ["src", "alt", "title", "width", "height"],
+    },
+    allowedSchemes: ["http", "https", "mailto", "data"],
+    allowedSchemesByTag: {
+      img: ["http", "https", "data"],
+    },
+  });
 
   result = result.replace(
     /\\+\[(📎|🎥)\s+([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g,
