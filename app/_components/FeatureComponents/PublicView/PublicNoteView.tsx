@@ -6,6 +6,7 @@ import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Not
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ReadingProgressBar } from "../../GlobalComponents/Layout/ReadingProgressBar";
 
 interface PublicNoteViewProps {
@@ -14,6 +15,7 @@ interface PublicNoteViewProps {
 }
 
 export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
+  const t = useTranslations();
   const [avatarUrl, setAvatarUrl] = useState("");
 
   const searchParams = useSearchParams();
@@ -54,13 +56,17 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
               </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
                 <div className="flex items-center gap-1">
-                  <span>by {user?.username}</span>
+                  <span>
+                    {t("public.by", { username: user?.username || "" })}
+                  </span>
                 </div>
                 {note.category && <span>• {note.category}</span>}
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
                   <span>
-                    Updated {new Date(note.updatedAt).toLocaleDateString()}
+                    {t("public.updated", {
+                      date: new Date(note.updatedAt).toLocaleDateString(),
+                    })}
                   </span>
                 </div>
               </div>
@@ -74,7 +80,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
 
         <div className="mt-12 pt-8 border-t border-border text-center no-print">
           <p className="text-sm text-muted-foreground">
-            This note is shared publicly by {note.owner}
+            {t("public.note_shared_by", { owner: note.owner || "" })}
           </p>
         </div>
       </div>

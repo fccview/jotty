@@ -8,6 +8,7 @@ import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Folder } from "lucide-react";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppMode, Category } from "@/app/_types";
+import { useTranslations } from "next-intl";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 
 interface CreateCategoryModalProps {
@@ -29,6 +30,7 @@ export const CreateCategoryModal = ({
   const [parentCategory, setParentCategory] = useState(initialParent);
   const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
+  const t = useTranslations();
   const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,19 +69,19 @@ export const CreateCategoryModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title="Create New Category"
+      title={t("modals.create_category")}
       titleIcon={<Folder className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Parent Category (Optional)
+            {t("modals.parent_category")}
           </label>
           <CategoryTreeSelector
             categories={categories}
             selectedCategory={parentCategory}
             onCategorySelect={setParentCategory}
-            placeholder="No parent (root level)"
+            placeholder={t("modals.no_parent")}
             className="w-full"
             isInModal={true}
           />
@@ -87,13 +89,13 @@ export const CreateCategoryModal = ({
 
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Category Name *
+            {t("modals.category_name")} *
           </label>
           <input
             type="text"
             value={categoryName}
             onChange={(e) => setCategoryName(e.target.value)}
-            placeholder="Enter category name..."
+            placeholder={t("modals.enter_category_name")}
             className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
             required
             disabled={isLoading}
@@ -114,7 +116,7 @@ export const CreateCategoryModal = ({
             disabled={isLoading}
             className="flex-1 border-border text-foreground hover:bg-muted/50"
           >
-            Cancel
+            {t("global.cancel")}
           </Button>
           <Button
             type="submit"
@@ -125,7 +127,9 @@ export const CreateCategoryModal = ({
             }
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {isLoading ? "Creating..." : "Create Category"}
+            {isLoading
+              ? t("modals.creating")
+              : t("modals.create_category_button")}
           </Button>
         </div>
       </form>

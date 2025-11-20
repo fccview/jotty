@@ -2,6 +2,7 @@ import { Checklist, Note } from "@/app/_types";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 type ContentItem = (Checklist | Note) & { link: string; details: string };
 

@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Plus, ClipboardList, RefreshCw } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { RecurrenceRule, Checklist, Item } from "@/app/_types";
 import { isMobileDevice } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
+import { RecurrenceRule, Item, Checklist } from "@/app/_types";
 import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
@@ -34,6 +35,7 @@ export const ChecklistHeading = ({
   placeholder = "Add new item...",
   submitButtonText = "Add Item",
 }: ChecklistHeadingProps) => {
+  const t = useTranslations();
   const [newItemText, setNewItemText] = useState("");
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -180,11 +182,11 @@ export const ChecklistHeading = ({
                   size="lg"
                   onClick={onBulkSubmit}
                   disabled={isLoading}
-                  title="Bulk add items"
+                  title={t("modals.bulk_add_tooltip")}
                   className="px-3 lg:px-4 shadow-sm"
                 >
                   <ClipboardList className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">Bulk</span>
+                  <span className="hidden lg:inline">{t("modals.bulk")}</span>
                 </Button>
               )}
               <div className="flex items-center">
@@ -192,11 +194,10 @@ export const ChecklistHeading = ({
                   type="submit"
                   size="lg"
                   disabled={isLoading || !newItemText.trim()}
-                  className={`px-4 lg:px-6 shadow-sm ${
-                    user?.enableRecurrence === "enable"
+                  className={`px-4 lg:px-6 shadow-sm ${user?.enableRecurrence === "enable"
                       ? "rounded-tr-none rounded-br-none"
                       : ""
-                  }`}
+                    }`}
                 >
                   <Plus className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">{submitButtonText}</span>

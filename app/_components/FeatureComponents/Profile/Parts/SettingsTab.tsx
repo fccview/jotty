@@ -28,6 +28,7 @@ import {
   checklistSettingsSchema,
   generalSettingsSchema,
 } from "@/app/_schemas/user-schemas";
+import { useTranslations } from "next-intl";
 
 interface SettingsTabProps {
   setShowDeleteModal: (show: boolean) => void;
@@ -64,6 +65,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
   const { showToast } = useToast();
+  const t = useTranslations();
   const [allThemes, setAllThemes] = useState<any[]>([]);
   const [loadingThemes, setLoadingThemes] = useState(true);
   const [initialSettings, setInitialSettings] = useState<Partial<User>>(
@@ -150,8 +152,8 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       }
       showToast({
         type: "error",
-        title: "Validation Error",
-        message: "Please fix the validation errors before saving.",
+        title: t("profile.validation_error"),
+        message: t("profile.fix_validation_errors"),
       });
       return;
     }
@@ -162,8 +164,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       router.refresh();
       showToast({
         type: "success",
-        title: `${sectionName} settings saved!`,
-        message: `Your ${sectionName.toLowerCase()} preferences have been updated.`,
+        title: t("profile.settings_saved", { section: sectionName }),
+        message: t("profile.preferences_updated", {
+          section: sectionName.toLowerCase(),
+        }),
       });
     } else {
       console.error(
@@ -172,8 +176,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       );
       showToast({
         type: "error",
-        title: `Failed to save ${sectionName.toLowerCase()} settings`,
-        message: result.error || "An unknown error occurred.",
+        title: t("profile.failed_to_save_settings", {
+          section: sectionName.toLowerCase(),
+        }),
+        message: result.error || t("profile.unknown_error"),
       });
     }
 
@@ -205,8 +211,8 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   ];
 
   const tableSyntaxOptions = [
-    { id: "markdown", name: "Markdown (e.g., | Header |)" },
-    { id: "html", name: "HTML (e.g., <table><tr><td>)" },
+    { id: "markdown", name: t("profile.table_syntax_markdown") },
+    { id: "html", name: t("profile.table_syntax_html") },
   ];
 
   const autoSaveIntervalOptions = [
@@ -221,13 +227,13 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   ];
 
   const notesDefaultEditorOptions = [
-    { id: "wysiwyg", name: "Rich Text Editor" },
-    { id: "markdown", name: "Markdown" },
+    { id: "wysiwyg", name: t("profile.editor_rich_text") },
+    { id: "markdown", name: t("profile.editor_markdown") },
   ];
 
   const notesDefaultModeOptions = [
-    { id: "edit", name: "Edit" },
-    { id: "view", name: "View" },
+    { id: "edit", name: t("profile.mode_edit") },
+    { id: "view", name: t("profile.mode_view") },
   ];
 
   const enableRecurrenceOptions = [
@@ -247,15 +253,15 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   ];
 
   const landingPageOptions = [
-    { id: "last-visited", name: "Last visited page" },
-    { id: Modes.CHECKLISTS, name: "Checklists" },
-    { id: Modes.NOTES, name: "Notes" },
+    { id: "last-visited", name: t("profile.landing_last_visited") },
+    { id: Modes.CHECKLISTS, name: t("profile.landing_checklists") },
+    { id: Modes.NOTES, name: t("profile.landing_notes") },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Account Settings</h2>
+        <h2 className="text-2xl font-bold">{t("profile.account_settings")}</h2>
       </div>
 
       <FormWrapper
@@ -264,7 +270,13 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <Button
             onClick={() =>
               handleSaveSection(
-                ["preferredTheme", "landingPage", "fileRenameMode", "preferredDateFormat", "preferredTimeFormat"],
+                [
+                  "preferredTheme",
+                  "landingPage",
+                  "fileRenameMode",
+                  "preferredDateFormat",
+                  "preferredTimeFormat",
+                ],
                 generalSettingsSchema,
                 "General"
               )
@@ -401,7 +413,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
       </FormWrapper>
 
       <FormWrapper
-        title="Notes Preferences"
+        title={t("profile.notes_preferences")}
         action={
           <Button
             onClick={() =>
@@ -419,7 +431,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             disabled={!hasEditorChanges}
             size="sm"
           >
-            Save Editor
+            {t("profile.save_editor")}
           </Button>
         }
       >
@@ -455,7 +467,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               handleSettingChange("notesDefaultMode", value as NotesDefaultMode)
             }
             options={notesDefaultModeOptions}
-            placeholder="Select notes default mode"
+            placeholder={t("profile.select_default_mode")}
             className="w-full"
           />
           {validationErrors.notesDefaultMode && (
@@ -475,7 +487,9 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="notes-default-editor">Default Editor</Label>
+          <Label htmlFor="notes-default-editor">
+            {t("profile.default_editor")}
+          </Label>
           <Dropdown
             value={currentSettings.notesDefaultEditor || "wysiwyg"}
             onChange={(value) =>
@@ -485,7 +499,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               )
             }
             options={notesDefaultEditorOptions}
-            placeholder="Select notes default editor"
+            placeholder={t("profile.select_default_editor")}
             className="w-full"
           />
           {validationErrors.notesDefaultEditor && (
@@ -506,14 +520,14 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="table-syntax">Table Syntax in Notes</Label>
+          <Label htmlFor="table-syntax">{t("profile.table_syntax")}</Label>
           <Dropdown
             value={currentSettings.tableSyntax || "html"}
             onChange={(value) =>
               handleSettingChange("tableSyntax", value as TableSyntax)
             }
             options={tableSyntaxOptions}
-            placeholder="Select table syntax"
+            placeholder={t("profile.select_table_syntax")}
             className="w-full"
           />
           {validationErrors.tableSyntax && (
@@ -522,7 +536,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose how tables are rendered in your notes.
+            {t("profile.table_syntax_description")}
           </p>
         </div>
       </FormWrapper>
@@ -584,18 +598,18 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         </div>
       </FormWrapper>
 
-      <FormWrapper title="Account Management">
+      <FormWrapper title={t("profile.account_management")}>
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div>
-              <h4 className="font-medium">Delete Account</h4>
+              <h4 className="font-medium">{t("profile.delete_account")}</h4>
               <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data
+                {t("profile.delete_account_description")}
               </p>
             </div>
             {isDemoMode ? (
               <span className="text-sm text-muted-foreground">
-                disabled in demo mode
+                {t("profile.disabled_in_demo")}
               </span>
             ) : (
               <Button
@@ -603,7 +617,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                 className="text-destructive hover:text-destructive"
                 onClick={() => setShowDeleteModal(true)}
               >
-                Delete Account
+                {t("profile.delete_account")}
               </Button>
             )}
           </div>

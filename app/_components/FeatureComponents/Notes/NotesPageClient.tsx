@@ -15,6 +15,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 import Masonry from "react-masonry-css";
+import { useTranslations } from "next-intl";
 
 interface NotesPageClientProps {
   initialNotes: Note[];
@@ -30,6 +31,7 @@ export const NotesPageClient = ({
   user,
 }: NotesPageClientProps) => {
   const router = useRouter();
+  const t = useTranslations();
   const { openCreateNoteModal } = useShortcut();
   const { isInitialized } = useAppMode();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -142,14 +144,14 @@ export const NotesPageClient = ({
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
         <SiteHeader
-          title="All Notes"
+          title={t("notes.all_notes")}
           description="Browse and manage all your notes"
         />
         <EmptyState
           icon={<FileText className="h-10 w-10 text-muted-foreground" />}
-          title="No notes yet"
-          description="Create your first note to get started with your knowledge base."
-          buttonText="Create New Note"
+          title={t("notes.no_notes_yet")}
+          description={t("notes.create_your_first_note")}
+          buttonText={t("notes.create_note")}
           onButtonClick={() => openCreateNoteModal()}
         />
       </div>
@@ -159,13 +161,13 @@ export const NotesPageClient = ({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <SiteHeader
-        title="All Notes"
-        description="Browse and manage all your notes"
+        title={t("notes.all_notes")}
+        description={t("notes.browse_and_manage_all_your_notes")}
       />
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
           <FilterSidebar
-            title="By type"
+            title={t("global.filter_by_type")}
             filterValue={noteFilter}
             filterOptions={filterOptions}
             onFilterChange={(value) => setNoteFilter(value as NoteFilter)}
@@ -193,10 +195,10 @@ export const NotesPageClient = ({
             <div className="text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No notes found
+                {t("notes.no_notes_found")}
               </h3>
               <p className="text-muted-foreground">
-                Try adjusting your filters or create a new note.
+                {t("notes.try_adjusting_your_filters_or_create_a_new_note")}
               </p>
             </div>
           ) : (

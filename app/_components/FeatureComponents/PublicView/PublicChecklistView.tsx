@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Checklist, User } from "@/app/_types";
 import { PublicChecklistHeader } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistHeader";
 import { PublicChecklistBody } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistBody";
+import { useTranslations } from "next-intl";
 
 interface PublicChecklistViewProps {
   checklist: Checklist;
@@ -15,6 +16,7 @@ export const PublicChecklistView = ({
   user,
 }: PublicChecklistViewProps) => {
   const [avatarUrl, setAvatarUrl] = useState("");
+  const t = useTranslations();
 
   useEffect(() => {
     if (typeof window !== "undefined" && user?.avatarUrl) {
@@ -38,7 +40,7 @@ export const PublicChecklistView = ({
 
         <footer className="mt-12 pt-8 border-t border-border text-center">
           <p className="text-sm text-muted-foreground">
-            This checklist is shared publicly by {checklist.owner}
+            {t("public.checklist_shared_by", { owner: checklist.owner || "" })}
           </p>
         </footer>
       </div>

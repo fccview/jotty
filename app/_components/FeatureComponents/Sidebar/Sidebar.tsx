@@ -24,6 +24,7 @@ import { NavigationLogoutIcon } from "../Navigation/Parts/NavigationLogoutIcon";
 import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
 import { NavigationHelpIcon } from "../Navigation/Parts/NavigationHelpIcon";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 export const Sidebar = (props: SidebarProps) => {
@@ -37,6 +38,7 @@ export const Sidebar = (props: SidebarProps) => {
     onOpenSettings,
   } = props;
 
+  const t = useTranslations();
   const { checkNavigation } = useNavigationGuard();
   const { checklists, notes } = useAppMode();
   const searchParams = useSearchParams();
@@ -63,8 +65,8 @@ export const Sidebar = (props: SidebarProps) => {
       updatedMode = isNotesPage
         ? Modes.NOTES
         : isChecklistsPage
-          ? Modes.CHECKLISTS
-          : sidebar.mode || Modes.CHECKLISTS;
+        ? Modes.CHECKLISTS
+        : sidebar.mode || Modes.CHECKLISTS;
     }
 
     setMode(searchMode || updatedMode || Modes.CHECKLISTS);
@@ -116,7 +118,7 @@ export const Sidebar = (props: SidebarProps) => {
                   />
                   {isDemoMode && (
                     <span className="text-sm text-muted-foreground font-medium">
-                      (demo)
+                      {t("sidebar.demo")}
                     </span>
                   )}
                 </div>
@@ -131,13 +133,15 @@ export const Sidebar = (props: SidebarProps) => {
             <div className="px-2 pt-2">
               <div className="flex items-center justify-between">
                 <h3 className="jotty-sidebar-categories-title text-xs font-bold uppercase text-muted-foreground tracking-wider">
-                  Categories
+                  {t("global.categories")}
                 </h3>
                 <button
                   onClick={sidebar.handleToggleAllCategories}
                   className="jotty-sidebar-categories-toggle-all text-xs font-medium text-primary hover:underline focus:outline-none"
                 >
-                  {sidebar.areAnyCollapsed ? "Expand All" : "Collapse All"}
+                  {sidebar.areAnyCollapsed
+                    ? t("global.expand_all")
+                    : t("global.collapse_all")}
                 </button>
               </div>
             </div>
@@ -193,7 +197,7 @@ export const Sidebar = (props: SidebarProps) => {
               <span className="truncate">{user?.username}</span>
               {user?.isAdmin && (
                 <span className="px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded">
-                  Admin
+                  {t("global.admin")}
                 </span>
               )}
             </button>
@@ -291,7 +295,7 @@ export const Sidebar = (props: SidebarProps) => {
             note={sidebar.modalState.data as Note}
             categories={categories}
             onClose={sidebar.closeModal}
-            onUpdated={(customFunction: () => void = () => { }) => {
+            onUpdated={(customFunction: () => void = () => {}) => {
               sidebar.closeModal();
               sidebar.router.refresh();
               customFunction?.();

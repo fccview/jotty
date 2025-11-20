@@ -16,9 +16,11 @@ import { AppSettings } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
+import { useTranslations } from "next-intl";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 
 export const AppSettingsTab = () => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const { updateFavicons } = useFaviconUpdate();
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -38,16 +40,16 @@ export const AppSettingsTab = () => {
       } catch (error) {
         showToast({
           type: "error",
-          title: "Load Error",
+          title: t("global.error"),
           message:
             error instanceof Error
               ? error.message
-              : "Could not fetch settings.",
+              : t("admin.settings.load_error"),
         });
       }
     };
     loadSettings();
-  }, [showToast]);
+  }, [showToast, t]);
 
   const handleInputChange = (field: string, value: string) => {
     setSettings((prev) => (prev ? { ...prev, [field]: value } : null));
@@ -67,20 +69,20 @@ export const AppSettingsTab = () => {
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: "Settings saved successfully.",
+          title: t("global.success"),
+          message: t("admin.settings.saved_success"),
         });
         setHasChanges(false);
         updateFavicons();
       } else {
-        throw new Error(result.error || "Failed to save settings");
+        throw new Error(result.error || t("admin.settings.save_failed"));
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Save Error",
+        title: t("global.error"),
         message:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+          error instanceof Error ? error.message : t("global.unknown_error"),
       });
     } finally {
       setIsSaving(false);
@@ -92,32 +94,32 @@ export const AppSettingsTab = () => {
   const formFields = [
     {
       id: "appName",
-      label: "Application Name",
-      description: "Appears in the browser tab and PWA name.",
+      label: t("admin.settings.app_name"),
+      description: t("admin.settings.app_name_description"),
       placeholder: isRwMarkable ? "rwMarkable" : "jotty·page",
     },
     {
       id: "appDescription",
-      label: "Application Description",
-      description: "Used for search engines and PWA description.",
+      label: t("admin.settings.app_description"),
+      description: t("admin.settings.app_description_description"),
       placeholder: "A simple, fast, and lightweight checklist...",
     },
   ] as const;
 
   const iconFields = [
     {
-      label: "16x16 Favicon",
-      description: "Small favicon for browser tabs.",
+      label: t("admin.settings.favicon_16"),
+      description: t("admin.settings.favicon_16_description"),
       iconType: "16x16Icon",
     },
     {
-      label: "32x32 Favicon",
-      description: "Standard favicon for most browsers.",
+      label: t("admin.settings.favicon_32"),
+      description: t("admin.settings.favicon_32_description"),
       iconType: "32x32Icon",
     },
     {
-      label: "180x180 Apple Touch Icon",
-      description: "Icon for iOS home screen.",
+      label: t("admin.settings.favicon_180"),
+      description: t("admin.settings.favicon_180_description"),
       iconType: "180x180Icon",
     },
     {
@@ -135,9 +137,11 @@ export const AppSettingsTab = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">Settings</h2>
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          {t("global.settings")}
+        </h2>
         <p className="text-muted-foreground">
-          Customize your application name, description, and icons.
+          {t("admin.settings.customize_app")}
         </p>
       </div>
 
@@ -155,6 +159,12 @@ export const AppSettingsTab = () => {
           ))}
         </div>
         <div>
+          <label
+            className="text-sm font-medium leading-none block mb-3"
+            htmlFor="notifyNewUpdates"
+          >
+            {t("admin.settings.notify_updates")}
+          </label>
           <Label htmlFor="notifyNewUpdates" className="block mb-3">
             Notify me of new updates
           </Label>
@@ -162,8 +172,8 @@ export const AppSettingsTab = () => {
             value={settings?.notifyNewUpdates || "yes"}
             onChange={(value) => handleInputChange("notifyNewUpdates", value)}
             options={[
-              { id: "yes", name: "Yes" },
-              { id: "no", name: "No" },
+              { id: "yes", name: t("global.yes") },
+              { id: "no", name: t("global.no") },
             ]}
           />
         </div>
@@ -180,15 +190,22 @@ export const AppSettingsTab = () => {
             ]}
           />
           <span className="text-xs text-muted-foreground">
-            When enabled this setting will show the parsed titles in the sidebar, search results, and overall across the app. <br />
-            When disabled, the original file names will be sanitised, made human readable and shown instead.<br />
-            <span className="font-bold">Setting this to &quot;no&quot; will improve performance on large datasets but may impact readability - especially on filenames with non latin characters.</span>
+            When enabled this setting will show the parsed titles in the
+            sidebar, search results, and overall across the app. <br />
+            When disabled, the original file names will be sanitised, made human
+            readable and shown instead.
+            <br />
+            <span className="font-bold">
+              Setting this to &quot;no&quot; will improve performance on large
+              datasets but may impact readability - especially on filenames with
+              non latin characters.
+            </span>
           </span>
         </div>
         <div>
           <Input
-            label="Maximum file upload size"
-            description="The maximum file size allowed for uploads in MB (applies to images, videos, and files)"
+            label={t("admin.settings.max_file_size")}
+            description={t("admin.settings.max_file_size_description")}
             type="number"
             id="maximumFileSize"
             defaultValue={
@@ -206,7 +223,9 @@ export const AppSettingsTab = () => {
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold mb-4">Application Icons</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            {t("admin.settings.app_icons")}
+          </h3>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {iconFields.map((field) => (
               <ImageUpload
@@ -225,10 +244,11 @@ export const AppSettingsTab = () => {
           <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
             {isSaving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                {t("global.saving")}
               </>
             ) : (
-              "Save Changes"
+              t("admin.settings.save_changes")
             )}
           </Button>
           <Button
@@ -236,11 +256,11 @@ export const AppSettingsTab = () => {
             onClick={() => window.location.reload()}
             disabled={isSaving || !hasChanges}
           >
-            Reset
+            {t("global.reset")}
           </Button>
           {hasChanges && (
             <p className="text-sm text-muted-foreground">
-              You have unsaved changes.
+              {t("admin.settings.unsaved_changes")}
             </p>
           )}
         </div>

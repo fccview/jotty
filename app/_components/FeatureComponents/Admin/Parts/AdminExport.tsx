@@ -12,6 +12,7 @@ import {
   exportWholeDataFolder,
   getExportProgress,
 } from "@/app/_server/actions/export";
+import { useTranslations } from "next-intl";
 
 type ExportType =
   | "all_checklists_notes"
@@ -26,33 +27,29 @@ interface ExportOption {
   requiresUserSelection: boolean;
 }
 
-const exportOptions: ExportOption[] = [
+const getExportOptions = (t: any): ExportOption[] => [
   {
     id: "all_checklists_notes",
-    title: "All Checklists and Notes",
-    description:
-      "Exports all checklists and notes created by all users. This will generate a zip file containing JSON data organized by user and category.",
+    title: t("admin.export.all_checklists_notes"),
+    description: t("admin.export.all_checklists_notes_description"),
     requiresUserSelection: false,
   },
   {
     id: "user_checklists_notes",
-    title: "Specific User's Checklists and Notes",
-    description:
-      "Select a user from the dropdown to export all checklists and notes belonging to that specific user.",
+    title: t("admin.export.user_checklists_notes"),
+    description: t("admin.export.user_checklists_notes_description"),
     requiresUserSelection: true,
   },
   {
     id: "all_users_data",
-    title: "All User Account Data",
-    description:
-      "Exports a JSON file with all user account info (usernames, admin status, etc.). This does NOT include their checklist or note content.",
+    title: t("admin.export.all_users_data"),
+    description: t("admin.export.all_users_data_description"),
     requiresUserSelection: false,
   },
   {
     id: "whole_data_folder",
-    title: "Entire Data Folder (Backup)",
-    description:
-      "Exports the entire 'data' folder, including all user content, metadata, and settings. Use with caution as this can be a large file.",
+    title: t("admin.export.whole_data_folder"),
+    description: t("admin.export.whole_data_folder_description"),
     requiresUserSelection: false,
   },
 ];
@@ -62,6 +59,9 @@ interface ExportContentProps {
 }
 
 export const ExportContent = ({ users }: ExportContentProps) => {
+  const t = useTranslations();
+  const exportOptions = getExportOptions(t);
+
   const [selectedExportType, setSelectedExportType] = useState<ExportType>(
     exportOptions[3].id
   );
@@ -78,7 +78,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
 
   const selectedOption = useMemo(
     () => exportOptions.find((opt) => opt.id === selectedExportType)!,
-    [selectedExportType]
+    [selectedExportType, exportOptions]
   );
 
   React.useEffect(() => {
@@ -101,7 +101,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
 
   const handleExport = async () => {
     setExporting(true);
-    setProgress({ progress: 0, message: "Initiating export..." });
+    setProgress({ progress: 0, message: t("admin.export.initiating") });
     setDownloadUrl(undefined);
     setError(undefined);
 
@@ -113,7 +113,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
           break;
         case "user_checklists_notes":
           if (!selectedUser) {
-            setError("Please select a user to export.");
+            setError(t("admin.export.select_user"));
             setExporting(false);
             return;
           }
@@ -131,16 +131,16 @@ export const ExportContent = ({ users }: ExportContentProps) => {
         setDownloadUrl(result.downloadUrl);
         setProgress({
           progress: 100,
-          message: "Export completed successfully.",
+          message: t("admin.export.completed_success"),
         });
       } else {
-        setError(result?.error || "Export failed.");
-        setProgress({ progress: 100, message: "Export failed." });
+        setError(result?.error || t("admin.export.failed"));
+        setProgress({ progress: 100, message: t("admin.export.failed") });
       }
     } catch (err: any) {
       console.error("Export error:", err);
-      setError(err.message || "An unexpected error occurred during export.");
-      setProgress({ progress: 100, message: "Export failed due to an error." });
+      setError(err.message || t("admin.export.unexpected_error"));
+      setProgress({ progress: 100, message: t("admin.export.failed_error") });
     } finally {
       if (error || !downloadUrl) {
         setExporting(false);
@@ -154,9 +154,9 @@ export const ExportContent = ({ users }: ExportContentProps) => {
   return (
     <div className="py-6 bg-card space-y-8">
       <div>
-        <h2 className="text-2xl font-bold">Data Export Options</h2>
+        <h2 className="text-2xl font-bold">{t("admin.export.data_export_options")}</h2>
         <p className="text-muted-foreground">
-          Select an export type and download data from your application.
+          {t("admin.export.select_export_type")}
         </p>
       </div>
 
@@ -186,7 +186,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
                 name: user.username,
               }))}
               disabled={exporting}
-              placeholder="Select a user to export"
+              placeholder={t("admin.export.select_user_placeholder")}
               className="w-full"
             />
           </div>
@@ -197,7 +197,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
           disabled={isExportDisabled}
           className="w-full md:w-auto"
         >
-          Export Data
+          {t("admin.export.export_data")}
         </Button>
       </div>
 
@@ -213,13 +213,13 @@ export const ExportContent = ({ users }: ExportContentProps) => {
       {downloadUrl && !exporting && (
         <div className="p-4 border rounded-md bg-secondary text-secondary-foreground text-center text-sm">
           <p>
-            Export ready!{" "}
+            {t("admin.export.export_ready")}{" "}
             <a
               href={downloadUrl}
               download
               className="text-primary hover:underline font-medium"
             >
-              Click here to download your file.
+              {t("admin.export.click_to_download")}
             </a>
           </p>
         </div>
@@ -227,7 +227,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
 
       {error && (
         <div className="p-4 border border-destructive rounded-md bg-destructive/10 text-destructive text-center">
-          <p className="font-medium">Error: {error}</p>
+          <p className="font-medium">{t("admin.export.error")}: {error}</p>
         </div>
       )}
     </div>

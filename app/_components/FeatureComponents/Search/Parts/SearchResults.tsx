@@ -3,6 +3,7 @@
 import { CheckSquare, FileText, Users } from "lucide-react";
 import { cn } from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
+import { useTranslations } from "next-intl";
 import { ItemTypes } from "@/app/_types/enums";
 
 interface SearchResult {
@@ -28,6 +29,8 @@ export const SearchResults = ({
   onSelectResult,
   query,
 }: SearchResultsProps) => {
+  const t = useTranslations();
+
   const getSnippet = (content: string | undefined, query: string) => {
     if (!content) return "";
 
@@ -46,7 +49,7 @@ export const SearchResults = ({
   if (results.length === 0) {
     return (
       <div className="p-4 text-center text-muted-foreground">
-        No results found
+        {t("search.no_results_found")}
       </div>
     );
   }
@@ -98,7 +101,7 @@ export const SearchResults = ({
                 {result.owner && (
                   <>
                     <span>•</span>
-                    <span>by {result.owner}</span>
+                    <span>{t("public.by", { username: result.owner })}</span>
                   </>
                 )}
               </div>

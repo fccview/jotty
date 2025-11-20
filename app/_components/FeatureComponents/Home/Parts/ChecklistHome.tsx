@@ -23,6 +23,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useChecklistHome } from "@/app/_hooks/useChecklistHome";
+import { useTranslations } from "next-intl";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 
@@ -60,6 +61,7 @@ export const ChecklistHome = ({
     draggedItemWidth,
   } = useChecklistHome({ lists, user });
 
+  const t = useTranslations();
   const getListSharer = (list: Checklist) => {
     const encodedCategory = encodeCategoryPath(
       list.category || "Uncategorized"
@@ -74,9 +76,9 @@ export const ChecklistHome = ({
     return (
       <div className="h-full flex items-center justify-center">
         <EmptyState
-          title="No Checklists Yet"
-          description="Create your first checklist to start organizing your tasks."
-          buttonText="New Checklist"
+          title={t("checklists.no_checklists_yet")}
+          description={t("checklists.create_your_first_checklist")}
+          buttonText={t("checklists.new_checklist")}
           onButtonClick={() => onCreateModal()}
           icon={<CheckSquare className="h-10 w-10 text-muted-foreground" />}
         />
@@ -90,10 +92,10 @@ export const ChecklistHome = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
-              Checklists
+              {t("checklists.title")}
             </h1>
             <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
-              Your productivity dashboard
+              {t("checklists.description")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -103,8 +105,10 @@ export const ChecklistHome = ({
               size="sm"
               className="flex-1 sm:size-lg"
             >
-              <span className="hidden sm:inline">All Lists</span>
-              <span className="sm:hidden">All</span>
+              <span className="hidden sm:inline">
+                {t("checklists.all_lists")}
+              </span>
+              <span className="sm:hidden">{t("global.all")}</span>
             </Button>
             <Button
               onClick={() => onCreateModal()}
@@ -112,8 +116,10 @@ export const ChecklistHome = ({
               className="flex-1 sm:size-lg"
             >
               <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">New Checklist</span>
-              <span className="sm:hidden">New</span>
+              <span className="hidden sm:inline">
+                {t("checklists.new_checklist")}
+              </span>
+              <span className="sm:hidden">{t("global.new")}</span>
             </Button>
           </div>
         </div>
@@ -128,7 +134,9 @@ export const ChecklistHome = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.totalLists}
                 </div>
-                <div className="text-xs text-muted-foreground">Lists</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.categories")}
+                </div>
               </div>
             </div>
 
@@ -140,7 +148,9 @@ export const ChecklistHome = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completedItems}
                 </div>
-                <div className="text-xs text-muted-foreground">Completed</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.completed")}
+                </div>
               </div>
             </div>
 
@@ -152,7 +162,9 @@ export const ChecklistHome = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {completionRate}%
                 </div>
-                <div className="text-xs text-muted-foreground">Progress</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.progress")}
+                </div>
               </div>
             </div>
 
@@ -164,7 +176,9 @@ export const ChecklistHome = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.totalItems}
                 </div>
-                <div className="text-xs text-muted-foreground">Total Items</div>
+                <div className="text-xs text-muted-foreground">
+                  {t("global.total_items")}
+                </div>
               </div>
             </div>
           </div>
@@ -174,7 +188,7 @@ export const ChecklistHome = ({
           <div className="flex items-center gap-3">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-foreground">
-              Filter by completion
+              {t("actions.filter_by_completion")}
             </span>
           </div>
           <Dropdown
@@ -192,7 +206,7 @@ export const ChecklistHome = ({
                 <Pin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Pinned
+                {t("global.pinned")}
               </h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
@@ -246,7 +260,7 @@ export const ChecklistHome = ({
                     <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    Task Lists
+                    {t("tasks.task_lists")}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
@@ -255,8 +269,10 @@ export const ChecklistHome = ({
                     size="sm"
                     className="ml-2"
                   >
-                    <span className="hidden sm:inline">Show All Tasks</span>
-                    <span className="sm:hidden">All</span>
+                    <span className="hidden sm:inline">
+                      {t("tasks.all_tasks")}
+                    </span>
+                    <span className="sm:hidden">{t("global.all")}</span>
                     <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
                   </Button>
                 </div>
@@ -282,7 +298,7 @@ export const ChecklistHome = ({
                     <CheckSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    Simple Lists
+                    {t("checklists.simple_lists")}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
@@ -291,8 +307,10 @@ export const ChecklistHome = ({
                     size="sm"
                     className="ml-2"
                   >
-                    <span className="hidden sm:inline">Show All</span>
-                    <span className="sm:hidden">All</span>
+                    <span className="hidden sm:inline">
+                      {t("checklists.all_lists")}
+                    </span>
+                    <span className="sm:hidden">{t("global.all")}</span>
                     <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
                   </Button>
                 </div>

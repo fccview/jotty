@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface checklistItemsWrapperProps {
@@ -17,19 +18,22 @@ export const ChecklistItemsWrapper = ({
   isLoading,
   isCompleted = false,
 }: checklistItemsWrapperProps) => {
+  const t = useTranslations();
+
   const { permissions } = usePermissions();
   return (
     <div className="bg-card border-b border-border pb-4 lg:border-0">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <div
-            className={`w-2 h-2 rounded-full ${isCompleted ? "bg-green-500" : "bg-muted-foreground"
-              }`}
+            className={`w-2 h-2 rounded-full ${
+              isCompleted ? "bg-green-500" : "bg-muted-foreground"
+            }`}
           ></div>
           {title} ({count})
           {isLoading && (
             <span className="ml-2 text-sm text-muted-foreground">
-              Saving...
+              {t("global.saving")}
             </span>
           )}
         </h3>
@@ -39,7 +43,9 @@ export const ChecklistItemsWrapper = ({
             disabled={isLoading}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
           >
-            {isCompleted ? "Uncheck All" : "Check All"}
+            {isCompleted
+              ? t("checklists.uncheck_all")
+              : t("checklists.check_all")}
           </button>
         )}
       </div>

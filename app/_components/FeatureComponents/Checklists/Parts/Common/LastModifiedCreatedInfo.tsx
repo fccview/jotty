@@ -1,6 +1,7 @@
 import { Checklist, Item } from "@/app/_types";
 import { Edit2Icon, ListPlus } from "lucide-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useTranslations } from "next-intl";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
@@ -14,12 +15,18 @@ const LastModifiedCreatedInfo = ({
   getUserAvatarUrl: (username: string) => string;
   checklist: Checklist;
 }) => {
+  const t = useTranslations();
+
   const { allSharedItems } = useAppMode();
   const { formatDateTimeString } = usePreferredDateTime();
-  const encodedCategory = encodeCategoryPath(checklist.category || "Uncategorized");
+  const encodedCategory = encodeCategoryPath(
+    checklist.category || "Uncategorized"
+  );
 
   const isShared = allSharedItems?.checklists.some(
-    (sharedChecklist) => sharedChecklist.id === checklist.id && sharedChecklist.category === encodedCategory
+    (sharedChecklist) =>
+      sharedChecklist.id === checklist.id &&
+      sharedChecklist.category === encodedCategory
   );
   return (
     <>
@@ -30,10 +37,15 @@ const LastModifiedCreatedInfo = ({
           {item.createdBy && (
             <span
               className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
-              title={`Created by ${item.createdBy}${item.createdAt
-                ? ` on ${formatDateTimeString(item.createdAt)}`
-                : ""
-                }`}
+              title={`${t("checklists.created_by", {
+                username: item.createdBy,
+              })}${
+                item.createdAt
+                  ? t("checklists.created_on", {
+                      date: formatDateTimeString(item.createdAt),
+                    })
+                  : ""
+              }`}
             >
               <UserAvatar
                 username={item.createdBy}
@@ -50,10 +62,15 @@ const LastModifiedCreatedInfo = ({
           {item.lastModifiedBy && (
             <span
               className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
-              title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
-                ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
-                : ""
-                }`}
+              title={`${t("checklists.last_modified_by", {
+                username: item.lastModifiedBy,
+              })}${
+                item.lastModifiedAt
+                  ? t("checklists.last_modified_on", {
+                      date: formatDateTimeString(item.lastModifiedAt),
+                    })
+                  : ""
+              }`}
             >
               <UserAvatar
                 username={item.lastModifiedBy}
@@ -62,7 +79,9 @@ const LastModifiedCreatedInfo = ({
               />
               <span className="flex items-center gap-1">
                 <Edit2Icon className="h-3 w-3" />
-                {item.lastModifiedAt ? formatDateTimeString(item.lastModifiedAt) : ""}
+                {item.lastModifiedAt
+                  ? formatDateTimeString(item.lastModifiedAt)
+                  : ""}
               </span>
             </span>
           )}

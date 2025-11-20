@@ -11,11 +11,12 @@ import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checkli
 import VirtualizedChecklistItems from "./VirtualizedChecklistItems";
 import { ChecklistDropIndicator } from "./ChecklistDropIndicator";
 import { Checklist, Item } from "@/app/_types";
-import { ItemTypes, TaskStatusLabels } from "@/app/_types/enums";
+import { TaskStatusLabels, ItemTypes } from "@/app/_types/enums";
 import { useMemo, useState } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
+import { useTranslations } from "next-intl";
 
 interface ChecklistBodyProps {
   localList: Checklist;
@@ -51,7 +52,7 @@ export const ChecklistBody = ({
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
   const [isDragging, setIsDragging] = useState(false);
   const [activeItem, setActiveItem] = useState<Item | null>(null);
-
+  const t = useTranslations();
   const referencingItems = useMemo(() => {
     return getReferences(
       linkIndex,
@@ -68,10 +69,10 @@ export const ChecklistBody = ({
       <>
         <div className="bg-card rounded-lg border border-border m-4 p-8 text-center">
           <h3 className="text-xl font-semibold text-foreground mb-2">
-            No items yet
+            {t("checklists.no_items_yet")}
           </h3>
           <p className="text-muted-foreground">
-            Add your first item to get started!
+            {t("checklists.add_first_item")}
           </p>
         </div>
 

@@ -11,47 +11,51 @@ import {
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
+
 interface AdminTabsProps {
   activeTab: AdminTabsEnum;
   onTabChange: (tab: AdminTabsEnum) => void;
 }
 
 export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
+  const t = useTranslations();
+
   const tabs = [
     {
       id: AdminTabsEnum.OVERVIEW,
-      label: "Overview",
+      label: t("global.overview"),
       icon: Activity,
     },
     {
       id: AdminTabsEnum.USERS,
-      label: "Users",
+      label: t("global.users"),
       icon: Users,
     },
     {
       id: AdminTabsEnum.CONTENT,
-      label: "Content",
+      label: t("global.content"),
       icon: FileText,
     },
     {
       id: AdminTabsEnum.SHARING,
-      label: "Sharing",
+      label: t("global.sharing"),
       icon: Globe,
     },
     {
       id: AdminTabsEnum.EDITOR,
-      label: "Editor",
+      label: t("global.editor"),
       icon: Edit3,
     },
     {
       id: AdminTabsEnum.STYLING,
-      label: "Styling",
+      label: t("global.styling"),
       icon: Palette,
     },
     {
       id: AdminTabsEnum.SETTINGS,
-      label: "Settings",
+      label: t("global.settings"),
       icon: Settings,
     },
   ];

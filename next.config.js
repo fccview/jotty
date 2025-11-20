@@ -1,3 +1,5 @@
+const withNextIntl = require('next-intl/plugin')('./app/i18n.ts');
+
 const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,
@@ -6,7 +8,6 @@ const withPWA = require('next-pwa')({
   buildExcludes: [/middleware-manifest\.json$/]
 })
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: [],
@@ -18,4 +19,6 @@ const nextConfig = {
   }
 }
 
-module.exports = withPWA(nextConfig)
+module.exports = withNextIntl({
+  ...withPWA(nextConfig)
+});

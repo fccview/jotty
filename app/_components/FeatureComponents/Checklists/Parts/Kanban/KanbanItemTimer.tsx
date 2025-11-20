@@ -2,6 +2,7 @@
 
 import { Clock, Timer, Pause, Plus } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanItemTimerProps {
@@ -21,11 +22,12 @@ export const KanbanItemTimer = ({
   onTimerToggle,
   onAddManualTime,
 }: KanbanItemTimerProps) => {
+  const t = useTranslations();
   const { permissions } = usePermissions();
 
   const handleAddTime = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const minutes = prompt("Enter time in minutes:");
+    const minutes = prompt(t("checklists.enter_time_minutes"));
     if (minutes && !isNaN(Number(minutes))) {
       onAddManualTime(Number(minutes));
     }

@@ -18,6 +18,7 @@ import { SidebarItem } from "@/app/_components/FeatureComponents/Sidebar/Parts/S
 import { Modes } from "@/app/_types/enums";
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
+import { useTranslations } from "next-intl";
 
 interface CategoryRendererProps {
   category: Category;
@@ -37,6 +38,7 @@ interface CategoryRendererProps {
 }
 
 export const CategoryRenderer = (props: CategoryRendererProps) => {
+  const t = useTranslations();
   const {
     category,
     allCategories,
@@ -81,7 +83,10 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
 
   const dropdownItems = [
     {
-      label: `New ${mode === Modes.CHECKLISTS ? "Checklist" : "Note"}`,
+      label:
+        mode === Modes.CHECKLISTS
+          ? t("checklists.new_checklist")
+          : t("notes.new_note"),
       onClick: () => onQuickCreate(category.path),
       icon:
         mode === Modes.CHECKLISTS ? (
@@ -91,17 +96,17 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
         ),
     },
     {
-      label: "New Category",
+      label: t("sidebar.new_category"),
       onClick: () => onCreateSubcategory(category.path),
       icon: <FolderPlus className="h-4 w-4" />,
     },
     { type: "divider" as const },
     {
-      label: "Rename Category",
+      label: t("modals.rename_category"),
       onClick: () => onRenameCategory(category.path),
     },
     {
-      label: "Delete Category",
+      label: t("modals.delete_category"),
       onClick: () => onDeleteCategory(category.path),
       variant: "destructive" as const,
     },
@@ -112,9 +117,10 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const firstChildId = subCategories[0]
     ? `category::${subCategories[0].path}`
     : categoryItems[0]
-      ? `item::${categoryItems[0].category || "Uncategorized"}::${categoryItems[0].id
+    ? `item::${categoryItems[0].category || "Uncategorized"}::${
+        categoryItems[0].id
       }`
-      : undefined;
+    : undefined;
 
   return (
     <div className="space-y-1">
@@ -234,14 +240,16 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                 />
               </Draggable>
               <DropIndicator
-                id={`drop-after-item::${item.category || "Uncategorized"}::${item.id
-                  }`}
+                id={`drop-after-item::${item.category || "Uncategorized"}::${
+                  item.id
+                }`}
                 data={{
                   type: "drop-indicator",
                   parentPath: category.path,
                   position: "after",
-                  targetDndId: `item::${item.category || "Uncategorized"}::${item.id
-                    }`,
+                  targetDndId: `item::${item.category || "Uncategorized"}::${
+                    item.id
+                  }`,
                   targetType: "item",
                 }}
               />

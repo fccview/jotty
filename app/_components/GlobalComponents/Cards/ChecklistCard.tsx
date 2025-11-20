@@ -2,6 +2,7 @@ import { CheckCircle, Clock, Pin, PinOff } from "lucide-react";
 import { Checklist } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
+import { useTranslations } from "next-intl";
 import { TaskSpecificDetails } from "@/app/_components/GlobalComponents/Cards/TaskSpecificDetails";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -28,6 +29,8 @@ export const ChecklistCard = ({
   sharer,
   fixedWidth,
 }: ChecklistCardProps) => {
+  const t = useTranslations();
+
   const {
     attributes,
     listeners,
@@ -67,7 +70,9 @@ export const ChecklistCard = ({
   const cardStyle = {
     ...style,
     ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
-    ...(fixedWidth ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth } : {}),
+    ...(fixedWidth
+      ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth }
+      : {}),
   };
 
   return (
@@ -97,9 +102,10 @@ export const ChecklistCard = ({
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"
-                } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
-              title={isPinned ? "Unpin" : "Pin"}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              title={isPinned ? t("global.unpin") : t("global.pin")}
             >
               {isPinned ? (
                 <PinOff className="h-3 w-3 text-muted-foreground hover:text-primary" />
@@ -118,7 +124,7 @@ export const ChecklistCard = ({
 
       <div className="mb-3">
         <div className="flex justify-between text-xs text-muted-foreground mb-1">
-          <span>Progress</span>
+          <span>{t("global.progress")}</span>
           <span>{completionRate}%</span>
         </div>
         <div className="w-full bg-muted rounded-full h-2">
@@ -145,7 +151,7 @@ export const ChecklistCard = ({
             <>
               <CheckCircle className="h-3 w-3" />
               <span>
-                {completedItems}/{totalItems} completed
+                {completedItems}/{totalItems} {t("global.completed")}
               </span>
             </>
           )}

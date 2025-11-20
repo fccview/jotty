@@ -17,7 +17,9 @@ import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPa
 import { StatusManagementModal } from "./StatusManagementModal";
 import { ArchivedItemsModal } from "./ArchivedItemsModal";
 import { useKanbanBoard } from "../../../../../_hooks/useKanbanBoard";
-import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
+import { ItemTypes } from "@/app/_types/enums";
 import { ReferencedBySection } from "../../../Notes/Parts/ReferencedBySection";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -60,6 +62,7 @@ const defaultStatuses: KanbanStatus[] = [
 ];
 
 export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
+  const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
@@ -178,8 +181,8 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           isLoading={isLoading}
           autoFocus={true}
           focusKey={focusKey}
-          placeholder="Add new task..."
-          submitButtonText="Add Task"
+          placeholder={t("checklists.add_new_task")}
+          submitButtonText={t("checklists.add_task")}
         />
       )}
       <div className="flex gap-2 px-4 pt-4 pb-2 w-full justify-end">

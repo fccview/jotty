@@ -34,6 +34,7 @@ import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
+import { useTranslations } from "next-intl";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -56,6 +57,7 @@ export const NoteEditorHeader = ({
   showTOC,
   setShowTOC,
 }: NoteEditorHeaderProps) => {
+  const t = useTranslations();
   const metadata = useMetadata();
   const {
     title,
@@ -196,7 +198,7 @@ export const NoteEditorHeader = ({
                 )}
 
                 <Button variant="outline" size="sm" onClick={handleCancel}>
-                  Cancel
+                  {t("global.cancel")}
                 </Button>
                 <Button
                   size="sm"
@@ -209,12 +211,16 @@ export const NoteEditorHeader = ({
                   {status.isSaving ? (
                     <>
                       <Loader2 className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2 animate-spin" />
-                      <span className="hidden lg:inline">Saving...</span>
+                      <span className="hidden lg:inline">
+                        {t("global.saving")}
+                      </span>
                     </>
                   ) : (
                     <>
                       <Save className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2" />
-                      <span className="hidden lg:inline">Save</span>
+                      <span className="hidden lg:inline">
+                        {t("global.save")}
+                      </span>
                     </>
                   )}
                 </Button>
@@ -265,7 +271,7 @@ export const NoteEditorHeader = ({
                         ? [
                             {
                               type: "item" as const,
-                              label: "Share",
+                              label: t("global.share"),
                               icon: <Share2 className="h-4 w-4" />,
                               onClick: () => setShowShareModal(true),
                             },
@@ -275,7 +281,7 @@ export const NoteEditorHeader = ({
                         ? [
                             {
                               type: "item" as const,
-                              label: "Clone",
+                              label: t("global.clone"),
                               icon: <Copy className="h-4 w-4" />,
                               onClick: onClone,
                             },
@@ -283,7 +289,7 @@ export const NoteEditorHeader = ({
                         : []),
                       {
                         type: "item" as const,
-                        label: "Print / Save as PDF",
+                        label: t("global.print_save_as_pdf"),
                         icon: isPrinting ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
@@ -293,7 +299,7 @@ export const NoteEditorHeader = ({
                       },
                       {
                         type: "item" as const,
-                        label: "Table of Contents",
+                        label: t("global.table_of_contents"),
                         icon: <List className="h-4 w-4" />,
                         onClick: () => setShowTOC(!showTOC),
                         className: "hidden lg:flex",
@@ -302,7 +308,7 @@ export const NoteEditorHeader = ({
                         ? [
                             {
                               type: "item" as const,
-                              label: "Archive",
+                              label: t("global.archive"),
                               icon: <Archive className="h-4 w-4" />,
                               onClick: handleArchive,
                             },
@@ -312,7 +318,7 @@ export const NoteEditorHeader = ({
                         ? [
                             {
                               type: "item" as const,
-                              label: "Delete",
+                              label: t("global.delete"),
                               icon: <Trash2 className="h-4 w-4" />,
                               onClick: handleDelete,
                               variant: "destructive" as const,

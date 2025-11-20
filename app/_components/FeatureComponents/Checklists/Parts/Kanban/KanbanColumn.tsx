@@ -9,8 +9,7 @@ import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useTranslations } from "next-intl";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -39,6 +38,7 @@ export const KanbanColumn = ({
   statusColor,
   statuses,
 }: KanbanColumnProps) => {
+  const t = useTranslations();
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -54,11 +54,13 @@ export const KanbanColumn = ({
 
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null;
   };
 
   const rgb = hexToRgb(color);
@@ -73,9 +75,7 @@ export const KanbanColumn = ({
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: color }}
           />
-          <h3 className="font-medium text-sm text-foreground">
-            {title}
-          </h3>
+          <h3 className="font-medium text-sm text-foreground">{title}</h3>
         </div>
         <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
           {items.length}
@@ -112,7 +112,7 @@ export const KanbanColumn = ({
             ))}
             {items.length === 0 && (
               <div className="text-center text-muted-foreground text-sm py-8">
-                No tasks
+                {t("checklists.no_tasks")}
               </div>
             )}
           </div>
