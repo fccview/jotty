@@ -2,14 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Checklist } from "@/app/_types";
-import {
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  TouchSensor,
-} from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
 import { useChecklist } from "@/app/_hooks/useChecklist";
 import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeader";
@@ -31,6 +23,7 @@ interface ChecklistViewProps {
   onClone?: () => void;
   currentUsername?: string;
   isAdmin?: boolean;
+  sensors: any;
 }
 
 export const ChecklistView = ({
@@ -42,6 +35,7 @@ export const ChecklistView = ({
   onClone,
   currentUsername,
   isAdmin = false,
+  sensors,
 }: ChecklistViewProps) => {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
@@ -67,14 +61,6 @@ export const ChecklistView = ({
     deletingItemsCount,
     pendingTogglesCount,
   } = checklistHookProps;
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 250, tolerance: 5 },
-    }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
 
   const { permissions } = usePermissions();
 
@@ -135,7 +121,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => { }}
+          onRemove={() => {}}
         ></ToastContainer>
       )}
 
@@ -155,7 +141,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => { }}
+          onRemove={() => {}}
         ></ToastContainer>
       )}
 
@@ -192,3 +178,4 @@ export const ChecklistView = ({
     </div>
   );
 };
+

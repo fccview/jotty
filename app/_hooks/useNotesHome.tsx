@@ -7,6 +7,7 @@ import {
   DragStartEvent,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -40,13 +41,20 @@ export const useNotesHome = ({
         tolerance: 5,
       },
     }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor)
   );
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
 
-    const rect = event.active.rect?.current || event.active.data?.current?.sortable?.rect;
+    const rect =
+      event.active.rect?.current || event.active.data?.current?.sortable?.rect;
     if (rect) {
       setDraggedItemWidth(rect.initial?.width || 0);
     }
