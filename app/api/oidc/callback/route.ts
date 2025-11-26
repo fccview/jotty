@@ -18,6 +18,25 @@ function base64UrlEncode(buffer: Buffer) {
     .replace(/=+$/g, "");
 }
 
+function checkClaims(allowedClaimValues: string | undefined, availableClaimValues: string[] | string){
+  let available: string[] = [];
+  if (Array.isArray(availableClaimValues)) {
+    available = availableClaimValues;
+  } else if (typeof availableClaimValues === "string") {
+    available = availableClaimValues.split(/[\s,]+/).filter(Boolean);
+  }
+
+  const filteredAllowedClaimValues: string[] = (allowedClaimValues || "")
+    .split(",")
+    .map((g) => g.trim())
+    .filter(Boolean);
+
+  const isAllowed =
+    filteredAllowedClaimValues.length > 0 && filteredAllowedClaimValues.some((g) => available.includes(g));
+
+  return isAllowed;
+}
+
 async function ensureUser(username: string, isAdmin: boolean) {
   const usersFile = path.join(process.cwd(), "data", "users", "users.json");
   await fs.mkdir(path.dirname(usersFile), { recursive: true });
@@ -200,29 +219,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
-  let groups: string[] = [];
-  if (Array.isArray(claims.groups)) {
-    groups = claims.groups;
-  } else if (typeof claims.groups === "string") {
-    groups = claims.groups.split(/[\s,]+/).filter(Boolean);
-  }
+  const isInAdminGroup = checkClaims(process.env.OIDC_ADMIN_GROUPS, claims.groups);
+  const isInAdminRole = checkClaims(process.env.OIDC_ADMIN_ROLES, claims.roles);
 
-  const adminGroups = (process.env.OIDC_ADMIN_GROUPS || "")
-    .split(",")
-    .map((g) => g.trim())
-    .filter(Boolean);
-
-  const isAdmin =
-    adminGroups.length > 0 && groups.some((g) => adminGroups.includes(g));
+  const isAdmin = isInAdminGroup || isInAdminRole;
 
   if (process.env.DEBUGGER) {
     console.log("SSO CALLBACK - groups processing:", {
-      rawGroups: claims.groups,
-      processedGroups: groups,
-      adminGroups,
-      isAdmin,
-      groupsType: typeof claims.groups,
-      groupsIsArray: Array.isArray(claims.groups),
+      envOidcAdminGroups: process.env.OIDC_ADMIN_GROUPS,
+      envOidcAdminRoles: process.env.OIDC_ADMIN_ROLES,
+      claimsGroups: claims.groups,
+      claimsRoles: claims.roles,
+      isInAdminGroup,
+      isInAdminRole,
     });
   }
 

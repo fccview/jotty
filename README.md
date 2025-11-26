@@ -138,7 +138,8 @@ The recommended way to run `jotty·page` is with Docker.
           #- APP_URL=https://your-jotty-domain.com
           #- OIDC_CLIENT_SECRET=your_client_secret
           #- SSO_FALLBACK_LOCAL=yes
-          #- OIDC_ADMIN_GROUPS=admins
+          #- OIDC_ADMIN_GROUPS=admins # use this if your IDP sends a group claim
+          #- OIDC_ADMIN_ROLES=admins # use this if your IDP sends a role claim
     ```
 
 2.  Create the data directory and set permissions:
