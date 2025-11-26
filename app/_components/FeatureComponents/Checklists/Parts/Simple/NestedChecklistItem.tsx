@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
-import { useSortable } from "@dnd-kit/sortable";
+import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
@@ -68,17 +68,16 @@ const NestedChecklistItemComponent = ({
     );
   };
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: item.id,
-    disabled: isDragDisabled,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: item.id,
+      data: {
+        type: "item",
+        item: item,
+        completed: item.completed,
+      },
+      disabled: isDragDisabled,
+    });
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -194,10 +193,8 @@ const NestedChecklistItemComponent = ({
 
   return (
     <div
-      ref={setNodeRef}
       style={{
         transform: CSS.Transform.toString(transform),
-        transition,
       }}
       className={cn(
         "relative my-1",
@@ -233,7 +230,8 @@ const NestedChecklistItemComponent = ({
               type="button"
               {...attributes}
               {...listeners}
-              className="text-muted-foreground lg:block hover:text-foreground cursor-move touch-none"
+              className="text-muted-foreground hidden lg:block hover:text-foreground cursor-move touch-manipulation"
+              ref={setNodeRef}
             >
               <GripVertical className="h-4 w-4" />
             </button>

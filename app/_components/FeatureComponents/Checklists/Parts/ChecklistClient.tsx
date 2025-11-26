@@ -101,16 +101,12 @@ export const ChecklistClient = ({
     });
   };
 
-  const {
-    handleDeleteList,
-    getNewType,
-    handleConfirmConversion,
-    sensors,
-  } = useChecklist({
-    list: localChecklist,
-    onUpdate: handleUpdate,
-    onDelete: handleDelete,
-  });
+  const { handleDeleteList, getNewType, handleConfirmConversion } =
+    useChecklist({
+      list: localChecklist,
+      onUpdate: handleUpdate,
+      onDelete: handleDelete,
+    });
 
   const renderContent = () => {
     if (localChecklist.type === "task") {
@@ -147,7 +143,6 @@ export const ChecklistClient = ({
         onClone={handleClone}
         currentUsername={user?.username}
         isAdmin={user?.isAdmin}
-        sensors={sensors}
       />
     );
   };
