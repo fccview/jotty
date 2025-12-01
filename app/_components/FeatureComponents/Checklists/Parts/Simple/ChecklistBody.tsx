@@ -148,7 +148,20 @@ export const ChecklistBody = ({
                   onBulkToggle={() => handleBulkToggle(true)}
                   isLoading={isLoading}
                 >
-                  {incompleteItems.map((item, index) => (
+                  {incompleteItems.length >= 50 ? (
+                  <VirtualizedChecklistItems
+                    items={incompleteItems}
+                    onToggle={handleToggleItem}
+                    onDelete={handleDeleteItem}
+                    onEdit={handleEditItem}
+                    onAddSubItem={handleAddSubItem}
+                    isDeletingItem={isDeletingItem}
+                    checklist={localList}
+                    isAnyItemDragging={isDragging}
+                    overItem={overItem}
+                  />
+                ) : (
+                  incompleteItems.map((item, index) => (
                     <div key={item.id}>
                       <NestedChecklistItem
                         key={item.id}
@@ -167,7 +180,8 @@ export const ChecklistBody = ({
                         isAnyItemDragging={isDragging}
                       />
                     </div>
-                  ))}
+                  ))
+                )}
                 </ChecklistItemsWrapper>
               )}
               {completedItems.length > 0 && (
@@ -178,7 +192,20 @@ export const ChecklistBody = ({
                   isLoading={isLoading}
                   isCompleted
                 >
-                  {completedItems.map((item, index) => (
+                  {completedItems.length >= 50 ? (
+                  <VirtualizedChecklistItems
+                    items={completedItems}
+                    onToggle={handleToggleItem}
+                    onDelete={handleDeleteItem}
+                    onEdit={handleEditItem}
+                    onAddSubItem={handleAddSubItem}
+                    isDeletingItem={isDeletingItem}
+                    checklist={localList}
+                    isAnyItemDragging={isDragging}
+                    overItem={overItem}
+                  />
+                ) : (
+                  completedItems.map((item, index) => (
                     <div key={item.id}>
                       <NestedChecklistItem
                         key={item.id}
@@ -198,7 +225,8 @@ export const ChecklistBody = ({
                         isAnyItemDragging={isDragging}
                       />
                     </div>
-                  ))}
+                  ))
+                )}
                 </ChecklistItemsWrapper>
               )}
             </div>
