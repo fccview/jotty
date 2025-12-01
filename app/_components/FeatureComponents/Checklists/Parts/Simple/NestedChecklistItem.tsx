@@ -39,6 +39,9 @@ interface NestedChecklistItemProps {
   isDragDisabled?: boolean;
   isSubtask?: boolean;
   checklist: Checklist;
+  isOver?: boolean;
+  overPosition?: "before" | "after";
+  isAnyItemDragging?: boolean;
 }
 
 const NestedChecklistItemComponent = ({
@@ -55,6 +58,9 @@ const NestedChecklistItemComponent = ({
   isDragDisabled = false,
   isSubtask = false,
   checklist,
+  isOver = false,
+  overPosition,
+  isAnyItemDragging = false,
 }: NestedChecklistItemProps) => {
   const { usersPublicData, user } = useAppMode();
   const { permissions } = usePermissions();
@@ -196,8 +202,8 @@ const NestedChecklistItemComponent = ({
     <div
       ref={setNodeRef}
       style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
+        transform: isAnyItemDragging && !isDragging ? CSS.Transform.toString({ x: 0, y: 0, scaleX: 1, scaleY: 1 }) : CSS.Transform.toString(transform),
+        transition: isAnyItemDragging && !isDragging ? "none" : transition,
       }}
       className={cn(
         "relative my-1",
@@ -215,6 +221,9 @@ const NestedChecklistItemComponent = ({
         isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
       )}
     >
+      {isOver && overPosition === "before" && (
+        <div className="absolute -top-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
+      )}
       <div
         className={cn(
           "group/item flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
@@ -408,6 +417,9 @@ const NestedChecklistItemComponent = ({
           </div>
         )}
       </div>
+      {isOver && overPosition === "after" && (
+        <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
+      )}
 
       {showAddSubItem && !isPublicView && (
         <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>

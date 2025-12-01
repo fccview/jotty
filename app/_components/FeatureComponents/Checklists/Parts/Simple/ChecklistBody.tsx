@@ -4,6 +4,7 @@ import {
   DragStartEvent,
   DragOverlay,
   closestCorners,
+  DragOverEvent,
 } from "@dnd-kit/core";
 import { ChecklistProgress } from "./ChecklistProgress";
 import { ChecklistItemsWrapper } from "./ChecklistItemsWrapper";
@@ -49,6 +50,8 @@ export const ChecklistBody = ({
 }: ChecklistBodyProps) => {
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
   const [activeItem, setActiveItem] = useState<Item | null>(null);
+  const [overItem, setOverItem] = useState<{ id: string; position: "before" | "after" } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const referencingItems = useMemo(() => {
     return getReferences(
@@ -68,15 +71,36 @@ export const ChecklistBody = ({
   const onDragStart = (event: DragStartEvent) => {
     const item = localList.items.find((item) => item.id === event.active.id);
     setActiveItem(item || null);
+    setIsDragging(true);
   };
 
   const onDragEnd = (event: DragEndEvent) => {
     handleDragEnd(event);
     setActiveItem(null);
+    setOverItem(null);
+    setIsDragging(false);
   };
 
   const onDragCancel = () => {
     setActiveItem(null);
+    setOverItem(null);
+    setIsDragging(false);
+  };
+
+  const onDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) {
+      setOverItem(null);
+      return;
+    }
+
+    const overId = over.id;
+    const isDraggingUp = event.delta.y < 0;
+
+    setOverItem({
+      id: overId.toString(),
+      position: isDraggingUp ? "before" : "after",
+    });
   };
 
   if (localList.items.length === 0) {
@@ -113,6 +137,7 @@ export const ChecklistBody = ({
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           onDragCancel={onDragCancel}
+          onDragOver={onDragOver}
         >
           <SortableContext items={items} strategy={verticalListSortingStrategy}>
             <div className="w-full space-y-4 overflow-hidden">
@@ -137,6 +162,9 @@ export const ChecklistBody = ({
                         isDeletingItem={isDeletingItem}
                         isDragDisabled={false}
                         checklist={localList}
+                        isOver={overItem?.id === item.id}
+                        overPosition={overItem?.id === item.id ? overItem.position : undefined}
+                        isAnyItemDragging={isDragging}
                       />
                     </div>
                   ))}
@@ -165,6 +193,9 @@ export const ChecklistBody = ({
                         isDeletingItem={isDeletingItem}
                         isDragDisabled={false}
                         checklist={localList}
+                        isOver={overItem?.id === item.id}
+                        overPosition={overItem?.id === item.id ? overItem.position : undefined}
+                        isAnyItemDragging={isDragging}
                       />
                     </div>
                   ))}
@@ -174,19 +205,21 @@ export const ChecklistBody = ({
           </SortableContext>
           <DragOverlay>
             {activeItem ? (
-              <NestedChecklistItem
-                item={activeItem}
-                index={0}
-                level={0}
-                onToggle={() => {}}
-                onDelete={() => {}}
-                onEdit={() => {}}
-                onAddSubItem={() => {}}
-                isDeletingItem={false}
-                isDragDisabled={true}
-                checklist={localList}
-                completed={activeItem.completed}
-              />
+              <div className="pointer-events-none w-full opacity-50">
+                <NestedChecklistItem
+                  item={activeItem}
+                  index={0}
+                  level={0}
+                  onToggle={() => {}}
+                  onDelete={() => {}}
+                  onEdit={() => {}}
+                  onAddSubItem={() => {}}
+                  isDeletingItem={false}
+                  isDragDisabled={true}
+                  checklist={localList}
+                  completed={activeItem.completed}
+                />
+              </div>
             ) : null}
           </DragOverlay>
         </DndContext>
