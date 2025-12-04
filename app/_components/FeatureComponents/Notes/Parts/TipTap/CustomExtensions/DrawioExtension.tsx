@@ -19,6 +19,8 @@ export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, ext
       const drawioOrigin = new URL(drawioBaseUrl).origin;
       if (event.origin !== drawioOrigin && !event.origin.includes('diagrams.net')) return;
 
+      if (event.source !== iframeRef.current?.contentWindow) return;
+
       if (typeof event.data === 'string' && event.data.length > 0) {
         try {
           const message = JSON.parse(event.data);
