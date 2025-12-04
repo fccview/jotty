@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { DragEndEvent } from "@dnd-kit/core";
+import {
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Checklist, RecurrenceRule } from "@/app/_types";
 import {
@@ -50,6 +57,23 @@ export const useChecklist = ({
     new Map()
   );
   const isInitialMount = useRef(true);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+        delay: 50,
+        tolerance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
 
   useEffect(() => {
     setLocalList(list);
@@ -380,92 +404,32 @@ export const useChecklist = ({
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    if (!over || active.id === over.id) return;
 
-    if (!over || active.id === over.id) {
-      return;
-    }
+    const activeId = active.id;
+    const overId = over.id;
 
-    const activeData = active.data.current;
-    const overData = over.data.current;
+    setLocalList((list) => {
+      const oldIndex = list.items.findIndex((item) => item.id === activeId);
+      const newIndex = list.items.findIndex((item) => item.id === overId);
+      return { ...list, items: arrayMove(list.items, oldIndex, newIndex) };
+    });
 
-    if (!activeData || !overData) {
-      return;
-    }
+    const newItems = arrayMove(
+      localList.items,
+      localList.items.findIndex((item) => item.id === activeId),
+      localList.items.findIndex((item) => item.id === overId)
+    );
+    const itemIds = newItems.map((item) => item.id);
+    const formData = new FormData();
+    formData.append("listId", localList.id);
+    formData.append("itemIds", JSON.stringify(itemIds));
+    formData.append("currentItems", JSON.stringify(newItems));
+    formData.append("category", localList.category || "Uncategorized");
 
-    if (activeData.type === "item" && overData.type === "drop-indicator") {
-      const activeCompleted = activeData.completed;
-      const targetContext = overData.parentPath;
-
-      if ((activeCompleted && targetContext === "todo") ||
-        (!activeCompleted && targetContext === "completed")) {
-        return;
-      }
-    }
-
-    if (overData.type === "drop-indicator") {
-      const allItems = localList.items;
-      const activeItem = allItems.find(item => item.id === active.id);
-
-      if (!activeItem) return;
-
-      const targetContext = overData.parentPath;
-      const isTargetTodo = targetContext === "todo";
-      const isTargetCompleted = targetContext === "completed";
-
-      const contextItems = isTargetTodo
-        ? allItems.filter(item => !item.completed)
-        : allItems.filter(item => item.completed);
-
-      let newItems: typeof allItems;
-
-      if (overData.targetDndId) {
-        const targetIndex = contextItems.findIndex(item => item.id === overData.targetDndId);
-        if (targetIndex !== -1) {
-          const insertIndex = overData.position === "before" ? targetIndex : targetIndex + 1;
-
-          const otherItems = allItems.filter(item => item.id !== active.id);
-          const todoItems = otherItems.filter(item => !item.completed);
-          const completedItems = otherItems.filter(item => item.completed);
-
-          if (isTargetTodo) {
-            todoItems.splice(insertIndex, 0, { ...activeItem, completed: false });
-            newItems = [...todoItems, ...completedItems];
-          } else {
-            completedItems.splice(insertIndex, 0, { ...activeItem, completed: true });
-            newItems = [...todoItems, ...completedItems];
-          }
-        } else {
-          const otherItems = allItems.filter(item => item.id !== active.id);
-          const todoItems = otherItems.filter(item => !item.completed);
-          const completedItems = otherItems.filter(item => item.completed);
-
-          newItems = isTargetTodo
-            ? [{ ...activeItem, completed: false }, ...todoItems, ...completedItems]
-            : [...todoItems, ...completedItems, { ...activeItem, completed: true }];
-        }
-      } else {
-        const otherItems = allItems.filter(item => item.id !== active.id);
-        const todoItems = otherItems.filter(item => !item.completed);
-        const completedItems = otherItems.filter(item => item.completed);
-
-        newItems = isTargetTodo
-          ? [{ ...activeItem, completed: false }, ...todoItems, ...completedItems]
-          : [...todoItems, { ...activeItem, completed: true }, ...completedItems];
-      }
-
-      setLocalList({ ...localList, items: newItems });
-
-      const itemIds = newItems.map((item) => item.id);
-      const formData = new FormData();
-      formData.append("listId", localList.id);
-      formData.append("itemIds", JSON.stringify(itemIds));
-      formData.append("currentItems", JSON.stringify(newItems));
-      formData.append("category", localList.category || "Uncategorized");
-
-      const result = await reorderItems(formData);
-      if (!result.success) {
-        setLocalList(list);
-      }
+    const result = await reorderItems(formData);
+    if (!result.success) {
+      setLocalList(list);
     }
   };
 
@@ -646,7 +610,13 @@ export const useChecklist = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${localList.uuid ? localList.uuid : `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id}`}`
+      `${
+        localList.uuid
+          ? localList.uuid
+          : `${encodeCategoryPath(localList.category || "Uncategorized")}/${
+              localList.id
+            }`
+      }`
     );
     if (success) {
       setCopied(true);
@@ -711,5 +681,6 @@ export const useChecklist = ({
     totalCount: localList.items.length,
     deletingItemsCount: itemsToDelete.length,
     pendingTogglesCount: pendingToggles.size,
+    sensors,
   };
 };
