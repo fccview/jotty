@@ -34,16 +34,24 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN apk add --no-cache su-exec
+
+RUN if ! getent group 1000 > /dev/null 2>&1; then \
+        addgroup --system --gid 1000 appgroup; \
+    fi
+
+RUN if ! getent passwd 1000 > /dev/null 2>&1; then \
+        GROUP_NAME=$(getent group 1000 | cut -d: -f1); \
+        adduser --system --uid 1000 --gid "$GROUP_NAME" appuser; \
+    fi
 
 # Create data directory with proper permissions
 RUN mkdir -p /app/data/users /app/data/checklists /app/data/notes && \
-    chown -R nextjs:nodejs /app/data
+    chown -R 1000:1000 /app/data
 
 # Create .next cache directory with proper permissions
 RUN mkdir -p /app/.next/cache && \
-    chown -R nextjs:nodejs /app/.next
+    chown -R 1000:1000 /app/.next
 
 # Copy public directory
 COPY --from=builder /app/public ./public
@@ -52,20 +60,22 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/howto ./howto
 
 # Copy the entire .next directory
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=1000:1000 /app/.next ./.next
 
 # Copy package.json and yarn.lock for yarn start
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/yarn.lock ./yarn.lock
 
 # Copy node_modules for production dependencies
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=deps --chown=1000:1000 /app/node_modules ./node_modules
 
-USER nextjs
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["yarn", "start"] 
