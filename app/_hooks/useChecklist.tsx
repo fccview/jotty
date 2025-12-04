@@ -62,7 +62,7 @@ export const useChecklist = ({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
-        delay: 150,
+        delay: 50,
         tolerance: 5,
       },
     }),
@@ -610,7 +610,13 @@ export const useChecklist = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${localList.uuid ? localList.uuid : `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id}`}`
+      `${
+        localList.uuid
+          ? localList.uuid
+          : `${encodeCategoryPath(localList.category || "Uncategorized")}/${
+              localList.id
+            }`
+      }`
     );
     if (success) {
       setCopied(true);
