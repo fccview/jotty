@@ -15,6 +15,7 @@ import {
 import { arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Checklist, User } from "@/app/_types";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
+import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { useHomeFilter } from "@/app/_utils/home-filter-store";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
@@ -184,15 +185,23 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
 
   const stats = useMemo(() => {
     const totalLists = lists.length;
-    const totalItems = lists.reduce(
-      (sum, list) => sum + (list.items?.length || 0),
-      0
-    );
-    const completedItems = lists.reduce(
-      (sum, list) =>
-        sum + (list.items?.filter((item) => item.completed).length || 0),
-      0
-    );
+
+    let totalItems = 0;
+    let completedItems = 0;
+
+    lists.forEach((list) => {
+      let items = list.items;
+
+      // If the list has rawContent, parse it to get the actual items
+      if ("rawContent" in list && (list as any).rawContent) {
+        const parsedData = parseChecklistContent((list as any).rawContent, list.id);
+        items = parsedData.items;
+      }
+
+      totalItems += items?.length || 0;
+      completedItems += items?.filter((item) => isItemCompleted(item, list.type)).length || 0;
+    });
+
     const taskLists = lists.filter((list) => list.type === "task").length;
 
     return { totalLists, totalItems, completedItems, taskLists };
