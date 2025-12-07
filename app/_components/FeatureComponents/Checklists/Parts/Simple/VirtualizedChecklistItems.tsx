@@ -78,6 +78,7 @@ const VirtualizedChecklistItems = memo(
               isAnyItemDragging={isAnyItemDragging}
               isOver={overItem?.id === item.id}
               overPosition={overItem?.id === item.id ? overItem.position : undefined}
+              overItem={overItem}
             />
           ))}
         </div>
@@ -102,6 +103,7 @@ const VirtualizedChecklistItems = memo(
             isAnyItemDragging={isAnyItemDragging}
             isOver={overItem?.id === item.id}
             overPosition={overItem?.id === item.id ? overItem.position : undefined}
+            overItem={overItem}
           />
         ))}
         {renderedCount < items.length && (

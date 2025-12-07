@@ -9,8 +9,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist, RecurrenceRule } from "@/app/_types";
+import { Checklist, Item, RecurrenceRule } from "@/app/_types";
 import {
   deleteList,
   convertChecklistType,
@@ -406,25 +405,75 @@ export const useChecklist = ({
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const activeId = active.id;
-    const overId = over.id;
+    const activeId = active.id.toString();
+    const overId = over.id.toString();
+
+    const findItemWithParent = (
+      items: Item[],
+      targetId: string,
+      parent: Item | null = null
+    ): { item: Item; parent: Item | null; siblings: Item[]; index: number } | null => {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.id === targetId) {
+          return { item, parent, siblings: items, index: i };
+        }
+        if (item.children) {
+          const found = findItemWithParent(item.children, targetId, item);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const activeInfo = findItemWithParent(localList.items, activeId);
+    const overInfo = findItemWithParent(localList.items, overId);
+
+    if (!activeInfo || !overInfo) return;
+
+    const cloneItems = (items: Item[]): Item[] => {
+      return items.map((item) => ({
+        ...item,
+        children: item.children ? cloneItems(item.children) : undefined,
+      }));
+    };
 
     setLocalList((list) => {
-      const oldIndex = list.items.findIndex((item) => item.id === activeId);
-      const newIndex = list.items.findIndex((item) => item.id === overId);
-      return { ...list, items: arrayMove(list.items, oldIndex, newIndex) };
+      const newItems = cloneItems(list.items);
+
+      const activeInNew = findItemWithParent(newItems, activeId);
+      const overInNew = findItemWithParent(newItems, overId);
+
+      if (!activeInNew || !overInNew) return list;
+
+      activeInNew.siblings.splice(activeInNew.index, 1);
+
+      const targetSiblings = overInNew.siblings;
+      const targetParent = overInNew.parent;
+
+      let newIndex = targetSiblings.findIndex((item) => item.id === overId);
+
+      if (activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInNew.index) {
+        newIndex = newIndex;
+      }
+
+      targetSiblings.splice(newIndex, 0, activeInNew.item);
+
+      const updateOrder = (items: Item[]) => {
+        items.forEach((item, idx) => {
+          item.order = idx;
+          if (item.children) updateOrder(item.children);
+        });
+      };
+      updateOrder(newItems);
+
+      return { ...list, items: newItems };
     });
 
-    const newItems = arrayMove(
-      localList.items,
-      localList.items.findIndex((item) => item.id === activeId),
-      localList.items.findIndex((item) => item.id === overId)
-    );
-    const itemIds = newItems.map((item) => item.id);
     const formData = new FormData();
     formData.append("listId", localList.id);
-    formData.append("itemIds", JSON.stringify(itemIds));
-    formData.append("currentItems", JSON.stringify(newItems));
+    formData.append("activeItemId", activeId);
+    formData.append("overItemId", overId);
     formData.append("category", localList.category || "Uncategorized");
 
     const result = await reorderItems(formData);
@@ -610,12 +659,10 @@ export const useChecklist = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${
-        localList.uuid
-          ? localList.uuid
-          : `${encodeCategoryPath(localList.category || "Uncategorized")}/${
-              localList.id
-            }`
+      `${localList.uuid
+        ? localList.uuid
+        : `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id
+        }`
       }`
     );
     if (success) {

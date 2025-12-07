@@ -420,10 +420,8 @@ export const deleteItem = async (formData: FormData): Promise<Result<Checklist>>
 export const reorderItems = async (formData: FormData) => {
   try {
     const listId = formData.get("listId") as string;
-    const itemIds = JSON.parse(formData.get("itemIds") as string) as string[];
-    const currentItems = JSON.parse(
-      formData.get("currentItems") as string
-    ) as any[];
+    const activeItemId = formData.get("activeItemId") as string;
+    const overItemId = formData.get("overItemId") as string;
     const category = formData.get("category") as string;
 
     const isAdminUser = await isAdmin();
@@ -439,17 +437,57 @@ export const reorderItems = async (formData: FormData) => {
       throw new Error("List not found");
     }
 
-    const itemMap = new Map(currentItems.map((item) => [item.id, item]));
+    const findItemWithParent = (
+      items: any[],
+      targetId: string,
+      parent: any = null
+    ): { item: any; parent: any; siblings: any[]; index: number } | null => {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.id === targetId) {
+          return { item, parent, siblings: items, index: i };
+        }
+        if (item.children) {
+          const found = findItemWithParent(item.children, targetId, item);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
 
-    const updatedItems = itemIds.map((id, index) => {
-      const item = itemMap.get(id);
-      if (!item) throw new Error(`Item ${id} not found`);
-      return { ...item, order: index };
-    });
+    const cloneItems = (items: any[]): any[] => {
+      return items.map((item) => ({
+        ...item,
+        children: item.children ? cloneItems(item.children) : undefined,
+      }));
+    };
+
+    const newItems = cloneItems(list.items || []);
+
+    const activeInfo = findItemWithParent(newItems, activeItemId);
+    const overInfo = findItemWithParent(newItems, overItemId);
+
+    if (!activeInfo || !overInfo) {
+      throw new Error("Item not found in hierarchy");
+    }
+
+    activeInfo.siblings.splice(activeInfo.index, 1);
+
+    const targetSiblings = overInfo.siblings;
+    let newIndex = targetSiblings.findIndex((item) => item.id === overItemId);
+    targetSiblings.splice(newIndex, 0, activeInfo.item);
+
+    const updateOrder = (items: any[]) => {
+      items.forEach((item, idx) => {
+        item.order = idx;
+        if (item.children) updateOrder(item.children);
+      });
+    };
+    updateOrder(newItems);
 
     const updatedList = {
       ...list,
-      items: updatedItems,
+      items: newItems,
       updatedAt: new Date().toISOString(),
     };
 

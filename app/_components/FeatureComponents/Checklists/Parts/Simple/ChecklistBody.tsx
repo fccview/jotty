@@ -65,11 +65,31 @@ export const ChecklistBody = ({
   }, [linkIndex, localList.uuid, localList.category, notes, checklists]);
 
   const items = useMemo(() => {
-    return localList.items.map((item) => item.id);
+    const flattenItems = (items: Item[]): string[] => {
+      return items.reduce<string[]>((acc, item) => {
+        acc.push(item.id);
+        if (item.children && item.children.length > 0) {
+          acc.push(...flattenItems(item.children));
+        }
+        return acc;
+      }, []);
+    };
+    return flattenItems(localList.items);
   }, [localList.items]);
 
   const onDragStart = (event: DragStartEvent) => {
-    const item = localList.items.find((item) => item.id === event.active.id);
+    const findItem = (items: Item[], id: string): Item | undefined => {
+      for (const item of items) {
+        if (item.id === id) return item;
+        if (item.children) {
+          const found = findItem(item.children, id);
+          if (found) return found;
+        }
+      }
+      return undefined;
+    };
+
+    const item = findItem(localList.items, event.active.id.toString());
     setActiveItem(item || null);
     setIsDragging(true);
   };
@@ -149,39 +169,40 @@ export const ChecklistBody = ({
                   isLoading={isLoading}
                 >
                   {incompleteItems.length >= 50 ? (
-                  <VirtualizedChecklistItems
-                    items={incompleteItems}
-                    onToggle={handleToggleItem}
-                    onDelete={handleDeleteItem}
-                    onEdit={handleEditItem}
-                    onAddSubItem={handleAddSubItem}
-                    isDeletingItem={isDeletingItem}
-                    checklist={localList}
-                    isAnyItemDragging={isDragging}
-                    overItem={overItem}
-                  />
-                ) : (
-                  incompleteItems.map((item, index) => (
-                    <div key={item.id}>
-                      <NestedChecklistItem
-                        key={item.id}
-                        item={item}
-                        index={index.toString()}
-                        level={0}
-                        onToggle={handleToggleItem}
-                        onDelete={handleDeleteItem}
-                        onEdit={handleEditItem}
-                        onAddSubItem={handleAddSubItem}
-                        isDeletingItem={isDeletingItem}
-                        isDragDisabled={false}
-                        checklist={localList}
-                        isOver={overItem?.id === item.id}
-                        overPosition={overItem?.id === item.id ? overItem.position : undefined}
-                        isAnyItemDragging={isDragging}
-                      />
-                    </div>
-                  ))
-                )}
+                    <VirtualizedChecklistItems
+                      items={incompleteItems}
+                      onToggle={handleToggleItem}
+                      onDelete={handleDeleteItem}
+                      onEdit={handleEditItem}
+                      onAddSubItem={handleAddSubItem}
+                      isDeletingItem={isDeletingItem}
+                      checklist={localList}
+                      isAnyItemDragging={isDragging}
+                      overItem={overItem}
+                    />
+                  ) : (
+                    incompleteItems.map((item, index) => (
+                      <div key={item.id}>
+                        <NestedChecklistItem
+                          key={item.id}
+                          item={item}
+                          index={index.toString()}
+                          level={0}
+                          onToggle={handleToggleItem}
+                          onDelete={handleDeleteItem}
+                          onEdit={handleEditItem}
+                          onAddSubItem={handleAddSubItem}
+                          isDeletingItem={isDeletingItem}
+                          isDragDisabled={false}
+                          checklist={localList}
+                          isOver={overItem?.id === item.id}
+                          overPosition={overItem?.id === item.id ? overItem.position : undefined}
+                          isAnyItemDragging={isDragging}
+                          overItem={overItem}
+                        />
+                      </div>
+                    ))
+                  )}
                 </ChecklistItemsWrapper>
               )}
               {completedItems.length > 0 && (
@@ -193,40 +214,41 @@ export const ChecklistBody = ({
                   isCompleted
                 >
                   {completedItems.length >= 50 ? (
-                  <VirtualizedChecklistItems
-                    items={completedItems}
-                    onToggle={handleToggleItem}
-                    onDelete={handleDeleteItem}
-                    onEdit={handleEditItem}
-                    onAddSubItem={handleAddSubItem}
-                    isDeletingItem={isDeletingItem}
-                    checklist={localList}
-                    isAnyItemDragging={isDragging}
-                    overItem={overItem}
-                  />
-                ) : (
-                  completedItems.map((item, index) => (
-                    <div key={item.id}>
-                      <NestedChecklistItem
-                        key={item.id}
-                        item={item}
-                        index={(incompleteItems.length + index).toString()}
-                        level={0}
-                        onToggle={handleToggleItem}
-                        onDelete={handleDeleteItem}
-                        onEdit={handleEditItem}
-                        onAddSubItem={handleAddSubItem}
-                        completed
-                        isDeletingItem={isDeletingItem}
-                        isDragDisabled={false}
-                        checklist={localList}
-                        isOver={overItem?.id === item.id}
-                        overPosition={overItem?.id === item.id ? overItem.position : undefined}
-                        isAnyItemDragging={isDragging}
-                      />
-                    </div>
-                  ))
-                )}
+                    <VirtualizedChecklistItems
+                      items={completedItems}
+                      onToggle={handleToggleItem}
+                      onDelete={handleDeleteItem}
+                      onEdit={handleEditItem}
+                      onAddSubItem={handleAddSubItem}
+                      isDeletingItem={isDeletingItem}
+                      checklist={localList}
+                      isAnyItemDragging={isDragging}
+                      overItem={overItem}
+                    />
+                  ) : (
+                    completedItems.map((item, index) => (
+                      <div key={item.id}>
+                        <NestedChecklistItem
+                          key={item.id}
+                          item={item}
+                          index={(incompleteItems.length + index).toString()}
+                          level={0}
+                          onToggle={handleToggleItem}
+                          onDelete={handleDeleteItem}
+                          onEdit={handleEditItem}
+                          onAddSubItem={handleAddSubItem}
+                          completed
+                          isDeletingItem={isDeletingItem}
+                          isDragDisabled={false}
+                          checklist={localList}
+                          isOver={overItem?.id === item.id}
+                          overPosition={overItem?.id === item.id ? overItem.position : undefined}
+                          isAnyItemDragging={isDragging}
+                          overItem={overItem}
+                        />
+                      </div>
+                    ))
+                  )}
                 </ChecklistItemsWrapper>
               )}
             </div>
@@ -238,10 +260,10 @@ export const ChecklistBody = ({
                   item={activeItem}
                   index={0}
                   level={0}
-                  onToggle={() => {}}
-                  onDelete={() => {}}
-                  onEdit={() => {}}
-                  onAddSubItem={() => {}}
+                  onToggle={() => { }}
+                  onDelete={() => { }}
+                  onEdit={() => { }}
+                  onAddSubItem={() => { }}
                   isDeletingItem={false}
                   isDragDisabled={true}
                   checklist={localList}

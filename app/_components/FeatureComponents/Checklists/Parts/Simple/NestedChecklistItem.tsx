@@ -42,6 +42,7 @@ interface NestedChecklistItemProps {
   isOver?: boolean;
   overPosition?: "before" | "after";
   isAnyItemDragging?: boolean;
+  overItem?: { id: string; position: "before" | "after" } | null;
 }
 
 const NestedChecklistItemComponent = ({
@@ -61,6 +62,7 @@ const NestedChecklistItemComponent = ({
   isOver = false,
   overPosition,
   isAnyItemDragging = false,
+  overItem = null,
 }: NestedChecklistItemProps) => {
   const { usersPublicData, user } = useAppMode();
   const { permissions } = usePermissions();
@@ -235,7 +237,6 @@ const NestedChecklistItemComponent = ({
       >
         {!isPublicView &&
           !isDragDisabled &&
-          !isChild &&
           permissions?.canEdit && (
             <button
               type="button"
@@ -473,6 +474,10 @@ const NestedChecklistItemComponent = ({
               isDragDisabled={isDragDisabled}
               isPublicView={isPublicView}
               checklist={checklist}
+              isOver={overItem?.id === child.id}
+              overPosition={overItem?.id === child.id ? overItem.position : undefined}
+              isAnyItemDragging={isAnyItemDragging}
+              overItem={overItem}
             />
           ))}
         </div>
