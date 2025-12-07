@@ -38,31 +38,38 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      const transformItem = (item: any, index: number, listType: string): any => {
+        const baseItem: any = {
+          id: item.id,
+          index,
+          text: item.text,
+          completed: item.completed,
+        };
+
+        if (listType === "task") {
+          baseItem.status = item.status || TaskStatus.TODO;
+          baseItem.time =
+            item.timeEntries && item.timeEntries.length > 0
+              ? item.timeEntries
+              : 0;
+        }
+
+        // NEW: Recursively add children if they exist
+        if (item.children && item.children.length > 0) {
+          baseItem.children = item.children.map((child: any, childIndex: number) =>
+            transformItem(child, childIndex, listType)
+          );
+        }
+
+        return baseItem;
+      };
+
       const checklists = userLists.map((list) => ({
         id: list.uuid || list.id,
         title: list.title,
         category: list.category || "Uncategorized",
         type: list.type || "simple",
-        items: list.items.map((item, index) => {
-          const baseItem = {
-            index,
-            text: item.text,
-            completed: item.completed,
-          };
-
-          if (list.type === "task") {
-            return {
-              ...baseItem,
-              status: item.status || TaskStatus.TODO,
-              time:
-                item.timeEntries && item.timeEntries.length > 0
-                  ? item.timeEntries
-                  : 0,
-            };
-          }
-
-          return baseItem;
-        }),
+        items: list.items.map((item, index) => transformItem(item, index, list.type)),
         createdAt: list.createdAt,
         updatedAt: list.updatedAt,
       }));

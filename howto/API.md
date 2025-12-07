@@ -365,11 +365,71 @@ Adds a new item to the specified checklist.
 }
 ```
 
+**Creating Nested Sub-Items:**
+
+To create a nested sub-item (child of an existing item), include the `parentIndex` parameter with the index path of the parent item:
+
+```json
+{
+  "text": "Sub-task of first item",
+  "parentIndex": "0"
+}
+```
+
+Index paths use dot notation for nested items:
+- `"0"` - Creates a child of the first top-level item
+- `"0.1"` - Creates a child of the second child of the first item
+- `"2.0.1"` - Creates a grandchild of the third top-level item
+
+**Nested Items in Response:**
+
+Items can contain a `children` array with nested sub-items:
+
+```json
+{
+  "items": [
+    {
+      "id": "list-123",
+      "index": 0,
+      "text": "Parent Task",
+      "completed": false,
+      "children": [
+        {
+          "id": "list-sub-456",
+          "index": 0,
+          "text": "Sub-task 1",
+          "completed": false
+        },
+        {
+          "id": "list-sub-789",
+          "index": 1,
+          "text": "Sub-task 2",
+          "completed": true,
+          "children": [
+            {
+              "id": "list-sub-sub-999",
+              "index": 0,
+              "text": "Nested sub-task",
+              "completed": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
 ### 7. Check Item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/check`
 
-Marks an item as completed. Use the item index (0-based) from the checklist response.
+Marks an item as completed. Supports both top-level and nested items using index paths.
+
+**Examples:**
+- `/api/checklists/{listId}/items/0/check` - Check first top-level item
+- `/api/checklists/{listId}/items/0.1/check` - Check second child of first item
+- `/api/checklists/{listId}/items/2.0.1/check` - Check nested grandchild
 
 **Response:**
 
@@ -383,7 +443,11 @@ Marks an item as completed. Use the item index (0-based) from the checklist resp
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/uncheck`
 
-Marks an item as incomplete. Use the item index (0-based) from the checklist response.
+Marks an item as incomplete. Supports both top-level and nested items using index paths.
+
+**Examples:**
+- `/api/checklists/{listId}/items/1/uncheck` - Uncheck second top-level item
+- `/api/checklists/{listId}/items/0.0/uncheck` - Uncheck first child of first item
 
 **Response:**
 
@@ -393,7 +457,26 @@ Marks an item as incomplete. Use the item index (0-based) from the checklist res
 }
 ```
 
-### 9. Get All Notes
+### 9. Delete Item
+
+**DELETE** `/api/checklists/{listId}/items/{itemIndex}`
+
+Deletes a checklist item. Supports both top-level and nested items using index paths.
+
+**Examples:**
+- `/api/checklists/{listId}/items/2` - Delete third top-level item
+- `/api/checklists/{listId}/items/0.1` - Delete second child of first item
+- `/api/checklists/{listId}/items/1.0.2` - Delete nested grandchild
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
+### 10. Get All Notes
 
 **GET** `/api/notes`
 

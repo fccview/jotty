@@ -100,38 +100,7 @@ paths:
                         items:
                           type: array
                           items:
-                            type: object
-                            properties:
-                              index:
-                                type: integer
-                                example: 0
-                              text:
-                                type: string
-                                example: "Task 1"
-                              completed:
-                                type: boolean
-                                example: false
-                              status:
-                                type: string
-                                enum: [todo, in_progress, paused, completed]
-                              time:
-                                oneOf:
-                                  - type: integer
-                                    example: 0
-                                  - type: array
-                                    items:
-                                      type: object
-                                      properties:
-                                        id:
-                                          type: string
-                                        startTime:
-                                          type: string
-                                          format: date-time
-                                        endTime:
-                                          type: string
-                                          format: date-time
-                                        duration:
-                                          type: integer
+                            $ref: '#/components/schemas/ChecklistItem'
                         createdAt:
                           type: string
                           format: date-time
@@ -203,7 +172,10 @@ paths:
   /checklists/{listId}/items:
     post:
       summary: Create Checklist Item
-      description: Adds a new item to the specified checklist
+      description: |
+        Adds a new item to the specified checklist.
+
+        To create a nested item, provide the `parentIndex` parameter with the index path of the parent item (e.g., "0" for first item's child, "0.1" for second child of first item).
       tags:
         - Checklists
       parameters:
@@ -226,6 +198,10 @@ paths:
                 text:
                   type: string
                   example: "New task to complete"
+                parentIndex:
+                  type: string
+                  description: Index path of parent item (e.g., "0", "0.1", "2.0.1") for creating nested sub-items
+                  example: "0"
                 status:
                   type: string
                   enum: [in_progress, paused, completed]
@@ -267,7 +243,10 @@ paths:
   /checklists/{listId}/items/{itemIndex}/check:
     put:
       summary: Mark Item as Completed
-      description: Marks a checklist item as completed
+      description: |
+        Marks a checklist item as completed.
+
+        Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
       tags:
         - Checklists
       parameters:
@@ -281,8 +260,9 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 0
+            type: string
+          description: Index or index path (e.g., "0", "0.1", "2.0.1")
+          example: "0.1"
       responses:
         '200':
           description: Item marked as completed
@@ -302,7 +282,10 @@ paths:
   /checklists/{listId}/items/{itemIndex}/uncheck:
     put:
       summary: Mark Item as Incomplete
-      description: Marks a checklist item as incomplete
+      description: |
+        Marks a checklist item as incomplete.
+
+        Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
       tags:
         - Checklists
       parameters:
@@ -316,11 +299,51 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 0
+            type: string
+          description: Index or index path (e.g., "0", "0.1", "2.0.1")
+          example: "0.1"
       responses:
         '200':
           description: Item marked as incomplete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: Checklist or item not found
+        '400':
+          description: Invalid item index
+
+  /checklists/{listId}/items/{itemIndex}:
+    delete:
+      summary: Delete Item
+      description: |
+        Deletes a checklist item.
+
+        Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
+      tags:
+        - Checklists
+      parameters:
+        - name: listId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: itemIndex
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Index or index path (e.g., "0", "0.1", "2.0.1")
+          example: "1"
+      responses:
+        '200':
+          description: Item deleted successfully
           content:
             application/json:
               schema:
@@ -825,6 +848,52 @@ components:
         error:
           type: string
           example: "Error message description"
+
+    ChecklistItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Internal item ID
+          example: "listId-1234567890"
+        index:
+          type: integer
+          description: Position in the parent's items array
+          example: 0
+        text:
+          type: string
+          example: "Task 1"
+        completed:
+          type: boolean
+          example: false
+        status:
+          type: string
+          enum: [todo, in_progress, paused, completed]
+          description: Only present for task-type checklists
+        time:
+          oneOf:
+            - type: integer
+              example: 0
+            - type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  startTime:
+                    type: string
+                    format: date-time
+                  endTime:
+                    type: string
+                    format: date-time
+                  duration:
+                    type: integer
+          description: Only present for task-type checklists
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChecklistItem'
+          description: Nested sub-items
 
   responses:
     UnauthorizedError:

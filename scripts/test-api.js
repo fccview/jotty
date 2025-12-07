@@ -425,6 +425,130 @@ const testItemEndpoints = async () => {
     });
 }
 
+const testNestedItems = async () => {
+    console.log(`\n${colors.bright}--- Testing Nested Items ---${colors.reset}`);
+
+    await test(`POST /api/checklists/:id/items (create nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Creating nested item under item 0 in checklist: ${testState.simpleChecklistId}`);
+        const response = await makeRequest('POST', `/api/checklists/${testState.simpleChecklistId}/items`, {
+            text: 'Nested Item - Child of Item 0',
+            parentIndex: '0'
+        });
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const hasChildren = checklist.items[0].children && checklist.items[0].children.length > 0;
+        const childExists = hasChildren && checklist.items[0].children.some(child =>
+            child.text === 'Nested Item - Child of Item 0'
+        );
+
+        logStep(`Nested item created: ${childExists ? 'YES' : 'NO'}`);
+        return { success: childExists, error: childExists ? null : 'Nested item not found in children array' };
+    });
+
+    await test(`POST /api/checklists/:id/items (create deeply nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Creating deeply nested item under item 0.0`);
+        const response = await makeRequest('POST', `/api/checklists/${testState.simpleChecklistId}/items`, {
+            text: 'Deeply Nested Item - Grandchild',
+            parentIndex: '0.0'
+        });
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const grandchildExists = checklist.items[0]?.children?.[0]?.children?.some(child =>
+            child.text === 'Deeply Nested Item - Grandchild'
+        );
+
+        logStep(`Deeply nested item created: ${grandchildExists ? 'YES' : 'NO'}`);
+        return { success: grandchildExists, error: grandchildExists ? null : 'Deeply nested item not found' };
+    });
+
+    await test(`PUT /api/checklists/:id/items/0.0/check (check nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Checking nested item at index 0.0`);
+        const response = await makeRequest('PUT', `/api/checklists/${testState.simpleChecklistId}/items/0.0/check`);
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const nestedItem = checklist.items[0]?.children?.[0];
+        const isChecked = nestedItem?.completed === true;
+
+        logStep(`Nested item checked: ${isChecked ? 'YES' : 'NO'}`);
+        return { success: isChecked, error: isChecked ? null : 'Nested item not marked as completed' };
+    });
+
+    await test(`PUT /api/checklists/:id/items/0.0/uncheck (uncheck nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Unchecking nested item at index 0.0`);
+        const response = await makeRequest('PUT', `/api/checklists/${testState.simpleChecklistId}/items/0.0/uncheck`);
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const nestedItem = checklist.items[0]?.children?.[0];
+        const isUnchecked = nestedItem?.completed === false;
+
+        logStep(`Nested item unchecked: ${isUnchecked ? 'YES' : 'NO'}`);
+        return { success: isUnchecked, error: isUnchecked ? null : 'Nested item not marked as incomplete' };
+    });
+
+    await test(`DELETE /api/checklists/:id/items/0.0.0 (delete deeply nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Deleting deeply nested item at index 0.0.0`);
+        const response = await makeRequest('DELETE', `/api/checklists/${testState.simpleChecklistId}/items/0.0.0`);
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const grandchildrenExist = checklist.items[0]?.children?.[0]?.children?.length > 0;
+
+        logStep(`Deeply nested item deleted: ${!grandchildrenExist ? 'YES' : 'NO'}`);
+        return { success: !grandchildrenExist, error: !grandchildrenExist ? null : 'Deeply nested item still exists' };
+    });
+
+    await test(`DELETE /api/checklists/:id/items/0.0 (delete nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        const beforeResponse = await makeRequest('GET', '/api/checklists');
+        const beforeChecklist = beforeResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const childrenCountBefore = beforeChecklist.items[0]?.children?.length || 0;
+
+        logStep(`Deleting nested item at index 0.0 (${childrenCountBefore} children before)`);
+        const response = await makeRequest('DELETE', `/api/checklists/${testState.simpleChecklistId}/items/0.0`);
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const afterResponse = await makeRequest('GET', '/api/checklists');
+        const afterChecklist = afterResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const childrenCountAfter = afterChecklist.items[0]?.children?.length || 0;
+        const wasDeleted = childrenCountAfter === childrenCountBefore - 1;
+
+        logStep(`Nested item deleted: ${wasDeleted ? 'YES' : 'NO'} (${childrenCountBefore} -> ${childrenCountAfter})`);
+        return { success: wasDeleted, error: wasDeleted ? null : `Expected ${childrenCountBefore - 1} children, got ${childrenCountAfter}` };
+    });
+}
+
 const testUserAndSummaryEndpoints = async () => {
     console.log(`\n${colors.bright}--- Testing User & Summary Endpoints ---${colors.reset}`);
 
@@ -627,6 +751,7 @@ const main = async () => {
         await testNoteEndpoints();
         await testChecklistEndpoints();
         await testItemEndpoints();
+        await testNestedItems();
         await testUserAndSummaryEndpoints();
         await testExportEndpoints();
         await testErrorHandling();
