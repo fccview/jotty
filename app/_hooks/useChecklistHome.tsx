@@ -192,7 +192,6 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     lists.forEach((list) => {
       let items = list.items;
 
-      // If the list has rawContent, parse it to get the actual items
       if ("rawContent" in list && (list as any).rawContent) {
         const parsedData = parseChecklistContent((list as any).rawContent, list.id);
         items = parsedData.items;

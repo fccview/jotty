@@ -53,7 +53,7 @@ const makeRequest = (method, path, data = null, headers = {}) => {
         const options = {
             hostname: url.hostname,
             port: url.port,
-            path: url.pathname + url.search, // Includes query params
+            path: url.pathname + url.search,
             method,
             headers: {
                 'x-api-key': API_KEY,
@@ -74,7 +74,6 @@ const makeRequest = (method, path, data = null, headers = {}) => {
                     const jsonBody = body ? JSON.parse(body) : {};
                     resolve({ status: res.statusCode, body: jsonBody });
                 } catch (e) {
-                    // Resolve with raw body if JSON parsing fails
                     resolve({ status: res.statusCode, body: body });
                 }
             });
@@ -549,6 +548,222 @@ const testNestedItems = async () => {
     });
 }
 
+const testTaskEndpoints = async () => {
+    console.log(`\n${colors.bright}--- Testing Task Endpoints ---${colors.reset}`);
+
+    await test('GET /api/tasks (list all tasks)', async () => {
+        logStep('Fetching all tasks');
+        const response = await makeRequest('GET', '/api/tasks');
+        const isSuccess = response.status === 200 && Array.isArray(response.body.tasks);
+        if (isSuccess) {
+            logStep(`Found ${response.body.tasks.length} tasks`);
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with tasks array, got ${response.status}`
+        };
+    });
+
+    await test('POST /api/tasks (create task)', async () => {
+        logStep('Creating a new task checklist');
+        const response = await makeRequest('POST', '/api/tasks', {
+            title: 'API Test Task Board',
+            category: 'Testing'
+        });
+        if (response.status === 200 && response.body.data) {
+            testState.taskChecklistId = response.body.data.id;
+            logStep(`Task created with ID: ${testState.taskChecklistId}`);
+            const hasDefaultStatuses = response.body.data.statuses && response.body.data.statuses.length >= 3;
+            return {
+                success: hasDefaultStatuses,
+                error: hasDefaultStatuses ? null : 'Task should have default statuses'
+            };
+        }
+        return {
+            success: false,
+            error: `Expected status 200 with task data, got ${response.status}`
+        };
+    });
+
+    await test(`GET /api/tasks/${testState.taskChecklistId} (get task)`, async () => {
+        logStep(`Fetching task ${testState.taskChecklistId}`);
+        const response = await makeRequest('GET', `/api/tasks/${testState.taskChecklistId}`);
+        const isSuccess = response.status === 200 && response.body.task && response.body.task.id === testState.taskChecklistId;
+        if (isSuccess) {
+            logStep(`Task retrieved: ${response.body.task.title}`);
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with task data, got ${response.status}`
+        };
+    });
+
+    await test(`PUT /api/tasks/${testState.taskChecklistId} (update task)`, async () => {
+        logStep('Updating task title and category');
+        const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}`, {
+            title: 'Updated Task Board',
+            category: 'Work'
+        });
+        const isSuccess = response.status === 200 && response.body.data && response.body.data.title === 'Updated Task Board';
+        if (isSuccess) {
+            logStep('Task updated successfully');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with updated data, got ${response.status}`
+        };
+    });
+
+    await test(`GET /api/tasks/${testState.taskChecklistId}/statuses (get statuses)`, async () => {
+        logStep('Fetching task statuses');
+        const response = await makeRequest('GET', `/api/tasks/${testState.taskChecklistId}/statuses`);
+        const isSuccess = response.status === 200 && Array.isArray(response.body.statuses);
+        if (isSuccess) {
+            logStep(`Found ${response.body.statuses.length} statuses`);
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with statuses array, got ${response.status}`
+        };
+    });
+
+    await test(`POST /api/tasks/${testState.taskChecklistId}/statuses (create status)`, async () => {
+        logStep('Creating a new status');
+        const response = await makeRequest('POST', `/api/tasks/${testState.taskChecklistId}/statuses`, {
+            id: 'review',
+            label: 'In Review',
+            color: '#3b82f6',
+            order: 2
+        });
+        const isSuccess = response.status === 200 && response.body.data && response.body.data.id === 'review';
+        if (isSuccess) {
+            logStep('Status created: review');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with new status, got ${response.status}`
+        };
+    });
+
+    await test(`PUT /api/tasks/${testState.taskChecklistId}/statuses/review (update status)`, async () => {
+        logStep('Updating status label');
+        const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}/statuses/review`, {
+            label: 'Code Review',
+            color: '#8b5cf6'
+        });
+        const isSuccess = response.status === 200 && response.body.data && response.body.data.label === 'Code Review';
+        if (isSuccess) {
+            logStep('Status updated successfully');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with updated status, got ${response.status}`
+        };
+    });
+
+    await test(`POST /api/tasks/${testState.taskChecklistId}/items (create task item)`, async () => {
+        logStep('Creating a new task item');
+        const response = await makeRequest('POST', `/api/tasks/${testState.taskChecklistId}/items`, {
+            text: 'Implement feature X',
+            status: 'todo'
+        });
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Task item created');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`POST /api/tasks/${testState.taskChecklistId}/items (create nested task item)`, async () => {
+        logStep('Creating a nested task item');
+        const response = await makeRequest('POST', `/api/tasks/${testState.taskChecklistId}/items`, {
+            text: 'Sub-task: Write tests',
+            status: 'todo',
+            parentIndex: '0'
+        });
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Nested task item created');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`PUT /api/tasks/${testState.taskChecklistId}/items/0/status (update item status)`, async () => {
+        logStep('Updating item status to in_progress');
+        const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}/items/0/status`, {
+            status: 'in_progress'
+        });
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Item status updated');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`PUT /api/tasks/${testState.taskChecklistId}/items/0.0/status (update nested item status)`, async () => {
+        logStep('Updating nested item status to review');
+        const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}/items/0.0/status`, {
+            status: 'review'
+        });
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Nested item status updated');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`DELETE /api/tasks/${testState.taskChecklistId}/items/0.0 (delete nested item)`, async () => {
+        logStep('Deleting nested task item');
+        const response = await makeRequest('DELETE', `/api/tasks/${testState.taskChecklistId}/items/0.0`);
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Nested item deleted');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`DELETE /api/tasks/${testState.taskChecklistId}/statuses/review (delete status)`, async () => {
+        logStep('Deleting status');
+        const response = await makeRequest('DELETE', `/api/tasks/${testState.taskChecklistId}/statuses/review`);
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Status deleted (items moved to default status)');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`DELETE /api/tasks/${testState.taskChecklistId} (delete task)`, async () => {
+        logStep('Deleting task checklist');
+        const response = await makeRequest('DELETE', `/api/tasks/${testState.taskChecklistId}`);
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Task deleted successfully');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+}
+
 const testUserAndSummaryEndpoints = async () => {
     console.log(`\n${colors.bright}--- Testing User & Summary Endpoints ---${colors.reset}`);
 
@@ -752,6 +967,7 @@ const main = async () => {
         await testChecklistEndpoints();
         await testItemEndpoints();
         await testNestedItems();
+        await testTaskEndpoints();
         await testUserAndSummaryEndpoints();
         await testExportEndpoints();
         await testErrorHandling();

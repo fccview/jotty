@@ -600,7 +600,385 @@ Deletes an existing note for the authenticated user.
 }
 ```
 
-### 13. Get User Information
+## Task Management
+
+The `/tasks` endpoints provide specialized access to task checklists with Kanban board functionality, including status management and column-based organization. Tasks are a specific type of checklist optimized for project management workflows.
+
+### 13. Get All Tasks
+
+**GET** `/api/tasks`
+
+Retrieves all task checklists for the authenticated user.
+
+**Query Parameters:**
+
+- `category` (optional): Filter tasks by category name
+- `status` (optional): Filter tasks that contain items with this status
+- `q` (optional): Search tasks by title or item text
+
+**Response:**
+
+```json
+{
+  "tasks": [
+    {
+      "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "title": "Sprint Tasks",
+      "category": "Work",
+      "statuses": [
+        { "id": "todo", "label": "To Do", "order": 0 },
+        { "id": "in_progress", "label": "In Progress", "order": 1 },
+        { "id": "completed", "label": "Completed", "order": 2 }
+      ],
+      "items": [
+        {
+          "id": "task-1",
+          "index": 0,
+          "text": "Implement user authentication",
+          "status": "in_progress",
+          "completed": false
+        }
+      ],
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+### 14. Create Task
+
+**POST** `/api/tasks`
+
+Creates a new task checklist for the authenticated user.
+
+**Request Body:**
+
+```json
+{
+  "title": "New Sprint",
+  "category": "Work",
+  "statuses": [
+    { "id": "todo", "label": "To Do", "order": 0 },
+    { "id": "review", "label": "In Review", "order": 1, "color": "#3b82f6" },
+    { "id": "done", "label": "Done", "order": 2 }
+  ]
+}
+```
+
+**Parameters:**
+
+- `title` (required): The title of the task checklist
+- `category` (optional): Category for the task (defaults to "Uncategorized")
+- `statuses` (optional): Custom Kanban column statuses (defaults to todo/in_progress/completed)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "New Sprint",
+    "category": "Work",
+    "statuses": [
+      { "id": "todo", "label": "To Do", "order": 0 },
+      { "id": "review", "label": "In Review", "order": 1, "color": "#3b82f6" },
+      { "id": "done", "label": "Done", "order": 2 }
+    ],
+    "items": [],
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+### 15. Get Task
+
+**GET** `/api/tasks/{taskId}`
+
+Retrieves a specific task checklist.
+
+**Response:**
+
+```json
+{
+  "task": {
+    "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "title": "Sprint Tasks",
+    "category": "Work",
+    "statuses": [
+      { "id": "todo", "label": "To Do", "order": 0 },
+      { "id": "in_progress", "label": "In Progress", "order": 1 },
+      { "id": "completed", "label": "Completed", "order": 2 }
+    ],
+    "items": [
+      {
+        "id": "task-1",
+        "index": 0,
+        "text": "Implement user authentication",
+        "status": "in_progress",
+        "completed": false
+      }
+    ],
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+### 16. Update Task
+
+**PUT** `/api/tasks/{taskId}`
+
+Updates task metadata (title, category). All fields are optional.
+
+**Request Body:**
+
+```json
+{
+  "title": "Updated Sprint Title",
+  "category": "Projects"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "Updated Sprint Title",
+    "category": "Projects",
+    "statuses": [...],
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T12:30:00.000Z"
+  }
+}
+```
+
+### 17. Delete Task
+
+**DELETE** `/api/tasks/{taskId}`
+
+Deletes a task checklist.
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
+### 18. Get Task Statuses
+
+**GET** `/api/tasks/{taskId}/statuses`
+
+Retrieves all Kanban column statuses for a task.
+
+**Response:**
+
+```json
+{
+  "statuses": [
+    { "id": "todo", "label": "To Do", "order": 0 },
+    { "id": "in_progress", "label": "In Progress", "order": 1 },
+    { "id": "completed", "label": "Completed", "order": 2 }
+  ]
+}
+```
+
+### 19. Create Status
+
+**POST** `/api/tasks/{taskId}/statuses`
+
+Adds a new Kanban column status to a task.
+
+**Request Body:**
+
+```json
+{
+  "id": "review",
+  "label": "In Review",
+  "color": "#3b82f6",
+  "order": 2
+}
+```
+
+**Parameters:**
+
+- `id` (required): Unique identifier for the status
+- `label` (required): Display name for the status
+- `color` (optional): Color code for the status column
+- `order` (optional): Display order (defaults to last position)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "review",
+    "label": "In Review",
+    "color": "#3b82f6",
+    "order": 2
+  }
+}
+```
+
+### 20. Update Status
+
+**PUT** `/api/tasks/{taskId}/statuses/{statusId}`
+
+Updates a Kanban column status.
+
+**Request Body:**
+
+```json
+{
+  "label": "Code Review",
+  "color": "#8b5cf6",
+  "order": 3
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "review",
+    "label": "Code Review",
+    "color": "#8b5cf6",
+    "order": 3
+  }
+}
+```
+
+### 21. Delete Status
+
+**DELETE** `/api/tasks/{taskId}/statuses/{statusId}`
+
+Deletes a Kanban column status. Items with this status will be automatically moved to the first available status.
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
+### 22. Create Task Item
+
+**POST** `/api/tasks/{taskId}/items`
+
+Creates a new item in a task checklist.
+
+**Request Body:**
+
+```json
+{
+  "text": "Implement user authentication",
+  "status": "todo"
+}
+```
+
+**Creating Nested Items:**
+
+To create a nested sub-item, include the `parentIndex` parameter with the index path:
+
+```json
+{
+  "text": "Sub-task: Add login form",
+  "status": "todo",
+  "parentIndex": "0"
+}
+```
+
+Index path examples:
+- `"0"` - Creates a child of the first top-level item
+- `"0.1"` - Creates a child of the second child of the first item
+- `"2.0.1"` - Creates a grandchild of the third top-level item
+
+**Parameters:**
+
+- `text` (required): The text content of the item
+- `status` (optional): Initial status (defaults to "todo")
+- `parentIndex` (optional): Index path for creating nested items
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "task-item-1234567890"
+  }
+}
+```
+
+### 23. Update Item Status
+
+**PUT** `/api/tasks/{taskId}/items/{itemIndex}/status`
+
+Changes an item's status (moves it between Kanban columns).
+
+**Request Body:**
+
+```json
+{
+  "status": "in_progress"
+}
+```
+
+**Parameters:**
+
+- `status` (required): The new status for the item
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
+**Example - Moving nested item:**
+
+```bash
+PUT /api/tasks/550e8400-e29b-41d4-a716-446655440000/items/0.1/status
+{
+  "status": "completed"
+}
+```
+
+### 24. Delete Task Item
+
+**DELETE** `/api/tasks/{taskId}/items/{itemIndex}`
+
+Deletes an item from a task checklist.
+
+**Response:**
+
+```json
+{
+  "success": true
+}
+```
+
+**Example - Deleting nested item:**
+
+```bash
+DELETE /api/tasks/550e8400-e29b-41d4-a716-446655440000/items/0.1
+```
+
+This deletes the second child of the first top-level item.
+
+### 25. Get User Information
 
 **GET** `/api/user/{username}`
 
