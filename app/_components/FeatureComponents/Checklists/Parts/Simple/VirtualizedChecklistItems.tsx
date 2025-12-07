@@ -14,7 +14,8 @@ interface VirtualizedChecklistItemsProps {
   isDeletingItem: boolean;
   checklist: Checklist;
   className?: string;
-  isDragging?: boolean;
+  isAnyItemDragging?: boolean;
+  overItem?: { id: string; position: "before" | "after" } | null;
 }
 
 const VirtualizedChecklistItems = memo(
@@ -27,13 +28,14 @@ const VirtualizedChecklistItems = memo(
     isDeletingItem,
     checklist,
     className,
-    isDragging = false,
+    isAnyItemDragging = false,
+    overItem,
   }: VirtualizedChecklistItemsProps) => {
     const [renderedCount, setRenderedCount] = useState(20);
     const sentinelRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-      if (items.length <= 50 || isDragging) return;
+      if (items.length <= 50 || isAnyItemDragging) return;
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -49,7 +51,7 @@ const VirtualizedChecklistItems = memo(
       }
 
       return () => observer.disconnect();
-    }, [items.length, renderedCount, isDragging]);
+    }, [items.length, renderedCount, isAnyItemDragging]);
 
     const visibleItems = items.slice(0, renderedCount);
 
@@ -73,6 +75,10 @@ const VirtualizedChecklistItems = memo(
               isDeletingItem={isDeletingItem}
               isDragDisabled={false}
               checklist={checklist}
+              isAnyItemDragging={isAnyItemDragging}
+              isOver={overItem?.id === item.id}
+              overPosition={overItem?.id === item.id ? overItem.position : undefined}
+              overItem={overItem}
             />
           ))}
         </div>
@@ -94,6 +100,10 @@ const VirtualizedChecklistItems = memo(
             isDeletingItem={isDeletingItem}
             isDragDisabled={false}
             checklist={checklist}
+            isAnyItemDragging={isAnyItemDragging}
+            isOver={overItem?.id === item.id}
+            overPosition={overItem?.id === item.id ? overItem.position : undefined}
+            overItem={overItem}
           />
         ))}
         {renderedCount < items.length && (

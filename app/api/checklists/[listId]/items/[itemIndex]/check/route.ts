@@ -11,27 +11,42 @@ export async function PUT(
 ) {
   return withApiAuth(request, async (user) => {
     try {
-      const itemIndex = parseInt(params.itemIndex);
-      if (isNaN(itemIndex) || itemIndex < 0) {
-        return NextResponse.json(
-          { error: "Invalid item index" },
-          { status: 400 }
-        );
-      }
-
       const list = await getListById(params.listId, user.username);
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
 
-      if (itemIndex >= list.items.length) {
-        return NextResponse.json(
-          { error: "Item index out of range" },
-          { status: 400 }
-        );
+      const indexPath = params.itemIndex.split('.').map(i => parseInt(i));
+
+      for (const idx of indexPath) {
+        if (isNaN(idx) || idx < 0) {
+          return NextResponse.json(
+            { error: "Invalid item index" },
+            { status: 400 }
+          );
+        }
       }
 
-      const item = list.items[itemIndex];
+      let item: any = null;
+      let currentItems = list.items;
+
+      for (const idx of indexPath) {
+        if (idx >= currentItems.length) {
+          return NextResponse.json(
+            { error: "Item index out of range" },
+            { status: 400 }
+          );
+        }
+        item = currentItems[idx];
+        currentItems = item.children || [];
+      }
+
+      if (!item) {
+        return NextResponse.json(
+          { error: "Item not found" },
+          { status: 404 }
+        );
+      }
 
       const formData = new FormData();
       formData.append("listId", list.id);

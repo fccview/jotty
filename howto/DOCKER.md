@@ -42,7 +42,7 @@ Sets a custom name for the running container. This makes it easier to manage wit
 user: "1000:1000"
 ```
 
-Runs the container with the specified user and group ID. This should match your host system user for proper file permissions.
+Runs the container with the specified user and group ID. This should match your host system user for proper file permissions. **Alternatively**, you can use the `PUID` and `PGID` environment variables instead of the `user:` directive. If neither is set, defaults to `1000:1000`. The `user:` directive takes precedence if both are used. This is particularly useful when running on NAS systems like Unraid.
 
 ```yaml
 userns_mode: keep-id
@@ -95,6 +95,9 @@ Automatically restarts the container unless it was explicitly stopped. Ensures y
 ```yaml
 environment:
   - NODE_ENV=production
+  - PUID=1000
+  - PGID=1000
+  - UMASK=002
   - HTTPS=true
   - SERVE_PUBLIC_IMAGES=yes
   - SERVE_PUBLIC_FILES=yes
@@ -109,6 +112,9 @@ environment:
 ```
 
 - `- NODE_ENV=production` Sets the Node.js environment to production mode for optimal performance and security.
+- `- PUID=1000` Optional. Process User ID that the container will run as. Defaults to `1000` if not set. Set this to match your host system's user ID (find it with `id -u` on Linux). Particularly useful on NAS systems like Unraid. **Note:** The `user:` directive in docker-compose takes precedence over PUID/PGID.
+- `- PGID=1000` Optional. Process Group ID that the container will run as. Defaults to `1000` if not set. Set this to match your host system's group ID (find it with `id -g` on Linux). **Note:** The `user:` directive in docker-compose takes precedence over PUID/PGID.
+- `- UMASK=002` Optional. Sets the default file creation mask. Defaults to `002` if not set. Controls default permissions for newly created files and directories.
 - `- HTTPS=true` Optional. Enables HTTPS mode for secure connections.
 - `- APP_URL=https://your-jotty-domain.com` Base URL of your jotty·page instance. Required for secure session (https) and SSO.
 - `- SERVE_PUBLIC_IMAGES=yes` Optional. Allows public access to uploaded images via direct URLs.

@@ -32,7 +32,8 @@ services:
       # Optional security enhancements:
       - OIDC_CLIENT_SECRET=your_client_secret # Enable confidential client mode (if your provider requires it)
       - SSO_FALLBACK_LOCAL=yes # Allow both SSO and local login
-      - OIDC_ADMIN_GROUPS=admins # Map provider groups to admin role
+      - OIDC_ADMIN_GROUPS=admins # Map IDP groups claim to admin role
+      - OIDC_ADMIN_ROLES=admins # Map IDP roles claim to admin role
       - OIDC_GROUPS_SCOPE=groups # Scope to request for groups (set to empty string or "no" to disable for providers like Entra ID)
       - OIDC_LOGOUT_URL=https://authprovider.local/realms/master/logout # Custom logout URL for global logout
       # Optional for reverse proxy issues:
@@ -57,7 +58,7 @@ Community verified Providers:
 Provider's specific notes:
 
 - **Google** provider doesn't support usage of `groups` with OIDC authentication, so do NOT set the `OIDC_ADMIN_GROUPS` environment variable.
-- **Entra ID** provider allows usage of admin groups with `OIDC_ADMIN_GROUPS={Entra Group ID}` variable. For that, ensure to include optional `groups` claim in the 'Token Configuration' pane of your 'Enterprise Registration' AND define the environment variable to `OIDC_GROUPS_SCOPE="no"` or `OIDC_GROUPS_SCOPE=""`.
+- **Entra ID** provider allows usage of admin groups with `OIDC_ADMIN_GROUPS={Entra Group ID}` variable. For that, ensure to include optional `groups` claim in the 'Token Configuration' pane of your 'Enterprise Registration' AND define the environment variable to `OIDC_GROUPS_SCOPE="no"` or `OIDC_GROUPS_SCOPE=""`. Alternatively, use `OIDC_ADMIN_ROLES=role-name` to make use of Application Groups configured in Entra.
 
 p.s. **First user to sign in via SSO when no local users exist becomes admin automatically.**
 

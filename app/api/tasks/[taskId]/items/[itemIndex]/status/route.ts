@@ -1,19 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { updateItem } from "@/app/_server/actions/checklist-item";
 import { getListById } from "@/app/_server/actions/checklist";
+import { updateItem } from "@/app/_server/actions/checklist-item";
 
 export const dynamic = "force-dynamic";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { listId: string; itemIndex: string } }
+  { params }: { params: { taskId: string; itemIndex: string } }
 ) {
   return withApiAuth(request, async (user) => {
     try {
-      const list = await getListById(params.listId, user.username);
-      if (!list) {
-        return NextResponse.json({ error: "List not found" }, { status: 404 });
+      const body = await request.json();
+      const { status } = body;
+
+      if (!status) {
+        return NextResponse.json(
+          { error: "Status is required" },
+          { status: 400 }
+        );
+      }
+
+      const task = await getListById(params.taskId, user.username);
+      if (!task) {
+        return NextResponse.json({ error: "Task not found" }, { status: 404 });
+      }
+
+      if (task.type !== "task") {
+        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
       }
 
       const indexPath = params.itemIndex.split('.').map(i => parseInt(i));
@@ -28,7 +42,7 @@ export async function PUT(
       }
 
       let item: any = null;
-      let currentItems = list.items;
+      let currentItems = task.items;
 
       for (const idx of indexPath) {
         if (idx >= currentItems.length) {
@@ -49,37 +63,23 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("listId", list.id);
+      formData.append("listId", task.id);
       formData.append("itemId", item.id);
-      formData.append("completed", "false");
-      formData.append("category", list.category || "Uncategorized");
+      formData.append("status", status);
+      formData.append("category", task.category || "Uncategorized");
 
-      const result = await updateItem(list, formData, user.username, true);
+      const result = await updateItem(task, formData, user.username, true);
 
       if (!result.success) {
         return NextResponse.json(
-          { error: result.error || "Failed to uncheck item" },
+          { error: result.error || "Failed to update item status" },
           { status: 500 }
         );
       }
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === "List not found") {
-          return NextResponse.json(
-            { error: "List not found" },
-            { status: 404 }
-          );
-        }
-        if (error.message === "Item index out of range") {
-          return NextResponse.json(
-            { error: "Item index out of range" },
-            { status: 400 }
-          );
-        }
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
+      console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }

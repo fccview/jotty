@@ -6,20 +6,33 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 
-export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, extension }: any) => {
+export const DrawioNodeView = ({
+  node,
+  updateAttributes,
+  deleteNode,
+  editor,
+  extension,
+}: any) => {
   const [isEditing, setIsEditing] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const themeMode = node.attrs.themeMode || "light";
 
-  const drawioBaseUrl = extension.storage?.drawioUrl || "https://embed.diagrams.net";
+  const drawioBaseUrl =
+    extension.storage?.drawioUrl || "https://embed.diagrams.net";
   const drawioUrl = `${drawioBaseUrl}/?embed=1&ui=kennedy&spin=1&proto=json&saveAndExit=1&noSaveBtn=0`;
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const drawioOrigin = new URL(drawioBaseUrl).origin;
-      if (event.origin !== drawioOrigin && !event.origin.includes('diagrams.net')) return;
+      if (
+        event.origin !== drawioOrigin &&
+        !event.origin.includes("diagrams.net")
+      )
+        return;
 
-      if (typeof event.data === 'string' && event.data.length > 0) {
+      if (event.source !== iframeRef.current?.contentWindow) return;
+
+      if (typeof event.data === "string" && event.data.length > 0) {
         try {
           const message = JSON.parse(event.data);
           const drawioOrigin = new URL(drawioBaseUrl).origin;
@@ -65,12 +78,18 @@ export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, ext
           } else if (message.event === "export") {
             let svgData = message.data;
 
-            if (typeof svgData === 'string' && svgData.startsWith('data:image/svg+xml;base64,')) {
+            if (
+              typeof svgData === "string" &&
+              svgData.startsWith("data:image/svg+xml;base64,")
+            ) {
               try {
-                const base64Data = svgData.replace('data:image/svg+xml;base64,', '');
+                const base64Data = svgData.replace(
+                  "data:image/svg+xml;base64,",
+                  ""
+                );
                 svgData = atob(base64Data);
               } catch (e) {
-                console.error('Failed to decode SVG:', e);
+                console.error("Failed to decode SVG:", e);
               }
             }
 
@@ -138,9 +157,15 @@ export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, ext
               <button
                 onClick={toggleTheme}
                 className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
-                title={`Switch to ${themeMode === "light" ? "dark" : "light"} mode`}
+                title={`Switch to ${
+                  themeMode === "light" ? "dark" : "light"
+                } mode`}
               >
-                {themeMode === "light" ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+                {themeMode === "light" ? (
+                  <Moon className="h-3 w-3" />
+                ) : (
+                  <Sun className="h-3 w-3" />
+                )}
               </button>
               <button
                 onClick={openDrawio}
@@ -160,7 +185,10 @@ export const DrawioNodeView = ({ node, updateAttributes, deleteNode, editor, ext
             <div
               className="drawio-svg-container flex justify-center items-center"
               style={{
-                filter: themeMode === "dark" ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)" : "none",
+                filter:
+                  themeMode === "dark"
+                    ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)"
+                    : "none",
               }}
               dangerouslySetInnerHTML={{ __html: node.attrs.svgData }}
             />
@@ -213,8 +241,7 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
       },
       svgData: {
         default: null,
-        parseHTML: (element) =>
-          element.getAttribute("data-drawio-svg") || null,
+        parseHTML: (element) => element.getAttribute("data-drawio-svg") || null,
         renderHTML: (attributes) => {
           if (!attributes.svgData) return {};
           return {
@@ -240,9 +267,13 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
       {
         tag: "div[data-drawio]",
         getAttrs: (element) => ({
-          diagramData: (element as HTMLElement).getAttribute("data-drawio-data") || null,
-          svgData: (element as HTMLElement).getAttribute("data-drawio-svg") || null,
-          themeMode: (element as HTMLElement).getAttribute("data-drawio-theme") || "light",
+          diagramData:
+            (element as HTMLElement).getAttribute("data-drawio-data") || null,
+          svgData:
+            (element as HTMLElement).getAttribute("data-drawio-svg") || null,
+          themeMode:
+            (element as HTMLElement).getAttribute("data-drawio-theme") ||
+            "light",
         }),
       },
     ];
@@ -263,8 +294,8 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
 
   addNodeView() {
     return ReactNodeViewRenderer(DrawioNodeView, {
-      as: 'div',
-      contentDOMElementTag: 'div',
+      as: "div",
+      contentDOMElementTag: "div",
     });
   },
 
@@ -279,12 +310,12 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
     return {
       insertDrawIo:
         () =>
-          ({ commands }: any) => {
-            return commands.insertContent({
-              type: this.name,
-              attrs: { diagramData: null, svgData: null },
-            });
-          },
+        ({ commands }: any) => {
+          return commands.insertContent({
+            type: this.name,
+            attrs: { diagramData: null, svgData: null },
+          });
+        },
     };
   },
 });

@@ -53,7 +53,7 @@ const makeRequest = (method, path, data = null, headers = {}) => {
         const options = {
             hostname: url.hostname,
             port: url.port,
-            path: url.pathname + url.search, // Includes query params
+            path: url.pathname + url.search,
             method,
             headers: {
                 'x-api-key': API_KEY,
@@ -74,7 +74,6 @@ const makeRequest = (method, path, data = null, headers = {}) => {
                     const jsonBody = body ? JSON.parse(body) : {};
                     resolve({ status: res.statusCode, body: jsonBody });
                 } catch (e) {
-                    // Resolve with raw body if JSON parsing fails
                     resolve({ status: res.statusCode, body: body });
                 }
             });
@@ -425,6 +424,346 @@ const testItemEndpoints = async () => {
     });
 }
 
+const testNestedItems = async () => {
+    console.log(`\n${colors.bright}--- Testing Nested Items ---${colors.reset}`);
+
+    await test(`POST /api/checklists/:id/items (create nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Creating nested item under item 0 in checklist: ${testState.simpleChecklistId}`);
+        const response = await makeRequest('POST', `/api/checklists/${testState.simpleChecklistId}/items`, {
+            text: 'Nested Item - Child of Item 0',
+            parentIndex: '0'
+        });
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const hasChildren = checklist.items[0].children && checklist.items[0].children.length > 0;
+        const childExists = hasChildren && checklist.items[0].children.some(child =>
+            child.text === 'Nested Item - Child of Item 0'
+        );
+
+        logStep(`Nested item created: ${childExists ? 'YES' : 'NO'}`);
+        return { success: childExists, error: childExists ? null : 'Nested item not found in children array' };
+    });
+
+    await test(`POST /api/checklists/:id/items (create deeply nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Creating deeply nested item under item 0.0`);
+        const response = await makeRequest('POST', `/api/checklists/${testState.simpleChecklistId}/items`, {
+            text: 'Deeply Nested Item - Grandchild',
+            parentIndex: '0.0'
+        });
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const grandchildExists = checklist.items[0]?.children?.[0]?.children?.some(child =>
+            child.text === 'Deeply Nested Item - Grandchild'
+        );
+
+        logStep(`Deeply nested item created: ${grandchildExists ? 'YES' : 'NO'}`);
+        return { success: grandchildExists, error: grandchildExists ? null : 'Deeply nested item not found' };
+    });
+
+    await test(`PUT /api/checklists/:id/items/0.0/check (check nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Checking nested item at index 0.0`);
+        const response = await makeRequest('PUT', `/api/checklists/${testState.simpleChecklistId}/items/0.0/check`);
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const nestedItem = checklist.items[0]?.children?.[0];
+        const isChecked = nestedItem?.completed === true;
+
+        logStep(`Nested item checked: ${isChecked ? 'YES' : 'NO'}`);
+        return { success: isChecked, error: isChecked ? null : 'Nested item not marked as completed' };
+    });
+
+    await test(`PUT /api/checklists/:id/items/0.0/uncheck (uncheck nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Unchecking nested item at index 0.0`);
+        const response = await makeRequest('PUT', `/api/checklists/${testState.simpleChecklistId}/items/0.0/uncheck`);
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const nestedItem = checklist.items[0]?.children?.[0];
+        const isUnchecked = nestedItem?.completed === false;
+
+        logStep(`Nested item unchecked: ${isUnchecked ? 'YES' : 'NO'}`);
+        return { success: isUnchecked, error: isUnchecked ? null : 'Nested item not marked as incomplete' };
+    });
+
+    await test(`DELETE /api/checklists/:id/items/0.0.0 (delete deeply nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        logStep(`Deleting deeply nested item at index 0.0.0`);
+        const response = await makeRequest('DELETE', `/api/checklists/${testState.simpleChecklistId}/items/0.0.0`);
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const checkResponse = await makeRequest('GET', '/api/checklists');
+        const checklist = checkResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const grandchildrenExist = checklist.items[0]?.children?.[0]?.children?.length > 0;
+
+        logStep(`Deeply nested item deleted: ${!grandchildrenExist ? 'YES' : 'NO'}`);
+        return { success: !grandchildrenExist, error: !grandchildrenExist ? null : 'Deeply nested item still exists' };
+    });
+
+    await test(`DELETE /api/checklists/:id/items/0.0 (delete nested item)`, async () => {
+        if (!testState.simpleChecklistId) return { success: false, error: 'No simple checklist ID' };
+
+        const beforeResponse = await makeRequest('GET', '/api/checklists');
+        const beforeChecklist = beforeResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const childrenCountBefore = beforeChecklist.items[0]?.children?.length || 0;
+
+        logStep(`Deleting nested item at index 0.0 (${childrenCountBefore} children before)`);
+        const response = await makeRequest('DELETE', `/api/checklists/${testState.simpleChecklistId}/items/0.0`);
+        if (response.status !== 200 || !response.body.success) {
+            return { success: false, error: `Status ${response.status}` };
+        }
+
+        const afterResponse = await makeRequest('GET', '/api/checklists');
+        const afterChecklist = afterResponse.body.checklists.find(c => c.id === testState.simpleChecklistId);
+        const childrenCountAfter = afterChecklist.items[0]?.children?.length || 0;
+        const wasDeleted = childrenCountAfter === childrenCountBefore - 1;
+
+        logStep(`Nested item deleted: ${wasDeleted ? 'YES' : 'NO'} (${childrenCountBefore} -> ${childrenCountAfter})`);
+        return { success: wasDeleted, error: wasDeleted ? null : `Expected ${childrenCountBefore - 1} children, got ${childrenCountAfter}` };
+    });
+}
+
+const testTaskEndpoints = async () => {
+    console.log(`\n${colors.bright}--- Testing Task Endpoints ---${colors.reset}`);
+
+    await test('GET /api/tasks (list all tasks)', async () => {
+        logStep('Fetching all tasks');
+        const response = await makeRequest('GET', '/api/tasks');
+        const isSuccess = response.status === 200 && Array.isArray(response.body.tasks);
+        if (isSuccess) {
+            logStep(`Found ${response.body.tasks.length} tasks`);
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with tasks array, got ${response.status}`
+        };
+    });
+
+    await test('POST /api/tasks (create task)', async () => {
+        logStep('Creating a new task checklist');
+        const response = await makeRequest('POST', '/api/tasks', {
+            title: 'API Test Task Board',
+            category: 'Testing'
+        });
+        if (response.status === 200 && response.body.data) {
+            testState.taskChecklistId = response.body.data.id;
+            logStep(`Task created with ID: ${testState.taskChecklistId}`);
+            const hasDefaultStatuses = response.body.data.statuses && response.body.data.statuses.length >= 3;
+            return {
+                success: hasDefaultStatuses,
+                error: hasDefaultStatuses ? null : 'Task should have default statuses'
+            };
+        }
+        return {
+            success: false,
+            error: `Expected status 200 with task data, got ${response.status}`
+        };
+    });
+
+    await test(`GET /api/tasks/${testState.taskChecklistId} (get task)`, async () => {
+        logStep(`Fetching task ${testState.taskChecklistId}`);
+        const response = await makeRequest('GET', `/api/tasks/${testState.taskChecklistId}`);
+        const isSuccess = response.status === 200 && response.body.task && response.body.task.id === testState.taskChecklistId;
+        if (isSuccess) {
+            logStep(`Task retrieved: ${response.body.task.title}`);
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with task data, got ${response.status}`
+        };
+    });
+
+    await test(`PUT /api/tasks/${testState.taskChecklistId} (update task)`, async () => {
+        logStep('Updating task title and category');
+        const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}`, {
+            title: 'Updated Task Board',
+            category: 'Work'
+        });
+        const isSuccess = response.status === 200 && response.body.data && response.body.data.title === 'Updated Task Board';
+        if (isSuccess) {
+            logStep('Task updated successfully');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with updated data, got ${response.status}`
+        };
+    });
+
+    await test(`GET /api/tasks/${testState.taskChecklistId}/statuses (get statuses)`, async () => {
+        logStep('Fetching task statuses');
+        const response = await makeRequest('GET', `/api/tasks/${testState.taskChecklistId}/statuses`);
+        const isSuccess = response.status === 200 && Array.isArray(response.body.statuses);
+        if (isSuccess) {
+            logStep(`Found ${response.body.statuses.length} statuses`);
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with statuses array, got ${response.status}`
+        };
+    });
+
+    await test(`POST /api/tasks/${testState.taskChecklistId}/statuses (create status)`, async () => {
+        logStep('Creating a new status');
+        const response = await makeRequest('POST', `/api/tasks/${testState.taskChecklistId}/statuses`, {
+            id: 'review',
+            label: 'In Review',
+            color: '#3b82f6',
+            order: 2
+        });
+        const isSuccess = response.status === 200 && response.body.data && response.body.data.id === 'review';
+        if (isSuccess) {
+            logStep('Status created: review');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with new status, got ${response.status}`
+        };
+    });
+
+    await test(`PUT /api/tasks/${testState.taskChecklistId}/statuses/review (update status)`, async () => {
+        logStep('Updating status label');
+        const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}/statuses/review`, {
+            label: 'Code Review',
+            color: '#8b5cf6'
+        });
+        const isSuccess = response.status === 200 && response.body.data && response.body.data.label === 'Code Review';
+        if (isSuccess) {
+            logStep('Status updated successfully');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with updated status, got ${response.status}`
+        };
+    });
+
+    await test(`POST /api/tasks/${testState.taskChecklistId}/items (create task item)`, async () => {
+        logStep('Creating a new task item');
+        const response = await makeRequest('POST', `/api/tasks/${testState.taskChecklistId}/items`, {
+            text: 'Implement feature X',
+            status: 'todo'
+        });
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Task item created');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`POST /api/tasks/${testState.taskChecklistId}/items (create nested task item)`, async () => {
+        logStep('Creating a nested task item');
+        const response = await makeRequest('POST', `/api/tasks/${testState.taskChecklistId}/items`, {
+            text: 'Sub-task: Write tests',
+            status: 'todo',
+            parentIndex: '0'
+        });
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Nested task item created');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`PUT /api/tasks/${testState.taskChecklistId}/items/0/status (update item status)`, async () => {
+        logStep('Updating item status to in_progress');
+        const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}/items/0/status`, {
+            status: 'in_progress'
+        });
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Item status updated');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`PUT /api/tasks/${testState.taskChecklistId}/items/0.0/status (update nested item status)`, async () => {
+        logStep('Updating nested item status to review');
+        const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}/items/0.0/status`, {
+            status: 'review'
+        });
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Nested item status updated');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`DELETE /api/tasks/${testState.taskChecklistId}/items/0.0 (delete nested item)`, async () => {
+        logStep('Deleting nested task item');
+        const response = await makeRequest('DELETE', `/api/tasks/${testState.taskChecklistId}/items/0.0`);
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Nested item deleted');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`DELETE /api/tasks/${testState.taskChecklistId}/statuses/review (delete status)`, async () => {
+        logStep('Deleting status');
+        const response = await makeRequest('DELETE', `/api/tasks/${testState.taskChecklistId}/statuses/review`);
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Status deleted (items moved to default status)');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+
+    await test(`DELETE /api/tasks/${testState.taskChecklistId} (delete task)`, async () => {
+        logStep('Deleting task checklist');
+        const response = await makeRequest('DELETE', `/api/tasks/${testState.taskChecklistId}`);
+        const isSuccess = response.status === 200 && response.body.success;
+        if (isSuccess) {
+            logStep('Task deleted successfully');
+        }
+        return {
+            success: isSuccess,
+            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+        };
+    });
+}
+
 const testUserAndSummaryEndpoints = async () => {
     console.log(`\n${colors.bright}--- Testing User & Summary Endpoints ---${colors.reset}`);
 
@@ -627,6 +966,8 @@ const main = async () => {
         await testNoteEndpoints();
         await testChecklistEndpoints();
         await testItemEndpoints();
+        await testNestedItems();
+        await testTaskEndpoints();
         await testUserAndSummaryEndpoints();
         await testExportEndpoints();
         await testErrorHandling();

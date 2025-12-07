@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
@@ -39,6 +39,10 @@ interface NestedChecklistItemProps {
   isDragDisabled?: boolean;
   isSubtask?: boolean;
   checklist: Checklist;
+  isOver?: boolean;
+  overPosition?: "before" | "after";
+  isAnyItemDragging?: boolean;
+  overItem?: { id: string; position: "before" | "after" } | null;
 }
 
 const NestedChecklistItemComponent = ({
@@ -55,6 +59,10 @@ const NestedChecklistItemComponent = ({
   isDragDisabled = false,
   isSubtask = false,
   checklist,
+  isOver = false,
+  overPosition,
+  isAnyItemDragging = false,
+  overItem = null,
 }: NestedChecklistItemProps) => {
   const { usersPublicData, user } = useAppMode();
   const { permissions } = usePermissions();
@@ -68,16 +76,17 @@ const NestedChecklistItemComponent = ({
     );
   };
 
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: item.id,
-      data: {
-        type: "item",
-        item: item,
-        completed: item.completed,
-      },
-      disabled: isDragDisabled,
-    });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: item.id,
+    disabled: isDragDisabled,
+  });
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -146,7 +155,6 @@ const NestedChecklistItemComponent = ({
     if (newSubItemText.trim() && onAddSubItem) {
       onAddSubItem(item.id, newSubItemText.trim());
       setNewSubItemText("");
-      setShowAddSubItem(false);
     }
   };
 
@@ -193,8 +201,10 @@ const NestedChecklistItemComponent = ({
 
   return (
     <div
+      ref={setNodeRef}
       style={{
-        transform: CSS.Transform.toString(transform),
+        transform: isAnyItemDragging && !isDragging ? CSS.Transform.toString({ x: 0, y: 0, scaleX: 1, scaleY: 1 }) : CSS.Transform.toString(transform),
+        transition: isAnyItemDragging && !isDragging ? "none" : transition,
       }}
       className={cn(
         "relative my-1",
@@ -212,6 +222,9 @@ const NestedChecklistItemComponent = ({
         isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
       )}
     >
+      {isOver && overPosition === "before" && (
+        <div className="absolute -top-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
+      )}
       <div
         className={cn(
           "group/item flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
@@ -224,14 +237,12 @@ const NestedChecklistItemComponent = ({
       >
         {!isPublicView &&
           !isDragDisabled &&
-          !isChild &&
           permissions?.canEdit && (
             <button
               type="button"
               {...attributes}
               {...listeners}
-              className="text-muted-foreground hidden lg:block hover:text-foreground cursor-move touch-manipulation"
-              ref={setNodeRef}
+              className="text-muted-foreground lg:block hover:text-foreground cursor-move touch-none"
             >
               <GripVertical className="h-4 w-4" />
             </button>
@@ -406,6 +417,9 @@ const NestedChecklistItemComponent = ({
           </div>
         )}
       </div>
+      {isOver && overPosition === "after" && (
+        <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
+      )}
 
       {showAddSubItem && !isPublicView && (
         <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>
@@ -460,6 +474,10 @@ const NestedChecklistItemComponent = ({
               isDragDisabled={isDragDisabled}
               isPublicView={isPublicView}
               checklist={checklist}
+              isOver={overItem?.id === child.id}
+              overPosition={overItem?.id === child.id ? overItem.position : undefined}
+              isAnyItemDragging={isAnyItemDragging}
+              overItem={overItem}
             />
           ))}
         </div>

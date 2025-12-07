@@ -66,7 +66,7 @@ export const SidebarItem = ({
     setIsTogglingPin(item.id);
     try {
       const result = await togglePin(
-        item.id,
+        item.uuid || item.id,
         item.category || "Uncategorized",
         mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE
       );
@@ -86,7 +86,7 @@ export const SidebarItem = ({
       mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
     if (!pinnedItems) return false;
 
-    const itemPath = `${item.category || "Uncategorized"}/${item.id}`;
+    const itemPath = `${item.category || "Uncategorized"}/${item.uuid || item.id}`;
     return pinnedItems.includes(itemPath);
   };
 

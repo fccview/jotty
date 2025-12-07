@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { updateItem } from "@/app/_server/actions/checklist-item";
 import { getListById } from "@/app/_server/actions/checklist";
+import { listToMarkdown } from "@/app/_utils/checklist-utils";
+import { serverWriteFile } from "@/app/_server/actions/file";
+import path from "path";
+
+const CHECKLISTS_FOLDER = "checklists";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
+export async function DELETE(
   request: NextRequest,
   { params }: { params: { listId: string; itemIndex: string } }
 ) {
@@ -48,38 +52,41 @@ export async function PUT(
         );
       }
 
-      const formData = new FormData();
-      formData.append("listId", list.id);
-      formData.append("itemId", item.id);
-      formData.append("completed", "false");
-      formData.append("category", list.category || "Uncategorized");
+      const filterOutItem = (items: any[], itemId: string): any[] => {
+        return items
+          .filter((item) => item.id !== itemId)
+          .map((item) => {
+            const filteredChildren = item.children ? filterOutItem(item.children, itemId) : undefined;
+            return {
+              ...item,
+              children: filteredChildren && filteredChildren.length > 0 ? filteredChildren : undefined,
+            };
+          });
+      };
 
-      const result = await updateItem(list, formData, user.username, true);
+      const updatedList = {
+        ...list,
+        items: filterOutItem(list.items || [], item.id),
+        updatedAt: new Date().toISOString(),
+      };
 
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to uncheck item" },
-          { status: 500 }
-        );
-      }
+      const ownerDir = path.join(
+        process.cwd(),
+        "data",
+        CHECKLISTS_FOLDER,
+        list.owner!
+      );
+      const filePath = path.join(
+        ownerDir,
+        list.category || "Uncategorized",
+        `${list.id}.md`
+      );
+
+      await serverWriteFile(filePath, listToMarkdown(updatedList as any));
 
       return NextResponse.json({ success: true });
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === "List not found") {
-          return NextResponse.json(
-            { error: "List not found" },
-            { status: 404 }
-          );
-        }
-        if (error.message === "Item index out of range") {
-          return NextResponse.json(
-            { error: "Item index out of range" },
-            { status: 400 }
-          );
-        }
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
+      console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
         { status: 500 }

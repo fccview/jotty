@@ -4,6 +4,7 @@ import { createItem } from "@/app/_server/actions/checklist-item";
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
+import { TaskStatus } from "@/app/_types/enums";
 import path from "path";
 
 const CHECKLISTS_FOLDER = "checklists";
@@ -12,12 +13,12 @@ export const dynamic = "force-dynamic";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { listId: string } }
+  { params }: { params: { taskId: string } }
 ) {
   return withApiAuth(request, async (user) => {
     try {
       const body = await request.json();
-      const { text, status, time, parentIndex } = body;
+      const { text, status, parentIndex } = body;
 
       if (!text) {
         return NextResponse.json(
@@ -26,20 +27,19 @@ export async function POST(
         );
       }
 
-      const list = await getListById(params.listId, user.username);
-      if (!list) {
-        return NextResponse.json({ error: "List not found" }, { status: 404 });
+      const task = await getListById(params.taskId, user.username);
+      if (!task) {
+        return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      const formData = new FormData();
-      formData.append("listId", list.id);
-      formData.append("text", text);
-      formData.append("category", list.category || "Uncategorized");
+      if (task.type !== "task") {
+        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+      }
 
       if (parentIndex !== undefined) {
         const indexPath = parentIndex.toString().split('.').map((i: string) => parseInt(i));
         let parentItem: any = null;
-        let currentItems = list.items;
+        let currentItems = task.items;
 
         for (const idx of indexPath) {
           if (idx >= currentItems.length) {
@@ -60,8 +60,9 @@ export async function POST(
         }
 
         const newSubItem: any = {
-          id: `${list.id}-sub-${Date.now()}`,
+          id: `${task.id}-sub-${Date.now()}`,
           text,
+          status: status || TaskStatus.TODO,
           completed: false,
           order: 0,
         };
@@ -82,7 +83,7 @@ export async function POST(
           return false;
         };
 
-        const updatedItems = JSON.parse(JSON.stringify(list.items));
+        const updatedItems = JSON.parse(JSON.stringify(task.items));
         if (!addSubItemToParent(updatedItems, parentItem.id)) {
           return NextResponse.json(
             { error: "Failed to add sub-item" },
@@ -90,8 +91,8 @@ export async function POST(
           );
         }
 
-        const updatedList = {
-          ...list,
+        const updatedTask = {
+          ...task,
           items: updatedItems,
           updatedAt: new Date().toISOString(),
         };
@@ -100,29 +101,26 @@ export async function POST(
           process.cwd(),
           "data",
           CHECKLISTS_FOLDER,
-          list.owner!
+          task.owner!
         );
         const filePath = path.join(
           ownerDir,
-          list.category || "Uncategorized",
-          `${list.id}.md`
+          task.category || "Uncategorized",
+          `${task.id}.md`
         );
 
-        await serverWriteFile(filePath, listToMarkdown(updatedList as any));
+        await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
 
         return NextResponse.json({ success: true });
       }
-      if (status) {
-        formData.append("status", status);
-      }
-      if (time !== undefined) {
-        formData.append(
-          "time",
-          typeof time === "string" ? time : JSON.stringify(time)
-        );
-      }
 
-      const result = await createItem(list, formData, user.username, true);
+      const formData = new FormData();
+      formData.append("listId", task.id);
+      formData.append("text", text);
+      formData.append("category", task.category || "Uncategorized");
+      formData.append("status", status || TaskStatus.TODO);
+
+      const result = await createItem(task, formData, user.username, true);
 
       if (!result.success) {
         return NextResponse.json(
