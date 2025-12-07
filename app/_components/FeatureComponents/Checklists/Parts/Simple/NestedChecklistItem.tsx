@@ -153,7 +153,6 @@ const NestedChecklistItemComponent = ({
     if (newSubItemText.trim() && onAddSubItem) {
       onAddSubItem(item.id, newSubItemText.trim());
       setNewSubItemText("");
-      setShowAddSubItem(false);
     }
   };
 
