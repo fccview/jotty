@@ -692,7 +692,14 @@ export const getMarkdownPreviewContent = (
 export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  let result = sanitizeHtml(markdown, {
+  const comments: string[] = [];
+  const commentRegex = /<!--[\s\S]*?-->/g;
+  let sanitized = markdown.replace(commentRegex, (match) => {
+    comments.push(match);
+    return `__COMMENT_${comments.length - 1}__`;
+  });
+
+  let result = sanitizeHtml(sanitized, {
     allowedTags: [
       "table",
       "thead",
@@ -760,6 +767,10 @@ export const sanitizeMarkdown = (markdown: string): string => {
     allowedSchemesByTag: {
       img: ["http", "https", "data"],
     },
+  });
+
+  comments.forEach((comment, index) => {
+    result = result.replace(`__COMMENT_${index}__`, comment);
   });
 
   result = result.replace(
