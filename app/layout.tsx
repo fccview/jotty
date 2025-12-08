@@ -77,7 +77,14 @@ export const generateMetadata = async (): Promise<Metadata> => {
     )
   );
 
-  await writeJsonFile(manifest, path.join("data", "site.webmanifest"));
+  try {
+    await writeJsonFile(manifest, path.join("data", "site.webmanifest"));
+  } catch (error) {
+    console.error(
+      "Your data and/or config folders seem to be using the wrong permissions, please fix them by following the instructions here: https://github.com/fccview/jotty/blob/main/howto/DOCKER.md and/or setting the correct env variables from here: https://github.com/fccview/jotty/blob/main/howto/ENV-VARIABLES.md",
+      error
+    );
+  }
 
   return {
     title: appName,
@@ -161,10 +168,22 @@ export default async function RootLayout({
   ] = await Promise.all([
     shouldParseContent
       ? getUserNotes()
-      : getUserNotes({ projection: ["id", "title", "category", "owner", "uuid"] }),
+      : getUserNotes({
+          projection: ["id", "title", "category", "owner", "uuid"],
+        }),
     shouldParseContent
       ? getUserChecklists()
-      : getUserChecklists({ projection: ["id", "title", "category", "owner", "uuid", "type", "items"] }),
+      : getUserChecklists({
+          projection: [
+            "id",
+            "title",
+            "category",
+            "owner",
+            "uuid",
+            "type",
+            "items",
+          ],
+        }),
     getAllSharedItems(),
     user
       ? getAllSharedItemsForUser(user.username)
@@ -204,7 +223,9 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <script
           dangerouslySetInnerHTML={{
-            __html: themeInitScript(JSON.stringify(customThemes["custom-themes"] || {}))
+            __html: themeInitScript(
+              JSON.stringify(customThemes["custom-themes"] || {})
+            ),
           }}
         />
       </head>
