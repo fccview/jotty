@@ -13,6 +13,7 @@ import { TableSyntax } from "@/app/_types";
 import { decodeCategoryPath, decodeId } from "./global-utils";
 import { getContrastColor } from "./color-utils";
 import sanitizeHtml from "sanitize-html";
+import { getCodeBlockRanges, isPositionInCodeBlock } from "./code-block-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
@@ -723,4 +724,43 @@ export const sanitizeMarkdown = (markdown: string): string => {
   );
 
   return result;
+};
+
+
+export interface Heading {
+  id: string;
+  text: string;
+  level: number;
+}
+
+export const extractHeadings = (content: string): Heading[] => {
+  if (!content?.trim()) return [];
+
+  const codeBlockRanges = getCodeBlockRanges(content);
+  const lines = content.split("\n");
+  const extractedHeadings: Heading[] = [];
+  let currentIndex = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lineStartIndex = currentIndex;
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+
+    if (
+      headingMatch &&
+      !isPositionInCodeBlock(lineStartIndex, codeBlockRanges)
+    ) {
+      const level = headingMatch[1].length;
+      const text = headingMatch[2].trim();
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-");
+      extractedHeadings.push({ id, text, level });
+    }
+
+    currentIndex += line.length + 1;
+  }
+
+  return extractedHeadings;
 };

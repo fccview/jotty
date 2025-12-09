@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { List } from "lucide-react";
 import { cn } from "@/app/_utils/global-utils";
+import { extractHeadings as extractHeadingsFromMarkdown } from "@/app/_utils/markdown-utils";
 
 interface Heading {
   id: string;
@@ -11,29 +12,69 @@ interface Heading {
 }
 
 interface TableOfContentsProps {
-  content: string;
+  content?: string;
+  isEditing?: boolean;
   className?: string;
 }
 
-const useTableOfContents = (content: string) => {
+const useTableOfContents = (content?: string, isEditing?: boolean) => {
   const [activeHeading, setActiveHeading] = useState<string | null>(null);
+  const [headings, setHeadings] = useState<Heading[]>([]);
 
-  const headings = useMemo(() => {
-    if (!content?.trim()) return [];
-    const headingRegex = /^(#{1,6})\s+(.+)$/gm;
-    const extractedHeadings: Heading[] = [];
-    let match;
-    while ((match = headingRegex.exec(content)) !== null) {
-      const level = match[1].length;
-      const text = match[2].trim();
-      const id = text
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-");
-      extractedHeadings.push({ id, text, level });
+  const markdownHeadings = useMemo(() => {
+    if (isEditing && content) {
+      return extractHeadingsFromMarkdown(content);
     }
-    return extractedHeadings;
-  }, [content]);
+    return [];
+  }, [content, isEditing]);
+
+  useEffect(() => {
+    if (isEditing) {
+      setHeadings(markdownHeadings);
+      return;
+    }
+
+    const extractHeadingsFromDOM = (): Heading[] => {
+      const contentArea = document.querySelector(".prose, [class*='prose']");
+      const searchRoot = contentArea || document.body;
+      const headingElements = searchRoot.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      const extracted: Heading[] = [];
+
+      headingElements.forEach((element) => {
+        const id = element.id;
+        const text = element.textContent || "";
+        const tagName = element.tagName.toLowerCase();
+        const level = parseInt(tagName.charAt(1));
+
+        if (id && text.trim()) {
+          extracted.push({ id, text: text.trim(), level });
+        }
+      });
+
+      return extracted;
+    };
+
+    const updateHeadings = () => {
+      const extracted = extractHeadingsFromDOM();
+      setHeadings(extracted);
+    };
+
+    const timeoutId = setTimeout(updateHeadings, 100);
+
+    const observer = new MutationObserver(() => {
+      updateHeadings();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
+  }, [isEditing, markdownHeadings]);
 
   useEffect(() => {
     if (headings.length === 0) return;
@@ -63,10 +104,10 @@ const useTableOfContents = (content: string) => {
 
 export const TableOfContents = ({
   content,
+  isEditing,
   className,
 }: TableOfContentsProps) => {
-  const { headings, activeHeading, setActiveHeading } =
-    useTableOfContents(content);
+  const { headings, activeHeading, setActiveHeading } = useTableOfContents(content, isEditing);
 
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
