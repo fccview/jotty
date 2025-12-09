@@ -162,6 +162,7 @@ export const SidebarItem = ({
     <div className="flex items-center group/item" style={style}>
       <button
         onClick={() => onItemClick(item)}
+        data-sidebar-item-selected={isSelected}
         className={cn(
           "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors flex-1 text-left truncate",
           isSelected
