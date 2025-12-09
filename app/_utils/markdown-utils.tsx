@@ -692,7 +692,7 @@ export const getMarkdownPreviewContent = (
 export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  let result markdown.replace(
+  let result = markdown.replace(
     /\\+\[(📎|🎥)\s+([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g,
     "[$1 $2]($3)"
   );
