@@ -13,7 +13,6 @@ import { TableSyntax } from "@/app/_types";
 import { decodeCategoryPath, decodeId } from "./global-utils";
 import { getContrastColor } from "./color-utils";
 import sanitizeHtml from "sanitize-html";
-import { getCodeBlockRanges, isPositionInCodeBlock } from "./code-block-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
@@ -732,6 +731,38 @@ export interface Heading {
   text: string;
   level: number;
 }
+
+const getCodeBlockRanges = (content: string): Array<{ start: number; end: number }> => {
+  const codeBlockRanges: Array<{ start: number; end: number }> = [];
+  const fencedCodeBlockRegex = /```[\s\S]*?```/g;
+  const inlineCodeRegex = /`[^`\n]+`/g;
+
+  let codeMatch;
+  while ((codeMatch = fencedCodeBlockRegex.exec(content)) !== null) {
+    codeBlockRanges.push({
+      start: codeMatch.index,
+      end: codeMatch.index + codeMatch[0].length,
+    });
+  }
+
+  while ((codeMatch = inlineCodeRegex.exec(content)) !== null) {
+    codeBlockRanges.push({
+      start: codeMatch.index,
+      end: codeMatch.index + codeMatch[0].length,
+    });
+  }
+
+  return codeBlockRanges;
+};
+
+const isPositionInCodeBlock = (
+  position: number,
+  codeBlockRanges: Array<{ start: number; end: number }>
+): boolean => {
+  return codeBlockRanges.some(
+    (range) => position >= range.start && position < range.end
+  );
+};
 
 export const extractHeadings = (content: string): Heading[] => {
   if (!content?.trim()) return [];
