@@ -54,7 +54,6 @@ export async function GET(request: NextRequest) {
               : 0;
         }
 
-        // NEW: Recursively add children if they exist
         if (item.children && item.children.length > 0) {
           baseItem.children = item.children.map((child: any, childIndex: number) =>
             transformItem(child, childIndex, listType)

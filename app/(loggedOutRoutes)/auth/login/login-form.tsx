@@ -10,18 +10,30 @@ import { Loader2 } from "lucide-react";
 export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSsoLoading, setIsSsoLoading] = useState(false);
   const { isDemoMode, appVersion, isRwMarkable } = useAppMode();
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setIsLoading(true);
     setError("");
+
+    const formData = new FormData(e.currentTarget);
 
     try {
       const result = await login(formData);
       if (result?.error) {
         setError(result.error);
+        setIsLoading(false);
       }
-    } finally {
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "digest" in error) {
+        const digest = (error as { digest?: string }).digest;
+        if (digest?.startsWith("NEXT_REDIRECT")) {
+          throw error;
+        }
+      }
+      setError("An error occurred. Please try again.");
       setIsLoading(false);
     }
   }
@@ -42,12 +54,22 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
 
       {ssoEnabled && (
         <div className="space-y-3">
-          <a
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
-            href="/api/oidc/login"
+          <Button
+            className="w-full"
+            disabled={isLoading || isSsoLoading}
+            onClick={() => {
+              setIsSsoLoading(true);
+              window.location.href = "/api/oidc/login";
+            }}
           >
-            Sign in with SSO
-          </a>
+            {isSsoLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing In...
+              </>
+            ) : (
+              "Sign in with SSO"
+            )}
+          </Button>
           <div className="relative !mt-8">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -68,7 +90,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         </div>
       )}
 
-      <form action={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
             <span className="text-sm text-destructive">{error}</span>
@@ -82,7 +104,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             name="username"
             type="text"
             required
-            disabled={isLoading}
+            disabled={isLoading || isSsoLoading}
             className="mt-1"
             placeholder="Enter your username"
             defaultValue=""
@@ -97,7 +119,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             name="password"
             type="password"
             required
-            disabled={isLoading}
+            disabled={isLoading || isSsoLoading}
             className="mt-1"
             placeholder="Enter your password"
             autoComplete="current-password"
@@ -105,7 +127,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           />
         </div>
 
-        <Button type="submit" className="w-full !mt-8" disabled={isLoading}>
+        <Button type="submit" className="w-full !mt-8" disabled={isLoading || isSsoLoading}>
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing In...

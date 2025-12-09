@@ -485,7 +485,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-                checkbox.properties.checked !== false
+              checkbox.properties.checked !== false
             );
 
             if (isInsideP) {
@@ -701,6 +701,26 @@ export const sanitizeMarkdown = (markdown: string): string => {
     "![$1]($2)"
   );
   result = result.replace(/\\+\[([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g, "[$1]($2)");
+
+  result = result.replace(
+    /<iframe[\s\S]*?<\/iframe>/gi,
+    (match) => match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  );
+
+  result = result.replace(
+    /<embed[\s\S]*?>/gi,
+    (match) => match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  );
+
+  result = result.replace(
+    /<object[\s\S]*?<\/object>/gi,
+    (match) => match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  );
+
+  result = result.replace(
+    /<script[\s\S]*?<\/script>/gi,
+    (match) => match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  );
 
   return result;
 };
