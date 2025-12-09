@@ -141,6 +141,7 @@ export const SharedItemsList = ({
                         <button
                           key={`${item.id}-${item.category}`}
                           onClick={() => onItemClick(minimalItem)}
+                          data-sidebar-item-selected={isSelected}
                           className={cn(
                             "flex items-center gap-2 py-2 px-3 text-sm rounded-md transition-colors w-full text-left",
                             isSelected ? "bg-primary/60 text-primary-foreground" : "hover:bg-muted/50 text-foreground"

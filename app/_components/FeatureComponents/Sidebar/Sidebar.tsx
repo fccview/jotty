@@ -24,7 +24,7 @@ import { NavigationLogoutIcon } from "../Navigation/Parts/NavigationLogoutIcon";
 import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
 import { NavigationHelpIcon } from "../Navigation/Parts/NavigationHelpIcon";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export const Sidebar = (props: SidebarProps) => {
   const {
@@ -48,6 +48,7 @@ export const Sidebar = (props: SidebarProps) => {
   const isSomePage = isNotesPage || isChecklistsPage;
 
   const sidebar = useSidebar(props);
+  const categoriesScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const searchMode = searchParams?.get("mode") as AppMode;
@@ -70,9 +71,47 @@ export const Sidebar = (props: SidebarProps) => {
     setMode(searchMode || updatedMode || Modes.CHECKLISTS);
   }, []);
 
-  if (!sidebar.isInitialized) return null;
-
   const currentItems = mode === Modes.CHECKLISTS ? checklists : notes || [];
+
+  useEffect(() => {
+    if (!categoriesScrollRef.current || !pathname) return;
+
+    const scrollToSelectedItem = () => {
+      const selectedButton = categoriesScrollRef.current?.querySelector(
+        '[data-sidebar-item-selected="true"]'
+      ) as HTMLElement;
+
+      if (selectedButton && categoriesScrollRef.current) {
+        const container = categoriesScrollRef.current;
+        const buttonRect = selectedButton.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+
+        const isVisible =
+          buttonRect.top >= containerRect.top &&
+          buttonRect.bottom <= containerRect.bottom;
+
+        if (!isVisible) {
+          const scrollTop =
+            container.scrollTop +
+            buttonRect.top -
+            containerRect.top -
+            containerRect.height / 2 +
+            buttonRect.height / 2;
+
+          container.scrollTo({
+            top: Math.max(0, scrollTop),
+            behavior: "smooth",
+          });
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(scrollToSelectedItem, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [pathname, sidebar.mode, currentItems]);
+
+  if (!sidebar.isInitialized) return null;
 
   return (
     <>
@@ -127,7 +166,10 @@ export const Sidebar = (props: SidebarProps) => {
             mode={mode}
             onModeChange={sidebar.handleModeSwitch}
           />
-          <div className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-4">
+          <div
+            ref={categoriesScrollRef}
+            className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-4"
+          >
             <div className="px-2 pt-2">
               <div className="flex items-center justify-between">
                 <h3 className="jotty-sidebar-categories-title text-xs font-bold uppercase text-muted-foreground tracking-wider">

@@ -62,6 +62,7 @@ export const NoteEditor = ({
                   ? viewModel.derivedMarkdownContent
                   : note.content || ""
               }
+              isEditing={viewModel.isEditing}
             />
           </div>
         )}

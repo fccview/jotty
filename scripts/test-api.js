@@ -818,7 +818,6 @@ const testExportEndpoints = async () => {
             if (response.status === 200 && response.body.success && response.body.downloadUrl) {
                 logStep(`Download URL received. Attempting to fetch...`);
                 const downloadRes = await makeRequest('GET', response.body.downloadUrl, null, { 'Accept': 'application/zip' });
-                // We just care that we got *a* response, not necessarily 200
                 logStep(`Fetch attempt returned status: ${downloadRes.status}`);
             }
             return {
@@ -942,10 +941,8 @@ const manageTempExports = async (mode = 'post-clean') => {
             logStep(`${logColor}Directory is already empty or does not exist.${colors.reset}`);
         }
 
-        // Use fs.rm from 'fs/promises'
         await fs.rm(exportTempDir, { recursive: true, force: true });
 
-        // Re-create the directory so the app doesn't crash if it expects it
         await fs.mkdir(exportTempDir, { recursive: true });
 
         logStep(`${logColor}Cleanup complete. Directory is now clean.${colors.reset}`);

@@ -485,7 +485,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-                checkbox.properties.checked !== false
+              checkbox.properties.checked !== false
             );
 
             if (isInsideP) {
@@ -692,88 +692,7 @@ export const getMarkdownPreviewContent = (
 export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  const comments: string[] = [];
-  const commentRegex = /<!--[\s\S]*?-->/g;
-  let sanitized = markdown.replace(commentRegex, (match) => {
-    comments.push(match);
-    return `__COMMENT_${comments.length - 1}__`;
-  });
-
-  let result = sanitizeHtml(sanitized, {
-    allowedTags: [
-      "table",
-      "thead",
-      "tbody",
-      "tfoot",
-      "tr",
-      "th",
-      "td",
-      "colgroup",
-      "col",
-      "ul",
-      "ol",
-      "li",
-      "p",
-      "br",
-      "strong",
-      "b",
-      "em",
-      "i",
-      "u",
-      "code",
-      "pre",
-      "mark",
-      "span",
-      "div",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-      "a",
-      "img",
-      "blockquote",
-      "hr",
-      "details",
-      "summary",
-    ],
-    allowedAttributes: {
-      "*": [
-        "style",
-        "class",
-        "colspan",
-        "rowspan",
-        "align",
-        "data-type",
-        "data-checked",
-        "data-color",
-        "data-highlight",
-        "data-mermaid",
-        "data-mermaid-content",
-        "data-drawio",
-        "data-drawio-data",
-        "data-drawio-svg",
-        "data-drawio-theme",
-        "data-file-url",
-        "data-file-name",
-        "data-file-type",
-        "data-file-mime-type",
-      ],
-      a: ["href", "title"],
-      img: ["src", "alt", "title", "width", "height"],
-    },
-    allowedSchemes: ["http", "https", "mailto", "data"],
-    allowedSchemesByTag: {
-      img: ["http", "https", "data"],
-    },
-  });
-
-  comments.forEach((comment, index) => {
-    result = result.replace(`__COMMENT_${index}__`, comment);
-  });
-
-  result = result.replace(
+  let result = markdown.replace(
     /\\+\[(📎|🎥)\s+([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g,
     "[$1 $2]($3)"
   );
@@ -783,5 +702,96 @@ export const sanitizeMarkdown = (markdown: string): string => {
   );
   result = result.replace(/\\+\[([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g, "[$1]($2)");
 
+  result = result.replace(
+    /<iframe[\s\S]*?<\/iframe>/gi,
+    (match) => match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  );
+
+  result = result.replace(
+    /<embed[\s\S]*?>/gi,
+    (match) => match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  );
+
+  result = result.replace(
+    /<object[\s\S]*?<\/object>/gi,
+    (match) => match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  );
+
+  result = result.replace(
+    /<script[\s\S]*?<\/script>/gi,
+    (match) => match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+  );
+
   return result;
+};
+
+
+export interface Heading {
+  id: string;
+  text: string;
+  level: number;
+}
+
+const getCodeBlockRanges = (content: string): Array<{ start: number; end: number }> => {
+  const codeBlockRanges: Array<{ start: number; end: number }> = [];
+  const fencedCodeBlockRegex = /```[\s\S]*?```/g;
+  const inlineCodeRegex = /`[^`\n]+`/g;
+
+  let codeMatch;
+  while ((codeMatch = fencedCodeBlockRegex.exec(content)) !== null) {
+    codeBlockRanges.push({
+      start: codeMatch.index,
+      end: codeMatch.index + codeMatch[0].length,
+    });
+  }
+
+  while ((codeMatch = inlineCodeRegex.exec(content)) !== null) {
+    codeBlockRanges.push({
+      start: codeMatch.index,
+      end: codeMatch.index + codeMatch[0].length,
+    });
+  }
+
+  return codeBlockRanges;
+};
+
+const isPositionInCodeBlock = (
+  position: number,
+  codeBlockRanges: Array<{ start: number; end: number }>
+): boolean => {
+  return codeBlockRanges.some(
+    (range) => position >= range.start && position < range.end
+  );
+};
+
+export const extractHeadings = (content: string): Heading[] => {
+  if (!content?.trim()) return [];
+
+  const codeBlockRanges = getCodeBlockRanges(content);
+  const lines = content.split("\n");
+  const extractedHeadings: Heading[] = [];
+  let currentIndex = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lineStartIndex = currentIndex;
+    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
+
+    if (
+      headingMatch &&
+      !isPositionInCodeBlock(lineStartIndex, codeBlockRanges)
+    ) {
+      const level = headingMatch[1].length;
+      const text = headingMatch[2].trim();
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-");
+      extractedHeadings.push({ id, text, level });
+    }
+
+    currentIndex += line.length + 1;
+  }
+
+  return extractedHeadings;
 };
