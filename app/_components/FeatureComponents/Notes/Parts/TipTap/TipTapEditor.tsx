@@ -58,6 +58,13 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
     const contentIsMarkdown = !content.trim().startsWith("<");
 
+    const getOriginalMarkdown = () => {
+      if (contentIsMarkdown) {
+        return content;
+      }
+      return convertHtmlToMarkdownUnified(content, tableSyntax);
+    };
+
     const initialOutput = defaultEditorIsMarkdown && !contentIsMarkdown
       ? convertHtmlToMarkdownUnified(content, tableSyntax)
       : content;
@@ -73,7 +80,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const [showPreview, setShowPreview] = useState(false);
     const isInitialized = useRef(false);
     const debounceTimeoutRef = useRef<NodeJS.Timeout>();
-    const originalMarkdownRef = useRef<string>(isMarkdownMode ? initialOutput : "");
+    const originalMarkdownRef = useRef<string>(getOriginalMarkdown());
     const richEditorWasEditedRef = useRef<boolean>(false);
 
     const uploadHook = useFileUpload(appSettings?.maximumFileSize);
@@ -212,16 +219,15 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     });
 
     useEffect(() => {
+      const contentIsMarkdown = !content.trim().startsWith("<");
+      const markdownContent = contentIsMarkdown
+        ? content
+        : convertHtmlToMarkdownUnified(content, tableSyntax);
+
+      originalMarkdownRef.current = markdownContent;
+
       if (isMarkdownMode) {
-        const contentIsMarkdown = !content.trim().startsWith("<");
-        if (contentIsMarkdown) {
-          setMarkdownContent(content);
-          originalMarkdownRef.current = content;
-        } else {
-          const markdownOutput = convertHtmlToMarkdownUnified(content, tableSyntax);
-          setMarkdownContent(markdownOutput);
-          originalMarkdownRef.current = markdownOutput;
-        }
+        setMarkdownContent(markdownContent);
       }
     }, [content, isMarkdownMode, tableSyntax]);
 
