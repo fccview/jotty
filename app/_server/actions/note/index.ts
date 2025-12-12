@@ -261,11 +261,11 @@ const _readNotesRecursively = async (
     .map((e) => e.name);
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -279,11 +279,11 @@ const _readNotesRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -331,9 +331,9 @@ const _readNotesRecursively = async (
               )
             );
           }
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subDocs = await _readNotesRecursively(
       categoryDir,
@@ -431,27 +431,17 @@ const _checkForMigrationNeeded = async (): Promise<boolean> => {
 
 export const createNote = async (formData: FormData) => {
   try {
-    const { title, category, rawContent, user, disableFormatting } =
-      getFormData(formData, [
-        "title",
-        "category",
-        "rawContent",
-        "user",
-        "disableFormatting",
-      ]);
+    const { title, category, rawContent, user } = getFormData(formData, [
+      "title",
+      "category",
+      "rawContent",
+      "user",
+    ]);
     const formUser = user ? JSON.parse(user as string) : null;
 
-    const shouldSkipFormatting = disableFormatting === "true";
-    let content: string;
-
-    if (shouldSkipFormatting) {
-      const { contentWithoutMetadata } = stripYaml(rawContent);
-      content = contentWithoutMetadata;
-    } else {
-      const sanitizedContent = sanitizeMarkdown(rawContent);
-      const { contentWithoutMetadata } = stripYaml(sanitizedContent);
-      content = contentWithoutMetadata;
-    }
+    const sanitizedContent = sanitizeMarkdown(rawContent);
+    const { contentWithoutMetadata } = stripYaml(sanitizedContent);
+    const content = contentWithoutMetadata;
 
     const currentUser = formUser || (await getCurrentUser());
 
@@ -514,7 +504,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       unarchive,
       user,
       uuid,
-      disableFormatting,
     } = getFormData(formData, [
       "id",
       "title",
@@ -524,7 +513,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       "unarchive",
       "user",
       "uuid",
-      "disableFormatting",
     ]);
     const settings = await getAppSettings();
 
@@ -534,23 +522,15 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       currentUser = await getUsername();
     }
 
-    const shouldSkipFormatting = disableFormatting === "true";
-    const { contentWithoutMetadata: rawContent } = stripYaml(content);
-
-    let processedContent: string;
-    if (shouldSkipFormatting) {
-      processedContent = rawContent;
-    } else {
-      const sanitizedContent = sanitizeMarkdown(content);
-      const { contentWithoutMetadata } = stripYaml(sanitizedContent);
-      processedContent = settings?.data?.editor?.enableBilateralLinks
-        ? await convertInternalLinksToNewFormat(
-            contentWithoutMetadata,
-            currentUser,
-            originalCategory
-          )
-        : contentWithoutMetadata;
-    }
+    const sanitizedContent = sanitizeMarkdown(content);
+    const { contentWithoutMetadata } = stripYaml(sanitizedContent);
+    const processedContent = settings?.data?.editor?.enableBilateralLinks
+      ? await convertInternalLinksToNewFormat(
+        contentWithoutMetadata,
+        currentUser,
+        originalCategory
+      )
+      : contentWithoutMetadata;
 
     const convertedContent = processedContent;
 
@@ -623,9 +603,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     if (settings?.data?.editor?.enableBilateralLinks) {
       try {
         const links = (await parseInternalLinks(updatedDoc.content)) || [];
-        const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
-          updatedDoc.id
-        }`;
+        const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
+          }`;
 
         const oldItemKey = `${note.category || "Uncategorized"}/${id}`;
 
@@ -858,7 +837,7 @@ export const getNoteById = async (
       (d.id === id || d.uuid === id) &&
       (!category ||
         encodeCategoryPath(d.category || "Uncategorized")?.toLowerCase() ===
-          encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
+        encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
   );
 
   if (note && "rawContent" in note) {

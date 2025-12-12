@@ -5,7 +5,7 @@ import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-markup";
 import "prismjs/components/prism-markdown";
-import "prismjs/themes/prism-tomorrow.css";
+import "prismjs/themes/prism.css";
 
 interface SyntaxHighlightedEditorProps {
   content: string;

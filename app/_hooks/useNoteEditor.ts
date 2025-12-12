@@ -35,6 +35,7 @@ export const useNoteEditor = ({
   const router = useRouter();
   const { user } = useAppMode();
   const isMinimalMode = user?.disableRichEditor === "enable";
+  const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
   const [title, setTitle] = useState(note.title);
   const [category, setCategory] = useState(note.category || "Uncategorized");
   const [editorContent, setEditorContent] = useState(() => {
@@ -42,9 +43,14 @@ export const useNoteEditor = ({
     if (isMinimalMode) {
       return contentWithoutMetadata;
     }
+    if (defaultEditorIsMarkdown) {
+      return contentWithoutMetadata;
+    }
     return convertMarkdownToHtml(contentWithoutMetadata);
   });
-  const [isMarkdownMode, setIsMarkdownMode] = useState(isMinimalMode);
+  const [isMarkdownMode, setIsMarkdownMode] = useState(
+    isMinimalMode || defaultEditorIsMarkdown
+  );
   const [isPrinting, setIsPrinting] = useState(false);
   const notesDefaultMode = user?.notesDefaultMode || "view";
 
@@ -85,15 +91,19 @@ export const useNoteEditor = ({
     if (isMinimalMode) {
       setEditorContent(contentWithoutMetadata);
       setIsMarkdownMode(true);
+    } else if (defaultEditorIsMarkdown) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true);
     } else {
       setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+      setIsMarkdownMode(false);
     }
 
     if (searchParams?.get("editor") !== "true") {
       setIsEditing(false);
       setHasUnsavedChanges(false);
     }
-  }, [note, isMinimalMode]);
+  }, [note, isMinimalMode, defaultEditorIsMarkdown]);
 
   useEffect(() => {
     if (notesDefaultMode !== "edit" && !isEditing) return;
@@ -128,7 +138,6 @@ export const useNoteEditor = ({
       formData.append("originalCategory", note.category || "Uncategorized");
       formData.append("user", owner.data?.username || "");
       formData.append("uuid", note.uuid || "");
-      formData.append("disableFormatting", user?.disableFormatting === "enable" ? "true" : "false");
 
       const result = await updateNote(formData, useAutosave);
 
@@ -208,8 +217,12 @@ export const useNoteEditor = ({
     if (isMinimalMode) {
       setEditorContent(contentWithoutMetadata);
       setIsMarkdownMode(true);
+    } else if (defaultEditorIsMarkdown) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true);
     } else {
       setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+      setIsMarkdownMode(false);
     }
   };
 

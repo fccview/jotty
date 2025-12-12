@@ -61,10 +61,6 @@ export const CreateNoteModal = ({
       formData.append("title", title.trim());
       formData.append("category", finalCategoryPath);
       formData.append("content", "");
-      formData.append(
-        "disableFormatting",
-        user?.disableFormatting === "enable" ? "true" : "false"
-      );
       const result = await createNote(formData);
 
       if (result.success) onCreated(result.data);

@@ -63,7 +63,6 @@ export async function POST(request: NextRequest) {
         title,
         content = "",
         category = "Uncategorized",
-        disableFormatting = false,
       } = body;
 
       if (!title) {
@@ -78,10 +77,6 @@ export async function POST(request: NextRequest) {
       formData.append("rawContent", content);
       formData.append("category", category);
       formData.append("user", JSON.stringify(user));
-      formData.append(
-        "disableFormatting",
-        disableFormatting ? "true" : "false"
-      );
 
       const result = await createNote(formData);
       if (result.error) {

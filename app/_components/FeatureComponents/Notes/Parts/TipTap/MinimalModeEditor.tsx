@@ -51,9 +51,8 @@ export const MinimalModeEditor = ({
       <>
         <ReadingProgressBar />
         <div
-          className={`px-6 pt-6 pb-12 ${
-            compactMode ? "max-w-[900px] mx-auto" : ""
-          }`}
+          className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
         >
           <UnifiedMarkdownRenderer content={noteContent} />
         </div>
@@ -63,7 +62,7 @@ export const MinimalModeEditor = ({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-background border-b border-border px-4 py-2 flex items-center justify-between sticky top-0 z-10">
+      <div className="bg-background border-b border-border px-4 py-2 items-center justify-between sticky top-0 z-10 hidden lg:flex">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-foreground">
             Minimal Mode
@@ -135,9 +134,8 @@ export const MinimalModeEditor = ({
       <div className="flex-1 overflow-y-auto">
         {showPreview ? (
           <div
-            className={`px-6 pt-6 pb-12 ${
-              compactMode ? "max-w-[900px] mx-auto" : ""
-            }`}
+            className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
+              }`}
           >
             <UnifiedMarkdownRenderer content={markdownContent} />
           </div>

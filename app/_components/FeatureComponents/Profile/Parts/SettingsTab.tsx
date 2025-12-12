@@ -16,7 +16,6 @@ import {
   FileRenameMode,
   PreferredTimeFormat,
   PreferredDateFormat,
-  DisableFormatting,
   DisableRichEditor,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
@@ -47,7 +46,6 @@ const getSettingsFromUser = (user: User | null): Partial<User> => ({
   fileRenameMode: user?.fileRenameMode || "dash-case",
   preferredDateFormat: user?.preferredDateFormat || "dd/mm/yyyy",
   preferredTimeFormat: user?.preferredTimeFormat || "12-hours",
-  disableFormatting: user?.disableFormatting || "disable",
   disableRichEditor: user?.disableRichEditor || "disable",
 });
 
@@ -123,7 +121,6 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     "tableSyntax",
     "notesDefaultMode",
     "notesAutoSaveInterval",
-    "disableFormatting",
     "disableRichEditor",
   ]);
   const hasChecklistsChanges = hasChanges([
@@ -423,7 +420,6 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                   "notesDefaultMode",
                   "notesDefaultEditor",
                   "tableSyntax",
-                  "disableFormatting",
                   "disableRichEditor",
                 ],
                 editorSettingsSchema,
@@ -541,18 +537,20 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="disable-rich-editor">Minimal Mode (Disable Rich Editor)</Label>
+          <Label htmlFor="disable-rich-editor">
+            Minimal Mode (Disable Rich Editor)
+          </Label>
           <Dropdown
             value={currentSettings.disableRichEditor || "disable"}
             onChange={(value) => {
-              handleSettingChange("disableRichEditor", value as DisableRichEditor);
-              if (value === "enable") {
-                handleSettingChange("disableFormatting", "enable" as DisableFormatting);
-              }
+              handleSettingChange(
+                "disableRichEditor",
+                value as DisableRichEditor
+              );
             }}
             options={[
-              { id: "disable", name: "Disabled (Use Rich Editor)" },
-              { id: "enable", name: "Enabled (Markdown Only)" },
+              { id: "disable", name: "Use Rich Editor" },
+              { id: "enable", name: "Markdown Only" },
             ]}
             placeholder="Select minimal mode"
             className="w-full"
@@ -563,35 +561,9 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            When enabled, uses a simple markdown renderer instead of the rich text editor.
-            Advanced features like bilateral linking will not work in this mode.
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="disable-formatting">Raw Markdown Mode (Disable Formatting)</Label>
-          <Dropdown
-            value={currentSettings.disableFormatting || "disable"}
-            onChange={(value) =>
-              handleSettingChange("disableFormatting", value as DisableFormatting)
-            }
-            options={[
-              { id: "disable", name: "Disabled (Apply Formatting)" },
-              { id: "enable", name: "Enabled (Save Raw Markdown)" },
-            ]}
-            placeholder="Select raw markdown mode"
-            className="w-full"
-            disabled={currentSettings.disableRichEditor === "enable"}
-          />
-          {validationErrors.disableFormatting && (
-            <p className="text-sm text-destructive">
-              {validationErrors.disableFormatting}
-            </p>
-          )}
-          <p className="text-sm text-muted-foreground">
-            {currentSettings.disableRichEditor === "enable"
-              ? "Automatically enabled when Minimal Mode is active."
-              : "When enabled, saves your markdown exactly as typed without any automatic formatting or sanitization."}
+            When enabled, uses a simple markdown renderer instead of the rich
+            text editor. Advanced features like bilateral linking will not work
+            in this mode.
           </p>
         </div>
       </FormWrapper>
