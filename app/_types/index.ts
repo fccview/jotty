@@ -158,6 +158,7 @@ export interface User {
   fileRenameMode?: FileRenameMode;
   preferredDateFormat: PreferredDateFormat;
   preferredTimeFormat: PreferredTimeFormat;
+  disableRichEditor?: DisableRichEditor;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -171,6 +172,7 @@ export type NotesAutoSaveInterval = 0 | 1000 | 5000 | 10000 | 15000 | 20000;
 export type FileRenameMode = "dash-case" | "minimal" | "none";
 export type PreferredDateFormat = "dd/mm/yyyy" | "mm/dd/yyyy";
 export type PreferredTimeFormat = "12-hours" | "24-hours";
+export type DisableRichEditor = "enable" | "disable";
 
 export interface SharedItem {
   id: string;

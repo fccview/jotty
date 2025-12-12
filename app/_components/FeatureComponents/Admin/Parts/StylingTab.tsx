@@ -198,7 +198,7 @@ export const StylingTab = () => {
               <h4 className="text-sm font-medium">Color Variables</h4>
               <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
                 {Object.entries(themeForm.colors).map(([key, value]) => (
-                  <div key={key} className="flex items-center space-x-2">
+                  <div key={key} className="flex items-center space-x-2 flex-wrap">
                     <label className="text-xs font-mono text-muted-foreground min-w-0 flex-1">
                       {key}
                     </label>
@@ -207,12 +207,12 @@ export const StylingTab = () => {
                       value={
                         value
                           ? `#${value
-                              .split(" ")
-                              .map((v) => {
-                                const num = parseInt(v);
-                                return num.toString(16).padStart(2, "0");
-                              })
-                              .join("")}`
+                            .split(" ")
+                            .map((v) => {
+                              const num = parseInt(v);
+                              return num.toString(16).padStart(2, "0");
+                            })
+                            .join("")}`
                           : "#000000"
                       }
                       onChange={(e) => {

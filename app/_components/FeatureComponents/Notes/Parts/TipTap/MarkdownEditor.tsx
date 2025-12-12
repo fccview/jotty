@@ -1,37 +1,32 @@
-import { Editor } from "@tiptap/react";
+import { SyntaxHighlightedEditor } from "./SyntaxHighlightedEditor";
 
 interface MarkdownEditorProps {
   content: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onFileDrop: (files: File[]) => void;
+  showLineNumbers?: boolean;
 }
 
 export const MarkdownEditor = ({
   content,
   onChange,
   onFileDrop,
+  showLineNumbers = true,
 }: MarkdownEditorProps) => {
+  const handleValueChange = (newValue: string) => {
+    const syntheticEvent = {
+      target: { value: newValue },
+    } as React.ChangeEvent<HTMLTextAreaElement>;
+    onChange(syntheticEvent);
+  };
+
   return (
-    <div
-      className="flex-1 p-4 overflow-y-auto h-full"
-      onDragOver={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) {
-          onFileDrop(files);
-        }
-      }}
-    >
-      <textarea
-        value={content}
-        onChange={onChange}
-        className="w-full h-full bg-background text-foreground resize-none focus:outline-none focus:ring-none p-2"
-        placeholder="Write your markdown here..."
+    <div className="flex-1 p-4 overflow-y-auto h-full">
+      <SyntaxHighlightedEditor
+        content={content}
+        onChange={handleValueChange}
+        onFileDrop={onFileDrop}
+        showLineNumbers={showLineNumbers}
       />
     </div>
   );

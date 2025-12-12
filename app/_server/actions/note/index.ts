@@ -2,9 +2,7 @@
 
 import path from "path";
 import { Note, User } from "@/app/_types";
-import {
-  generateUniqueFilename,
-} from "@/app/_utils/filename-utils";
+import { generateUniqueFilename } from "@/app/_utils/filename-utils";
 import {
   getCurrentUser,
   getUserByNote,
@@ -113,7 +111,9 @@ const convertInternalLinksToNewFormat = async (
   for (const match of spanMatches) {
     const [fullMatch] = match;
     const hrefMatch = fullMatch.match(/data-href="([^"]*)"/);
-    const convertMatch = fullMatch.match(/data-convert-to-bidirectional="([^"]*)"/);
+    const convertMatch = fullMatch.match(
+      /data-convert-to-bidirectional="([^"]*)"/
+    );
 
     const href = hrefMatch?.[1];
     const shouldConvert = convertMatch?.[1] === "true";
@@ -140,28 +140,33 @@ const convertInternalLinksToNewFormat = async (
             if (note?.uuid) {
               let updatedSpan = fullMatch
                 .replace(/data-href="[^"]*"/, `data-href="/jotty/${note.uuid}"`)
-                .replace(/data-convert-to-bidirectional="true"/, `data-convert-to-bidirectional="false"`);
+                .replace(
+                  /data-convert-to-bidirectional="true"/,
+                  `data-convert-to-bidirectional="false"`
+                );
 
-              if (fullMatch.includes('data-uuid=')) {
+              if (fullMatch.includes("data-uuid=")) {
                 updatedSpan = updatedSpan.replace(
                   /data-uuid="[^"]*"/,
                   `data-uuid="${note.uuid}"`
                 );
               } else {
                 updatedSpan = updatedSpan.replace(
-                  'data-internal-link',
+                  "data-internal-link",
                   `data-internal-link data-uuid="${note.uuid}"`
                 );
               }
-              convertedContent = convertedContent.replace(fullMatch, updatedSpan);
+              convertedContent = convertedContent.replace(
+                fullMatch,
+                updatedSpan
+              );
             }
           }
         } catch (error) {
           console.warn("Failed to convert note link:", href, error);
         }
       }
-    }
-    else if (href.startsWith("/checklist/")) {
+    } else if (href.startsWith("/checklist/")) {
       const parts = href.split("/");
       if (parts.length >= 3) {
         const categoryAndId = parts.slice(2).join("/");
@@ -170,26 +175,39 @@ const convertInternalLinksToNewFormat = async (
 
         try {
           const { getUserChecklists } = await import("../checklist");
-          const checklists = await getUserChecklists({ username, isRaw: true, allowArchived: true });
+          const checklists = await getUserChecklists({
+            username,
+            isRaw: true,
+            allowArchived: true,
+          });
           if (checklists.success && checklists.data) {
             const checklist = checklists.data.find((c) => c.id === id);
             if (checklist?.uuid) {
               let updatedSpan = fullMatch
-                .replace(/data-href="[^"]*"/, `data-href="/jotty/${checklist.uuid}"`)
-                .replace(/data-convert-to-bidirectional="true"/, `data-convert-to-bidirectional="false"`);
+                .replace(
+                  /data-href="[^"]*"/,
+                  `data-href="/jotty/${checklist.uuid}"`
+                )
+                .replace(
+                  /data-convert-to-bidirectional="true"/,
+                  `data-convert-to-bidirectional="false"`
+                );
 
-              if (fullMatch.includes('data-uuid=')) {
+              if (fullMatch.includes("data-uuid=")) {
                 updatedSpan = updatedSpan.replace(
                   /data-uuid="[^"]*"/,
                   `data-uuid="${checklist.uuid}"`
                 );
               } else {
                 updatedSpan = updatedSpan.replace(
-                  'data-internal-link',
+                  "data-internal-link",
                   `data-internal-link data-uuid="${checklist.uuid}"`
                 );
               }
-              convertedContent = convertedContent.replace(fullMatch, updatedSpan);
+              convertedContent = convertedContent.replace(
+                fullMatch,
+                updatedSpan
+              );
             }
           }
         } catch (error) {
@@ -313,7 +331,6 @@ const _readNotesRecursively = async (
               )
             );
           }
-
         } catch { }
       }
     } catch { }
@@ -391,7 +408,6 @@ const _checkDataFilesNeedMigration = async (): Promise<boolean> => {
   }
 };
 
-
 const _checkForMigrationNeeded = async (): Promise<boolean> => {
   try {
     const { SHARED_ITEMS_FILE } = await import("@/app/_consts/files");
@@ -415,10 +431,13 @@ const _checkForMigrationNeeded = async (): Promise<boolean> => {
 
 export const createNote = async (formData: FormData) => {
   try {
-    const { title, category, rawContent, user } = getFormData(formData, ["title", "category", "rawContent", "user"]);
-    const formUser = user
-      ? JSON.parse(user as string)
-      : null;
+    const { title, category, rawContent, user } = getFormData(formData, [
+      "title",
+      "category",
+      "rawContent",
+      "user",
+    ]);
+    const formUser = user ? JSON.parse(user as string) : null;
 
     const sanitizedContent = sanitizeMarkdown(rawContent);
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
@@ -452,7 +471,7 @@ export const createNote = async (formData: FormData) => {
     await serverWriteFile(filePath, _noteToMarkdown(newDoc));
 
     try {
-      const links = await parseInternalLinks(newDoc.content) || [];
+      const links = (await parseInternalLinks(newDoc.content)) || [];
       await updateIndexForItem(
         currentUser.username,
         "note",
@@ -476,7 +495,25 @@ export const createNote = async (formData: FormData) => {
 
 export const updateNote = async (formData: FormData, autosaveNotes = false) => {
   try {
-    const { id, title, content, category, originalCategory, unarchive, user, uuid } = getFormData(formData, ["id", "title", "content", "category", "originalCategory", "unarchive", "user", "uuid"]);
+    const {
+      id,
+      title,
+      content,
+      category,
+      originalCategory,
+      unarchive,
+      user,
+      uuid,
+    } = getFormData(formData, [
+      "id",
+      "title",
+      "content",
+      "category",
+      "originalCategory",
+      "unarchive",
+      "user",
+      "uuid",
+    ]);
     const settings = await getAppSettings();
 
     let currentUser = user;
@@ -487,12 +524,15 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     const sanitizedContent = sanitizeMarkdown(content);
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
+    const processedContent = settings?.data?.editor?.enableBilateralLinks
+      ? await convertInternalLinksToNewFormat(
+        contentWithoutMetadata,
+        currentUser,
+        originalCategory
+      )
+      : contentWithoutMetadata;
 
-    const convertedContent = settings?.data?.editor?.enableBilateralLinks ? await convertInternalLinksToNewFormat(
-      contentWithoutMetadata,
-      currentUser,
-      originalCategory
-    ) : contentWithoutMetadata;
+    const convertedContent = processedContent;
 
     const note = await getNoteById(uuid || id, originalCategory, currentUser);
 
@@ -560,10 +600,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     await serverWriteFile(filePath, _noteToMarkdown(updatedDoc));
 
-
     if (settings?.data?.editor?.enableBilateralLinks) {
       try {
-        const links = await parseInternalLinks(updatedDoc.content) || [];
+        const links = (await parseInternalLinks(updatedDoc.content)) || [];
         const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
           }`;
 
@@ -661,7 +700,9 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       return { error: "Not authenticated" };
     }
 
-    const notes = await getUserNotes(username ? { username: currentUser.username } : {});
+    const notes = await getUserNotes(
+      username ? { username: currentUser.username } : {}
+    );
 
     if (!notes.success || !notes.data) {
       return { error: "Failed to fetch notes" };
@@ -784,7 +825,7 @@ export const getNoteById = async (
   const notes = await getUserNotes({
     username,
     allowArchived: true,
-    isRaw: true
+    isRaw: true,
   });
 
   if (!notes.success || !notes.data) {
@@ -800,7 +841,10 @@ export const getNoteById = async (
   );
 
   if (note && "rawContent" in note) {
-    const parsedData = parseNoteContent((note as any).rawContent || "", note.id || "");
+    const parsedData = parseNoteContent(
+      (note as any).rawContent || "",
+      note.id || ""
+    );
     const existingUuid = parsedData.uuid || note.uuid;
 
     let finalUuid = existingUuid;
@@ -949,7 +993,6 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     }
 
     return { success: true, data: notes as Note[] };
-
   } catch (error) {
     console.error("Error in getNotesUnified:", error);
     return { success: false, error: "Failed to fetch notes" };
@@ -980,8 +1023,11 @@ export const cloneNote = async (formData: FormData) => {
     const currentUser = await getCurrentUser();
     const userDir = await getUserModeDir(Modes.NOTES);
 
-    const isOwnedByCurrentUser = !note.owner || note.owner === currentUser?.username;
-    const targetCategory = isOwnedByCurrentUser ? (category || "Uncategorized") : "Uncategorized";
+    const isOwnedByCurrentUser =
+      !note.owner || note.owner === currentUser?.username;
+    const targetCategory = isOwnedByCurrentUser
+      ? category || "Uncategorized"
+      : "Uncategorized";
 
     const categoryDir = path.join(userDir, targetCategory);
     await ensureDir(categoryDir);
@@ -1001,7 +1047,11 @@ export const cloneNote = async (formData: FormData) => {
     await serverWriteFile(filePath, updatedContent);
 
     const newId = path.basename(filename, ".md");
-    const clonedNote = await getNoteById(newId, currentUser?.username, targetCategory);
+    const clonedNote = await getNoteById(
+      newId,
+      currentUser?.username,
+      targetCategory
+    );
 
     try {
       revalidatePath("/");

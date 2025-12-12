@@ -34,13 +34,23 @@ export const useNoteEditor = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAppMode();
+  const isMinimalMode = user?.disableRichEditor === "enable";
+  const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
   const [title, setTitle] = useState(note.title);
   const [category, setCategory] = useState(note.category || "Uncategorized");
   const [editorContent, setEditorContent] = useState(() => {
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
+    if (isMinimalMode) {
+      return contentWithoutMetadata;
+    }
+    if (defaultEditorIsMarkdown) {
+      return contentWithoutMetadata;
+    }
     return convertMarkdownToHtml(contentWithoutMetadata);
   });
-  const [isMarkdownMode, setIsMarkdownMode] = useState(false);
+  const [isMarkdownMode, setIsMarkdownMode] = useState(
+    isMinimalMode || defaultEditorIsMarkdown
+  );
   const [isPrinting, setIsPrinting] = useState(false);
   const notesDefaultMode = user?.notesDefaultMode || "view";
 
@@ -78,13 +88,22 @@ export const useNoteEditor = ({
 
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
 
-    setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+    if (isMinimalMode) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true);
+    } else if (defaultEditorIsMarkdown) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true);
+    } else {
+      setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+      setIsMarkdownMode(false);
+    }
 
     if (searchParams?.get("editor") !== "true") {
       setIsEditing(false);
       setHasUnsavedChanges(false);
     }
-  }, [note]);
+  }, [note, isMinimalMode, defaultEditorIsMarkdown]);
 
   useEffect(() => {
     if (notesDefaultMode !== "edit" && !isEditing) return;
@@ -195,7 +214,16 @@ export const useNoteEditor = ({
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
-    setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+    if (isMinimalMode) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true);
+    } else if (defaultEditorIsMarkdown) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true);
+    } else {
+      setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+      setIsMarkdownMode(false);
+    }
   };
 
   const handleDelete = async () => {

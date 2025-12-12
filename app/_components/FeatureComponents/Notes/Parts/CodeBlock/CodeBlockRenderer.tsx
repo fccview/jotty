@@ -34,7 +34,7 @@ export const CodeBlockRenderer = ({
   return (
     <div
       className={cn(
-        "relative group my-4 overflow-hidden bg-[#282c34]",
+        "code-block-container relative group my-4 overflow-hidden bg-[#282c34]",
         className
       )}
     >
@@ -61,7 +61,7 @@ export const CodeBlockRenderer = ({
         </Button>
       </div>
 
-      <div className="absolute top-2 right-2 z-10">
+      <div className="absolute top-1 right-4 z-10">
         <Button
           variant="ghost"
           size="icon"

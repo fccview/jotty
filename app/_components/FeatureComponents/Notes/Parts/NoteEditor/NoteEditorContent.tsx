@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useMemo } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalModeEditor";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -36,6 +37,9 @@ export const NoteEditorContent = ({
   const editor = searchParams?.get("editor");
   const editorRef = useRef<TiptapEditorRef>(null);
   const { permissions } = usePermissions();
+
+  const isMinimalMode = user?.disableRichEditor === "enable";
+
   const referencingItems = useMemo(() => {
     return getReferences(
       linkIndex,
@@ -50,7 +54,8 @@ export const NoteEditorContent = ({
   useEffect(() => {
     if (
       editorRef.current &&
-      (isEditing || notesDefaultMode === "edit" || editor === "true")
+      (isEditing || notesDefaultMode === "edit" || editor === "true") &&
+      !isMinimalMode
     ) {
       editorRef.current.updateAtMentionData(
         notes,
@@ -58,12 +63,36 @@ export const NoteEditorContent = ({
         user?.username || ""
       );
     }
-  }, [notes, checklists, isEditing, notesDefaultMode, editor, editorRef]);
+  }, [
+    notes,
+    checklists,
+    isEditing,
+    notesDefaultMode,
+    editor,
+    editorRef,
+    isMinimalMode,
+  ]);
+
+  const isEditMode =
+    (notesDefaultMode === "edit" || editor === "true" || isEditing) &&
+    permissions?.canEdit;
+
+  if (isMinimalMode) {
+    return (
+      <div className="flex-1 h-full pb-10 lg:pb-0">
+        <MinimalModeEditor
+          isEditing={isEditMode ?? false}
+          noteContent={noteContent || ""}
+          onEditorContentChange={onEditorContentChange}
+          compactMode={compactMode}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 h-full pb-14 lg:pb-0">
-      {(notesDefaultMode === "edit" || editor === "true" || isEditing) &&
-      permissions?.canEdit ? (
+      {isEditMode ? (
         <TiptapEditor
           ref={editorRef}
           content={editorContent}

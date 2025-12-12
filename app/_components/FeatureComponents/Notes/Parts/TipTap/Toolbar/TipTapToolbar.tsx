@@ -6,10 +6,13 @@ import {
   Code,
   Heading2,
   List,
+  ListX,
   Quote,
   Link as LinkIcon,
   FileText,
   Eye,
+  EyeOff,
+  Monitor,
   Underline,
   ImageIcon,
 } from "lucide-react";
@@ -28,12 +31,22 @@ type ToolbarProps = {
   editor: Editor | null;
   isMarkdownMode: boolean;
   toggleMode: () => void;
+  showLineNumbers?: boolean;
+  onToggleLineNumbers?: () => void;
+  showPreview?: boolean;
+  onTogglePreview?: () => void;
+  markdownContent?: string;
 };
 
 export const TiptapToolbar = ({
   editor,
   isMarkdownMode,
   toggleMode,
+  showLineNumbers = true,
+  onToggleLineNumbers,
+  showPreview = false,
+  onTogglePreview,
+  markdownContent = "",
 }: ToolbarProps) => {
   const [showFileModal, setShowFileModal] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
@@ -127,7 +140,45 @@ export const TiptapToolbar = ({
           isMarkdownMode ? "md:justify-end" : "md:justify-between"
         )}
       >
-        <div className="flex-shrink-0 md:order-last">
+        <div className="flex-shrink-0 md:order-last flex items-center gap-1">
+          {isMarkdownMode && onToggleLineNumbers && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={onToggleLineNumbers}
+              className="flex-shrink-0 hidden lg:flex"
+              title={showLineNumbers ? "Hide line numbers" : "Show line numbers"}
+            >
+              {showLineNumbers ? (
+                <List className="h-4 w-4" />
+              ) : (
+                <ListX className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+          {isMarkdownMode && onTogglePreview && (
+            <Button
+              variant={showPreview ? "secondary" : "ghost"}
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={onTogglePreview}
+              className="flex-shrink-0 hidden lg:flex"
+              title={showPreview ? "Hide preview" : "Show preview"}
+            >
+              {showPreview ? (
+                <>
+                  <EyeOff className="h-4 w-4 mr-2" />
+                  <span>Edit</span>
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 mr-2" />
+                  <span>Preview</span>
+                </>
+              )}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -138,8 +189,8 @@ export const TiptapToolbar = ({
           >
             {isMarkdownMode ? (
               <>
-                <Eye className="h-4 w-4 mr-2" />
-                <span>Rich Text</span>
+                <Monitor className="h-4 w-4 mr-2" />
+                <span>Rich Editor</span>
               </>
             ) : (
               <>
@@ -152,21 +203,38 @@ export const TiptapToolbar = ({
 
         <div className="fixed bottom-[62px] w-full left-0 lg:hidden z-40 bg-background">
           <div className="flex gap-1 p-2 border-b border-border w-full justify-center items-center">
+            {isMarkdownMode && onTogglePreview && (
+              <Button
+                variant={showPreview ? "default" : "ghost"}
+                className="w-1/3"
+                size="sm"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={onTogglePreview}
+                title={showPreview ? "Hide preview" : "Show preview"}
+              >
+                {showPreview ? (
+                  <EyeOff className="h-4 w-4 mr-2" />
+                ) : (
+                  <Eye className="h-4 w-4 mr-2" />
+                )}
+                <span>Preview</span>
+              </Button>
+            )}
             <Button
               variant={!isMarkdownMode ? "default" : "ghost"}
-              className={`w-1/2`}
+              className={isMarkdownMode && onTogglePreview ? "w-1/3" : "w-1/2"}
               size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={toggleMode}
-              title="Toggle rich text mode"
+              title="Toggle rich editor mode"
             >
-              <Eye className="h-4 w-4 mr-2" />
-              <span>Rich Text</span>
+              <Monitor className="h-4 w-4 mr-2" />
+              <span>Rich Editor</span>
             </Button>
 
             <Button
               variant={isMarkdownMode ? "default" : "ghost"}
-              className={`w-1/2`}
+              className={isMarkdownMode && onTogglePreview ? "w-1/3" : "w-1/2"}
               size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={toggleMode}

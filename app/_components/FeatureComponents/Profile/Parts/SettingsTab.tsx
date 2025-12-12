@@ -16,6 +16,7 @@ import {
   FileRenameMode,
   PreferredTimeFormat,
   PreferredDateFormat,
+  DisableRichEditor,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -45,6 +46,7 @@ const getSettingsFromUser = (user: User | null): Partial<User> => ({
   fileRenameMode: user?.fileRenameMode || "dash-case",
   preferredDateFormat: user?.preferredDateFormat || "dd/mm/yyyy",
   preferredTimeFormat: user?.preferredTimeFormat || "12-hours",
+  disableRichEditor: user?.disableRichEditor || "disable",
 });
 
 const pick = <T extends object, K extends keyof T>(
@@ -119,6 +121,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     "tableSyntax",
     "notesDefaultMode",
     "notesAutoSaveInterval",
+    "disableRichEditor",
   ]);
   const hasChecklistsChanges = hasChanges([
     "enableRecurrence",
@@ -264,7 +267,13 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <Button
             onClick={() =>
               handleSaveSection(
-                ["preferredTheme", "landingPage", "fileRenameMode", "preferredDateFormat", "preferredTimeFormat"],
+                [
+                  "preferredTheme",
+                  "landingPage",
+                  "fileRenameMode",
+                  "preferredDateFormat",
+                  "preferredTimeFormat",
+                ],
                 generalSettingsSchema,
                 "General"
               )
@@ -411,6 +420,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                   "notesDefaultMode",
                   "notesDefaultEditor",
                   "tableSyntax",
+                  "disableRichEditor",
                 ],
                 editorSettingsSchema,
                 "Notes Preferences"
@@ -523,6 +533,37 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           )}
           <p className="text-sm text-muted-foreground">
             Choose how tables are rendered in your notes.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="disable-rich-editor">
+            Minimal Mode (Disable Rich Text Editor)
+          </Label>
+          <Dropdown
+            value={currentSettings.disableRichEditor || "disable"}
+            onChange={(value) => {
+              handleSettingChange(
+                "disableRichEditor",
+                value as DisableRichEditor
+              );
+            }}
+            options={[
+              { id: "disable", name: "Use Rich Text Editor" },
+              { id: "enable", name: "Markdown Only" },
+            ]}
+            placeholder="Select minimal mode"
+            className="w-full"
+          />
+          {validationErrors.disableRichEditor && (
+            <p className="text-sm text-destructive">
+              {validationErrors.disableRichEditor}
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            When enabled, uses a simple markdown renderer instead of the rich
+            text editor. Advanced features like bilateral linking will not work
+            in this mode.
           </p>
         </div>
       </FormWrapper>

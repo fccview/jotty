@@ -25,6 +25,7 @@ import {
 import { MarkdownEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MarkdownEditor";
 import { VisualEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/VisualEditor";
 import { BubbleMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/FloatingMenu/BubbleMenu";
+import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 
 type TiptapEditorProps = {
   content: string;
@@ -54,18 +55,26 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       enableBilateralLinks: true,
     };
 
-    const initialOutput =
-      user?.notesDefaultEditor === "markdown"
-        ? convertHtmlToMarkdownUnified(content, tableSyntax)
-        : content;
+    const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
+    const contentIsMarkdown = !content.trim().startsWith("<");
+
+    const initialOutput = defaultEditorIsMarkdown && !contentIsMarkdown
+      ? convertHtmlToMarkdownUnified(content, tableSyntax)
+      : content;
 
     const [isMarkdownMode, setIsMarkdownMode] = useState(
-      user?.notesDefaultEditor === "markdown"
+      defaultEditorIsMarkdown
     );
-    const [markdownContent, setMarkdownContent] = useState(initialOutput);
+    const [markdownContent, setMarkdownContent] = useState(
+      isMarkdownMode ? initialOutput : ""
+    );
     const [showBubbleMenu, setShowBubbleMenu] = useState(false);
+    const [showLineNumbers, setShowLineNumbers] = useState(true);
+    const [showPreview, setShowPreview] = useState(false);
     const isInitialized = useRef(false);
     const debounceTimeoutRef = useRef<NodeJS.Timeout>();
+    const originalMarkdownRef = useRef<string>(isMarkdownMode ? initialOutput : "");
+    const richEditorWasEditedRef = useRef<boolean>(false);
 
     const uploadHook = useFileUpload(appSettings?.maximumFileSize);
     const tableToolbar = useTableToolbar();
@@ -105,14 +114,14 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       content: "",
       onUpdate: ({ editor }) => {
         if (!isMarkdownMode) {
+          richEditorWasEditedRef.current = true;
           debouncedOnChange(editor.getHTML(), false);
         }
       },
       editorProps: {
         attributes: {
-          class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${
-            compactMode ? "!max-w-[900px] mx-auto" : ""
-          }`,
+          class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
+            }`,
         },
         handleKeyDown: (view, event) => {
           return createKeyDownHandler(editor)(view, event);
@@ -144,25 +153,35 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       if (isMarkdownMode) {
         setTimeout(() => {
           if (editor) {
+            originalMarkdownRef.current = markdownContent;
+            richEditorWasEditedRef.current = false;
             const htmlContent = convertMarkdownToHtml(markdownContent);
             editor.commands.setContent(htmlContent, { emitUpdate: false });
             setIsMarkdownMode(false);
+            debouncedOnChange(htmlContent, false);
           }
         }, 0);
       } else {
         setTimeout(() => {
           if (editor) {
-            const htmlContent = editor.getHTML();
-            const markdownOutput = convertHtmlToMarkdownUnified(
-              htmlContent,
-              tableSyntax
-            );
-            setMarkdownContent(markdownOutput);
+            let finalMarkdown: string;
+            if (richEditorWasEditedRef.current) {
+              const htmlContent = editor.getHTML();
+              finalMarkdown = convertHtmlToMarkdownUnified(
+                htmlContent,
+                tableSyntax
+              );
+            } else {
+              finalMarkdown = originalMarkdownRef.current;
+            }
+            setMarkdownContent(finalMarkdown);
             setIsMarkdownMode(true);
+            debouncedOnChange(finalMarkdown, true);
+            richEditorWasEditedRef.current = false;
           }
         }, 0);
       }
-    }, [isMarkdownMode, markdownContent, tableSyntax, editor]);
+    }, [isMarkdownMode, markdownContent, tableSyntax, editor, debouncedOnChange]);
 
     useShortcuts([
       {
@@ -193,13 +212,35 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     });
 
     useEffect(() => {
+      if (isMarkdownMode) {
+        const contentIsMarkdown = !content.trim().startsWith("<");
+        if (contentIsMarkdown) {
+          setMarkdownContent(content);
+          originalMarkdownRef.current = content;
+        } else {
+          const markdownOutput = convertHtmlToMarkdownUnified(content, tableSyntax);
+          setMarkdownContent(markdownOutput);
+          originalMarkdownRef.current = markdownOutput;
+        }
+      }
+    }, [content, isMarkdownMode, tableSyntax]);
+
+    useEffect(() => {
       if (editor && !isInitialized.current) {
         isInitialized.current = true;
         setTimeout(() => {
-          editor.commands.setContent(content);
+          if (isMarkdownMode) {
+            const htmlContent = convertMarkdownToHtml(markdownContent);
+            editor.commands.setContent(htmlContent, { emitUpdate: false });
+          } else {
+            const contentToSet = content.trim().startsWith("<")
+              ? content
+              : convertMarkdownToHtml(content);
+            editor.commands.setContent(contentToSet, { emitUpdate: false });
+          }
         }, 0);
       }
-    }, [editor, content]);
+    }, [editor, content, isMarkdownMode, markdownContent]);
 
     useEffect(() => {
       return () => {
@@ -274,11 +315,16 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
     return (
       <div className="flex flex-col h-full">
-        <div className="bg-background border-b border-border px-4 py-2 flex items-center justify-between sticky top-0 z-10">
+        <div className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 ${isMarkdownMode ? "py-0 lg:py-2" : "py-2"}`}>
           <TiptapToolbar
             editor={editor}
             isMarkdownMode={isMarkdownMode}
             toggleMode={toggleMode}
+            showLineNumbers={showLineNumbers}
+            onToggleLineNumbers={() => setShowLineNumbers(!showLineNumbers)}
+            showPreview={showPreview}
+            onTogglePreview={() => setShowPreview(!showPreview)}
+            markdownContent={markdownContent}
           />
         </div>
 
@@ -296,11 +342,19 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           onRetry={uploadHook.resetErrors}
         />
 
-        {isMarkdownMode ? (
+        {isMarkdownMode && showPreview ? (
+          <div
+            className={`px-6 pt-6 pb-12 overflow-y-auto flex-1 ${compactMode ? "max-w-[900px] mx-auto" : ""
+              }`}
+          >
+            <UnifiedMarkdownRenderer content={markdownContent} />
+          </div>
+        ) : isMarkdownMode ? (
           <MarkdownEditor
             content={markdownContent}
             onChange={handleMarkdownChange}
             onFileDrop={handleMarkdownFileDrop}
+            showLineNumbers={showLineNumbers}
           />
         ) : (
           <>

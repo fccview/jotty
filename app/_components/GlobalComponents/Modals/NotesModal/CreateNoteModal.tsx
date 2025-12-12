@@ -9,6 +9,7 @@ import { Modal } from "../Modal";
 import { CategoryInput } from "@/app/_components/GlobalComponents/FormElements/CategoryInput";
 import { Modes } from "@/app/_types/enums";
 import { createCategory } from "@/app/_server/actions/category";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface CreateNoteModalProps {
   onClose: () => void;
@@ -23,6 +24,7 @@ export const CreateNoteModal = ({
   categories,
   initialCategory = "",
 }: CreateNoteModalProps) => {
+  const { user } = useAppMode();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(initialCategory);
   const [newCategory, setNewCategory] = useState("");
