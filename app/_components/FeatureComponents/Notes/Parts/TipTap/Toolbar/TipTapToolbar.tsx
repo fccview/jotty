@@ -6,6 +6,7 @@ import {
   Code,
   Heading2,
   List,
+  ListX,
   Quote,
   Link as LinkIcon,
   FileText,
@@ -28,12 +29,16 @@ type ToolbarProps = {
   editor: Editor | null;
   isMarkdownMode: boolean;
   toggleMode: () => void;
+  showLineNumbers?: boolean;
+  onToggleLineNumbers?: () => void;
 };
 
 export const TiptapToolbar = ({
   editor,
   isMarkdownMode,
   toggleMode,
+  showLineNumbers = true,
+  onToggleLineNumbers,
 }: ToolbarProps) => {
   const [showFileModal, setShowFileModal] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
@@ -127,7 +132,23 @@ export const TiptapToolbar = ({
           isMarkdownMode ? "md:justify-end" : "md:justify-between"
         )}
       >
-        <div className="flex-shrink-0 md:order-last">
+        <div className="flex-shrink-0 md:order-last flex items-center gap-1">
+          {isMarkdownMode && onToggleLineNumbers && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={onToggleLineNumbers}
+              className="flex-shrink-0 hidden lg:flex"
+              title={showLineNumbers ? "Hide line numbers" : "Show line numbers"}
+            >
+              {showLineNumbers ? (
+                <List className="h-4 w-4" />
+              ) : (
+                <ListX className="h-4 w-4" />
+              )}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"

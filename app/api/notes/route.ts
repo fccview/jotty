@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {
       const { searchParams } = new URL(request.url);
-      const category = searchParams.get('category');
-      const search = searchParams.get('q');
+      const category = searchParams.get("category");
+      const search = searchParams.get("q");
 
       const notes = await getUserNotes({ username: user.username });
       if (!notes.success || !notes.data) {
@@ -22,13 +22,16 @@ export async function GET(request: NextRequest) {
       let filteredNotes = notes.data;
 
       if (category) {
-        filteredNotes = filteredNotes.filter((note) => note.category === category);
+        filteredNotes = filteredNotes.filter(
+          (note) => note.category === category
+        );
       }
       if (search) {
         const searchLower = search.toLowerCase();
-        filteredNotes = filteredNotes.filter((note) =>
-          note.title?.toLowerCase().includes(searchLower) ||
-          note.content?.toLowerCase().includes(searchLower)
+        filteredNotes = filteredNotes.filter(
+          (note) =>
+            note.title?.toLowerCase().includes(searchLower) ||
+            note.content?.toLowerCase().includes(searchLower)
         );
       }
 
@@ -56,7 +59,12 @@ export async function POST(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {
       const body = await request.json();
-      const { title, content = "", category = "Uncategorized" } = body;
+      const {
+        title,
+        content = "",
+        category = "Uncategorized",
+        disableFormatting = false,
+      } = body;
 
       if (!title) {
         return NextResponse.json(
@@ -70,6 +78,10 @@ export async function POST(request: NextRequest) {
       formData.append("rawContent", content);
       formData.append("category", category);
       formData.append("user", JSON.stringify(user));
+      formData.append(
+        "disableFormatting",
+        disableFormatting ? "true" : "false"
+      );
 
       const result = await createNote(formData);
       if (result.error) {

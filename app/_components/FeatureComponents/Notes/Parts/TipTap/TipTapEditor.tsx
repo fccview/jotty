@@ -64,6 +64,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     );
     const [markdownContent, setMarkdownContent] = useState(initialOutput);
     const [showBubbleMenu, setShowBubbleMenu] = useState(false);
+    const [showLineNumbers, setShowLineNumbers] = useState(true);
     const isInitialized = useRef(false);
     const debounceTimeoutRef = useRef<NodeJS.Timeout>();
 
@@ -279,6 +280,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             editor={editor}
             isMarkdownMode={isMarkdownMode}
             toggleMode={toggleMode}
+            showLineNumbers={showLineNumbers}
+            onToggleLineNumbers={() => setShowLineNumbers(!showLineNumbers)}
           />
         </div>
 
@@ -301,6 +304,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             content={markdownContent}
             onChange={handleMarkdownChange}
             onFileDrop={handleMarkdownFileDrop}
+            showLineNumbers={showLineNumbers}
           />
         ) : (
           <>

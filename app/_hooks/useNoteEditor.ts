@@ -34,13 +34,17 @@ export const useNoteEditor = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAppMode();
+  const isMinimalMode = user?.disableRichEditor === "enable";
   const [title, setTitle] = useState(note.title);
   const [category, setCategory] = useState(note.category || "Uncategorized");
   const [editorContent, setEditorContent] = useState(() => {
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
+    if (isMinimalMode) {
+      return contentWithoutMetadata;
+    }
     return convertMarkdownToHtml(contentWithoutMetadata);
   });
-  const [isMarkdownMode, setIsMarkdownMode] = useState(false);
+  const [isMarkdownMode, setIsMarkdownMode] = useState(isMinimalMode);
   const [isPrinting, setIsPrinting] = useState(false);
   const notesDefaultMode = user?.notesDefaultMode || "view";
 
@@ -78,13 +82,18 @@ export const useNoteEditor = ({
 
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
 
-    setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+    if (isMinimalMode) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true);
+    } else {
+      setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+    }
 
     if (searchParams?.get("editor") !== "true") {
       setIsEditing(false);
       setHasUnsavedChanges(false);
     }
-  }, [note]);
+  }, [note, isMinimalMode]);
 
   useEffect(() => {
     if (notesDefaultMode !== "edit" && !isEditing) return;
@@ -119,6 +128,7 @@ export const useNoteEditor = ({
       formData.append("originalCategory", note.category || "Uncategorized");
       formData.append("user", owner.data?.username || "");
       formData.append("uuid", note.uuid || "");
+      formData.append("disableFormatting", user?.disableFormatting === "enable" ? "true" : "false");
 
       const result = await updateNote(formData, useAutosave);
 
@@ -195,7 +205,12 @@ export const useNoteEditor = ({
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
-    setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+    if (isMinimalMode) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true);
+    } else {
+      setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
+    }
   };
 
   const handleDelete = async () => {

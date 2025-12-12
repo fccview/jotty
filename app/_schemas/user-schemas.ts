@@ -24,6 +24,12 @@ export const editorSettingsSchema = z.object({
   notesAutoSaveInterval: z
     .number()
     .min(0, "Notes auto save interval must be greater than 0"),
+  disableFormatting: z.enum(["enable", "disable"], {
+    message: "Disable formatting must be either 'enable' or 'disable'",
+  }),
+  disableRichEditor: z.enum(["enable", "disable"], {
+    message: "Disable rich editor must be either 'enable' or 'disable'",
+  }),
 });
 
 export const checklistSettingsSchema = z.object({
