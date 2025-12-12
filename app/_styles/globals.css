@@ -726,13 +726,43 @@ p > code {
 }
 
 .ProseMirror .hljs {
-  color: #abb2bf;
-  background: #282c34;
+  color: #abb2bf!important;
+  background: #282c34!important;
+  font-family: "Intel One Mono", monospace !important;
+  font-size: 14px !important;   
+}
+
+.ProseMirror .hljs * {
+  font-family: "Intel One Mono", monospace !important;
+  font-size: 14px !important;   
 }
 
 .hljs .hljs {
     padding: 0;
     background: transparent;
+}
+
+
+.code-block-container,
+.code-block-container *,
+.code-block-container pre,
+.code-block-container code,
+.code-block-container pre *,
+.code-block-container code * {
+  text-shadow: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  font-family: "Intel One Mono", monospace !important;
+}
+.code-block-container pre {
+  background: transparent !important;
+  color: #abb2bf !important;
+}
+
+.code-block-container code[class*="language-"], 
+.code-block-container pre[class*="language-"] {
+  background: transparent !important;
+  color: #abb2bf !important;
 }
 
 .line-clamp-2 {

@@ -68,7 +68,7 @@ export const SyntaxHighlightedEditor = ({
       <div className="flex min-h-full" ref={editorRef}>
         {showLineNumbers && (
           <div
-            className="py-4 pr-3 text-muted-foreground text-right select-none border-r border-border hidden lg:block"
+            className="py-4 h-full px-1 text-foreground text-right select-none hidden lg:block opacity-50"
             style={{ ...editorFontStyle }}
           >
             {lineNumbers.map((num) => (
