@@ -190,7 +190,7 @@ export const TiptapToolbar = ({
             {isMarkdownMode ? (
               <>
                 <Monitor className="h-4 w-4 mr-2" />
-                <span>Rich Text</span>
+                <span>Rich Editor</span>
               </>
             ) : (
               <>
@@ -226,10 +226,10 @@ export const TiptapToolbar = ({
               size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={toggleMode}
-              title="Toggle rich text mode"
+              title="Toggle rich editor mode"
             >
               <Monitor className="h-4 w-4 mr-2" />
-              <span>Rich Text</span>
+              <span>Rich Editor</span>
             </Button>
 
             <Button

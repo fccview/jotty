@@ -538,7 +538,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
 
         <div className="space-y-2">
           <Label htmlFor="disable-rich-editor">
-            Minimal Mode (Disable Rich Editor)
+            Minimal Mode (Disable Rich Text Editor)
           </Label>
           <Dropdown
             value={currentSettings.disableRichEditor || "disable"}
@@ -549,7 +549,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               );
             }}
             options={[
-              { id: "disable", name: "Use Rich Editor" },
+              { id: "disable", name: "Use Rich Text Editor" },
               { id: "enable", name: "Markdown Only" },
             ]}
             placeholder="Select minimal mode"
