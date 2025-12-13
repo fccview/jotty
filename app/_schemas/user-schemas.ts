@@ -27,6 +27,9 @@ export const editorSettingsSchema = z.object({
   disableRichEditor: z.enum(["enable", "disable"], {
     message: "Disable rich editor must be either 'enable' or 'disable'",
   }),
+  markdownTheme: z.enum(["prism", "prism-dark", "prism-funky", "prism-okaidia", "prism-tomorrow", "prism-twilight", "prism-coy", "prism-solarizedlight"], {
+    message: "Markdown theme must be a valid Prism theme",
+  }),
 });
 
 export const checklistSettingsSchema = z.object({

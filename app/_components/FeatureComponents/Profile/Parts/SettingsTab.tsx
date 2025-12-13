@@ -17,6 +17,7 @@ import {
   PreferredTimeFormat,
   PreferredDateFormat,
   DisableRichEditor,
+  MarkdownTheme,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -47,6 +48,7 @@ const getSettingsFromUser = (user: User | null): Partial<User> => ({
   preferredDateFormat: user?.preferredDateFormat || "dd/mm/yyyy",
   preferredTimeFormat: user?.preferredTimeFormat || "12-hours",
   disableRichEditor: user?.disableRichEditor || "disable",
+  markdownTheme: user?.markdownTheme || "prism",
 });
 
 const pick = <T extends object, K extends keyof T>(
@@ -210,6 +212,17 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const tableSyntaxOptions = [
     { id: "markdown", name: "Markdown (e.g., | Header |)" },
     { id: "html", name: "HTML (e.g., <table><tr><td>)" },
+  ];
+
+  const markdownThemeOptions = [
+    { id: "prism", name: "Default" },
+    { id: "prism-dark", name: "Dark" },
+    { id: "prism-funky", name: "Funky" },
+    { id: "prism-okaidia", name: "Okaidia" },
+    { id: "prism-tomorrow", name: "Tomorrow" },
+    { id: "prism-twilight", name: "Twilight" },
+    { id: "prism-coy", name: "Coy" },
+    { id: "prism-solarizedlight", name: "Solarized Light" },
   ];
 
   const autoSaveIntervalOptions = [
@@ -533,6 +546,27 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           )}
           <p className="text-sm text-muted-foreground">
             Choose how tables are rendered in your notes.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="markdown-theme">Markdown Syntax Theme</Label>
+          <Dropdown
+            value={currentSettings.markdownTheme || "prism"}
+            onChange={(value) =>
+              handleSettingChange("markdownTheme", value as MarkdownTheme)
+            }
+            options={markdownThemeOptions}
+            placeholder="Select syntax theme"
+            className="w-full"
+          />
+          {validationErrors.markdownTheme && (
+            <p className="text-sm text-destructive">
+              {validationErrors.markdownTheme}
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Choose the syntax highlighting theme for the markdown editor.
           </p>
         </div>
 

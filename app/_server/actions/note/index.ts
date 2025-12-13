@@ -8,7 +8,7 @@ import {
   getUserByNote,
   getUsername,
 } from "@/app/_server/actions/users";
-import { isAdmin, isAuthenticated } from "@/app/_server/actions/users";
+import { isAuthenticated } from "@/app/_server/actions/users";
 import fs from "fs/promises";
 import {
   ensureDir,

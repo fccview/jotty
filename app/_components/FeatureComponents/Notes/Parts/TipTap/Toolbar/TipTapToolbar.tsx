@@ -26,6 +26,7 @@ import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Pa
 import { useState } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ExtraItemsDropdown";
+import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/PrismThemeDropdown";
 
 type ToolbarProps = {
   editor: Editor | null;
@@ -156,6 +157,11 @@ export const TiptapToolbar = ({
                 <ListX className="h-4 w-4" />
               )}
             </Button>
+          )}
+          {isMarkdownMode && (
+            <div className="hidden lg:flex">
+              <PrismThemeDropdown isMarkdownMode={isMarkdownMode} />
+            </div>
           )}
           {isMarkdownMode && onTogglePreview && (
             <Button

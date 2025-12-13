@@ -5,7 +5,7 @@ import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-markup";
 import "prismjs/components/prism-markdown";
-import "prismjs/themes/prism.css";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface SyntaxHighlightedEditorProps {
   content: string;
@@ -26,13 +26,72 @@ export const SyntaxHighlightedEditor = ({
   onFileDrop,
   showLineNumbers = true,
 }: SyntaxHighlightedEditorProps) => {
+  const { user } = useAppMode();
   const [lineCount, setLineCount] = useState(1);
   const editorRef = useRef<HTMLDivElement>(null);
+  const theme = user?.markdownTheme || "prism";
 
   useEffect(() => {
     const lines = content.split("\n").length;
     setLineCount(lines);
   }, [content]);
+
+  useEffect(() => {
+    const linkId = "prism-theme-stylesheet";
+    const themeNames = [
+      "prism",
+      "prism-dark",
+      "prism-funky",
+      "prism-okaidia",
+      "prism-tomorrow",
+      "prism-twilight",
+      "prism-coy",
+      "prism-solarizedlight",
+    ];
+
+    const removeAllThemeStyles = () => {
+      const existingLink = document.getElementById(linkId) as HTMLLinkElement;
+      if (existingLink) {
+        existingLink.remove();
+      }
+
+      const allLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+      allLinks.forEach((link) => {
+        const href = link.getAttribute("href") || "";
+        if (
+          (href.includes("prismjs/themes/") || href.includes("/api/prism-theme")) &&
+          themeNames.some((name) => href.includes(name) || href.includes(`theme=${name}`))
+        ) {
+          link.remove();
+        }
+      });
+
+      const allStyles = Array.from(document.querySelectorAll('style'));
+      allStyles.forEach((style) => {
+        const textContent = style.textContent || "";
+        if (
+          themeNames.some((name) => textContent.includes(`prismjs/themes/${name}`))
+        ) {
+          style.remove();
+        }
+      });
+    };
+
+    removeAllThemeStyles();
+
+    const link = document.createElement("link");
+    link.id = linkId;
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.setAttribute("data-prism-theme", theme);
+    link.href = `/api/prism-theme?theme=${theme}`;
+
+    document.head.appendChild(link);
+
+    return () => {
+      removeAllThemeStyles();
+    };
+  }, [theme]);
 
   const handleHighlight = (code: string): string => {
     if (!code) return "";
