@@ -1,12 +1,14 @@
 "use client";
 
 import { Note, User } from "@/app/_types";
-import { Clock } from "lucide-react";
+import { Clock, Eye, Key } from "lucide-react";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ReadingProgressBar } from "../../GlobalComponents/Layout/ReadingProgressBar";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { EncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/EncryptionModal";
 
 interface PublicNoteViewProps {
   note: Note;
@@ -15,6 +17,8 @@ interface PublicNoteViewProps {
 
 export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [showEncryptionModal, setShowEncryptionModal] = useState(false);
+  const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const isPrintView = searchParams.get("view_mode") === "print";
@@ -69,8 +73,45 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
         </div>
 
         <div className={cardClass}>
-          <UnifiedMarkdownRenderer content={note.content} />
+          {note.encrypted && !decryptedContent ? (
+            <div className="text-center space-y-4 max-w-md mx-auto px-6 py-12">
+              <div className="flex justify-center">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Key className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold">This note is encrypted</h3>
+              <p className="text-sm text-muted-foreground">
+                This note is protected with PGP encryption.
+              </p>
+              <div className="flex items-center justify-center gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEncryptionModal(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  View
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <UnifiedMarkdownRenderer content={decryptedContent || note.content} />
+          )}
         </div>
+
+        {note.encrypted && (
+          <EncryptionModal
+            isOpen={showEncryptionModal}
+            onClose={() => setShowEncryptionModal(false)}
+            mode="view"
+            noteContent={note.content}
+            onSuccess={(content) => {
+              setDecryptedContent(content);
+              setShowEncryptionModal(false);
+            }}
+          />
+        )}
 
         <div className="mt-12 pt-8 border-t border-border text-center no-print">
           <p className="text-sm text-muted-foreground">

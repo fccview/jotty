@@ -5,7 +5,7 @@ import { UnsavedChangesModal } from "@/app/_components/GlobalComponents/Modals/C
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { NoteEditorHeader } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorHeader";
 import { NoteEditorContent } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorContent";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { TableOfContents } from "../TableOfContents";
 import { useSearchParams } from "next/navigation";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
@@ -28,6 +28,8 @@ export const NoteEditor = ({
   const { permissions } = usePermissions();
   const isOwner = permissions?.isOwner || false;
   const [showTOC, setShowTOC] = useState(false);
+  const decryptModalRef = useRef<(() => void) | null>(null);
+  const viewModalRef = useRef<(() => void) | null>(null);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background h-full">
@@ -40,6 +42,8 @@ export const NoteEditor = ({
         viewModel={viewModel}
         showTOC={showTOC}
         setShowTOC={setShowTOC}
+        onOpenDecryptModal={decryptModalRef}
+        onOpenViewModal={viewModalRef}
       />
 
       <div className="flex h-full w-full relative">
@@ -52,6 +56,8 @@ export const NoteEditor = ({
             noteId={note.uuid}
             noteCategory={note.category}
             encrypted={note.encrypted}
+            onOpenDecryptModal={() => decryptModalRef.current?.()}
+            onOpenViewModal={() => viewModalRef.current?.()}
           />
         </div>
 

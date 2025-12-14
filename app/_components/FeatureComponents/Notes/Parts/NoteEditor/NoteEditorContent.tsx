@@ -12,7 +12,8 @@ import { useEffect, useRef, useMemo } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalModeEditor";
-import { Key } from "lucide-react";
+import { Key, Eye, Unlock } from "lucide-react";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -22,6 +23,8 @@ interface NoteEditorContentProps {
   noteId?: string;
   noteCategory?: string;
   encrypted?: boolean;
+  onOpenDecryptModal?: () => void;
+  onOpenViewModal?: () => void;
 }
 
 export const NoteEditorContent = ({
@@ -32,6 +35,8 @@ export const NoteEditorContent = ({
   noteId,
   noteCategory,
   encrypted,
+  onOpenDecryptModal,
+  onOpenViewModal,
 }: NoteEditorContentProps) => {
   const { user, linkIndex, notes, checklists, appSettings } = useAppMode();
   const { compactMode } = useSettings();
@@ -94,8 +99,29 @@ export const NoteEditorContent = ({
           </div>
           <h3 className="text-xl font-semibold">This note is encrypted</h3>
           <p className="text-sm text-muted-foreground">
-            This note is protected with PGP encryption. Use the menu in the top-right corner to view or decrypt it.
+            This note is protected with PGP encryption.
           </p>
+          <div className="flex items-center justify-center gap-3 pt-4">
+            {onOpenViewModal && (
+              <Button
+                variant="outline"
+                onClick={onOpenViewModal}
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                View
+              </Button>
+            )}
+            {onOpenDecryptModal && (
+              <Button
+                onClick={onOpenDecryptModal}
+                className="flex items-center gap-2"
+              >
+                <Unlock className="h-4 w-4" />
+                Decrypt
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );

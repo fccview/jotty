@@ -49,6 +49,8 @@ interface NoteEditorHeaderProps {
   showTOC: boolean;
   setShowTOC: (show: boolean) => void;
   viewModel: NoteEditorViewModel;
+  onOpenDecryptModal?: React.MutableRefObject<(() => void) | null>;
+  onOpenViewModal?: React.MutableRefObject<(() => void) | null>;
 }
 
 export const NoteEditorHeader = ({
@@ -60,6 +62,8 @@ export const NoteEditorHeader = ({
   viewModel,
   showTOC,
   setShowTOC,
+  onOpenDecryptModal,
+  onOpenViewModal,
 }: NoteEditorHeaderProps) => {
   const metadata = useMetadata();
   const {
@@ -88,6 +92,21 @@ export const NoteEditorHeader = ({
   useEffect(() => {
     setHasPromptedForDecryption(false);
   }, [note?.id]);
+
+  useEffect(() => {
+    if (onOpenDecryptModal) {
+      onOpenDecryptModal.current = () => {
+        setEncryptionModalMode("decrypt");
+        setShowEncryptionModal(true);
+      };
+    }
+    if (onOpenViewModal) {
+      onOpenViewModal.current = () => {
+        setEncryptionModalMode("view");
+        setShowEncryptionModal(true);
+      };
+    }
+  }, [onOpenDecryptModal, onOpenViewModal]);
 
   useEffect(() => {
     if (
@@ -219,9 +238,6 @@ export const NoteEditorHeader = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold truncate">{title}</h1>
-                    {note?.encrypted && (
-                      <Key className="h-4 w-4 text-primary flex-shrink-0" />
-                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -243,6 +259,9 @@ export const NoteEditorHeader = ({
                       )}
                     </Button>
 
+                    {note?.encrypted && (
+                      <Key className="h-4 w-4 text-primary flex-shrink-0" />
+                    )}
                     {isPubliclyShared && (
                       <span title="Publicly shared">
                         <Globe className="h-4 w-4 text-primary" />

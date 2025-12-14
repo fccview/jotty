@@ -59,6 +59,7 @@ export const NoteCard = ({
 
   const displayTitle = parsedData?.title || note?.title;
   const displayContent = parsedData?.content || note?.content || "";
+  const isEncrypted = parsedData?.encrypted ?? note?.encrypted ?? false;
 
   const { previewText, wordCount } = useMemo(() => {
     const content = displayContent;
@@ -118,13 +119,13 @@ export const NoteCard = ({
             onPointerDown={(e) => isDraggable && e.stopPropagation()}
             onMouseDown={(e) => isDraggable && e.stopPropagation()}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
+              {isEncrypted && (
+                <Key className="h-4 w-4 mt-1 text-primary flex-shrink-0" />
+              )}
               <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                 {displayTitle}
               </h3>
-              {note.encrypted && (
-                <Key className="h-4 w-4 text-primary flex-shrink-0" />
-              )}
             </div>
           </div>
           {onTogglePin && (
@@ -149,7 +150,13 @@ export const NoteCard = ({
 
       <div className="px-4 pb-4 flex-1">
         <div className="jotty-note-card-content relative max-h-72 overflow-y-auto">
-          {showMarkdownPreview ? (
+          {isEncrypted ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-muted-foreground italic">
+                This note is encrypted
+              </p>
+            </div>
+          ) : showMarkdownPreview ? (
             <div className="text-sm text-muted-foreground prose prose-sm max-w-none">
               <div
                 className={`${fullScrollableContent
