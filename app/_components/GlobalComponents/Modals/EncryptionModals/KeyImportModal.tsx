@@ -5,6 +5,7 @@ import { Upload, AlertCircle } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
+import { Textarea } from "@/app/_components/GlobalComponents/FormElements/Textarea";
 import { importKeys } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
 
@@ -121,42 +122,36 @@ export const KeyImportModal = ({
           ]}
         />
 
-        <div>
-          <label
-            htmlFor="publicKey"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
-            Public Key *
-          </label>
-          <textarea
-            ref={publicKeyRef}
-            id="publicKey"
-            value={publicKey}
-            onChange={(e) => setPublicKey(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring font-mono text-xs min-h-[150px]"
-            placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----&#10;&#10;mQINBF...&#10;&#10;-----END PGP PUBLIC KEY BLOCK-----"
-            disabled={isImporting}
-            required
-          />
-        </div>
+        <Textarea
+          ref={publicKeyRef}
+          id="publicKey"
+          label="Public Key"
+          value={publicKey}
+          onChange={(e) => setPublicKey(e.target.value)}
+          placeholder={`-----BEGIN PGP PUBLIC KEY BLOCK-----
 
-        <div>
-          <label
-            htmlFor="privateKey"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
-            Private Key *
-          </label>
-          <textarea
-            id="privateKey"
-            value={privateKey}
-            onChange={(e) => setPrivateKey(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring font-mono text-xs min-h-[150px]"
-            placeholder="-----BEGIN PGP PRIVATE KEY BLOCK-----&#10;&#10;lQdGBF...&#10;&#10;-----END PGP PRIVATE KEY BLOCK-----"
-            disabled={isImporting}
-            required
-          />
-        </div>
+mQINBF...
+
+-----END PGP PUBLIC KEY BLOCK-----`}
+          disabled={isImporting}
+          required
+          minHeight="150px"
+        />
+
+        <Textarea
+          id="privateKey"
+          label="Private Key"
+          value={privateKey}
+          onChange={(e) => setPrivateKey(e.target.value)}
+          placeholder={`-----BEGIN PGP PRIVATE KEY BLOCK-----
+
+lQdGBF...
+
+-----END PGP PRIVATE KEY BLOCK-----`}
+          disabled={isImporting}
+          required
+          minHeight="150px"
+        />
 
         <div className="flex justify-end gap-3">
           <Button

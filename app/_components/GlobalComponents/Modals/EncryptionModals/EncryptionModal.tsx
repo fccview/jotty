@@ -6,9 +6,12 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { Textarea } from "@/app/_components/GlobalComponents/FormElements/Textarea";
 import {
   encryptNoteContent,
   decryptNoteContent,
+  getStoredKeys,
 } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
@@ -33,17 +36,51 @@ export const EncryptionModal = ({
   const [customKey, setCustomKey] = useState("");
   const [passphrase, setPassphrase] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasStoredKeys, setHasStoredKeys] = useState(false);
+  const [isCheckingKeys, setIsCheckingKeys] = useState(false);
   const passphraseRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (isOpen) {
       passphraseRef.current?.focus();
+      if (mode === "encrypt") {
+        checkStoredKeys();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, mode]);
+
+  const checkStoredKeys = async () => {
+    setIsCheckingKeys(true);
+    try {
+      const result = await getStoredKeys();
+      if (result.success && result.data) {
+        const hasKeys = result.data.hasKeys || false;
+        setHasStoredKeys(hasKeys);
+        if (!hasKeys) {
+          setUseCustomKey(true);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking stored keys:", error);
+      setHasStoredKeys(false);
+      setUseCustomKey(true);
+    } finally {
+      setIsCheckingKeys(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (mode === "encrypt" && !hasStoredKeys && !customKey.trim()) {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Public key is required. You don't have any stored keys.",
+      });
+      return;
+    }
 
     if (useCustomKey && !customKey.trim()) {
       showToast({
@@ -179,68 +216,88 @@ export const EncryptionModal = ({
           }
         />
 
-        <div className="flex items-center justify-between gap-4">
-          <label
-            htmlFor="useCustomKey"
-            className="flex-1 cursor-pointer"
-            onClick={() => setUseCustomKey(!useCustomKey)}
-          >
-            <div className="font-medium">
-              Use custom {isEncrypt ? "public" : "private"} key
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {useCustomKey
-                ? `Paste your custom ${isEncrypt ? "public" : "private"} key below`
-                : `Use your stored ${isEncrypt ? "public" : "private"} key`}
-            </p>
-          </label>
-          <Toggle
-            checked={useCustomKey}
-            onCheckedChange={setUseCustomKey}
-            size="md"
+        {isEncrypt && !hasStoredKeys && (
+          <InfoBox
+            variant="warning"
+            title="No stored keys found"
+            items={[
+              "You don't have any encryption keys configured",
+              "Please paste a public key below to encrypt this note",
+              "You can generate or import keys in Profile → Encryption",
+            ]}
           />
-        </div>
+        )}
 
-        {useCustomKey && (
-          <div>
+        {hasStoredKeys && (
+          <div className="flex items-center justify-between gap-4">
             <label
-              htmlFor="customKey"
-              className="block text-sm font-medium text-foreground mb-2"
+              htmlFor="useCustomKey"
+              className="flex-1 cursor-pointer"
+              onClick={() => setUseCustomKey(!useCustomKey)}
             >
-              {keyLabel} *
+              <div className="font-medium">
+                Use custom {isEncrypt ? "public" : "private"} key
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {useCustomKey
+                  ? `Paste your custom ${isEncrypt ? "public" : "private"} key below`
+                  : `Use your stored ${isEncrypt ? "public" : "private"} key`}
+              </p>
             </label>
-            <textarea
-              id="customKey"
-              value={customKey}
-              onChange={(e) => setCustomKey(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring font-mono text-xs min-h-[200px]"
-              placeholder={`-----BEGIN PGP ${isEncrypt ? "PUBLIC" : "PRIVATE"} KEY BLOCK-----\n\n...\n\n-----END PGP ${isEncrypt ? "PUBLIC" : "PRIVATE"} KEY BLOCK-----`}
-              disabled={isProcessing}
-              required
+            <Toggle
+              checked={useCustomKey}
+              onCheckedChange={setUseCustomKey}
+              size="md"
             />
           </div>
         )}
 
+        {isEncrypt && !hasStoredKeys && (
+          <Textarea
+            id="customKey"
+            label="Public Key"
+            value={customKey}
+            onChange={(e) => setCustomKey(e.target.value)}
+            placeholder={`-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+...
+
+-----END PGP PUBLIC KEY BLOCK-----`}
+            disabled={isProcessing}
+            required
+            minHeight="200px"
+          />
+        )}
+
+        {useCustomKey && hasStoredKeys && (
+          <Textarea
+            id="customKey"
+            label={keyLabel}
+            value={customKey}
+            onChange={(e) => setCustomKey(e.target.value)}
+            placeholder={`-----BEGIN PGP ${isEncrypt ? "PUBLIC" : "PRIVATE"} KEY BLOCK-----
+
+...
+
+-----END PGP ${isEncrypt ? "PUBLIC" : "PRIVATE"} KEY BLOCK-----`}
+            disabled={isProcessing}
+            required
+            minHeight="200px"
+          />
+        )}
+
         {(mode === "decrypt" || mode === "view") && (
-          <div>
-            <label
-              htmlFor="passphrase"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Passphrase *
-            </label>
-            <input
-              ref={passphraseRef}
-              id="passphrase"
-              type="password"
-              value={passphrase}
-              onChange={(e) => setPassphrase(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Enter your passphrase"
-              disabled={isProcessing}
-              required
-            />
-          </div>
+          <Input
+            ref={passphraseRef}
+            id="passphrase"
+            type="password"
+            label="Passphrase"
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.target.value)}
+            placeholder="Enter your passphrase"
+            disabled={isProcessing}
+            required
+          />
         )}
 
         <div className="flex justify-end gap-3">

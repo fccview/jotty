@@ -5,6 +5,7 @@ import { Key, AlertCircle, Download } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
 import { generateKeyPair } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
@@ -148,42 +149,26 @@ export const KeyGenerationModal = ({
             ]}
           />
 
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Name (optional)
-            </label>
-            <input
-              ref={nameInputRef}
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Your name"
-              disabled={isGenerating}
-            />
-          </div>
+          <Input
+            ref={nameInputRef}
+            id="name"
+            type="text"
+            label="Name (optional)"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your name"
+            disabled={isGenerating}
+          />
 
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Email (optional)
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="your@email.com"
-              disabled={isGenerating}
-            />
-          </div>
+          <Input
+            id="email"
+            type="email"
+            label="Email (optional)"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            disabled={isGenerating}
+          />
 
           <PasswordFields
             password={passphrase}
