@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Type, Pin, PinOff } from "lucide-react";
+import { Clock, Type, Pin, PinOff, Key } from "lucide-react";
 import { Note } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { useMemo } from "react";
@@ -118,9 +118,14 @@ export const NoteCard = ({
             onPointerDown={(e) => isDraggable && e.stopPropagation()}
             onMouseDown={(e) => isDraggable && e.stopPropagation()}
           >
-            <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-              {displayTitle}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                {displayTitle}
+              </h3>
+              {note.encrypted && (
+                <Key className="h-4 w-4 text-primary flex-shrink-0" />
+              )}
+            </div>
           </div>
           {onTogglePin && (
             <button

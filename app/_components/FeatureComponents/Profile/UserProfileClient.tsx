@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Settings, Monitor, Archive, Link } from "lucide-react";
+import { User, Settings, Monitor, Archive, Link, Key } from "lucide-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
 import { Category } from "@/app/_types";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
 import { ProfileTab } from "./Parts/ProfileTab";
 import { SessionsTab } from "./Parts/SessionsTab";
 import { SettingsTab } from "./Parts/SettingsTab";
+import { EncryptionTab } from "./Parts/EncryptionTab";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Button } from "../../GlobalComponents/Buttons/Button";
 import { ArchiveTab } from "./Parts/ArchiveTab";
@@ -85,6 +86,7 @@ export const UserProfileClient = ({
             { id: ProfileTabs.SESSIONS, label: "Sessions", icon: Monitor },
             { id: ProfileTabs.ARCHIVE, label: "Archive", icon: Archive },
             ...(appSettings?.editor?.enableBilateralLinks ? [{ id: ProfileTabs.CONNECTIONS, label: "Connections", icon: Link }] : []),
+            { id: ProfileTabs.ENCRYPTION, label: "Encryption", icon: Key },
             { id: ProfileTabs.SETTINGS, label: "Settings", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -129,6 +131,7 @@ export const UserProfileClient = ({
         {activeTab === ProfileTabs.CONNECTIONS && (
           <LinksTab linkIndex={linkIndex} />
         )}
+        {activeTab === ProfileTabs.ENCRYPTION && <EncryptionTab />}
         {activeTab === ProfileTabs.SETTINGS && (
           <SettingsTab setShowDeleteModal={setShowDeleteModal} />
         )}

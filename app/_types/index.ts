@@ -1,5 +1,6 @@
 import { TaskStatus, Modes, ItemTypes } from "./enums";
 import { LinkIndex } from "../_server/actions/link";
+import { EncryptionSettings } from "./encryption";
 
 export type ChecklistType = "simple" | "task";
 export type ItemType = "checklist" | "note";
@@ -92,6 +93,8 @@ export interface Note {
   owner?: string;
   isShared?: boolean;
   rawContent?: string;
+  encrypted?: boolean;
+  encryptedContent?: string;
 }
 
 export interface NoteEditorViewModel {
@@ -160,6 +163,7 @@ export interface User {
   preferredTimeFormat: PreferredTimeFormat;
   disableRichEditor?: DisableRichEditor;
   markdownTheme?: MarkdownTheme;
+  encryptionSettings?: EncryptionSettings;
 }
 
 export type EnableRecurrence = "enable" | "disable";

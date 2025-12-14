@@ -63,6 +63,12 @@ const helpFiles: TabItem[] = [
     icon: <Phone className="h-4 w-4" />,
   },
   {
+    id: "encryption",
+    name: "Encryption",
+    filename: path.join(HOWTO_DIR, "ENCRYPTION.md"),
+    icon: <Key className="h-4 w-4" />,
+  },
+  {
     id: "sso",
     name: "SSO",
     filename: path.join(HOWTO_DIR, "SSO.md"),

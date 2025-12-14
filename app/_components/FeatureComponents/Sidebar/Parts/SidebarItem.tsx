@@ -12,6 +12,7 @@ import {
   MoreHorizontal,
   Archive,
   Trash,
+  Key,
 } from "lucide-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -203,6 +204,11 @@ export const SidebarItem = ({
         </span>
 
         <div className="flex items-center gap-1 flex-shrink-0">
+          {mode === Modes.NOTES && "encrypted" in item && item.encrypted && (
+            <span title="Encrypted note">
+              <Key className="h-4 w-4 text-primary" />
+            </span>
+          )}
           {isShared && (
             <span title={sharedWith.join(", ")}>
               <Users className="h-4 w-4 text-primary" />

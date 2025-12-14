@@ -51,6 +51,7 @@ export const NoteEditor = ({
             onEditorContentChange={viewModel.handleEditorContentChange}
             noteId={note.uuid}
             noteCategory={note.category}
+            encrypted={note.encrypted}
           />
         </div>
 

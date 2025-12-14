@@ -484,7 +484,7 @@ const markdownProcessor = unified()
           ) {
             node.properties["data-checked"] = String(
               checkbox.properties.checked != null &&
-                checkbox.properties.checked !== false
+              checkbox.properties.checked !== false
             );
 
             if (isInsideP) {

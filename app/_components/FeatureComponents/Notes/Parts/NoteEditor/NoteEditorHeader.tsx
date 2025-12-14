@@ -17,6 +17,8 @@ import {
   Trash2,
   MoreHorizontal,
   Copy,
+  Eye,
+  Key,
 } from "lucide-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -29,11 +31,14 @@ import { Modes } from "@/app/_types/enums";
 import {
   copyTextToClipboard,
   encodeCategoryPath,
+  buildCategoryPath,
 } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
+import { EncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/EncryptionModal";
+import { updateNote } from "@/app/_server/actions/note";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -72,10 +77,30 @@ export const NoteEditorHeader = ({
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
+  const [showEncryptionModal, setShowEncryptionModal] = useState(false);
+  const [encryptionModalMode, setEncryptionModalMode] = useState<"encrypt" | "decrypt" | "view">("encrypt");
+  const [hasPromptedForDecryption, setHasPromptedForDecryption] = useState(false);
   const [copied, setCopied] = useState(false);
   const { user } = useAppMode();
   const router = useRouter();
   const { permissions } = usePermissions();
+
+  useEffect(() => {
+    setHasPromptedForDecryption(false);
+  }, [note?.id]);
+
+  useEffect(() => {
+    if (
+      note?.encrypted &&
+      user?.encryptionSettings?.autoDecrypt &&
+      !hasPromptedForDecryption &&
+      !isEditing
+    ) {
+      setEncryptionModalMode("view");
+      setShowEncryptionModal(true);
+      setHasPromptedForDecryption(true);
+    }
+  }, [note?.encrypted, user?.encryptionSettings?.autoDecrypt, hasPromptedForDecryption, isEditing]);
 
   const handleArchive = async () => {
     const result = await toggleArchive(note, Modes.NOTES);
@@ -86,17 +111,76 @@ export const NoteEditorHeader = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${
-        note?.uuid
-          ? note?.uuid
-          : `${encodeCategoryPath(note?.category || "Uncategorized")}/${
-              note?.id
-            }`
+      `${note?.uuid
+        ? note?.uuid
+        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id
+        }`
       }`
     );
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleViewDecryption = (decryptedContent: string) => {
+    viewModel.handleEditorContentChange(decryptedContent, true);
+    setShowEncryptionModal(false);
+  };
+
+  const handlePermanentDecryption = async (newContent: string) => {
+    const formData = new FormData();
+    formData.append("id", note.id);
+    formData.append("title", title);
+    formData.append("content", newContent);
+    formData.append("category", category);
+    if (note.uuid) {
+      formData.append("uuid", note.uuid);
+    }
+
+    const result = await updateNote(formData);
+
+    if (result.success && result.data) {
+      const categoryPath = buildCategoryPath(
+        result.data.category || "Uncategorized",
+        result.data.id
+      );
+      const newPath = `/note/${categoryPath}`;
+      const currentPath = window.location.pathname;
+
+      if (newPath === currentPath) {
+        window.location.reload();
+      } else {
+        router.push(newPath);
+      }
+    }
+  };
+
+  const handleEncryptionSuccess = async (newContent: string) => {
+    const formData = new FormData();
+    formData.append("id", note.id);
+    formData.append("title", title);
+    formData.append("content", newContent);
+    formData.append("category", category);
+    if (note.uuid) {
+      formData.append("uuid", note.uuid);
+    }
+
+    const result = await updateNote(formData);
+
+    if (result.success && result.data) {
+      const categoryPath = buildCategoryPath(
+        result.data.category || "Uncategorized",
+        result.data.id
+      );
+      const newPath = `/note/${categoryPath}`;
+      const currentPath = window.location.pathname;
+
+      if (newPath === currentPath) {
+        window.location.reload();
+      } else {
+        router.push(newPath);
+      }
     }
   };
 
@@ -135,6 +219,9 @@ export const NoteEditorHeader = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold truncate">{title}</h1>
+                    {note?.encrypted && (
+                      <Key className="h-4 w-4 text-primary flex-shrink-0" />
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -142,13 +229,12 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      title={`Copy ID: ${
-                        note?.uuid
-                          ? note?.uuid
-                          : `${encodeCategoryPath(
-                              note?.category || "Uncategorized"
-                            )}/${note?.id}`
-                      }`}
+                      title={`Copy ID: ${note?.uuid
+                        ? note?.uuid
+                        : `${encodeCategoryPath(
+                          note?.category || "Uncategorized"
+                        )}/${note?.id}`
+                        }`}
                     >
                       {copied ? (
                         <Check className="h-3 w-3 text-green-500" />
@@ -223,7 +309,8 @@ export const NoteEditorHeader = ({
               <>
                 <div className="flex items-center gap-2">
                   {user?.notesDefaultMode === "edit" &&
-                    permissions?.canEdit && (
+                    permissions?.canEdit &&
+                    !note?.encrypted && (
                       <Button
                         variant="outline"
                         size="icon"
@@ -243,7 +330,7 @@ export const NoteEditorHeader = ({
                       </Button>
                     )}
 
-                  {permissions?.canEdit && (
+                  {permissions?.canEdit && !note?.encrypted && (
                     <Button
                       variant="outline"
                       size="icon"
@@ -263,24 +350,56 @@ export const NoteEditorHeader = ({
                     items={[
                       ...(permissions?.isOwner
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Share",
-                              icon: <Share2 className="h-4 w-4" />,
-                              onClick: () => setShowShareModal(true),
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Share",
+                            icon: <Share2 className="h-4 w-4" />,
+                            onClick: () => setShowShareModal(true),
+                          },
+                        ]
                         : []),
                       ...(onClone
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Clone",
-                              icon: <Copy className="h-4 w-4" />,
-                              onClick: onClone,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Clone",
+                            icon: <Copy className="h-4 w-4" />,
+                            onClick: onClone,
+                          },
+                        ]
                         : []),
+                      ...(note?.encrypted
+                        ? [
+                          {
+                            type: "item" as const,
+                            label: "View",
+                            icon: <Eye className="h-4 w-4" />,
+                            onClick: () => {
+                              setEncryptionModalMode("view");
+                              setShowEncryptionModal(true);
+                            },
+                          },
+                          {
+                            type: "item" as const,
+                            label: "Decrypt",
+                            icon: <Key className="h-4 w-4" />,
+                            onClick: () => {
+                              setEncryptionModalMode("decrypt");
+                              setShowEncryptionModal(true);
+                            },
+                          },
+                        ]
+                        : [
+                          {
+                            type: "item" as const,
+                            label: "Encrypt Note",
+                            icon: <Key className="h-4 w-4" />,
+                            onClick: () => {
+                              setEncryptionModalMode("encrypt");
+                              setShowEncryptionModal(true);
+                            },
+                          },
+                        ]),
                       {
                         type: "item" as const,
                         label: "Print / Save as PDF",
@@ -300,24 +419,24 @@ export const NoteEditorHeader = ({
                       },
                       ...(permissions?.canDelete
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Archive",
-                              icon: <Archive className="h-4 w-4" />,
-                              onClick: handleArchive,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Archive",
+                            icon: <Archive className="h-4 w-4" />,
+                            onClick: handleArchive,
+                          },
+                        ]
                         : []),
                       ...(canDelete
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Delete",
-                              icon: <Trash2 className="h-4 w-4" />,
-                              onClick: handleDelete,
-                              variant: "destructive" as const,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Delete",
+                            icon: <Trash2 className="h-4 w-4" />,
+                            onClick: handleDelete,
+                            variant: "destructive" as const,
+                          },
+                        ]
                         : []),
                     ]}
                   />
@@ -341,6 +460,20 @@ export const NoteEditorHeader = ({
         usernames={itemDetails.sharedWith}
         isOpen={showSharedWithModal}
         onClose={() => setShowSharedWithModal(false)}
+      />
+
+      <EncryptionModal
+        isOpen={showEncryptionModal}
+        onClose={() => setShowEncryptionModal(false)}
+        mode={encryptionModalMode}
+        noteContent={viewModel.editorContent}
+        onSuccess={
+          encryptionModalMode === "view"
+            ? handleViewDecryption
+            : encryptionModalMode === "decrypt"
+              ? handlePermanentDecryption
+              : handleEncryptionSuccess
+        }
       />
     </>
   );

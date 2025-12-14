@@ -94,6 +94,7 @@ const _parseMarkdownNote = (
       : new Date().toISOString(),
     owner,
     isShared,
+    encrypted: metadata.encrypted || false,
   };
 };
 
@@ -233,6 +234,11 @@ const _noteToMarkdown = (note: Note): string => {
   } else {
     metadata.title = note.title || "Untitled Note";
     content = lines.join("\n").trim();
+  }
+
+  // Add encrypted flag if note is encrypted
+  if (note.encrypted) {
+    metadata.encrypted = true;
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);
@@ -552,12 +558,16 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       return { error: "Permission denied" };
     }
 
+    // Detect if content is PGP encrypted
+    const isEncrypted = convertedContent.includes("-----BEGIN PGP MESSAGE-----");
+
     const updatedDoc = {
       ...note,
       title,
       content: convertedContent,
       category: category || note.category,
       updatedAt: new Date().toISOString(),
+      encrypted: isEncrypted,
     };
 
     const ownerDir = USER_NOTES_DIR(note.owner!);
@@ -882,6 +892,7 @@ export const getNoteById = async (
       title: parsedData.title,
       content: parsedData.content,
       uuid: finalUuid,
+      encrypted: parsedData.encrypted || false,
     };
     return result as Note;
   }
