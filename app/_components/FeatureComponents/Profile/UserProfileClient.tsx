@@ -86,7 +86,7 @@ export const UserProfileClient = ({
             { id: ProfileTabs.SESSIONS, label: "Sessions", icon: Monitor },
             { id: ProfileTabs.ARCHIVE, label: "Archive", icon: Archive },
             ...(appSettings?.editor?.enableBilateralLinks ? [{ id: ProfileTabs.CONNECTIONS, label: "Connections", icon: Link }] : []),
-            { id: ProfileTabs.ENCRYPTION, label: "Encryption", icon: Key },
+            { id: ProfileTabs.ENCRYPTION, label: "Encryption (beta)", icon: Key },
             { id: ProfileTabs.SETTINGS, label: "Settings", icon: Settings },
           ].map((tab) => {
             const Icon = tab.icon;
