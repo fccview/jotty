@@ -2,7 +2,7 @@
 	<style>
 		tspan { white-space:pre } 
 		.s0 { fill: #ffffff} 
-		.s1 { fill: rgb(139 59 208) } 
+		.s1 { fill: rgb(158 93 248) } 
 	</style>
 	<path id="Shape 8" class="s0" d="m32 151.86c0-64.46 52.34-116.86 116.71-116.86h583.58c64.37 0 116.71 52.4 116.71 116.86v584.28c0 64.46-52.34 116.86-116.71 116.86h-583.58c-64.37 0-116.71-52.4-116.71-116.86z"/>
 	<path id="Shape 7" fill-rule="evenodd" class="s0" d="m50.1 377.1l0.8 0.4-0.8 0.4z"/>

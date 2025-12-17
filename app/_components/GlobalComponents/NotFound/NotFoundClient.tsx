@@ -8,9 +8,7 @@ import { Home05Icon, RefreshIcon } from "hugeicons-react";
 
 export const NotFoundClient = () => {
   const router = useRouter();
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(() =>
-    Math.floor(Math.random() * QUOTES.length)
-  );
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [quoteCount, setQuoteCount] = useState(1);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -33,6 +31,10 @@ export const NotFoundClient = () => {
       setIsTransitioning(false);
     }, 300);
   }, [getRandomQuoteIndex, isTransitioning]);
+
+  useEffect(() => {
+    setCurrentQuoteIndex(Math.floor(Math.random() * QUOTES.length));
+  }, []);
 
   useEffect(() => {
     if (intervalRef.current) {
