@@ -63,8 +63,8 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
-  const { linkIndex, notes, checklists, appSettings } = useAppMode();
-  const { allSharedItems } = useAppMode();
+  const { linkIndex, notes, checklists, appSettings, allSharedItems } =
+    useAppMode();
   const encodedCategory = encodeCategoryPath(
     checklist.category || "Uncategorized"
   );
@@ -158,13 +158,19 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const referencingItems = useMemo(() => {
     return getReferences(
       linkIndex,
-      checklist.uuid,
-      checklist.category,
+      localChecklist.uuid,
+      localChecklist.category,
       ItemTypes.CHECKLIST,
       notes,
       checklists
     );
-  }, [linkIndex, checklist.uuid, checklist.category, checklists, notes]);
+  }, [
+    linkIndex,
+    localChecklist.uuid,
+    localChecklist.category,
+    checklists,
+    notes,
+  ]);
 
   return (
     <div className="h-full flex flex-col bg-background overflow-y-auto">
@@ -223,10 +229,11 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 return (
                   <div
                     key={column.id}
-                    className={`${columns.length > 4
-                      ? "flex-shrink-0 min-w-[20%]"
-                      : "min-w-[24%] "
-                      }`}
+                    className={`${
+                      columns.length > 4
+                        ? "flex-shrink-0 min-w-[20%]"
+                        : "min-w-[24%] "
+                    }`}
                   >
                     <KanbanColumn
                       checklist={localChecklist}

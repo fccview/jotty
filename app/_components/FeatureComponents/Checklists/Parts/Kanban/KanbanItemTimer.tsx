@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Clock01Icon, TimeQuarterIcon, Add01Icon } from "hugeicons-react";
 import { PauseCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -15,7 +16,7 @@ interface KanbanItemTimerProps {
   onAddManualTime: (minutes: number) => void;
 }
 
-export const KanbanItemTimer = ({
+const KanbanItemTimerComponent = ({
   totalTime,
   currentTime,
   isRunning,
@@ -71,3 +72,5 @@ export const KanbanItemTimer = ({
     </div>
   );
 };
+
+export const KanbanItemTimer = memo(KanbanItemTimerComponent);

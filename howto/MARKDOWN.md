@@ -171,8 +171,6 @@ Create tables using standard Markdown pipe syntax or raw HTML.
 | Keyboard Keys | Supported |
 ```
 
-**_Note:_** _While you can create tables using Markdown, they will always be saved as HTML in the final file to perfectly preserve structure and custom formatting._
-
 ### Code Blocks
 
 Wrap your code in triple backticks. You can specify a language for syntax highlighting.

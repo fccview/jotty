@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, memo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -9,8 +10,6 @@ import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -26,7 +25,7 @@ interface KanbanColumnProps {
   statuses: KanbanStatus[];
 }
 
-export const KanbanColumn = ({
+const KanbanColumnComponent = ({
   checklist,
   id,
   title,
@@ -43,29 +42,36 @@ export const KanbanColumn = ({
     id,
   });
 
-  const defaultColors: Record<string, string> = {
-    [TaskStatus.TODO]: "#6b7280",
-    [TaskStatus.IN_PROGRESS]: "#3b82f6",
-    [TaskStatus.COMPLETED]: "#10b981",
-    [TaskStatus.PAUSED]: "#f59e0b",
-  };
+  const defaultColors: Record<string, string> = useMemo(
+    () => ({
+      [TaskStatus.TODO]: "#6b7280",
+      [TaskStatus.IN_PROGRESS]: "#3b82f6",
+      [TaskStatus.COMPLETED]: "#10b981",
+      [TaskStatus.PAUSED]: "#f59e0b",
+    }),
+    []
+  );
 
   const color = statusColor || defaultColors[status] || "#6b7280";
 
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : null;
-  };
+  const { borderColor, bgColor } = useMemo(() => {
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          }
+        : null;
+    };
 
-  const rgb = hexToRgb(color);
-  const borderColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` : color;
-  const bgColor = rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)` : color;
+    const rgb = hexToRgb(color);
+    return {
+      borderColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` : color,
+      bgColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)` : color,
+    };
+  }, [color]);
 
   return (
     <div className="flex flex-col h-full my-4 lg:my-0">
@@ -121,3 +127,5 @@ export const KanbanColumn = ({
     </div>
   );
 };
+
+export const KanbanColumn = memo(KanbanColumnComponent);

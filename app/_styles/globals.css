@@ -1,28 +1,27 @@
+
+@import 'highlight.js/styles/github-dark-dimmed.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import 'highlight.js/styles/github-dark-dimmed.css';
-
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Intel+One+Mono:ital,wght@0,300..700;1,300..700&display=swap');
 
 @layer base {
     :root {
         --background: 249 249 249;
         --background-secondary: 249 248 252;
-        --foreground: 74 74 74;
+        --foreground: 48 48 48;
         --card: 249 249 249;
-        --card-foreground: 74 74 74;
+        --card-foreground: var(--foreground);
         --popover: 249 249 249;
-        --popover-foreground: 74 74 74;
+        --popover-foreground: var(--foreground);
         --primary: 157 95 254;
         --primary-foreground: 249 249 249;
         --secondary: 243 240 249;
-        --secondary-foreground: 74 74 74;
+        --secondary-foreground: var(--foreground);
         --muted: 243 240 249;
         --muted-foreground: 107 99 139;
         --accent: 243 240 249;
-        --accent-foreground: 74 74 74;
+        --accent-foreground: var(--foreground);
         --destructive: 239 68 68;
         --destructive-foreground: 249 249 249;
         --border: 228 223 240;
@@ -60,19 +59,19 @@
     .rwmarkable-light {
         --background: 249 249 249;
         --background-secondary: 249 250 251;
-        --foreground: 74 74 74;
+        --foreground: 48 48 48;
         --card: 249 249 249;
-        --card-foreground: 74 74 74;
+        --card-foreground: var(--foreground);
         --popover: 249 249 249;
-        --popover-foreground: 74 74 74;
+        --popover-foreground: var(--foreground);
         --primary: 37 99 235;
         --primary-foreground: 249 249 249;
         --secondary: 241 245 249;
-        --secondary-foreground: 74 74 74;
+        --secondary-foreground: var(--foreground);
         --muted: 241 245 249;
         --muted-foreground: 100 116 139;
         --accent: 241 245 249;
-        --accent-foreground: 74 74 74;
+        --accent-foreground: var(--foreground);
         --destructive: 239 68 68;
         --destructive-foreground: 249 249 249;
         --border: 226 232 240;
@@ -474,20 +473,26 @@ svg {
     }
 }
 
-body {
-    font-family: "Google Sans", sans-serif;  
+body, a, p, span, button, label, input, textarea, select {
+    font-family: 'Work Sans Variable', sans-serif;
+    letter-spacing: -0.5px;
+    overflow-wrap: break-word;
 }
 
-a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
-    font-family: "Google Sans", sans-serif;
-    overflow-wrap: break-word;
+h1, h2, h3, h4, h5, h6, .jotty-app-name {
+    font-family: 'IBM Plex Sans Variable', sans-serif;
+}
+
+.jotty-app-name span {
+    font-family: 'Work Sans Variable', sans-serif;
+    font-weight: 500;
 }
 
 pre, code, 
 code span {
-    font-family: "Intel One Mono", monospace;
-    font-size: small;
-  }
+    font-family: "Google Sans Code Variable", monospace;
+    font-size: 14px!important;
+}
 
 .hide-scrollbar::-webkit-scrollbar {
     display: none!important;
@@ -580,7 +585,7 @@ mark {
 }
 
 .prose strong {
-    @apply font-semibold;
+    @apply font-bold;
 }
 
 .prose em {
@@ -705,20 +710,17 @@ p > code {
     color: orange;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    font-size: 0.875rem;
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-family: "Google Sans Code Variable", monospace;
 }
 
 .ProseMirror .hljs {
   color: #abb2bf!important;
   background: #282c34!important;
-  font-family: "Intel One Mono", monospace !important;
-  font-size: 14px !important;   
+  font-family: "Google Sans Code Variable" !important;
 }
 
 .ProseMirror .hljs * {
-  font-family: "Intel One Mono", monospace !important;
-  font-size: 14px !important;   
+  font-family: "Google Sans Code Variable" !important;   
 }
 
 .hljs .hljs {
@@ -736,7 +738,7 @@ p > code {
   text-shadow: none !important;
   box-shadow: none !important;
   filter: none !important;
-  font-family: "Intel One Mono", monospace !important;
+  font-family: "Google Sans Code Variable" !important;
 }
 .code-block-container pre {
   background: transparent !important;

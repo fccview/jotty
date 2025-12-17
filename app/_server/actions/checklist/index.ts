@@ -87,11 +87,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-      ...order.categories.filter((n) => dirNames.includes(n)),
-      ...dirNames
-        .filter((n) => !order.categories!.includes(n))
-        .sort((a, b) => a.localeCompare(b)),
-    ]
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -110,11 +110,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -163,10 +163,9 @@ const readListsRecursively = async (
             );
             lists.push(parsedList);
           }
-
-        } catch { }
+        } catch {}
       }
-    } catch { }
+    } catch {}
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -337,13 +336,14 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       );
     }
 
-    const serializedLists = lists.map(list => ({
+    const serializedLists = lists.map((list) => ({
       ...list,
-      statuses: list.statuses ? JSON.parse(JSON.stringify(list.statuses)) : undefined
+      statuses: list.statuses
+        ? JSON.parse(JSON.stringify(list.statuses))
+        : undefined,
     }));
 
     return { success: true, data: serializedLists as Checklist[] };
-
   } catch (error) {
     console.error("Error in getUserChecklists:", error);
     return { success: false, error: "Failed to fetch lists" };
@@ -379,11 +379,14 @@ export const getListById = async (
       (list.id === id || list.uuid === id) &&
       (!category ||
         list.category?.toLowerCase() ===
-        decodeCategoryPath(category).toLowerCase())
+          decodeCategoryPath(category).toLowerCase())
   );
 
   if (list && "rawContent" in list) {
-    const parsedData = parseChecklistContent((list as any).rawContent, list.id!);
+    const parsedData = parseChecklistContent(
+      (list as any).rawContent,
+      list.id!
+    );
     const checklistType =
       extractChecklistType((list as any).rawContent) || "task";
     const existingUuid = parsedData.uuid || list.uuid;
@@ -434,7 +437,10 @@ export const getListById = async (
   return list as Checklist | undefined;
 };
 
-export const getAllLists = async (allowArchived?: boolean, isRaw: boolean = false) => {
+export const getAllLists = async (
+  allowArchived?: boolean,
+  isRaw: boolean = false
+) => {
   try {
     const allLists: Checklist[] = [];
 
@@ -643,8 +649,9 @@ export const updateList = async (formData: FormData) => {
     try {
       const content = updatedList.items.map((i) => i.text).join("\n");
       const links = await parseInternalLinks(content);
-      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
-        }`;
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${
+        updatedList.id
+      }`;
 
       const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
       if (oldItemKey !== newItemKey) {
@@ -740,7 +747,9 @@ export const deleteList = async (formData: FormData) => {
     }
 
     const isAdminUser = apiUser ? currentUser.isAdmin : await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getUserChecklists(apiUser ? { username: currentUser.username } : {}));
+    const lists = await (isAdminUser
+      ? getAllLists()
+      : getUserChecklists(apiUser ? { username: currentUser.username } : {}));
     if (!lists.success || !lists.data) {
       return { error: "Failed to fetch lists" };
     }
@@ -766,7 +775,12 @@ export const deleteList = async (formData: FormData) => {
       filePath = path.join(ownerDir, category, `${id}.md`);
     } else {
       const userDir = apiUser
-        ? path.join(process.cwd(), "data", CHECKLISTS_FOLDER, currentUser.username)
+        ? path.join(
+            process.cwd(),
+            "data",
+            CHECKLISTS_FOLDER,
+            currentUser.username
+          )
         : await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(userDir, category, `${id}.md`);
     }
@@ -815,7 +829,11 @@ export const deleteList = async (formData: FormData) => {
 
 export const convertChecklistType = async (formData: FormData) => {
   try {
-    const { listId, newType: type, uuid } = getFormData(formData, ["listId", "newType", "uuid"]);
+    const {
+      listId,
+      newType: type,
+      uuid,
+    } = getFormData(formData, ["listId", "newType", "uuid"]);
     const newType = type as ChecklistType;
 
     if (!listId || !newType) {
@@ -915,7 +933,10 @@ export const convertChecklistType = async (formData: FormData) => {
 
 export const updateChecklistStatuses = async (formData: FormData) => {
   try {
-    const { uuid, statusesStr } = getFormData(formData, ["uuid", "statusesStr"]);
+    const { uuid, statusesStr } = getFormData(formData, [
+      "uuid",
+      "statusesStr",
+    ]);
 
     if (!uuid || !statusesStr) {
       console.error("Missing uuid or statusesStr");
@@ -937,13 +958,17 @@ export const updateChecklistStatuses = async (formData: FormData) => {
 
     const statuses = JSON.parse(statusesStr);
 
-    const oldStatusIds = (list.statuses || []).map(s => s.id);
+    const oldStatusIds = (list.statuses || []).map((s) => s.id);
     const newStatusIds = statuses.map((s: any) => s.id);
-    const removedStatusIds = oldStatusIds.filter(id => !newStatusIds.includes(id));
+    const removedStatusIds = oldStatusIds.filter(
+      (id) => !newStatusIds.includes(id)
+    );
 
-    const sortedStatuses = [...statuses].sort((a: any, b: any) => a.order - b.order);
+    const sortedStatuses = [...statuses].sort(
+      (a: any, b: any) => a.order - b.order
+    );
     const firstStatus = sortedStatuses[0];
-    const defaultStatusId = firstStatus?.id || 'todo';
+    const defaultStatusId = firstStatus?.id || "todo";
 
     const currentUser = await getCurrentUser();
     const username = currentUser?.username;
@@ -952,8 +977,8 @@ export const updateChecklistStatuses = async (formData: FormData) => {
     }
 
     const now = new Date().toISOString();
-    const updatedItems = list.items.map(item => {
-      if (removedStatusIds.includes(item.status || '')) {
+    const updatedItems = list.items.map((item) => {
+      if (removedStatusIds.includes(item.status || "")) {
         const history = item.history || [];
         history.push({
           status: defaultStatusId,
@@ -1030,7 +1055,11 @@ export const cloneChecklist = async (formData: FormData) => {
     const category = formData.get("category") as string;
     const ownerUsername = formData.get("user") as string | null;
 
-    const checklist = await getListById(id, ownerUsername || undefined, category);
+    const checklist = await getListById(
+      id,
+      ownerUsername || undefined,
+      category
+    );
     if (!checklist) {
       return { error: "Checklist not found" };
     }
@@ -1038,8 +1067,11 @@ export const cloneChecklist = async (formData: FormData) => {
     const currentUser = await getCurrentUser();
     const userDir = await getUserModeDir(Modes.CHECKLISTS);
 
-    const isOwnedByCurrentUser = !checklist.owner || checklist.owner === currentUser?.username;
-    const targetCategory = isOwnedByCurrentUser ? (category || "Uncategorized") : "Uncategorized";
+    const isOwnedByCurrentUser =
+      !checklist.owner || checklist.owner === currentUser?.username;
+    const targetCategory = isOwnedByCurrentUser
+      ? category || "Uncategorized"
+      : "Uncategorized";
 
     const categoryDir = path.join(userDir, targetCategory);
     await ensureDir(categoryDir);
@@ -1059,7 +1091,11 @@ export const cloneChecklist = async (formData: FormData) => {
     await serverWriteFile(filePath, updatedContent);
 
     const newId = path.basename(filename, ".md");
-    const clonedChecklist = await getListById(newId, currentUser?.username, targetCategory);
+    const clonedChecklist = await getListById(
+      newId,
+      currentUser?.username,
+      targetCategory
+    );
 
     try {
       revalidatePath("/");

@@ -34,7 +34,7 @@ A self-hosted app for your checklists and notes.
   <p align="center">
     <em>Rich text editor for notes.</em>
   </p>
-  <img src="public/app-screenshots/notes-markdown.png" alt="Note Editor" width="400" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 8px;">
+  <img src="public/app-screenshots/note-markdown.png" alt="Note Editor" width="400" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 8px;">
 </div>
 
 ## Quick nav

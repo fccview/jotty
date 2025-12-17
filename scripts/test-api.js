@@ -696,31 +696,55 @@ const testTaskEndpoints = async () => {
 
     await test(`PUT /api/tasks/${testState.taskChecklistId}/items/0/status (update item status)`, async () => {
         logStep('Updating item status to in_progress');
+        const beforeResponse = await makeRequest('GET', `/api/tasks/${testState.taskChecklistId}`);
+        const beforeStatus = beforeResponse.body.task?.items?.[0]?.status;
+        logStep(`Item status before: ${beforeStatus || 'undefined'}`);
+
         const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}/items/0/status`, {
             status: 'in_progress'
         });
-        const isSuccess = response.status === 200 && response.body.success;
-        if (isSuccess) {
-            logStep('Item status updated');
+        if (response.status !== 200 || !response.body.success) {
+            return {
+                success: false,
+                error: `Expected status 200 with success, got ${response.status}`
+            };
         }
+
+        const afterResponse = await makeRequest('GET', `/api/tasks/${testState.taskChecklistId}`);
+        const afterStatus = afterResponse.body.task?.items?.[0]?.status;
+        logStep(`Item status after: ${afterStatus || 'undefined'}`);
+
+        const isUpdated = afterStatus === 'in_progress';
         return {
-            success: isSuccess,
-            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+            success: isUpdated,
+            error: isUpdated ? null : `Expected status 'in_progress', got '${afterStatus}'`
         };
     });
 
     await test(`PUT /api/tasks/${testState.taskChecklistId}/items/0.0/status (update nested item status)`, async () => {
         logStep('Updating nested item status to review');
+        const beforeResponse = await makeRequest('GET', `/api/tasks/${testState.taskChecklistId}`);
+        const beforeStatus = beforeResponse.body.task?.items?.[0]?.children?.[0]?.status;
+        logStep(`Nested item status before: ${beforeStatus || 'undefined'}`);
+
         const response = await makeRequest('PUT', `/api/tasks/${testState.taskChecklistId}/items/0.0/status`, {
             status: 'review'
         });
-        const isSuccess = response.status === 200 && response.body.success;
-        if (isSuccess) {
-            logStep('Nested item status updated');
+        if (response.status !== 200 || !response.body.success) {
+            return {
+                success: false,
+                error: `Expected status 200 with success, got ${response.status}`
+            };
         }
+
+        const afterResponse = await makeRequest('GET', `/api/tasks/${testState.taskChecklistId}`);
+        const afterStatus = afterResponse.body.task?.items?.[0]?.children?.[0]?.status;
+        logStep(`Nested item status after: ${afterStatus || 'undefined'}`);
+
+        const isUpdated = afterStatus === 'review';
         return {
-            success: isSuccess,
-            error: isSuccess ? null : `Expected status 200 with success, got ${response.status}`
+            success: isUpdated,
+            error: isUpdated ? null : `Expected status 'review', got '${afterStatus}'`
         };
     });
 

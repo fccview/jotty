@@ -1,28 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import {
   Clock01Icon,
   ArrowDown01Icon,
   ArrowRight01Icon,
 } from "hugeicons-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface TimeEntriesAccordionProps {
   timeEntries: any[];
   totalTime: number;
   formatTimerTime: (seconds: number) => string;
+  usersPublicData?: any[];
+  formatDateString: (dateString: string) => string;
+  formatTimeString: (dateString: string) => string;
 }
 
-export const TimeEntriesAccordion = ({
+const TimeEntriesAccordionComponent = ({
   timeEntries,
   totalTime,
   formatTimerTime,
+  usersPublicData,
+  formatDateString,
+  formatTimeString,
 }: TimeEntriesAccordionProps) => {
-  const { usersPublicData } = useAppMode();
-  const { formatDateString, formatTimeString } = usePreferredDateTime();
 
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
@@ -96,3 +98,5 @@ export const TimeEntriesAccordion = ({
     </div>
   );
 };
+
+export const TimeEntriesAccordion = memo(TimeEntriesAccordionComponent);

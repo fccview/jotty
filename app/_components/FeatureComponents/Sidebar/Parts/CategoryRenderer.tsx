@@ -113,10 +113,9 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const firstChildId = subCategories[0]
     ? `category::${subCategories[0].path}`
     : categoryItems[0]
-    ? `item::${categoryItems[0].category || "Uncategorized"}::${
-        categoryItems[0].id
+      ? `item::${categoryItems[0].category || "Uncategorized"}::${categoryItems[0].id
       }`
-    : undefined;
+      : undefined;
 
   return (
     <div className="space-y-1">
@@ -170,7 +169,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                     <Folder01Icon className="h-4 w-4" />
                   </>
                 )}
-                <span className="truncate">{category.name}</span>
+                <span className="truncate font-[500]">{category.name}</span>
                 <span className="text-xs text-muted-foreground ml-auto">
                   {getTotalItemsInCategory(category.path)}
                 </span>
@@ -244,16 +243,14 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                 />
               </Draggable>
               <DropIndicator
-                id={`drop-after-item::${item.category || "Uncategorized"}::${
-                  item.id
-                }`}
+                id={`drop-after-item::${item.category || "Uncategorized"}::${item.id
+                  }`}
                 data={{
                   type: "drop-indicator",
                   parentPath: category.path,
                   position: "after",
-                  targetDndId: `item::${item.category || "Uncategorized"}::${
-                    item.id
-                  }`,
+                  targetDndId: `item::${item.category || "Uncategorized"}::${item.id
+                    }`,
                   targetType: "item",
                 }}
               />

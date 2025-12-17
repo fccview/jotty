@@ -5,7 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { SubtaskModal } from "./SubtaskModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -21,6 +21,7 @@ import { KanbanItemContent } from "./KanbanItemContent";
 import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { CircleIcon } from "hugeicons-react";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface KanbanItemProps {
   checklist: Checklist;
@@ -33,7 +34,7 @@ interface KanbanItemProps {
   statuses: KanbanStatus[];
 }
 
-export const KanbanItem = ({
+const KanbanItemComponent = ({
   checklist,
   item,
   isDragging,
@@ -45,16 +46,21 @@ export const KanbanItem = ({
 }: KanbanItemProps) => {
   const { usersPublicData } = useAppMode();
   const { permissions } = usePermissions();
+  const { formatDateString, formatDateTimeString, formatTimeString } =
+    usePreferredDateTime();
 
-  const getUserAvatarUrl = (username: string) => {
-    if (!usersPublicData) return "";
+  const getUserAvatarUrl = useCallback(
+    (username: string) => {
+      if (!usersPublicData) return "";
 
-    return (
-      usersPublicData.find(
-        (user) => user.username?.toLowerCase() === username?.toLowerCase()
-      )?.avatarUrl || ""
-    );
-  };
+      return (
+        usersPublicData.find(
+          (user) => user.username?.toLowerCase() === username?.toLowerCase()
+        )?.avatarUrl || ""
+      );
+    },
+    [usersPublicData]
+  );
 
   const [showSubtaskModal, setShowSubtaskModal] = useState(false);
 
@@ -89,15 +95,16 @@ export const KanbanItem = ({
     }
   }, [isSortableDragging]);
 
-  const statusOptions = statuses?.map((status) => ({
-    id: status.id,
-    name: status.label,
-    color: status.color,
-    order: status.order,
-    icon: CircleIcon,
-  }));
-
-  statusOptions?.sort((a, b) => a.order - b.order);
+  const statusOptions = useMemo(() => {
+    const options = statuses?.map((status) => ({
+      id: status.id,
+      name: status.label,
+      color: status.color,
+      order: status.order,
+      icon: CircleIcon,
+    }));
+    return options?.sort((a, b) => a.order - b.order);
+  }, [statuses]);
 
   return (
     <>
@@ -145,6 +152,8 @@ export const KanbanItem = ({
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
               onArchive={kanbanItemHook.handleArchive}
+              formatDateString={formatDateString}
+              formatDateTimeString={formatDateTimeString}
             />
 
             <KanbanItemTimer
@@ -164,6 +173,9 @@ export const KanbanItem = ({
                     kanbanItemHook.totalTime + kanbanItemHook.currentTime
                   }
                   formatTimerTime={formatTimerTime}
+                  usersPublicData={usersPublicData}
+                  formatDateString={formatDateString}
+                  formatTimeString={formatTimeString}
                 />
               </div>
             )}
@@ -197,3 +209,5 @@ export const KanbanItem = ({
     </>
   );
 };
+
+export const KanbanItem = memo(KanbanItemComponent);

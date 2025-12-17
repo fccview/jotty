@@ -1,3 +1,6 @@
+import '@fontsource-variable/work-sans';
+import '@fontsource-variable/google-sans-code';
+import '@fontsource-variable/inter';
 import type { Metadata, Viewport } from "next";
 import "@/app/_styles/globals.css";
 import { ThemeProvider } from "@/app/_providers/ThemeProvider";
@@ -166,21 +169,21 @@ export default async function RootLayout({
     shouldParseContent
       ? getUserNotes()
       : getUserNotes({
-          projection: ["id", "title", "category", "owner", "uuid"],
-        }),
+        projection: ["id", "title", "category", "owner", "uuid"],
+      }),
     shouldParseContent
       ? getUserChecklists()
       : getUserChecklists({
-          projection: [
-            "id",
-            "title",
-            "category",
-            "owner",
-            "uuid",
-            "type",
-            "items",
-          ],
-        }),
+        projection: [
+          "id",
+          "title",
+          "category",
+          "owner",
+          "uuid",
+          "type",
+          "items",
+        ],
+      }),
     getAllSharedItems(),
     user
       ? getAllSharedItemsForUser(user.username)

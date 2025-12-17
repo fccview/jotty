@@ -10,7 +10,10 @@ import {
   createBulkItems,
   reorderItems,
 } from "@/app/_server/actions/checklist-item";
-import { getListById, getUserChecklists } from "@/app/_server/actions/checklist";
+import {
+  getListById,
+  getUserChecklists,
+} from "@/app/_server/actions/checklist";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { getCurrentUser, getUserByChecklist } from "../_server/actions/users";
 
@@ -52,15 +55,19 @@ export const useKanbanBoard = ({
   const [showBulkPasteModal, setShowBulkPasteModal] = useState(false);
   const [focusKey, setFocusKey] = useState(0);
 
-  const validStatusIds = (localChecklist.statuses || defaultStatuses).map(s => s.id);
+  const validStatusIds = (localChecklist.statuses || defaultStatuses).map(
+    (s) => s.id
+  );
 
   useEffect(() => {
-    setLocalChecklist(checklist);
-    setFocusKey((prev) => prev + 1);
-  }, [checklist]);
+    if (checklist.id !== localChecklist.id || checklist.updatedAt !== localChecklist.updatedAt) {
+      setLocalChecklist(checklist);
+      setFocusKey((prev) => prev + 1);
+    }
+  }, [checklist.id, checklist.updatedAt, localChecklist.id, localChecklist.updatedAt]);
 
   const refreshChecklist = async () => {
-    const result = await getUserChecklists() as Result<Checklist[]>;
+    const result = (await getUserChecklists()) as Result<Checklist[]>;
     if (result.success && result.data) {
       const updatedChecklist = result.data.find(
         (list) => list.id === checklist.id
@@ -73,7 +80,9 @@ export const useKanbanBoard = ({
   };
 
   const getItemsByStatus = (status: string) => {
-    return localChecklist.items.filter((item) => item.status === status && !item.isArchived);
+    return localChecklist.items.filter(
+      (item) => item.status === status && !item.isArchived
+    );
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -216,10 +225,7 @@ export const useKanbanBoard = ({
     ? localChecklist.items.find((item) => item.id === activeId)
     : null;
 
-  const handleItemStatusUpdate = async (
-    itemId: string,
-    newStatus: string
-  ) => {
+  const handleItemStatusUpdate = async (itemId: string, newStatus: string) => {
     const item = localChecklist.items.find((item) => item.id === itemId);
     if (!item) {
       return;

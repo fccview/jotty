@@ -55,7 +55,7 @@ export const SearchBar = ({
         onFocus={() => setIsOpen(true)}
         placeholder={`Search ${mode}... (⌘K)`}
         inputRef={inputRef}
-        className={cn("transition-all", isOpen && "border-primary shadow-md")}
+        className={cn("transition-all")}
       />
 
       {isOpen && query && (
