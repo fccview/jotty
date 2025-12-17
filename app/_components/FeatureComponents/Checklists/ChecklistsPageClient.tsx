@@ -3,13 +3,12 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Folder,
-  CheckCircle,
-  TrendingUp,
-  Clock,
-  CheckIcon,
-  CheckSquare,
-} from "lucide-react";
+  Folder01Icon,
+  CheckmarkCircle04Icon,
+  TradeUpIcon,
+  Clock01Icon,
+  CheckmarkSquare04Icon,
+} from "hugeicons-react";
 import { Checklist, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
@@ -22,6 +21,7 @@ import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
+import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -170,13 +170,7 @@ export const ChecklistsPageClient = ({
   }, [initialLists]);
 
   if (!isInitialized) {
-    return (
-      <div className="flex h-screen bg-background w-full">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (initialLists.length === 0) {
@@ -189,7 +183,9 @@ export const ChecklistsPageClient = ({
           />
 
           <EmptyState
-            icon={<CheckSquare className="h-10 w-10 text-muted-foreground" />}
+            icon={
+              <CheckmarkSquare04Icon className="h-10 w-10 text-muted-foreground" />
+            }
             title="No Checklists yet"
             description="Create your first checklist to start organizing your tasks."
             buttonText="New Checklist"
@@ -207,11 +203,11 @@ export const ChecklistsPageClient = ({
           title="All Checklists"
           description="Browse and manage all your checklists"
         />
-        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-6">
+        <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Folder className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <Folder01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -222,8 +218,8 @@ export const ChecklistsPageClient = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <CheckmarkCircle04Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -234,8 +230,8 @@ export const ChecklistsPageClient = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <TradeUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -246,8 +242,8 @@ export const ChecklistsPageClient = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <Clock01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -290,7 +286,7 @@ export const ChecklistsPageClient = ({
           <div className="lg:col-span-3">
             {paginatedItems.length === 0 ? (
               <div className="text-center py-12">
-                <Folder className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <Folder01Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   No checklists found
                 </h3>
@@ -306,8 +302,9 @@ export const ChecklistsPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${list.category || "Uncategorized"
-                          }/${list.id}`;
+                        const categoryPath = `${
+                          list.category || "Uncategorized"
+                        }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(

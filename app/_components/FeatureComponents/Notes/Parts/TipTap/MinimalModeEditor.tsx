@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Eye, EyeOff, List, ListX, FileText } from "lucide-react";
+import {
+  ViewIcon,
+  ViewOffSlashIcon,
+  LeftToRightListBulletIcon,
+  RightToLeftListTriangleIcon,
+  File02Icon,
+} from "hugeicons-react";
 import { SyntaxHighlightedEditor } from "./SyntaxHighlightedEditor";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
@@ -51,8 +57,9 @@ export const MinimalModeEditor = ({
       <>
         <ReadingProgressBar />
         <div
-          className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
-            }`}
+          className={`px-6 pt-6 pb-12 ${
+            compactMode ? "max-w-[900px] mx-auto" : ""
+          }`}
         >
           <UnifiedMarkdownRenderer content={noteContent} />
         </div>
@@ -80,9 +87,9 @@ export const MinimalModeEditor = ({
             className="h-8 px-2"
           >
             {showLineNumbers ? (
-              <List className="h-4 w-4" />
+              <RightToLeftListTriangleIcon className="h-4 w-4" />
             ) : (
-              <ListX className="h-4 w-4" />
+              <LeftToRightListBulletIcon className="h-4 w-4" />
             )}
           </Button>
           <Button
@@ -93,9 +100,9 @@ export const MinimalModeEditor = ({
             className="h-8 px-2"
           >
             {showPreview ? (
-              <EyeOff className="h-4 w-4" />
+              <ViewOffSlashIcon className="h-4 w-4" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <ViewIcon className="h-4 w-4" />
             )}
             <span className="ml-1 text-xs">
               {showPreview ? "Edit" : "Preview"}
@@ -114,7 +121,7 @@ export const MinimalModeEditor = ({
             onClick={() => setShowPreview(false)}
             title="Markdown Editor"
           >
-            <FileText className="h-4 w-4 mr-2" />
+            <File02Icon className="h-4 w-4 mr-2" />
             <span>Markdown</span>
           </Button>
 
@@ -126,7 +133,7 @@ export const MinimalModeEditor = ({
             onClick={() => setShowPreview(true)}
             title="Preview Mode"
           >
-            <Eye className="h-4 w-4 mr-2" />
+            <ViewIcon className="h-4 w-4 mr-2" />
             <span>Preview</span>
           </Button>
         </div>
@@ -134,8 +141,9 @@ export const MinimalModeEditor = ({
       <div className="flex-1 overflow-y-auto">
         {showPreview ? (
           <div
-            className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
-              }`}
+            className={`px-6 pt-6 pb-12 ${
+              compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
           >
             <UnifiedMarkdownRenderer content={markdownContent} />
           </div>

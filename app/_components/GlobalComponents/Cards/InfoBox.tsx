@@ -6,7 +6,7 @@ interface InfoBoxProps {
 
 export const InfoBox = ({ title, items, variant }: InfoBoxProps) => {
   const isWarning = variant === "warning";
-  const baseClasses = "p-4 rounded-lg border";
+  const baseClasses = "p-4 rounded-jotty border";
   const variantClasses = isWarning
     ? "bg-destructive/5 border-destructive/20 text-destructive"
     : "bg-primary/5 border-primary/20 text-primary";

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ListTodo } from "lucide-react";
 import { Checklist, ChecklistType, Category } from "@/app/_types";
 import { createCategory } from "@/app/_server/actions/category";
 import { createList } from "@/app/_server/actions/checklist";
@@ -11,6 +10,7 @@ import { CategoryInput } from "@/app/_components/GlobalComponents/FormElements/C
 import { ChecklistTypeSelector } from "../../../FeatureComponents/Checklists/Parts/ChecklistTypeSelector";
 import { Modes } from "@/app/_types/enums";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface CreateListModalProps {
   onClose: () => void;
@@ -77,28 +77,20 @@ export const CreateListModal = ({
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Create New Checklist"
-      titleIcon={<ListTodo className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Create New Checklist">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Checklist Name *
-          </label>
-          <input
-            ref={titleInputRef}
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter checklist name..."
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <Input
+          ref={titleInputRef}
+          id="checklistName"
+          name="checklistName"
+          label="Checklist Name *"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter checklist name..."
+          required
+          disabled={isLoading}
+        />
 
         <ChecklistTypeSelector
           selectedType={type}

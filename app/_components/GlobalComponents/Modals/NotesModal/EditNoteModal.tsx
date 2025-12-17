@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -9,11 +8,10 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { getNoteById, updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
-import { buildCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
-import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { getPermissions } from "@/app/_utils/sharing-utils";
+import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface EditNoteModalProps {
   note: Note;
@@ -41,8 +39,15 @@ export const EditNoteModal = ({
 
   useEffect(() => {
     const fetchNote = async () => {
-      const note = await getNoteById(initialNote.id, initialNote.category || "Uncategorized", user?.username || "");
-      const parsedNote = parseNoteContent(note?.rawContent || "", note?.id || "");
+      const note = await getNoteById(
+        initialNote.id,
+        initialNote.category || "Uncategorized",
+        user?.username || ""
+      );
+      const parsedNote = parseNoteContent(
+        note?.rawContent || "",
+        note?.id || ""
+      );
 
       setNote(note || null);
       setTitle(parsedNote?.title || "");
@@ -53,17 +58,11 @@ export const EditNoteModal = ({
 
   if (!note) {
     return (
-      <Modal
-        isOpen={true}
-        onClose={onClose}
-        title="Note not found"
-        titleIcon={<FileText className="h-5 w-5 text-primary" />}
-      >
+      <Modal isOpen={true} onClose={onClose} title="Note not found">
         <p>Note not found</p>
       </Modal>
     );
   }
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,19 +108,17 @@ export const EditNoteModal = ({
       isOpen={true}
       onClose={onClose}
       title={unarchive ? "Unarchive Note" : "Edit Note"}
-      titleIcon={<FileText className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Note Name *
-          </label>
-          <input
+          <Input
+            id="noteName"
+            name="noteName"
+            label="Note Name *"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter note name..."
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
             required
             disabled={isLoading}
           />
@@ -166,8 +163,8 @@ export const EditNoteModal = ({
             {isLoading
               ? "Updating..."
               : unarchive
-                ? "Unarchive Note"
-                : "Update Note"}
+              ? "Unarchive Note"
+              : "Update Note"}
           </Button>
         </div>
       </form>

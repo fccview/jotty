@@ -1,76 +1,79 @@
+
+@import 'highlight.js/styles/github-dark-dimmed.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import 'highlight.js/styles/github-dark-dimmed.css';
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Intel+One+Mono:ital,wght@0,300..700;1,300..700&display=swap');
 
 @layer base {
     :root {
-        --background: 255 255 255;
+        --background: 249 249 249;
         --background-secondary: 249 248 252;
-        --foreground: 20 20 20;
-        --card: 255 255 255;
-        --card-foreground: 20 20 20;
-        --popover: 255 255 255;
-        --popover-foreground: 20 20 20;
-        --primary: 139 59 208;
-        --primary-foreground: 255 255 255;
+        --foreground: 48 48 48;
+        --card: 249 249 249;
+        --card-foreground: var(--foreground);
+        --popover: 249 249 249;
+        --popover-foreground: var(--foreground);
+        --primary: 157 95 254;
+        --primary-foreground: 249 249 249;
         --secondary: 243 240 249;
-        --secondary-foreground: 20 20 20;
+        --secondary-foreground: var(--foreground);
         --muted: 243 240 249;
         --muted-foreground: 107 99 139;
         --accent: 243 240 249;
-        --accent-foreground: 20 20 20;
+        --accent-foreground: var(--foreground);
         --destructive: 239 68 68;
-        --destructive-foreground: 255 255 255;
+        --destructive-foreground: 249 249 249;
         --border: 228 223 240;
         --input: 228 223 240;
-        --ring: 139 59 208;
+        --ring: var(--primary);
+    }
+
+    .default {
+        color: rgb(74 74 74);
     }
 
     .dark {
-        --background: 12 20 53;
-        --background-secondary: 47 14 91;
-        --foreground: 243 244 246;
-        --card: 12 20 53;
-        --card-foreground: 243 244 246;
-        --popover: 12 20 53;
-        --popover-foreground: 243 244 246;
-        --primary: 139 59 208;
-        --primary-foreground: 243 244 246;
-        --secondary: 47 14 91;
-        --secondary-foreground: 243 244 246;
-        --muted: 47 14 91;
+        --background: 14 24 64;
+        --background-secondary: 76 22 132;
+        --foreground: 249 249 249;
+        --card: var(--background);
+        --card-foreground: var(--foreground);
+        --popover: var(--background);
+        --popover-foreground: var(--foreground);
+        --primary: 157 95 254;
+        --primary-foreground: var(--foreground);
+        --secondary: var(--background-secondary);
+        --secondary-foreground: var(--foreground);
+        --muted: var(--background-secondary);
         --muted-foreground: 163 156 175;
-        --accent: 47 14 91;
-        --accent-foreground: 243 244 246;
+        --accent: var(--background-secondary);
+        --accent-foreground: var(--foreground);
         --destructive: 239 68 68;
-        --destructive-foreground: 243 244 246;
+        --destructive-foreground: var(--foreground);
         --border: 38 47 63;
         --input: 38 47 63;
-        --ring: 139 59 208;
+        --ring: var(--primary);
     }
 
     .rwmarkable-light {
-        --background: 255 255 255;
+        --background: 249 249 249;
         --background-secondary: 249 250 251;
-        --foreground: 20 20 20;
-        --card: 255 255 255;
-        --card-foreground: 20 20 20;
-        --popover: 255 255 255;
-        --popover-foreground: 20 20 20;
+        --foreground: 48 48 48;
+        --card: 249 249 249;
+        --card-foreground: var(--foreground);
+        --popover: 249 249 249;
+        --popover-foreground: var(--foreground);
         --primary: 37 99 235;
-        --primary-foreground: 255 255 255;
+        --primary-foreground: 249 249 249;
         --secondary: 241 245 249;
-        --secondary-foreground: 20 20 20;
+        --secondary-foreground: var(--foreground);
         --muted: 241 245 249;
         --muted-foreground: 100 116 139;
         --accent: 241 245 249;
-        --accent-foreground: 20 20 20;
+        --accent-foreground: var(--foreground);
         --destructive: 239 68 68;
-        --destructive-foreground: 255 255 255;
+        --destructive-foreground: 249 249 249;
         --border: 226 232 240;
         --input: 226 232 240;
         --ring: 37 99 235;
@@ -125,21 +128,21 @@
     .black-white {
         --background: 10 10 10;
         --background-secondary: 29 29 33;
-        --foreground: 255 255 255;
+        --foreground: 249 249 249;
         --card: 10 10 10;
-        --card-foreground: 255 255 255;
+        --card-foreground: 249 249 249;
         --popover: 10 10 10;
-        --popover-foreground: 255 255 255;
+        --popover-foreground: 249 249 249;
         --primary: 90 90 90;
-        --primary-foreground: 255 255 255;
+        --primary-foreground: 249 249 249;
         --secondary: 49 51 57;
-        --secondary-foreground: 255 255 255;
+        --secondary-foreground: 249 249 249;
         --muted: 49 51 57;
         --muted-foreground: 180 180 180;
         --accent: 49 51 57;
-        --accent-foreground: 255 255 255;
+        --accent-foreground: 249 249 249;
         --destructive: 239 68 68;
-        --destructive-foreground: 255 255 255;
+        --destructive-foreground: 249 249 249;
         --border: 49 51 57;
         --input: 49 51 57;
         --ring: 90 90 90;
@@ -148,19 +151,19 @@
     .sunset {
         --background: 254 242 242;
         --background-secondary: 252 231 231;
-        --foreground: 20 20 20;
+        --foreground: 74 74 74;
         --card: 254 242 242;
-        --card-foreground: 20 20 20;
+        --card-foreground: 74 74 74;
         --popover: 254 242 242;
-        --popover-foreground: 20 20 20;
+        --popover-foreground: 74 74 74;
         --primary: 220 38 38;
         --primary-foreground: 254 242 242;
         --secondary: 254 226 226;
-        --secondary-foreground: 20 20 20;
+        --secondary-foreground: 74 74 74;
         --muted: 254 226 226;
         --muted-foreground: 155 28 28;
         --accent: 254 226 226;
-        --accent-foreground: 20 20 20;
+        --accent-foreground: 74 74 74;
         --destructive: 239 68 68;
         --destructive-foreground: 254 242 242;
         --border: 254 226 226;
@@ -171,19 +174,19 @@
     .ocean {
         --background: 239 246 255;
         --background-secondary: 219 234 254;
-        --foreground: 20 20 20;
+        --foreground: 74 74 74;
         --card: 239 246 255;
-        --card-foreground: 20 20 20;
+        --card-foreground: 74 74 74;
         --popover: 239 246 255;
-        --popover-foreground: 20 20 20;
+        --popover-foreground: 74 74 74;
         --primary: 37 99 235;
         --primary-foreground: 239 246 255;
         --secondary: 219 234 254;
-        --secondary-foreground: 20 20 20;
+        --secondary-foreground: 74 74 74;
         --muted: 219 234 254;
         --muted-foreground: 29 78 216;
         --accent: 219 234 254;
-        --accent-foreground: 20 20 20;
+        --accent-foreground: 74 74 74;
         --destructive: 239 68 68;
         --destructive-foreground: 239 246 255;
         --border: 219 234 254;
@@ -194,19 +197,19 @@
     .forest {
         --background: 240 253 244;
         --background-secondary: 220 252 231;
-        --foreground: 20 20 20;
+        --foreground: 74 74 74;
         --card: 240 253 244;
-        --card-foreground: 20 20 20;
+        --card-foreground: 74 74 74;
         --popover: 240 253 244;
-        --popover-foreground: 20 20 20;
+        --popover-foreground: 74 74 74;
         --primary: 22 163 74;
         --primary-foreground: 240 253 244;
         --secondary: 220 252 231;
-        --secondary-foreground: 20 20 20;
+        --secondary-foreground: 74 74 74;
         --muted: 220 252 231;
         --muted-foreground: 21 128 61;
         --accent: 220 252 231;
-        --accent-foreground: 20 20 20;
+        --accent-foreground: 74 74 74;
         --destructive: 239 68 68;
         --destructive-foreground: 240 253 244;
         --border: 220 252 231;
@@ -422,6 +425,10 @@
     }
 }
 
+svg {
+    stroke-width: 2;
+}
+
 .stroke-current {
     stroke: rgb(var(--primary-foreground));
 }
@@ -448,7 +455,11 @@
     }
 
     body {
-        @apply bg-background-secondary text-foreground;
+        @apply bg-background text-foreground;
+    }
+
+    .rounded-jotty {
+        border-radius: 0.25rem;
     }
 }
 
@@ -462,20 +473,26 @@
     }
 }
 
-body {
-    font-family: "Inter", sans-serif;    
+body, a, p, span, button, label, input, textarea, select {
+    font-family: 'Work Sans Variable', sans-serif;
+    letter-spacing: -0.5px;
+    overflow-wrap: break-word;
 }
 
-a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
-    font-family: "Inter", sans-serif;
-    overflow-wrap: break-word;
+h1, h2, h3, h4, h5, h6, .jotty-app-name {
+    font-family: 'IBM Plex Sans Variable', sans-serif;
+}
+
+.jotty-app-name span {
+    font-family: 'Work Sans Variable', sans-serif;
+    font-weight: 500;
 }
 
 pre, code, 
 code span {
-    font-family: "Intel One Mono", monospace;
-    font-size: small;
-  }
+    font-family: "Google Sans Code Variable", monospace;
+    font-size: 14px!important;
+}
 
 .hide-scrollbar::-webkit-scrollbar {
     display: none!important;
@@ -506,40 +523,12 @@ code span {
     margin-bottom: 0;
     display: none;
     cursor: pointer;
-  }
-  
-  .checklist-item label {
+}
+
+.checklist-item label {
     position: relative;
     cursor: pointer;
-  }
-  
-  .checklist-item label:before {
-    content:'';
-    -webkit-appearance: none;
-    background-color: transparent;
-    border: 1px solid rgb(var(--primary) / var(--tw-bg-opacity, 1));
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), inset 0px -15px 10px -12px rgba(0, 0, 0, 0.05);
-    padding: 10px;
-    display: inline-block;
-    position: relative;
-    vertical-align: middle;
-    cursor: pointer;
-    margin-right: 10px;
-    border-radius: 5px;
-  }
-  
-  .checklist-item label.checked:after {
-    content: '';
-    display: block;
-    position: absolute;
-    top: 50%;
-    left: 8px;
-    width: 7px;
-    height: 12px;
-    border: solid rgb(var(--primary) / var(--tw-bg-opacity, 1));
-    border-width: 0 1px 1px 0;
-    transform: translate(0, -60%) rotate(45deg);
-  }
+}
 
 mark {
     background-color: #fef08a;
@@ -596,7 +585,7 @@ mark {
 }
 
 .prose strong {
-    @apply font-semibold;
+    @apply font-bold;
 }
 
 .prose em {
@@ -713,7 +702,7 @@ mark {
 }
 
 .prose kbd {
-    @apply bg-muted px-2 py-1 text-xs rounded-md border border-border shadow-border shadow-sm;
+    @apply bg-muted px-2 py-1 text-xs rounded-jotty border border-border shadow-border shadow-sm;
 }
 
 p > code {
@@ -721,20 +710,17 @@ p > code {
     color: orange;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
-    font-size: 0.875rem;
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-family: "Google Sans Code Variable", monospace;
 }
 
 .ProseMirror .hljs {
   color: #abb2bf!important;
   background: #282c34!important;
-  font-family: "Intel One Mono", monospace !important;
-  font-size: 14px !important;   
+  font-family: "Google Sans Code Variable" !important;
 }
 
 .ProseMirror .hljs * {
-  font-family: "Intel One Mono", monospace !important;
-  font-size: 14px !important;   
+  font-family: "Google Sans Code Variable" !important;   
 }
 
 .hljs .hljs {
@@ -752,7 +738,7 @@ p > code {
   text-shadow: none !important;
   box-shadow: none !important;
   filter: none !important;
-  font-family: "Intel One Mono", monospace !important;
+  font-family: "Google Sans Code Variable" !important;
 }
 .code-block-container pre {
   background: transparent !important;

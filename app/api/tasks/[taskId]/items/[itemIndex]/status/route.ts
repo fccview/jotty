@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
-import { updateItem } from "@/app/_server/actions/checklist-item";
+import { updateItemStatus } from "@/app/_server/actions/checklist-item";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +27,13 @@ export async function PUT(
       }
 
       if (task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 }
+        );
       }
 
-      const indexPath = params.itemIndex.split('.').map(i => parseInt(i));
+      const indexPath = params.itemIndex.split(".").map((i) => parseInt(i));
 
       for (const idx of indexPath) {
         if (isNaN(idx) || idx < 0) {
@@ -56,10 +59,7 @@ export async function PUT(
       }
 
       if (!item) {
-        return NextResponse.json(
-          { error: "Item not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Item not found" }, { status: 404 });
       }
 
       const formData = new FormData();
@@ -67,8 +67,9 @@ export async function PUT(
       formData.append("itemId", item.id);
       formData.append("status", status);
       formData.append("category", task.category || "Uncategorized");
+      formData.append("username", user.username);
 
-      const result = await updateItem(task, formData, user.username, true);
+      const result = await updateItemStatus(formData, user.username);
 
       if (!result.success) {
         return NextResponse.json(

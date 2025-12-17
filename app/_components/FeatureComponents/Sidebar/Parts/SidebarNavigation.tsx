@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckSquare, FileText } from "lucide-react";
+import { CheckmarkSquare04Icon, File02Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { AppMode } from "@/app/_types";
@@ -27,12 +27,12 @@ export const SidebarNavigation = ({
     {
       id: Modes.CHECKLISTS,
       label: "Checklists",
-      icon: CheckSquare,
+      icon: CheckmarkSquare04Icon,
     },
     {
       id: Modes.NOTES,
       label: "Notes",
-      icon: FileText,
+      icon: File02Icon,
     },
   ];
 

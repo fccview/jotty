@@ -1,10 +1,7 @@
 "use client";
 
-import { FileText, CheckSquare, Router } from "lucide-react";
-import {
-  buildCategoryPath,
-  encodeCategoryPath,
-} from "@/app/_utils/global-utils";
+import { File02Icon, CheckmarkSquare04Icon } from "hugeicons-react";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
@@ -45,14 +42,14 @@ export const ReferencedBySection = ({
           <div
             key={`${item.type}-${item.path}`}
             onClick={() => handleItemClick(item)}
-            className="bg-muted/50 border border-border rounded-lg p-3 cursor-pointer hover:shadow-sm hover:border-primary/30 transition-all duration-200 group"
+            className="bg-muted/50 border border-border rounded-jotty p-3 cursor-pointer hover:shadow-sm hover:border-primary/30 transition-all duration-200 group"
           >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
                 {item.type === ItemTypes.NOTE ? (
-                  <FileText className="h-4 w-4 text-blue-500" />
+                  <File02Icon className="h-4 w-4 text-blue-500" />
                 ) : (
-                  <CheckSquare className="h-4 w-4 text-green-500" />
+                  <CheckmarkSquare04Icon className="h-4 w-4 text-green-500" />
                 )}
               </div>
               <div className="flex-1 min-w-0">

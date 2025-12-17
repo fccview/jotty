@@ -1,8 +1,17 @@
 "use client";
 
-import { Download, Eye, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import {
+  Download01Icon,
+  ViewIcon,
+  PlayCircleIcon,
+  VolumeMute01Icon,
+  VolumeOffIcon,
+} from "hugeicons-react";
+import { PauseCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 interface VideoAttachmentProps {
   url: string;
@@ -62,7 +71,7 @@ export const VideoAttachment = ({
       className={`jotty-video-attachment inline-block max-w-full ${className}`}
     >
       <span className="relative group block">
-        <span className="max-w-2xl rounded-lg overflow-hidden border border-border bg-card block">
+        <span className="max-w-2xl rounded-jotty overflow-hidden border border-border bg-card block">
           <span
             className="relative cursor-pointer block"
             onMouseEnter={() => setShowControls(true)}
@@ -87,7 +96,7 @@ export const VideoAttachment = ({
                   size="lg"
                   className="bg-white/90 hover:bg-white text-black opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <Play className="h-6 w-6 mr-2" />
+                  <PlayCircleIcon className="h-6 w-6 mr-2" />
                   Play Video
                 </Button>
               )}
@@ -107,9 +116,12 @@ export const VideoAttachment = ({
                       className="text-white hover:bg-white/20"
                     >
                       {isPlaying ? (
-                        <Pause className="h-4 w-4" />
+                        <HugeiconsIcon
+                          icon={PauseCircleIcon}
+                          className="h-4 w-4"
+                        />
                       ) : (
-                        <Play className="h-4 w-4" />
+                        <PlayCircleIcon className="h-4 w-4" />
                       )}
                     </Button>
                     <Button
@@ -122,9 +134,9 @@ export const VideoAttachment = ({
                       className="text-white hover:bg-white/20"
                     >
                       {isMuted ? (
-                        <VolumeX className="h-4 w-4" />
+                        <VolumeOffIcon className="h-4 w-4" />
                       ) : (
-                        <Volume2 className="h-4 w-4" />
+                        <VolumeMute01Icon className="h-4 w-4" />
                       )}
                     </Button>
                   </span>
@@ -139,7 +151,7 @@ export const VideoAttachment = ({
                       }}
                       className="bg-white/90 hover:bg-white text-black"
                     >
-                      <Eye className="h-4 w-4 mr-1" />
+                      <ViewIcon className="h-4 w-4 mr-1" />
                       View
                     </Button>
                     <Button
@@ -154,7 +166,7 @@ export const VideoAttachment = ({
                       }}
                       className="bg-white/90 hover:bg-white text-black"
                     >
-                      <Download className="h-4 w-4 mr-1" />
+                      <Download01Icon className="h-4 w-4 mr-1" />
                       Download
                     </Button>
                   </span>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Plus } from "lucide-react";
 import { RecurrenceRule } from "@/app/_types";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -38,12 +37,7 @@ export const AddItemWithRecurrenceModal = ({
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Add Item with Recurrence"
-      titleIcon={<Plus className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Add Item with Recurrence">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <Input

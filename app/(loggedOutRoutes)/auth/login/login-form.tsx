@@ -5,7 +5,8 @@ import { login } from "@/app/_server/actions/auth";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Loader2 } from "lucide-react";
+import { Orbit01Icon } from "hugeicons-react";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 
 export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
   const [error, setError] = useState<string>("");
@@ -44,12 +45,6 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Welcome back
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {ssoEnabled
-            ? "Choose how to access "
-            : "Enter your credentials to access "}{" "}
-          {isRwMarkable ? "rwMarkable" : "jotty·page"}
-        </p>
       </div>
 
       {ssoEnabled && (
@@ -64,7 +59,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           >
             {isSsoLoading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing In...
+                <Logo className="h-4 w-4 mr-2 animate-pulse" /> Signing In...
               </>
             ) : (
               "Sign in with SSO"
@@ -84,7 +79,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
       )}
 
       {isDemoMode && (
-        <div className="bg-muted p-3 rounded-md">
+        <div className="bg-muted p-3 rounded-jotty">
           <strong>username: </strong>demo <br />
           <strong>password: </strong>demodemo
         </div>
@@ -92,7 +87,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
             <span className="text-sm text-destructive">{error}</span>
           </div>
         )}
@@ -127,10 +122,14 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           />
         </div>
 
-        <Button type="submit" className="w-full !mt-8" disabled={isLoading || isSsoLoading}>
+        <Button
+          type="submit"
+          className="w-full !mt-8"
+          disabled={isLoading || isSsoLoading}
+        >
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing In...
+              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" /> Signing In...
             </>
           ) : (
             "Sign In"

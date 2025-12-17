@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Add01Icon } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { CategoryTreeSelector } from "../Dropdowns/CategoryTreeSelector";
 import { Category } from "@/app/_types";
@@ -47,7 +47,7 @@ export const CategoryInput = ({
               type="text"
               value={newCategory}
               onChange={(e) => onNewCategoryChange(e.target.value)}
-              className="flex-1 px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex-1 px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
               placeholder="Enter new category name..."
               disabled={disabled}
             />
@@ -88,7 +88,7 @@ export const CategoryInput = ({
             className="px-3"
             disabled={disabled}
           >
-            <Plus className="h-4 w-4" />
+            <Add01Icon className="h-4 w-4" />
           </Button>
         </div>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CheckSquare, BarChart3 } from "lucide-react";
+import { CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { ChecklistType } from "@/app/_types";
@@ -15,8 +15,8 @@ interface ConversionConfirmModalProps {
 }
 
 const TYPE_CONFIG = {
-  simple: { label: "Simple Checklist", Icon: CheckSquare },
-  task: { label: "Task Project", Icon: BarChart3 },
+  simple: { label: "Simple Checklist", Icon: CheckmarkSquare04Icon },
+  task: { label: "Task Project", Icon: TaskDaily01Icon },
 };
 
 const DATA_LOSS_WARNINGS = [
@@ -52,14 +52,9 @@ export const ConversionConfirmModal = ({
   const isDestructive = newType === "simple" && currentType === "task";
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Convert Checklist Type"
-      titleIcon={<AlertTriangle className="h-5 w-5 text-destructive" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Convert Checklist Type">
       <div className="space-y-4">
-        <div className="flex items-center justify-center gap-3 p-3 bg-muted/50 rounded-lg">
+        <div className="flex items-center justify-center gap-3 p-3 bg-muted/50 rounded-jotty">
           <TypeDisplay type={currentType} />
           <span className="text-muted-foreground">→</span>
           <TypeDisplay type={newType} />

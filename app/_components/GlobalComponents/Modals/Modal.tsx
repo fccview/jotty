@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { createPortal } from "react-dom";
 
@@ -11,7 +11,6 @@ interface ModalProps {
   title: React.ReactNode;
   children: React.ReactNode;
   className?: string;
-  titleIcon?: React.ReactNode;
 }
 
 export const Modal = ({
@@ -20,7 +19,6 @@ export const Modal = ({
   title,
   children,
   className = "",
-  titleIcon,
 }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
@@ -84,7 +82,7 @@ export const Modal = ({
         className={`
           jotty-modal-content
           bg-background border border-border w-full lg:max-w-md shadow-xl
-          lg:rounded-xl rounded-t-xl p-6
+          lg:rounded-md rounded-t-xl p-6
           translate-y-0 lg:translate-y-0
           transition-all duration-200
           ${className}
@@ -94,11 +92,6 @@ export const Modal = ({
           <div className="lg:hidden absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-muted-foreground/20" />
 
           <div className="jotty-modal-title text-xl font-bold text-foreground flex items-center">
-            {titleIcon && (
-              <div className="mr-2 p-2 bg-primary/10 rounded-lg">
-                {titleIcon}
-              </div>
-            )}
             {title}
           </div>
           <Button
@@ -107,7 +100,7 @@ export const Modal = ({
             onClick={onClose}
             className="h-8 w-8 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
           >
-            <X className="h-4 w-4" />
+            <MultiplicationSignIcon className="h-4 w-4" />
           </Button>
         </div>
 

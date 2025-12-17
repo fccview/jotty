@@ -7,7 +7,10 @@ export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
   const ssoEnabled = process.env.SSO_MODE === "oidc";
-  const allowLocal = process.env.SSO_FALLBACK_LOCAL && process.env.SSO_FALLBACK_LOCAL !== "no" && process.env.SSO_FALLBACK_LOCAL !== "false";
+  const allowLocal =
+    process.env.SSO_FALLBACK_LOCAL &&
+    process.env.SSO_FALLBACK_LOCAL !== "no" &&
+    process.env.SSO_FALLBACK_LOCAL !== "false";
 
   const hasExistingUsers = await hasUsers();
   if (
@@ -30,7 +33,7 @@ export default async function LoginPage() {
             </p>
           </div>
           <a
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+            className="inline-flex items-center justify-center rounded-jotty text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
             href="/api/oidc/login"
           >
             Sign in

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Loader2 } from "lucide-react";
+import { Orbit01Icon } from "hugeicons-react";
 import { useToast } from "@/app/_providers/ToastProvider";
 import {
   getAppSettings,
@@ -10,13 +10,13 @@ import {
 } from "@/app/_server/actions/config";
 import { useFaviconUpdate } from "@/app/_hooks/useFaviconUpdate";
 import { ImageUpload } from "@/app/_components/GlobalComponents/FormElements/ImageUpload";
-import { LoadingSpinner } from "@/app/_components/GlobalComponents/Layout/LoadingSpinner";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { AppSettings } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 
 export const AppSettingsTab = () => {
   const { showToast } = useToast();
@@ -87,7 +87,7 @@ export const AppSettingsTab = () => {
     }
   };
 
-  if (!settings) return <LoadingSpinner />;
+  if (!settings) return;
 
   const formFields = [
     {
@@ -134,14 +134,7 @@ export const AppSettingsTab = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">Settings</h2>
-        <p className="text-muted-foreground">
-          Customize your application name, description, and icons.
-        </p>
-      </div>
-
-      <div className="bg-background border border-border rounded-lg p-6 space-y-8">
+      <div className="bg-background border border-border rounded-jotty p-6 space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           {formFields.map((field) => (
             <Input
@@ -180,9 +173,16 @@ export const AppSettingsTab = () => {
             ]}
           />
           <span className="text-xs text-muted-foreground">
-            When enabled this setting will show the parsed titles in the sidebar, search results, and overall across the app. <br />
-            When disabled, the original file names will be sanitised, made human readable and shown instead.<br />
-            <span className="font-bold">Setting this to &quot;no&quot; will improve performance on large datasets but may impact readability - especially on filenames with non latin characters.</span>
+            When enabled this setting will show the parsed titles in the
+            sidebar, search results, and overall across the app. <br />
+            When disabled, the original file names will be sanitised, made human
+            readable and shown instead.
+            <br />
+            <span className="font-bold">
+              Setting this to &quot;no&quot; will improve performance on large
+              datasets but may impact readability - especially on filenames with
+              non latin characters.
+            </span>
           </span>
         </div>
         <div>
@@ -225,7 +225,7 @@ export const AppSettingsTab = () => {
           <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
             {isSaving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" /> Saving...
               </>
             ) : (
               "Save Changes"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, FolderPlus } from "lucide-react";
+import { Add01Icon, FolderAddIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { AppMode } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
@@ -27,7 +27,7 @@ export const SidebarActions = ({
           size="sm"
           className="flex-1"
         >
-          <Plus className="h-4 w-4 mr-2" />
+          <Add01Icon className="h-4 w-4 mr-2" />
           New {mode === Modes.CHECKLISTS ? "Checklist" : "Note"}
         </Button>
         <Button
@@ -38,7 +38,7 @@ export const SidebarActions = ({
           variant="outline"
           size="sm"
         >
-          <FolderPlus className="h-4 w-4" />
+          <FolderAddIcon className="h-4 w-4" />
         </Button>
       </div>
     </div>

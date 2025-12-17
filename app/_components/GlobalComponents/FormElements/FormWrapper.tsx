@@ -14,7 +14,7 @@ export const FormWrapper = ({
   contentMaxHeight,
 }: FormWrapperProps) => {
   return (
-    <div className="jotty-form-wrapper bg-background border border-border rounded-lg p-6">
+    <div className="jotty-form-wrapper bg-background border border-border rounded-jotty p-6">
       <div className="jotty-form-wrapper-header flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">{title}</h3>
         {action}

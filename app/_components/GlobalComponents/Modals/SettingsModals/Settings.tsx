@@ -1,15 +1,12 @@
 "use client";
 
 import {
-  Settings,
-  Save,
-  Smile,
-  FileText,
-  ArrowLeftRight,
-  ChevronsRightLeft,
-  ChevronsLeftRight,
-  CheckSquare,
-} from "lucide-react";
+  FloppyDiskIcon,
+  SmileIcon,
+  File02Icon,
+  ArrowHorizontalIcon,
+  CheckmarkSquare04Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
@@ -61,12 +58,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   }, [isOpen]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Settings"
-      titleIcon={<Settings className="h-5 w-5 text-muted-foreground" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Settings">
       <p className="text-sm text-muted-foreground mb-6">
         These options only apply to the current browser session. Please check
         your{" "}
@@ -90,7 +82,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           {user?.notesAutoSaveInterval !== 0 && (
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-2">
-                <Save className="h-4 w-4 text-muted-foreground" />
+                <FloppyDiskIcon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">Autosave Notes</span>
               </div>
               <div className="relative">
@@ -117,7 +109,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <File02Icon className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">Show Note Preview on Cards</span>
             </div>
             <div className="relative">
@@ -143,7 +135,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
-              <ChevronsLeftRight className="h-4 w-4 text-muted-foreground" />
+              <ArrowHorizontalIcon className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">Notes compact mode</span>
             </div>
             <div className="relative">
@@ -172,7 +164,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         <div className="space-y-3">
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
-              <Smile className="h-4 w-4 text-muted-foreground" />
+              <SmileIcon className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">Show Emojis on checklists</span>
             </div>
             <div className="relative">
@@ -198,7 +190,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
-              <CheckSquare className="h-4 w-4 text-muted-foreground" />
+              <CheckmarkSquare04Icon className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
                 Show completed tasks as suggestions
               </span>

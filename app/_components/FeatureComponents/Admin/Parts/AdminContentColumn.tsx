@@ -1,5 +1,5 @@
 import { Checklist, Note } from "@/app/_types";
-import { ExternalLink } from "lucide-react";
+import { LinkForwardIcon } from "hugeicons-react";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -25,7 +25,7 @@ export const AdminContentColumn = ({
           <Link
             key={`${item.category}-${item.id}`}
             href={item.link}
-            className="block p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+            className="block p-3 bg-muted/50 rounded-jotty hover:bg-muted/70 transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -33,7 +33,7 @@ export const AdminContentColumn = ({
                   <p className="font-medium text-foreground text-sm truncate">
                     {item.title}
                   </p>
-                  <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                  <LinkForwardIcon className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {item.details}

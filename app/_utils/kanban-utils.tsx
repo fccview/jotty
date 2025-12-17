@@ -1,4 +1,4 @@
-import { Clock, Timer } from "lucide-react";
+import { Clock01Icon, TimeQuarterIcon } from "hugeicons-react";
 import { TaskStatus } from "@/app/_types/enums";
 
 export const formatTimerTime = (seconds: number): string => {
@@ -32,11 +32,15 @@ export const getStatusColor = (status?: string): string => {
 export const getStatusIcon = (status?: string): JSX.Element | null => {
   switch (status) {
     case TaskStatus.IN_PROGRESS:
-      return <Timer className="h-3 w-3 text-primary" />;
+      return <TimeQuarterIcon className="h-3 w-3 text-primary" />;
     case TaskStatus.COMPLETED:
-      return <Clock className="h-3 w-3 text-green-600 dark:text-green-400" />;
+      return (
+        <Clock01Icon className="h-3 w-3 text-green-600 dark:text-green-400" />
+      );
     case TaskStatus.PAUSED:
-      return <Clock className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />;
+      return (
+        <Clock01Icon className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+      );
     default:
       return null;
   }

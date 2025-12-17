@@ -1,5 +1,5 @@
 import { Editor } from "@tiptap/react";
-import { ChevronDown, Type, Search } from "lucide-react";
+import { ArrowDown01Icon, TextIcon, Search01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ToolbarDropdown";
 import { useState, useMemo } from "react";
@@ -157,8 +157,8 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
       size="sm"
       className="flex items-center gap-1"
     >
-      <Type className="h-4 w-4" />
-      <ChevronDown className="h-3 w-3" />
+      <TextIcon className="h-4 w-4" />
+      <ArrowDown01Icon className="h-3 w-3" />
     </Button>
   );
 
@@ -166,14 +166,14 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
     <ToolbarDropdown trigger={trigger}>
       <div className="p-2 border-b border-border">
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search fonts..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
-            className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
           />
         </div>
       </div>

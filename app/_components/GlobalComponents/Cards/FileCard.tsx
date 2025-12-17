@@ -2,7 +2,7 @@ import { FileItem } from "@/app/_server/actions/upload";
 import { getFileIcon, formatFileSize } from "@/app/_utils/file-icon-utils";
 import Image from "next/image";
 import { Button } from "../Buttons/Button";
-import { Eye, Download, Trash2 } from "lucide-react";
+import { ViewIcon, Download01Icon, Delete03Icon } from "hugeicons-react";
 
 interface FileCardProps {
   file: FileItem;
@@ -18,10 +18,10 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
   return (
     <div className="jotty-file-card relative group">
       <div
-        className="bg-card border border-border rounded-xl p-3 sm:p-4 cursor-pointer hover:ring-2 hover:ring-ring transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+        className="bg-card border border-border rounded-md p-3 sm:p-4 cursor-pointer hover:ring-2 hover:ring-ring transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
         onClick={onSelect}
       >
-        <div className="aspect-square bg-muted rounded-lg overflow-hidden mb-3 relative">
+        <div className="aspect-square bg-muted rounded-jotty overflow-hidden mb-3 relative">
           {file.type === "image" ? (
             <Image
               src={file.url}
@@ -56,7 +56,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
           }
           title="Open file"
         >
-          <Eye className="h-4 w-4" />
+          <ViewIcon className="h-4 w-4" />
         </Button>
         <Button
           variant="secondary"
@@ -72,7 +72,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
           }
           title="Download file"
         >
-          <Download className="h-4 w-4" />
+          <Download01Icon className="h-4 w-4" />
         </Button>
         <Button
           variant="destructive"
@@ -81,7 +81,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
           onClick={(e) => handleAction(e, onDelete)}
           title="Delete file"
         >
-          <Trash2 className="h-4 w-4" />
+          <Delete03Icon className="h-4 w-4" />
         </Button>
       </div>
     </div>

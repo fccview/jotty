@@ -18,9 +18,11 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 }) => {
   const storedAvatars =
     typeof window !== "undefined" && localStorage.getItem(`avatars`);
+  const parsedAvatars = storedAvatars ? JSON.parse(storedAvatars) : {};
+  const cachedAvatar = parsedAvatars[username];
 
   const [avatar, setAvatar] = useState<string | null>(
-    avatarUrl || (storedAvatars ? JSON.parse(storedAvatars)?.[username] : null)
+    avatarUrl !== undefined && avatarUrl !== null ? avatarUrl : cachedAvatar !== undefined ? cachedAvatar : null
   );
   const sizeClasses = {
     xs: "h-4 w-4 text-xs",
@@ -41,27 +43,25 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   const backgroundColor = getDeterministicColor(username);
 
   useEffect(() => {
-    if (!avatarUrl) {
+    if ((avatarUrl === undefined || avatarUrl === null) && cachedAvatar === undefined) {
       const fetchAvatarUrl = async () => {
         const user = await getUserByUsername(username);
         return user?.avatarUrl || "";
       };
 
       fetchAvatarUrl().then((url) => {
-        if (url !== avatar) {
-          setAvatar(url);
+        setAvatar(url || null);
 
-          localStorage.setItem(
-            `avatars`,
-            JSON.stringify({
-              ...(storedAvatars ? JSON.parse(storedAvatars) : {}),
-              [username]: url,
-            })
-          );
-        }
+        localStorage.setItem(
+          `avatars`,
+          JSON.stringify({
+            ...parsedAvatars,
+            [username]: url || "",
+          })
+        );
       });
     }
-  }, [avatarUrl]);
+  }, [avatarUrl, username]);
 
   return (
     <div

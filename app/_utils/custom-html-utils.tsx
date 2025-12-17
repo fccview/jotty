@@ -12,14 +12,14 @@ export const customHtmlMarks: CustomHtmlMarkDefinition[] = [
   {
     name: "mark",
     tag: "mark",
-    classes: "bg-yellow-200 px-1 py-0.5 rounded-sm",
+    classes: "bg-yellow-200 px-1 py-0.5 rounded-jotty",
     attributesToPreserve: ["style"],
   },
   {
     name: "kbd",
     tag: "kbd",
     classes:
-      "bg-muted px-2 py-1 text-xs rounded-md border border-border shadow-border shadow-sm",
+      "bg-muted px-2 py-1 text-xs rounded-jotty border border-border shadow-border shadow-sm",
   },
   {
     name: "subscript",

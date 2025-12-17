@@ -793,7 +793,7 @@ export const EMOJIS: EmojiDictionary = {
     "shark": "🦈",
     "shaved ice": "🍧",
     "sheep": "🐑",
-    "shield": "🛡️",
+    "ShieldUserIcon": "🛡️",
     "shinto": "⛩️",
     "ship": "🚢",
     "shirt": "👕",

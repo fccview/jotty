@@ -2,17 +2,17 @@
 
 import { Editor } from "@tiptap/react";
 import {
-  ImageIcon,
-  Paperclip,
-  Table,
-  Highlighter,
-  Subscript as SubscriptIcon,
-  Superscript as SuperscriptIcon,
-  Type,
-  BookText,
-  ChevronDown,
-  MoreHorizontal,
-} from "lucide-react";
+  Image02Icon,
+  Attachment01Icon,
+  LayoutTable01Icon,
+  PenTool01Icon,
+  TextSubscriptIcon,
+  TextSuperscriptIcon,
+  LetterSpacingIcon,
+  SquareArrowDown02Icon,
+  ArrowDown01Icon,
+  MoreHorizontalIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "./ToolbarDropdown";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
@@ -72,53 +72,53 @@ export const ExtraItemsDropdown = ({
   const items = useMemo(
     () => [
       {
-        icon: <ImageIcon className="h-4 w-4" />,
+        icon: <Image02Icon className="h-4 w-4" />,
         label: "Image",
         command: addImage,
         shortcut: { code: "KeyI", modKey: true, shiftKey: true },
       },
       {
-        icon: <Paperclip className="h-4 w-4" />,
+        icon: <Attachment01Icon className="h-4 w-4" />,
         label: "File",
         command: onFileModalOpen,
         shortcut: { code: "KeyF", modKey: true, shiftKey: true },
       },
       {
-        icon: <Table className="h-4 w-4" />,
+        icon: <LayoutTable01Icon className="h-4 w-4" />,
         label: "Table",
         command: onTableModalOpen,
         shortcut: { code: "KeyT", modKey: true, shiftKey: true },
       },
       {
-        icon: <Highlighter className="h-4 w-4" />,
+        icon: <PenTool01Icon className="h-4 w-4" />,
         label: "Highlight",
         command: () => editor.chain().focus().toggleMark("mark").run(),
         isActive: editor.isActive("mark"),
         shortcut: { code: "KeyH", modKey: true, shiftKey: true },
       },
       {
-        icon: <SubscriptIcon className="h-4 w-4" />,
+        icon: <TextSubscriptIcon className="h-4 w-4" />,
         label: "Subscript",
         command: () => editor.chain().focus().toggleMark("subscript").run(),
         isActive: editor.isActive("subscript"),
         shortcut: { code: "Comma", modKey: true },
       },
       {
-        icon: <SuperscriptIcon className="h-4 w-4" />,
+        icon: <TextSuperscriptIcon className="h-4 w-4" />,
         label: "Superscript",
         command: () => editor.chain().focus().toggleMark("superscript").run(),
         isActive: editor.isActive("superscript"),
         shortcut: { code: "Period", modKey: true },
       },
       {
-        icon: <Type className="h-4 w-4" />,
+        icon: <LetterSpacingIcon className="h-4 w-4" />,
         label: "Abbreviation",
         command: toggleAbbreviation,
         isActive: editor.isActive("abbreviation"),
         shortcut: { code: "KeyA", modKey: true, shiftKey: true },
       },
       {
-        icon: <BookText className="h-4 w-4" />,
+        icon: <SquareArrowDown02Icon className="h-4 w-4" />,
         label: "Collapsible",
         command: toggleDetails,
         isActive: editor.isActive("details"),
@@ -160,8 +160,8 @@ export const ExtraItemsDropdown = ({
       onMouseDown={(e) => e.preventDefault()}
       className="flex items-center gap-1"
     >
-      <MoreHorizontal className="h-4 w-4" />
-      <ChevronDown className="h-3 w-3" />
+      <MoreHorizontalIcon className="h-4 w-4" />
+      <ArrowDown01Icon className="h-3 w-3" />
     </Button>
   );
 
@@ -171,8 +171,9 @@ export const ExtraItemsDropdown = ({
         {items.map((item, index) => (
           <button
             key={index}
-            className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-sm ${item.isActive ? "bg-accent" : ""
-              }`}
+            className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-sm ${
+              item.isActive ? "bg-accent" : ""
+            }`}
             onClick={item.command}
           >
             <div className="flex items-center gap-2">

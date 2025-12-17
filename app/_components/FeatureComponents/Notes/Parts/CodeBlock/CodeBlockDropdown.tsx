@@ -1,7 +1,7 @@
 "use client";
 
 import { Editor } from "@tiptap/react";
-import { ChevronDown, Code, Search } from "lucide-react";
+import { ArrowDown01Icon, SourceCodeIcon, Search01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { popularCodeBlockLanguages } from "@/app/_utils/code-block-utils";
 import { useState, useRef, useEffect, useMemo } from "react";
@@ -82,23 +82,24 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
     <>
       {isOpen && (
         <div
-          className="fixed bg-background border border-border rounded-md shadow-lg min-w-[250px] max-h-[400px] overflow-hidden flex flex-col"
+          className="fixed bg-background border border-border rounded-jotty shadow-lg min-w-[250px] max-h-[400px] overflow-hidden flex flex-col"
           style={{
-            top: `${dropdownRef.current?.getBoundingClientRect().bottom || 0
-              }px`,
+            top: `${
+              dropdownRef.current?.getBoundingClientRect().bottom || 0
+            }px`,
             left: `${dropdownRef.current?.getBoundingClientRect().left || 0}px`,
             pointerEvents: "auto",
           }}
         >
           <div className="p-2 border-b border-border">
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+              <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search languages..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
@@ -136,9 +137,9 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1"
       >
-        <Code className="h-4 w-4" />
+        <SourceCodeIcon className="h-4 w-4" />
         <span className="text-xs">Code</span>
-        <ChevronDown className="h-3 w-3" />
+        <ArrowDown01Icon className="h-3 w-3" />
       </Button>
 
       {portalContainerRef.current &&

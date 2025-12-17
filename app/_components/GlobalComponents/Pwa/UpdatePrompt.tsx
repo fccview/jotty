@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useGitHubRelease } from "@/app/_hooks/useGitHubRelease";
 import { readPackageVersion } from "@/app/_server/actions/config";
@@ -126,13 +126,13 @@ export const UpdatePrompt = () => {
           )}
         </div>
       </Modal>
-      <div className="fixed bottom-4 left-[2vw] lg:left-auto lg:right-4 z-50 bg-background border border-border rounded-lg shadow-lg p-4 w-[96vw] lg:w-[300px]">
+      <div className="fixed bottom-4 left-[2vw] lg:left-auto lg:right-4 z-50 bg-background border border-border rounded-jotty shadow-lg p-4 w-[96vw] lg:w-[300px]">
         <div className="flex items-center justify-between">
           <div
             className="flex items-center gap-3 cursor-pointer"
             onClick={handlePromptClick}
           >
-            <div className="p-2 bg-primary rounded-lg flex items-center justify-center">
+            <div className="p-2 bg-primary rounded-jotty flex items-center justify-center">
               <svg
                 className="h-5 w-5 text-primary-foreground"
                 xmlns="http://www.w3.org/2000/svg"
@@ -163,7 +163,7 @@ export const UpdatePrompt = () => {
               size="sm"
               className="h-8 w-8 p-0"
             >
-              <X className="h-4 w-4" />
+              <MultiplicationSignIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>

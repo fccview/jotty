@@ -2,7 +2,6 @@
 
 import { Modal } from "../Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Share2 } from "lucide-react";
 import { useSharingTools } from "@/app/_hooks/useSharingTools";
 import { FeedbackMessage } from "./Parts/SharingFeedbackMessage";
 import { ShareTabs } from "./Parts/ShareTabs";
@@ -41,12 +40,7 @@ export const ShareModal = ({
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title={`Share ${metadata.type}`}
-      titleIcon={<Share2 className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title={`Share ${metadata.type}`}>
       <div className="space-y-4 py-6">
         <h3 className="font-semibold text-lg">{metadata.title}</h3>
         <FeedbackMessage error={error} success={success} />

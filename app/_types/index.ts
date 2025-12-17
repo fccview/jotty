@@ -1,5 +1,6 @@
 import { TaskStatus, Modes, ItemTypes } from "./enums";
 import { LinkIndex } from "../_server/actions/link";
+import { EncryptionSettings } from "./encryption";
 
 export type ChecklistType = "simple" | "task";
 export type ItemType = "checklist" | "note";
@@ -92,6 +93,8 @@ export interface Note {
   owner?: string;
   isShared?: boolean;
   rawContent?: string;
+  encrypted?: boolean;
+  encryptedContent?: string;
 }
 
 export interface NoteEditorViewModel {
@@ -159,6 +162,8 @@ export interface User {
   preferredDateFormat: PreferredDateFormat;
   preferredTimeFormat: PreferredTimeFormat;
   disableRichEditor?: DisableRichEditor;
+  markdownTheme?: MarkdownTheme;
+  encryptionSettings?: EncryptionSettings;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -167,6 +172,7 @@ export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";
 export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
+export type MarkdownTheme = "prism" | "prism-dark" | "prism-funky" | "prism-okaidia" | "prism-tomorrow" | "prism-twilight" | "prism-coy" | "prism-solarizedlight";
 export type NotesDefaultMode = "edit" | "view";
 export type NotesAutoSaveInterval = 0 | 1000 | 5000 | 10000 | 15000 | 20000;
 export type FileRenameMode = "dash-case" | "minimal" | "none";

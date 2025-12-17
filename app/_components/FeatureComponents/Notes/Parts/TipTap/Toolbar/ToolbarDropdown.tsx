@@ -14,7 +14,7 @@ const PORTAL_ID = "toolbar-dropdown-portal-root";
 export const ToolbarDropdown = ({
   trigger,
   children,
-  direction = "left"
+  direction = "left",
 }: ToolbarDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -59,19 +59,24 @@ export const ToolbarDropdown = ({
     <>
       {isOpen && (
         <div
-          className="fixed bg-background border border-border rounded-md shadow-lg min-w-[200px] max-w-[200px] max-h-[300px] overflow-hidden flex flex-col"
+          className="fixed bg-background border border-border rounded-jotty shadow-lg min-w-[200px] max-w-[200px] max-h-[300px] overflow-hidden flex flex-col"
           style={{
-            top: `${(triggerRef.current?.getBoundingClientRect().bottom || 0) + 4
-              }px`,
+            top: `${
+              (triggerRef.current?.getBoundingClientRect().bottom || 0) + 4
+            }px`,
             pointerEvents: "auto",
             ...(direction === "right"
               ? {
-                right: `${window.innerWidth - (triggerRef.current?.getBoundingClientRect().right || 0)}px`,
-              }
+                  right: `${
+                    window.innerWidth -
+                    (triggerRef.current?.getBoundingClientRect().right || 0)
+                  }px`,
+                }
               : {
-                left: `${triggerRef.current?.getBoundingClientRect().left || 0}px`,
-              }
-            ),
+                  left: `${
+                    triggerRef.current?.getBoundingClientRect().left || 0
+                  }px`,
+                }),
           }}
           onMouseDown={(e) => {
             e.stopPropagation();

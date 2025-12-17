@@ -1,6 +1,10 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import {
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  MoreHorizontalIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 
@@ -65,7 +69,9 @@ export const Pagination = ({
   ];
 
   return (
-    <div className={`bg-card border border-border rounded-lg p-4 ${className}`}>
+    <div
+      className={`bg-card border border-border rounded-jotty p-4 ${className}`}
+    >
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-foreground">Page</span>
@@ -96,7 +102,7 @@ export const Pagination = ({
             disabled={currentPage === 1}
             className="flex-1 h-8 text-xs"
           >
-            <ChevronLeft className="h-3 w-3 mr-1" />
+            <ArrowLeft01Icon className="h-3 w-3 mr-1" />
             Prev
           </Button>
           <Button
@@ -107,7 +113,7 @@ export const Pagination = ({
             className="flex-1 h-8 text-xs"
           >
             Next
-            <ChevronRight className="h-3 w-3 ml-1" />
+            <ArrowRight01Icon className="h-3 w-3 ml-1" />
           </Button>
         </div>
       </div>

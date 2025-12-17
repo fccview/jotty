@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 
 interface AccordionProps {
@@ -24,7 +24,7 @@ export const Accordion = ({
   return (
     <div
       className={cn(
-        "jotty-accordion border border-border rounded-lg bg-card",
+        "jotty-accordion border border-border rounded-jotty bg-card",
         className
       )}
     >
@@ -39,9 +39,9 @@ export const Accordion = ({
       >
         {title}
         {isOpen ? (
-          <ChevronDown className="h-5 w-5 transition-transform duration-200" />
+          <ArrowDown01Icon className="h-5 w-5 transition-transform duration-200" />
         ) : (
-          <ChevronRight className="h-5 w-5 transition-transform duration-200" />
+          <ArrowRight01Icon className="h-5 w-5 transition-transform duration-200" />
         )}
       </button>
       {isOpen && (

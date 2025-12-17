@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Eye, EyeOff, AlertCircle, Check } from "lucide-react";
+import {
+  Delete03Icon,
+  ViewIcon,
+  ViewOffSlashIcon,
+  AlertCircleIcon,
+  Tick02Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useRouter } from "next/navigation";
 import { Modal } from "../Modal";
@@ -66,23 +72,18 @@ export const DeleteAccountModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Delete Account"
-      titleIcon={<Trash2 className="h-5 w-5 text-destructive" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Delete Account">
       <div className="space-y-4">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-            <AlertCircle className="h-4 w-4 text-destructive" />
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
+            <AlertCircleIcon className="h-4 w-4 text-destructive" />
             <span className="text-sm text-destructive">{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-md">
-            <Check className="h-4 w-4 text-primary" />
+          <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-jotty">
+            <Tick02Icon className="h-4 w-4 text-primary" />
             <span className="text-sm text-primary">{success}</span>
           </div>
         )}
@@ -108,7 +109,7 @@ export const DeleteAccountModal = ({
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring pr-10"
+                className="w-full px-3 py-2 bg-background border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring pr-10"
                 placeholder="Enter your password to confirm"
                 disabled={isLoading}
               />
@@ -119,9 +120,9 @@ export const DeleteAccountModal = ({
                 disabled={isLoading}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <ViewOffSlashIcon className="h-4 w-4" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <ViewIcon className="h-4 w-4" />
                 )}
               </button>
             </div>
@@ -144,7 +145,7 @@ export const DeleteAccountModal = ({
               "Deleting..."
             ) : (
               <>
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Delete03Icon className="h-4 w-4 mr-2" />
                 Delete Account
               </>
             )}

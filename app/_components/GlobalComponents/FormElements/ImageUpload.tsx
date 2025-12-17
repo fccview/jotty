@@ -2,9 +2,14 @@ import { useToast } from "@/app/_providers/ToastProvider";
 import { FC, useState } from "react";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { X, Image as ImageIcon, Loader2 } from "lucide-react";
+import {
+  MultiplicationSignIcon,
+  Image02Icon,
+  Orbit01Icon,
+} from "hugeicons-react";
 import { uploadAppIcon } from "@/app/_server/actions/config";
 import { AppSettings } from "@/app/_types";
+import { Logo } from "../Layout/Logo/Logo";
 
 interface ImageUploadProps {
   label: string;
@@ -173,11 +178,10 @@ export const ImageUpload: FC<ImageUploadProps> = ({
       <Label className="text-sm font-medium">{label}</Label>
       <p className="text-xs text-muted-foreground">{description}</p>
       <div
-        className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${
-          dragOver
+        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${dragOver
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/25 hover:border-muted-foreground/50"
-        }`}
+          }`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -205,7 +209,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
               onClick={() => onUpload(iconType, "")}
               className="flex-shrink-0 h-8 w-8 p-0"
             >
-              <X className="h-4 w-4" />
+              <MultiplicationSignIcon className="h-4 w-4" />
             </Button>
           </div>
         )}
@@ -214,7 +218,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
             htmlFor={`upload-${iconType || "avatar"}`}
             className="text-center cursor-pointer block"
           >
-            <ImageIcon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+            <Image02Icon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm font-medium">Drop image or click to upload</p>
             <p className="text-xs text-muted-foreground">
               PNG, JPG, WebP up to 5MB
@@ -222,8 +226,8 @@ export const ImageUpload: FC<ImageUploadProps> = ({
           </label>
         )}
         {isUploading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-jotty">
+            <Logo className="h-6 w-6 animate-pulse" />
             <p className="text-sm mt-2">Uploading...</p>
           </div>
         )}

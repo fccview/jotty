@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FileText } from "lucide-react";
+import { File02Icon } from "hugeicons-react";
 import { Note, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
@@ -15,6 +15,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 import Masonry from "react-masonry-css";
+import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 
 interface NotesPageClientProps {
   initialNotes: Note[];
@@ -129,13 +130,7 @@ export const NotesPageClient = ({
   };
 
   if (!isInitialized) {
-    return (
-      <div className="flex h-screen bg-background w-full">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (initialNotes.length === 0) {
@@ -146,7 +141,7 @@ export const NotesPageClient = ({
           description="Browse and manage all your notes"
         />
         <EmptyState
-          icon={<FileText className="h-10 w-10 text-muted-foreground" />}
+          icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
           title="No notes yet"
           description="Create your first note to get started with your knowledge base."
           buttonText="Create New Note"
@@ -191,7 +186,7 @@ export const NotesPageClient = ({
         <div className="lg:col-span-3">
           {paginatedItems.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <File02Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
                 No notes found
               </h3>

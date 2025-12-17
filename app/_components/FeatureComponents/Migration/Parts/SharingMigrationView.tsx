@@ -1,14 +1,18 @@
 import { MigrationHeader } from "./MigrationHeader";
 import { InfoCard } from "@/app/_components/GlobalComponents/Cards/InfoCard";
 import { InfoCardVariant } from "@/app/_components/GlobalComponents/Cards/InfoCard";
-import { Globe, Info, Shield } from "lucide-react";
-import { Database } from "lucide-react";
-import { Users } from "lucide-react";
-import { CheckCircle } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
+import {
+  Globe02Icon,
+  ShieldUserIcon,
+  Alert02Icon,
+  InformationCircleIcon,
+} from "hugeicons-react";
+import { Database01Icon } from "hugeicons-react";
+import { UserMultipleIcon } from "hugeicons-react";
+import { CheckmarkCircle04Icon } from "hugeicons-react";
 import { useState } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { RefreshCw } from "lucide-react";
+import { RefreshIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 
 interface SharingMigrationViewProps {
@@ -35,7 +39,7 @@ export const SharingMigrationView = ({
     <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4">
       <div className="max-w-3xl w-full space-y-6">
         <MigrationHeader
-          icon={<Database className="h-12 w-12 text-primary" />}
+          icon={<Database01Icon className="h-12 w-12 text-primary" />}
           title={
             isMigrationComplete
               ? "Migration Complete"
@@ -51,7 +55,7 @@ export const SharingMigrationView = ({
         {!isMigrationComplete && (
           <>
             <InfoCard
-              icon={<Info className="h-5 w-5 text-primary" />}
+              icon={<InformationCircleIcon className="h-5 w-5 text-primary" />}
               title="What's happening?"
             >
               <p className="text-sm">
@@ -68,23 +72,24 @@ export const SharingMigrationView = ({
               </p>
             </InfoCard>
 
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-foreground mb-4">
                 Migration Changes
               </h2>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Users className="h-5 w-5 text-primary mt-0.5" />
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
+                  <UserMultipleIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">User-focused sharing</p>
                     <p className="text-xs text-muted-foreground">
-                      Each user now has an array of items they shared <strong>WITH</strong>{" "}
-                      them rather than items having an array of users they shared with.
+                      Each user now has an array of items they shared{" "}
+                      <strong>WITH</strong> them rather than items having an
+                      array of users they shared with.
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Database className="h-5 w-5 text-primary mt-0.5" />
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
+                  <Database01Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
                       Separate sharing files
@@ -98,8 +103,8 @@ export const SharingMigrationView = ({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Globe className="h-5 w-5 text-primary mt-0.5" />
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
+                  <Globe02Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
                       Public sharing support
@@ -110,14 +115,15 @@ export const SharingMigrationView = ({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Shield className="h-5 w-5 text-primary mt-0.5" />
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
+                  <ShieldUserIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
                       Granular sharing permissions
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Each item will have read, edit and delete permissions for each user it is shared with.
+                      Each item will have read, edit and delete permissions for
+                      each user it is shared with.
                     </p>
                   </div>
                 </div>
@@ -125,7 +131,7 @@ export const SharingMigrationView = ({
             </div>
 
             <InfoCard
-              icon={<AlertTriangle className="h-5 w-5 text-amber-600" />}
+              icon={<Alert02Icon className="h-5 w-5 text-amber-600" />}
               title="Important: Backup Your Data"
               variant={InfoCardVariant.WARNING}
             >
@@ -134,14 +140,15 @@ export const SharingMigrationView = ({
                 <code className="bg-muted px-1 rounded text-xs">
                   data/sharing
                 </code>{" "}
-                folder. While this migration is safe and it manually backs up your sharing data, it&apos;s always good
-                practice to have a backup just in case.
+                folder. While this migration is safe and it manually backs up
+                your sharing data, it&apos;s always good practice to have a
+                backup just in case.
               </p>
             </InfoCard>
 
             {error && (
               <InfoCard
-                icon={<Info className="h-4 w-4 text-destructive" />}
+                icon={<Alert02Icon className="h-4 w-4 text-destructive" />}
                 title="Migration failed"
                 variant={InfoCardVariant.DESTRUCTIVE}
               >
@@ -149,7 +156,7 @@ export const SharingMigrationView = ({
               </InfoCard>
             )}
 
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -181,7 +188,7 @@ export const SharingMigrationView = ({
                 size="lg"
                 className="min-w-48"
               >
-                <RefreshCw
+                <RefreshIcon
                   className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")}
                 />
                 {isMigrating ? "Migrating..." : "Start Migration"}
@@ -193,7 +200,9 @@ export const SharingMigrationView = ({
         {isMigrationComplete && (
           <div className="space-y-4">
             <InfoCard
-              icon={<CheckCircle className="h-5 w-5 text-green-600" />}
+              icon={
+                <CheckmarkCircle04Icon className="h-5 w-5 text-green-600" />
+              }
               title="Migration Successful"
               variant={InfoCardVariant.DEFAULT}
             >
@@ -205,14 +214,14 @@ export const SharingMigrationView = ({
             </InfoCard>
 
             {migrationResult.changes.length > 0 && (
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+              <div className="bg-card border border-border rounded-md p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
                   What was changed:
                 </h3>
                 <ul className="space-y-2">
                   {migrationResult.changes.map((change, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <CheckmarkCircle04Icon className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                       <span className="text-sm text-muted-foreground">
                         {change}
                       </span>

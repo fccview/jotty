@@ -24,7 +24,7 @@ export const PasswordFields = ({
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-full px-3 py-2 bg-background border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
         placeholder="Enter password"
         disabled={disabled}
       />
@@ -37,7 +37,7 @@ export const PasswordFields = ({
         type="password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-full px-3 py-2 bg-background border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
         placeholder="Confirm password"
         disabled={disabled}
       />

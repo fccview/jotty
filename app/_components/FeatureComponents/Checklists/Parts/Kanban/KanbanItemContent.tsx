@@ -1,12 +1,12 @@
 "use client";
 
+import { memo } from "react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { Item, KanbanStatus } from "@/app/_types";
-import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { TaskStatusLabels } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface KanbanItemContentProps {
   item: Item;
@@ -24,9 +24,11 @@ interface KanbanItemContentProps {
   onEdit: () => void;
   onDelete: () => void;
   onArchive: () => void;
+  formatDateString: (dateString: string) => string;
+  formatDateTimeString: (dateString: string) => string;
 }
 
-export const KanbanItemContent = ({
+const KanbanItemContentComponent = ({
   item,
   isEditing,
   statuses,
@@ -42,9 +44,10 @@ export const KanbanItemContent = ({
   onEdit,
   onDelete,
   onArchive,
+  formatDateString,
+  formatDateTimeString,
 }: KanbanItemContentProps) => {
   const { permissions } = usePermissions();
-  const { formatDateString, formatDateTimeString } = usePreferredDateTime();
 
   const getStatusLabel = (status?: string) => {
     if (!status) return TaskStatusLabels.TODO;
@@ -103,10 +106,18 @@ export const KanbanItemContent = ({
               value=""
               options={[
                 { id: "view", name: "View Task" },
-                ...(permissions?.canEdit ? [{ id: "add", name: "Add Subtask" }] : []),
-                ...(permissions?.canEdit ? [{ id: "rename", name: "Rename Task" }] : []),
-                ...(permissions?.canEdit ? [{ id: "archive", name: "Archive Task" }] : []),
-                ...(permissions?.canDelete ? [{ id: "delete", name: "Delete Task" }] : []),
+                ...(permissions?.canEdit
+                  ? [{ id: "add", name: "Add Subtask" }]
+                  : []),
+                ...(permissions?.canEdit
+                  ? [{ id: "rename", name: "Rename Task" }]
+                  : []),
+                ...(permissions?.canEdit
+                  ? [{ id: "archive", name: "Archive Task" }]
+                  : []),
+                ...(permissions?.canDelete
+                  ? [{ id: "delete", name: "Delete Task" }]
+                  : []),
               ]}
               onChange={(action) => {
                 switch (action) {
@@ -136,17 +147,16 @@ export const KanbanItemContent = ({
       <div className="flex items-center justify-between text-xs">
         <div className="flex items-center gap-1.5 text-muted-foreground">
           {getStatusIcon(item.status)}
-          <span>
-            {getStatusLabel(item.status)}
-          </span>
+          <span>{getStatusLabel(item.status)}</span>
         </div>
         {item.lastModifiedBy && isShared && (
           <div
             className="flex items-center gap-1"
-            title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
-              ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
-              : ""
-              }`}
+            title={`Last modified by ${item.lastModifiedBy}${
+              item.lastModifiedAt
+                ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
+                : ""
+            }`}
           >
             <UserAvatar
               username={item.lastModifiedBy}
@@ -154,9 +164,7 @@ export const KanbanItemContent = ({
               avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
             />
             <span className="text-[10px] text-muted-foreground">
-              {item.lastModifiedAt
-                ? formatDateString(item.lastModifiedAt)
-                : ""}
+              {item.lastModifiedAt ? formatDateString(item.lastModifiedAt) : ""}
             </span>
           </div>
         )}
@@ -175,7 +183,7 @@ export const KanbanItemContent = ({
             progress={Math.round(
               (item.children.filter((c) => c.completed).length /
                 item.children.length) *
-              100
+                100
             )}
           />
         </>
@@ -183,3 +191,5 @@ export const KanbanItemContent = ({
     </div>
   );
 };
+
+export const KanbanItemContent = memo(KanbanItemContentComponent);

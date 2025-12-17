@@ -1,7 +1,12 @@
 "use client";
 
-import { Loader2, CheckCircle, AlertCircle, Upload } from "lucide-react";
+import {
+  Orbit01Icon,
+  CheckmarkCircle04Icon,
+  AlertCircleIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { Logo } from "../Layout/Logo/Logo";
 
 interface UploadOverlayProps {
   isVisible: boolean;
@@ -24,23 +29,23 @@ export const UploadOverlay = ({
 
   return (
     <div className="jotty-upload-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+      <div className="bg-card border border-border rounded-jotty p-6 max-w-md w-full mx-4 shadow-xl">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-3">
             {isUploading ? (
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Logo className="h-6 w-6 animate-pulse" />
             ) : uploadError ? (
-              <AlertCircle className="h-8 w-8 text-destructive" />
+              <AlertCircleIcon className="h-8 w-8 text-destructive" />
             ) : (
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckmarkCircle04Icon className="h-8 w-8 text-green-500" />
             )}
             <div className="text-center">
               <h3 className="text-lg font-semibold text-foreground">
                 {isUploading
                   ? "Uploading File"
                   : uploadError
-                  ? "Upload Failed"
-                  : "Upload Complete"}
+                    ? "Upload Failed"
+                    : "Upload Complete"}
               </h3>
               {fileName && (
                 <p className="text-sm text-muted-foreground truncate max-w-xs">
@@ -59,7 +64,7 @@ export const UploadOverlay = ({
           )}
 
           {uploadError && (
-            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md w-full text-center">
+            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-jotty w-full text-center">
               {uploadError}
             </div>
           )}

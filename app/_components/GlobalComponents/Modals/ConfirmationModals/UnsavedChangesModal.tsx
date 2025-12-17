@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Save, X } from "lucide-react";
+import { FloppyDiskIcon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 
@@ -20,14 +20,9 @@ export const UnsavedChangesModal = ({
   noteTitle = "this note",
 }: UnsavedChangesModalProps) => {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Unsaved Changes"
-      titleIcon={<AlertTriangle className="h-5 w-5 text-destructive" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Unsaved Changes">
       <div className="space-y-4">
-        <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
+        <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-jotty">
           <h3 className="text-sm font-medium text-destructive mb-2">
             ⚠️ Unsaved Changes Detected
           </h3>
@@ -44,7 +39,7 @@ export const UnsavedChangesModal = ({
 
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <Button variant="outline" onClick={onClose} className="flex-1">
-          <X className="h-4 w-4 mr-2" />
+          <MultiplicationSignIcon className="h-4 w-4 mr-2" />
           Cancel
         </Button>
         <Button
@@ -65,7 +60,7 @@ export const UnsavedChangesModal = ({
           }}
           className="flex-1"
         >
-          <Save className="h-4 w-4 mr-2" />
+          <FloppyDiskIcon className="h-4 w-4 mr-2" />
           Save & Leave
         </Button>
       </div>

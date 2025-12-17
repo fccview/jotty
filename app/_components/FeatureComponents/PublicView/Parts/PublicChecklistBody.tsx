@@ -1,5 +1,5 @@
 import { Checklist, Item } from "@/app/_types";
-import { CheckSquare } from "lucide-react";
+import { CheckmarkSquare04Icon } from "hugeicons-react";
 import { TaskStatusSection } from "./TaskStatusSection";
 import { useMemo } from "react";
 import { TaskStatus } from "@/app/_types/enums";
@@ -36,7 +36,7 @@ export const PublicChecklistBody = ({
   if (totalCount === 0) {
     return (
       <div className="text-center py-12">
-        <CheckSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <CheckmarkSquare04Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-medium text-foreground mb-2">
           No items yet
         </h3>

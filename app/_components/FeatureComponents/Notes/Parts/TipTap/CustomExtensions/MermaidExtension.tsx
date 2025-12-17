@@ -7,10 +7,12 @@ import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
 
 const getCSSVariable = (variable: string): string => {
-  if (typeof window === 'undefined') return '';
-  const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+  if (typeof window === "undefined") return "";
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(variable)
+    .trim();
   if (value && /^\d+\s+\d+\s+\d+$/.test(value)) {
-    return `rgb(${value.replace(/\s+/g, ', ')})`;
+    return `rgb(${value.replace(/\s+/g, ", ")})`;
   }
   return value;
 };
@@ -21,35 +23,41 @@ const initializeMermaidTheme = () => {
     theme: "base",
     securityLevel: "loose",
     themeVariables: {
-      primaryColor: getCSSVariable('--primary') || 'rgb(139, 59, 208)',
-      primaryTextColor: getCSSVariable('--primary-foreground') || 'rgb(255, 255, 255)',
-      primaryBorderColor: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      lineColor: getCSSVariable('--primary') || 'rgb(139, 59, 208)',
-      secondaryColor: getCSSVariable('--secondary') || 'rgb(243, 240, 249)',
-      tertiaryColor: getCSSVariable('--muted') || 'rgb(243, 240, 249)',
-      background: getCSSVariable('--background') || 'rgb(255, 255, 255)',
-      mainBkg: getCSSVariable('--background') || 'rgb(255, 255, 255)',
-      secondBkg: getCSSVariable('--muted') || 'rgb(243, 240, 249)',
-      tertiaryBkg: getCSSVariable('--accent') || 'rgb(243, 240, 249)',
-      textColor: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      border1: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      border2: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      nodeBorder: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      clusterBkg: getCSSVariable('--muted') || 'rgb(243, 240, 249)',
-      clusterBorder: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      defaultLinkColor: getCSSVariable('--primary') || 'rgb(139, 59, 208)',
-      titleColor: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      edgeLabelBackground: getCSSVariable('--background') || 'rgb(255, 255, 255)',
-      nodeTextColor: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
+      primaryColor: getCSSVariable("--primary") || "rgb(139, 59, 208)",
+      primaryTextColor:
+        getCSSVariable("--primary-foreground") || "rgb(255, 255, 255)",
+      primaryBorderColor: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
+      lineColor: getCSSVariable("--primary") || "rgb(139, 59, 208)",
+      secondaryColor: getCSSVariable("--secondary") || "rgb(243, 240, 249)",
+      tertiaryColor: getCSSVariable("--muted") || "rgb(243, 240, 249)",
+      background: getCSSVariable("--background") || "rgb(255, 255, 255)",
+      mainBkg: getCSSVariable("--background") || "rgb(255, 255, 255)",
+      secondBkg: getCSSVariable("--muted") || "rgb(243, 240, 249)",
+      tertiaryBkg: getCSSVariable("--accent") || "rgb(243, 240, 249)",
+      textColor: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
+      border1: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
+      border2: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
+      nodeBorder: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
+      clusterBkg: getCSSVariable("--muted") || "rgb(243, 240, 249)",
+      clusterBorder: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
+      defaultLinkColor: getCSSVariable("--primary") || "rgb(139, 59, 208)",
+      titleColor: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
+      edgeLabelBackground:
+        getCSSVariable("--background") || "rgb(255, 255, 255)",
+      nodeTextColor: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
     },
   });
 };
 
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   initializeMermaidTheme();
 }
 
-export const MermaidNodeView = ({ node, updateAttributes, deleteNode }: any) => {
+export const MermaidNodeView = ({
+  node,
+  updateAttributes,
+  deleteNode,
+}: any) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -97,7 +105,7 @@ export const MermaidNodeView = ({ node, updateAttributes, deleteNode }: any) => 
 
   return (
     <NodeViewWrapper className="mermaid-node-wrapper">
-      <div className="mermaid-diagram-container relative group border border-border rounded-md p-4 my-4 bg-background">
+      <div className="mermaid-diagram-container relative group border border-border rounded-jotty p-4 my-4 bg-background">
         {isEditing ? (
           <div className="mermaid-editor">
             <textarea
@@ -190,7 +198,8 @@ export const MermaidExtension = Node.create({
       {
         tag: "div[data-mermaid]",
         getAttrs: (element) => ({
-          content: (element as HTMLElement).getAttribute("data-mermaid-content") || "",
+          content:
+            (element as HTMLElement).getAttribute("data-mermaid-content") || "",
         }),
       },
     ];
@@ -216,12 +225,12 @@ export const MermaidExtension = Node.create({
     return {
       setMermaid:
         (content: string) =>
-          ({ commands }: any) => {
-            return commands.insertContent({
-              type: this.name,
-              attrs: { content },
-            });
-          },
+        ({ commands }: any) => {
+          return commands.insertContent({
+            type: this.name,
+            attrs: { content },
+          });
+        },
     };
   },
 });

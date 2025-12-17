@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft01Icon, Add01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useRouter } from "next/navigation";
 
@@ -36,7 +36,7 @@ export const PageHeader = ({
     <div className={`jotty-page-header mb-8 ${className}`}>
       {showBackButton && (
         <Button variant="ghost" onClick={() => router.back()} className="mb-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft01Icon className="h-4 w-4 mr-2" />
           {backButtonText}
         </Button>
       )}
@@ -48,9 +48,8 @@ export const PageHeader = ({
           </h1>
           <p className="jotty-page-header-description text-muted-foreground">
             {stats
-              ? `Showing ${stats.current}-${stats.total} of ${
-                  stats.total
-                } ${description.toLowerCase()}`
+              ? `Showing ${stats.current}-${stats.total} of ${stats.total
+              } ${description.toLowerCase()}`
               : description}
           </p>
         </div>

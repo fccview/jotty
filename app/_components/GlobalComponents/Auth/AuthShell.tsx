@@ -12,9 +12,9 @@ export const AuthShell = ({ children }: AuthShellProps) => {
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center justify-center gap-3">
           <DynamicLogo className="h-8 w-8" size="32x32" />
-          <AppName className="text-xl font-bold text-foreground" />
+          <AppName className="text-xl font-bold text-foreground jotty-app-name" />
         </div>
-        <div className="rounded-2xl border border-border bg-card shadow-sm p-6">
+        <div className="rounded-jotty border border-border bg-card p-6">
           {children}
         </div>
       </div>

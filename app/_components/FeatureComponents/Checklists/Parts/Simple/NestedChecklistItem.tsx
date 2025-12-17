@@ -2,16 +2,18 @@
 
 import { useState, useRef, useEffect, memo } from "react";
 import {
-  Plus,
-  Trash2,
-  GripVertical,
-  Edit2,
-  Check,
-  X,
-  ChevronDown,
-  ChevronRight,
-  MoreHorizontal,
-} from "lucide-react";
+  Add01Icon,
+  Delete03Icon,
+  DragDropVerticalIcon,
+  PencilEdit02Icon,
+  Tick02Icon,
+  MultiplicationSignIcon,
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  MoreHorizontalIcon,
+  SquareIcon,
+  CheckmarkSquare02Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { useSortable } from "@dnd-kit/sortable";
@@ -179,11 +181,11 @@ const NestedChecklistItemComponent = ({
   const isChild = level > 0;
 
   const dropdownOptions = [
-    ...(onEdit ? [{ id: "edit", name: "Edit", icon: Edit2 }] : []),
+    ...(onEdit ? [{ id: "edit", name: "Edit", icon: PencilEdit02Icon }] : []),
     ...(onAddSubItem
-      ? [{ id: "add-sub-item", name: "Add sub-item", icon: Plus }]
+      ? [{ id: "add-sub-item", name: "Add sub-item", icon: Add01Icon }]
       : []),
-    { id: "delete", name: "Delete", icon: Trash2 },
+    { id: "delete", name: "Delete", icon: Delete03Icon },
   ];
 
   useEffect(() => {
@@ -203,19 +205,22 @@ const NestedChecklistItemComponent = ({
     <div
       ref={setNodeRef}
       style={{
-        transform: isAnyItemDragging && !isDragging ? CSS.Transform.toString({ x: 0, y: 0, scaleX: 1, scaleY: 1 }) : CSS.Transform.toString(transform),
+        transform:
+          isAnyItemDragging && !isDragging
+            ? CSS.Transform.toString({ x: 0, y: 0, scaleX: 1, scaleY: 1 })
+            : CSS.Transform.toString(transform),
         transition: isAnyItemDragging && !isDragging ? "none" : transition,
       }}
       className={cn(
         "relative my-1",
         hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
         !hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-lg border-dashed border-t",
+          !isChild &&
+          "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
         isChild &&
-        "ml-4 pl-4 rounded-lg border-dashed border-l border-border border-l-primary/70",
+          "ml-4 pl-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
         "first:mt-0 transition-colors duration-150",
         isActive && "bg-muted/20",
         isDragging && "opacity-50 z-50",
@@ -228,25 +233,23 @@ const NestedChecklistItemComponent = ({
       <div
         className={cn(
           "group/item flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
-          "rounded-lg",
+          "rounded-jotty",
           isChild ? "px-2.5 py-2" : "p-3",
           completed && "opacity-80",
           !permissions?.canEdit &&
-          "opacity-50 cursor-not-allowed pointer-events-none"
+            "opacity-50 cursor-not-allowed pointer-events-none"
         )}
       >
-        {!isPublicView &&
-          !isDragDisabled &&
-          permissions?.canEdit && (
-            <button
-              type="button"
-              {...attributes}
-              {...listeners}
-              className="text-muted-foreground lg:block hover:text-foreground cursor-move touch-none"
-            >
-              <GripVertical className="h-4 w-4" />
-            </button>
-          )}
+        {!isPublicView && !isDragDisabled && permissions?.canEdit && (
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="text-muted-foreground lg:block hover:text-foreground cursor-move touch-none"
+          >
+            <DragDropVerticalIcon className="h-4 w-4" />
+          </button>
+        )}
 
         <div className="relative flex items-center">
           <input
@@ -257,7 +260,7 @@ const NestedChecklistItemComponent = ({
               onToggle(item.id, e.target.checked);
             }}
             className={cn(
-              "h-5 w-5 rounded border-input focus:ring-2 focus:ring-offset-2 focus:ring-ring",
+              "h-5 w-5 rounded border-input focus:ring-none focus:ring-offset-2 focus:ring-ring",
               "transition-all duration-150",
               (item.completed || completed) && "bg-primary border-primary"
             )}
@@ -272,9 +275,9 @@ const NestedChecklistItemComponent = ({
             className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
           >
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
+              <ArrowDown01Icon className="h-4 w-4" />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ArrowRight01Icon className="h-4 w-4" />
             )}
           </Button>
         )}
@@ -297,7 +300,7 @@ const NestedChecklistItemComponent = ({
                   onClick={handleSave}
                   className="h-6 w-6 p-0"
                 >
-                  <Check className="h-3 w-3" />
+                  <Tick02Icon className="h-3 w-3" />
                 </Button>
               </>
             )}
@@ -308,7 +311,7 @@ const NestedChecklistItemComponent = ({
                 onClick={handleCancel}
                 className="h-6 w-6 p-0 text-destructive"
               >
-                <X className="h-3 w-3" />
+                <MultiplicationSignIcon className="h-3 w-3" />
               </Button>
             )}
           </div>
@@ -321,13 +324,19 @@ const NestedChecklistItemComponent = ({
                   "text-sm transition-all duration-200 cursor-pointer items-center flex",
                   isActive && "scale-95",
                   item.completed || completed
-                    ? "line-through text-muted-foreground checked"
+                    ? "line-through text-muted-foreground"
                     : "text-foreground"
                 )}
                 onMouseDown={() => setIsActive(true)}
                 onMouseUp={() => setIsActive(false)}
                 onMouseLeave={() => setIsActive(false)}
               >
+                {item.completed || completed ? (
+                  <CheckmarkSquare02Icon className="h-6 w-6 text-primary mr-2 !stroke-1" />
+                ) : (
+                  <SquareIcon className="h-6 w-6 text-muted-foreground mr-2 !stroke-1" />
+                )}
+
                 {item.recurrence && user?.enableRecurrence === "enable" && (
                   <RecurrenceIndicator recurrence={item.recurrence} />
                 )}
@@ -357,7 +366,7 @@ const NestedChecklistItemComponent = ({
                   className="h-8 w-8 p-0"
                   title="Add sub-item"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Add01Icon className="h-4 w-4" />
                 </Button>
               )}
 
@@ -368,7 +377,7 @@ const NestedChecklistItemComponent = ({
                   onClick={handleEdit}
                   className="h-8 w-8 p-0"
                 >
-                  <Edit2 className="h-4 w-4" />
+                  <PencilEdit02Icon className="h-4 w-4" />
                 </Button>
               )}
 
@@ -379,7 +388,7 @@ const NestedChecklistItemComponent = ({
                   onClick={() => onDelete(item.id)}
                   className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Delete03Icon className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -392,11 +401,11 @@ const NestedChecklistItemComponent = ({
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="h-8 w-8 p-0"
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontalIcon className="h-4 w-4" />
                 </Button>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 z-50 w-48 mt-1 bg-card border border-border rounded-lg shadow-lg">
+                  <div className="absolute right-0 z-50 w-48 mt-1 bg-card border border-border rounded-jotty shadow-lg">
                     <div className="py-1">
                       {dropdownOptions.map((option) => (
                         <button
@@ -431,7 +440,7 @@ const NestedChecklistItemComponent = ({
                 value={newSubItemText}
                 onChange={(e) => setNewSubItemText(e.target.value)}
                 placeholder="Add sub-item..."
-                className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-2 focus:ring-ring"
+                className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-none focus:ring-ring"
                 autoFocus
               />
             </div>
@@ -452,7 +461,7 @@ const NestedChecklistItemComponent = ({
                 setNewSubItemText("");
               }}
             >
-              <X className="h-4 w-4" />
+              <MultiplicationSignIcon className="h-4 w-4" />
             </Button>
           </form>
         </div>
@@ -475,7 +484,9 @@ const NestedChecklistItemComponent = ({
               isPublicView={isPublicView}
               checklist={checklist}
               isOver={overItem?.id === child.id}
-              overPosition={overItem?.id === child.id ? overItem.position : undefined}
+              overPosition={
+                overItem?.id === child.id ? overItem.position : undefined
+              }
               isAnyItemDragging={isAnyItemDragging}
               overItem={overItem}
             />

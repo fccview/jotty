@@ -1,44 +1,42 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LucideIcon, Palette } from "lucide-react";
+import { PaintBrush04Icon } from "hugeicons-react";
 
 interface DynamicIconProps {
-    iconName: string;
-    fallbackIcon?: LucideIcon;
-    className?: string;
+  iconName: string;
+  className?: string;
 }
 
 export const DynamicIcon = ({
-    iconName,
-    fallbackIcon: FallbackIcon = Palette,
-    className = "h-4 w-4"
+  iconName,
+  className = "h-4 w-4",
 }: DynamicIconProps) => {
-    const [IconComponent, setIconComponent] = useState<LucideIcon | null>(null);
+  const [IconComponent, setIconComponent] = useState<any>(null);
 
-    useEffect(() => {
-        if (!iconName) {
-            setIconComponent(FallbackIcon);
-            return;
-        }
-
-        import("lucide-react")
-            .then((lucide) => {
-                const icon = (lucide as any)[iconName] as LucideIcon;
-                if (icon) {
-                    setIconComponent(() => icon);
-                } else {
-                    setIconComponent(FallbackIcon);
-                }
-            })
-            .catch(() => {
-                setIconComponent(FallbackIcon);
-            });
-    }, [iconName, FallbackIcon]);
-
-    if (!IconComponent) {
-        return <FallbackIcon className={className} />;
+  useEffect(() => {
+    if (!iconName) {
+      setIconComponent(PaintBrush04Icon);
+      return;
     }
 
-    return <IconComponent className={className} />;
+    import("hugeicons-react")
+      .then((hugeicons) => {
+        const icon = (hugeicons as any)[iconName];
+        if (icon) {
+          setIconComponent(() => icon);
+        } else {
+          setIconComponent(PaintBrush04Icon);
+        }
+      })
+      .catch(() => {
+        setIconComponent(PaintBrush04Icon);
+      });
+  }, [iconName]);
+
+  if (!IconComponent) {
+    return <PaintBrush04Icon className={className} />;
+  }
+
+  return <IconComponent className={className} />;
 };

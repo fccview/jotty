@@ -301,6 +301,7 @@ export const useNoteEditor = ({
     category,
     setCategory,
     editorContent,
+    setEditorContent,
     isEditing,
     setIsEditing,
     status,

@@ -6,7 +6,7 @@ import ListItem from "@tiptap/extension-list-item";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import BulletList from "@tiptap/extension-bullet-list";
-import Underline from "@tiptap/extension-underline";
+import TextUnderlineIcon from "@tiptap/extension-underline";
 import HardBreak from "@tiptap/extension-hard-break";
 import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
@@ -14,11 +14,9 @@ import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import { LowlightPlugin } from "./lowlightPlugin";
-import { BubbleMenu } from "@tiptap/extension-bubble-menu";
 import { Color } from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Highlight } from "@tiptap/extension-highlight";
-import { InputRule } from "@tiptap/core";
 import { lowlight } from "@/app/_utils/lowlight-utils";
 import { FileAttachmentExtension } from "@/app/_components/FeatureComponents/Notes/Parts/FileAttachment/FileAttachmentExtension";
 import { CodeBlockNodeView } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockNodeView";
@@ -88,15 +86,17 @@ export const createEditorExtensions = (
         return {
           color: {
             default: null,
-            parseHTML: element => element.getAttribute('data-color') || element.style.backgroundColor,
-            renderHTML: attributes => {
+            parseHTML: (element) =>
+              element.getAttribute("data-color") ||
+              element.style.backgroundColor,
+            renderHTML: (attributes) => {
               if (!attributes.color) {
                 return {};
               }
               const bgColor = attributes.color;
               const textColor = getContrastColor(bgColor);
               return {
-                'data-color': bgColor,
+                "data-color": bgColor,
                 style: `background-color: ${bgColor}; color: ${textColor}`,
               };
             },
@@ -112,7 +112,7 @@ export const createEditorExtensions = (
       enableSlashCommands: settings.enableSlashCommands,
     }),
     InternalLink,
-    Underline,
+    TextUnderlineIcon,
     HardBreak,
     CodeBlockLowlight.configure({
       lowlight,
@@ -183,7 +183,6 @@ export const createEditorExtensions = (
     }),
     TaskList,
     TaskItem.extend({
-      nested: true,
       content: "block+",
       parseHTML() {
         return [
@@ -200,6 +199,8 @@ export const createEditorExtensions = (
           },
         ];
       },
+    }).configure({
+      nested: true,
     }),
     BulletList.extend({
       content: "listItem+",

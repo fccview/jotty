@@ -23,7 +23,7 @@ import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { Settings, Archive } from "lucide-react";
+import { Settings01Icon, Archive02Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { updateChecklistStatuses } from "@/app/_server/actions/checklist";
 import {
@@ -63,8 +63,8 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
-  const { linkIndex, notes, checklists, appSettings } = useAppMode();
-  const { allSharedItems } = useAppMode();
+  const { linkIndex, notes, checklists, appSettings, allSharedItems } =
+    useAppMode();
   const encodedCategory = encodeCategoryPath(
     checklist.category || "Uncategorized"
   );
@@ -158,13 +158,19 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const referencingItems = useMemo(() => {
     return getReferences(
       linkIndex,
-      checklist.uuid,
-      checklist.category,
+      localChecklist.uuid,
+      localChecklist.category,
       ItemTypes.CHECKLIST,
       notes,
       checklists
     );
-  }, [linkIndex, checklist.uuid, checklist.category, checklists, notes]);
+  }, [
+    linkIndex,
+    localChecklist.uuid,
+    localChecklist.category,
+    checklists,
+    notes,
+  ]);
 
   return (
     <div className="h-full flex flex-col bg-background overflow-y-auto">
@@ -190,7 +196,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             onClick={() => setShowStatusModal(true)}
             className="text-xs"
           >
-            <Settings className="h-3 w-3 mr-1" />
+            <Settings01Icon className="h-3 w-3 mr-1" />
             Manage Statuses
           </Button>
         )}
@@ -200,7 +206,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           onClick={() => setShowArchivedModal(true)}
           className="text-xs"
         >
-          <Archive className="h-3 w-3 mr-1" />
+          <Archive02Icon className="h-3 w-3 mr-1" />
           View Archived
         </Button>
       </div>

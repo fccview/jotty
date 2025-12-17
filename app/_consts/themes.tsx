@@ -1,23 +1,23 @@
 import {
-  Sun,
-  Moon,
-  Sunset,
-  Waves,
-  Trees,
-  CloudMoon,
-  Palette,
-  Terminal,
-  Github,
-  Monitor,
-  Coffee,
-  Flower2,
-  Flame,
-  Palmtree,
-  Building,
-  Laptop,
-  Sparkles,
-  LucideIcon,
-} from "lucide-react";
+  Sun03Icon,
+  GibbousMoonIcon,
+  SunsetIcon,
+  CurvyRightDirectionIcon,
+  Tree03Icon,
+  MoonCloudIcon,
+  PaintBrush04Icon,
+  GithubIcon,
+  Tv02Icon,
+  Coffee02Icon,
+  FlowerIcon,
+  FireIcon,
+  Leaf04Icon,
+  Building02Icon,
+  LaptopIcon,
+  SourceCodeIcon,
+  LaptopProgrammingIcon
+} from "hugeicons-react";
+
 import {
   loadCustomThemes,
   processCustomThemes,
@@ -32,62 +32,60 @@ const LegacyLogoBlue = (props: any) => (
   />
 );
 
-type IconComponent = LucideIcon | typeof LegacyLogo;
-
-const ICON_MAP: Record<string, IconComponent> = {
-  Sun,
-  Moon,
-  Sunset,
-  Waves,
-  Trees,
-  CloudMoon,
-  Palette,
-  Terminal,
-  Github,
-  Monitor,
-  Coffee,
-  Flower2,
-  Flame,
-  Palmtree,
-  Building,
-  Laptop,
-  Sparkles,
+const ICON_MAP: Record<string, any> = {
+  Sun03Icon,
+  GibbousMoonIcon,
+  SunsetIcon,
+  CurvyRightDirectionIcon,
+  Tree03Icon,
+  MoonCloudIcon,
+  PaintBrush04Icon,
+  LaptopIcon,
+  GithubIcon,
+  Tv02Icon,
+  Coffee02Icon,
+  FlowerIcon,
+  FireIcon,
+  Leaf04Icon,
+  Building02Icon,
+  LaptopProgrammingIcon,
+  SourceCodeIcon,
   LegacyLogo,
 };
 
 export const BUILT_IN_THEMES: Array<{
   id: string;
   name: string;
-  icon: IconComponent;
+  icon: any;
 }> = [
-  { id: "system" as const, name: "System", icon: Laptop },
-  { id: "light" as const, name: "Light", icon: Sun },
-  { id: "dark" as const, name: "Dark", icon: Moon },
-  {
-    id: "rwmarkable-light" as const,
-    name: "RWMarkable Light",
-    icon: LegacyLogoBlue,
-  },
-  {
-    id: "rwmarkable-dark" as const,
-    name: "RWMarkable Dark",
-    icon: LegacyLogoBlue,
-  },
-  { id: "fccview" as const, name: "fccview", icon: Sparkles },
-  { id: "black-white" as const, name: "Black & White", icon: Palette },
-  { id: "sunset" as const, name: "Sunset", icon: Sunset },
-  { id: "ocean" as const, name: "Ocean", icon: Waves },
-  { id: "forest" as const, name: "Forest", icon: Trees },
-  { id: "nord" as const, name: "Nord", icon: CloudMoon },
-  { id: "dracula" as const, name: "Dracula", icon: Palette },
-  { id: "monokai" as const, name: "Monokai", icon: Terminal },
-  { id: "github-dark" as const, name: "GitHub Dark", icon: Github },
-  { id: "tokyo-night" as const, name: "Tokyo Night", icon: Monitor },
-  { id: "catppuccin" as const, name: "Catppuccin", icon: Coffee },
-  { id: "rose-pine" as const, name: "Rose Pine", icon: Flower2 },
-  { id: "gruvbox" as const, name: "Gruvbox", icon: Flame },
-  { id: "solarized-dark" as const, name: "Solarized Dark", icon: Palmtree },
-];
+    { id: "system" as const, name: "System", icon: LaptopIcon },
+    { id: "light" as const, name: "Light", icon: Sun03Icon },
+    { id: "dark" as const, name: "Dark", icon: GibbousMoonIcon },
+    {
+      id: "rwmarkable-light" as const,
+      name: "RWMarkable Light",
+      icon: LegacyLogoBlue,
+    },
+    {
+      id: "rwmarkable-dark" as const,
+      name: "RWMarkable Dark",
+      icon: LegacyLogoBlue,
+    },
+    { id: "fccview" as const, name: "fccview", icon: SourceCodeIcon },
+    { id: "black-white" as const, name: "Black & White", icon: PaintBrush04Icon },
+    { id: "sunset" as const, name: "SunsetIcon", icon: SunsetIcon },
+    { id: "ocean" as const, name: "Ocean", icon: CurvyRightDirectionIcon },
+    { id: "forest" as const, name: "Forest", icon: Tree03Icon },
+    { id: "nord" as const, name: "Nord", icon: MoonCloudIcon },
+    { id: "dracula" as const, name: "Dracula", icon: PaintBrush04Icon },
+    { id: "monokai" as const, name: "Monokai", icon: LaptopProgrammingIcon },
+    { id: "github-dark" as const, name: "GitHub Dark", icon: GithubIcon },
+    { id: "tokyo-night" as const, name: "Tokyo Night", icon: Tv02Icon },
+    { id: "catppuccin" as const, name: "Catppuccin", icon: Coffee02Icon },
+    { id: "rose-pine" as const, name: "Rose Pine", icon: FlowerIcon },
+    { id: "gruvbox" as const, name: "Gruvbox", icon: FireIcon },
+    { id: "solarized-dark" as const, name: "Solarized Dark", icon: Leaf04Icon },
+  ];
 
 export const getAllThemes = async () => {
   const customConfig = await loadCustomThemes();
@@ -97,7 +95,7 @@ export const getAllThemes = async () => {
 
   customThemes.forEach((customTheme) => {
     const iconComponent =
-      ICON_MAP[customTheme.icon as keyof typeof ICON_MAP] || Palette;
+      ICON_MAP[customTheme.icon as keyof typeof ICON_MAP] || PaintBrush04Icon;
     allThemes.push({
       id: customTheme.id as any,
       name: customTheme.name,
@@ -107,8 +105,6 @@ export const getAllThemes = async () => {
 
   return allThemes;
 };
-
-export const getBuiltInThemes = () => BUILT_IN_THEMES;
 
 export const getCustomThemeColors = async () => {
   const customConfig = await loadCustomThemes();

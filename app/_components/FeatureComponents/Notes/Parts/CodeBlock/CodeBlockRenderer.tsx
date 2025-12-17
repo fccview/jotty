@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Check, Code } from "lucide-react";
+import { Copy01Icon, Tick02Icon, SourceCodeIcon } from "hugeicons-react";
 import { useState, ReactElement } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { getLanguageByValue } from "@/app/_utils/code-block-utils";
@@ -28,7 +28,9 @@ export const CodeBlockRenderer = ({
 
   const languageObj = getLanguageByValue(language.replace("hljs ", ""));
 
-  const languageIcon = languageObj?.icon || <Code className="h-4 w-4" />;
+  const languageIcon = languageObj?.icon || (
+    <SourceCodeIcon className="h-4 w-4" />
+  );
   const displayLanguage = languageObj?.label || language.replace("hljs ", "");
 
   return (
@@ -54,9 +56,9 @@ export const CodeBlockRenderer = ({
           className="h-6 w-6 p-0 text-gray-400"
         >
           {copied ? (
-            <Check className="h-3 w-3 text-green-500" />
+            <Tick02Icon className="h-3 w-3 text-green-500" />
           ) : (
-            <Copy className="h-3 w-3" />
+            <Copy01Icon className="h-3 w-3" />
           )}
         </Button>
       </div>
@@ -73,9 +75,9 @@ export const CodeBlockRenderer = ({
           className="transition-opacity opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-gray-400"
         >
           {copied ? (
-            <Check className="h-3 w-3 text-green-500" />
+            <Tick02Icon className="h-3 w-3 text-green-500" />
           ) : (
-            <Copy className="h-3 w-3" />
+            <Copy01Icon className="h-3 w-3" />
           )}
         </Button>
       </div>

@@ -5,7 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { SubtaskModal } from "./SubtaskModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -20,7 +20,8 @@ import { KanbanItemTimer } from "./KanbanItemTimer";
 import { KanbanItemContent } from "./KanbanItemContent";
 import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { Circle } from "lucide-react";
+import { CircleIcon } from "hugeicons-react";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface KanbanItemProps {
   checklist: Checklist;
@@ -33,7 +34,7 @@ interface KanbanItemProps {
   statuses: KanbanStatus[];
 }
 
-export const KanbanItem = ({
+const KanbanItemComponent = ({
   checklist,
   item,
   isDragging,
@@ -45,16 +46,21 @@ export const KanbanItem = ({
 }: KanbanItemProps) => {
   const { usersPublicData } = useAppMode();
   const { permissions } = usePermissions();
+  const { formatDateString, formatDateTimeString, formatTimeString } =
+    usePreferredDateTime();
 
-  const getUserAvatarUrl = (username: string) => {
-    if (!usersPublicData) return "";
+  const getUserAvatarUrl = useCallback(
+    (username: string) => {
+      if (!usersPublicData) return "";
 
-    return (
-      usersPublicData.find(
-        (user) => user.username?.toLowerCase() === username?.toLowerCase()
-      )?.avatarUrl || ""
-    );
-  };
+      return (
+        usersPublicData.find(
+          (user) => user.username?.toLowerCase() === username?.toLowerCase()
+        )?.avatarUrl || ""
+      );
+    },
+    [usersPublicData]
+  );
 
   const [showSubtaskModal, setShowSubtaskModal] = useState(false);
 
@@ -89,15 +95,16 @@ export const KanbanItem = ({
     }
   }, [isSortableDragging]);
 
-  const statusOptions = statuses?.map((status) => ({
-    id: status.id,
-    name: status.label,
-    color: status.color,
-    order: status.order,
-    icon: Circle
-  }));
-
-  statusOptions?.sort((a, b) => a.order - b.order);
+  const statusOptions = useMemo(() => {
+    const options = statuses?.map((status) => ({
+      id: status.id,
+      name: status.label,
+      color: status.color,
+      order: status.order,
+      icon: CircleIcon,
+    }));
+    return options?.sort((a, b) => a.order - b.order);
+  }, [statuses]);
 
   return (
     <>
@@ -122,10 +129,10 @@ export const KanbanItem = ({
           {...listeners}
           onDoubleClick={() => setShowSubtaskModal(true)}
           className={cn(
-            "group relative bg-background border rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
+            "group relative bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
             getStatusColor(item.status),
             (isDragging || isSortableDragging) &&
-            "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+              "opacity-50 scale-95 rotate-1 shadow-lg z-50"
           )}
         >
           <div className="space-y-2">
@@ -145,6 +152,8 @@ export const KanbanItem = ({
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
               onArchive={kanbanItemHook.handleArchive}
+              formatDateString={formatDateString}
+              formatDateTimeString={formatDateTimeString}
             />
 
             <KanbanItemTimer
@@ -164,12 +173,15 @@ export const KanbanItem = ({
                     kanbanItemHook.totalTime + kanbanItemHook.currentTime
                   }
                   formatTimerTime={formatTimerTime}
+                  usersPublicData={usersPublicData}
+                  formatDateString={formatDateString}
+                  formatTimeString={formatTimeString}
                 />
               </div>
             )}
 
             {item.recurrence && (
-              <div className="text-xs flex items-center gap-1 capitalize !mt-2 border bg-muted-foreground/5 border-muted-foreground/20 rounded-md p-2">
+              <div className="text-xs flex items-center gap-1 capitalize !mt-2 border bg-muted-foreground/5 border-muted-foreground/20 rounded-jotty p-2">
                 <span className="text-muted-foreground/80">
                   Repeats {getRecurrenceDescription(item.recurrence)}
                 </span>
@@ -197,3 +209,5 @@ export const KanbanItem = ({
     </>
   );
 };
+
+export const KanbanItem = memo(KanbanItemComponent);

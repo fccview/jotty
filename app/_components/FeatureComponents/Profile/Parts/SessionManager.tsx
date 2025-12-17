@@ -1,11 +1,12 @@
 "use client";
 
-import { Trash2, Loader2 } from "lucide-react";
+import { Delete03Icon, Orbit01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useSessionManager } from "@/app/_hooks/useSessionManager";
 import { SessionCard } from "@/app/_components/GlobalComponents/Cards/SessionCard";
 import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/FeedbackMessage";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 
 export const SessionManager = () => {
   const {
@@ -22,9 +23,7 @@ export const SessionManager = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-      </div>
+      <Logo className="h-6 w-6 animate-pulse" />
     );
   }
 
@@ -47,10 +46,10 @@ export const SessionManager = () => {
             disabled={terminating.all}
           >
             {terminating.all ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
             ) : (
               <>
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Delete03Icon className="h-4 w-4 mr-2" />
                 Terminate All Others
               </>
             )}

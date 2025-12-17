@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  AlertCircle,
-  Check,
-  Key,
-  Copy,
-  Eye,
-  EyeOff,
-  RefreshCw,
-} from "lucide-react";
+  AlertCircleIcon,
+  Tick02Icon,
+  LockKeyIcon,
+  Copy01Icon,
+  ViewIcon,
+  ViewOffSlashIcon,
+  RefreshIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { User as UserType, AppSettings } from "@/app/_types";
 import { updateProfile } from "@/app/_server/actions/users";
@@ -249,22 +249,22 @@ export const ProfileTab = ({
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-          <AlertCircle className="h-4 w-4 text-destructive" />
+        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
+          <AlertCircleIcon className="h-4 w-4 text-destructive" />
           <span className="text-sm text-destructive">{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-md">
-          <Check className="h-4 w-4 text-primary" />
+        <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-jotty">
+          <Tick02Icon className="h-4 w-4 text-primary" />
           <span className="text-sm text-primary">{success}</span>
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
-          <div className="flex flex-col items-center gap-4 p-4 border border-border rounded-lg">
+          <div className="flex flex-col items-center gap-4 p-4 border border-border rounded-jotty">
             <UserAvatar
               username={editedUsername}
               avatarUrl={avatarUrl}
@@ -294,7 +294,7 @@ export const ProfileTab = ({
         </div>
         <div className="md:col-span-2 space-y-4">
           <div className="space-y-4">
-            <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-lg">
+            <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-jotty">
               <div>
                 <h3 className="font-medium">API Key</h3>
                 <p className="text-sm text-muted-foreground">
@@ -316,9 +316,9 @@ export const ProfileTab = ({
                       title={showApiKey ? "Hide API Key" : "Show API Key"}
                     >
                       {showApiKey ? (
-                        <EyeOff className="h-4 w-4" />
+                        <ViewOffSlashIcon className="h-4 w-4" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <ViewIcon className="h-4 w-4" />
                       )}
                     </Button>
                     <Button
@@ -328,7 +328,7 @@ export const ProfileTab = ({
                       className="h-8 w-8 p-0"
                       title="Copy API Key"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Copy01Icon className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
@@ -344,9 +344,9 @@ export const ProfileTab = ({
                     title={apiKey ? "Regenerate API Key" : "Generate API Key"}
                   >
                     {apiKey ? (
-                      <RefreshCw className="h-4 w-4" />
+                      <RefreshIcon className="h-4 w-4" />
                     ) : (
-                      <Key className="h-4 w-4 mr-2" />
+                      <LockKeyIcon className="h-4 w-4 mr-2" />
                     )}
                     {isGenerating ? "Generating..." : apiKey ? "" : "Generate"}
                   </Button>

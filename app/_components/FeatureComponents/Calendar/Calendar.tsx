@@ -1,7 +1,11 @@
 "use client";
 
-import { ChevronRight, ChevronLeft } from "lucide-react";
-import { useCalendar, UseCalendarProps, MONTHS } from "@/app/_hooks/useCalendar";
+import { ArrowRight01Icon, ArrowLeft01Icon } from "hugeicons-react";
+import {
+  useCalendar,
+  UseCalendarProps,
+  MONTHS,
+} from "@/app/_hooks/useCalendar";
 import { cn } from "@/app/_utils/global-utils";
 
 export interface CalendarProps extends UseCalendarProps {
@@ -45,7 +49,7 @@ export default function Calendar(props: CalendarProps) {
               className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="sr-only">Previous month</span>
-              <ChevronLeft aria-hidden="true" className="size-5" />
+              <ArrowLeft01Icon aria-hidden="true" className="size-5" />
             </button>
             <div className="flex-auto flex items-center justify-center gap-2">
               <select
@@ -77,7 +81,7 @@ export default function Calendar(props: CalendarProps) {
               className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <span className="sr-only">Next month</span>
-              <ChevronRight aria-hidden="true" className="size-5" />
+              <ArrowRight01Icon aria-hidden="true" className="size-5" />
             </button>
           </div>
 
@@ -87,7 +91,7 @@ export default function Calendar(props: CalendarProps) {
             ))}
           </div>
 
-          <div className="isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-border text-sm shadow-sm ring-1 ring-border dark:shadow-none">
+          <div className="isolate mt-2 grid grid-cols-7 gap-px rounded-jotty bg-border text-sm shadow-sm ring-1 ring-border dark:shadow-none">
             {days.map((day, index) => {
               const isFirstInRow = index % 7 === 0;
               const isLastInRow = index % 7 === 6;
@@ -125,26 +129,28 @@ export default function Calendar(props: CalendarProps) {
                     isFirstInRow && isFirstRow ? "rounded-tl-lg" : "",
                     isLastInRow && isFirstRow ? "rounded-tr-lg" : "",
                     isFirstInRow && isLastRow ? "rounded-bl-lg" : "",
-                    isLastInRow && isLastRow ? "rounded-br-lg" : "",
+                    isLastInRow && isLastRow ? "rounded-br-lg" : ""
                   )}
                 >
                   <time
                     dateTime={day.date.toISOString()}
                     className={`
                       mx-auto flex size-7 items-center justify-center rounded-full
-                      ${(day.isSelected ||
-                        day.isRangeStart ||
-                        day.isRangeEnd) &&
+                      ${
+                        (day.isSelected ||
+                          day.isRangeStart ||
+                          day.isRangeEnd) &&
                         !day.isToday
-                        ? "bg-foreground text-background"
-                        : ""
+                          ? "bg-foreground text-background"
+                          : ""
                       }
-                      ${(day.isSelected ||
-                        day.isRangeStart ||
-                        day.isRangeEnd) &&
+                      ${
+                        (day.isSelected ||
+                          day.isRangeStart ||
+                          day.isRangeEnd) &&
                         day.isToday
-                        ? "bg-primary text-primary-foreground"
-                        : ""
+                          ? "bg-primary text-primary-foreground"
+                          : ""
                       }
                     `}
                   >

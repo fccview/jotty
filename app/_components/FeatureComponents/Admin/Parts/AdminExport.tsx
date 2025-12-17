@@ -160,7 +160,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
         </p>
       </div>
 
-      <div className="space-y-4 p-6 rounded-lg bg-muted/50 shadow-sm">
+      <div className="space-y-4 p-6 rounded-jotty bg-muted/50 shadow-sm">
         <Dropdown
           onChange={(value) => setSelectedExportType(value as ExportType)}
           value={selectedExportType}
@@ -211,7 +211,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
       )}
 
       {downloadUrl && !exporting && (
-        <div className="p-4 border rounded-md bg-secondary text-secondary-foreground text-center text-sm">
+        <div className="p-4 border rounded-jotty bg-secondary text-secondary-foreground text-center text-sm">
           <p>
             Export ready!{" "}
             <a
@@ -226,7 +226,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
       )}
 
       {error && (
-        <div className="p-4 border border-destructive rounded-md bg-destructive/10 text-destructive text-center">
+        <div className="p-4 border border-destructive rounded-jotty bg-destructive/10 text-destructive text-center">
           <p className="font-medium">Error: {error}</p>
         </div>
       )}

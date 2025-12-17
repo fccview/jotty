@@ -245,9 +245,8 @@ export const useSharingTools = ({
 
       setStatus((prev) => ({
         ...prev,
-        success: `Item ${
-          action === "share" ? "shared" : "unshared"
-        } successfully!`,
+        success: `Item ${action === "share" ? "shared" : "unshared"
+          } successfully!`,
       }));
     }
   };
@@ -374,9 +373,8 @@ export const useSharingTools = ({
 
       setStatus((prev) => ({
         ...prev,
-        success: `Item is now ${
-          isPublic ? "publicly" : "no longer"
-        } accessible!`,
+        success: `Item is now ${isPublic ? "publicly" : "no longer"
+          } accessible!`,
       }));
 
       if (isPublic) {

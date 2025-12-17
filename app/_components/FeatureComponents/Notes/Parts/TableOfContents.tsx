@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { List } from "lucide-react";
+import { LeftToRightListBulletIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { extractHeadings as extractHeadingsFromMarkdown } from "@/app/_utils/markdown-utils";
 
@@ -151,7 +151,7 @@ export const TableOfContents = ({
     >
       <div className="p-3 border-b border-border">
         <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-          <List className="h-4 w-4" />
+          <LeftToRightListBulletIcon className="h-4 w-4" />
           Contents
         </h3>
       </div>

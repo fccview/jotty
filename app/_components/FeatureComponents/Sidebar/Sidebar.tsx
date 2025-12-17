@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, Shield, User } from "lucide-react";
+import { Settings01Icon, ShieldUserIcon, UserIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { DeleteCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/DeleteCategoryModal";
 import { RenameCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/RenameCategoryModal";
@@ -150,7 +150,7 @@ export const Sidebar = (props: SidebarProps) => {
                 <DynamicLogo className="h-8 w-8" size="32x32" />
                 <div className="flex items-center gap-2">
                   <AppName
-                    className="text-xl font-bold text-foreground"
+                    className="text-xl font-bold text-foreground jotty-app-name"
                     fallback={isRwMarkable ? "rwMarkable" : "jotty·page"}
                   />
                   {isDemoMode && (
@@ -248,7 +248,7 @@ export const Sidebar = (props: SidebarProps) => {
                 checkNavigation(() => router.push("/profile"));
               }}
             >
-              <User className="h-4 w-4" />
+              <UserIcon className="h-4 w-4" />
             </Button>
           </div>
 
@@ -279,13 +279,13 @@ export const Sidebar = (props: SidebarProps) => {
               <NavigationHelpIcon />
 
               <NavigationGlobalIcon
-                icon={<Settings className="h-6 w-6" />}
+                icon={<Settings01Icon className="h-6 w-6" />}
                 onClick={() => checkNavigation(() => onOpenSettings())}
               />
 
               {user?.isAdmin && (
                 <NavigationGlobalIcon
-                  icon={<Shield className="h-5 w-5" />}
+                  icon={<ShieldUserIcon className="h-5 w-5" />}
                   onClick={() => checkNavigation(() => router.push("/admin"))}
                 />
               )}

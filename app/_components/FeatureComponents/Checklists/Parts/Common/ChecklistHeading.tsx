@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Plus, ClipboardList, RefreshCw } from "lucide-react";
+import { Add01Icon, TaskAdd01Icon, RefreshIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { RecurrenceRule, Checklist, Item } from "@/app/_types";
 import { isMobileDevice } from "@/app/_utils/global-utils";
@@ -155,7 +155,7 @@ export const ChecklistHeading = ({
                 onChange={handleInputChange}
                 onFocus={handleInputFocus}
                 placeholder={placeholder}
-                className="w-full px-4 py-3 border border-input bg-background rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-ring transition-all duration-200 shadow-sm"
+                className="w-full px-4 py-3 border border-input bg-background rounded-jotty text-base focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 focus:border-ring transition-all duration-200 shadow-sm"
                 disabled={isLoading}
               />
               {showSuggestions &&
@@ -183,7 +183,7 @@ export const ChecklistHeading = ({
                   title="Bulk add items"
                   className="px-3 lg:px-4 shadow-sm"
                 >
-                  <ClipboardList className="h-4 w-4 lg:mr-2" />
+                  <TaskAdd01Icon className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">Bulk</span>
                 </Button>
               )}
@@ -198,7 +198,7 @@ export const ChecklistHeading = ({
                       : ""
                   }`}
                 >
-                  <Plus className="h-4 w-4 lg:mr-2" />
+                  <Add01Icon className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">{submitButtonText}</span>
                 </Button>
 
@@ -211,7 +211,7 @@ export const ChecklistHeading = ({
                     title="Add recurring item"
                     className="px-3 lg:px-4 shadow-sm border-l-2 border-border rounded-tl-none rounded-bl-none"
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshIcon className="h-4 w-4" />
                   </Button>
                 )}
               </div>

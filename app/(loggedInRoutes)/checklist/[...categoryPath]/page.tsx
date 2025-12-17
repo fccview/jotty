@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
-import { getListById, getUserChecklists } from "@/app/_server/actions/checklist";
+import {
+  getListById,
+  getUserChecklists,
+} from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getCurrentUser } from "@/app/_server/actions/users";

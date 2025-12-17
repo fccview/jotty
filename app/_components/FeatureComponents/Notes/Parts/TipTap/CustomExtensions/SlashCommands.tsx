@@ -3,19 +3,19 @@ import { ReactRenderer } from "@tiptap/react";
 import Suggestion from "@tiptap/suggestion";
 import tippy from "tippy.js";
 import {
-  Heading1,
-  Heading2,
-  List,
-  CheckSquare,
-  Code,
-  Quote,
-  Table,
-  Image as ImageIcon,
-  Paperclip,
-  BookText,
-  Network,
-  PenTool,
-} from "lucide-react";
+  Heading01Icon,
+  Heading02Icon,
+  LeftToRightListBulletIcon,
+  CheckmarkSquare04Icon,
+  SourceCodeIcon,
+  QuoteUpIcon,
+  LayoutTable01Icon,
+  Image02Icon,
+  Attachment01Icon,
+  SquareArrowDown02Icon,
+  SharedWifiIcon,
+  DrawingModeIcon,
+} from "hugeicons-react";
 import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommandsList";
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
 import { ItemType } from "@/app/_types";
@@ -47,7 +47,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Heading 1",
     description: "Big section heading",
-    icon: <Heading1 className="h-4 w-4" />,
+    icon: <Heading01Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).setHeading({ level: 1 }).run();
     },
@@ -55,7 +55,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Heading 2",
     description: "Medium section heading",
-    icon: <Heading2 className="h-4 w-4" />,
+    icon: <Heading02Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).setHeading({ level: 2 }).run();
     },
@@ -63,7 +63,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Bullet List",
     description: "Create a bulleted list",
-    icon: <List className="h-4 w-4" />,
+    icon: <LeftToRightListBulletIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleBulletList().run();
     },
@@ -71,7 +71,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Task List",
     description: "Create a task list",
-    icon: <CheckSquare className="h-4 w-4" />,
+    icon: <CheckmarkSquare04Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleTaskList().run();
     },
@@ -79,7 +79,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Code Block",
     description: "Create a code block",
-    icon: <Code className="h-4 w-4" />,
+    icon: <SourceCodeIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
     },
@@ -87,7 +87,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Quote",
     description: "Create a blockquote",
-    icon: <Quote className="h-4 w-4" />,
+    icon: <QuoteUpIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleBlockquote().run();
     },
@@ -95,7 +95,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Table",
     description: "Insert a table",
-    icon: <Table className="h-4 w-4" />,
+    icon: <LayoutTable01Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor
         .chain()
@@ -108,7 +108,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Image",
     description: "Insert an image",
-    icon: <ImageIcon className="h-4 w-4" />,
+    icon: <Image02Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).run();
       const url = window.prompt("Image URL");
@@ -120,7 +120,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "File",
     description: "Attach a file",
-    icon: <Paperclip className="h-4 w-4" />,
+    icon: <Attachment01Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).run();
       const url = window.prompt("File URL");
@@ -142,7 +142,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Collapsible",
     description: "Create a collapsible section",
-    icon: <BookText className="h-4 w-4" />,
+    icon: <SquareArrowDown02Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       const selectedText = editor.state.doc.textBetween(
         range.from,
@@ -160,7 +160,7 @@ const slashCommands: SlashCommandItem[] = [
   {
     title: "Mermaid Diagram",
     description: "Create a Mermaid diagram",
-    icon: <Network className="h-4 w-4" />,
+    icon: <SharedWifiIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       const defaultMermaid = `graph TD
     A[Start] --> B{Decision}
@@ -168,13 +168,18 @@ const slashCommands: SlashCommandItem[] = [
     B -->|No| D[Option 2]
     C --> E[End]
     D --> E`;
-      editor.chain().focus().deleteRange(range).setMermaid(defaultMermaid).run();
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .setMermaid(defaultMermaid)
+        .run();
     },
   },
   {
     title: "Draw.io Diagram",
     description: "Create a visual diagram",
-    icon: <PenTool className="h-4 w-4" />,
+    icon: <DrawingModeIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).insertDrawIo().run();
     },

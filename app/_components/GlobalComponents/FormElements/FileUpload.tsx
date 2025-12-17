@@ -1,7 +1,12 @@
 import { Button } from "../Buttons/Button";
-import { Upload, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Upload01Icon,
+  CheckmarkCircle04Icon,
+  AlertCircleIcon,
+} from "hugeicons-react";
 import { formatFileSize } from "@/app/_utils/file-icon-utils";
-import { Loader2 } from "lucide-react";
+import { Orbit01Icon } from "hugeicons-react";
+import { Logo } from "../Layout/Logo/Logo";
 
 interface FileUploadProps {
   activeTab: "images" | "videos" | "files";
@@ -30,8 +35,8 @@ export const FileUpload = ({
           activeTab === "images"
             ? "image/*"
             : activeTab === "videos"
-            ? "video/*"
-            : "*"
+              ? "video/*"
+              : "*"
         }
         onChange={onFileSelect}
         className="hidden"
@@ -42,7 +47,7 @@ export const FileUpload = ({
         onClick={() => document.getElementById("file-upload")?.click()}
         className="w-full sm:w-auto"
       >
-        <Upload className="h-4 w-4 mr-2" /> Choose{" "}
+        <Upload01Icon className="h-4 w-4 mr-2" /> Choose{" "}
         {activeTab === "images" ? "Image" : "File"}
       </Button>
       {selectedFile && (
@@ -50,11 +55,11 @@ export const FileUpload = ({
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {isUploading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
+                <Logo className="h-4 w-4 animate-pulse" />
               ) : uploadError ? (
-                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                <AlertCircleIcon className="h-4 w-4 text-destructive flex-shrink-0" />
               ) : (
-                <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                <CheckmarkCircle04Icon className="h-4 w-4 text-green-500 flex-shrink-0" />
               )}
               <span className="text-sm text-foreground truncate">
                 {selectedFile.name}
@@ -79,13 +84,13 @@ export const FileUpload = ({
           )}
 
           {uploadError && (
-            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-jotty">
               {uploadError}
             </div>
           )}
 
           {fileSizeError && (
-            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-jotty">
               {fileSizeError}
             </div>
           )}

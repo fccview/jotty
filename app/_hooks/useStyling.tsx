@@ -49,7 +49,7 @@ export const useStyling = () => {
   const [editingTheme, setEditingTheme] = useState<string | null>(null);
   const [themeForm, setThemeForm] = useState<ThemeFormData>({
     name: "",
-    icon: "Palette",
+    icon: "PaintBrush04Icon",
     colors: {
       "--background": "",
       "--foreground": "",
@@ -181,7 +181,7 @@ export const useStyling = () => {
     setEditingTheme(null);
     setThemeForm({
       name: "",
-      icon: "Palette",
+      icon: "PaintBrush04Icon",
       colors: {
         "--background": "",
         "--foreground": "",
@@ -235,7 +235,7 @@ export const useStyling = () => {
 
     setThemeForm({
       name: theme.name,
-      icon: theme.icon || "Palette",
+      icon: theme.icon || "PaintBrush04Icon",
       colors: {
         "--background": processedColors["--background"] || "",
         "--foreground": processedColors["--foreground"] || "",

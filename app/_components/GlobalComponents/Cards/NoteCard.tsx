@@ -1,6 +1,12 @@
 "use client";
 
-import { Clock, Type, Pin, PinOff } from "lucide-react";
+import {
+  Clock01Icon,
+  TextNumberSignIcon,
+  PinIcon,
+  PinOffIcon,
+  LockKeyIcon,
+} from "hugeicons-react";
 import { Note } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { useMemo } from "react";
@@ -59,6 +65,7 @@ export const NoteCard = ({
 
   const displayTitle = parsedData?.title || note?.title;
   const displayContent = parsedData?.content || note?.content || "";
+  const isEncrypted = parsedData?.encrypted ?? note?.encrypted ?? false;
 
   const { previewText, wordCount } = useMemo(() => {
     const content = displayContent;
@@ -75,8 +82,8 @@ export const NoteCard = ({
       previewText: fullScrollableContent
         ? content
         : plainText.length > 550
-          ? plainText.substring(0, 550) + "..."
-          : plainText,
+        ? plainText.substring(0, 550) + "..."
+        : plainText,
       wordCount: words.length,
     };
   }, [displayContent, fullScrollableContent]);
@@ -92,14 +99,16 @@ export const NoteCard = ({
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
 
   const cardStyle = {
     ...style,
     ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
-    ...(fixedWidth ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth } : {}),
+    ...(fixedWidth
+      ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth }
+      : {}),
   };
 
   return (
@@ -107,8 +116,9 @@ export const NoteCard = ({
       ref={setNodeRef}
       style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-note-card bg-card border border-border rounded-xl hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${isDragging ? "border-primary/30" : ""
-        }`}
+      className={`jotty-note-card bg-card border border-border rounded-md hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${
+        isDragging ? "border-primary/30" : ""
+      }`}
     >
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
@@ -118,9 +128,14 @@ export const NoteCard = ({
             onPointerDown={(e) => isDraggable && e.stopPropagation()}
             onMouseDown={(e) => isDraggable && e.stopPropagation()}
           >
-            <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-              {displayTitle}
-            </h3>
+            <div className="flex items-start gap-2">
+              {isEncrypted && (
+                <LockKeyIcon className="h-4 w-4 mt-1 text-primary flex-shrink-0" />
+              )}
+              <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                {displayTitle}
+              </h3>
+            </div>
           </div>
           {onTogglePin && (
             <button
@@ -128,14 +143,15 @@ export const NoteCard = ({
                 e.stopPropagation();
                 onTogglePin(note);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"
-                } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-lg flex-shrink-0`}
-              title={isPinned ? "Unpin" : "Pin"}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-jotty flex-shrink-0`}
+              title={isPinned ? "Unpin" : "PinIcon"}
             >
               {isPinned ? (
-                <PinOff className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                <PinOffIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
               ) : (
-                <Pin className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                <PinIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
               )}
             </button>
           )}
@@ -144,13 +160,20 @@ export const NoteCard = ({
 
       <div className="px-4 pb-4 flex-1">
         <div className="jotty-note-card-content relative max-h-72 overflow-y-auto">
-          {showMarkdownPreview ? (
+          {isEncrypted ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-muted-foreground italic">
+                This note is encrypted
+              </p>
+            </div>
+          ) : showMarkdownPreview ? (
             <div className="text-sm text-muted-foreground prose prose-sm max-w-none">
               <div
-                className={`${fullScrollableContent
-                  ? "max-h-[200px] overflow-y-auto"
-                  : "line-clamp-4"
-                  } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
+                className={`${
+                  fullScrollableContent
+                    ? "max-h-[200px] overflow-y-auto"
+                    : "line-clamp-4"
+                } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
               >
                 <UnifiedMarkdownRenderer content={displayContent} />
               </div>
@@ -175,18 +198,18 @@ export const NoteCard = ({
               </div>
             )}
             {!sharer && categoryName && (
-              <span className="bg-primary/10 text-primary px-2 py-1 rounded-md font-medium">
+              <span className="bg-primary/10 text-primary px-2 py-1 rounded-jotty font-medium">
                 {categoryName}
               </span>
             )}
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <Type className="h-3 w-3" />
+              <TextNumberSignIcon className="h-3 w-3" />
               <span>{wordCount}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
+              <Clock01Icon className="h-3 w-3" />
               <span>{formatRelativeTime(note.updatedAt)}</span>
             </div>
           </div>

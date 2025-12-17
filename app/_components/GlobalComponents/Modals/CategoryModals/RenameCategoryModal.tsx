@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Edit3 } from "lucide-react";
 import { Modal } from "../Modal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface RenameCategoryModalProps {
   isOpen: boolean;
@@ -60,30 +60,22 @@ export const RenameCategoryModal = ({
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Rename Category"
-      titleIcon={<Edit3 className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Rename Category">
       <p className="text-sm text-muted-foreground mb-4">
         Enter a new name for &quot;{categoryName}&quot;
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Category Name
-          </label>
-          <input
-            type="text"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:outline-none"
-            placeholder="Enter category name..."
-            autoFocus
-          />
-        </div>
+        <Input
+          id="categoryName"
+          name="categoryName"
+          label="Category Name"
+          type="text"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Enter category name..."
+          autoFocus
+        />
 
         <div className="flex gap-3 justify-end">
           <Button

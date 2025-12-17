@@ -4,13 +4,11 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { QUOTES } from "@/app/_consts/notes";
-import { Home, RefreshCw } from "lucide-react";
+import { Home05Icon, RefreshIcon } from "hugeicons-react";
 
 export const NotFoundClient = () => {
   const router = useRouter();
-  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(() =>
-    Math.floor(Math.random() * QUOTES.length)
-  );
+  const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [quoteCount, setQuoteCount] = useState(1);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -33,6 +31,10 @@ export const NotFoundClient = () => {
       setIsTransitioning(false);
     }, 300);
   }, [getRandomQuoteIndex, isTransitioning]);
+
+  useEffect(() => {
+    setCurrentQuoteIndex(Math.floor(Math.random() * QUOTES.length));
+  }, []);
 
   useEffect(() => {
     if (intervalRef.current) {
@@ -93,11 +95,10 @@ export const NotFoundClient = () => {
           <div className="relative min-h-[100px] flex items-center justify-center px-4">
             <div className="relative w-full">
               <p
-                className={`text-lg md:text-xl text-muted-foreground transition-all duration-300 transform ${
-                  isTransitioning
+                className={`text-lg md:text-xl text-muted-foreground transition-all duration-300 transform ${isTransitioning
                     ? "opacity-0 translate-y-2"
                     : "opacity-100 translate-y-0"
-                }`}
+                  }`}
               >
                 &ldquo;{QUOTES[currentQuoteIndex]}&rdquo;
               </p>
@@ -113,10 +114,9 @@ export const NotFoundClient = () => {
             size="lg"
             className="group relative overflow-hidden"
           >
-            <RefreshCw
-              className={`h-5 w-5 mr-2 transition-transform duration-300 ${
-                isTransitioning ? "animate-spin" : "group-hover:rotate-180"
-              }`}
+            <RefreshIcon
+              className={`h-5 w-5 mr-2 transition-transform duration-300 ${isTransitioning ? "animate-spin" : "group-hover:rotate-180"
+                }`}
             />
             New Quote
             <span className="ml-2 text-xs opacity-60 hidden sm:inline">
@@ -124,7 +124,7 @@ export const NotFoundClient = () => {
             </span>
           </Button>
           <Button onClick={() => router.push("/")} size="lg" className="group">
-            <Home className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
+            <Home05Icon className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
             Go Home
             <span className="ml-2 text-xs opacity-60 hidden sm:inline">
               (Enter)

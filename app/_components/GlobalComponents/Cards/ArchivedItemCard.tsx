@@ -1,6 +1,11 @@
 "use client";
 
-import { Clock, Archive, FileText, ListTodo } from "lucide-react";
+import {
+  Clock01Icon,
+  Archive02Icon,
+  File02Icon,
+  CheckmarkSquare04Icon,
+} from "hugeicons-react";
 import { ArchivedItem } from "@/app/_server/actions/archived";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -15,10 +20,11 @@ export const ArchivedItemCard = ({
   item,
   onUnarchive,
 }: ArchivedItemCardProps) => {
-  const Icon = item.type === ItemTypes.CHECKLIST ? ListTodo : FileText;
+  const Icon =
+    item.type === ItemTypes.CHECKLIST ? CheckmarkSquare04Icon : File02Icon;
 
   return (
-    <div className="jotty-archived-item-card bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/50 transition-all duration-200 group flex flex-col h-full">
+    <div className="jotty-archived-item-card bg-card border border-border rounded-jotty p-4 hover:shadow-md hover:border-primary/50 transition-all duration-200 group flex flex-col h-full">
       <div className="flex items-start gap-2 mb-3">
         <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
         <h3
@@ -39,8 +45,10 @@ export const ArchivedItemCard = ({
           )}
         </div>
         <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          <span>{item.updatedAt ? formatRelativeTime(item.updatedAt) : "Unknown"}</span>
+          <Clock01Icon className="h-3 w-3" />
+          <span>
+            {item.updatedAt ? formatRelativeTime(item.updatedAt) : "Unknown"}
+          </span>
         </div>
       </div>
 
@@ -50,7 +58,7 @@ export const ArchivedItemCard = ({
         onClick={() => onUnarchive(item)}
         className="w-full mt-auto"
       >
-        <Archive className="h-3 w-3 mr-1.5" />
+        <Archive02Icon className="h-3 w-3 mr-1.5" />
         Unarchive
       </Button>
     </div>

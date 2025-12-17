@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sun, Moon } from "lucide-react";
+import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 
 interface DrawioRendererProps {
   svgData: string;
@@ -9,12 +9,18 @@ interface DrawioRendererProps {
   className?: string;
 }
 
-export const DrawioRenderer = ({ svgData, themeMode: initialTheme = "light", className = "" }: DrawioRendererProps) => {
+export const DrawioRenderer = ({
+  svgData,
+  themeMode: initialTheme = "light",
+  className = "",
+}: DrawioRendererProps) => {
   const [themeMode, setThemeMode] = useState(initialTheme);
 
   if (!svgData) {
     return (
-      <div className={`border border-border rounded p-4 my-4 text-center text-muted-foreground ${className}`}>
+      <div
+        className={`border border-border rounded p-4 my-4 text-center text-muted-foreground ${className}`}
+      >
         <p>Draw.io diagram (no preview available)</p>
       </div>
     );
@@ -25,20 +31,29 @@ export const DrawioRenderer = ({ svgData, themeMode: initialTheme = "light", cla
   };
 
   return (
-    <div className={`relative group border border-border rounded-md p-4 my-4 bg-background ${className}`}>
+    <div
+      className={`relative group border border-border rounded-jotty p-4 my-4 bg-background ${className}`}
+    >
       <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 z-10">
         <button
           onClick={toggleTheme}
           className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
           title={`Switch to ${themeMode === "light" ? "dark" : "light"} mode`}
         >
-          {themeMode === "light" ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+          {themeMode === "light" ? (
+            <GibbousMoonIcon className="h-3 w-3" />
+          ) : (
+            <Sun03Icon className="h-3 w-3" />
+          )}
         </button>
       </div>
       <div
         className="flex justify-center items-center"
         style={{
-          filter: themeMode === "dark" ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)" : "none",
+          filter:
+            themeMode === "dark"
+              ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)"
+              : "none",
         }}
         dangerouslySetInnerHTML={{ __html: svgData }}
       />

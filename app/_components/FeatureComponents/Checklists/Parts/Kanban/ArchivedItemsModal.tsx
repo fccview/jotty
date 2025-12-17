@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Archive, Undo2 } from "lucide-react";
+import { Archive02Icon } from "hugeicons-react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Item, KanbanStatus } from "@/app/_types";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
+import { TaskStatus } from "@/app/_types/enums";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Undo02Icon } from "@hugeicons/core-free-icons";
 
 interface ArchivedItemsModalProps {
   isOpen: boolean;
@@ -65,7 +67,6 @@ export const ArchivedItemsModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Archived Items"
-      titleIcon={<Archive className="h-5 w-5" />}
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">
@@ -81,15 +82,18 @@ export const ArchivedItemsModal = ({
 
         {filteredItems.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <Archive className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>No archived items{filterStatus !== "all" ? " with this status" : ""}</p>
+            <Archive02Icon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>
+              No archived items
+              {filterStatus !== "all" ? " with this status" : ""}
+            </p>
           </div>
         ) : (
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
             {filteredItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between gap-3 p-3 border-l-4 border rounded-lg bg-muted/30"
+                className="flex items-center justify-between gap-3 p-3 border-l-4 border rounded-jotty bg-muted/30"
                 style={{
                   borderLeftColor: item.previousStatus
                     ? getStatusColor(item.previousStatus)
@@ -101,7 +105,8 @@ export const ArchivedItemsModal = ({
                   <div className="flex items-center gap-2 mt-1">
                     {item.archivedAt && (
                       <p className="text-xs text-muted-foreground">
-                        Archived {new Date(item.archivedAt).toLocaleDateString()}
+                        Archived{" "}
+                        {new Date(item.archivedAt).toLocaleDateString()}
                         {item.archivedBy && ` by ${item.archivedBy}`}
                       </p>
                     )}
@@ -127,7 +132,7 @@ export const ArchivedItemsModal = ({
                   onClick={() => onUnarchive(item.id)}
                   className="shrink-0"
                 >
-                  <Undo2 className="h-3 w-3 mr-1" />
+                  <HugeiconsIcon icon={Undo02Icon} className="h-3 w-3 mr-1" />
                   Restore
                 </Button>
               </div>

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, ChevronDown, ChevronRight, Circle } from "lucide-react";
+import { CheckmarkCircle04Icon, ArrowDown01Icon, ArrowRight01Icon, CircleIcon } from "hugeicons-react";
 import { Checklist, Item } from "@/app/_types";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
-import { cn } from "@/app/_utils/global-utils";
 
 interface ChecklistProgressProps {
   checklist: Checklist;
@@ -42,7 +41,7 @@ export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
         className="w-full flex items-center justify-between py-1.5 px-3 hover:bg-muted/40 transition-colors group"
       >
         <div className="flex items-center gap-2">
-          {progress === 100 ? <CheckCircle className="h-3.5 w-3.5 transition-all duration-300 text-primary" /> : <Circle className="h-3.5 w-3.5 transition-all duration-300 text-primary/60" />}
+          {progress === 100 ? <CheckmarkCircle04Icon className="h-3.5 w-3.5 transition-all duration-300 text-primary" /> : <CircleIcon className="h-3.5 w-3.5 transition-all duration-300 text-primary/60" />}
           <span className="text-xs font-medium text-foreground">
             {completedCount}/{totalCount}
           </span>
@@ -58,9 +57,9 @@ export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
             />
           </div>
           {isOpen ? (
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-all duration-200" />
+            <ArrowDown01Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-all duration-200" />
           ) : (
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-all duration-200" />
+            <ArrowRight01Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-all duration-200" />
           )}
         </div>
       </button>

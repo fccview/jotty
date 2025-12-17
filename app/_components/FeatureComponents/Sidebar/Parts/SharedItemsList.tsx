@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react";
 import {
-  ChevronDown,
-  ChevronRight,
-  Users,
-  User,
-  FileText,
-  CheckSquare,
-} from "lucide-react";
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  UserMultipleIcon,
+  File02Icon,
+  CheckmarkSquare04Icon,
+} from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -79,16 +78,16 @@ export const SharedItemsList = ({
         <button
           onClick={onToggleCollapsed}
           className={cn(
-            "flex items-center gap-2 py-2 pr-2 text-sm rounded-md transition-colors w-full text-left",
+            "flex items-center gap-2 py-2 pr-2 text-sm rounded-jotty transition-colors w-full text-left",
             "hover:bg-muted/50 cursor-pointer"
           )}
         >
           {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <ArrowRight01Icon className="h-4 w-4" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ArrowDown01Icon className="h-4 w-4" />
           )}
-          <Users className="h-4 w-4 text-primary" />
+          <UserMultipleIcon className="h-4 w-4 text-primary" />
           <span className="truncate font-medium text-primary">
             Shared with you
           </span>
@@ -108,14 +107,14 @@ export const SharedItemsList = ({
                 <button
                   onClick={() => toggleUserCollapsed(sharer)}
                   className={cn(
-                    "flex items-center gap-2 py-2 pr-2 text-sm rounded-md transition-colors w-full text-left",
+                    "flex items-center gap-2 py-2 pr-2 text-sm rounded-jotty transition-colors w-full text-left",
                     "hover:bg-muted/50 cursor-pointer"
                   )}
                 >
                   {isUserCollapsed ? (
-                    <ChevronRight className="h-4 w-4" />
+                    <ArrowRight01Icon className="h-4 w-4" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ArrowDown01Icon className="h-4 w-4" />
                   )}
                   <UserAvatar size="xs" username={sharer} />
                   <span className="truncate font-medium text-foreground">
@@ -143,17 +142,21 @@ export const SharedItemsList = ({
                           onClick={() => onItemClick(minimalItem)}
                           data-sidebar-item-selected={isSelected}
                           className={cn(
-                            "flex items-center gap-2 py-2 px-3 text-sm rounded-md transition-colors w-full text-left",
-                            isSelected ? "bg-primary/60 text-primary-foreground" : "hover:bg-muted/50 text-foreground"
+                            "flex items-center gap-2 py-2 px-3 text-sm rounded-jotty transition-colors w-full text-left",
+                            isSelected
+                              ? "bg-primary/60 text-primary-foreground"
+                              : "hover:bg-muted/50 text-foreground"
                           )}
                         >
                           {mode === "checklists" ? (
-                            <CheckSquare className="h-4 w-4" />
+                            <CheckmarkSquare04Icon className="h-4 w-4" />
                           ) : (
-                            <FileText className="h-4 w-4" />
+                            <File02Icon className="h-4 w-4" />
                           )}
                           <span className="truncate flex-1">
-                            {appSettings?.parseContent === "yes" ? item.id : capitalize(item.id.replace(/-/g, " "))}
+                            {appSettings?.parseContent === "yes"
+                              ? item.id
+                              : capitalize(item.id.replace(/-/g, " "))}
                           </span>
                         </button>
                       );

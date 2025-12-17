@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Editor } from "@tiptap/react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Table } from "lucide-react";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface TableInsertModalProps {
   isOpen: boolean;
@@ -30,40 +30,29 @@ export const TableInsertModal = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Insert Table"
-      titleIcon={<Table className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Insert Table">
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Rows
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={rows}
-              onChange={(e) => setRows(parseInt(e.target.value) || 1)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Columns
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="10"
-              value={cols}
-              onChange={(e) => setCols(parseInt(e.target.value) || 1)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-            />
-          </div>
+          <Input
+            id="rows"
+            name="rows"
+            label="Rows"
+            type="number"
+            min="1"
+            max="10"
+            value={rows.toString()}
+            onChange={(e) => setRows(parseInt(e.target.value) || 1)}
+          />
+          <Input
+            id="cols"
+            name="cols"
+            label="Columns"
+            type="number"
+            min="1"
+            max="10"
+            value={cols.toString()}
+            onChange={(e) => setCols(parseInt(e.target.value) || 1)}
+          />
         </div>
 
         <div className="flex gap-3 pt-4">

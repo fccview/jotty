@@ -1,7 +1,13 @@
 import { cn } from "@/app/_utils/global-utils";
 import { Button } from "../../../Buttons/Button";
-import { Loader2, MessageCircle, Facebook, Mail } from "lucide-react";
-import { Copy } from "lucide-react";
+import {
+  Orbit01Icon,
+  RedditIcon,
+  Facebook01Icon,
+  Mail01Icon,
+} from "hugeicons-react";
+import { Copy01Icon } from "hugeicons-react";
+import { Logo } from "../../../Layout/Logo/Logo";
 
 interface PublicShareTabProps {
   isLoading: boolean;
@@ -64,7 +70,7 @@ export const PublicShareTab = ({
     },
     {
       name: "Reddit",
-      Icon: MessageCircle,
+      Icon: RedditIcon,
       color: "text-[#FF4500]",
       onClick: () =>
         window.open(
@@ -76,7 +82,7 @@ export const PublicShareTab = ({
     },
     {
       name: "Facebook",
-      Icon: Facebook,
+      Icon: Facebook01Icon,
       color: "text-[#1877F2]",
       onClick: () =>
         window.open(
@@ -88,7 +94,7 @@ export const PublicShareTab = ({
     },
     {
       name: "Email",
-      Icon: Mail,
+      Icon: Mail01Icon,
       onClick: () => {
         window.location.href = `mailto:?subject=${encodeURIComponent(
           `Check out this ${itemType}: ${itemTitle}`
@@ -101,7 +107,7 @@ export const PublicShareTab = ({
 
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-muted/30 rounded-lg border border-border">
+      <div className="p-4 bg-muted/30 rounded-jotty border border-border">
         <h4 className="font-medium">Public Access</h4>
         <p className="text-sm text-muted-foreground mb-3">
           Make this {itemType} accessible to anyone with the link.
@@ -114,7 +120,7 @@ export const PublicShareTab = ({
         >
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
               Updating...
             </>
           ) : isPubliclyShared ? (
@@ -125,16 +131,21 @@ export const PublicShareTab = ({
         </Button>
       </div>
       {isPubliclyShared && publicUrl && (
-        <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-4">
+        <div className="p-4 bg-primary/5 border border-primary/20 rounded-jotty space-y-4">
           <div className="flex gap-2">
             <input
               type="text"
               value={publicUrl}
               readOnly
-              className="flex-1 px-3 py-2 bg-background border rounded-md text-sm font-mono"
+              className="flex-1 px-3 py-2 bg-background border rounded-jotty text-sm font-mono"
             />
-            <Button onClick={handleCopyUrl} size="sm" variant="outline" title="Copy URL">
-              <Copy className="h-4 w-4" />
+            <Button
+              onClick={handleCopyUrl}
+              size="sm"
+              variant="outline"
+              title="Copy URL"
+            >
+              <Copy01Icon className="h-4 w-4" />
             </Button>
           </div>
           <div className="flex gap-2">

@@ -3,18 +3,18 @@
 import { Modal } from "../Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import {
-  Shield,
-  Trash2,
-  Edit3,
-  Plus,
-  Save,
-  AlertCircle,
-  Lock,
-  Loader2,
-} from "lucide-react";
+  ShieldUserIcon,
+  Delete03Icon,
+  FloppyDiskIcon,
+  AlertCircleIcon,
+  SquareLock01Icon,
+  Orbit01Icon,
+} from "hugeicons-react";
 import { useUserManagementModal } from "@/app/_hooks/useUserManagementModal";
 import { User as UserType } from "@/app/_types";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { Logo } from "../../Layout/Logo/Logo";
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -35,32 +35,24 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
       isOpen={true}
       onClose={onClose}
       title={mode === "add" ? "Add New User" : "Edit User"}
-      titleIcon={
-        mode === "add" ? (
-          <Plus className="h-5 w-5 text-primary" />
-        ) : (
-          <Edit3 className="h-5 w-5 text-primary" />
-        )
-      }
     >
       <form onSubmit={handlers.handleSubmit} className="space-y-4">
         {state.error && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-            <AlertCircle className="h-4 w-4 text-destructive" />
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
+            <AlertCircleIcon className="h-4 w-4 text-destructive" />
             <span className="text-sm text-destructive">{state.error}</span>
           </div>
         )}
-        <div>
-          <label className="block text-sm font-medium mb-2">Username</label>
-          <input
-            type="text"
-            value={state.username}
-            onChange={(e) => setters.setUsername(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Enter username"
-            disabled={state.isLoading}
-          />
-        </div>
+        <Input
+          id="username"
+          name="username"
+          label="Username"
+          type="text"
+          value={state.username}
+          onChange={(e) => setters.setUsername(e.target.value)}
+          placeholder="Enter username"
+          disabled={state.isLoading}
+        />
         {mode === "add" && (
           <PasswordFields
             password={state.password}
@@ -84,7 +76,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             htmlFor="isAdmin"
             className="flex items-center gap-2 text-sm cursor-pointer"
           >
-            <Shield className="h-4 w-4" /> Admin privileges
+            <ShieldUserIcon className="h-4 w-4" /> Admin privileges
           </label>
         </div>
         {mode === "edit" && (
@@ -102,7 +94,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
                 htmlFor="changePassword"
                 className="flex items-center gap-2 text-sm cursor-pointer"
               >
-                <Lock className="h-4 w-4" /> Change Password
+                <SquareLock01Icon className="h-4 w-4" /> Change Password
               </label>
             </div>
             {state.changePassword && (
@@ -127,7 +119,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
                 disabled={state.isLoading}
                 className="text-destructive hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4 mr-2" /> Delete
+                <Delete03Icon className="h-4 w-4 mr-2" /> Delete
               </Button>
             )}
           </div>
@@ -143,12 +135,12 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             <Button type="submit" disabled={state.isLoading}>
               {state.isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Save className="h-4 w-4 mr-2" />
+                  <FloppyDiskIcon className="h-4 w-4 mr-2" />
                   {mode === "add" ? "Create User" : "Save Changes"}
                 </>
               )}

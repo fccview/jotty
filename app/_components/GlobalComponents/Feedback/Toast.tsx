@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Check, AlertCircle } from "lucide-react";
+import {
+  MultiplicationSignIcon,
+  Tick02Icon,
+  AlertCircleIcon,
+} from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 
 export interface Toast {
@@ -42,11 +46,11 @@ export const Toast = ({ toast, onRemove }: ToastProps) => {
   const getIcon = () => {
     switch (toast.type) {
       case "success":
-        return <Check className="h-4 w-4 text-primary" />;
+        return <Tick02Icon className="h-4 w-4 text-primary" />;
       case "error":
-        return <AlertCircle className="h-4 w-4 text-destructive" />;
+        return <AlertCircleIcon className="h-4 w-4 text-destructive" />;
       default:
-        return <AlertCircle className="h-4 w-4 text-primary" />;
+        return <AlertCircleIcon className="h-4 w-4 text-primary" />;
     }
   };
 
@@ -64,7 +68,7 @@ export const Toast = ({ toast, onRemove }: ToastProps) => {
   return (
     <div
       className={cn(
-        "jotty-toast flex items-start gap-3 p-4 rounded-lg border shadow-lg transition-all duration-300 transform",
+        "jotty-toast flex items-start gap-3 p-4 rounded-jotty border shadow-lg transition-all duration-300 transform",
         getStyles(),
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       )}
@@ -78,9 +82,9 @@ export const Toast = ({ toast, onRemove }: ToastProps) => {
       </div>
       <button
         onClick={handleRemove}
-        className="flex-shrink-0 p-1 rounded-md hover:bg-black/10 transition-colors"
+        className="flex-shrink-0 p-1 rounded-jotty hover:bg-black/10 transition-colors"
       >
-        <X className="h-4 w-4" />
+        <MultiplicationSignIcon className="h-4 w-4" />
       </button>
     </div>
   );

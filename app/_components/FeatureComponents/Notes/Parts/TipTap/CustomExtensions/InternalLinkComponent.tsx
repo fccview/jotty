@@ -2,11 +2,21 @@
 
 import React, { useState } from "react";
 import { NodeViewWrapper } from "@tiptap/react";
-import { FileText, CheckSquare, BarChart3, Link2, Link } from "lucide-react";
+import {
+  File02Icon,
+  CheckmarkSquare04Icon,
+  TaskDaily01Icon,
+  FileLinkIcon,
+  Attachment01Icon,
+} from "hugeicons-react";
 import { useRouter } from "next/navigation";
 import { getNoteById } from "@/app/_server/actions/note";
 import { getListById } from "@/app/_server/actions/checklist";
-import { buildCategoryPath, decodeCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
+import {
+  buildCategoryPath,
+  decodeCategoryPath,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
@@ -32,42 +42,68 @@ interface InternalLinkComponentProps {
 }
 
 const _returnNote = async (uuid: string, router: any, note?: Note) => {
-  const finalNote = note || await getNoteById(uuid);
+  const finalNote = note || (await getNoteById(uuid));
 
   if (finalNote) {
-    router.push(`/note/${buildCategoryPath(finalNote.category || "Uncategorized", finalNote.id)}`);
+    router.push(
+      `/note/${buildCategoryPath(
+        finalNote.category || "Uncategorized",
+        finalNote.id
+      )}`
+    );
     return;
   }
 
   return undefined;
 };
 
-const _returnChecklist = async (uuid: string, router: any, checklist?: Checklist) => {
-  const finalChecklist = checklist || await getListById(uuid);
+const _returnChecklist = async (
+  uuid: string,
+  router: any,
+  checklist?: Checklist
+) => {
+  const finalChecklist = checklist || (await getListById(uuid));
 
   if (finalChecklist) {
-    router.push(`/checklist/${buildCategoryPath(finalChecklist.category || "Uncategorized", finalChecklist.id)}`);
+    router.push(
+      `/checklist/${buildCategoryPath(
+        finalChecklist.category || "Uncategorized",
+        finalChecklist.id
+      )}`
+    );
     return;
   }
   return undefined;
 };
 
-export const InternalLinkComponent = ({ node, editor, updateAttributes }: InternalLinkComponentProps) => {
+export const InternalLinkComponent = ({
+  node,
+  editor,
+  updateAttributes,
+}: InternalLinkComponentProps) => {
   const router = useRouter();
-  const { href, title, uuid, itemId, type, category, convertToBidirectional } = node.attrs;
+  const { href, title, uuid, itemId, type, category, convertToBidirectional } =
+    node.attrs;
   const [showPopup, setShowPopup] = useState(false);
-  const potentialCategory = href?.replace("/jotty/", "").replace("/note/", "").replace("/checklist/", "").split("/").slice(1, -1).join("/");
+  const potentialCategory = href
+    ?.replace("/jotty/", "")
+    .replace("/note/", "")
+    .replace("/checklist/", "")
+    .split("/")
+    .slice(1, -1)
+    .join("/");
   const { appSettings, notes, checklists } = useAppMode();
 
   const isEditable = editor?.isEditable ?? false;
-  const isPathBasedLink = href?.startsWith("/note/") || href?.startsWith("/checklist/");
+  const isPathBasedLink =
+    href?.startsWith("/note/") || href?.startsWith("/checklist/");
   const isJottyLink = href?.startsWith("/jotty/");
 
   const canToggle = isPathBasedLink || isJottyLink;
 
-  const fullItem = notes.find((n) =>
-    n.uuid === uuid) as Note | undefined
-    || checklists.find((c) => c.uuid === uuid) as Checklist | undefined;
+  const fullItem =
+    (notes.find((n) => n.uuid === uuid) as Note | undefined) ||
+    (checklists.find((c) => c.uuid === uuid) as Checklist | undefined);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -77,8 +113,16 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
       const uuidFromPath = href.replace("/jotty/", "");
 
       if (fullItem) {
-        router.push(`/${fullItem && "type" in fullItem && fullItem.type ?
-          ItemTypes.CHECKLIST : ItemTypes.NOTE}/${buildCategoryPath(fullItem.category || "Uncategorized", fullItem.id)}`);
+        router.push(
+          `/${
+            fullItem && "type" in fullItem && fullItem.type
+              ? ItemTypes.CHECKLIST
+              : ItemTypes.NOTE
+          }/${buildCategoryPath(
+            fullItem.category || "Uncategorized",
+            fullItem.id
+          )}`
+        );
         return;
       }
 
@@ -106,11 +150,20 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
 
     if (isJottyLink) {
       if (fullItem) {
-        const pathPrefix = fullItem && "type" in fullItem && fullItem.type ? "/checklist/" : "/note/";
-        const newHref = `${pathPrefix}${buildCategoryPath(fullItem.category || "Uncategorized", fullItem.id)}`;
+        const pathPrefix =
+          fullItem && "type" in fullItem && fullItem.type
+            ? "/checklist/"
+            : "/note/";
+        const newHref = `${pathPrefix}${buildCategoryPath(
+          fullItem.category || "Uncategorized",
+          fullItem.id
+        )}`;
         updateAttributes({
           href: newHref,
-          type: fullItem && "type" in fullItem && fullItem.type ? "checklist" : "note",
+          type:
+            fullItem && "type" in fullItem && fullItem.type
+              ? "checklist"
+              : "note",
           category: fullItem.category || "Uncategorized",
           itemId: fullItem.id,
           convertToBidirectional: false,
@@ -123,7 +176,7 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
           convertToBidirectional: false,
         });
       } else {
-        console.warn('Cannot convert jotty to path - missing data');
+        console.warn("Cannot convert jotty to path - missing data");
       }
     } else if (isPathBasedLink) {
       if (uuid) {
@@ -132,8 +185,19 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
           convertToBidirectional: false,
         });
       } else if (itemId && category) {
-        const foundItem = notes.find((n) => encodeId(n.id || "") === encodeId(itemId) && encodeCategoryPath(n?.category || "") === encodeCategoryPath(category))
-          || checklists.find((c) => encodeId(c.id || "") === encodeId(itemId) && encodeCategoryPath(c?.category || "") === encodeCategoryPath(category));
+        const foundItem =
+          notes.find(
+            (n) =>
+              encodeId(n.id || "") === encodeId(itemId) &&
+              encodeCategoryPath(n?.category || "") ===
+                encodeCategoryPath(category)
+          ) ||
+          checklists.find(
+            (c) =>
+              encodeId(c.id || "") === encodeId(itemId) &&
+              encodeCategoryPath(c?.category || "") ===
+                encodeCategoryPath(category)
+          );
 
         if (foundItem?.uuid) {
           updateAttributes({
@@ -142,10 +206,10 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
             convertToBidirectional: false,
           });
         } else {
-          console.log('Could not find item to convert');
+          console.log("Could not find item to convert");
         }
       } else {
-        console.log('Missing itemId or category');
+        console.log("Missing itemId or category");
       }
     }
   };
@@ -160,24 +224,36 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
       onMouseLeave={() => {
         setShowPopup(false);
       }}
-      className="inline-flex items-center gap-1.5 mx-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-md hover:bg-primary/15 transition-colors cursor-pointer group relative"
+      className="inline-flex items-center gap-1.5 mx-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/15 transition-colors cursor-pointer group relative"
     >
-      {showPopup && href && (href.startsWith("/jotty/") || href.startsWith("/note/") || href.startsWith("/checklist/")) && (
-        <span className="block absolute top-[110%] left-0 min-w-[300px] max-w-[400px] z-10">
-          {fullItem && "type" in fullItem && fullItem.type ? (
-            <ChecklistCard list={fullItem as Checklist} onSelect={() => { }} />
-          ) : (
-            <NoteCard note={fullItem as Note} onSelect={() => { }} fullScrollableContent />
-          )}
-        </span>
-      )}
+      {showPopup &&
+        href &&
+        (href.startsWith("/jotty/") ||
+          href.startsWith("/note/") ||
+          href.startsWith("/checklist/")) && (
+          <span className="block absolute top-[110%] left-0 min-w-[300px] max-w-[400px] z-10">
+            {fullItem && "type" in fullItem && fullItem.type ? (
+              <ChecklistCard list={fullItem as Checklist} onSelect={() => {}} />
+            ) : (
+              <NoteCard
+                note={fullItem as Note}
+                onSelect={() => {}}
+                fullScrollableContent
+              />
+            )}
+          </span>
+        )}
       <span className="flex-shrink-0">
         {fullItem && "type" in fullItem && fullItem.type ? (
           <>
-            {fullItem.type === "task" ? <BarChart3 className="h-5 w-5" /> : <CheckSquare className="h-5 w-5" />}
+            {fullItem.type === "task" ? (
+              <TaskDaily01Icon className="h-5 w-5" />
+            ) : (
+              <CheckmarkSquare04Icon className="h-5 w-5" />
+            )}
           </>
         ) : (
-          <FileText className="h-5 w-5" />
+          <File02Icon className="h-5 w-5" />
         )}
       </span>
       <span className="text-sm font-medium text-foreground">
@@ -186,35 +262,39 @@ export const InternalLinkComponent = ({ node, editor, updateAttributes }: Intern
           : capitalize(title.replace(/-/g, " "))}
       </span>
       ·
-      <span className="text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-md">
-        {fullItem?.category || decodeCategoryPath(potentialCategory) || "not-found"}
+      <span className="text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-jotty">
+        {fullItem?.category ||
+          decodeCategoryPath(potentialCategory) ||
+          "not-found"}
       </span>
-
       {isEditable && (isPathBasedLink || canToggle) && (
         <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-border">
           <span className="text-xs text-muted-foreground">Link Type:</span>
           <button
             onClick={handleToggleConversion}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${isJottyLink
-              ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
-              : convertToBidirectional
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-xs font-medium transition-all ${
+              isJottyLink
+                ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
+                : convertToBidirectional
                 ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
                 : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
-              }`}
-            title={isJottyLink
-              ? "Click to convert to path-based link (cross-platform compatible)"
-              : convertToBidirectional
+            }`}
+            title={
+              isJottyLink
+                ? "Click to convert to path-based link (cross-platform compatible)"
+                : convertToBidirectional
                 ? "Will convert to bidirectional UUID link on save (enables backlinks)"
-                : "Click to convert to bidirectional UUID link (enables backlinks)"}
+                : "Click to convert to bidirectional UUID link (enables backlinks)"
+            }
           >
             {isJottyLink || convertToBidirectional ? (
               <>
-                <Link2 className="h-3.5 w-3.5" />
+                <FileLinkIcon className="h-3.5 w-3.5" />
                 <span>Bidirectional</span>
               </>
             ) : (
               <>
-                <Link className="h-3.5 w-3.5" />
+                <Attachment01Icon className="h-3.5 w-3.5" />
                 <span>Path-Based</span>
               </>
             )}

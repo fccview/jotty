@@ -323,7 +323,9 @@ export const createItem = async (
   }
 };
 
-export const deleteItem = async (formData: FormData): Promise<Result<Checklist>> => {
+export const deleteItem = async (
+  formData: FormData
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
@@ -524,22 +526,30 @@ export const reorderItems = async (formData: FormData) => {
   }
 };
 
-export const updateItemStatus = async (formData: FormData): Promise<Result<Checklist>> => {
+export const updateItemStatus = async (
+  formData: FormData,
+  usernameOverride?: string
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
     const status = formData.get("status") as string;
     const timeEntriesStr = formData.get("timeEntries") as string;
     const category = formData.get("category") as string;
+    const formDataUsername = formData.get("username") as string;
 
-    const username = await getUsername();
+    const username =
+      usernameOverride || formDataUsername || (await getUsername());
 
     if (!listId || !itemId) {
       return { success: false, error: "List ID and item ID are required" };
     }
 
     if (!status && !timeEntriesStr) {
-      return { success: false, error: "Either status or timeEntries must be provided" };
+      return {
+        success: false,
+        error: "Either status or timeEntries must be provided",
+      };
     }
 
     const list = await getListById(listId, username, category);
@@ -560,9 +570,9 @@ export const updateItemStatus = async (formData: FormData): Promise<Result<Check
     }
 
     const now = new Date().toISOString();
-    const updatedList = {
-      ...list,
-      items: list.items.map((item) => {
+
+    const findAndUpdateItemStatus = (items: any[], itemId: string): any[] => {
+      return items.map((item) => {
         if (item.id === itemId) {
           const updates: any = {};
           if (status) {
@@ -593,8 +603,21 @@ export const updateItemStatus = async (formData: FormData): Promise<Result<Check
           }
           return { ...item, ...updates };
         }
+
+        if (item.children && item.children.length > 0) {
+          return {
+            ...item,
+            children: findAndUpdateItemStatus(item.children, itemId),
+          };
+        }
+
         return item;
-      }),
+      });
+    };
+
+    const updatedList = {
+      ...list,
+      items: findAndUpdateItemStatus(list.items, itemId),
       updatedAt: now,
     };
 
@@ -627,7 +650,9 @@ export const updateItemStatus = async (formData: FormData): Promise<Result<Check
   }
 };
 
-export const createBulkItems = async (formData: FormData): Promise<Result<Checklist>> => {
+export const createBulkItems = async (
+  formData: FormData
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemsText = formData.get("itemsText") as string;
@@ -717,7 +742,9 @@ export const createBulkItems = async (formData: FormData): Promise<Result<Checkl
   }
 };
 
-export const bulkToggleItems = async (formData: FormData): Promise<Result<Checklist>> => {
+export const bulkToggleItems = async (
+  formData: FormData
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const completed = formData.get("completed") === "true";
@@ -920,7 +947,9 @@ export const bulkToggleItems = async (formData: FormData): Promise<Result<Checkl
   }
 };
 
-export const bulkDeleteItems = async (formData: FormData): Promise<Result<Checklist>> => {
+export const bulkDeleteItems = async (
+  formData: FormData
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemIdsStr = formData.get("itemIds") as string;
@@ -1014,7 +1043,9 @@ export const bulkDeleteItems = async (formData: FormData): Promise<Result<Checkl
   }
 };
 
-export const createSubItem = async (formData: FormData): Promise<Result<Checklist>> => {
+export const createSubItem = async (
+  formData: FormData
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const parentId = formData.get("parentId") as string;
@@ -1135,7 +1166,9 @@ export const createSubItem = async (formData: FormData): Promise<Result<Checklis
   }
 };
 
-export const archiveItem = async (formData: FormData): Promise<Result<Checklist>> => {
+export const archiveItem = async (
+  formData: FormData
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
@@ -1223,7 +1256,9 @@ export const archiveItem = async (formData: FormData): Promise<Result<Checklist>
   }
 };
 
-export const unarchiveItem = async (formData: FormData): Promise<Result<Checklist>> => {
+export const unarchiveItem = async (
+  formData: FormData
+): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
@@ -1257,7 +1292,13 @@ export const unarchiveItem = async (formData: FormData): Promise<Result<Checklis
     const unarchiveItemRecursive = (items: any[]): any[] => {
       return items.map((item) => {
         if (item.id === itemId) {
-          const { isArchived, archivedAt, archivedBy, previousStatus, ...rest } = item;
+          const {
+            isArchived,
+            archivedAt,
+            archivedBy,
+            previousStatus,
+            ...rest
+          } = item;
           return {
             ...rest,
             status: previousStatus || item.status,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { ArrowDown01Icon, MoreHorizontalIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 
 interface DropdownOption {
@@ -62,7 +62,7 @@ export const Dropdown = ({
           className="jotty-dropdown-icon flex items-center gap-2 cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <MoreHorizontal
+          <MoreHorizontalIcon
             className={cn(
               `h-4 w-4 transition-transform text-muted-foreground`,
               isOpen ? "rotate-180" : "",
@@ -80,7 +80,7 @@ export const Dropdown = ({
             }
           }}
           className={cn(
-            "jotty-dropdown-button w-full flex items-center justify-between p-3 rounded-lg border border-border transition-colors",
+            "jotty-dropdown-button w-full flex items-center justify-between p-3 rounded-jotty border border-border transition-colors",
             disabled
               ? "bg-muted text-muted-foreground cursor-not-allowed"
               : "hover:bg-muted/50",
@@ -96,7 +96,7 @@ export const Dropdown = ({
               {selectedOption?.name || placeholder}
             </span>
           </div>
-          <ChevronDown
+          <ArrowDown01Icon
             className={cn(
               `h-4 w-4 transition-transform`,
               isOpen ? "rotate-180" : "",
@@ -107,7 +107,7 @@ export const Dropdown = ({
       )}
 
       {isOpen && !disabled && (
-        <div className="jotty-dropdown-menu absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <div className="jotty-dropdown-menu absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] mt-1 bg-card border border-border rounded-jotty shadow-lg max-h-48 overflow-y-auto">
           <div className="py-1">
             {options.map((option) => (
               <button

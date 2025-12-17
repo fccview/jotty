@@ -1,6 +1,9 @@
 "use client";
 
-import { Clock, Timer, Pause, Plus } from "lucide-react";
+import { memo } from "react";
+import { Clock01Icon, TimeQuarterIcon, Add01Icon } from "hugeicons-react";
+import { PauseCircleIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 
@@ -13,7 +16,7 @@ interface KanbanItemTimerProps {
   onAddManualTime: (minutes: number) => void;
 }
 
-export const KanbanItemTimer = ({
+const KanbanItemTimerComponent = ({
   totalTime,
   currentTime,
   isRunning,
@@ -35,7 +38,7 @@ export const KanbanItemTimer = ({
     <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
+          <Clock01Icon className="h-3 w-3" />
           <span>{formatTimerTime(totalTime + currentTime)}</span>
         </div>
         <div className="flex" onPointerDown={(e) => e.stopPropagation()}>
@@ -50,9 +53,9 @@ export const KanbanItemTimer = ({
             }}
           >
             {isRunning ? (
-              <Pause className="h-3 w-3" />
+              <HugeiconsIcon icon={PauseCircleIcon} className="h-3 w-3" />
             ) : (
-              <Timer className="h-3 w-3" />
+              <TimeQuarterIcon className="h-3 w-3" />
             )}
           </Button>
           <Button
@@ -62,10 +65,12 @@ export const KanbanItemTimer = ({
             disabled={!permissions?.canEdit}
             onClick={handleAddTime}
           >
-            <Plus className="h-3 w-3" />
+            <Add01Icon className="h-3 w-3" />
           </Button>
         </div>
       </div>
     </div>
   );
 };
+
+export const KanbanItemTimer = memo(KanbanItemTimerComponent);

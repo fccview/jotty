@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { Paperclip } from "lucide-react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useFileManager } from "@/app/_hooks/useFileManager";
 import { FileUpload } from "../../FormElements/FileUpload";
@@ -44,7 +43,6 @@ export const FileModal = ({
     if (isOpen) loadFiles();
   }, [isOpen, loadFiles]);
 
-
   const handleFileClick = (
     url: string,
     type: "image" | "video" | "file",
@@ -60,7 +58,6 @@ export const FileModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Files & Images"
-      titleIcon={<Paperclip className="h-5 w-5" />}
       className="!max-w-6xl !max-h-[90vh] sm:!w-[95vw] !w-[100vw]"
     >
       <div className="flex flex-col h-full max-h-[calc(90vh-5rem)]">

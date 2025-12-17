@@ -4,11 +4,11 @@
   <h1 align="center">jotty·page</h1><br/>
 </p>
 
-A simple, self-hosted app for your checklists and notes.
+A self-hosted app for your checklists and notes.
 
-Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a lightweight alternative for managing your personal checklists and notes. It's built with Next.js 14, is easy to deploy, and keeps all your data on your own server.
+[jotty·page](https://jotty.page) is a lightweight alternative for managing your personal checklists and notes. It's extremely easy to deploy, keeps all your data on your own server and allows you to encrypt/decrypt your notes for your personal peace of mind.
 
-  <p align="center"><i>ex rwMarkable</i></p>
+<p align="center"><i>ex rwMarkable</i></p>
 
 ---
 
@@ -29,28 +29,25 @@ Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a
   <p align="center">
     <em>Clean, intuitive interface for managing your checklists and tasks.</em>
   </p>
-  <img src="public/app-screenshots/checklists-home-dark.png" alt="Checklist Home View" width="400" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+  <img src="public/app-screenshots/notes-view-dark.png" alt="Notes Home View" width="400" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
 
   <p align="center">
     <em>Rich text editor for notes.</em>
   </p>
-  <img src="public/app-screenshots/note-view-light.png" alt="Note Editor" width="400" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 8px;">
+  <img src="public/app-screenshots/note-markdown.png" alt="Note Editor" width="400" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 8px;">
 </div>
 
 ## Quick nav
 
 - [How to contribute](#contribute)
 - [Features](#features)
-- [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
-  - [Docker Compose (Recommended)](#docker-compose-recommended)
+  - [Docker Compose (Recommended)](#docker-compose)
   - [Initial Setup](#initial-setup)
   - [Local Development (Without Docker)](#local-development-without-docker)
 - [Data Storage](#data-storage)
 - [Versioning Scheme](#versioning)
-- [Updating](#updating)
-  - [Docker Compose](#docker-compose-1)
-  - [Manual](#manual)
+- [Encryption](#encryption)
 - [API](#api)
 - [Shortcuts](#shortcuts)
 - [Single Sign-On (SSO) with OIDC](#single-sign-on-sso-with-oidc)
@@ -63,19 +60,6 @@ Tired of bloated, cloud-based to-do apps? [jotty·page](https://jotty.page) is a
   </a>
 </p>
 
-<a id="contribute"></a>
-
-## How to contribute
-
-Hi, it's amazing having a community willing to push new feature to the app, and I am VERY open to contributors pushing their idea, it's what makes open source amazing.
-
-That said for the sake of sanity let's all follow the same structure:
-
-- When creating a new branch, do off from the `develop` branch, this will always be ahead of `main` and it's what gets released
-- When creating a pull request, direct it back into `develop`, I' ll then review it and merge it. Your code will end up in the next release that way and we all avoid conflicts!
-
-Please bear with on reviews, it may take a bit of time for me to go through it all on top of life/work/hobbies :)
-
 <a id="features"></a>
 
 ## Features
@@ -86,26 +70,16 @@ Please bear with on reviews, it may take a bit of time for me to go through it a
 - **File-Based:** No database needed! Everything is stored in simple Markdown and JSON files in a single data directory.
 - **User Management:** An admin panel to create and manage user accounts with session tracking.
 - **Customisable:** 14 built-in themes plus custom theme support with custom emojis and icons.
+- **Encryption:** Full on PGP encryption, read more about it in [howto/ENCRYPTION.md](howto/ENCRYPTION.md)
 - **API Access:** Programmatic access to your checklists and notes via REST API with authentication.
-
-<a id="tech-stack"></a>
-
-## Tech Stack
-
-- **Framework:** Next.js 14 (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **State:** Zustand
-- **Editor:** TipTap
-- **Deployment:** Docker
 
 <a id="getting-started"></a>
 
 ## Getting Started
 
-The recommended way to run `jotty·page` is with Docker.
+My recommended way to run `jotty·page` is with Docker, or you can use the handy [proxmox community script](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/jotty.sh)
 
-<a id="docker-compose-recommended"></a>
+<a id="docker-compose"></a>
 
 ### Docker Compose (Recommended)
 
@@ -126,27 +100,16 @@ The recommended way to run `jotty·page` is with Docker.
           - ./config:/app/config:rw
           - ./cache:/app/.next/cache:rw
         restart: unless-stopped
-        #platform: linux/arm64
         environment:
           - NODE_ENV=production
-          #- HTTPS=true
-          #- SERVE_PUBLIC_IMAGES=yes
-          #- SERVE_PUBLIC_FILES=yes
-          #- SSO_MODE=oidc
-          #- OIDC_ISSUER=<YOUR_SSO_ISSUER>
-          #- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>
-          #- APP_URL=https://your-jotty-domain.com
-          #- OIDC_CLIENT_SECRET=your_client_secret
-          #- SSO_FALLBACK_LOCAL=yes
-          #- OIDC_ADMIN_GROUPS=admins # use this if your IDP sends a group claim
-          #- OIDC_ADMIN_ROLES=admins # use this if your IDP sends a role claim
     ```
 
 2.  Create the data directory and set permissions:
 
     ```bash
-    mkdir -p data/users data/checklists data/notes data/sharing cache
+    mkdir -p config data/users data/checklists data/notes data/sharing data/encryption cache
     sudo chown -R 1000:1000 data/
+    sudo chown -R 1000:1000 config/
     sudo chown -R 1000:1000 cache/
     ```
 
@@ -196,8 +159,7 @@ If you want to run the app locally for development:
 - `data/notes/`: Stores all notes as `.md` files.
 - `data/users/`: Contains `users.json` and `sessions.json`.
 - `data/sharing/`: Contains `shared-items.json`.
-- `data/settings.json`: App settings (name, description, custom icons).
-- `data/uploads/app-icons/`: Custom uploaded app icons.
+- `data/encryption/`: Contains all public/private keys for all users.
 
 **Make sure you back up the `data` directory!**
 
@@ -223,34 +185,6 @@ Because the migration is automatic, I do not consider this a "breaking" change t
 
 I will always detail these migrations in the release notes. I _highly recommend_ you **back up your data** before any feature update, just in case.
 
-<a id="updating"></a>
-
-## Updating
-
-<a id="docker-compose-1"></a>
-
-### Docker Compose
-
-Pull the latest image and restart your container.
-
-```bash
-docker compose pull
-docker compose up -d
-```
-
-<a id="manual"></a>
-
-### Manual
-
-If you're running from source, pull the latest changes and rebuild.
-
-```bash
-git pull
-yarn install
-yarn build
-yarn start
-```
-
 <a id="supported-markdown"></a>
 
 ## SUPPORTED MARKDOWN
@@ -258,6 +192,14 @@ yarn start
 `jotty·page` supports GitHub Flavored Markdown (GFM) and some custom syntax for complex functionality.
 
 📖 **For the complete MARKDOWN documentation, see [howto/MARKDOWN.md](howto/MARKDOWN.md)**
+
+<a id="encryption"></a>
+
+## ENCRYPTION
+
+`jotty·page` uses industry standard PGP encryption.
+
+📖 **For the complete ENCRYPTION documentation, see [howto/ENCRYPTION.md](howto/ENCRYPTION.md)**
 
 <a id="api"></a>
 

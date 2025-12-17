@@ -1,13 +1,12 @@
 "use client";
 
 import {
-  Users,
-  FileText,
-  CheckSquare,
-  Shield,
-  Share2,
-  Package,
-} from "lucide-react";
+  UserMultipleIcon,
+  File02Icon,
+  CheckmarkSquare04Icon,
+  ShieldUserIcon,
+  GithubIcon,
+} from "hugeicons-react";
 import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import { ReactNode } from "react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -30,41 +29,32 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
     {
       title: "App Version",
       value: appVersion || "",
-      icon: <Package className="h-6 w-6 text-primary" />,
+      icon: <GithubIcon className="h-6 w-6 text-primary" />,
     },
     {
       title: "Total Users",
       value: stats.totalUsers,
-      icon: <Users className="h-6 w-6 text-primary" />,
+      icon: <UserMultipleIcon className="h-6 w-6 text-primary" />,
     },
     {
       title: "Admin Users",
       value: stats.adminUsers,
-      icon: <Shield className="h-6 w-6 text-primary" />,
+      icon: <ShieldUserIcon className="h-6 w-6 text-primary" />,
     },
     {
       title: "Total Checklists",
       value: stats.totalChecklists,
-      icon: <CheckSquare className="h-6 w-6 text-primary" />,
+      icon: <CheckmarkSquare04Icon className="h-6 w-6 text-primary" />,
     },
     {
       title: "Total Notes",
       value: stats.totalNotes,
-      icon: <FileText className="h-6 w-6 text-primary" />,
+      icon: <File02Icon className="h-6 w-6 text-primary" />,
     },
   ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">
-          System Overview
-        </h2>
-        <p className="text-muted-foreground">
-          Monitor your application&apos;s usage and user activity.
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {statCards.map(
           (card: {
@@ -83,7 +73,7 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="p-6 rounded-lg border border-border bg-card">
+        <div className="p-6 rounded-jotty border border-border bg-card">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             User Distribution
           </h3>
@@ -109,7 +99,7 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
           </div>
         </div>
 
-        <div className="p-6 rounded-lg border border-border bg-card">
+        <div className="p-6 rounded-jotty border border-border bg-card">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             Content Overview
           </h3>

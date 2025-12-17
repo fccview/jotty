@@ -1,10 +1,16 @@
 import { MigrationHeader } from "./MigrationHeader";
 import { InfoCard } from "@/app/_components/GlobalComponents/Cards/InfoCard";
 import { InfoCardVariant } from "@/app/_components/GlobalComponents/Cards/InfoCard";
-import { Database, Info, FileText, Code, Shield } from "lucide-react";
+import {
+  Database01Icon,
+  InformationCircleIcon,
+  File02Icon,
+  SourceCodeIcon,
+  ShieldUserIcon,
+} from "hugeicons-react";
 import { useState } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { RefreshCw } from "lucide-react";
+import { RefreshIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { migrateToYamlMetadataFormat } from "@/app/_server/actions/migration/index";
 
@@ -39,7 +45,7 @@ export const YamlMetadataMigrationView = ({
     <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4">
       <div className="max-w-4xl w-full space-y-6">
         <MigrationHeader
-          icon={<Code className="h-12 w-12 text-primary" />}
+          icon={<SourceCodeIcon className="h-12 w-12 text-primary" />}
           title={
             isMigrationComplete
               ? "YAML Metadata Migration Complete"
@@ -55,7 +61,7 @@ export const YamlMetadataMigrationView = ({
         {!isMigrationComplete && (
           <>
             <InfoCard
-              icon={<Info className="h-5 w-5 text-primary" />}
+              icon={<InformationCircleIcon className="h-5 w-5 text-primary" />}
               title="What's changing?"
             >
               <p className="text-sm">
@@ -70,13 +76,13 @@ export const YamlMetadataMigrationView = ({
               </p>
             </InfoCard>
 
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-foreground mb-4">
                 Migration Changes
               </h2>
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                  <FileText className="h-5 w-5 text-primary mt-0.5" />
+                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
+                  <File02Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">YAML Metadata Format</p>
                     <p className="text-xs text-muted-foreground">
@@ -91,8 +97,8 @@ checklistType: task|simple
                     </pre>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Database className="h-5 w-5 text-primary mt-0.5" />
+                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
+                  <Database01Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
                       UUID-based Identification
@@ -103,8 +109,8 @@ checklistType: task|simple
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Shield className="h-5 w-5 text-primary mt-0.5" />
+                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
+                  <ShieldUserIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
                       Preserves Existing Metadata
@@ -127,7 +133,7 @@ checklistType: task|simple
             </div>
 
             <InfoCard
-              icon={<Shield className="h-5 w-5 text-amber-600" />}
+              icon={<ShieldUserIcon className="h-5 w-5 text-amber-600" />}
               title="Automatic Backup Included"
               variant={InfoCardVariant.WARNING}
             >
@@ -139,7 +145,7 @@ checklistType: task|simple
             </InfoCard>
 
             <InfoCard
-              icon={<FileText className="h-5 w-5 text-primary" />}
+              icon={<File02Icon className="h-5 w-5 text-primary" />}
               title="YAML Frontmatter is Industry Standard"
             >
               <p className="text-sm mb-3">
@@ -312,7 +318,9 @@ checklistType: task|simple
 
             {error && (
               <InfoCard
-                icon={<Info className="h-4 w-4 text-destructive" />}
+                icon={
+                  <InformationCircleIcon className="h-4 w-4 text-destructive" />
+                }
                 title="Migration failed"
                 variant={InfoCardVariant.DESTRUCTIVE}
               >
@@ -320,7 +328,7 @@ checklistType: task|simple
               </InfoCard>
             )}
 
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -351,7 +359,7 @@ checklistType: task|simple
                 size="lg"
                 className="min-w-48"
               >
-                <RefreshCw
+                <RefreshIcon
                   className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")}
                 />
                 {isMigrating ? "Migrating..." : "Start Migration"}
@@ -365,9 +373,9 @@ checklistType: task|simple
             <InfoCard
               icon={
                 migrationResult.migrated ? (
-                  <Database className="h-5 w-5 text-green-600" />
+                  <Database01Icon className="h-5 w-5 text-green-600" />
                 ) : (
-                  <Info className="h-5 w-5 text-blue-600" />
+                  <InformationCircleIcon className="h-5 w-5 text-blue-600" />
                 )
               }
               title={
@@ -385,14 +393,14 @@ checklistType: task|simple
             </InfoCard>
 
             {migrationResult.changes.length > 0 && (
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+              <div className="bg-card border border-border rounded-md p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
                   Migration Details:
                 </h3>
                 <ul className="space-y-2">
                   {migrationResult.changes.map((change, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <Code className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <SourceCodeIcon className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                       <span className="text-sm text-muted-foreground">
                         {change}
                       </span>

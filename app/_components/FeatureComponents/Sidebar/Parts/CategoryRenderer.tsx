@@ -1,14 +1,15 @@
 "use client";
 
 import {
-  ChevronDown,
-  ChevronRight,
-  Folder,
-  MoreHorizontal,
-  FileText,
-  CheckSquare,
-  FolderPlus,
-} from "lucide-react";
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  Folder01Icon,
+  FolderEditIcon,
+  File02Icon,
+  CheckmarkSquare04Icon,
+  FolderAddIcon,
+  Folder02Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
@@ -85,15 +86,15 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
       onClick: () => onQuickCreate(category.path),
       icon:
         mode === Modes.CHECKLISTS ? (
-          <CheckSquare className="h-4 w-4" />
+          <CheckmarkSquare04Icon className="h-4 w-4" />
         ) : (
-          <FileText className="h-4 w-4" />
+          <File02Icon className="h-4 w-4" />
         ),
     },
     {
       label: "New Category",
       onClick: () => onCreateSubcategory(category.path),
-      icon: <FolderPlus className="h-4 w-4" />,
+      icon: <FolderAddIcon className="h-4 w-4" />,
     },
     { type: "divider" as const },
     {
@@ -137,13 +138,13 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
             <div
               className={cn(
                 "flex items-center justify-between",
-                isOver && "bg-primary/10 rounded-md"
+                isOver && "bg-primary/10 rounded-jotty"
               )}
             >
               <button
                 onClick={() => onToggleCategory(category.path)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors w-full text-left",
+                  "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty transition-colors w-full text-left",
                   hasContent
                     ? "hover:bg-muted/50 cursor-pointer"
                     : "text-muted-foreground cursor-default"
@@ -152,15 +153,23 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
               >
                 {hasContent ? (
                   isCollapsed ? (
-                    <ChevronRight className="h-4 w-4" />
+                    <>
+                      <ArrowRight01Icon className="h-4 w-4" />
+                      <Folder01Icon className="h-4 w-4" />
+                    </>
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <>
+                      <ArrowDown01Icon className="h-4 w-4" />
+                      <Folder02Icon className="h-4 w-4" />
+                    </>
                   )
                 ) : (
-                  <div className="w-4" />
+                  <>
+                    <ArrowRight01Icon className="h-4 w-4 opacity-20" />
+                    <Folder01Icon className="h-4 w-4" />
+                  </>
                 )}
-                <Folder className="h-4 w-4" />
-                <span className="truncate">{category.name}</span>
+                <span className="truncate font-[500]">{category.name}</span>
                 <span className="text-xs text-muted-foreground ml-auto">
                   {getTotalItemsInCategory(category.path)}
                 </span>
@@ -173,9 +182,9 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 opacity-40 lg:opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-8 w-8 p-0 opacity-40 lg:opacity-20 group-hover:opacity-100 transition-opacity"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <FolderEditIcon className="h-4 w-4" />
                   </Button>
                 }
               />

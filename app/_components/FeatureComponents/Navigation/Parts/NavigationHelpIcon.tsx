@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { HelpCircle, Key, Lock, Phone, Palette, Terminal } from "lucide-react";
+import {
+  HelpCircleIcon,
+  SquareLock01Icon,
+  SmartPhone01Icon,
+  PaintBrush04Icon,
+  LaptopProgrammingIcon,
+  LockKeyIcon,
+} from "hugeicons-react";
 import { NavigationGlobalIcon } from "./NavigationGlobalIcon";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Tabs } from "@/app/_components/GlobalComponents/Tabs/Tabs";
@@ -42,31 +49,37 @@ const helpFiles: TabItem[] = [
     id: "customisations",
     name: "Customisations",
     filename: path.join(HOWTO_DIR, "CUSTOMISATIONS.md"),
-    icon: <Palette className="h-4 w-4" />,
+    icon: <PaintBrush04Icon className="h-4 w-4" />,
   },
   {
     id: "docker",
     name: "Docker",
     filename: path.join(HOWTO_DIR, "DOCKER.md"),
-    icon: <Terminal className="h-4 w-4" />,
+    icon: <LaptopProgrammingIcon className="h-4 w-4" />,
   },
   {
     id: "env-variables",
     name: "Env Variables",
     filename: path.join(HOWTO_DIR, "ENV-VARIABLES.md"),
-    icon: <Key className="h-4 w-4" />,
+    icon: <LockKeyIcon className="h-4 w-4" />,
   },
   {
     id: "pwa",
     name: "PWA",
     filename: path.join(HOWTO_DIR, "PWA.md"),
-    icon: <Phone className="h-4 w-4" />,
+    icon: <SmartPhone01Icon className="h-4 w-4" />,
+  },
+  {
+    id: "encryption",
+    name: "Encryption",
+    filename: path.join(HOWTO_DIR, "ENCRYPTION.md"),
+    icon: <LockKeyIcon className="h-4 w-4" />,
   },
   {
     id: "sso",
     name: "SSO",
     filename: path.join(HOWTO_DIR, "SSO.md"),
-    icon: <Lock className="h-4 w-4" />,
+    icon: <SquareLock01Icon className="h-4 w-4" />,
   },
 ];
 
@@ -114,7 +127,6 @@ export const NavigationHelpIcon = () => {
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
         title={"How to"}
-        titleIcon={<HelpCircle className="h-5 w-5 text-primary" />}
         className="lg:max-h-[80vh] lg:!max-w-[80vw] lg:!w-[80vw]"
       >
         <div className="flex flex-col h-full max-h-[calc(80vh-8rem)]">
@@ -133,7 +145,7 @@ export const NavigationHelpIcon = () => {
       </Modal>
 
       <NavigationGlobalIcon
-        icon={<HelpCircle className="h-5 w-5" />}
+        icon={<HelpCircleIcon className="h-5 w-5" />}
         onClick={handleHelpClick}
       />
     </>

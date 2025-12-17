@@ -1,6 +1,11 @@
 import { Category } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
-import { ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react";
+import {
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  Folder01Icon,
+  Folder02Icon,
+} from "hugeicons-react";
 
 export interface CategoryTreeNodeProps {
   category: Category;
@@ -29,7 +34,7 @@ export const CategoryTreeNode = ({
     <div key={category.path} className="jotty-category-tree-node select-none">
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer hover:bg-muted/50",
+          "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty cursor-pointer hover:bg-muted/50",
           selectedCategory === category.path && "bg-primary/10 text-primary"
         )}
         style={{ paddingLeft: `${12 + level * 20}px` }}
@@ -52,18 +57,18 @@ export const CategoryTreeNode = ({
         >
           {hasSubCategories ? (
             isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
+              <ArrowDown01Icon className="h-4 w-4" />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ArrowRight01Icon className="h-4 w-4" />
             )
           ) : (
-            <div className="w-5" />
+            <ArrowRight01Icon className="h-4 w-4 opacity-20" />
           )}
         </button>
         {isExpanded ? (
-          <FolderOpen className="h-4 w-4 text-primary" />
+          <Folder02Icon className="h-4 w-4 text-primary" />
         ) : (
-          <Folder className="h-4 w-4 text-muted-foreground" />
+          <Folder01Icon className="h-4 w-4 text-muted-foreground" />
         )}
         <span className="truncate">{category.name}</span>
         {category.count > 0 && (

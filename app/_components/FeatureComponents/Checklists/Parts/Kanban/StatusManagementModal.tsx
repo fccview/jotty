@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Settings, Plus, Trash2, GripVertical } from "lucide-react";
+import { Add01Icon, Delete03Icon, DragDropVerticalIcon } from "hugeicons-react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { KanbanStatus } from "@/app/_types";
 import {
   DndContext,
@@ -65,29 +66,33 @@ const SortableStatusItem = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 p-3 border border-border rounded-lg bg-muted/30"
+      className="flex items-center gap-2 p-3 border border-border rounded-jotty bg-muted/30"
     >
       <div
         {...attributes}
         {...listeners}
         className="cursor-grab active:cursor-grabbing"
       >
-        <GripVertical className="h-5 w-5 text-muted-foreground" />
+        <DragDropVerticalIcon className="h-5 w-5 text-muted-foreground" />
       </div>
 
-      <input
-        type="text"
-        value={status.label}
-        onChange={(e) => onUpdateLabel(status.id, e.target.value)}
-        className="flex-1 px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        placeholder="Status name"
-      />
+      <div className="flex-1">
+        <Input
+          id={`status-${status.id}`}
+          name={`status-${status.id}`}
+          type="text"
+          value={status.label}
+          onChange={(e) => onUpdateLabel(status.id, e.target.value)}
+          placeholder="Status name"
+          className="!space-y-0 [&>label]:hidden"
+        />
+      </div>
 
       <input
         type="color"
         value={status.color || defaultStatusColors[status.id] || "#6b7280"}
         onChange={(e) => onUpdateColor(status.id, e.target.value)}
-        className="w-12 h-10 border border-input rounded-md cursor-pointer"
+        className="w-12 h-10 border border-input rounded-jotty cursor-pointer"
         title="Status color"
       />
 
@@ -98,7 +103,7 @@ const SortableStatusItem = ({
         disabled={!canRemove}
         className="h-10 w-10 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
       >
-        <Trash2 className="h-4 w-4" />
+        <Delete03Icon className="h-4 w-4" />
       </Button>
     </div>
   );
@@ -120,9 +125,9 @@ export const StatusManagementModal = ({
   itemsByStatus = {},
 }: StatusManagementModalProps) => {
   const [statuses, setStatuses] = useState<KanbanStatus[]>(
-    currentStatuses.map(s => ({
+    currentStatuses.map((s) => ({
       ...s,
-      color: s.color || defaultStatusColors[s.id]
+      color: s.color || defaultStatusColors[s.id],
     }))
   );
 
@@ -143,14 +148,14 @@ export const StatusManagementModal = ({
   };
 
   const handleUpdateLabel = (id: string, label: string) => {
-    setStatuses(
-      statuses.map((s) => (s.id === id ? { ...s, label } : s))
-    );
+    setStatuses(statuses.map((s) => (s.id === id ? { ...s, label } : s)));
   };
 
   const handleUpdateColor = (id: string, color: string) => {
     setStatuses(
-      statuses.map((s) => (s.id === id ? { ...s, color: color || undefined } : s))
+      statuses.map((s) =>
+        s.id === id ? { ...s, color: color || undefined } : s
+      )
     );
   };
 
@@ -161,16 +166,16 @@ export const StatusManagementModal = ({
 
     if (itemCount > 0) {
       const confirmed = confirm(
-        `This status has ${itemCount} item${itemCount > 1 ? 's' : ''}. ` +
-        `${itemCount > 1 ? 'They' : 'It'} will be moved to "${firstStatus?.label || 'the first status'}". Continue?`
+        `This status has ${itemCount} item${itemCount > 1 ? "s" : ""}. ` +
+          `${itemCount > 1 ? "They" : "It"} will be moved to "${
+            firstStatus?.label || "the first status"
+          }". Continue?`
       );
       if (!confirmed) return;
     }
 
     const newStatuses = statuses.filter((s) => s.id !== id);
-    setStatuses(
-      newStatuses.map((s, index) => ({ ...s, order: index }))
-    );
+    setStatuses(newStatuses.map((s, index) => ({ ...s, order: index })));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -200,12 +205,12 @@ export const StatusManagementModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Manage Statuses"
-      titleIcon={<Settings className="h-5 w-5" />}
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Customize the statuses for this kanban board. Add, remove, or reorder statuses.
+          Customize the statuses for this kanban board. Add, remove, or reorder
+          statuses.
         </p>
 
         <DndContext
@@ -232,26 +237,16 @@ export const StatusManagementModal = ({
           </SortableContext>
         </DndContext>
 
-        <Button
-          variant="outline"
-          onClick={handleAddStatus}
-          className="w-full"
-        >
-          <Plus className="h-4 w-4 mr-2" />
+        <Button variant="outline" onClick={handleAddStatus} className="w-full">
+          <Add01Icon className="h-4 w-4 mr-2" />
           Add Status
         </Button>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-          >
+          <Button type="button" variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
-            Save Changes
-          </Button>
+          <Button onClick={handleSave}>Save Changes</Button>
         </div>
       </div>
     </Modal>
