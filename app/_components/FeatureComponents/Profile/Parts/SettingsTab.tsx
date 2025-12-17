@@ -661,7 +661,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
 
       <FormWrapper title="Account Management">
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-jotty">
             <div>
               <h4 className="font-medium">Delete Account</h4>
               <p className="text-sm text-muted-foreground">

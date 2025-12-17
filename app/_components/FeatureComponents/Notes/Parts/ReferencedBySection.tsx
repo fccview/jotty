@@ -42,7 +42,7 @@ export const ReferencedBySection = ({
           <div
             key={`${item.type}-${item.path}`}
             onClick={() => handleItemClick(item)}
-            className="bg-muted/50 border border-border rounded-lg p-3 cursor-pointer hover:shadow-sm hover:border-primary/30 transition-all duration-200 group"
+            className="bg-muted/50 border border-border rounded-jotty p-3 cursor-pointer hover:shadow-sm hover:border-primary/30 transition-all duration-200 group"
           >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">

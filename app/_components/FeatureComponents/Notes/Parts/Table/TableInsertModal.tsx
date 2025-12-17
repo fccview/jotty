@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Editor } from "@tiptap/react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { LayoutTable01Icon } from "hugeicons-react";
 
 interface TableInsertModalProps {
   isOpen: boolean;
@@ -30,12 +29,7 @@ export const TableInsertModal = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Insert Table"
-      titleIcon={<LayoutTable01Icon className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Insert Table">
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -48,7 +42,7 @@ export const TableInsertModal = ({
               max="10"
               value={rows}
               onChange={(e) => setRows(parseInt(e.target.value) || 1)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              className="w-full px-3 py-2 bg-background border border-input rounded-jotty text-foreground focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
             />
           </div>
           <div>
@@ -61,7 +55,7 @@ export const TableInsertModal = ({
               max="10"
               value={cols}
               onChange={(e) => setCols(parseInt(e.target.value) || 1)}
-              className="w-full px-3 py-2 bg-background border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              className="w-full px-3 py-2 bg-background border border-input rounded-jotty text-foreground focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
             />
           </div>
         </div>

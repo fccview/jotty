@@ -5,8 +5,6 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import {
   ShieldUserIcon,
   Delete03Icon,
-  PropertyEditIcon,
-  Add01Icon,
   FloppyDiskIcon,
   AlertCircleIcon,
   SquareLock01Icon,
@@ -35,17 +33,10 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
       isOpen={true}
       onClose={onClose}
       title={mode === "add" ? "Add New User" : "Edit User"}
-      titleIcon={
-        mode === "add" ? (
-          <Add01Icon className="h-5 w-5 text-primary" />
-        ) : (
-          <PropertyEditIcon className="h-5 w-5 text-primary" />
-        )
-      }
     >
       <form onSubmit={handlers.handleSubmit} className="space-y-4">
         {state.error && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
             <AlertCircleIcon className="h-4 w-4 text-destructive" />
             <span className="text-sm text-destructive">{state.error}</span>
           </div>
@@ -56,7 +47,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             type="text"
             value={state.username}
             onChange={(e) => setters.setUsername(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 bg-background border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
             placeholder="Enter username"
             disabled={state.isLoading}
           />

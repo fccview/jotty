@@ -119,7 +119,7 @@ export const AtMentionsList = forwardRef<
             <button
               key={`${item.type}-${item.id}`}
               className={cn(
-                "flex items-center gap-3 w-full px-3 py-2 text-left rounded-md text-sm transition-colors",
+                "flex items-center gap-3 w-full px-3 py-2 text-left rounded-jotty text-sm transition-colors",
                 globalIndex === selectedIndex
                   ? "bg-accent text-accent-foreground"
                   : "hover:bg-accent/50"
@@ -147,7 +147,7 @@ export const AtMentionsList = forwardRef<
   );
 
   return (
-    <div className="bg-card border border-border rounded-lg shadow-lg p-3 min-w-80 max-w-96">
+    <div className="bg-card border border-border rounded-jotty shadow-lg p-3 min-w-80 max-w-96">
       <div className="relative mb-3">
         <Search01Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <input
@@ -156,7 +156,7 @@ export const AtMentionsList = forwardRef<
           placeholder="Search notes and checklists..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+          className="w-full pl-10 pr-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
         />
       </div>
 

@@ -3,8 +3,74 @@
 @tailwind utilities;
 @import 'highlight.js/styles/github-dark-dimmed.css';
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap'); */
 @import url('https://fonts.googleapis.com/css2?family=Intel+One+Mono:ital,wght@0,300..700;1,300..700&display=swap');
+
+@import url('/fonts/GoogleSans/static/GoogleSans-Regular.ttf');
+@import url('/fonts/GoogleSans/static/GoogleSans-Medium.ttf');
+@import url('/fonts/GoogleSans/static/GoogleSans-Bold.ttf');
+@import url('/fonts/GoogleSans/static/GoogleSans-ExtraBold.ttf');
+@import url('/fonts/GoogleSans/static/GoogleSans-Black.ttf');
+@import url('/fonts/GoogleSans/static/GoogleSans-ExtraLight.ttf');
+@import url('/fonts/GoogleSans/static/GoogleSans-Light.ttf');
+@import url('/fonts/GoogleSans/static/GoogleSans-Regular.ttf');
+@import url('/fonts/GoogleSans/static/GoogleSans-SemiBold.ttf');
+
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('/fonts/GoogleSans/static/GoogleSans-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('/fonts/GoogleSans/static/GoogleSans-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('/fonts/GoogleSans/static/GoogleSans-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('/fonts/GoogleSans/static/GoogleSans-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('/fonts/GoogleSans/static/GoogleSans-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('/fonts/GoogleSans/static/GoogleSans-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('/fonts/GoogleSans/static/GoogleSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'GoogleSans';
+    src: url('/fonts/GoogleSans/static/GoogleSans-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
 
 @layer base {
     :root {
@@ -454,6 +520,10 @@ svg {
     body {
         @apply bg-background-secondary text-foreground;
     }
+
+    .rounded-jotty {
+        border-radius: 0.25rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -467,11 +537,11 @@ svg {
 }
 
 body {
-    font-family: "Inter", sans-serif;    
+    font-family: "GoogleSans", sans-serif;    
 }
 
 a, p, span, h1, h2, h3, h4, h5, h6, button, label, input, textarea, select {
-    font-family: "Inter", sans-serif;
+    font-family: "GoogleSans", sans-serif;
     overflow-wrap: break-word;
 }
 
@@ -517,7 +587,7 @@ code span {
     cursor: pointer;
   }
   
-  .checklist-item label:before {
+  /* .checklist-item label:before {
     content:'';
     -webkit-appearance: none;
     background-color: transparent;
@@ -543,7 +613,7 @@ code span {
     border: solid rgb(var(--primary) / var(--tw-bg-opacity, 1));
     border-width: 0 1px 1px 0;
     transform: translate(0, -60%) rotate(45deg);
-  }
+  } */
 
 mark {
     background-color: #fef08a;
@@ -717,7 +787,7 @@ mark {
 }
 
 .prose kbd {
-    @apply bg-muted px-2 py-1 text-xs rounded-md border border-border shadow-border shadow-sm;
+    @apply bg-muted px-2 py-1 text-xs rounded-jotty border border-border shadow-border shadow-sm;
 }
 
 p > code {

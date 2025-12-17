@@ -35,7 +35,7 @@ export const UsersShareTab = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search users..."
-          className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring"
         />
       </div>
       <div className="max-h-48 overflow-y-auto">
@@ -56,7 +56,7 @@ export const UsersShareTab = ({
             return (
               <div
                 key={user.username}
-                className="p-3 rounded-lg border hover:bg-accent/50"
+                className="p-3 rounded-jotty border hover:bg-accent/50"
               >
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -82,7 +82,7 @@ export const UsersShareTab = ({
                           )
                         }
                         disabled={isLoading}
-                        className="flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 px-2 py-1 rounded-jotty bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors disabled:opacity-50"
                         title="Toggle all permissions"
                       >
                         <Settings01Icon className="h-3 w-3 text-primary" />
@@ -138,7 +138,7 @@ export const UsersShareTab = ({
                           )
                         }
                         disabled={isLoading}
-                        className="flex items-center gap-1 py-1 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <ViewIcon className="h-3 w-3 text-muted-foreground" />
                         <span className="text-xs font-medium">Read</span>
@@ -165,7 +165,7 @@ export const UsersShareTab = ({
                           )
                         }
                         disabled={isLoading}
-                        className="flex items-center gap-1 py-1 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <PencilEdit02Icon className="h-3 w-3 text-muted-foreground" />
                         <span className="text-xs font-medium">Edit</span>
@@ -192,7 +192,7 @@ export const UsersShareTab = ({
                           )
                         }
                         disabled={isLoading}
-                        className="flex items-center gap-1 py-1 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <Delete03Icon className="h-3 w-3 text-destructive" />
                         <span className="text-xs font-medium">Delete</span>

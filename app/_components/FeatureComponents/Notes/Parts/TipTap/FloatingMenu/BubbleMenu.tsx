@@ -129,7 +129,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
       <div
         ref={menuRef}
         data-overlay
-        className="fixed z-40 bg-card border border-border rounded-lg shadow-lg p-1 flex items-center gap-1"
+        className="fixed z-40 bg-card border border-border rounded-jotty shadow-lg p-1 flex items-center gap-1"
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >

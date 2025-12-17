@@ -27,7 +27,7 @@ export const CategoryInput = ({
 }: CategoryInputProps) => {
   const selectedCategoryName = selectedCategory
     ? categories.find((c) => c.path === selectedCategory)?.name ||
-    selectedCategory
+      selectedCategory
     : "Root level";
 
   const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
@@ -47,7 +47,7 @@ export const CategoryInput = ({
               type="text"
               value={newCategory}
               onChange={(e) => onNewCategoryChange(e.target.value)}
-              className="flex-1 px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+              className="flex-1 px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
               placeholder="Enter new category name..."
               disabled={disabled}
             />

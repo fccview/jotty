@@ -117,7 +117,7 @@ export const CompactImageResizeOverlay = ({
     <div
       ref={overlayRef}
       data-overlay
-      className="fixed z-50 bg-card border border-border rounded-lg shadow-lg p-3 min-w-64"
+      className="fixed z-50 bg-card border border-border rounded-jotty shadow-lg p-3 min-w-64"
       onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >

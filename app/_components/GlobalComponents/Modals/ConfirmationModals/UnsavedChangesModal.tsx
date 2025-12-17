@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Alert02Icon,
-  FloppyDiskIcon,
-  MultiplicationSignIcon,
-} from "hugeicons-react";
+import { FloppyDiskIcon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 
@@ -24,14 +20,9 @@ export const UnsavedChangesModal = ({
   noteTitle = "this note",
 }: UnsavedChangesModalProps) => {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Unsaved Changes"
-      titleIcon={<Alert02Icon className="h-5 w-5 text-destructive" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Unsaved Changes">
       <div className="space-y-4">
-        <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
+        <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-jotty">
           <h3 className="text-sm font-medium text-destructive mb-2">
             ⚠️ Unsaved Changes Detected
           </h3>

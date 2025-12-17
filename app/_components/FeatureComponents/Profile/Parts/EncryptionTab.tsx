@@ -364,18 +364,6 @@ export const EncryptionTab = () => {
         </div>
       </FormWrapper>
 
-      <InfoBox
-        variant="info"
-        title="Important Security Information"
-        items={[
-          "Your passphrase is NEVER stored by Jotty",
-          "Encrypted note content cannot be searched",
-          "Always backup your private key and remember your passphrase",
-          "Lost passphrase = permanent loss of encrypted data",
-          "Custom path is for local installations only (not Docker)",
-        ]}
-      />
-
       <KeyGenerationModal
         isOpen={showGenerateModal}
         onClose={() => setShowGenerateModal(false)}
@@ -390,7 +378,7 @@ export const EncryptionTab = () => {
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background border border-border rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-background border border-border rounded-jotty p-6 max-w-md w-full mx-4">
             <div className="flex items-center gap-3 text-destructive mb-4">
               <Alert02Icon className="h-6 w-6" />
               <h3 className="text-lg font-semibold">Delete Encryption Keys?</h3>

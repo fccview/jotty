@@ -212,7 +212,7 @@ For more advanced formatting, you can use the following HTML tags directly in th
             <p><strong>Keyboard Key</strong></p>
          </td>
          <td colspan="1" rowspan="1">
-            <p><kbd class="bg-muted px-2 py-1 text-xs rounded-md border border-border shadow-border shadow-sm">Enter</kbd></p>
+            <p><kbd class="bg-muted px-2 py-1 text-xs rounded-jotty border border-border shadow-border shadow-sm">Enter</kbd></p>
          </td>
          <td colspan="1" rowspan="1">
             <p><code>&lt;kbd&gt;Enter&lt;/kbd&gt;</code></p>
@@ -223,7 +223,7 @@ For more advanced formatting, you can use the following HTML tags directly in th
             <p><strong>Highlight</strong></p>
          </td>
          <td colspan="1" rowspan="1">
-            <p><mark class="bg-yellow-200 text-yellow-900 px-1 py-0.5 rounded-sm">important</mark></p>
+            <p><mark class="bg-yellow-200 text-yellow-900 px-1 py-0.5 rounded-jotty">important</mark></p>
          </td>
          <td colspan="1" rowspan="1">
             <p><code>&lt;mark&gt;important&lt;/mark&gt;</code></p>

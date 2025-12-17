@@ -4,12 +4,12 @@ import { cn } from "@/app/_utils/global-utils";
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
-  | "default"
-  | "destructive"
-  | "outline"
-  | "secondary"
-  | "ghost"
-  | "link";
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
   size?: "default" | "xs" | "sm" | "lg" | "icon";
 }
 
@@ -18,7 +18,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          "jotty-button inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+          "jotty-button inline-flex items-center justify-center whitespace-nowrap rounded-jotty text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
           {
             "jotty-button-default bg-primary text-primary-foreground hover:bg-primary/90":
               variant === "default",
@@ -35,9 +35,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           },
           {
             "h-10 px-4 py-2": size === "default",
-            "h-8 rounded-md px-2 text-xs": size === "xs",
-            "h-9 rounded-md px-3": size === "sm",
-            "h-11 rounded-md px-8": size === "lg",
+            "h-8 rounded-jotty px-2 text-xs": size === "xs",
+            "h-9 rounded-jotty px-3": size === "sm",
+            "h-11 rounded-jotty px-8": size === "lg",
             "h-10 w-10": size === "icon",
           },
           className

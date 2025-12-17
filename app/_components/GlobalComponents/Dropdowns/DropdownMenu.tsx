@@ -69,7 +69,7 @@ export const DropdownMenu = ({
       {isOpen && (
         <div
           className={cn(
-            "absolute top-full mt-1 w-56 bg-background border border-border rounded-md shadow-lg z-50 py-1",
+            "absolute top-full mt-1 w-56 bg-background border border-border rounded-jotty shadow-lg z-50 py-1",
             align === "right" ? "right-0" : "left-0"
           )}
         >
@@ -86,7 +86,7 @@ export const DropdownMenu = ({
                   item.className || "",
                   "w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors text-left",
                   item.variant === "destructive" &&
-                  "text-destructive hover:bg-destructive/10"
+                    "text-destructive hover:bg-destructive/10"
                 )}
               >
                 {item.icon && (

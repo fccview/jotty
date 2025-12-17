@@ -5,7 +5,6 @@ import { createCategory } from "@/app/_server/actions/category";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Folder01Icon } from "hugeicons-react";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppMode, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
@@ -64,12 +63,7 @@ export const CreateCategoryModal = ({
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Create New Category"
-      titleIcon={<Folder01Icon className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Create New Category">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
@@ -94,7 +88,7 @@ export const CreateCategoryModal = ({
             value={categoryName}
             onChange={(e) => setCategoryName(e.target.value)}
             placeholder="Enter category name..."
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+            className="w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none"
             required
             disabled={isLoading}
           />

@@ -64,7 +64,8 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           >
             {isSsoLoading ? (
               <>
-                <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" /> Signing In...
+                <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" /> Signing
+                In...
               </>
             ) : (
               "Sign in with SSO"
@@ -84,7 +85,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
       )}
 
       {isDemoMode && (
-        <div className="bg-muted p-3 rounded-md">
+        <div className="bg-muted p-3 rounded-jotty">
           <strong>username: </strong>demo <br />
           <strong>password: </strong>demodemo
         </div>
@@ -92,7 +93,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
             <span className="text-sm text-destructive">{error}</span>
           </div>
         )}
@@ -127,10 +128,15 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           />
         </div>
 
-        <Button type="submit" className="w-full !mt-8" disabled={isLoading || isSsoLoading}>
+        <Button
+          type="submit"
+          className="w-full !mt-8"
+          disabled={isLoading || isSsoLoading}
+        >
           {isLoading ? (
             <>
-              <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" /> Signing In...
+              <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" /> Signing
+              In...
             </>
           ) : (
             "Sign In"

@@ -1,7 +1,12 @@
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Orbit01Icon, Add01Icon, PencilEdit02Icon, Delete03Icon, SparklesIcon } from "hugeicons-react";
+import {
+  Orbit01Icon,
+  Add01Icon,
+  PencilEdit02Icon,
+  Delete03Icon,
+} from "hugeicons-react";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useEmojis } from "@/app/_hooks/useEmojis";
 
@@ -41,7 +46,7 @@ export const EmojiManager = () => {
           {getCustomEmojis().map((emoji) => (
             <div
               key={emoji.keyword}
-              className="flex items-center justify-between p-2 border border-border rounded-md bg-muted/30 text-sm"
+              className="flex items-center justify-between p-2 border border-border rounded-jotty bg-muted/30 text-sm"
             >
               <div className="flex items-center space-x-2 min-w-0 flex-1">
                 <span className="text-base">{emoji.emoji}</span>
@@ -87,7 +92,6 @@ export const EmojiManager = () => {
         isOpen={emojiModalOpen}
         onClose={() => setEmojiModalOpen(false)}
         title={editingEmoji ? "Edit Emoji" : "Add Emoji"}
-        titleIcon={<SparklesIcon className="h-5 w-5" />}
         className="!w-full max-w-md"
       >
         <div className="space-y-4">
@@ -115,7 +119,7 @@ export const EmojiManager = () => {
                 disabled={isSavingEmojis}
                 className="flex-1"
               />
-              <div className="flex items-center px-3 py-2 border border-border rounded-md bg-muted/30 text-lg">
+              <div className="flex items-center px-3 py-2 border border-border rounded-jotty bg-muted/30 text-lg">
                 {emojiForm.emoji || "🤝"}
               </div>
             </div>

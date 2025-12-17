@@ -72,22 +72,17 @@ export const DeleteAccountModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Delete Account"
-      titleIcon={<Delete03Icon className="h-5 w-5 text-destructive" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Delete Account">
       <div className="space-y-4">
         {error && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
             <AlertCircleIcon className="h-4 w-4 text-destructive" />
             <span className="text-sm text-destructive">{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-md">
+          <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-jotty">
             <Tick02Icon className="h-4 w-4 text-primary" />
             <span className="text-sm text-primary">{success}</span>
           </div>
@@ -114,7 +109,7 @@ export const DeleteAccountModal = ({
                 type={showPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring pr-10"
+                className="w-full px-3 py-2 bg-background border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring pr-10"
                 placeholder="Enter your password to confirm"
                 disabled={isLoading}
               />

@@ -43,7 +43,7 @@ export const Toggle = ({
       disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
       className={cn(
-        "jotty-toggle relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        "jotty-toggle relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         checked
           ? "jotty-toggle-checked bg-primary"
           : "jotty-toggle-unchecked bg-input",

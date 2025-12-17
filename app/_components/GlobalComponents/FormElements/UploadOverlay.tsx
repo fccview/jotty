@@ -28,7 +28,7 @@ export const UploadOverlay = ({
 
   return (
     <div className="jotty-upload-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+      <div className="bg-card border border-border rounded-jotty p-6 max-w-md w-full mx-4 shadow-xl">
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-3">
             {isUploading ? (
@@ -63,7 +63,7 @@ export const UploadOverlay = ({
           )}
 
           {uploadError && (
-            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md w-full text-center">
+            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-jotty w-full text-center">
               {uploadError}
             </div>
           )}

@@ -208,11 +208,11 @@ export const ChecklistsPageClient = ({
           title="All Checklists"
           description="Browse and manage all your checklists"
         />
-        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-6">
+        <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Folder01Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <Folder01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -223,8 +223,8 @@ export const ChecklistsPageClient = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <CheckmarkCircle04Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <CheckmarkCircle04Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -235,8 +235,8 @@ export const ChecklistsPageClient = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <TradeUpIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <TradeUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -247,8 +247,8 @@ export const ChecklistsPageClient = ({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Clock01Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <Clock01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">

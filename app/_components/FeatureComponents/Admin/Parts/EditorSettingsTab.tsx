@@ -143,7 +143,7 @@ export const EditorSettingsTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-card border border-border rounded-lg p-6">
+      <div className="bg-card border border-border rounded-jotty p-6">
         <div className="space-y-6">
           <div>
             <h3 className="text-lg font-semibold mb-2">Editor Features</h3>
@@ -309,10 +309,13 @@ export const EditorSettingsTab = () => {
               <label className="block">
                 <div className="text-sm font-medium mb-1">
                   Draw.io URL
-                  <span className="ml-1 text-xs text-muted-foreground">(Optional)</span>
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    (Optional)
+                  </span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Specify a custom Draw.io instance URL. Leave empty to use the default public instance (https://embed.diagrams.net).
+                  Specify a custom Draw.io instance URL. Leave empty to use the
+                  default public instance (https://embed.diagrams.net).
                   <span className="mt-1 block text-xs italic">
                     Example for self-hosted: https://your-domain.com/drawio
                   </span>
@@ -321,7 +324,9 @@ export const EditorSettingsTab = () => {
                   id="drawioUrl"
                   type="text"
                   value={settings.editor.drawioUrl || ""}
-                  onChange={(e) => handleInputChange("drawioUrl", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("drawioUrl", e.target.value)
+                  }
                   placeholder="https://embed.diagrams.net"
                   className="w-full"
                 />

@@ -1,4 +1,9 @@
-import { CheckmarkCircle04Icon, Clock01Icon, PinIcon, PinOffIcon } from "hugeicons-react";
+import {
+  CheckmarkCircle04Icon,
+  Clock01Icon,
+  PinIcon,
+  PinOffIcon,
+} from "hugeicons-react";
 import { Checklist } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
@@ -60,14 +65,16 @@ export const ChecklistCard = ({
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
 
   const cardStyle = {
     ...style,
     ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
-    ...(fixedWidth ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth } : {}),
+    ...(fixedWidth
+      ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth }
+      : {}),
   };
 
   return (
@@ -75,8 +82,9 @@ export const ChecklistCard = ({
       ref={setNodeRef}
       style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${isDragging ? "border-primary/30" : ""
-        }`}
+      className={`jotty-checklist-card bg-card border border-border rounded-jotty p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${
+        isDragging ? "border-primary/30" : ""
+      }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div
@@ -96,8 +104,9 @@ export const ChecklistCard = ({
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"
-                } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
               title={isPinned ? "Unpin" : "PinIcon"}
             >
               {isPinned ? (

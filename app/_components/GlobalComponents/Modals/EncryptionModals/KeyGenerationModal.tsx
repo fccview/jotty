@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { LockKeyIcon, AlertCircleIcon, Download01Icon } from "hugeicons-react";
+import { Download01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
@@ -135,7 +135,6 @@ export const KeyGenerationModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Generate PGP Key Pair"
-      titleIcon={<LockKeyIcon className="h-5 w-5 text-primary" />}
       className="max-w-2xl"
     >
       {!generatedKeys ? (

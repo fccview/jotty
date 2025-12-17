@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { File02Icon as DocIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { createNote } from "@/app/_server/actions/note";
 import { Category, Note } from "@/app/_types";
@@ -75,12 +74,7 @@ export const CreateNoteModal = ({
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Create New Note"
-      titleIcon={<DocIcon className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Create New Note">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
@@ -95,7 +89,7 @@ export const CreateNoteModal = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
             placeholder="Enter note title..."
             required
             disabled={isCreating}

@@ -24,7 +24,7 @@ export const Accordion = ({
   return (
     <div
       className={cn(
-        "jotty-accordion border border-border rounded-lg bg-card",
+        "jotty-accordion border border-border rounded-jotty bg-card",
         className
       )}
     >

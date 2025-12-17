@@ -3,7 +3,12 @@
 import { useMemo, useState } from "react";
 import { LinkIndex } from "@/app/_server/actions/link";
 import dynamic from "next/dynamic";
-import { File02Icon, Link04Icon, SharedWifiIcon, RefreshIcon } from "hugeicons-react";
+import {
+  File02Icon,
+  Link04Icon,
+  SharedWifiIcon,
+  RefreshIcon,
+} from "hugeicons-react";
 import { Checklist, ItemType, Note } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
@@ -21,10 +26,14 @@ const CHECKLISTS_COLOR = "#10b981";
 const TEXT_COLOR = "rgb(var(--foreground))";
 const BORDER_COLOR = "rgb(var(--muted-foreground))";
 
-
-const getLabel = (node: any, notes: Partial<Note>[], checklists: Partial<Checklist>[]) => {
-  const fullItem = notes.find((n) => n.uuid === node.data.id) as Note | undefined
-    || checklists.find((c) => c.uuid === node.data.id) as Checklist | undefined;
+const getLabel = (
+  node: any,
+  notes: Partial<Note>[],
+  checklists: Partial<Checklist>[]
+) => {
+  const fullItem =
+    (notes.find((n) => n.uuid === node.data.id) as Note | undefined) ||
+    (checklists.find((c) => c.uuid === node.data.id) as Checklist | undefined);
   return `${fullItem?.id}.md`;
 };
 
@@ -253,11 +262,11 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           </p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-6 lg:mb-8">
+        <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6 lg:mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <File02Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <File02Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -268,8 +277,8 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Link04Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <Link04Icon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -280,8 +289,8 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="p-2 bg-secondary rounded-jotty">
+                <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -298,7 +307,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-8">
+        <div className="bg-card border border-border rounded-md p-8">
           <div className="text-center space-y-4">
             <div className="text-6xl">🔗</div>
             <div className="space-y-2">
@@ -331,11 +340,11 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
         </p>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-6 lg:mb-8">
+      <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6 lg:mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <File02Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <div className="p-2 bg-secondary rounded-jotty">
+              <File02Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
               <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -346,8 +355,8 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <div className="p-2 bg-secondary rounded-jotty">
+              <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
               <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -358,8 +367,8 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <div className="p-2 bg-secondary rounded-jotty">
+              <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
               <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -373,7 +382,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-6">
+      <div className="bg-card border border-border rounded-md p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Link Network</h3>
@@ -432,7 +441,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
 
           {hoveredNode && (
             <div
-              className="fixed z-50 bg-popover text-popover-foreground p-3 rounded-lg border shadow-lg max-w-xs pointer-events-none"
+              className="fixed z-50 bg-popover text-popover-foreground p-3 rounded-jotty border shadow-lg max-w-xs pointer-events-none"
               style={{
                 left: mousePosition.x + 10,
                 top: mousePosition.y - 10,
@@ -448,10 +457,10 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 {hoveredNode.data.connectionCount >= 5
                   ? " (highly connected)"
                   : hoveredNode.data.connectionCount >= 2
-                    ? " (moderately connected)"
-                    : hoveredNode.data.connectionCount === 0
-                      ? " (isolated)"
-                      : ""}
+                  ? " (moderately connected)"
+                  : hoveredNode.data.connectionCount === 0
+                  ? " (isolated)"
+                  : ""}
               </div>
               <div className="text-xs text-muted-foreground mt-1 font-mono line-clamp-1">
                 {hoveredNode.data.id}

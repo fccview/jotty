@@ -25,7 +25,7 @@ export const AdminContentColumn = ({
           <Link
             key={`${item.category}-${item.id}`}
             href={item.link}
-            className="block p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+            className="block p-3 bg-muted/50 rounded-jotty hover:bg-muted/70 transition-colors"
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">

@@ -22,7 +22,7 @@ export const ImageAttachment = ({
       className={`jotty-image-attachment inline-block max-w-full ${className}`}
     >
       <span className="jotty-image-attachment-container relative group block">
-        <span className="jotty-image-attachment-content max-w-sm rounded-lg overflow-hidden border border-border bg-card block">
+        <span className="jotty-image-attachment-content max-w-sm rounded-jotty overflow-hidden border border-border bg-card block">
           <Image
             src={url}
             alt={displayName}

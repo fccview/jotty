@@ -100,7 +100,7 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
     >
       <div
         className={cn(
-          "absolute top-0 left-0 right-0 bg-muted mb-6",
+          "absolute top-0 left-0 right-0 bg-muted mb-6 z-10",
           fixed ? "h-[10px]" : "h-[2px]"
         )}
         role="progressbar"

@@ -131,7 +131,7 @@ export const DrawioNodeView = ({
     <NodeViewWrapper className="drawio-node-wrapper">
       {isEditing && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-background rounded-lg shadow-xl w-[95vw] h-[90vh] flex flex-col">
+          <div className="bg-background rounded-jotty shadow-xl w-[95vw] h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-3 border-b border-border">
               <h3 className="font-semibold">Edit Diagram</h3>
               <button
@@ -150,15 +150,16 @@ export const DrawioNodeView = ({
         </div>
       )}
 
-      <div className="drawio-diagram-container relative group border border-border rounded-md p-4 my-4 bg-background">
+      <div className="drawio-diagram-container relative group border border-border rounded-jotty p-4 my-4 bg-background">
         {node.attrs.svgData ? (
           <>
             <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 flex gap-1 z-10">
               <button
                 onClick={toggleTheme}
                 className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
-                title={`Switch to ${themeMode === "light" ? "dark" : "light"
-                  } mode`}
+                title={`Switch to ${
+                  themeMode === "light" ? "dark" : "light"
+                } mode`}
               >
                 {themeMode === "light" ? (
                   <GibbousMoonIcon className="h-3 w-3" />
@@ -309,12 +310,12 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
     return {
       insertDrawIo:
         () =>
-          ({ commands }: any) => {
-            return commands.insertContent({
-              type: this.name,
-              attrs: { diagramData: null, svgData: null },
-            });
-          },
+        ({ commands }: any) => {
+          return commands.insertContent({
+            type: this.name,
+            attrs: { diagramData: null, svgData: null },
+          });
+        },
     };
   },
 });

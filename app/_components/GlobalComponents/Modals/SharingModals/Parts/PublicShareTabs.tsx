@@ -106,7 +106,7 @@ export const PublicShareTab = ({
 
   return (
     <div className="space-y-4">
-      <div className="p-4 bg-muted/30 rounded-lg border border-border">
+      <div className="p-4 bg-muted/30 rounded-jotty border border-border">
         <h4 className="font-medium">Public Access</h4>
         <p className="text-sm text-muted-foreground mb-3">
           Make this {itemType} accessible to anyone with the link.
@@ -130,13 +130,13 @@ export const PublicShareTab = ({
         </Button>
       </div>
       {isPubliclyShared && publicUrl && (
-        <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-4">
+        <div className="p-4 bg-primary/5 border border-primary/20 rounded-jotty space-y-4">
           <div className="flex gap-2">
             <input
               type="text"
               value={publicUrl}
               readOnly
-              className="flex-1 px-3 py-2 bg-background border rounded-md text-sm font-mono"
+              className="flex-1 px-3 py-2 bg-background border rounded-jotty text-sm font-mono"
             />
             <Button
               onClick={handleCopyUrl}

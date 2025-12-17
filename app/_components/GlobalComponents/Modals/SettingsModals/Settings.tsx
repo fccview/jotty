@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Settings01Icon,
   FloppyDiskIcon,
   SmileIcon,
   File02Icon,
@@ -59,12 +58,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   }, [isOpen]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Settings"
-      titleIcon={<Settings01Icon className="h-5 w-5 text-muted-foreground" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Settings">
       <p className="text-sm text-muted-foreground mb-6">
         These options only apply to the current browser session. Please check
         your{" "}

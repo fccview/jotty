@@ -141,7 +141,7 @@ export const AppSettingsTab = () => {
         </p>
       </div>
 
-      <div className="bg-background border border-border rounded-lg p-6 space-y-8">
+      <div className="bg-background border border-border rounded-jotty p-6 space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           {formFields.map((field) => (
             <Input
@@ -180,9 +180,16 @@ export const AppSettingsTab = () => {
             ]}
           />
           <span className="text-xs text-muted-foreground">
-            When enabled this setting will show the parsed titles in the sidebar, search results, and overall across the app. <br />
-            When disabled, the original file names will be sanitised, made human readable and shown instead.<br />
-            <span className="font-bold">Setting this to &quot;no&quot; will improve performance on large datasets but may impact readability - especially on filenames with non latin characters.</span>
+            When enabled this setting will show the parsed titles in the
+            sidebar, search results, and overall across the app. <br />
+            When disabled, the original file names will be sanitised, made human
+            readable and shown instead.
+            <br />
+            <span className="font-bold">
+              Setting this to &quot;no&quot; will improve performance on large
+              datasets but may impact readability - especially on filenames with
+              non latin characters.
+            </span>
           </span>
         </div>
         <div>

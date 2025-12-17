@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { SquareUnlock01Icon, LockKeyIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
@@ -182,33 +181,32 @@ export const EncryptionModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={`${actionLabel} Note`}
-      titleIcon={
-        isEncrypt ? (
-          <LockKeyIcon className="h-5 w-5 text-primary" />
-        ) : (
-          <SquareUnlock01Icon className="h-5 w-5 text-primary" />
-        )
-      }
       className="max-w-2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <InfoBox
           variant={isEncrypt ? "info" : "warning"}
-          title={isEncrypt ? "Encrypting Note" : isView ? "View Decrypted Content" : "Decrypting Note"}
+          title={
+            isEncrypt
+              ? "Encrypting Note"
+              : isView
+              ? "View Decrypted Content"
+              : "Decrypting Note"
+          }
           items={
             isEncrypt
               ? [
-                "Your note content will be encrypted with PGP",
-                "Only someone with the private key can decrypt it",
-                "The note title will remain unencrypted",
-              ]
+                  "Your note content will be encrypted with PGP",
+                  "Only someone with the private key can decrypt it",
+                  "The note title will remain unencrypted",
+                ]
               : isView
-                ? [
+              ? [
                   "Content will be decrypted for viewing only",
                   "The file will remain encrypted on the server",
                   "You cannot edit encrypted notes",
                 ]
-                : [
+              : [
                   "This will decrypt the note file",
                   "The note will be saved as unencrypted",
                   "You will be able to edit the note after decryption",
@@ -240,7 +238,9 @@ export const EncryptionModal = ({
               </div>
               <p className="text-sm text-muted-foreground">
                 {useCustomKey
-                  ? `Paste your custom ${isEncrypt ? "public" : "private"} key below`
+                  ? `Paste your custom ${
+                      isEncrypt ? "public" : "private"
+                    } key below`
                   : `Use your stored ${isEncrypt ? "public" : "private"} key`}
               </p>
             </label>
@@ -275,7 +275,9 @@ export const EncryptionModal = ({
             label={keyLabel}
             value={customKey}
             onChange={(e) => setCustomKey(e.target.value)}
-            placeholder={`-----BEGIN PGP ${isEncrypt ? "PUBLIC" : "PRIVATE"} KEY BLOCK-----
+            placeholder={`-----BEGIN PGP ${
+              isEncrypt ? "PUBLIC" : "PRIVATE"
+            } KEY BLOCK-----
 
 ...
 
@@ -314,6 +316,6 @@ export const EncryptionModal = ({
           </Button>
         </div>
       </form>
-    </Modal >
+    </Modal>
   );
 };

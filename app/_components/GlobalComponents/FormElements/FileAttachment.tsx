@@ -21,9 +21,9 @@ export const FileAttachment = ({
 
   return (
     <span className={`jotty-file-attachment inline-block ${className}`}>
-      <span className="jotty-file-attachment-container bg-card border border-border rounded-lg p-4 max-w-sm hover:shadow-lg transition-all duration-200 hover:border-primary/20 group block">
+      <span className="jotty-file-attachment-container bg-card border border-border rounded-jotty p-4 max-w-sm hover:shadow-lg transition-all duration-200 hover:border-primary/20 group block">
         <span className="jotty-file-attachment-content flex items-center gap-3">
-          <span className="jotty-file-attachment-icon flex-shrink-0 p-2 bg-muted rounded-lg group-hover:bg-accent transition-colors block">
+          <span className="jotty-file-attachment-icon flex-shrink-0 p-2 bg-muted rounded-jotty group-hover:bg-accent transition-colors block">
             {getFileIcon(mimeType, fileName)}
           </span>
           <span className="flex-1 min-w-0">

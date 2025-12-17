@@ -1,6 +1,13 @@
 "use client";
 
-import { Search01Icon, Add01Icon, PropertyEditIcon, Delete03Icon, ShieldUserIcon, UserIcon } from "hugeicons-react";
+import {
+  Search01Icon,
+  Add01Icon,
+  UserEdit01Icon,
+  Delete03Icon,
+  ShieldUserIcon,
+  UserIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { User as UserType, Checklist, Note } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
@@ -58,7 +65,7 @@ export const AdminUsers = ({
           placeholder="Search users..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2"
         />
       </div>
 
@@ -74,12 +81,16 @@ export const AdminUsers = ({
           return (
             <div
               key={user.username}
-              className="bg-card border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+              className="bg-card border border-border rounded-jotty p-4 hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
-                    <UserAvatar size="lg" username={user.username} avatarUrl={user.avatarUrl} />
+                    <UserAvatar
+                      size="lg"
+                      username={user.username}
+                      avatarUrl={user.avatarUrl}
+                    />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -109,7 +120,7 @@ export const AdminUsers = ({
                     className="h-8 w-8 p-0"
                     title="Edit User"
                   >
-                    <PropertyEditIcon className="h-4 w-4" />
+                    <UserEdit01Icon className="h-4 w-4" />
                   </Button>
                   {user.username !== username && (
                     <Button
@@ -134,7 +145,7 @@ export const AdminUsers = ({
         })}
 
         {filteredUsers.length === 0 && (
-          <div className="bg-card border border-border rounded-lg p-8 text-center">
+          <div className="bg-card border border-border rounded-jotty p-8 text-center">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
               <UserIcon className="h-8 w-8 text-muted-foreground" />
             </div>

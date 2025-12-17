@@ -14,7 +14,7 @@ export const AuthShell = ({ children }: AuthShellProps) => {
           <DynamicLogo className="h-8 w-8" size="32x32" />
           <AppName className="text-xl font-bold text-foreground" />
         </div>
-        <div className="rounded-2xl border border-border bg-card shadow-sm p-6">
+        <div className="rounded-jotty border border-border bg-card p-6">
           {children}
         </div>
       </div>

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Image02Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Input } from "../FormElements/Input";
 
 interface ImageSizeModalProps {
@@ -58,7 +57,6 @@ export const ImageSizeModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Image Size"
-      titleIcon={<Image02Icon className="h-5 w-5" />}
       className="!max-w-md"
     >
       <div className="space-y-4">
@@ -86,7 +84,7 @@ export const ImageSizeModal = ({
                 value={width}
                 onChange={(e) => handleWidthChange(e.target.value)}
                 placeholder="Auto"
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-primary"
               />
             </div>
 
@@ -98,7 +96,7 @@ export const ImageSizeModal = ({
                 value={height}
                 onChange={(e) => handleHeightChange(e.target.value)}
                 placeholder="Auto"
-                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-primary"
               />
             </div>
           </div>

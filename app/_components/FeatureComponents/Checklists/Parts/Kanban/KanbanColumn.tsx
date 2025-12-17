@@ -54,11 +54,13 @@ export const KanbanColumn = ({
 
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null;
   };
 
   const rgb = hexToRgb(color);
@@ -73,9 +75,7 @@ export const KanbanColumn = ({
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: color }}
           />
-          <h3 className="font-medium text-sm text-foreground">
-            {title}
-          </h3>
+          <h3 className="font-medium text-sm text-foreground">{title}</h3>
         </div>
         <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
           {items.length}
@@ -85,7 +85,7 @@ export const KanbanColumn = ({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex-1 rounded-lg border-2 border-dashed p-3 min-h-[200px] transition-colors",
+          "flex-1 rounded-jotty border-2 border-dashed p-3 min-h-[200px] transition-colors",
           isOver && "border-primary bg-primary/5"
         )}
         style={{

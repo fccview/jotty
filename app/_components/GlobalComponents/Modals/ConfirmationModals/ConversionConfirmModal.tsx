@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Alert02Icon,
-  CheckmarkSquare04Icon,
-  TaskDaily01Icon,
-} from "hugeicons-react";
+import { CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { ChecklistType } from "@/app/_types";
@@ -56,14 +52,9 @@ export const ConversionConfirmModal = ({
   const isDestructive = newType === "simple" && currentType === "task";
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Convert Checklist Type"
-      titleIcon={<Alert02Icon className="h-5 w-5 text-destructive" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Convert Checklist Type">
       <div className="space-y-4">
-        <div className="flex items-center justify-center gap-3 p-3 bg-muted/50 rounded-lg">
+        <div className="flex items-center justify-center gap-3 p-3 bg-muted/50 rounded-jotty">
           <TypeDisplay type={currentType} />
           <span className="text-muted-foreground">→</span>
           <TypeDisplay type={newType} />

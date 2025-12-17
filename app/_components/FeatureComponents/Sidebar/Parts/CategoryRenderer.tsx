@@ -4,7 +4,7 @@ import {
   ArrowDown01Icon,
   ArrowRight01Icon,
   Folder01Icon,
-  MoreHorizontalIcon,
+  FolderEditIcon,
   File02Icon,
   CheckmarkSquare04Icon,
   FolderAddIcon,
@@ -138,13 +138,13 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
             <div
               className={cn(
                 "flex items-center justify-between",
-                isOver && "bg-primary/10 rounded-md"
+                isOver && "bg-primary/10 rounded-jotty"
               )}
             >
               <button
                 onClick={() => onToggleCategory(category.path)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors w-full text-left",
+                  "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty transition-colors w-full text-left",
                   hasContent
                     ? "hover:bg-muted/50 cursor-pointer"
                     : "text-muted-foreground cursor-default"
@@ -174,9 +174,9 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 opacity-40 lg:opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-8 w-8 p-0 opacity-40 lg:opacity-20 group-hover:opacity-100 transition-opacity"
                   >
-                    <MoreHorizontalIcon className="h-4 w-4" />
+                    <FolderEditIcon className="h-4 w-4" />
                   </Button>
                 }
               />

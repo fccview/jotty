@@ -59,7 +59,7 @@ export const SearchBar = ({
       />
 
       {isOpen && query && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-md shadow-lg z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-jotty shadow-lg z-50 overflow-hidden">
           <SearchResults
             results={results}
             selectedIndex={selectedIndex}

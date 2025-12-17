@@ -39,7 +39,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
 
   const cardClass = isPrintView
     ? ""
-    : "bg-card border border-border rounded-lg p-6";
+    : "bg-card border border-border rounded-jotty p-6";
 
   return (
     <div className={containerClass}>
@@ -96,7 +96,9 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
               </div>
             </div>
           ) : (
-            <UnifiedMarkdownRenderer content={decryptedContent || note.content} />
+            <UnifiedMarkdownRenderer
+              content={decryptedContent || note.content}
+            />
           )}
         </div>
 

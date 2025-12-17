@@ -13,7 +13,7 @@ export const FeedbackMessage = ({ error, success }: FeedbackMessageProps) => {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 p-3 border rounded-md",
+        "flex items-center gap-2 p-3 border rounded-jotty",
         isError
           ? "bg-destructive/10 border-destructive/20"
           : "bg-primary/10 border-primary/20"

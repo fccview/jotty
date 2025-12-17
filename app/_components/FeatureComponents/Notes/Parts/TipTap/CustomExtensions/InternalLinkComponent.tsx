@@ -224,7 +224,7 @@ export const InternalLinkComponent = ({
       onMouseLeave={() => {
         setShowPopup(false);
       }}
-      className="inline-flex items-center gap-1.5 mx-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-md hover:bg-primary/15 transition-colors cursor-pointer group relative"
+      className="inline-flex items-center gap-1.5 mx-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/15 transition-colors cursor-pointer group relative"
     >
       {showPopup &&
         href &&
@@ -262,7 +262,7 @@ export const InternalLinkComponent = ({
           : capitalize(title.replace(/-/g, " "))}
       </span>
       ·
-      <span className="text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-md">
+      <span className="text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-jotty">
         {fullItem?.category ||
           decodeCategoryPath(potentialCategory) ||
           "not-found"}
@@ -272,7 +272,7 @@ export const InternalLinkComponent = ({
           <span className="text-xs text-muted-foreground">Link Type:</span>
           <button
             onClick={handleToggleConversion}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-xs font-medium transition-all ${
               isJottyLink
                 ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
                 : convertToBidirectional

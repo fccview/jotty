@@ -33,7 +33,7 @@ export const SearchInput = ({
         onChange={(e) => onQueryChange(e.target.value)}
         onFocus={onFocus}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-input bg-background py-3 pl-12 pr-12 text-base focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 md:rounded-md md:py-2 md:pl-10 md:pr-10 md:text-sm"
+        className="w-full rounded-jotty border border-input bg-background py-3 pl-12 pr-12 text-base focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 md:rounded-jotty md:py-2 md:pl-10 md:pr-10 md:text-sm"
       />
       {query && (
         <Button

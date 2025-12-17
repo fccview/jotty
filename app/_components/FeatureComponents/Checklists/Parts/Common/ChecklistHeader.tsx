@@ -3,7 +3,7 @@
 import {
   ArrowLeft01Icon,
   Delete03Icon,
-  PropertyEditIcon,
+  PencilEdit02Icon,
   Share08Icon,
   TaskDaily01Icon,
   CheckmarkSquare04Icon,
@@ -145,7 +145,7 @@ export const ChecklistHeader = ({
                 onClick={onEdit}
                 className="h-10 w-10 p-0"
               >
-                <PropertyEditIcon className="h-4 w-4 lg:h-5 lg:w-5" />
+                <PencilEdit02Icon className="h-4 w-4 lg:h-5 lg:w-5" />
               </Button>
             )}
           </div>
@@ -223,7 +223,7 @@ export const ChecklistHeader = ({
                         {
                           type: "item" as const,
                           label: "Edit",
-                          icon: <PropertyEditIcon className="h-4 w-4" />,
+                          icon: <PencilEdit02Icon className="h-4 w-4" />,
                           onClick: onEdit,
                           className: "lg:!hidden",
                         },

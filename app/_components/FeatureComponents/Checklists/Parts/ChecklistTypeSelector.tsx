@@ -24,7 +24,7 @@ export const ChecklistTypeSelector = ({
           key={type}
           type="button"
           onClick={() => onTypeChange(type)}
-          className={`p-4 rounded-lg border-2 transition-all text-center ${
+          className={`p-4 rounded-jotty border-2 transition-all text-center ${
             selectedType === type
               ? "border-primary bg-primary/5"
               : "border-border hover:border-primary/50"

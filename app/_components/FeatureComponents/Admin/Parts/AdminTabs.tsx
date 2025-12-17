@@ -6,7 +6,7 @@ import {
   Activity03Icon,
   Globe02Icon,
   Settings01Icon,
-  PropertyEditIcon,
+  BookEditIcon,
   PaintBrush04Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -42,7 +42,7 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
     {
       id: AdminTabsEnum.EDITOR,
       label: "Editor",
-      icon: PropertyEditIcon,
+      icon: BookEditIcon,
     },
     {
       id: AdminTabsEnum.STYLING,
@@ -57,7 +57,7 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
   ];
 
   return (
-    <div className="bg-muted p-1 rounded-lg">
+    <div className="bg-muted p-1 rounded-jotty">
       <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
         {tabs.map((tab) => {
           const Icon = tab.icon;

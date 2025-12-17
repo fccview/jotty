@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { PropertyEditIcon } from "hugeicons-react";
 import { Modal } from "../Modal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
@@ -60,12 +59,7 @@ export const RenameCategoryModal = ({
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Rename Category"
-      titleIcon={<PropertyEditIcon className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Rename Category">
       <p className="text-sm text-muted-foreground mb-4">
         Enter a new name for &quot;{categoryName}&quot;
       </p>
@@ -79,7 +73,7 @@ export const RenameCategoryModal = ({
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:outline-none"
+            className="w-full px-3 py-2 bg-background border border-border rounded-jotty text-foreground placeholder:text-muted-foreground focus:ring-none focus:ring-primary focus:outline-none"
             placeholder="Enter category name..."
             autoFocus
           />

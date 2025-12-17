@@ -1,6 +1,12 @@
 "use client";
 
-import { Clock01Icon, TextNumberSignIcon, PinIcon, PinOffIcon, LockKeyIcon } from "hugeicons-react";
+import {
+  Clock01Icon,
+  TextNumberSignIcon,
+  PinIcon,
+  PinOffIcon,
+  LockKeyIcon,
+} from "hugeicons-react";
 import { Note } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { useMemo } from "react";
@@ -76,8 +82,8 @@ export const NoteCard = ({
       previewText: fullScrollableContent
         ? content
         : plainText.length > 550
-          ? plainText.substring(0, 550) + "..."
-          : plainText,
+        ? plainText.substring(0, 550) + "..."
+        : plainText,
       wordCount: words.length,
     };
   }, [displayContent, fullScrollableContent]);
@@ -93,14 +99,16 @@ export const NoteCard = ({
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
 
   const cardStyle = {
     ...style,
     ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
-    ...(fixedWidth ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth } : {}),
+    ...(fixedWidth
+      ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth }
+      : {}),
   };
 
   return (
@@ -108,8 +116,9 @@ export const NoteCard = ({
       ref={setNodeRef}
       style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-note-card bg-card border border-border rounded-xl hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${isDragging ? "border-primary/30" : ""
-        }`}
+      className={`jotty-note-card bg-card border border-border rounded-md hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${
+        isDragging ? "border-primary/30" : ""
+      }`}
     >
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
@@ -134,8 +143,9 @@ export const NoteCard = ({
                 e.stopPropagation();
                 onTogglePin(note);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"
-                } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-lg flex-shrink-0`}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-jotty flex-shrink-0`}
               title={isPinned ? "Unpin" : "PinIcon"}
             >
               {isPinned ? (
@@ -159,10 +169,11 @@ export const NoteCard = ({
           ) : showMarkdownPreview ? (
             <div className="text-sm text-muted-foreground prose prose-sm max-w-none">
               <div
-                className={`${fullScrollableContent
-                  ? "max-h-[200px] overflow-y-auto"
-                  : "line-clamp-4"
-                  } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
+                className={`${
+                  fullScrollableContent
+                    ? "max-h-[200px] overflow-y-auto"
+                    : "line-clamp-4"
+                } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
               >
                 <UnifiedMarkdownRenderer content={displayContent} />
               </div>
@@ -187,7 +198,7 @@ export const NoteCard = ({
               </div>
             )}
             {!sharer && categoryName && (
-              <span className="bg-primary/10 text-primary px-2 py-1 rounded-md font-medium">
+              <span className="bg-primary/10 text-primary px-2 py-1 rounded-jotty font-medium">
                 {categoryName}
               </span>
             )}

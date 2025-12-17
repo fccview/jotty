@@ -144,7 +144,7 @@ export const AdminContent = ({
           return (
             <div
               key={user.username}
-              className="p-6 rounded-lg border border-border bg-card"
+              className="p-6 rounded-jotty border border-border bg-card"
             >
               <div
                 className="lg:flex items-center justify-between cursor-pointer"
@@ -183,7 +183,9 @@ export const AdminContent = ({
                     disabled={rebuildingIndex === user.username}
                     title="Rebuild link indexex"
                   >
-                    {rebuildingIndex === user.username ? "Rebuilding..." : "Rebuild Indexes"}
+                    {rebuildingIndex === user.username
+                      ? "Rebuilding..."
+                      : "Rebuild Indexes"}
                   </Button>
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">

@@ -69,7 +69,9 @@ export const Pagination = ({
   ];
 
   return (
-    <div className={`bg-card border border-border rounded-lg p-4 ${className}`}>
+    <div
+      className={`bg-card border border-border rounded-jotty p-4 ${className}`}
+    >
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-foreground">Page</span>

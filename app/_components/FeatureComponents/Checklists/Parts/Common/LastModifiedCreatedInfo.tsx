@@ -33,7 +33,7 @@ const LastModifiedCreatedInfo = ({
         >
           {item.createdBy && (
             <span
-              className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
+              className="flex items-center gap-1 bg-muted rounded-jotty py-1 px-2"
               title={`Created by ${item.createdBy}${
                 item.createdAt
                   ? ` on ${formatDateTimeString(item.createdAt)}`
@@ -54,7 +54,7 @@ const LastModifiedCreatedInfo = ({
 
           {item.lastModifiedBy && (
             <span
-              className="flex items-center gap-1 bg-muted rounded-md py-1 px-2"
+              className="flex items-center gap-1 bg-muted rounded-jotty py-1 px-2"
               title={`Last modified by ${item.lastModifiedBy}${
                 item.lastModifiedAt
                   ? ` on ${formatDateTimeString(item.lastModifiedAt)}`

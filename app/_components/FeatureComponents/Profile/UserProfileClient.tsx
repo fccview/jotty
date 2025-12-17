@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { UserIcon, Tv02Icon, SharedWifiIcon, LockKeyIcon, Archive02Icon, Settings01Icon } from "hugeicons-react";
+import {
+  UserIcon,
+  Tv02Icon,
+  SharedWifiIcon,
+  LockKeyIcon,
+  Archive02Icon,
+  Settings01Icon,
+} from "hugeicons-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
 import { Category } from "@/app/_types";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
@@ -35,22 +42,20 @@ export const UserProfileClient = ({
   linkIndex,
 }: UserProfileClientProps) => {
   const { user, appSettings } = useAppMode();
-  const [activeTab, setActiveTab] = useState<
-    ProfileTabs
-  >(ProfileTabs.PROFILE);
+  const [activeTab, setActiveTab] = useState<ProfileTabs>(ProfileTabs.PROFILE);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
   const handleTabChange = (newTab: ProfileTabs) => {
     setActiveTab(newTab);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.location.hash = newTab;
     }
   };
 
   useEffect(() => {
     setIsHydrated(true);
-    const hash = window.location.hash.replace('#', '');
+    const hash = window.location.hash.replace("#", "");
     const validTabs = Object.values(ProfileTabs);
     if (validTabs.includes(hash as ProfileTabs)) {
       setActiveTab(hash as ProfileTabs);
@@ -61,15 +66,15 @@ export const UserProfileClient = ({
     if (!isHydrated) return;
 
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '');
+      const hash = window.location.hash.replace("#", "");
       const validTabs = Object.values(ProfileTabs);
       if (validTabs.includes(hash as ProfileTabs)) {
         setActiveTab(hash as ProfileTabs);
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, [isHydrated]);
 
   return (
@@ -79,15 +84,31 @@ export const UserProfileClient = ({
         description="Manage your account settings and preferences"
       />
 
-      <div className="bg-muted p-1 rounded-lg">
+      <div className="bg-muted p-1 rounded-jotty">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {[
             { id: ProfileTabs.PROFILE, label: "Profile", icon: UserIcon },
             { id: ProfileTabs.SESSIONS, label: "Sessions", icon: Tv02Icon },
             { id: ProfileTabs.ARCHIVE, label: "Archive", icon: Archive02Icon },
-            ...(appSettings?.editor?.enableBilateralLinks ? [{ id: ProfileTabs.CONNECTIONS, label: "Connections", icon: SharedWifiIcon }] : []),
-            { id: ProfileTabs.ENCRYPTION, label: "Encryption (beta)", icon: LockKeyIcon },
-            { id: ProfileTabs.SETTINGS, label: "Settings", icon: Settings01Icon },
+            ...(appSettings?.editor?.enableBilateralLinks
+              ? [
+                  {
+                    id: ProfileTabs.CONNECTIONS,
+                    label: "Connections",
+                    icon: SharedWifiIcon,
+                  },
+                ]
+              : []),
+            {
+              id: ProfileTabs.ENCRYPTION,
+              label: "Encryption (beta)",
+              icon: LockKeyIcon,
+            },
+            {
+              id: ProfileTabs.SETTINGS,
+              label: "Settings",
+              icon: Settings01Icon,
+            },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -95,12 +116,8 @@ export const UserProfileClient = ({
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "ghost"}
                 size="sm"
-                onClick={() =>
-                  handleTabChange(
-                    tab.id as ProfileTabs
-                  )
-                }
-                className="flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors whitespace-nowrap flex-shrink-0"
+                onClick={() => handleTabChange(tab.id as ProfileTabs)}
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-jotty transition-colors whitespace-nowrap flex-shrink-0"
               >
                 <Icon className="h-4 w-4" />
                 {tab.label}
@@ -115,7 +132,7 @@ export const UserProfileClient = ({
           <ProfileTab
             user={user}
             isAdmin={isAdmin}
-            setUser={() => { }}
+            setUser={() => {}}
             isSsoUser={isSsoUser}
           />
         )}

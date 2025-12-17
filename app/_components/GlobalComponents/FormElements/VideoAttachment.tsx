@@ -71,7 +71,7 @@ export const VideoAttachment = ({
       className={`jotty-video-attachment inline-block max-w-full ${className}`}
     >
       <span className="relative group block">
-        <span className="max-w-2xl rounded-lg overflow-hidden border border-border bg-card block">
+        <span className="max-w-2xl rounded-jotty overflow-hidden border border-border bg-card block">
           <span
             className="relative cursor-pointer block"
             onMouseEnter={() => setShowControls(true)}

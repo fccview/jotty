@@ -82,7 +82,7 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="p-6 rounded-lg border border-border bg-card">
+        <div className="p-6 rounded-jotty border border-border bg-card">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             User Distribution
           </h3>
@@ -108,7 +108,7 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
           </div>
         </div>
 
-        <div className="p-6 rounded-lg border border-border bg-card">
+        <div className="p-6 rounded-jotty border border-border bg-card">
           <h3 className="text-lg font-semibold text-foreground mb-4">
             Content Overview
           </h3>

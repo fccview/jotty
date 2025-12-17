@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { HelpCircleIcon, SquareLock01Icon, SmartPhone01Icon, PaintBrush04Icon, LaptopProgrammingIcon, LockKeyIcon } from "hugeicons-react";
+import {
+  HelpCircleIcon,
+  SquareLock01Icon,
+  SmartPhone01Icon,
+  PaintBrush04Icon,
+  LaptopProgrammingIcon,
+  LockKeyIcon,
+} from "hugeicons-react";
 import { NavigationGlobalIcon } from "./NavigationGlobalIcon";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Tabs } from "@/app/_components/GlobalComponents/Tabs/Tabs";
@@ -120,7 +127,6 @@ export const NavigationHelpIcon = () => {
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
         title={"How to"}
-        titleIcon={<HelpCircleIcon className="h-5 w-5 text-primary" />}
         className="lg:max-h-[80vh] lg:!max-w-[80vw] lg:!w-[80vw]"
       >
         <div className="flex flex-col h-full max-h-[calc(80vh-8rem)]">

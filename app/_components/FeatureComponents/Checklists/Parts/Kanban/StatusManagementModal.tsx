@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Settings01Icon,
-  Add01Icon,
-  Delete03Icon,
-  DragDropVerticalIcon,
-} from "hugeicons-react";
+import { Add01Icon, Delete03Icon, DragDropVerticalIcon } from "hugeicons-react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { KanbanStatus } from "@/app/_types";
@@ -70,7 +65,7 @@ const SortableStatusItem = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 p-3 border border-border rounded-lg bg-muted/30"
+      className="flex items-center gap-2 p-3 border border-border rounded-jotty bg-muted/30"
     >
       <div
         {...attributes}
@@ -84,7 +79,7 @@ const SortableStatusItem = ({
         type="text"
         value={status.label}
         onChange={(e) => onUpdateLabel(status.id, e.target.value)}
-        className="flex-1 px-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        className="flex-1 px-3 py-2 border border-input bg-background rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring"
         placeholder="Status name"
       />
 
@@ -92,7 +87,7 @@ const SortableStatusItem = ({
         type="color"
         value={status.color || defaultStatusColors[status.id] || "#6b7280"}
         onChange={(e) => onUpdateColor(status.id, e.target.value)}
-        className="w-12 h-10 border border-input rounded-md cursor-pointer"
+        className="w-12 h-10 border border-input rounded-jotty cursor-pointer"
         title="Status color"
       />
 
@@ -205,7 +200,6 @@ export const StatusManagementModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Manage Statuses"
-      titleIcon={<Settings01Icon className="h-5 w-5" />}
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">

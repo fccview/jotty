@@ -80,7 +80,7 @@ export const Dropdown = ({
             }
           }}
           className={cn(
-            "jotty-dropdown-button w-full flex items-center justify-between p-3 rounded-lg border border-border transition-colors",
+            "jotty-dropdown-button w-full flex items-center justify-between p-3 rounded-jotty border border-border transition-colors",
             disabled
               ? "bg-muted text-muted-foreground cursor-not-allowed"
               : "hover:bg-muted/50",
@@ -107,7 +107,7 @@ export const Dropdown = ({
       )}
 
       {isOpen && !disabled && (
-        <div className="jotty-dropdown-menu absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <div className="jotty-dropdown-menu absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] mt-1 bg-card border border-border rounded-jotty shadow-lg max-h-48 overflow-y-auto">
           <div className="py-1">
             {options.map((option) => (
               <button

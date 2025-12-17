@@ -1,14 +1,8 @@
 "use client";
 
 import {
-  CheckmarkCircle04Icon,
-  Folder01Icon,
   Add01Icon,
-  TradeUpIcon,
-  Clock01Icon,
-  TaskDaily01Icon,
   CheckmarkSquare04Icon,
-  PinIcon,
   ArrowRight04Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -89,9 +83,6 @@ export const ChecklistHome = ({
             <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
               Checklists
             </h1>
-            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
-              Your productivity dashboard
-            </p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -115,64 +106,9 @@ export const ChecklistHome = ({
           </div>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-4 sm:p-6 mb-6 lg:mb-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Folder01Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.totalLists}
-                </div>
-                <div className="text-xs text-muted-foreground">Lists</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <CheckmarkCircle04Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.completedItems}
-                </div>
-                <div className="text-xs text-muted-foreground">Completed</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <TradeUpIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {completionRate}%
-                </div>
-                <div className="text-xs text-muted-foreground">Progress</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Clock01Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.totalItems}
-                </div>
-                <div className="text-xs text-muted-foreground">Total Items</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <PinIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                 Pinned
               </h2>
@@ -224,11 +160,8 @@ export const ChecklistHome = ({
             {taskLists.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <TaskDaily01Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    Task Lists
+                    Recent Tasks
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
@@ -260,11 +193,8 @@ export const ChecklistHome = ({
             {simpleLists.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <CheckmarkSquare04Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    Simple Lists
+                    Recent Checklists
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button

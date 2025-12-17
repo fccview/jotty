@@ -76,12 +76,12 @@ export const YamlMetadataMigrationView = ({
               </p>
             </InfoCard>
 
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-foreground mb-4">
                 Migration Changes
               </h2>
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
                   <File02Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">YAML Metadata Format</p>
@@ -97,7 +97,7 @@ checklistType: task|simple
                     </pre>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
                   <Database01Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
@@ -109,7 +109,7 @@ checklistType: task|simple
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
                   <ShieldUserIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
@@ -328,7 +328,7 @@ checklistType: task|simple
               </InfoCard>
             )}
 
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -393,7 +393,7 @@ checklistType: task|simple
             </InfoCard>
 
             {migrationResult.changes.length > 0 && (
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+              <div className="bg-card border border-border rounded-md p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
                   Migration Details:
                 </h3>

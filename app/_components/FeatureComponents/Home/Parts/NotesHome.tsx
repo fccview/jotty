@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Add01Icon,
-  File02Icon,
-  Folder02Icon,
-  PinIcon,
-  Clock01Icon,
-  ArrowRight04Icon,
-} from "hugeicons-react";
+import { Add01Icon, File02Icon, ArrowRight04Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Note, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
@@ -85,9 +78,6 @@ export const NotesHome = ({
             <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
               Notes
             </h1>
-            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
-              Your knowledge workspace
-            </p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -114,11 +104,8 @@ export const NotesHome = ({
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <PinIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Pinned Notes
+                Pinned
               </h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
@@ -174,9 +161,6 @@ export const NotesHome = ({
         {recent.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Clock01Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                 Recent Notes
               </h2>
@@ -212,15 +196,6 @@ export const NotesHome = ({
                 </div>
               ))}
             </Masonry>
-          </div>
-        )}
-
-        {notes.length > 12 && (
-          <div className="text-center mt-8">
-            <p className="text-sm text-muted-foreground">
-              Showing {recent.length} of {notes.length} notes. Use the sidebar
-              to browse all or search above.
-            </p>
           </div>
         )}
       </div>

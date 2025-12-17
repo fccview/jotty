@@ -7,7 +7,6 @@ import {
   Add01Icon,
   PencilEdit02Icon,
   Delete03Icon,
-  PaintBrush04Icon,
 } from "hugeicons-react";
 import { useStyling } from "@/app/_hooks/useStyling";
 import { ThemePreview } from "@/app/_components/FeatureComponents/Admin/Parts/ThemePreview";
@@ -106,7 +105,7 @@ export const StylingTab = () => {
               {getCustomThemes().map((theme) => (
                 <div
                   key={theme.id}
-                  className="flex items-center justify-between p-3 border border-border rounded-md bg-muted/30"
+                  className="flex items-center justify-between p-3 border border-border rounded-jotty bg-muted/30"
                 >
                   <div className="flex items-center space-x-2">
                     <theme.icon className="h-4 w-4" />
@@ -149,7 +148,6 @@ export const StylingTab = () => {
         isOpen={themeModalOpen}
         onClose={() => setThemeModalOpen(false)}
         title={editingTheme ? "Edit Theme" : "Create Theme"}
-        titleIcon={<PaintBrush04Icon className="h-5 w-5" />}
         className="!w-full lg:!max-w-[90vw] !h-[90vh] overflow-y-auto !max-h-[900px]"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -277,7 +275,7 @@ export const StylingTab = () => {
 
           <div className="space-y-4">
             <h4 className="text-sm font-medium">Live Preview</h4>
-            <div className="border border-border rounded-lg">
+            <div className="border border-border rounded-jotty">
               <ThemePreview
                 colors={themeForm.colors}
                 focusedColor={focusedColor}

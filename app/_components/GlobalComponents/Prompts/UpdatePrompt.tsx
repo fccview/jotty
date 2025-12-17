@@ -128,13 +128,13 @@ export const UpdatePrompt = () => {
           )}
         </div>
       </Modal>
-      <div className="fixed bottom-4 left-[2vw] lg:left-auto lg:right-4 z-50 bg-background border border-border rounded-lg shadow-lg p-4 w-[96vw] lg:w-[300px]">
+      <div className="fixed bottom-4 left-[2vw] lg:left-auto lg:right-4 z-50 bg-background border border-border rounded-jotty shadow-lg p-4 w-[96vw] lg:w-[300px]">
         <div className="flex items-center justify-between">
           <div
             className="flex items-center gap-3 cursor-pointer"
             onClick={handlePromptClick}
           >
-            <div className="p-2 bg-primary rounded-lg flex items-center justify-center">
+            <div className="p-2 bg-primary rounded-jotty flex items-center justify-center">
               <Download01Icon className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>

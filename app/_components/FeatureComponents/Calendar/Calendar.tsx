@@ -91,7 +91,7 @@ export default function Calendar(props: CalendarProps) {
             ))}
           </div>
 
-          <div className="isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-border text-sm shadow-sm ring-1 ring-border dark:shadow-none">
+          <div className="isolate mt-2 grid grid-cols-7 gap-px rounded-jotty bg-border text-sm shadow-sm ring-1 ring-border dark:shadow-none">
             {days.map((day, index) => {
               const isFirstInRow = index % 7 === 0;
               const isLastInRow = index % 7 === 6;

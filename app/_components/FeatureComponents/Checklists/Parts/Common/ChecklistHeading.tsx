@@ -155,7 +155,7 @@ export const ChecklistHeading = ({
                 onChange={handleInputChange}
                 onFocus={handleInputFocus}
                 placeholder={placeholder}
-                className="w-full px-4 py-3 border border-input bg-background rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-ring transition-all duration-200 shadow-sm"
+                className="w-full px-4 py-3 border border-input bg-background rounded-jotty text-base focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 focus:border-ring transition-all duration-200 shadow-sm"
                 disabled={isLoading}
               />
               {showSuggestions &&

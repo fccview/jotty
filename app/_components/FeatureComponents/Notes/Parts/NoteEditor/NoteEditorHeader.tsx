@@ -16,12 +16,12 @@ import {
   Share08Icon,
   Download01Icon,
   SidebarRightIcon,
-  PropertyEditIcon,
+  FileEditIcon,
   Delete03Icon,
   MoreHorizontalIcon,
   Copy01Icon,
   ViewIcon,
-  LockKeyIcon
+  LockKeyIcon,
 } from "hugeicons-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -79,14 +79,16 @@ export const NoteEditorHeader = ({
     handleCancel,
     handleSave,
     handleDelete,
-    setIsEditing,
     isPrinting,
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
-  const [encryptionModalMode, setEncryptionModalMode] = useState<"encrypt" | "decrypt" | "view">("encrypt");
-  const [hasPromptedForDecryption, setHasPromptedForDecryption] = useState(false);
+  const [encryptionModalMode, setEncryptionModalMode] = useState<
+    "encrypt" | "decrypt" | "view"
+  >("encrypt");
+  const [hasPromptedForDecryption, setHasPromptedForDecryption] =
+    useState(false);
   const [copied, setCopied] = useState(false);
   const { user } = useAppMode();
   const router = useRouter();
@@ -122,7 +124,12 @@ export const NoteEditorHeader = ({
       setShowEncryptionModal(true);
       setHasPromptedForDecryption(true);
     }
-  }, [note?.encrypted, user?.encryptionSettings?.autoDecrypt, hasPromptedForDecryption, isEditing]);
+  }, [
+    note?.encrypted,
+    user?.encryptionSettings?.autoDecrypt,
+    hasPromptedForDecryption,
+    isEditing,
+  ]);
 
   const handleArchive = async () => {
     const result = await toggleArchive(note, Modes.NOTES);
@@ -133,10 +140,12 @@ export const NoteEditorHeader = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${note?.uuid
-        ? note?.uuid
-        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id
-        }`
+      `${
+        note?.uuid
+          ? note?.uuid
+          : `${encodeCategoryPath(note?.category || "Uncategorized")}/${
+              note?.id
+            }`
       }`
     );
     if (success) {
@@ -248,12 +257,13 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      title={`Copy ID: ${note?.uuid
-                        ? note?.uuid
-                        : `${encodeCategoryPath(
-                          note?.category || "Uncategorized"
-                        )}/${note?.id}`
-                        }`}
+                      title={`Copy ID: ${
+                        note?.uuid
+                          ? note?.uuid
+                          : `${encodeCategoryPath(
+                              note?.category || "Uncategorized"
+                            )}/${note?.id}`
+                      }`}
                     >
                       {copied ? (
                         <Tick02Icon className="h-3 w-3 text-green-500" />
@@ -311,7 +321,7 @@ export const NoteEditorHeader = ({
                   onClick={() => {
                     handleSave();
                   }}
-                  className="fixed bottom-[150px] right-4 rounded-full py-6 lg:py-0 lg:rounded-md lg:relative lg:bottom-auto lg:right-auto z-10"
+                  className="fixed bottom-[150px] right-4 rounded-full py-6 lg:py-0 lg:rounded-jotty lg:relative lg:bottom-auto lg:right-auto z-10"
                   disabled={status.isSaving || status.isAutoSaving}
                 >
                   {status.isSaving ? (
@@ -359,7 +369,7 @@ export const NoteEditorHeader = ({
                       onClick={handleEdit}
                       title="Edit"
                     >
-                      <PropertyEditIcon className="h-5 w-5" />
+                      <FileEditIcon className="h-5 w-5" />
                     </Button>
                   )}
                   <DropdownMenu
@@ -372,56 +382,56 @@ export const NoteEditorHeader = ({
                     items={[
                       ...(permissions?.isOwner
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Share",
-                            icon: <Share08Icon className="h-4 w-4" />,
-                            onClick: () => setShowShareModal(true),
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Share",
+                              icon: <Share08Icon className="h-4 w-4" />,
+                              onClick: () => setShowShareModal(true),
+                            },
+                          ]
                         : []),
                       ...(onClone
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Clone",
-                            icon: <Copy01Icon className="h-4 w-4" />,
-                            onClick: onClone,
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Clone",
+                              icon: <Copy01Icon className="h-4 w-4" />,
+                              onClick: onClone,
+                            },
+                          ]
                         : []),
                       ...(note?.encrypted
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "View",
-                            icon: <ViewIcon className="h-4 w-4" />,
-                            onClick: () => {
-                              setEncryptionModalMode("view");
-                              setShowEncryptionModal(true);
+                            {
+                              type: "item" as const,
+                              label: "View",
+                              icon: <ViewIcon className="h-4 w-4" />,
+                              onClick: () => {
+                                setEncryptionModalMode("view");
+                                setShowEncryptionModal(true);
+                              },
                             },
-                          },
-                          {
-                            type: "item" as const,
-                            label: "Decrypt",
-                            icon: <LockKeyIcon className="h-4 w-4" />,
-                            onClick: () => {
-                              setEncryptionModalMode("decrypt");
-                              setShowEncryptionModal(true);
+                            {
+                              type: "item" as const,
+                              label: "Decrypt",
+                              icon: <LockKeyIcon className="h-4 w-4" />,
+                              onClick: () => {
+                                setEncryptionModalMode("decrypt");
+                                setShowEncryptionModal(true);
+                              },
                             },
-                          },
-                        ]
+                          ]
                         : [
-                          {
-                            type: "item" as const,
-                            label: "Encrypt Note",
-                            icon: <LockKeyIcon className="h-4 w-4" />,
-                            onClick: () => {
-                              setEncryptionModalMode("encrypt");
-                              setShowEncryptionModal(true);
+                            {
+                              type: "item" as const,
+                              label: "Encrypt Note",
+                              icon: <LockKeyIcon className="h-4 w-4" />,
+                              onClick: () => {
+                                setEncryptionModalMode("encrypt");
+                                setShowEncryptionModal(true);
+                              },
                             },
-                          },
-                        ]),
+                          ]),
                       {
                         type: "item" as const,
                         label: "Print / Save as PDF",
@@ -441,24 +451,24 @@ export const NoteEditorHeader = ({
                       },
                       ...(permissions?.canDelete
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Archive",
-                            icon: <Archive02Icon className="h-4 w-4" />,
-                            onClick: handleArchive,
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Archive",
+                              icon: <Archive02Icon className="h-4 w-4" />,
+                              onClick: handleArchive,
+                            },
+                          ]
                         : []),
                       ...(canDelete
                         ? [
-                          {
-                            type: "item" as const,
-                            label: "Delete",
-                            icon: <Delete03Icon className="h-4 w-4" />,
-                            onClick: handleDelete,
-                            variant: "destructive" as const,
-                          },
-                        ]
+                            {
+                              type: "item" as const,
+                              label: "Delete",
+                              icon: <Delete03Icon className="h-4 w-4" />,
+                              onClick: handleDelete,
+                              variant: "destructive" as const,
+                            },
+                          ]
                         : []),
                     ]}
                   />
@@ -493,8 +503,8 @@ export const NoteEditorHeader = ({
           encryptionModalMode === "view"
             ? handleViewDecryption
             : encryptionModalMode === "decrypt"
-              ? handlePermanentDecryption
-              : handleEncryptionSuccess
+            ? handlePermanentDecryption
+            : handleEncryptionSuccess
         }
       />
     </>

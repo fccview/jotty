@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Upload01Icon, AlertCircleIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
@@ -108,7 +107,6 @@ export const KeyImportModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Import PGP Keys"
-      titleIcon={<Upload01Icon className="h-5 w-5 text-primary" />}
       className="max-w-2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">

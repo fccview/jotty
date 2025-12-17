@@ -177,7 +177,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
       <Label className="text-sm font-medium">{label}</Label>
       <p className="text-xs text-muted-foreground">{description}</p>
       <div
-        className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${
+        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${
           dragOver
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/25 hover:border-muted-foreground/50"
@@ -226,7 +226,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
           </label>
         )}
         {isUploading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-jotty">
             <Orbit01Icon className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm mt-2">Uploading...</p>
           </div>

@@ -249,14 +249,14 @@ export const ProfileTab = ({
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
           <AlertCircleIcon className="h-4 w-4 text-destructive" />
           <span className="text-sm text-destructive">{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-md">
+        <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-jotty">
           <Tick02Icon className="h-4 w-4 text-primary" />
           <span className="text-sm text-primary">{success}</span>
         </div>
@@ -264,7 +264,7 @@ export const ProfileTab = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
-          <div className="flex flex-col items-center gap-4 p-4 border border-border rounded-lg">
+          <div className="flex flex-col items-center gap-4 p-4 border border-border rounded-jotty">
             <UserAvatar
               username={editedUsername}
               avatarUrl={avatarUrl}
@@ -294,7 +294,7 @@ export const ProfileTab = ({
         </div>
         <div className="md:col-span-2 space-y-4">
           <div className="space-y-4">
-            <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-lg">
+            <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-jotty">
               <div>
                 <h3 className="font-medium">API Key</h3>
                 <p className="text-sm text-muted-foreground">

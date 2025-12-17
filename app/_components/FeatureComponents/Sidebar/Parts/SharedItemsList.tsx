@@ -78,7 +78,7 @@ export const SharedItemsList = ({
         <button
           onClick={onToggleCollapsed}
           className={cn(
-            "flex items-center gap-2 py-2 pr-2 text-sm rounded-md transition-colors w-full text-left",
+            "flex items-center gap-2 py-2 pr-2 text-sm rounded-jotty transition-colors w-full text-left",
             "hover:bg-muted/50 cursor-pointer"
           )}
         >
@@ -107,7 +107,7 @@ export const SharedItemsList = ({
                 <button
                   onClick={() => toggleUserCollapsed(sharer)}
                   className={cn(
-                    "flex items-center gap-2 py-2 pr-2 text-sm rounded-md transition-colors w-full text-left",
+                    "flex items-center gap-2 py-2 pr-2 text-sm rounded-jotty transition-colors w-full text-left",
                     "hover:bg-muted/50 cursor-pointer"
                   )}
                 >
@@ -142,8 +142,10 @@ export const SharedItemsList = ({
                           onClick={() => onItemClick(minimalItem)}
                           data-sidebar-item-selected={isSelected}
                           className={cn(
-                            "flex items-center gap-2 py-2 px-3 text-sm rounded-md transition-colors w-full text-left",
-                            isSelected ? "bg-primary/60 text-primary-foreground" : "hover:bg-muted/50 text-foreground"
+                            "flex items-center gap-2 py-2 px-3 text-sm rounded-jotty transition-colors w-full text-left",
+                            isSelected
+                              ? "bg-primary/60 text-primary-foreground"
+                              : "hover:bg-muted/50 text-foreground"
                           )}
                         >
                           {mode === "checklists" ? (
@@ -152,7 +154,9 @@ export const SharedItemsList = ({
                             <File02Icon className="h-4 w-4" />
                           )}
                           <span className="truncate flex-1">
-                            {appSettings?.parseContent === "yes" ? item.id : capitalize(item.id.replace(/-/g, " "))}
+                            {appSettings?.parseContent === "yes"
+                              ? item.id
+                              : capitalize(item.id.replace(/-/g, " "))}
                           </span>
                         </button>
                       );

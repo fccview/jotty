@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckmarkSquare04Icon } from "hugeicons-react";
 import { getListById, updateList } from "@/app/_server/actions/checklist";
-import { getCurrentUser } from "@/app/_server/actions/users";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
@@ -39,8 +37,15 @@ export const EditChecklistModal = ({
 
   useEffect(() => {
     const fetchChecklist = async () => {
-      const checklist = await getListById(initialChecklist.id, user?.username || "", initialChecklist.category || "Uncategorized");
-      const parsedChecklist = parseChecklistContent(checklist?.rawContent || "", checklist?.id || "");
+      const checklist = await getListById(
+        initialChecklist.id,
+        user?.username || "",
+        initialChecklist.category || "Uncategorized"
+      );
+      const parsedChecklist = parseChecklistContent(
+        checklist?.rawContent || "",
+        checklist?.id || ""
+      );
 
       setChecklist(checklist || null);
       setTitle(parsedChecklist?.title || "");
@@ -51,12 +56,7 @@ export const EditChecklistModal = ({
 
   if (!checklist) {
     return (
-      <Modal
-        isOpen={true}
-        onClose={onClose}
-        title="Checklist not found"
-        titleIcon={<CheckmarkSquare04Icon className="h-5 w-5 text-primary" />}
-      >
+      <Modal isOpen={true} onClose={onClose} title="Checklist not found">
         <p>Checklist not found</p>
       </Modal>
     );
@@ -70,7 +70,10 @@ export const EditChecklistModal = ({
     const formData = new FormData();
     formData.append("id", initialChecklist.id);
     formData.append("title", title.trim());
-    formData.append("originalCategory", initialChecklist.category || "Uncategorized");
+    formData.append(
+      "originalCategory",
+      initialChecklist.category || "Uncategorized"
+    );
     formData.append("unarchive", unarchive ? "true" : "false");
 
     if (isOwner) {
@@ -103,7 +106,6 @@ export const EditChecklistModal = ({
       isOpen={true}
       onClose={onClose}
       title={unarchive ? "Unarchive Checklist" : "Edit Checklist"}
-      titleIcon={<CheckmarkSquare04Icon className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
@@ -115,7 +117,7 @@ export const EditChecklistModal = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter checklist name..."
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+            className="w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
             required
             disabled={isLoading || unarchive}
           />
@@ -158,8 +160,8 @@ export const EditChecklistModal = ({
             {isLoading
               ? "Updating..."
               : unarchive
-                ? "Unarchive Checklist"
-                : "Update Checklist"}
+              ? "Unarchive Checklist"
+              : "Update Checklist"}
           </Button>
         </div>
       </form>

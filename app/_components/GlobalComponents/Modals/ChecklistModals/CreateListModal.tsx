@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { CheckmarkSquare04Icon } from "hugeicons-react";
 import { Checklist, ChecklistType, Category } from "@/app/_types";
 import { createCategory } from "@/app/_server/actions/category";
 import { createList } from "@/app/_server/actions/checklist";
@@ -77,12 +76,7 @@ export const CreateListModal = ({
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      title="Create New Checklist"
-      titleIcon={<CheckmarkSquare04Icon className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={true} onClose={onClose} title="Create New Checklist">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
@@ -94,7 +88,7 @@ export const CreateListModal = ({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter checklist name..."
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring"
             required
             disabled={isLoading}
           />

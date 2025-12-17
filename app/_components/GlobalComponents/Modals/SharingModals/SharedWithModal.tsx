@@ -1,4 +1,3 @@
-import { UserMultipleIcon } from "hugeicons-react";
 import { Modal } from "../Modal";
 import { UserAvatar } from "../../User/UserAvatar";
 
@@ -16,17 +15,12 @@ export const SharedWithModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Shared With"
-      titleIcon={<UserMultipleIcon className="h-5 w-5 text-primary" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Shared With">
       <div className="space-y-4 py-6">
         {usernames.map((username) => (
           <div
             key={username}
-            className="p-3 rounded-lg border hover:bg-accent/50"
+            className="p-3 rounded-jotty border hover:bg-accent/50"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0 flex-1">

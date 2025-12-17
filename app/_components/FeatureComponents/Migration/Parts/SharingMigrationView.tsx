@@ -72,12 +72,12 @@ export const SharingMigrationView = ({
               </p>
             </InfoCard>
 
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-foreground mb-4">
                 Migration Changes
               </h2>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <UserMultipleIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">User-focused sharing</p>
@@ -88,7 +88,7 @@ export const SharingMigrationView = ({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <Database01Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
@@ -103,7 +103,7 @@ export const SharingMigrationView = ({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <Globe02Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
@@ -115,7 +115,7 @@ export const SharingMigrationView = ({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <ShieldUserIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">
@@ -156,7 +156,7 @@ export const SharingMigrationView = ({
               </InfoCard>
             )}
 
-            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -214,7 +214,7 @@ export const SharingMigrationView = ({
             </InfoCard>
 
             {migrationResult.changes.length > 0 && (
-              <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+              <div className="bg-card border border-border rounded-md p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
                   What was changed:
                 </h3>

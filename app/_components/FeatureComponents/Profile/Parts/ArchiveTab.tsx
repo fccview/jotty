@@ -100,7 +100,7 @@ export const ArchiveTab = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search archived items..."
-          className="w-full rounded-lg border border-input bg-background py-2 pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+          className="w-full rounded-jotty border border-input bg-background py-2 pl-10 pr-10 text-sm focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
         />
         {searchQuery && (
           <Button
@@ -212,15 +212,17 @@ export const ArchiveTab = ({
           />
         )}
 
-      {showEditNoteModal && selectedItem && selectedItem.type === ItemTypes.NOTE && (
-        <EditNoteModal
-          note={selectedItem.data as Note}
-          categories={notesCategories}
-          onClose={handleModalClose}
-          onUpdated={handleUpdated}
-          unarchive
-        />
-      )}
+      {showEditNoteModal &&
+        selectedItem &&
+        selectedItem.type === ItemTypes.NOTE && (
+          <EditNoteModal
+            note={selectedItem.data as Note}
+            categories={notesCategories}
+            onClose={handleModalClose}
+            onUpdated={handleUpdated}
+            unarchive
+          />
+        )}
     </div>
   );
 };

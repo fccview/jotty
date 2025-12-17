@@ -16,7 +16,10 @@ import { useMemo, useState } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface ChecklistBodyProps {
   localList: Checklist;
@@ -32,7 +35,6 @@ interface ChecklistBodyProps {
   isLoading: boolean;
   isDeletingItem: boolean;
 }
-
 
 export const ChecklistBody = ({
   localList,
@@ -50,7 +52,10 @@ export const ChecklistBody = ({
 }: ChecklistBodyProps) => {
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
   const [activeItem, setActiveItem] = useState<Item | null>(null);
-  const [overItem, setOverItem] = useState<{ id: string; position: "before" | "after" } | null>(null);
+  const [overItem, setOverItem] = useState<{
+    id: string;
+    position: "before" | "after";
+  } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const referencingItems = useMemo(() => {
@@ -126,7 +131,7 @@ export const ChecklistBody = ({
   if (localList.items.length === 0) {
     return (
       <>
-        <div className="bg-card rounded-lg border border-border m-4 p-8 text-center">
+        <div className="bg-card rounded-jotty border border-border m-4 p-8 text-center">
           <h3 className="text-xl font-semibold text-foreground mb-2">
             No items yet
           </h3>
@@ -196,7 +201,11 @@ export const ChecklistBody = ({
                           isDragDisabled={false}
                           checklist={localList}
                           isOver={overItem?.id === item.id}
-                          overPosition={overItem?.id === item.id ? overItem.position : undefined}
+                          overPosition={
+                            overItem?.id === item.id
+                              ? overItem.position
+                              : undefined
+                          }
                           isAnyItemDragging={isDragging}
                           overItem={overItem}
                         />
@@ -242,7 +251,11 @@ export const ChecklistBody = ({
                           isDragDisabled={false}
                           checklist={localList}
                           isOver={overItem?.id === item.id}
-                          overPosition={overItem?.id === item.id ? overItem.position : undefined}
+                          overPosition={
+                            overItem?.id === item.id
+                              ? overItem.position
+                              : undefined
+                          }
                           isAnyItemDragging={isDragging}
                           overItem={overItem}
                         />
@@ -260,10 +273,10 @@ export const ChecklistBody = ({
                   item={activeItem}
                   index={0}
                   level={0}
-                  onToggle={() => { }}
-                  onDelete={() => { }}
-                  onEdit={() => { }}
-                  onAddSubItem={() => { }}
+                  onToggle={() => {}}
+                  onDelete={() => {}}
+                  onEdit={() => {}}
+                  onAddSubItem={() => {}}
                   isDeletingItem={false}
                   isDragDisabled={true}
                   checklist={localList}

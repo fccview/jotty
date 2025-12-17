@@ -82,7 +82,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
     <>
       {isOpen && (
         <div
-          className="fixed bg-background border border-border rounded-md shadow-lg min-w-[250px] max-h-[400px] overflow-hidden flex flex-col"
+          className="fixed bg-background border border-border rounded-jotty shadow-lg min-w-[250px] max-h-[400px] overflow-hidden flex flex-col"
           style={{
             top: `${
               dropdownRef.current?.getBoundingClientRect().bottom || 0
@@ -99,7 +99,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
                 placeholder="Search languages..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>

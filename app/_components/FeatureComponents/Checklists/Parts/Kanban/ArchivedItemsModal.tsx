@@ -67,7 +67,6 @@ export const ArchivedItemsModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Archived Items"
-      titleIcon={<Archive02Icon className="h-5 w-5" />}
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">
@@ -94,7 +93,7 @@ export const ArchivedItemsModal = ({
             {filteredItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between gap-3 p-3 border-l-4 border rounded-lg bg-muted/30"
+                className="flex items-center justify-between gap-3 p-3 border-l-4 border rounded-jotty bg-muted/30"
                 style={{
                   borderLeftColor: item.previousStatus
                     ? getStatusColor(item.previousStatus)

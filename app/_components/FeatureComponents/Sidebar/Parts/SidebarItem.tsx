@@ -167,7 +167,7 @@ export const SidebarItem = ({
         onClick={() => onItemClick(item)}
         data-sidebar-item-selected={isSelected}
         className={cn(
-          "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors flex-1 text-left truncate",
+          "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty transition-colors flex-1 text-left truncate",
           isSelected
             ? "bg-primary/60 text-primary-foreground"
             : "hover:bg-muted/50 text-foreground"
@@ -231,7 +231,7 @@ export const SidebarItem = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 opacity-40 lg:opacity-0 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
+            className="h-8 w-8 p-0 opacity-40 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
           >
             <MoreHorizontalIcon className="h-4 w-4" />
           </Button>

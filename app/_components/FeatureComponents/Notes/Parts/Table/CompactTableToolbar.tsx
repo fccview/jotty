@@ -115,7 +115,7 @@ export const CompactTableToolbar = ({
     <div
       ref={toolbarRef}
       data-overlay
-      className="fixed z-[5] bg-card border border-border rounded-md shadow-lg p-1"
+      className="fixed z-[5] bg-card border border-border rounded-jotty shadow-lg p-1"
       style={{
         left: `${position.x}px`,
         top: `${position.y - 25}px`,

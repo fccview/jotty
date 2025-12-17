@@ -9,7 +9,11 @@ import {
   updateItem,
   deleteItem,
 } from "@/app/_server/actions/checklist-item";
-import { Add01Icon, FloppyDiskIcon, MultiplicationSignIcon } from "hugeicons-react";
+import {
+  Add01Icon,
+  FloppyDiskIcon,
+  MultiplicationSignIcon,
+} from "hugeicons-react";
 import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
@@ -249,7 +253,7 @@ export const SubtaskModal = ({
 
     return metadata.length ? (
       <div className="border-t border-border pt-4">
-        <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+        <div className="bg-muted/30 rounded-jotty p-3 border border-border/50">
           <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
             Metadata
           </h5>
@@ -287,7 +291,7 @@ export const SubtaskModal = ({
                 type="text"
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all text-base"
+                className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all text-base"
                 placeholder="Enter task title..."
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -311,7 +315,7 @@ export const SubtaskModal = ({
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all min-h-[120px] text-base resize-y"
+                className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all min-h-[120px] text-base resize-y"
                 placeholder="Add a description (optional)..."
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.ctrlKey) {
@@ -366,8 +370,9 @@ export const SubtaskModal = ({
         ) : (
           <div className="space-y-4">
             <div
-              className={`bg-card border border-border rounded-lg p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""
-                }`}
+              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${
+                permissions?.canEdit ? "cursor-pointer" : ""
+              }`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
               <div
@@ -415,7 +420,7 @@ export const SubtaskModal = ({
             </div>
 
             {item.children?.length ? (
-              <div className="space-y-2 mb-4 bg-background-secondary/50 rounded-lg p-3 border border-border/50">
+              <div className="space-y-2 mb-4 bg-background-secondary/50 rounded-jotty p-3 border border-border/50">
                 {item.children.map((subtask, index) => (
                   <NestedChecklistItem
                     isSubtask={true}
@@ -434,7 +439,7 @@ export const SubtaskModal = ({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground text-sm bg-muted/20 rounded-lg border border-dashed border-border mb-4">
+              <div className="text-center py-8 text-muted-foreground text-sm bg-muted/20 rounded-jotty border border-dashed border-border mb-4">
                 No subtasks yet. Add one below to get started.
               </div>
             )}
@@ -446,7 +451,7 @@ export const SubtaskModal = ({
                   value={newSubtaskText}
                   onChange={(e) => setNewSubtaskText(e.target.value)}
                   placeholder="Add a subtask..."
-                  className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all"
+                  className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();

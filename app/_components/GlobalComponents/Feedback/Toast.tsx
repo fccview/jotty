@@ -68,7 +68,7 @@ export const Toast = ({ toast, onRemove }: ToastProps) => {
   return (
     <div
       className={cn(
-        "jotty-toast flex items-start gap-3 p-4 rounded-lg border shadow-lg transition-all duration-300 transform",
+        "jotty-toast flex items-start gap-3 p-4 rounded-jotty border shadow-lg transition-all duration-300 transform",
         getStyles(),
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       )}
@@ -82,7 +82,7 @@ export const Toast = ({ toast, onRemove }: ToastProps) => {
       </div>
       <button
         onClick={handleRemove}
-        className="flex-shrink-0 p-1 rounded-md hover:bg-black/10 transition-colors"
+        className="flex-shrink-0 p-1 rounded-jotty hover:bg-black/10 transition-colors"
       >
         <MultiplicationSignIcon className="h-4 w-4" />
       </button>

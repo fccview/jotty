@@ -83,13 +83,13 @@ export const FileUpload = ({
           )}
 
           {uploadError && (
-            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-jotty">
               {uploadError}
             </div>
           )}
 
           {fileSizeError && (
-            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-md">
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-jotty">
               {fileSizeError}
             </div>
           )}

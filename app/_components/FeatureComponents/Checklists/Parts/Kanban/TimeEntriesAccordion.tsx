@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Clock01Icon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
+import {
+  Clock01Icon,
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+} from "hugeicons-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
@@ -33,7 +37,7 @@ export const TimeEntriesAccordion = ({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border border-border/30 rounded-md bg-muted/20">
+    <div className="border border-border/30 rounded-jotty bg-muted/20">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"

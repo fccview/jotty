@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Delete03Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useRouter } from "next/navigation";
@@ -34,12 +33,7 @@ export const DeleteCategoryModal = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Delete Category"
-      titleIcon={<Delete03Icon className="h-5 w-5 text-destructive" />}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Delete Category">
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Are you sure you want to delete the category &quot;{categoryName}
