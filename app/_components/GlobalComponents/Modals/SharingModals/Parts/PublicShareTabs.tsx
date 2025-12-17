@@ -7,6 +7,7 @@ import {
   Mail01Icon,
 } from "hugeicons-react";
 import { Copy01Icon } from "hugeicons-react";
+import { Logo } from "../../../Layout/Logo/Logo";
 
 interface PublicShareTabProps {
   isLoading: boolean;
@@ -119,7 +120,7 @@ export const PublicShareTab = ({
         >
           {isLoading ? (
             <>
-              <Orbit01Icon className="h-4 w-4 animate-spin mr-2" />
+              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
               Updating...
             </>
           ) : isPubliclyShared ? (

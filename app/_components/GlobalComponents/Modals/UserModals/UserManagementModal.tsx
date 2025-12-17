@@ -14,6 +14,7 @@ import { useUserManagementModal } from "@/app/_hooks/useUserManagementModal";
 import { User as UserType } from "@/app/_types";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { Logo } from "../../Layout/Logo/Logo";
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -134,7 +135,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             <Button type="submit" disabled={state.isLoading}>
               {state.isLoading ? (
                 <>
-                  <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" />
+                  <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
                   Saving...
                 </>
               ) : (

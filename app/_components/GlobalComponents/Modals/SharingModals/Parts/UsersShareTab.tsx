@@ -14,6 +14,7 @@ import { Button } from "../../../Buttons/Button";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { cn } from "@/app/_utils/global-utils";
+import { Logo } from "../../../Layout/Logo/Logo";
 
 export const UsersShareTab = ({
   filteredUsers,
@@ -112,11 +113,11 @@ export const UsersShareTab = ({
                       className={cn(
                         `w-full min-w-[80px]`,
                         isShared &&
-                          "text-destructive hover:text-destructive min-w-[10px]"
+                        "text-destructive hover:text-destructive min-w-[10px]"
                       )}
                     >
                       {isLoading ? (
-                        <Orbit01Icon className="h-3 w-3 animate-spin" />
+                        <Logo className="h-3 w-3 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
                       ) : isShared ? (
                         <UserMinus02Icon className="h-3 w-3 mr-1" />
                       ) : (

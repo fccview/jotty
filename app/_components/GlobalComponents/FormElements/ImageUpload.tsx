@@ -9,6 +9,7 @@ import {
 } from "hugeicons-react";
 import { uploadAppIcon } from "@/app/_server/actions/config";
 import { AppSettings } from "@/app/_types";
+import { Logo } from "../Layout/Logo/Logo";
 
 interface ImageUploadProps {
   label: string;
@@ -177,11 +178,10 @@ export const ImageUpload: FC<ImageUploadProps> = ({
       <Label className="text-sm font-medium">{label}</Label>
       <p className="text-xs text-muted-foreground">{description}</p>
       <div
-        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${
-          dragOver
+        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${dragOver
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/25 hover:border-muted-foreground/50"
-        }`}
+          }`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -227,7 +227,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         )}
         {isUploading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-jotty">
-            <Orbit01Icon className="h-8 w-8 animate-spin text-primary" />
+            <Logo className="h-6 w-6 animate-pulse" />
             <p className="text-sm mt-2">Uploading...</p>
           </div>
         )}

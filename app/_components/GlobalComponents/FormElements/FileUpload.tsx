@@ -6,6 +6,7 @@ import {
 } from "hugeicons-react";
 import { formatFileSize } from "@/app/_utils/file-icon-utils";
 import { Orbit01Icon } from "hugeicons-react";
+import { Logo } from "../Layout/Logo/Logo";
 
 interface FileUploadProps {
   activeTab: "images" | "videos" | "files";
@@ -34,8 +35,8 @@ export const FileUpload = ({
           activeTab === "images"
             ? "image/*"
             : activeTab === "videos"
-            ? "video/*"
-            : "*"
+              ? "video/*"
+              : "*"
         }
         onChange={onFileSelect}
         className="hidden"
@@ -54,7 +55,7 @@ export const FileUpload = ({
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {isUploading ? (
-                <Orbit01Icon className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
+                <Logo className="h-4 w-4 animate-pulse" />
               ) : uploadError ? (
                 <AlertCircleIcon className="h-4 w-4 text-destructive flex-shrink-0" />
               ) : (

@@ -95,11 +95,10 @@ export const NotFoundClient = () => {
           <div className="relative min-h-[100px] flex items-center justify-center px-4">
             <div className="relative w-full">
               <p
-                className={`text-lg md:text-xl text-muted-foreground transition-all duration-300 transform ${
-                  isTransitioning
+                className={`text-lg md:text-xl text-muted-foreground transition-all duration-300 transform ${isTransitioning
                     ? "opacity-0 translate-y-2"
                     : "opacity-100 translate-y-0"
-                }`}
+                  }`}
               >
                 &ldquo;{QUOTES[currentQuoteIndex]}&rdquo;
               </p>
@@ -116,9 +115,8 @@ export const NotFoundClient = () => {
             className="group relative overflow-hidden"
           >
             <RefreshIcon
-              className={`h-5 w-5 mr-2 transition-transform duration-300 ${
-                isTransitioning ? "animate-spin" : "group-hover:rotate-180"
-              }`}
+              className={`h-5 w-5 mr-2 transition-transform duration-300 ${isTransitioning ? "animate-spin" : "group-hover:rotate-180"
+                }`}
             />
             New Quote
             <span className="ml-2 text-xs opacity-60 hidden sm:inline">

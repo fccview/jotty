@@ -9,6 +9,7 @@ import {
 } from "hugeicons-react";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useEmojis } from "@/app/_hooks/useEmojis";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 
 export const EmojiManager = () => {
   const {
@@ -82,7 +83,7 @@ export const EmojiManager = () => {
           )}
           {isLoadingEmojis && (
             <div className="col-span-full flex items-center justify-center py-4">
-              <Orbit01Icon className="h-4 w-4 animate-spin" />
+              <Logo className="h-4 w-4 mr-2 animate-pulse" />
             </div>
           )}
         </div>
@@ -140,7 +141,7 @@ export const EmojiManager = () => {
             <Button onClick={handleSaveEmoji} disabled={isSavingEmojis}>
               {isSavingEmojis ? (
                 <>
-                  <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />
+                  <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
                   Saving...
                 </>
               ) : editingEmoji ? (

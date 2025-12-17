@@ -6,6 +6,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Orbit01Icon } from "hugeicons-react";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 
 export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
   const [error, setError] = useState<string>("");
@@ -44,12 +45,6 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Welcome back
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {ssoEnabled
-            ? "Choose how to access "
-            : "Enter your credentials to access "}{" "}
-          {isRwMarkable ? "rwMarkable" : "jotty·page"}
-        </p>
       </div>
 
       {ssoEnabled && (
@@ -64,8 +59,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           >
             {isSsoLoading ? (
               <>
-                <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" /> Signing
-                In...
+                <Logo className="h-4 w-4 mr-2 animate-pulse" /> Signing In...
               </>
             ) : (
               "Sign in with SSO"
@@ -135,8 +129,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         >
           {isLoading ? (
             <>
-              <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" /> Signing
-              In...
+              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" /> Signing In...
             </>
           ) : (
             "Sign In"

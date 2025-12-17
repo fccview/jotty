@@ -1,7 +1,7 @@
-import { Orbit01Icon } from "hugeicons-react";
 import { FileItem } from "@/app/_server/actions/upload";
 import { FileCard } from "../Cards/FileCard";
 import { Image02Icon, File02Icon } from "hugeicons-react";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 
 interface FileGridProps {
   files: FileItem[];
@@ -30,8 +30,7 @@ export const FileGrid = ({
     if (isLoading) {
       return (
         <div className="jotty-file-grid-loading text-center py-12">
-          <Orbit01Icon className="h-8 w-8 mx-auto animate-spin text-primary" />
-          <p className="mt-4 text-muted-foreground">Loading {activeTab}...</p>
+          <Logo className="h-6 w-6 animate-pulse" />
         </div>
       );
     }

@@ -6,6 +6,7 @@ import {
   AlertCircleIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { Logo } from "../Layout/Logo/Logo";
 
 interface UploadOverlayProps {
   isVisible: boolean;
@@ -32,7 +33,7 @@ export const UploadOverlay = ({
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-3">
             {isUploading ? (
-              <Orbit01Icon className="h-8 w-8 animate-spin text-primary" />
+              <Logo className="h-6 w-6 animate-pulse" />
             ) : uploadError ? (
               <AlertCircleIcon className="h-8 w-8 text-destructive" />
             ) : (
@@ -43,8 +44,8 @@ export const UploadOverlay = ({
                 {isUploading
                   ? "Uploading File"
                   : uploadError
-                  ? "Upload Failed"
-                  : "Upload Complete"}
+                    ? "Upload Failed"
+                    : "Upload Complete"}
               </h3>
               {fileName && (
                 <p className="text-sm text-muted-foreground truncate max-w-xs">

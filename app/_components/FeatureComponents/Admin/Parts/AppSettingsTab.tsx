@@ -16,6 +16,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 
 export const AppSettingsTab = () => {
   const { showToast } = useToast();
@@ -224,7 +225,7 @@ export const AppSettingsTab = () => {
           <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
             {isSaving ? (
               <>
-                <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" /> Saving...
               </>
             ) : (
               "Save Changes"

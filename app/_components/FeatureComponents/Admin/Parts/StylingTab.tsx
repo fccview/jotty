@@ -14,6 +14,7 @@ import { EmojiManager } from "@/app/_components/FeatureComponents/Admin/Parts/Em
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { DynamicIcon } from "@/app/_components/GlobalComponents/Icons/DynamicIcon";
 import { useState } from "react";
+import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 
 export const StylingTab = () => {
   const {
@@ -66,7 +67,7 @@ export const StylingTab = () => {
             <div className="w-full max-h-[600px] overflow-auto">
               {isLoadingCss ? (
                 <div className="flex items-center justify-center p-8">
-                  <Orbit01Icon className="h-6 w-6 animate-spin" />
+                  <Logo className="h-6 w-6 animate-pulse" />
                 </div>
               ) : (
                 <CssEditor value={css} onChange={handleCssChange} />
@@ -204,12 +205,12 @@ export const StylingTab = () => {
                       value={
                         value
                           ? `#${value
-                              .split(" ")
-                              .map((v) => {
-                                const num = parseInt(v);
-                                return num.toString(16).padStart(2, "0");
-                              })
-                              .join("")}`
+                            .split(" ")
+                            .map((v) => {
+                              const num = parseInt(v);
+                              return num.toString(16).padStart(2, "0");
+                            })
+                            .join("")}`
                           : "#000000"
                       }
                       onChange={(e) => {
