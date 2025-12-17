@@ -1,13 +1,12 @@
 "use client";
 
 import {
-  Users,
-  FileText,
-  CheckSquare,
-  Shield,
-  Share2,
-  Package,
-} from "lucide-react";
+  UserMultipleIcon,
+  File02Icon,
+  CheckmarkSquare04Icon,
+  ShieldUserIcon,
+  GithubIcon,
+} from "hugeicons-react";
 import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import { ReactNode } from "react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -30,27 +29,27 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
     {
       title: "App Version",
       value: appVersion || "",
-      icon: <Package className="h-6 w-6 text-primary" />,
+      icon: <GithubIcon className="h-6 w-6 text-primary" />,
     },
     {
       title: "Total Users",
       value: stats.totalUsers,
-      icon: <Users className="h-6 w-6 text-primary" />,
+      icon: <UserMultipleIcon className="h-6 w-6 text-primary" />,
     },
     {
       title: "Admin Users",
       value: stats.adminUsers,
-      icon: <Shield className="h-6 w-6 text-primary" />,
+      icon: <ShieldUserIcon className="h-6 w-6 text-primary" />,
     },
     {
       title: "Total Checklists",
       value: stats.totalChecklists,
-      icon: <CheckSquare className="h-6 w-6 text-primary" />,
+      icon: <CheckmarkSquare04Icon className="h-6 w-6 text-primary" />,
     },
     {
       title: "Total Notes",
       value: stats.totalNotes,
-      icon: <FileText className="h-6 w-6 text-primary" />,
+      icon: <File02Icon className="h-6 w-6 text-primary" />,
     },
   ];
 
@@ -61,7 +60,7 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
           System Overview
         </h2>
         <p className="text-muted-foreground">
-          Monitor your application&apos;s usage and user activity.
+          Tv02Icon your application&apos;s usage and user activity.
         </p>
       </div>
 

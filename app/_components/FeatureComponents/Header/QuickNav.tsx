@@ -1,12 +1,17 @@
 "use client";
 
-import { CheckSquare, FileText, Menu, Settings, Shield } from "lucide-react";
+import {
+  CheckmarkSquare04Icon,
+  File02Icon,
+  SidebarLeftIcon,
+  Settings01Icon,
+  ShieldUserIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useRouter } from "next/navigation";
-
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
-import { Checklist, Note, AppMode } from "@/app/_types";
+import { AppMode } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { cn } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
@@ -48,7 +53,7 @@ export const QuickNav = ({
             onClick={onSidebarToggle}
             className="text-muted-foreground hover:text-foreground lg:hidden"
           >
-            <Menu className="h-5 w-5" />
+            <SidebarLeftIcon className="h-5 w-5" />
           </Button>
         )}
 
@@ -59,14 +64,14 @@ export const QuickNav = ({
 
           {onOpenSettings && (
             <NavigationGlobalIcon
-              icon={<Settings className="h-5 w-5" />}
+              icon={<Settings01Icon className="h-5 w-5" />}
               onClick={() => checkNavigation(() => onOpenSettings())}
             />
           )}
 
           {isAdmin && (
             <NavigationGlobalIcon
-              icon={<Shield className="h-5 w-5" />}
+              icon={<ShieldUserIcon className="h-5 w-5" />}
               onClick={() => checkNavigation(() => router.push("/admin"))}
             />
           )}
@@ -77,7 +82,7 @@ export const QuickNav = ({
         <div className="contents lg:hidden">
           <NavigationGlobalIcon
             icon={
-              <CheckSquare
+              <CheckmarkSquare04Icon
                 className={cn(
                   "h-5 w-5",
                   mode === Modes.CHECKLISTS
@@ -96,7 +101,7 @@ export const QuickNav = ({
 
           <NavigationGlobalIcon
             icon={
-              <FileText
+              <File02Icon
                 className={cn(
                   "h-5 w-5",
                   mode === Modes.NOTES

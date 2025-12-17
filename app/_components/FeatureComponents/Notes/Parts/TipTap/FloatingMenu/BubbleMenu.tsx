@@ -2,15 +2,15 @@
 
 import { Editor } from "@tiptap/react";
 import {
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Code,
-  Link as LinkIcon,
-  Palette,
-  Highlighter,
-} from "lucide-react";
+  TextBoldIcon,
+  TextItalicIcon,
+  TextUnderlineIcon,
+  TextStrikethroughIcon,
+  SourceCodeIcon,
+  Attachment01Icon,
+  PaintBrush04Icon,
+  PenTool01Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ColorPicker } from "../ColorPicker/ColorPicker";
 import { useState, useRef, useEffect } from "react";
@@ -139,7 +139,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor.chain().focus().toggleBold().run()}
         >
-          <Bold className="h-4 w-4" />
+          <TextBoldIcon className="h-4 w-4" />
         </Button>
 
         <Button
@@ -148,7 +148,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         >
-          <Italic className="h-4 w-4" />
+          <TextItalicIcon className="h-4 w-4" />
         </Button>
 
         <Button
@@ -157,7 +157,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor.chain().focus().toggleUnderline().run()}
         >
-          <Underline className="h-4 w-4" />
+          <TextUnderlineIcon className="h-4 w-4" />
         </Button>
 
         <Button
@@ -166,7 +166,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor.chain().focus().toggleStrike().run()}
         >
-          <Strikethrough className="h-4 w-4" />
+          <TextStrikethroughIcon className="h-4 w-4" />
         </Button>
 
         <Button
@@ -175,7 +175,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => editor.chain().focus().toggleCode().run()}
         >
-          <Code className="h-4 w-4" />
+          <SourceCodeIcon className="h-4 w-4" />
         </Button>
 
         <div className="w-px h-6 bg-border mx-1" />
@@ -186,7 +186,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={setLink}
         >
-          <LinkIcon className="h-4 w-4" />
+          <Attachment01Icon className="h-4 w-4" />
         </Button>
 
         <Button
@@ -195,7 +195,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => setShowTextColorPicker(!showTextColorPicker)}
         >
-          <Palette className="h-4 w-4" />
+          <PaintBrush04Icon className="h-4 w-4" />
         </Button>
 
         <Button
@@ -204,7 +204,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => setShowHighlightPicker(!showHighlightPicker)}
         >
-          <Highlighter className="h-4 w-4" />
+          <PenTool01Icon className="h-4 w-4" />
         </Button>
       </div>
 

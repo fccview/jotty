@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from "react";
 import {
-  ChevronDown,
-  ChevronRight,
-  Users,
-  User,
-  FileText,
-  CheckSquare,
-} from "lucide-react";
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  UserMultipleIcon,
+  File02Icon,
+  CheckmarkSquare04Icon,
+} from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -84,11 +83,11 @@ export const SharedItemsList = ({
           )}
         >
           {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
+            <ArrowRight01Icon className="h-4 w-4" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ArrowDown01Icon className="h-4 w-4" />
           )}
-          <Users className="h-4 w-4 text-primary" />
+          <UserMultipleIcon className="h-4 w-4 text-primary" />
           <span className="truncate font-medium text-primary">
             Shared with you
           </span>
@@ -113,9 +112,9 @@ export const SharedItemsList = ({
                   )}
                 >
                   {isUserCollapsed ? (
-                    <ChevronRight className="h-4 w-4" />
+                    <ArrowRight01Icon className="h-4 w-4" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ArrowDown01Icon className="h-4 w-4" />
                   )}
                   <UserAvatar size="xs" username={sharer} />
                   <span className="truncate font-medium text-foreground">
@@ -148,9 +147,9 @@ export const SharedItemsList = ({
                           )}
                         >
                           {mode === "checklists" ? (
-                            <CheckSquare className="h-4 w-4" />
+                            <CheckmarkSquare04Icon className="h-4 w-4" />
                           ) : (
-                            <FileText className="h-4 w-4" />
+                            <File02Icon className="h-4 w-4" />
                           )}
                           <span className="truncate flex-1">
                             {appSettings?.parseContent === "yes" ? item.id : capitalize(item.id.replace(/-/g, " "))}

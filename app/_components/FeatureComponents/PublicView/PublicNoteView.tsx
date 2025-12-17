@@ -1,7 +1,7 @@
 "use client";
 
 import { Note, User } from "@/app/_types";
-import { Clock, Eye, Key } from "lucide-react";
+import { Clock01Icon, ViewIcon, LockKeyIcon } from "hugeicons-react";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useEffect, useState } from "react";
@@ -62,7 +62,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
                 </div>
                 {note.category && <span>• {note.category}</span>}
                 <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
+                  <Clock01Icon className="h-4 w-4" />
                   <span>
                     Updated {new Date(note.updatedAt).toLocaleDateString()}
                   </span>
@@ -77,7 +77,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
             <div className="text-center space-y-4 max-w-md mx-auto px-6 py-12">
               <div className="flex justify-center">
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Key className="h-8 w-8 text-primary" />
+                  <LockKeyIcon className="h-8 w-8 text-primary" />
                 </div>
               </div>
               <h3 className="text-xl font-semibold">This note is encrypted</h3>
@@ -90,7 +90,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
                   onClick={() => setShowEncryptionModal(true)}
                   className="flex items-center gap-2"
                 >
-                  <Eye className="h-4 w-4" />
+                  <ViewIcon className="h-4 w-4" />
                   View
                 </Button>
               </div>

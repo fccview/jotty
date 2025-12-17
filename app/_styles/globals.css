@@ -422,6 +422,10 @@
     }
 }
 
+svg {
+    stroke-width: 2;
+}
+
 .stroke-current {
     stroke: rgb(var(--primary-foreground));
 }

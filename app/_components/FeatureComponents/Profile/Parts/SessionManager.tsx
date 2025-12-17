@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2, Loader2 } from "lucide-react";
+import { Delete03Icon, Orbit01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useSessionManager } from "@/app/_hooks/useSessionManager";
 import { SessionCard } from "@/app/_components/GlobalComponents/Cards/SessionCard";
@@ -47,10 +47,10 @@ export const SessionManager = () => {
             disabled={terminating.all}
           >
             {terminating.all ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Orbit01Icon className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Delete03Icon className="h-4 w-4 mr-2" />
                 Terminate All Others
               </>
             )}

@@ -12,7 +12,7 @@ import { useEffect, useRef, useMemo } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalModeEditor";
-import { Key, Eye, Unlock } from "lucide-react";
+import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 
 interface NoteEditorContentProps {
@@ -94,7 +94,7 @@ export const NoteEditorContent = ({
         <div className="text-center space-y-4 max-w-md mx-auto px-6">
           <div className="flex justify-center">
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Key className="h-8 w-8 text-primary" />
+              <LockKeyIcon className="h-8 w-8 text-primary" />
             </div>
           </div>
           <h3 className="text-xl font-semibold">This note is encrypted</h3>
@@ -108,7 +108,7 @@ export const NoteEditorContent = ({
                 onClick={onOpenViewModal}
                 className="flex items-center gap-2"
               >
-                <Eye className="h-4 w-4" />
+                <ViewIcon className="h-4 w-4" />
                 View
               </Button>
             )}
@@ -117,7 +117,7 @@ export const NoteEditorContent = ({
                 onClick={onOpenDecryptModal}
                 className="flex items-center gap-2"
               >
-                <Unlock className="h-4 w-4" />
+                <SquareUnlock01Icon className="h-4 w-4" />
                 Decrypt
               </Button>
             )}

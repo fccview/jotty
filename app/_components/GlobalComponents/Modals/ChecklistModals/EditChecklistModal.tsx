@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ListTodo } from "lucide-react";
+import { CheckmarkSquare04Icon } from "hugeicons-react";
 import { getListById, updateList } from "@/app/_server/actions/checklist";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -55,7 +55,7 @@ export const EditChecklistModal = ({
         isOpen={true}
         onClose={onClose}
         title="Checklist not found"
-        titleIcon={<ListTodo className="h-5 w-5 text-primary" />}
+        titleIcon={<CheckmarkSquare04Icon className="h-5 w-5 text-primary" />}
       >
         <p>Checklist not found</p>
       </Modal>
@@ -103,7 +103,7 @@ export const EditChecklistModal = ({
       isOpen={true}
       onClose={onClose}
       title={unarchive ? "Unarchive Checklist" : "Edit Checklist"}
-      titleIcon={<ListTodo className="h-5 w-5 text-primary" />}
+      titleIcon={<CheckmarkSquare04Icon className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>

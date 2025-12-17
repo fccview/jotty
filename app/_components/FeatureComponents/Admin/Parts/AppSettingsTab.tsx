@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Loader2 } from "lucide-react";
+import { Orbit01Icon } from "hugeicons-react";
 import { useToast } from "@/app/_providers/ToastProvider";
 import {
   getAppSettings,
@@ -225,7 +225,7 @@ export const AppSettingsTab = () => {
           <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
             {isSaving ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" /> Saving...
               </>
             ) : (
               "Save Changes"

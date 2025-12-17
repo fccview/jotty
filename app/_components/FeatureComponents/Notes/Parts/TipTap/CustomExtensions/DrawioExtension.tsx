@@ -4,7 +4,7 @@ import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
-import { Sun, Moon } from "lucide-react";
+import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 
 export const DrawioNodeView = ({
   node,
@@ -157,14 +157,13 @@ export const DrawioNodeView = ({
               <button
                 onClick={toggleTheme}
                 className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
-                title={`Switch to ${
-                  themeMode === "light" ? "dark" : "light"
-                } mode`}
+                title={`Switch to ${themeMode === "light" ? "dark" : "light"
+                  } mode`}
               >
                 {themeMode === "light" ? (
-                  <Moon className="h-3 w-3" />
+                  <GibbousMoonIcon className="h-3 w-3" />
                 ) : (
-                  <Sun className="h-3 w-3" />
+                  <Sun03Icon className="h-3 w-3" />
                 )}
               </button>
               <button
@@ -310,12 +309,12 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
     return {
       insertDrawIo:
         () =>
-        ({ commands }: any) => {
-          return commands.insertContent({
-            type: this.name,
-            attrs: { diagramData: null, svgData: null },
-          });
-        },
+          ({ commands }: any) => {
+            return commands.insertContent({
+              type: this.name,
+              attrs: { diagramData: null, svgData: null },
+            });
+          },
     };
   },
 });

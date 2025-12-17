@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Delete03Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useRouter } from "next/navigation";
@@ -38,7 +38,7 @@ export const DeleteCategoryModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Delete Category"
-      titleIcon={<Trash2 className="h-5 w-5 text-destructive" />}
+      titleIcon={<Delete03Icon className="h-5 w-5 text-destructive" />}
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">

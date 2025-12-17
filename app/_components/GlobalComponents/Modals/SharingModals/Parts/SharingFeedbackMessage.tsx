@@ -1,5 +1,5 @@
 import { cn } from "@/app/_utils/global-utils";
-import { AlertCircle, Check } from "lucide-react";
+import { AlertCircleIcon, Tick02Icon } from "hugeicons-react";
 
 interface FeedbackMessageProps {
   error: string | null;
@@ -20,9 +20,9 @@ export const FeedbackMessage = ({ error, success }: FeedbackMessageProps) => {
       )}
     >
       {isError ? (
-        <AlertCircle className="h-4 w-4 text-destructive" />
+        <AlertCircleIcon className="h-4 w-4 text-destructive" />
       ) : (
-        <Check className="h-4 w-4 text-primary" />
+        <Tick02Icon className="h-4 w-4 text-primary" />
       )}
       <span
         className={cn("text-sm", isError ? "text-destructive" : "text-primary")}

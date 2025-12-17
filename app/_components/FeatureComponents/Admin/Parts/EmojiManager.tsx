@@ -1,7 +1,7 @@
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Loader2, Plus, Edit, Trash2, Sparkles } from "lucide-react";
+import { Orbit01Icon, Add01Icon, PencilEdit02Icon, Delete03Icon, SparklesIcon } from "hugeicons-react";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useEmojis } from "@/app/_hooks/useEmojis";
 
@@ -31,7 +31,7 @@ export const EmojiManager = () => {
             disabled={isLoadingEmojis}
             size="sm"
           >
-            <Plus className="mr-2 h-3 w-3" />
+            <Add01Icon className="mr-2 h-3 w-3" />
             Add Emoji
           </Button>
         }
@@ -56,7 +56,7 @@ export const EmojiManager = () => {
                   onClick={() => handleEditEmoji(emoji.keyword)}
                   className="h-6 w-6 p-0"
                 >
-                  <Edit className="h-3 w-3" />
+                  <PencilEdit02Icon className="h-3 w-3" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -64,7 +64,7 @@ export const EmojiManager = () => {
                   onClick={() => handleDeleteEmoji(emoji.keyword)}
                   className="h-6 w-6 p-0 text-destructive hover:text-destructive/80"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Delete03Icon className="h-3 w-3" />
                 </Button>
               </div>
             </div>
@@ -77,7 +77,7 @@ export const EmojiManager = () => {
           )}
           {isLoadingEmojis && (
             <div className="col-span-full flex items-center justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Orbit01Icon className="h-4 w-4 animate-spin" />
             </div>
           )}
         </div>
@@ -87,7 +87,7 @@ export const EmojiManager = () => {
         isOpen={emojiModalOpen}
         onClose={() => setEmojiModalOpen(false)}
         title={editingEmoji ? "Edit Emoji" : "Add Emoji"}
-        titleIcon={<Sparkles className="h-5 w-5" />}
+        titleIcon={<SparklesIcon className="h-5 w-5" />}
         className="!w-full max-w-md"
       >
         <div className="space-y-4">
@@ -136,7 +136,7 @@ export const EmojiManager = () => {
             <Button onClick={handleSaveEmoji} disabled={isSavingEmojis}>
               {isSavingEmojis ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
               ) : editingEmoji ? (

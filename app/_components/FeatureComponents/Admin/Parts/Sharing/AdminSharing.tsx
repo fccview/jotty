@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckSquare, FileText, Globe, Users } from "lucide-react";
+import { CheckmarkSquare04Icon, File02Icon, Globe02Icon, UserMultipleIcon } from "hugeicons-react";
 import { AdminSharedItemsList } from "@/app/_components/FeatureComponents/Admin/Parts/Sharing/AdminSharedItemsList";
 import { calculateMostActiveSharers, transformGlobalSharingToNetworkData, useThemeColors } from "@/app/_components/FeatureComponents/Admin/Parts/Sharing/AdminSharingFunctions";
 import { ItemType } from "@/app/_types";
@@ -83,22 +83,22 @@ export const AdminSharing = () => {
     {
       title: "Shared Checklists",
       value: totalSharedChecklists,
-      icon: <CheckSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
+      icon: <CheckmarkSquare04Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
     },
     {
       title: "Shared Notes",
       value: totalSharedNotes,
-      icon: <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
+      icon: <File02Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
     },
     {
       title: "Public Shares",
       value: totalPublicShares,
-      icon: <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
+      icon: <Globe02Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
     },
     {
       title: "Total Shares",
       value: totalUniqueSharedItems,
-      icon: <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
+      icon: <UserMultipleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
     },
   ];
 
@@ -112,7 +112,7 @@ export const AdminSharing = () => {
           </div>
         </div>
         <p className="text-muted-foreground">
-          Monitor and manage sharing activity across the platform
+          Tv02Icon and manage sharing activity across the platform
         </p>
       </div>
 
@@ -262,7 +262,7 @@ export const AdminSharing = () => {
             <div className="rounded-xl border bg-card p-6 shadow-sm">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="rounded-lg bg-primary/10 p-2">
-                  <CheckSquare className="h-5 w-5 text-primary" />
+                  <CheckmarkSquare04Icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <h4 className="font-semibold">Shared Checklists</h4>
@@ -281,7 +281,7 @@ export const AdminSharing = () => {
             <div className="rounded-xl border bg-card p-6 shadow-sm">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="rounded-lg bg-primary/10 p-2">
-                  <FileText className="h-5 w-5 text-primary" />
+                  <File02Icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <h4 className="font-semibold">Shared Notes</h4>
@@ -300,7 +300,7 @@ export const AdminSharing = () => {
             <div className="rounded-xl border bg-card p-6 shadow-sm">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="rounded-lg bg-primary/10 p-2">
-                  <Globe className="h-5 w-5 text-primary" />
+                  <Globe02Icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <h4 className="font-semibold">Public Shares</h4>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileText } from "lucide-react";
+import { File02Icon } from "hugeicons-react";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -57,7 +57,7 @@ export const EditNoteModal = ({
         isOpen={true}
         onClose={onClose}
         title="Note not found"
-        titleIcon={<FileText className="h-5 w-5 text-primary" />}
+        titleIcon={<File02Icon className="h-5 w-5 text-primary" />}
       >
         <p>Note not found</p>
       </Modal>
@@ -109,7 +109,7 @@ export const EditNoteModal = ({
       isOpen={true}
       onClose={onClose}
       title={unarchive ? "Unarchive Note" : "Edit Note"}
-      titleIcon={<FileText className="h-5 w-5 text-primary" />}
+      titleIcon={<File02Icon className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>

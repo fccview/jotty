@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckSquare, FileText, Users } from "lucide-react";
+import { CheckmarkSquare04Icon, File02Icon, UserMultipleIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
@@ -65,9 +65,9 @@ export const SearchResults = ({
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 mt-1">
               {result.type === ItemTypes.CHECKLIST ? (
-                <CheckSquare className="h-5 w-5 text-primary md:h-4 md:w-4" />
+                <CheckmarkSquare04Icon className="h-5 w-5 text-primary md:h-4 md:w-4" />
               ) : (
-                <FileText className="h-5 w-5 text-primary md:h-4 md:w-4" />
+                <File02Icon className="h-5 w-5 text-primary md:h-4 md:w-4" />
               )}
             </div>
 
@@ -77,7 +77,7 @@ export const SearchResults = ({
                   {result.title}
                 </h4>
                 {result.isShared && (
-                  <Users className="h-4 w-4 flex-shrink-0 text-primary md:h-3 md:w-3" />
+                  <UserMultipleIcon className="h-4 w-4 flex-shrink-0 text-primary md:h-3 md:w-3" />
                 )}
               </div>
 

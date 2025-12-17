@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useGitHubRelease } from "@/app/_hooks/useGitHubRelease";
 import { readPackageVersion } from "@/app/_server/actions/config";
@@ -163,7 +163,7 @@ export const UpdatePrompt = () => {
               size="sm"
               className="h-8 w-8 p-0"
             >
-              <X className="h-4 w-4" />
+              <MultiplicationSignIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>

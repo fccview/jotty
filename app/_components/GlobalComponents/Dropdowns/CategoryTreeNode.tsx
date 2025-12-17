@@ -1,6 +1,6 @@
 import { Category } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
-import { ChevronDown, ChevronRight, Folder, FolderOpen } from "lucide-react";
+import { ArrowDown01Icon, ArrowRight01Icon, Folder01Icon, Folder02Icon } from "hugeicons-react";
 
 export interface CategoryTreeNodeProps {
   category: Category;
@@ -52,18 +52,18 @@ export const CategoryTreeNode = ({
         >
           {hasSubCategories ? (
             isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
+              <ArrowDown01Icon className="h-4 w-4" />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ArrowRight01Icon className="h-4 w-4" />
             )
           ) : (
             <div className="w-5" />
           )}
         </button>
         {isExpanded ? (
-          <FolderOpen className="h-4 w-4 text-primary" />
+          <Folder02Icon className="h-4 w-4 text-primary" />
         ) : (
-          <Folder className="h-4 w-4 text-muted-foreground" />
+          <Folder01Icon className="h-4 w-4 text-muted-foreground" />
         )}
         <span className="truncate">{category.name}</span>
         {category.count > 0 && (

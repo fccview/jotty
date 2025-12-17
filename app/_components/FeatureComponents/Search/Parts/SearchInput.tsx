@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import { Search01Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 
@@ -25,7 +25,7 @@ export const SearchInput = ({
 }: SearchInputProps) => {
   return (
     <div className={cn("relative", className)}>
-      <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground md:left-3 md:h-4 md:w-4" />
+      <Search01Icon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground md:left-3 md:h-4 md:w-4" />
       <input
         ref={inputRef}
         type="text"
@@ -42,7 +42,7 @@ export const SearchInput = ({
           onClick={onClear}
           className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 p-0 text-muted-foreground hover:text-foreground md:right-1 md:h-6 md:w-6"
         >
-          <X className="h-4 w-4 md:h-3 md:w-3" />
+          <MultiplicationSignIcon className="h-4 w-4 md:h-3 md:w-3" />
         </Button>
       )}
     </div>

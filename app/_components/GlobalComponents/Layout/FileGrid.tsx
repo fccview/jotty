@@ -1,7 +1,7 @@
-import { Loader2 } from "lucide-react";
+import { Orbit01Icon } from "hugeicons-react";
 import { FileItem } from "@/app/_server/actions/upload";
 import { FileCard } from "../Cards/FileCard";
-import { ImageIcon, File } from "lucide-react";
+import { Image02Icon, File02Icon } from "hugeicons-react";
 
 interface FileGridProps {
   files: FileItem[];
@@ -30,7 +30,7 @@ export const FileGrid = ({
     if (isLoading) {
       return (
         <div className="jotty-file-grid-loading text-center py-12">
-          <Loader2 className="h-8 w-8 mx-auto animate-spin text-primary" />
+          <Orbit01Icon className="h-8 w-8 mx-auto animate-spin text-primary" />
           <p className="mt-4 text-muted-foreground">Loading {activeTab}...</p>
         </div>
       );
@@ -41,9 +41,9 @@ export const FileGrid = ({
         <div className="jotty-file-grid-empty text-center py-12 text-muted-foreground">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
             {activeTab === "images" ? (
-              <ImageIcon className="h-8 w-8" />
+              <Image02Icon className="h-8 w-8" />
             ) : (
-              <File className="h-8 w-8" />
+              <File02Icon className="h-8 w-8" />
             )}
           </div>
           <p className="text-lg font-medium">No {activeTab} found</p>

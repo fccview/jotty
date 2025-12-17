@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { MultiplicationSignIcon } from "hugeicons-react";
 
 interface SimpleSharedItem {
   id: string;
@@ -27,7 +27,7 @@ export const AdminSharedItemsList = ({
                 className="p-1 text-muted-foreground hover:text-destructive transition-colors"
                 title={`Unshare ${item.id}`}
               >
-                <X className="h-4 w-4" />
+                <MultiplicationSignIcon className="h-4 w-4" />
               </button>
             )}
           </div>

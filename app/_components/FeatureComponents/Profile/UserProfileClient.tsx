@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Settings, Monitor, Archive, Link, Key } from "lucide-react";
+import { UserIcon, Tv02Icon, SharedWifiIcon, LockKeyIcon, Archive02Icon, Settings01Icon } from "hugeicons-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
 import { Category } from "@/app/_types";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
@@ -82,12 +82,12 @@ export const UserProfileClient = ({
       <div className="bg-muted p-1 rounded-lg">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {[
-            { id: ProfileTabs.PROFILE, label: "Profile", icon: User },
-            { id: ProfileTabs.SESSIONS, label: "Sessions", icon: Monitor },
-            { id: ProfileTabs.ARCHIVE, label: "Archive", icon: Archive },
-            ...(appSettings?.editor?.enableBilateralLinks ? [{ id: ProfileTabs.CONNECTIONS, label: "Connections", icon: Link }] : []),
-            { id: ProfileTabs.ENCRYPTION, label: "Encryption (beta)", icon: Key },
-            { id: ProfileTabs.SETTINGS, label: "Settings", icon: Settings },
+            { id: ProfileTabs.PROFILE, label: "Profile", icon: UserIcon },
+            { id: ProfileTabs.SESSIONS, label: "Sessions", icon: Tv02Icon },
+            { id: ProfileTabs.ARCHIVE, label: "Archive", icon: Archive02Icon },
+            ...(appSettings?.editor?.enableBilateralLinks ? [{ id: ProfileTabs.CONNECTIONS, label: "Connections", icon: SharedWifiIcon }] : []),
+            { id: ProfileTabs.ENCRYPTION, label: "Encryption (beta)", icon: LockKeyIcon },
+            { id: ProfileTabs.SETTINGS, label: "Settings", icon: Settings01Icon },
           ].map((tab) => {
             const Icon = tab.icon;
             return (

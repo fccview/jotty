@@ -3,23 +3,26 @@
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Archive, ArrowLeft, Check, Hash } from "lucide-react";
 import {
-  Globe,
-  Users,
-  FolderOpen,
-  Loader2,
-  Save,
-  Share2,
-  Download,
-  List,
-  Edit3,
-  Trash2,
-  MoreHorizontal,
-  Copy,
-  Eye,
-  Key,
-} from "lucide-react";
+  Archive02Icon,
+  ArrowLeft01Icon,
+  Tick02Icon,
+  GridIcon,
+  Globe02Icon,
+  UserMultipleIcon,
+  Folder02Icon,
+  Orbit01Icon,
+  FloppyDiskIcon,
+  Share08Icon,
+  Download01Icon,
+  SidebarRightIcon,
+  PropertyEditIcon,
+  Delete03Icon,
+  MoreHorizontalIcon,
+  Copy01Icon,
+  ViewIcon,
+  LockKeyIcon
+} from "hugeicons-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
 import { useEffect, useState } from "react";
@@ -223,7 +226,7 @@ export const NoteEditorHeader = ({
               onClick={onBack}
               className="h-8 w-8 flex-shrink-0"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft01Icon className="h-5 w-5" />
             </Button>
             <div className="flex-1 min-w-0">
               {isEditing ? (
@@ -253,18 +256,18 @@ export const NoteEditorHeader = ({
                         }`}
                     >
                       {copied ? (
-                        <Check className="h-3 w-3 text-green-500" />
+                        <Tick02Icon className="h-3 w-3 text-green-500" />
                       ) : (
-                        <Hash className="h-3 w-3" />
+                        <GridIcon className="h-3 w-3" />
                       )}
                     </Button>
 
                     {note?.encrypted && (
-                      <Key className="h-4 w-4 text-primary flex-shrink-0" />
+                      <LockKeyIcon className="h-4 w-4 text-primary flex-shrink-0" />
                     )}
                     {isPubliclyShared && (
                       <span title="Publicly shared">
-                        <Globe className="h-4 w-4 text-primary" />
+                        <Globe02Icon className="h-4 w-4 text-primary" />
                       </span>
                     )}
                     {isShared && (
@@ -273,13 +276,13 @@ export const NoteEditorHeader = ({
                         className="cursor-pointer hover:text-primary"
                         onClick={() => setShowSharedWithModal(true)}
                       >
-                        <Users className="h-3 w-3" />
+                        <UserMultipleIcon className="h-3 w-3" />
                       </span>
                     )}
                   </div>
                   {category && category !== "Uncategorized" && (
                     <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
-                      <FolderOpen className="h-3 w-3" />
+                      <Folder02Icon className="h-3 w-3" />
                       <span>{category}</span>
                     </div>
                   )}
@@ -313,12 +316,12 @@ export const NoteEditorHeader = ({
                 >
                   {status.isSaving ? (
                     <>
-                      <Loader2 className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2 animate-spin" />
+                      <Orbit01Icon className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2 animate-spin" />
                       <span className="hidden lg:inline">Saving...</span>
                     </>
                   ) : (
                     <>
-                      <Save className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2" />
+                      <FloppyDiskIcon className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2" />
                       <span className="hidden lg:inline">Save</span>
                     </>
                   )}
@@ -339,11 +342,11 @@ export const NoteEditorHeader = ({
                       >
                         {status.isSaving ? (
                           <>
-                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <Orbit01Icon className="h-5 w-5 animate-spin" />
                           </>
                         ) : (
                           <>
-                            <Save className="h-5 w-5" />
+                            <FloppyDiskIcon className="h-5 w-5" />
                           </>
                         )}
                       </Button>
@@ -356,14 +359,14 @@ export const NoteEditorHeader = ({
                       onClick={handleEdit}
                       title="Edit"
                     >
-                      <Edit3 className="h-5 w-5" />
+                      <PropertyEditIcon className="h-5 w-5" />
                     </Button>
                   )}
                   <DropdownMenu
                     align="right"
                     trigger={
                       <Button variant="outline" size="icon">
-                        <MoreHorizontal className="h-5 w-5" />
+                        <MoreHorizontalIcon className="h-5 w-5" />
                       </Button>
                     }
                     items={[
@@ -372,7 +375,7 @@ export const NoteEditorHeader = ({
                           {
                             type: "item" as const,
                             label: "Share",
-                            icon: <Share2 className="h-4 w-4" />,
+                            icon: <Share08Icon className="h-4 w-4" />,
                             onClick: () => setShowShareModal(true),
                           },
                         ]
@@ -382,7 +385,7 @@ export const NoteEditorHeader = ({
                           {
                             type: "item" as const,
                             label: "Clone",
-                            icon: <Copy className="h-4 w-4" />,
+                            icon: <Copy01Icon className="h-4 w-4" />,
                             onClick: onClone,
                           },
                         ]
@@ -392,7 +395,7 @@ export const NoteEditorHeader = ({
                           {
                             type: "item" as const,
                             label: "View",
-                            icon: <Eye className="h-4 w-4" />,
+                            icon: <ViewIcon className="h-4 w-4" />,
                             onClick: () => {
                               setEncryptionModalMode("view");
                               setShowEncryptionModal(true);
@@ -401,7 +404,7 @@ export const NoteEditorHeader = ({
                           {
                             type: "item" as const,
                             label: "Decrypt",
-                            icon: <Key className="h-4 w-4" />,
+                            icon: <LockKeyIcon className="h-4 w-4" />,
                             onClick: () => {
                               setEncryptionModalMode("decrypt");
                               setShowEncryptionModal(true);
@@ -412,7 +415,7 @@ export const NoteEditorHeader = ({
                           {
                             type: "item" as const,
                             label: "Encrypt Note",
-                            icon: <Key className="h-4 w-4" />,
+                            icon: <LockKeyIcon className="h-4 w-4" />,
                             onClick: () => {
                               setEncryptionModalMode("encrypt");
                               setShowEncryptionModal(true);
@@ -423,16 +426,16 @@ export const NoteEditorHeader = ({
                         type: "item" as const,
                         label: "Print / Save as PDF",
                         icon: isPrinting ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Orbit01Icon className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Download className="h-4 w-4" />
+                          <Download01Icon className="h-4 w-4" />
                         ),
                         onClick: viewModel.handlePrint,
                       },
                       {
                         type: "item" as const,
                         label: "Table of Contents",
-                        icon: <List className="h-4 w-4" />,
+                        icon: <SidebarRightIcon className="h-4 w-4" />,
                         onClick: () => setShowTOC(!showTOC),
                         className: "hidden lg:flex",
                       },
@@ -441,7 +444,7 @@ export const NoteEditorHeader = ({
                           {
                             type: "item" as const,
                             label: "Archive",
-                            icon: <Archive className="h-4 w-4" />,
+                            icon: <Archive02Icon className="h-4 w-4" />,
                             onClick: handleArchive,
                           },
                         ]
@@ -451,7 +454,7 @@ export const NoteEditorHeader = ({
                           {
                             type: "item" as const,
                             label: "Delete",
-                            icon: <Trash2 className="h-4 w-4" />,
+                            icon: <Delete03Icon className="h-4 w-4" />,
                             onClick: handleDelete,
                             variant: "destructive" as const,
                           },

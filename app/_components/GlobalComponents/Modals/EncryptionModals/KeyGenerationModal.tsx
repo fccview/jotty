@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Key, AlertCircle, Download } from "lucide-react";
+import { LockKeyIcon, AlertCircleIcon, Download01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
@@ -108,7 +108,8 @@ export const KeyGenerationModal = ({
   const handleDownloadKey = (keyType: "public" | "private") => {
     if (!generatedKeys) return;
 
-    const key = keyType === "public" ? generatedKeys.publicKey : generatedKeys.privateKey;
+    const key =
+      keyType === "public" ? generatedKeys.publicKey : generatedKeys.privateKey;
     const blob = new Blob([key], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -134,7 +135,7 @@ export const KeyGenerationModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Generate PGP Key Pair"
-      titleIcon={<Key className="h-5 w-5 text-primary" />}
+      titleIcon={<LockKeyIcon className="h-5 w-5 text-primary" />}
       className="max-w-2xl"
     >
       {!generatedKeys ? (
@@ -211,7 +212,7 @@ export const KeyGenerationModal = ({
               variant="outline"
               className="w-full"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download01Icon className="h-4 w-4 mr-2" />
               Download Public Key
             </Button>
             <Button
@@ -219,7 +220,7 @@ export const KeyGenerationModal = ({
               variant="outline"
               className="w-full"
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download01Icon className="h-4 w-4 mr-2" />
               Download Private Key
             </Button>
           </div>

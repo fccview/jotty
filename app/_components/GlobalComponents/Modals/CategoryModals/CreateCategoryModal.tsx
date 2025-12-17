@@ -5,7 +5,7 @@ import { createCategory } from "@/app/_server/actions/category";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Folder } from "lucide-react";
+import { Folder01Icon } from "hugeicons-react";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppMode, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
@@ -68,7 +68,7 @@ export const CreateCategoryModal = ({
       isOpen={true}
       onClose={onClose}
       title="Create New Category"
-      titleIcon={<Folder className="h-5 w-5 text-primary" />}
+      titleIcon={<Folder01Icon className="h-5 w-5 text-primary" />}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>

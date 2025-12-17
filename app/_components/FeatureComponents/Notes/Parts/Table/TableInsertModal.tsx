@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Editor } from "@tiptap/react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Table } from "lucide-react";
+import { LayoutTable01Icon } from "hugeicons-react";
 
 interface TableInsertModalProps {
   isOpen: boolean;
@@ -34,7 +34,7 @@ export const TableInsertModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Insert Table"
-      titleIcon={<Table className="h-5 w-5 text-primary" />}
+      titleIcon={<LayoutTable01Icon className="h-5 w-5 text-primary" />}
     >
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">

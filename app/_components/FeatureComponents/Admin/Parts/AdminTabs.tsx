@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  Users,
-  FileText,
-  Activity,
-  Globe,
-  Settings,
-  Edit3,
-  Palette,
-} from "lucide-react";
+  UserMultipleIcon,
+  File02Icon,
+  Activity03Icon,
+  Globe02Icon,
+  Settings01Icon,
+  PropertyEditIcon,
+  PaintBrush04Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
@@ -22,37 +22,37 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
     {
       id: AdminTabsEnum.OVERVIEW,
       label: "Overview",
-      icon: Activity,
+      icon: Activity03Icon,
     },
     {
       id: AdminTabsEnum.USERS,
       label: "Users",
-      icon: Users,
+      icon: UserMultipleIcon,
     },
     {
       id: AdminTabsEnum.CONTENT,
       label: "Content",
-      icon: FileText,
+      icon: File02Icon,
     },
     {
       id: AdminTabsEnum.SHARING,
       label: "Sharing",
-      icon: Globe,
+      icon: Globe02Icon,
     },
     {
       id: AdminTabsEnum.EDITOR,
       label: "Editor",
-      icon: Edit3,
+      icon: PropertyEditIcon,
     },
     {
       id: AdminTabsEnum.STYLING,
       label: "Styling",
-      icon: Palette,
+      icon: PaintBrush04Icon,
     },
     {
       id: AdminTabsEnum.SETTINGS,
       label: "Settings",
-      icon: Settings,
+      icon: Settings01Icon,
     },
   ];
 

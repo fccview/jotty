@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Download, X } from "lucide-react";
+import { Download01Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useGitHubRelease } from "@/app/_hooks/useGitHubRelease";
@@ -135,7 +135,7 @@ export const UpdatePrompt = () => {
             onClick={handlePromptClick}
           >
             <div className="p-2 bg-primary rounded-lg flex items-center justify-center">
-              <Download className="h-5 w-5 text-primary-foreground" />
+              <Download01Icon className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
               <h3 className="font-medium text-foreground hover:underline">
@@ -154,7 +154,7 @@ export const UpdatePrompt = () => {
               size="sm"
               className="h-8 w-8 p-0"
             >
-              <X className="h-4 w-4" />
+              <MultiplicationSignIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>

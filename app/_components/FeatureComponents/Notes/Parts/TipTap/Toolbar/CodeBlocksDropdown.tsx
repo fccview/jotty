@@ -1,7 +1,7 @@
 "use client";
 
 import { Editor } from "@tiptap/react";
-import { ChevronDown, Code, Search } from "lucide-react";
+import { ArrowDown01Icon, SourceCodeIcon, Search01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { popularCodeBlockLanguages } from "@/app/_utils/code-block-utils";
 import { useState, useMemo } from "react";
@@ -44,8 +44,8 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
       className="flex items-center gap-1"
       title="Code"
     >
-      <Code className="h-4 w-4" />
-      <ChevronDown className="h-3 w-3" />
+      <SourceCodeIcon className="h-4 w-4" />
+      <ArrowDown01Icon className="h-3 w-3" />
     </Button>
   );
 
@@ -53,7 +53,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
     <ToolbarDropdown trigger={trigger} direction="right">
       <div className="p-2 border-b border-border">
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search languages..."

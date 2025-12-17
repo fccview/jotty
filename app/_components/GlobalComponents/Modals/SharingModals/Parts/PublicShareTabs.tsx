@@ -1,7 +1,12 @@
 import { cn } from "@/app/_utils/global-utils";
 import { Button } from "../../../Buttons/Button";
-import { Loader2, MessageCircle, Facebook, Mail } from "lucide-react";
-import { Copy } from "lucide-react";
+import {
+  Orbit01Icon,
+  RedditIcon,
+  Facebook01Icon,
+  Mail01Icon,
+} from "hugeicons-react";
+import { Copy01Icon } from "hugeicons-react";
 
 interface PublicShareTabProps {
   isLoading: boolean;
@@ -64,7 +69,7 @@ export const PublicShareTab = ({
     },
     {
       name: "Reddit",
-      Icon: MessageCircle,
+      Icon: RedditIcon,
       color: "text-[#FF4500]",
       onClick: () =>
         window.open(
@@ -76,7 +81,7 @@ export const PublicShareTab = ({
     },
     {
       name: "Facebook",
-      Icon: Facebook,
+      Icon: Facebook01Icon,
       color: "text-[#1877F2]",
       onClick: () =>
         window.open(
@@ -88,7 +93,7 @@ export const PublicShareTab = ({
     },
     {
       name: "Email",
-      Icon: Mail,
+      Icon: Mail01Icon,
       onClick: () => {
         window.location.href = `mailto:?subject=${encodeURIComponent(
           `Check out this ${itemType}: ${itemTitle}`
@@ -114,7 +119,7 @@ export const PublicShareTab = ({
         >
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <Orbit01Icon className="h-4 w-4 animate-spin mr-2" />
               Updating...
             </>
           ) : isPubliclyShared ? (
@@ -133,8 +138,13 @@ export const PublicShareTab = ({
               readOnly
               className="flex-1 px-3 py-2 bg-background border rounded-md text-sm font-mono"
             />
-            <Button onClick={handleCopyUrl} size="sm" variant="outline" title="Copy URL">
-              <Copy className="h-4 w-4" />
+            <Button
+              onClick={handleCopyUrl}
+              size="sm"
+              variant="outline"
+              title="Copy URL"
+            >
+              <Copy01Icon className="h-4 w-4" />
             </Button>
           </div>
           <div className="flex gap-2">

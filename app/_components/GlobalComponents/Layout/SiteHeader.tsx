@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { DynamicLogo } from "@/app/_components/GlobalComponents/Layout/Logo/DynamicLogo";
 import { AppName } from "@/app/_components/GlobalComponents/Layout/AppName";
@@ -33,7 +33,7 @@ export const SiteHeader = ({
               onClick={() => router.back()}
               className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft01Icon className="h-4 w-4" />
             </Button>
           )}
 

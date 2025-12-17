@@ -1,4 +1,4 @@
-import { CheckSquare, BarChart3 } from "lucide-react";
+import { CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
 import { ChecklistType } from "@/app/_types";
 import { ChecklistsTypes } from "@/app/_types/enums";
 
@@ -33,9 +33,9 @@ export const ChecklistTypeSelector = ({
         >
           <div className="flex flex-col items-center gap-2">
             {type === ChecklistsTypes.SIMPLE ? (
-              <CheckSquare className="h-6 w-6 text-muted-foreground" />
+              <CheckmarkSquare04Icon className="h-6 w-6 text-muted-foreground" />
             ) : (
-              <BarChart3 className="h-6 w-6 text-muted-foreground" />
+              <TaskDaily01Icon className="h-6 w-6 text-muted-foreground" />
             )}
             <div className="font-medium text-sm">
               {type === ChecklistsTypes.SIMPLE

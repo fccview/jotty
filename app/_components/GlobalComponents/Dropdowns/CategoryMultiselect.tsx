@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { ChevronDown, X, Folder, FolderOpen, ChevronRight, ChevronDown as ChevronDownIcon } from "lucide-react";
+import { ArrowDown01Icon, MultiplicationSignIcon, Folder01Icon, Folder02Icon, ArrowRight01Icon, ArrowDown01Icon as ArrowDown01IconIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { Category } from "@/app/_types";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -68,9 +68,9 @@ const CategoryTreeNode = ({
                 >
                     {hasSubCategories ? (
                         isExpanded ? (
-                            <ChevronDownIcon className="h-4 w-4" />
+                            <ArrowDown01IconIcon className="h-4 w-4" />
                         ) : (
-                            <ChevronRight className="h-4 w-4" />
+                            <ArrowRight01Icon className="h-4 w-4" />
                         )
                     ) : (
                         <div className="w-5" />
@@ -78,9 +78,9 @@ const CategoryTreeNode = ({
                 </button>
 
                 {isExpanded ? (
-                    <FolderOpen className="h-4 w-4 text-primary" />
+                    <Folder02Icon className="h-4 w-4 text-primary" />
                 ) : (
-                    <Folder className="h-4 w-4 text-muted-foreground" />
+                    <Folder01Icon className="h-4 w-4 text-muted-foreground" />
                 )}
                 <span className="truncate flex-1">{category.name}</span>
                 {category.count > 0 && (
@@ -232,9 +232,9 @@ export const CategoryMultiselect = ({
                     onClick={() => setIsOpen(!isOpen)}
                     className="jotty-category-multiselect-button w-full px-3 py-2 text-left text-sm bg-background border border-input rounded-md hover:border-ring focus:outline-none focus:ring-2 focus:ring-ring flex items-center gap-2 min-h-[40px]"
                 >
-                    <Folder className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <Folder01Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <span className="truncate flex-1">{displayText}</span>
-                    <ChevronDown
+                    <ArrowDown01Icon
                         className={cn("h-4 w-4 transition-transform flex-shrink-0", isOpen && "rotate-180")}
                     />
                 </button>
@@ -252,7 +252,7 @@ export const CategoryMultiselect = ({
                                     onClick={(e) => handleRemoveCategory(category.path, e)}
                                     className="hover:bg-primary/20 rounded p-0.5"
                                 >
-                                    <X className="h-3 w-3" />
+                                    <MultiplicationSignIcon className="h-3 w-3" />
                                 </button>
                             </div>
                         ))}

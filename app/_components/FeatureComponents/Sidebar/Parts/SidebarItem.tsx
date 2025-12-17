@@ -1,19 +1,19 @@
 "use client";
 
 import {
-  FileText,
-  CheckSquare,
-  BarChart3,
-  Edit,
-  Users,
-  Globe,
-  Pin,
-  PinOff,
-  MoreHorizontal,
-  Archive,
-  Trash,
-  Key,
-} from "lucide-react";
+  File02Icon,
+  CheckmarkSquare04Icon,
+  TaskDaily01Icon,
+  PencilEdit02Icon,
+  UserMultipleIcon,
+  Globe02Icon,
+  PinIcon,
+  PinOffIcon,
+  MoreHorizontalIcon,
+  Archive02Icon,
+  Delete03Icon,
+  LockKeyIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
@@ -87,44 +87,46 @@ export const SidebarItem = ({
       mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
     if (!pinnedItems) return false;
 
-    const itemPath = `${item.category || "Uncategorized"}/${item.uuid || item.id}`;
+    const itemPath = `${item.category || "Uncategorized"}/${
+      item.uuid || item.id
+    }`;
     return pinnedItems.includes(itemPath);
   };
 
   const dropdownItems = [
     ...(onEditItem
       ? [
-        {
-          label: "Edit",
-          onClick: () => onEditItem(item),
-          icon: <Edit className="h-4 w-4" />,
-        },
-      ]
+          {
+            label: "Edit",
+            onClick: () => onEditItem(item),
+            icon: <PencilEdit02Icon className="h-4 w-4" />,
+          },
+        ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
+      label: isItemPinned() ? "Unpin from Home" : "PinIcon to Home",
       onClick: handleTogglePin,
       icon: isItemPinned() ? (
-        <PinOff className="h-4 w-4" />
+        <PinOffIcon className="h-4 w-4" />
       ) : (
-        <Pin className="h-4 w-4" />
+        <PinIcon className="h-4 w-4" />
       ),
       disabled: isTogglingPin === item.id,
     },
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
-        {
-          label: "Archive",
-          onClick: async () => {
-            const result = await toggleArchive(item, mode);
-            if (result.success) {
-              router.refresh();
-            }
+          {
+            label: "Archive",
+            onClick: async () => {
+              const result = await toggleArchive(item, mode);
+              if (result.success) {
+                router.refresh();
+              }
+            },
+            icon: <Archive02Icon className="h-4 w-4" />,
           },
-          icon: <Archive className="h-4 w-4" />,
-        },
-      ]
+        ]
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
@@ -155,7 +157,7 @@ export const SidebarItem = ({
         }
       },
       variant: "destructive" as const,
-      icon: <Trash className="h-4 w-4" />,
+      icon: <Delete03Icon className="h-4 w-4" />,
     },
   ];
 
@@ -172,7 +174,7 @@ export const SidebarItem = ({
         )}
       >
         {mode === Modes.NOTES ? (
-          <FileText
+          <File02Icon
             className={cn(
               "h-4 w-4 text-foreground flex-shrink-0",
               isSelected ? "text-primary-foreground" : "text-foreground"
@@ -181,14 +183,14 @@ export const SidebarItem = ({
         ) : (
           <>
             {"type" in item && item.type === "task" ? (
-              <BarChart3
+              <TaskDaily01Icon
                 className={cn(
                   "h-4 w-4 text-foreground flex-shrink-0",
                   isSelected ? "text-primary-foreground" : "text-foreground"
                 )}
               />
             ) : (
-              <CheckSquare
+              <CheckmarkSquare04Icon
                 className={cn(
                   "h-4 w-4 text-foreground flex-shrink-0",
                   isSelected ? "text-primary-foreground" : "text-foreground"
@@ -206,22 +208,21 @@ export const SidebarItem = ({
         <div className="flex items-center gap-1 flex-shrink-0">
           {mode === Modes.NOTES && "encrypted" in item && item.encrypted && (
             <span title="Encrypted note">
-              <Key className="h-4 w-4 text-primary" />
+              <LockKeyIcon className="h-4 w-4 text-primary" />
             </span>
           )}
           {isShared && (
             <span title={sharedWith.join(", ")}>
-              <Users className="h-4 w-4 text-primary" />
+              <UserMultipleIcon className="h-4 w-4 text-primary" />
             </span>
           )}
           {isPubliclyShared && (
             <span title="Publicly shared">
-              <Globe className="h-4 w-4 text-primary" />
+              <Globe02Icon className="h-4 w-4 text-primary" />
             </span>
           )}
         </div>
       </button>
-
 
       <DropdownMenu
         align="right"
@@ -232,7 +233,7 @@ export const SidebarItem = ({
             size="sm"
             className="h-8 w-8 p-0 opacity-40 lg:opacity-0 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontalIcon className="h-4 w-4" />
           </Button>
         }
       />

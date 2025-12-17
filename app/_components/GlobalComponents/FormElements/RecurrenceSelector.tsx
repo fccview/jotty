@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, Info, Calendar as CalendarIcon, X } from "lucide-react";
+import {
+  RefreshIcon,
+  InformationCircleIcon,
+  Calendar01Icon,
+  MultiplicationSignIcon,
+} from "hugeicons-react";
 import { RecurrenceRule } from "@/app/_types";
 import {
   RECURRENCE_PRESETS,
@@ -101,10 +106,10 @@ export const RecurrenceSelector = ({
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -112,7 +117,7 @@ export const RecurrenceSelector = ({
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium text-foreground flex items-center gap-2">
-          <RefreshCw className="h-4 w-4" />
+          <RefreshIcon className="h-4 w-4" />
           Repeat
         </label>
         {value && (
@@ -145,8 +150,8 @@ export const RecurrenceSelector = ({
                 disabled={disabled}
                 className="flex items-center gap-2 w-full"
               >
-                <CalendarIcon className="h-4 w-4" />
-                {startDate ? formatDate(startDate) : 'Set Start Date'}
+                <Calendar01Icon className="h-4 w-4" />
+                {startDate ? formatDate(startDate) : "Set Start Date"}
               </Button>
               <span className="text-xs text-muted-foreground">
                 (optional - defaults to today)
@@ -163,8 +168,8 @@ export const RecurrenceSelector = ({
                   disabled={disabled || !selectedPreset}
                   className="flex items-center gap-2 w-full"
                 >
-                  <CalendarIcon className="h-4 w-4" />
-                  {endDate ? formatDate(endDate) : 'Set End Date (Optional)'}
+                  <Calendar01Icon className="h-4 w-4" />
+                  {endDate ? formatDate(endDate) : "Set End Date (Optional)"}
                 </Button>
                 {endDate && (
                   <button
@@ -173,22 +178,20 @@ export const RecurrenceSelector = ({
                     className="text-muted-foreground hover:text-foreground transition-colors"
                     title="Clear end date"
                   >
-                    <X className="h-4 w-4" />
+                    <MultiplicationSignIcon className="h-4 w-4" />
                   </button>
                 )}
               </div>
-              <span className="text-xs text-muted-foreground">
-                (optional)
-              </span>
+              <span className="text-xs text-muted-foreground">(optional)</span>
             </div>
           </div>
 
           <div className="flex items-start gap-2 p-3 bg-muted/50 border border-border rounded-lg">
-            <Info className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <InformationCircleIcon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
             <p className="text-xs text-muted-foreground">
               When you complete this item, it will automatically reappear as
               uncompleted based on the recurrence pattern you selected.
-              {endDate && ' The recurrence will stop after the end date.'}
+              {endDate && " The recurrence will stop after the end date."}
             </p>
           </div>
         </>

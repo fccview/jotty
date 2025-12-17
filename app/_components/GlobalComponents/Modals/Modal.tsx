@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { createPortal } from "react-dom";
 
@@ -107,7 +107,7 @@ export const Modal = ({
             onClick={onClose}
             className="h-8 w-8 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
           >
-            <X className="h-4 w-4" />
+            <MultiplicationSignIcon className="h-4 w-4" />
           </Button>
         </div>
 

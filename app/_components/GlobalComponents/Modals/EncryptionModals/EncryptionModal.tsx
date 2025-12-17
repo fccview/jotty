@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Key, Lock, Unlock } from "lucide-react";
+import { SquareUnlock01Icon, LockKeyIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
@@ -184,9 +184,9 @@ export const EncryptionModal = ({
       title={`${actionLabel} Note`}
       titleIcon={
         isEncrypt ? (
-          <Key className="h-5 w-5 text-primary" />
+          <LockKeyIcon className="h-5 w-5 text-primary" />
         ) : (
-          <Unlock className="h-5 w-5 text-primary" />
+          <SquareUnlock01Icon className="h-5 w-5 text-primary" />
         )
       }
       className="max-w-2xl"
@@ -314,6 +314,6 @@ export const EncryptionModal = ({
           </Button>
         </div>
       </form>
-    </Modal>
+    </Modal >
   );
 };

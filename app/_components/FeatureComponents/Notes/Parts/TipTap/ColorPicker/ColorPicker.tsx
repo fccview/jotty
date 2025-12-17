@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Palette, X, Check } from "lucide-react";
+import { PaintBrush04Icon, MultiplicationSignIcon, Tick02Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { cn } from "@/app/_utils/global-utils";
@@ -135,7 +135,7 @@ export const ColorPicker = ({
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Palette className="h-4 w-4" />
+                        <PaintBrush04Icon className="h-4 w-4" />
                         <span className="font-medium text-sm">
                             {type === "text" ? "Text Color" : "Highlight Color"}
                         </span>
@@ -146,7 +146,7 @@ export const ColorPicker = ({
                         onClick={onClose}
                         className="h-6 w-6 p-0"
                     >
-                        <X className="h-4 w-4" />
+                        <MultiplicationSignIcon className="h-4 w-4" />
                     </Button>
                 </div>
 
@@ -168,7 +168,7 @@ export const ColorPicker = ({
                             title={color.name}
                         >
                             {currentColor === color.value && (
-                                <Check className="h-3 w-3" />
+                                <Tick02Icon className="h-3 w-3" />
                             )}
                         </button>
                     ))}

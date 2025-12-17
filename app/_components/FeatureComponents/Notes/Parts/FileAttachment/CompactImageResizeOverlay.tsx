@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ImageIcon, X } from "lucide-react";
+import { Image02Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
@@ -124,7 +124,7 @@ export const CompactImageResizeOverlay = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ImageIcon className="h-4 w-4" />
+            <Image02Icon className="h-4 w-4" />
             <span className="font-medium text-sm">Resize Image</span>
           </div>
           <Button
@@ -133,7 +133,7 @@ export const CompactImageResizeOverlay = ({
             onClick={onClose}
             className="h-6 w-6 p-0"
           >
-            <X className="h-4 w-4" />
+            <MultiplicationSignIcon className="h-4 w-4" />
           </Button>
         </div>
 

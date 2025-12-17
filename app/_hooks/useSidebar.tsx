@@ -200,7 +200,9 @@ export const useSidebar = (props: SidebarProps) => {
         item.id
       );
       router.push(
-        `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${categoryPath}`
+        `/${
+          mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
+        }/${categoryPath}`
       );
       onClose();
     });
@@ -226,8 +228,9 @@ export const useSidebar = (props: SidebarProps) => {
 
     return (
       pathname?.toLowerCase() ===
-      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
-        }/${expectedPath}`.toLowerCase()
+      `/${
+        mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
+      }/${expectedPath}`.toLowerCase()
     );
   };
 

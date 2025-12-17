@@ -1,6 +1,6 @@
 "use client";
 
-import { Filter } from "lucide-react";
+import { FilterVerticalIcon } from "hugeicons-react";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { CategoryMultiselect } from "@/app/_components/GlobalComponents/Dropdowns/CategoryMultiselect";
 import { Category } from "@/app/_types";
@@ -40,7 +40,7 @@ export const FilterSidebar = ({
     >
       <div className="jotty-filter-sidebar-header bg-card border border-border rounded-lg p-4">
         <div className="jotty-filter-sidebar-header-icon flex items-center gap-2 mb-4">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+          <FilterVerticalIcon className="h-4 w-4 text-muted-foreground" />
           <span className="jotty-filter-sidebar-header-title font-medium text-foreground">
             Filters
           </span>

@@ -1,20 +1,20 @@
 "use client";
 
 import {
-  ArrowLeft,
-  Trash2,
-  Edit3,
-  Share2,
-  BarChart3,
-  CheckSquare,
-  Users,
-  Globe,
-  Hash,
-  Check,
-  MoreHorizontal,
-  Archive,
-  Copy,
-} from "lucide-react";
+  ArrowLeft01Icon,
+  Delete03Icon,
+  PropertyEditIcon,
+  Share08Icon,
+  TaskDaily01Icon,
+  CheckmarkSquare04Icon,
+  UserMultipleIcon,
+  Globe02Icon,
+  GridIcon,
+  Tick02Icon,
+  MoreHorizontalIcon,
+  Archive02Icon,
+  Copy01Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
@@ -76,7 +76,7 @@ export const ChecklistHeader = ({
             onClick={onBack}
             className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
           >
-            <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
+            <ArrowLeft01Icon className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
 
           <div className="flex items-center gap-3 max-w-[70vw] lg:max-w-none">
@@ -91,15 +91,15 @@ export const ChecklistHeader = ({
               title={`Copy ID: ${checklist?.uuid || checklist?.id}`}
             >
               {copied ? (
-                <Check className="h-3 w-3 text-green-500" />
+                <Tick02Icon className="h-3 w-3 text-green-500" />
               ) : (
-                <Hash className="h-3 w-3" />
+                <GridIcon className="h-3 w-3" />
               )}
             </Button>
 
             {isPubliclyShared && (
               <span title="Publicly shared">
-                <Globe className="h-3 w-3 text-primary" />
+                <Globe02Icon className="h-3 w-3 text-primary" />
               </span>
             )}
             {isShared && (
@@ -108,7 +108,7 @@ export const ChecklistHeader = ({
                 className="cursor-pointer hover:text-primary"
                 onClick={() => setShowSharedWithModal(true)}
               >
-                <Users className="h-3 w-3" />
+                <UserMultipleIcon className="h-3 w-3" />
               </span>
             )}
           </div>
@@ -131,9 +131,9 @@ export const ChecklistHeader = ({
                 }
               >
                 {checklist.type === ChecklistsTypes.TASK ? (
-                  <CheckSquare className="h-4 w-4 lg:h-5 lg:w-5" />
+                  <CheckmarkSquare04Icon className="h-4 w-4 lg:h-5 lg:w-5" />
                 ) : (
-                  <BarChart3 className="h-4 w-4 lg:h-5 lg:w-5" />
+                  <TaskDaily01Icon className="h-4 w-4 lg:h-5 lg:w-5" />
                 )}
               </Button>
             )}
@@ -145,7 +145,7 @@ export const ChecklistHeader = ({
                 onClick={onEdit}
                 className="h-10 w-10 p-0"
               >
-                <Edit3 className="h-4 w-4 lg:h-5 lg:w-5" />
+                <PropertyEditIcon className="h-4 w-4 lg:h-5 lg:w-5" />
               </Button>
             )}
           </div>
@@ -163,7 +163,7 @@ export const ChecklistHeader = ({
                 align="right"
                 trigger={
                   <Button variant="outline" size="sm" className="h-10 w-10 p-0">
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontalIcon className="h-4 w-4" />
                   </Button>
                 }
                 items={[
@@ -177,9 +177,9 @@ export const ChecklistHeader = ({
                               : "Convert to Task Project",
                           icon:
                             checklist.type === ChecklistsTypes.TASK ? (
-                              <CheckSquare className="h-4 w-4" />
+                              <CheckmarkSquare04Icon className="h-4 w-4" />
                             ) : (
-                              <BarChart3 className="h-4 w-4" />
+                              <TaskDaily01Icon className="h-4 w-4" />
                             ),
                           onClick: () => {
                             onConvertType();
@@ -193,7 +193,7 @@ export const ChecklistHeader = ({
                         {
                           type: "item" as const,
                           label: "Clone",
-                          icon: <Copy className="h-4 w-4" />,
+                          icon: <Copy01Icon className="h-4 w-4" />,
                           onClick: onClone,
                         },
                       ]
@@ -203,7 +203,7 @@ export const ChecklistHeader = ({
                         {
                           type: "item" as const,
                           label: "Archive",
-                          icon: <Archive className="h-4 w-4" />,
+                          icon: <Archive02Icon className="h-4 w-4" />,
                           onClick: onArchive,
                         },
                       ]
@@ -213,7 +213,7 @@ export const ChecklistHeader = ({
                         {
                           type: "item" as const,
                           label: "Share",
-                          icon: <Share2 className="h-4 w-4" />,
+                          icon: <Share08Icon className="h-4 w-4" />,
                           onClick: onShare,
                         },
                       ]
@@ -223,7 +223,7 @@ export const ChecklistHeader = ({
                         {
                           type: "item" as const,
                           label: "Edit",
-                          icon: <Edit3 className="h-4 w-4" />,
+                          icon: <PropertyEditIcon className="h-4 w-4" />,
                           onClick: onEdit,
                           className: "lg:!hidden",
                         },
@@ -234,7 +234,7 @@ export const ChecklistHeader = ({
                         {
                           type: "item" as const,
                           label: "Delete",
-                          icon: <Trash2 className="h-4 w-4" />,
+                          icon: <Delete03Icon className="h-4 w-4" />,
                           onClick: onDelete,
                           variant: "destructive" as const,
                         },

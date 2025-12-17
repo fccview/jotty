@@ -1,10 +1,9 @@
 import React, { useMemo } from "react";
 import { DynamicLogo } from "@/app/_components/GlobalComponents/Layout/Logo/DynamicLogo";
-import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
-import { CheckCircle, Clock, SettingsIcon } from "lucide-react";
+import { CheckmarkCircle04Icon, Clock01Icon, Settings01Icon } from "hugeicons-react";
 
 interface ThemePreviewProps {
   colors: { [key: string]: string };
@@ -81,7 +80,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ colors, focusedColor
         <DynamicLogo className="h-6 w-6" />
         <div className="flex items-center space-x-2">
           <Button size="sm" variant="outline">
-            <SettingsIcon className={`h-3 w-3 text-muted-foreground ${getHighlightClass("--muted-foreground")}`} />
+            <Settings01Icon className={`h-3 w-3 text-muted-foreground ${getHighlightClass("--muted-foreground")}`} />
           </Button>
         </div>
       </div>
@@ -117,11 +116,11 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ colors, focusedColor
           </div>
           <div className={`flex items-center justify-between text-xs text-muted-foreground ${getHighlightClass("--muted-foreground")}`}>
             <div className="flex items-center gap-1">
-              <CheckCircle className="h-3 w-3" />
+              <CheckmarkCircle04Icon className="h-3 w-3" />
               <span>7 completed</span>
             </div>
             <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
+              <Clock01Icon className="h-3 w-3" />
               <span>3 remaining</span>
             </div>
           </div>
@@ -148,14 +147,14 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({ colors, focusedColor
         <div className="space-y-3">
           <div className={`bg-primary/10 border border-primary/20 rounded-lg p-3 ${getHighlightClass("--primary")}`}>
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-primary" />
+              <CheckmarkCircle04Icon className="h-4 w-4 text-primary" />
               <span className="text-sm text-primary font-medium">Success message</span>
             </div>
           </div>
 
           <div className={`bg-destructive/10 border border-destructive/20 rounded-lg p-3 ${getHighlightClass("--destructive")}`}>
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-destructive" />
+              <CheckmarkCircle04Icon className="h-4 w-4 text-destructive" />
               <span className="text-sm text-destructive font-medium">Error message</span>
             </div>
           </div>

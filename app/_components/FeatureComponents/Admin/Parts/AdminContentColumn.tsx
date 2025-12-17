@@ -1,5 +1,5 @@
 import { Checklist, Note } from "@/app/_types";
-import { ExternalLink } from "lucide-react";
+import { LinkForwardIcon } from "hugeicons-react";
 import Link from "next/link";
 import { ReactNode } from "react";
 
@@ -33,7 +33,7 @@ export const AdminContentColumn = ({
                   <p className="font-medium text-foreground text-sm truncate">
                     {item.title}
                   </p>
-                  <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                  <LinkForwardIcon className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {item.details}

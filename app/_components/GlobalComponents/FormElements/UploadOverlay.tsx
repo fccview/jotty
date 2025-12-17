@@ -1,6 +1,10 @@
 "use client";
 
-import { Loader2, CheckCircle, AlertCircle, Upload } from "lucide-react";
+import {
+  Orbit01Icon,
+  CheckmarkCircle04Icon,
+  AlertCircleIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 
 interface UploadOverlayProps {
@@ -28,11 +32,11 @@ export const UploadOverlay = ({
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-3">
             {isUploading ? (
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Orbit01Icon className="h-8 w-8 animate-spin text-primary" />
             ) : uploadError ? (
-              <AlertCircle className="h-8 w-8 text-destructive" />
+              <AlertCircleIcon className="h-8 w-8 text-destructive" />
             ) : (
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckmarkCircle04Icon className="h-8 w-8 text-green-500" />
             )}
             <div className="text-center">
               <h3 className="text-lg font-semibold text-foreground">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Type, Pin, PinOff, Key } from "lucide-react";
+import { Clock01Icon, TextNumberSignIcon, PinIcon, PinOffIcon, LockKeyIcon } from "hugeicons-react";
 import { Note } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { useMemo } from "react";
@@ -121,7 +121,7 @@ export const NoteCard = ({
           >
             <div className="flex items-start gap-2">
               {isEncrypted && (
-                <Key className="h-4 w-4 mt-1 text-primary flex-shrink-0" />
+                <LockKeyIcon className="h-4 w-4 mt-1 text-primary flex-shrink-0" />
               )}
               <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                 {displayTitle}
@@ -136,12 +136,12 @@ export const NoteCard = ({
               }}
               className={`${isPinned ? "opacity-100" : "opacity-0"
                 } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-lg flex-shrink-0`}
-              title={isPinned ? "Unpin" : "Pin"}
+              title={isPinned ? "Unpin" : "PinIcon"}
             >
               {isPinned ? (
-                <PinOff className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                <PinOffIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
               ) : (
-                <Pin className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                <PinIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
               )}
             </button>
           )}
@@ -194,11 +194,11 @@ export const NoteCard = ({
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <Type className="h-3 w-3" />
+              <TextNumberSignIcon className="h-3 w-3" />
               <span>{wordCount}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
+              <Clock01Icon className="h-3 w-3" />
               <span>{formatRelativeTime(note.updatedAt)}</span>
             </div>
           </div>

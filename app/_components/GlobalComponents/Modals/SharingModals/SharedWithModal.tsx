@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { UserMultipleIcon } from "hugeicons-react";
 import { Modal } from "../Modal";
 import { UserAvatar } from "../../User/UserAvatar";
 
@@ -20,7 +20,7 @@ export const SharedWithModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Shared With"
-      titleIcon={<Users className="h-5 w-5 text-primary" />}
+      titleIcon={<UserMultipleIcon className="h-5 w-5 text-primary" />}
     >
       <div className="space-y-4 py-6">
         {usernames.map((username) => (

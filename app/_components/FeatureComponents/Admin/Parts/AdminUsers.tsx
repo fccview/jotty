@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Plus, Edit3, Trash2, Shield, User } from "lucide-react";
+import { Search01Icon, Add01Icon, PropertyEditIcon, Delete03Icon, ShieldUserIcon, UserIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { User as UserType, Checklist, Note } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
@@ -46,13 +46,13 @@ export const AdminUsers = ({
           </p>
         </div>
         <Button onClick={onAddUser} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
+          <Add01Icon className="h-4 w-4" />
           Add User
         </Button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search01Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Search users..."
@@ -92,7 +92,7 @@ export const AdminUsers = ({
                         </span>
                       )}
                       {user.isAdmin && (
-                        <Shield className="h-4 w-4 text-primary" />
+                        <ShieldUserIcon className="h-4 w-4 text-primary" />
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -109,7 +109,7 @@ export const AdminUsers = ({
                     className="h-8 w-8 p-0"
                     title="Edit User"
                   >
-                    <Edit3 className="h-4 w-4" />
+                    <PropertyEditIcon className="h-4 w-4" />
                   </Button>
                   {user.username !== username && (
                     <Button
@@ -123,7 +123,7 @@ export const AdminUsers = ({
                       {deletingUser === user.username ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-destructive mx-auto"></div>
                       ) : (
-                        <Trash2 className="h-4 w-4" />
+                        <Delete03Icon className="h-4 w-4" />
                       )}
                     </Button>
                   )}
@@ -136,7 +136,7 @@ export const AdminUsers = ({
         {filteredUsers.length === 0 && (
           <div className="bg-card border border-border rounded-lg p-8 text-center">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="h-8 w-8 text-muted-foreground" />
+              <UserIcon className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
               {searchQuery ? "No users found" : "No users yet"}

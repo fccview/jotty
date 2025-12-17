@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { LinkIndex } from "@/app/_server/actions/link";
 import dynamic from "next/dynamic";
-import { FileText, Link, Network, RefreshCw } from "lucide-react";
+import { File02Icon, Link04Icon, SharedWifiIcon, RefreshIcon } from "hugeicons-react";
 import { Checklist, ItemType, Note } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
@@ -257,7 +257,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <File02Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -269,7 +269,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
 
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Link className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <Link04Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -281,7 +281,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
 
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Network className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -335,7 +335,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <File02Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
               <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -347,7 +347,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
 
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Link className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
               <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -359,7 +359,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
 
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
-              <Network className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div>
               <div className="text-xl sm:text-2xl font-bold text-foreground">
@@ -396,7 +396,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 className="flex items-center gap-2"
                 title="Rebuild link indexes to update connection data"
               >
-                <RefreshCw
+                <RefreshIcon
                   className={`h-3 w-3 ${rebuildingIndex ? "animate-spin" : ""}`}
                 />
                 {rebuildingIndex ? "Rebuilding..." : "Rebuild Indexes"}

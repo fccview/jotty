@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, Pin, PinOff } from "lucide-react";
+import { CheckmarkCircle04Icon, Clock01Icon, PinIcon, PinOffIcon } from "hugeicons-react";
 import { Checklist } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
@@ -60,9 +60,9 @@ export const ChecklistCard = ({
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-        transform: CSS.Transform.toString(transform),
-        transition,
-      };
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
 
   const cardStyle = {
     ...style,
@@ -75,9 +75,8 @@ export const ChecklistCard = ({
       ref={setNodeRef}
       style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${
-        isDragging ? "border-primary/30" : ""
-      }`}
+      className={`jotty-checklist-card bg-card border border-border rounded-lg p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${isDragging ? "border-primary/30" : ""
+        }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div
@@ -99,12 +98,12 @@ export const ChecklistCard = ({
               }}
               className={`${isPinned ? "opacity-100" : "opacity-0"
                 } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
-              title={isPinned ? "Unpin" : "Pin"}
+              title={isPinned ? "Unpin" : "PinIcon"}
             >
               {isPinned ? (
-                <PinOff className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                <PinOffIcon className="h-3 w-3 text-muted-foreground hover:text-primary" />
               ) : (
-                <Pin className="h-3 w-3 text-muted-foreground hover:text-primary" />
+                <PinIcon className="h-3 w-3 text-muted-foreground hover:text-primary" />
               )}
             </button>
           )}
@@ -143,7 +142,7 @@ export const ChecklistCard = ({
           )}
           {!sharer && (
             <>
-              <CheckCircle className="h-3 w-3" />
+              <CheckmarkCircle04Icon className="h-3 w-3" />
               <span>
                 {completedItems}/{totalItems} completed
               </span>
@@ -151,7 +150,7 @@ export const ChecklistCard = ({
           )}
         </div>
         <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
+          <Clock01Icon className="h-3 w-3" />
           <span>{formatRelativeTime(list.updatedAt)}</span>
         </div>
       </div>

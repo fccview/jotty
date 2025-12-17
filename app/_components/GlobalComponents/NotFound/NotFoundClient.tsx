@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { QUOTES } from "@/app/_consts/notes";
-import { Home, RefreshCw } from "lucide-react";
+import { Home05Icon, RefreshIcon } from "hugeicons-react";
 
 export const NotFoundClient = () => {
   const router = useRouter();
@@ -113,7 +113,7 @@ export const NotFoundClient = () => {
             size="lg"
             className="group relative overflow-hidden"
           >
-            <RefreshCw
+            <RefreshIcon
               className={`h-5 w-5 mr-2 transition-transform duration-300 ${
                 isTransitioning ? "animate-spin" : "group-hover:rotate-180"
               }`}
@@ -124,7 +124,7 @@ export const NotFoundClient = () => {
             </span>
           </Button>
           <Button onClick={() => router.push("/")} size="lg" className="group">
-            <Home className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
+            <Home05Icon className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
             Go Home
             <span className="ml-2 text-xs opacity-60 hidden sm:inline">
               (Enter)

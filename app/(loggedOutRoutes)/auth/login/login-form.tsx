@@ -5,7 +5,7 @@ import { login } from "@/app/_server/actions/auth";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Loader2 } from "lucide-react";
+import { Orbit01Icon } from "hugeicons-react";
 
 export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
   const [error, setError] = useState<string>("");
@@ -64,7 +64,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           >
             {isSsoLoading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing In...
+                <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" /> Signing In...
               </>
             ) : (
               "Sign in with SSO"
@@ -130,7 +130,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         <Button type="submit" className="w-full !mt-8" disabled={isLoading || isSsoLoading}>
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Signing In...
+              <Orbit01Icon className="h-4 w-4 mr-2 animate-spin" /> Signing In...
             </>
           ) : (
             "Sign In"

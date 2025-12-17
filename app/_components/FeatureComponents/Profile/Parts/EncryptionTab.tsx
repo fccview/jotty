@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Key, Download, Upload, Trash2, AlertTriangle } from "lucide-react";
+import {
+  LockKeyIcon,
+  Download01Icon,
+  Upload01Icon,
+  Delete03Icon,
+  Alert02Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
@@ -85,7 +91,9 @@ export const EncryptionTab = () => {
         showToast({
           type: "success",
           title: "Success",
-          message: `${keyType === "public" ? "Public" : "Private"} key exported successfully`,
+          message: `${
+            keyType === "public" ? "Public" : "Private"
+          } key exported successfully`,
         });
       } else {
         showToast({
@@ -215,7 +223,7 @@ export const EncryptionTab = () => {
         ) : hasKeys && keyMetadata ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-primary">
-              <Key className="h-5 w-5" />
+              <LockKeyIcon className="h-5 w-5" />
               <span className="font-medium">Keys configured</span>
             </div>
             <div className="space-y-2 text-sm">
@@ -240,7 +248,7 @@ export const EncryptionTab = () => {
         ) : (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Key className="h-5 w-5" />
+              <LockKeyIcon className="h-5 w-5" />
               <span>No encryption keys configured</span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -259,7 +267,7 @@ export const EncryptionTab = () => {
                 onClick={() => setShowGenerateModal(true)}
                 className="w-full"
               >
-                <Key className="h-4 w-4 mr-2" />
+                <LockKeyIcon className="h-4 w-4 mr-2" />
                 Generate New Key Pair
               </Button>
               <Button
@@ -267,7 +275,7 @@ export const EncryptionTab = () => {
                 variant="outline"
                 className="w-full"
               >
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload01Icon className="h-4 w-4 mr-2" />
                 Import Existing Keys
               </Button>
             </>
@@ -279,7 +287,7 @@ export const EncryptionTab = () => {
                 variant="outline"
                 className="w-full"
               >
-                <Download className="h-4 w-4 mr-2" />
+                <Download01Icon className="h-4 w-4 mr-2" />
                 Export Public Key
               </Button>
               <Button
@@ -287,7 +295,7 @@ export const EncryptionTab = () => {
                 variant="outline"
                 className="w-full"
               >
-                <Download className="h-4 w-4 mr-2" />
+                <Download01Icon className="h-4 w-4 mr-2" />
                 Export Private Key
               </Button>
               <Button
@@ -295,7 +303,7 @@ export const EncryptionTab = () => {
                 variant="destructive"
                 className="w-full md:col-span-2"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Delete03Icon className="h-4 w-4 mr-2" />
                 Delete Keys
               </Button>
             </>
@@ -311,9 +319,14 @@ export const EncryptionTab = () => {
               className="flex-1 cursor-pointer space-y-1"
               onClick={() => handleAutoDecryptChange(!autoDecrypt)}
             >
-              <div className="font-medium">Prompt for passphrase when opening encrypted notes</div>
+              <div className="font-medium">
+                Prompt for passphrase when opening encrypted notes
+              </div>
               <p className="text-sm text-muted-foreground">
-                If enabled, you will be prompted for your passphrase when opening an encrypted note. The note will stay encrypted on the server, but you will be able to see the decrypted content in the current tab session.
+                If enabled, you will be prompted for your passphrase when
+                opening an encrypted note. The note will stay encrypted on the
+                server, but you will be able to see the decrypted content in the
+                current tab session.
               </p>
             </label>
             <Toggle
@@ -328,9 +341,9 @@ export const EncryptionTab = () => {
       <FormWrapper title="Custom Key Path (Local Installations)">
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Specify a custom (absolute) filesystem path for storing encryption keys.
-            This is only needed for local installations. Docker users should map
-            the default path in docker-compose.yml instead.
+            Specify a custom (absolute) filesystem path for storing encryption
+            keys. This is only needed for local installations. Docker users
+            should map the default path in docker-compose.yml instead.
           </p>
           <Input
             id="customKeyPath"
@@ -379,7 +392,7 @@ export const EncryptionTab = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background border border-border rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center gap-3 text-destructive mb-4">
-              <AlertTriangle className="h-6 w-6" />
+              <Alert02Icon className="h-6 w-6" />
               <h3 className="text-lg font-semibold">Delete Encryption Keys?</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-6">

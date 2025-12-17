@@ -23,7 +23,7 @@ import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { Settings, Archive } from "lucide-react";
+import { Settings01Icon, Archive02Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { updateChecklistStatuses } from "@/app/_server/actions/checklist";
 import {
@@ -190,7 +190,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             onClick={() => setShowStatusModal(true)}
             className="text-xs"
           >
-            <Settings className="h-3 w-3 mr-1" />
+            <Settings01Icon className="h-3 w-3 mr-1" />
             Manage Statuses
           </Button>
         )}
@@ -200,7 +200,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           onClick={() => setShowArchivedModal(true)}
           className="text-xs"
         >
-          <Archive className="h-3 w-3 mr-1" />
+          <Archive02Icon className="h-3 w-3 mr-1" />
           View Archived
         </Button>
       </div>
@@ -223,11 +223,10 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 return (
                   <div
                     key={column.id}
-                    className={`${
-                      columns.length > 4
-                        ? "flex-shrink-0 min-w-[20%]"
-                        : "min-w-[24%] "
-                    }`}
+                    className={`${columns.length > 4
+                      ? "flex-shrink-0 min-w-[20%]"
+                      : "min-w-[24%] "
+                      }`}
                   >
                     <KanbanColumn
                       checklist={localChecklist}

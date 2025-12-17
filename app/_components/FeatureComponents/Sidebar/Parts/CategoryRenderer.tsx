@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  ChevronDown,
-  ChevronRight,
-  Folder,
-  MoreHorizontal,
-  FileText,
-  CheckSquare,
-  FolderPlus,
-} from "lucide-react";
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  Folder01Icon,
+  MoreHorizontalIcon,
+  File02Icon,
+  CheckmarkSquare04Icon,
+  FolderAddIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
@@ -85,15 +85,15 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
       onClick: () => onQuickCreate(category.path),
       icon:
         mode === Modes.CHECKLISTS ? (
-          <CheckSquare className="h-4 w-4" />
+          <CheckmarkSquare04Icon className="h-4 w-4" />
         ) : (
-          <FileText className="h-4 w-4" />
+          <File02Icon className="h-4 w-4" />
         ),
     },
     {
       label: "New Category",
       onClick: () => onCreateSubcategory(category.path),
-      icon: <FolderPlus className="h-4 w-4" />,
+      icon: <FolderAddIcon className="h-4 w-4" />,
     },
     { type: "divider" as const },
     {
@@ -112,9 +112,10 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const firstChildId = subCategories[0]
     ? `category::${subCategories[0].path}`
     : categoryItems[0]
-      ? `item::${categoryItems[0].category || "Uncategorized"}::${categoryItems[0].id
+    ? `item::${categoryItems[0].category || "Uncategorized"}::${
+        categoryItems[0].id
       }`
-      : undefined;
+    : undefined;
 
   return (
     <div className="space-y-1">
@@ -152,14 +153,14 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
               >
                 {hasContent ? (
                   isCollapsed ? (
-                    <ChevronRight className="h-4 w-4" />
+                    <ArrowRight01Icon className="h-4 w-4" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ArrowDown01Icon className="h-4 w-4" />
                   )
                 ) : (
                   <div className="w-4" />
                 )}
-                <Folder className="h-4 w-4" />
+                <Folder01Icon className="h-4 w-4" />
                 <span className="truncate">{category.name}</span>
                 <span className="text-xs text-muted-foreground ml-auto">
                   {getTotalItemsInCategory(category.path)}
@@ -175,7 +176,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                     size="sm"
                     className="h-8 w-8 p-0 opacity-40 lg:opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontalIcon className="h-4 w-4" />
                   </Button>
                 }
               />
@@ -234,14 +235,16 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                 />
               </Draggable>
               <DropIndicator
-                id={`drop-after-item::${item.category || "Uncategorized"}::${item.id
-                  }`}
+                id={`drop-after-item::${item.category || "Uncategorized"}::${
+                  item.id
+                }`}
                 data={{
                   type: "drop-indicator",
                   parentPath: category.path,
                   position: "after",
-                  targetDndId: `item::${item.category || "Uncategorized"}::${item.id
-                    }`,
+                  targetDndId: `item::${item.category || "Uncategorized"}::${
+                    item.id
+                  }`,
                   targetType: "item",
                 }}
               />

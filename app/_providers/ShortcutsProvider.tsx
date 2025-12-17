@@ -89,7 +89,7 @@ export const ShortcutProvider = ({
   const shortcuts = useMemo(
     () => [
       {
-        code: "ArrowLeft",
+        code: "ArrowLeft01Icon",
         modKey: true,
         altKey: true,
         shiftKey: true,

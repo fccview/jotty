@@ -1,6 +1,6 @@
 "use client";
 
-import { Palette, ChevronDown } from "lucide-react";
+import { PaintBrush04Icon, ArrowDown01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
 import { MarkdownTheme } from "@/app/_types";
@@ -72,8 +72,8 @@ export const PrismThemeDropdown = ({ isMarkdownMode }: PrismThemeDropdownProps) 
             className="flex items-center gap-1"
             title="Syntax theme"
         >
-            <Palette className="h-4 w-4" />
-            <ChevronDown className="h-3 w-3" />
+            <PaintBrush04Icon className="h-4 w-4" />
+            <ArrowDown01Icon className="h-3 w-3" />
         </Button>
     );
 

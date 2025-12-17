@@ -2,7 +2,13 @@ import { CssEditor } from "@/app/_components/GlobalComponents/FormElements/CSSEd
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Loader2, Plus, Edit, Trash2, Palette } from "lucide-react";
+import {
+  Orbit01Icon,
+  Add01Icon,
+  PencilEdit02Icon,
+  Delete03Icon,
+  PaintBrush04Icon,
+} from "hugeicons-react";
 import { useStyling } from "@/app/_hooks/useStyling";
 import { ThemePreview } from "@/app/_components/FeatureComponents/Admin/Parts/ThemePreview";
 import { EmojiManager } from "@/app/_components/FeatureComponents/Admin/Parts/EmojiManager";
@@ -70,7 +76,7 @@ export const StylingTab = () => {
             <div className="w-full max-h-[600px] overflow-auto">
               {isLoadingCss ? (
                 <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <Orbit01Icon className="h-6 w-6 animate-spin" />
                 </div>
               ) : (
                 <CssEditor value={css} onChange={handleCssChange} />
@@ -91,7 +97,7 @@ export const StylingTab = () => {
                 disabled={isLoadingThemes}
                 size="sm"
               >
-                <Plus className="mr-2 h-3 w-3" />
+                <Add01Icon className="mr-2 h-3 w-3" />
                 Create Theme
               </Button>
             }
@@ -113,7 +119,7 @@ export const StylingTab = () => {
                       onClick={() => handleEditTheme(theme.id)}
                       className="h-6 w-6 p-0"
                     >
-                      <Edit className="h-3 w-3" />
+                      <PencilEdit02Icon className="h-3 w-3" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -121,7 +127,7 @@ export const StylingTab = () => {
                       onClick={() => handleDeleteTheme(theme.id)}
                       className="h-6 w-6 p-0 text-destructive hover:text-destructive/80"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Delete03Icon className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
@@ -143,7 +149,7 @@ export const StylingTab = () => {
         isOpen={themeModalOpen}
         onClose={() => setThemeModalOpen(false)}
         title={editingTheme ? "Edit Theme" : "Create Theme"}
-        titleIcon={<Palette className="h-5 w-5" />}
+        titleIcon={<PaintBrush04Icon className="h-5 w-5" />}
         className="!w-full lg:!max-w-[90vw] !h-[90vh] overflow-y-auto !max-h-[900px]"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -166,7 +172,6 @@ export const StylingTab = () => {
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
                     <DynamicIcon
                       iconName={themeForm.icon}
-                      fallbackIcon={Palette}
                       className="h-4 w-4 text-muted-foreground"
                     />
                   </div>
@@ -177,7 +182,7 @@ export const StylingTab = () => {
                     onChange={(e) =>
                       handleThemeFormChange("icon", e.target.value)
                     }
-                    placeholder="Palette"
+                    placeholder="PaintBrush04Icon"
                     className="pl-10"
                   />
                 </div>
@@ -189,7 +194,7 @@ export const StylingTab = () => {
                   >
                     Lucide icon
                   </a>{" "}
-                  name (e.g., Palette, Sun, Moon)
+                  name (e.g., PaintBrush04Icon, Sun03Icon, GibbousMoonIcon)
                 </p>
               </div>
             </div>
@@ -198,7 +203,10 @@ export const StylingTab = () => {
               <h4 className="text-sm font-medium">Color Variables</h4>
               <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
                 {Object.entries(themeForm.colors).map(([key, value]) => (
-                  <div key={key} className="flex items-center space-x-2 flex-wrap">
+                  <div
+                    key={key}
+                    className="flex items-center space-x-2 flex-wrap"
+                  >
                     <label className="text-xs font-mono text-muted-foreground min-w-0 flex-1">
                       {key}
                     </label>
@@ -207,12 +215,12 @@ export const StylingTab = () => {
                       value={
                         value
                           ? `#${value
-                            .split(" ")
-                            .map((v) => {
-                              const num = parseInt(v);
-                              return num.toString(16).padStart(2, "0");
-                            })
-                            .join("")}`
+                              .split(" ")
+                              .map((v) => {
+                                const num = parseInt(v);
+                                return num.toString(16).padStart(2, "0");
+                              })
+                              .join("")}`
                           : "#000000"
                       }
                       onChange={(e) => {
@@ -255,7 +263,7 @@ export const StylingTab = () => {
               <Button onClick={handleSaveTheme} disabled={isSavingThemes}>
                 {isSavingThemes ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
                 ) : editingTheme ? (

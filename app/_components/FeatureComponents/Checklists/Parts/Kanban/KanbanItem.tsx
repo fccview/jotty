@@ -20,7 +20,7 @@ import { KanbanItemTimer } from "./KanbanItemTimer";
 import { KanbanItemContent } from "./KanbanItemContent";
 import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { Circle } from "lucide-react";
+import { CircleIcon } from "hugeicons-react";
 
 interface KanbanItemProps {
   checklist: Checklist;
@@ -94,7 +94,7 @@ export const KanbanItem = ({
     name: status.label,
     color: status.color,
     order: status.order,
-    icon: Circle
+    icon: CircleIcon
   }));
 
   statusOptions?.sort((a, b) => a.order - b.order);

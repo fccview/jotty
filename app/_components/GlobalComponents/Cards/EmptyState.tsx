@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Add01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 
 interface EmptyStateProps {
@@ -29,7 +29,7 @@ export const EmptyState = ({
         e.preventDefault();
         onButtonClick();
       }} size="lg">
-        <Plus className="h-5 w-5 mr-2" />
+        <Add01Icon className="h-5 w-5 mr-2" />
         {buttonText}
       </Button>
     </div>

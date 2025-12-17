@@ -27,17 +27,17 @@ export interface EmojiConfig {
 
 const getDefaultIcon = (themeName: string) => {
   const lowerName = themeName.toLowerCase();
-  if (lowerName.includes("dark")) return "Moon";
-  if (lowerName.includes("light")) return "Sun";
-  if (lowerName.includes("blue")) return "Waves";
-  if (lowerName.includes("green")) return "Trees";
-  if (lowerName.includes("red")) return "Flame";
-  if (lowerName.includes("purple")) return "Palette";
+  if (lowerName.includes("dark")) return "GibbousMoonIcon";
+  if (lowerName.includes("light")) return "Sun03Icon";
+  if (lowerName.includes("blue")) return "CurvyRightDirectionIcon";
+  if (lowerName.includes("green")) return "Tree03Icon";
+  if (lowerName.includes("red")) return "FireIcon";
+  if (lowerName.includes("purple")) return "PaintBrush04Icon";
   if (lowerName.includes("corporate") || lowerName.includes("business"))
-    return "Building";
+    return "Building02Icon";
   if (lowerName.includes("sunset") || lowerName.includes("orange"))
-    return "Sunset";
-  return "Palette";
+    return "SunsetIcon";
+  return "PaintBrush04Icon";
 };
 
 export const loadCustomThemes = async (): Promise<ThemeConfig | null> => {

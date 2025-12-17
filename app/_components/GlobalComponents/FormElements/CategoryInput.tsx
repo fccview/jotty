@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Add01Icon } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { CategoryTreeSelector } from "../Dropdowns/CategoryTreeSelector";
 import { Category } from "@/app/_types";
@@ -27,7 +27,7 @@ export const CategoryInput = ({
 }: CategoryInputProps) => {
   const selectedCategoryName = selectedCategory
     ? categories.find((c) => c.path === selectedCategory)?.name ||
-      selectedCategory
+    selectedCategory
     : "Root level";
 
   const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
@@ -88,7 +88,7 @@ export const CategoryInput = ({
             className="px-3"
             disabled={disabled}
           >
-            <Plus className="h-4 w-4" />
+            <Add01Icon className="h-4 w-4" />
           </Button>
         </div>
       )}

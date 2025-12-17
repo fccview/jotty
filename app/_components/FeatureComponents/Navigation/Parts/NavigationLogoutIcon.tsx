@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { Logout01Icon } from "hugeicons-react";
 import { NavigationGlobalIcon } from "./NavigationGlobalIcon";
 import { logout } from "@/app/_server/actions/auth";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ export const NavigationLogoutIcon = () => {
 
   return (
     <NavigationGlobalIcon
-      icon={<LogOut className="h-5 w-5 text-destructive" />}
+      icon={<Logout01Icon className="h-5 w-5 text-destructive" />}
       onClick={handleLogout}
     />
   );

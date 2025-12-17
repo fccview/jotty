@@ -6,7 +6,7 @@ import ListItem from "@tiptap/extension-list-item";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import BulletList from "@tiptap/extension-bullet-list";
-import Underline from "@tiptap/extension-underline";
+import TextUnderlineIcon from "@tiptap/extension-underline";
 import HardBreak from "@tiptap/extension-hard-break";
 import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
@@ -112,7 +112,7 @@ export const createEditorExtensions = (
       enableSlashCommands: settings.enableSlashCommands,
     }),
     InternalLink,
-    Underline,
+    TextUnderlineIcon,
     HardBreak,
     CodeBlockLowlight.configure({
       lowlight,

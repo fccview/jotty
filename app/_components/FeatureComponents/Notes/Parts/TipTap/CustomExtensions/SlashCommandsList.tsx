@@ -71,7 +71,7 @@ export const SlashCommandsList = forwardRef<
                 return true;
             }
 
-            if (event.key === "ArrowLeft") {
+            if (event.key === "ArrowLeft01Icon") {
                 leftHandler();
                 return true;
             }

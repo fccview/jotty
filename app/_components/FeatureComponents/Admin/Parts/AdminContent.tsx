@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useMemo } from "react";
 import {
-  CheckSquare,
-  FileText,
-  ChevronDown,
-  ChevronRight,
-  Shield,
-} from "lucide-react";
+  CheckmarkSquare04Icon,
+  File02Icon,
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  ShieldUserIcon,
+} from "hugeicons-react";
 import { Checklist, Note, User as UserType } from "@/app/_types";
 import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
@@ -164,7 +164,7 @@ export const AdminContent = ({
                         {user.username}
                       </h3>
                       {user.isAdmin && (
-                        <Shield className="h-4 w-4 text-primary" />
+                        <ShieldUserIcon className="h-4 w-4 text-primary" />
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -191,9 +191,9 @@ export const AdminContent = ({
                     </span>
                   )}
                   {isExpanded ? (
-                    <ChevronDown className="h-5 w-5" />
+                    <ArrowDown01Icon className="h-5 w-5" />
                   ) : (
-                    <ChevronRight className="h-5 w-5" />
+                    <ArrowRight01Icon className="h-5 w-5" />
                   )}
                 </div>
               </div>
@@ -204,7 +204,7 @@ export const AdminContent = ({
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <AdminContentColumn
                         title="Checklists"
-                        icon={<CheckSquare className="h-4 w-4" />}
+                        icon={<CheckmarkSquare04Icon className="h-4 w-4" />}
                         items={checklists.map((list) => ({
                           ...list,
                           link: `/checklist/${buildCategoryPath(
@@ -216,7 +216,7 @@ export const AdminContent = ({
                       />
                       <AdminContentColumn
                         title="Notes"
-                        icon={<FileText className="h-4 w-4" />}
+                        icon={<File02Icon className="h-4 w-4" />}
                         items={notes.map((doc) => ({
                           ...doc,
                           link: `/note/${buildCategoryPath(
@@ -230,7 +230,7 @@ export const AdminContent = ({
                   ) : (
                     <div className="text-center py-8">
                       <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FileText className="h-8 w-8 text-muted-foreground" />
+                        <File02Icon className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
                         No content yet

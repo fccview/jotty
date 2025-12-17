@@ -1,5 +1,5 @@
 import { cn } from "@/app/_utils/global-utils";
-import { Globe, Users } from "lucide-react";
+import { Globe02Icon, UserMultipleIcon } from "hugeicons-react";
 
 interface ShareTabsProps {
   activeTab: string;
@@ -20,9 +20,9 @@ export const ShareTabs = ({ activeTab, setActiveTab }: ShareTabsProps) => (
         )}
       >
         {tab === "users" ? (
-          <Users className="h-4 w-4" />
+          <UserMultipleIcon className="h-4 w-4" />
         ) : (
-          <Globe className="h-4 w-4" />
+          <Globe02Icon className="h-4 w-4" />
         )}
         {tab === "users" ? "Share with Users" : "Public Link"}
       </button>

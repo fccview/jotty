@@ -9,7 +9,7 @@ import {
   updateItem,
   deleteItem,
 } from "@/app/_server/actions/checklist-item";
-import { Plus, Save, X } from "lucide-react";
+import { Add01Icon, FloppyDiskIcon, MultiplicationSignIcon } from "hugeicons-react";
 import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
@@ -354,11 +354,11 @@ export const SubtaskModal = ({
                   setIsEditing(false);
                 }}
               >
-                <X className="h-4 w-4 mr-2" />
+                <MultiplicationSignIcon className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
               <Button onClick={handleSave}>
-                <Save className="h-4 w-4 mr-2" />
+                <FloppyDiskIcon className="h-4 w-4 mr-2" />
                 Save Changes
               </Button>
             </div>
@@ -366,9 +366,8 @@ export const SubtaskModal = ({
         ) : (
           <div className="space-y-4">
             <div
-              className={`bg-card border border-border rounded-lg p-4 shadow-sm ${
-                permissions?.canEdit ? "cursor-pointer" : ""
-              }`}
+              className={`bg-card border border-border rounded-lg p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""
+                }`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
               <div
@@ -460,7 +459,7 @@ export const SubtaskModal = ({
                   disabled={!newSubtaskText.trim()}
                   title="Add subtask"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Add01Icon className="h-4 w-4" />
                 </Button>
               </div>
             )}

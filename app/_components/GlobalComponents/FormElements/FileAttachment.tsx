@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Eye } from "lucide-react";
+import { Download01Icon, ViewIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { getFileIcon, getFileTypeDisplay } from "@/app/_utils/file-icon-utils";
 
@@ -45,7 +45,7 @@ export const FileAttachment = ({
               className="jotty-file-attachment-view-button h-8 w-8 p-0 hover:bg-primary/10"
               title="Open file"
             >
-              <Eye className="h-4 w-4" />
+              <ViewIcon className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
@@ -59,7 +59,7 @@ export const FileAttachment = ({
               className="jotty-file-attachment-download-button h-8 w-8 p-0 hover:bg-primary/10"
               title="Download file"
             >
-              <Download className="h-4 w-4" />
+              <Download01Icon className="h-4 w-4" />
             </Button>
           </span>
         </span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, ChevronDown, ChevronRight } from "lucide-react";
+import { Clock01Icon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
@@ -39,7 +39,7 @@ export const TimeEntriesAccordion = ({
         className="w-full flex items-center justify-between py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
         <span className="flex items-center gap-1.5">
-          <Clock className="h-3 w-3" />
+          <Clock01Icon className="h-3 w-3" />
           <span className="font-medium text-left">
             {timeEntries.length} sessions
           </span>
@@ -49,9 +49,9 @@ export const TimeEntriesAccordion = ({
           </span>
         </span>
         {isOpen ? (
-          <ChevronDown className="h-3 w-3" />
+          <ArrowDown01Icon className="h-3 w-3" />
         ) : (
-          <ChevronRight className="h-3 w-3" />
+          <ArrowRight01Icon className="h-3 w-3" />
         )}
       </button>
 

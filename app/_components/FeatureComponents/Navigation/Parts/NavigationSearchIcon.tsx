@@ -1,6 +1,6 @@
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
-import { Search, X } from "lucide-react";
+import { Search01Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { SearchBar } from "../../Search/SearchBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { AppMode } from "@/app/_types";
@@ -66,9 +66,9 @@ export const NavigationSearchIcon = ({
         className="text-muted-foreground hover:text-foreground"
       >
         {isSearchOpen ? (
-          <X className="h-5 w-5" />
+          <MultiplicationSignIcon className="h-5 w-5" />
         ) : (
-          <Search className="h-5 w-5" />
+          <Search01Icon className="h-5 w-5" />
         )}
       </Button>
     </>

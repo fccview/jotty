@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Edit3 } from "lucide-react";
+import { PropertyEditIcon } from "hugeicons-react";
 import { Modal } from "../Modal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
@@ -64,7 +64,7 @@ export const RenameCategoryModal = ({
       isOpen={true}
       onClose={onClose}
       title="Rename Category"
-      titleIcon={<Edit3 className="h-5 w-5 text-primary" />}
+      titleIcon={<PropertyEditIcon className="h-5 w-5 text-primary" />}
     >
       <p className="text-sm text-muted-foreground mb-4">
         Enter a new name for &quot;{categoryName}&quot;

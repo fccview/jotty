@@ -1,21 +1,21 @@
 import { Editor } from "@tiptap/react";
 import {
-  Bold,
-  Italic,
-  Strikethrough,
-  Code,
-  Heading2,
-  List,
-  ListX,
-  Quote,
-  Link as LinkIcon,
-  FileText,
-  Eye,
-  EyeOff,
-  Monitor,
-  Underline,
-  ImageIcon,
-} from "lucide-react";
+  TextBoldIcon,
+  TextItalicIcon,
+  TextStrikethroughIcon,
+  SourceCodeIcon,
+  Heading02Icon,
+  LeftToRightListBulletIcon,
+  LeftToRightListNumberIcon,
+  QuoteUpIcon,
+  Attachment01Icon,
+  File02Icon,
+  ViewIcon,
+  ViewOffSlashIcon,
+  Tv02Icon,
+  TextUnderlineIcon,
+  Image02Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
 import { ImageSizeModal } from "@/app/_components/GlobalComponents/Modals/ImageSizeModal";
@@ -149,12 +149,14 @@ export const TiptapToolbar = ({
               onMouseDown={(e) => e.preventDefault()}
               onClick={onToggleLineNumbers}
               className="flex-shrink-0 hidden lg:flex"
-              title={showLineNumbers ? "Hide line numbers" : "Show line numbers"}
+              title={
+                showLineNumbers ? "Hide line numbers" : "Show line numbers"
+              }
             >
               {showLineNumbers ? (
-                <List className="h-4 w-4" />
+                <LeftToRightListBulletIcon className="h-4 w-4" />
               ) : (
-                <ListX className="h-4 w-4" />
+                <LeftToRightListNumberIcon className="h-4 w-4" />
               )}
             </Button>
           )}
@@ -174,12 +176,12 @@ export const TiptapToolbar = ({
             >
               {showPreview ? (
                 <>
-                  <EyeOff className="h-4 w-4 mr-2" />
+                  <ViewOffSlashIcon className="h-4 w-4 mr-2" />
                   <span>Edit</span>
                 </>
               ) : (
                 <>
-                  <Eye className="h-4 w-4 mr-2" />
+                  <ViewIcon className="h-4 w-4 mr-2" />
                   <span>Preview</span>
                 </>
               )}
@@ -195,12 +197,12 @@ export const TiptapToolbar = ({
           >
             {isMarkdownMode ? (
               <>
-                <Monitor className="h-4 w-4 mr-2" />
+                <Tv02Icon className="h-4 w-4 mr-2" />
                 <span>Rich Editor</span>
               </>
             ) : (
               <>
-                <FileText className="h-4 w-4 mr-2" />
+                <File02Icon className="h-4 w-4 mr-2" />
                 <span>Markdown</span>
               </>
             )}
@@ -219,9 +221,9 @@ export const TiptapToolbar = ({
                 title={showPreview ? "Hide preview" : "Show preview"}
               >
                 {showPreview ? (
-                  <EyeOff className="h-4 w-4 mr-2" />
+                  <ViewOffSlashIcon className="h-4 w-4 mr-2" />
                 ) : (
-                  <Eye className="h-4 w-4 mr-2" />
+                  <ViewIcon className="h-4 w-4 mr-2" />
                 )}
                 <span>Preview</span>
               </Button>
@@ -234,7 +236,7 @@ export const TiptapToolbar = ({
               onClick={toggleMode}
               title="Toggle rich editor mode"
             >
-              <Monitor className="h-4 w-4 mr-2" />
+              <Tv02Icon className="h-4 w-4 mr-2" />
               <span>Rich Editor</span>
             </Button>
 
@@ -246,7 +248,7 @@ export const TiptapToolbar = ({
               onClick={toggleMode}
               title="Toggle markdown mode"
             >
-              <FileText className="h-4 w-4 mr-2" />
+              <File02Icon className="h-4 w-4 mr-2" />
               <span>Markdown</span>
             </Button>
           </div>
@@ -268,7 +270,7 @@ export const TiptapToolbar = ({
             }
             title="Toggle bold"
           >
-            <Bold className="h-4 w-4" />
+            <TextBoldIcon className="h-4 w-4" />
           </Button>
           <Button
             variant={editor.isActive("italic") ? "secondary" : "ghost"}
@@ -281,7 +283,7 @@ export const TiptapToolbar = ({
             }
             title="Toggle italic"
           >
-            <Italic className="h-4 w-4" />
+            <TextItalicIcon className="h-4 w-4" />
           </Button>
           <Button
             variant={editor.isActive("underline") ? "secondary" : "ghost"}
@@ -294,7 +296,7 @@ export const TiptapToolbar = ({
             }
             title="Toggle underline"
           >
-            <Underline className="h-4 w-4" />
+            <TextUnderlineIcon className="h-4 w-4" />
           </Button>
           <Button
             variant={editor.isActive("strike") ? "secondary" : "ghost"}
@@ -307,7 +309,7 @@ export const TiptapToolbar = ({
             }
             title="Toggle strikethrough"
           >
-            <Strikethrough className="h-4 w-4" />
+            <TextStrikethroughIcon className="h-4 w-4" />
           </Button>
           <Button
             variant={editor.isActive("code") ? "secondary" : "ghost"}
@@ -318,7 +320,7 @@ export const TiptapToolbar = ({
             }
             title="Toggle inline code"
           >
-            <Code className="h-4 w-4" />
+            <SourceCodeIcon className="h-4 w-4" />
           </Button>
           <div className="w-px h-6 bg-border mx-2" />
           <FontFamilyDropdown editor={editor} />
@@ -336,7 +338,7 @@ export const TiptapToolbar = ({
             }
             title="Toggle heading 2"
           >
-            <Heading2 className="h-4 w-4" />
+            <Heading02Icon className="h-4 w-4" />
           </Button>
           <Button
             variant={editor.isActive("bulletList") ? "secondary" : "ghost"}
@@ -349,7 +351,7 @@ export const TiptapToolbar = ({
             }
             title="Toggle bullet list"
           >
-            <List className="h-4 w-4" />
+            <LeftToRightListBulletIcon className="h-4 w-4" />
           </Button>
           <Button
             variant={editor.isActive("blockquote") ? "secondary" : "ghost"}
@@ -362,7 +364,7 @@ export const TiptapToolbar = ({
             }
             title="Toggle blockquote"
           >
-            <Quote className="h-4 w-4" />
+            <QuoteUpIcon className="h-4 w-4" />
           </Button>
           <Button
             variant={editor.isActive("link") ? "secondary" : "ghost"}
@@ -371,7 +373,7 @@ export const TiptapToolbar = ({
             onClick={() => handleButtonClick(setLink)}
             title="Toggle link"
           >
-            <LinkIcon className="h-4 w-4" />
+            <Attachment01Icon className="h-4 w-4" />
           </Button>
           {isImageSelected && (
             <Button
@@ -386,7 +388,7 @@ export const TiptapToolbar = ({
               }}
               title="Edit image size"
             >
-              <ImageIcon className="h-4 w-4" />
+              <Image02Icon className="h-4 w-4" />
             </Button>
           )}
           <div className="w-px h-6 bg-border mx-2" />

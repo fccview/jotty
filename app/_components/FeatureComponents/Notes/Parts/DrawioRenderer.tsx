@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sun, Moon } from "lucide-react";
+import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 
 interface DrawioRendererProps {
   svgData: string;
@@ -32,7 +32,7 @@ export const DrawioRenderer = ({ svgData, themeMode: initialTheme = "light", cla
           className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
           title={`Switch to ${themeMode === "light" ? "dark" : "light"} mode`}
         >
-          {themeMode === "light" ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+          {themeMode === "light" ? <GibbousMoonIcon className="h-3 w-3" /> : <Sun03Icon className="h-3 w-3" />}
         </button>
       </div>
       <div

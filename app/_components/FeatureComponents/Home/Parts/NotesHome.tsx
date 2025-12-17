@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  Plus,
-  FileText,
-  FolderOpen,
-  Pin,
-  Clock,
-  ArrowRight,
-} from "lucide-react";
+  Add01Icon,
+  File02Icon,
+  Folder02Icon,
+  PinIcon,
+  Clock01Icon,
+  ArrowRight04Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Note, Category, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
@@ -67,7 +67,7 @@ export const NotesHome = ({
     return (
       <div className="flex-1 overflow-y-auto bg-background h-full">
         <EmptyState
-          icon={<FileText className="h-10 w-10 text-muted-foreground" />}
+          icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
           title="No notes yet"
           description="Create your first note to get started with your knowledge base."
           buttonText="Create New Note"
@@ -104,7 +104,7 @@ export const NotesHome = ({
               size="sm"
               className="flex-1 sm:size-lg"
             >
-              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+              <Add01Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">New Note</span>
               <span className="sm:hidden">New</span>
             </Button>
@@ -115,7 +115,7 @@ export const NotesHome = ({
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Pin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <PinIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                 Pinned Notes
@@ -175,7 +175,7 @@ export const NotesHome = ({
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <Clock01Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                 Recent Notes
@@ -189,7 +189,7 @@ export const NotesHome = ({
               >
                 <span className="hidden sm:inline">Show All</span>
                 <span className="sm:hidden">All</span>
-                <ArrowRight className="h-4 w-4 ml-1 sm:ml-2" />
+                <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </div>
             <Masonry

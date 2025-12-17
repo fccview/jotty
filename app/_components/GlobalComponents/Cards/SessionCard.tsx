@@ -1,10 +1,10 @@
 import { Session } from "@/app/_types";
-import { Monitor } from "lucide-react";
+import { Tv02Icon } from "hugeicons-react";
 import { getDeviceInfo } from "@/app/_utils/global-utils";
 import { formatTimeAgo } from "@/app/_utils/date-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Loader2, Trash2 } from "lucide-react";
-import { MapPin, Clock } from "lucide-react";
+import { Orbit01Icon, Delete03Icon } from "hugeicons-react";
+import { Location05Icon, Clock01Icon } from "hugeicons-react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface SessionCardProps {
@@ -29,7 +29,7 @@ export const SessionCard = ({
     >
       <div className="flex items-start gap-4 flex-1 min-w-0">
         <div className="p-2 bg-muted rounded-lg flex-shrink-0">
-          <Monitor className="h-5 w-5" />
+          <Tv02Icon className="h-5 w-5" />
         </div>
         <div className="space-y-1 min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -44,11 +44,11 @@ export const SessionCard = ({
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
+              <Location05Icon className="h-3 w-3" />
               <span>{isDemoMode ? "Hidden in demo" : session.ipAddress}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
+              <Clock01Icon className="h-3 w-3" />
               {formatTimeAgo(session.lastActivity)}
             </div>
           </div>
@@ -73,9 +73,9 @@ export const SessionCard = ({
           disabled={isTerminating}
         >
           {isTerminating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Orbit01Icon className="h-4 w-4 animate-spin" />
           ) : (
-            <Trash2 className="h-4 w-4" />
+            <Delete03Icon className="h-4 w-4" />
           )}
         </Button>
       )}

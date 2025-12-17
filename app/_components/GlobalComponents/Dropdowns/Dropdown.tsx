@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { ArrowDown01Icon, MoreHorizontalIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 
 interface DropdownOption {
@@ -62,7 +62,7 @@ export const Dropdown = ({
           className="jotty-dropdown-icon flex items-center gap-2 cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <MoreHorizontal
+          <MoreHorizontalIcon
             className={cn(
               `h-4 w-4 transition-transform text-muted-foreground`,
               isOpen ? "rotate-180" : "",
@@ -96,7 +96,7 @@ export const Dropdown = ({
               {selectedOption?.name || placeholder}
             </span>
           </div>
-          <ChevronDown
+          <ArrowDown01Icon
             className={cn(
               `h-4 w-4 transition-transform`,
               isOpen ? "rotate-180" : "",

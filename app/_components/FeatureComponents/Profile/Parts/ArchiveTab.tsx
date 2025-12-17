@@ -8,13 +8,13 @@ import { EditChecklistModal } from "@/app/_components/GlobalComponents/Modals/Ch
 import { ArchivedItem } from "@/app/_server/actions/archived";
 import { ArchivedItemCard } from "@/app/_components/GlobalComponents/Cards/ArchivedItemCard";
 import {
-  Search,
-  X,
-  ChevronDown,
-  ChevronUp,
-  ListTodo,
-  FileText,
-} from "lucide-react";
+  Search01Icon,
+  MultiplicationSignIcon,
+  ArrowDown01Icon,
+  ArrowUp01Icon,
+  CheckmarkSquare04Icon,
+  File02Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ItemTypes } from "@/app/_types/enums";
 
@@ -94,7 +94,7 @@ export const ArchiveTab = ({
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search01Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           type="text"
           value={searchQuery}
@@ -109,7 +109,7 @@ export const ArchiveTab = ({
             onClick={() => setSearchQuery("")}
             className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2 p-0 text-muted-foreground hover:text-foreground"
           >
-            <X className="h-3 w-3" />
+            <MultiplicationSignIcon className="h-3 w-3" />
           </Button>
         )}
       </div>
@@ -123,7 +123,7 @@ export const ArchiveTab = ({
                 className="flex items-center justify-between w-full text-left group"
               >
                 <div className="flex items-center gap-2">
-                  <ListTodo className="h-5 w-5 text-primary" />
+                  <CheckmarkSquare04Icon className="h-5 w-5 text-primary" />
                   <h3 className="text-lg font-medium text-foreground">
                     Checklists
                   </h3>
@@ -132,9 +132,9 @@ export const ArchiveTab = ({
                   </span>
                 </div>
                 {showChecklists ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ArrowUp01Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ArrowDown01Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 )}
               </button>
 
@@ -159,16 +159,16 @@ export const ArchiveTab = ({
                 className="flex items-center justify-between w-full text-left group"
               >
                 <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
+                  <File02Icon className="h-5 w-5 text-primary" />
                   <h3 className="text-lg font-medium text-foreground">Notes</h3>
                   <span className="text-sm text-muted-foreground">
                     ({archivedNotes.length})
                   </span>
                 </div>
                 {showNotes ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ArrowUp01Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <ArrowDown01Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                 )}
               </button>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { FileText as DocIcon } from "lucide-react";
+import { File02Icon as DocIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { createNote } from "@/app/_server/actions/note";
 import { Category, Note } from "@/app/_types";
