@@ -8,18 +8,11 @@ import {
 import { logout } from "@/app/_server/actions/auth";
 import { isAdmin as checkIsAdmin } from "@/app/_server/actions/users";
 import { AdminRequiredView } from "@/app/_components/FeatureComponents/Migration/Parts/MIgrationAdminRequired";
-import { clearAllSessions } from "@/app/_server/actions/session";
 import { SharingMigrationView } from "./Parts/SharingMigrationView";
 import { YamlMetadataMigrationView } from "./Parts/YamlMetadataMigrationView";
+import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 
-const LoadingView = () => (
-  <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-      <p className="text-muted-foreground">Loading migration...</p>
-    </div>
-  </div>
-);
+const LoadingView = () => <Loading />;
 
 export const MigrationPage = () => {
   const [isMigrating, setIsMigrating] = useState(false);

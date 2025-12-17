@@ -8,6 +8,7 @@ import {
   File02Icon,
   CheckmarkSquare04Icon,
   FolderAddIcon,
+  Folder02Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -153,14 +154,22 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
               >
                 {hasContent ? (
                   isCollapsed ? (
-                    <ArrowRight01Icon className="h-4 w-4" />
+                    <>
+                      <ArrowRight01Icon className="h-4 w-4" />
+                      <Folder01Icon className="h-4 w-4" />
+                    </>
                   ) : (
-                    <ArrowDown01Icon className="h-4 w-4" />
+                    <>
+                      <ArrowDown01Icon className="h-4 w-4" />
+                      <Folder02Icon className="h-4 w-4" />
+                    </>
                   )
                 ) : (
-                  <div className="w-4" />
+                  <>
+                    <ArrowRight01Icon className="h-4 w-4 opacity-20" />
+                    <Folder01Icon className="h-4 w-4" />
+                  </>
                 )}
-                <Folder01Icon className="h-4 w-4" />
                 <span className="truncate">{category.name}</span>
                 <span className="text-xs text-muted-foreground ml-auto">
                   {getTotalItemsInCategory(category.path)}

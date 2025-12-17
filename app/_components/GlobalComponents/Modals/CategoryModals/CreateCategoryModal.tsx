@@ -8,6 +8,7 @@ import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppMode, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface CreateCategoryModalProps {
   onClose: () => void;
@@ -79,20 +80,17 @@ export const CreateCategoryModal = ({
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Category Name *
-          </label>
-          <input
-            type="text"
-            value={categoryName}
-            onChange={(e) => setCategoryName(e.target.value)}
-            placeholder="Enter category name..."
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none"
-            required
-            disabled={isLoading}
-          />
-        </div>
+        <Input
+          id="categoryName"
+          name="categoryName"
+          label="Category Name *"
+          type="text"
+          value={categoryName}
+          onChange={(e) => setCategoryName(e.target.value)}
+          placeholder="Enter category name..."
+          required
+          disabled={isLoading}
+        />
 
         {notAllowedNames.includes(categoryName.trim().toLowerCase()) && (
           <div className="text-xs text-destructive">

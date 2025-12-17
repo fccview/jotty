@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
-import { LoadingSpinner } from "@/app/_components/GlobalComponents/Layout/LoadingSpinner";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppSettings } from "@/app/_types";
 import {
@@ -139,7 +138,7 @@ export const EditorSettingsTab = () => {
     }
   };
 
-  if (!settings) return <LoadingSpinner />;
+  if (!settings) return;
 
   return (
     <div className="space-y-6">

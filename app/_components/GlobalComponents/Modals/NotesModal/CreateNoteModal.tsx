@@ -9,6 +9,7 @@ import { CategoryInput } from "@/app/_components/GlobalComponents/FormElements/C
 import { Modes } from "@/app/_types/enums";
 import { createCategory } from "@/app/_server/actions/category";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface CreateNoteModalProps {
   onClose: () => void;
@@ -76,25 +77,18 @@ export const CreateNoteModal = ({
   return (
     <Modal isOpen={true} onClose={onClose} title="Create New Note">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
-            Title *
-          </label>
-          <input
-            ref={titleInputRef}
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
-            placeholder="Enter note title..."
-            required
-            disabled={isCreating}
-          />
-        </div>
+        <Input
+          ref={titleInputRef}
+          id="title"
+          name="title"
+          label="Title *"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Enter note title..."
+          required
+          disabled={isCreating}
+        />
 
         <CategoryInput
           categories={categories}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Add01Icon, Delete03Icon, DragDropVerticalIcon } from "hugeicons-react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { KanbanStatus } from "@/app/_types";
 import {
   DndContext,
@@ -75,13 +76,17 @@ const SortableStatusItem = ({
         <DragDropVerticalIcon className="h-5 w-5 text-muted-foreground" />
       </div>
 
-      <input
-        type="text"
-        value={status.label}
-        onChange={(e) => onUpdateLabel(status.id, e.target.value)}
-        className="flex-1 px-3 py-2 border border-input bg-background rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring"
-        placeholder="Status name"
-      />
+      <div className="flex-1">
+        <Input
+          id={`status-${status.id}`}
+          name={`status-${status.id}`}
+          type="text"
+          value={status.label}
+          onChange={(e) => onUpdateLabel(status.id, e.target.value)}
+          placeholder="Status name"
+          className="!space-y-0 [&>label]:hidden"
+        />
+      </div>
 
       <input
         type="color"

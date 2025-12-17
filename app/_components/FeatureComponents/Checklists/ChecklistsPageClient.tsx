@@ -21,6 +21,7 @@ import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
+import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -169,13 +170,7 @@ export const ChecklistsPageClient = ({
   }, [initialLists]);
 
   if (!isInitialized) {
-    return (
-      <div className="flex h-screen bg-background w-full">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (initialLists.length === 0) {

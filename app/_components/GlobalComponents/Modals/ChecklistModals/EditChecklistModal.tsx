@@ -10,6 +10,7 @@ import { Category, Checklist } from "@/app/_types";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface EditChecklistModalProps {
   checklist: Checklist;
@@ -109,15 +110,14 @@ export const EditChecklistModal = ({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Checklist Name *
-          </label>
-          <input
+          <Input
+            id="checklistName"
+            name="checklistName"
+            label="Checklist Name *"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter checklist name..."
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
             required
             disabled={isLoading || unarchive}
           />

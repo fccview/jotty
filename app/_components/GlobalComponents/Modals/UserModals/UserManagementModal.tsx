@@ -13,6 +13,7 @@ import {
 import { useUserManagementModal } from "@/app/_hooks/useUserManagementModal";
 import { User as UserType } from "@/app/_types";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -41,17 +42,16 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             <span className="text-sm text-destructive">{state.error}</span>
           </div>
         )}
-        <div>
-          <label className="block text-sm font-medium mb-2">Username</label>
-          <input
-            type="text"
-            value={state.username}
-            onChange={(e) => setters.setUsername(e.target.value)}
-            className="w-full px-3 py-2 bg-background border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
-            placeholder="Enter username"
-            disabled={state.isLoading}
-          />
-        </div>
+        <Input
+          id="username"
+          name="username"
+          label="Username"
+          type="text"
+          value={state.username}
+          onChange={(e) => setters.setUsername(e.target.value)}
+          placeholder="Enter username"
+          disabled={state.isLoading}
+        />
         {mode === "add" && (
           <PasswordFields
             password={state.password}

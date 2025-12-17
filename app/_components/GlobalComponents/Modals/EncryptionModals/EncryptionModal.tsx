@@ -185,7 +185,7 @@ export const EncryptionModal = ({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <InfoBox
-          variant={isEncrypt ? "info" : "warning"}
+          variant="info"
           title={
             isEncrypt
               ? "Encrypting Note"
@@ -196,20 +196,20 @@ export const EncryptionModal = ({
           items={
             isEncrypt
               ? [
-                  "Your note content will be encrypted with PGP",
-                  "Only someone with the private key can decrypt it",
-                  "The note title will remain unencrypted",
+                  "Note content will be encrypted with PGP",
+                  "Only someone with the private key/passphrase can decrypt it",
+                  "Note title/frontmatter will remain unencrypted",
                 ]
               : isView
               ? [
-                  "Content will be decrypted for viewing only",
-                  "The file will remain encrypted on the server",
+                  "Note content will be decrypted for viewing only",
+                  "Note will remain encrypted on the server",
                   "You cannot edit encrypted notes",
                 ]
               : [
-                  "This will decrypt the note file",
-                  "The note will be saved as unencrypted",
-                  "You will be able to edit the note after decryption",
+                  "This will decrypt the note content",
+                  "Note content will be restored as unencrypted",
+                  "You will be able to edit the note content after decryption",
                 ]
           }
         />
@@ -220,8 +220,9 @@ export const EncryptionModal = ({
             title="No stored keys found"
             items={[
               "You don't have any encryption keys configured",
-              "Please paste a public key below to encrypt this note",
-              "You can generate or import keys in Profile → Encryption",
+              "Please paste a public key below to encrypt the note content",
+              "You can generate or import specific keys for Jotty in Profile → Encryption",
+              "Your passphrase will NEVER be stored on the server",
             ]}
           />
         )}
@@ -236,13 +237,6 @@ export const EncryptionModal = ({
               <div className="font-medium">
                 Use custom {isEncrypt ? "public" : "private"} key
               </div>
-              <p className="text-sm text-muted-foreground">
-                {useCustomKey
-                  ? `Paste your custom ${
-                      isEncrypt ? "public" : "private"
-                    } key below`
-                  : `Use your stored ${isEncrypt ? "public" : "private"} key`}
-              </p>
             </label>
             <Toggle
               checked={useCustomKey}

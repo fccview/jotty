@@ -105,7 +105,7 @@ export const SidebarItem = ({
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: isItemPinned() ? "Unpin from Home" : "PinIcon to Home",
+      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
       onClick: handleTogglePin,
       icon: isItemPinned() ? (
         <PinOffIcon className="h-4 w-4" />

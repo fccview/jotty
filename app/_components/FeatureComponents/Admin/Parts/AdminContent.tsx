@@ -116,12 +116,6 @@ export const AdminContent = ({
       </Accordion>
 
       <div className="md:flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">All Content</h2>
-          <p className="text-muted-foreground">
-            Content organized by user with sharing status
-          </p>
-        </div>
         <div className="flex items-center gap-4 mt-4 md:mt-0">
           <span className="text-sm text-muted-foreground">
             {allLists.length + allDocs.length} total items across {users.length}{" "}

@@ -7,7 +7,6 @@ import {
   Folder01Icon,
   Folder02Icon,
   ArrowRight01Icon,
-  ArrowDown01Icon as ArrowDown01IconIcon,
 } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { Category } from "@/app/_types";
@@ -75,12 +74,12 @@ const CategoryTreeNode = ({
         >
           {hasSubCategories ? (
             isExpanded ? (
-              <ArrowDown01IconIcon className="h-4 w-4" />
+              <ArrowDown01Icon className="h-4 w-4" />
             ) : (
               <ArrowRight01Icon className="h-4 w-4" />
             )
           ) : (
-            <div className="w-5" />
+            <ArrowRight01Icon className="h-4 w-4 opacity-20" />
           )}
         </button>
 

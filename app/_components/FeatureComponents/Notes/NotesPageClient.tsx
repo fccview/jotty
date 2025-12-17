@@ -15,6 +15,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 import Masonry from "react-masonry-css";
+import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 
 interface NotesPageClientProps {
   initialNotes: Note[];
@@ -129,13 +130,7 @@ export const NotesPageClient = ({
   };
 
   if (!isInitialized) {
-    return (
-      <div className="flex h-screen bg-background w-full">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (initialNotes.length === 0) {
@@ -211,8 +206,9 @@ export const NotesPageClient = ({
                     <NoteCard
                       note={note}
                       onSelect={(note) => {
-                        const categoryPath = `${note.category || "Uncategorized"
-                          }/${note.id}`;
+                        const categoryPath = `${
+                          note.category || "Uncategorized"
+                        }/${note.id}`;
                         router.push(`/note/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedNotes?.includes(

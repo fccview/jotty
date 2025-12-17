@@ -11,6 +11,7 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { User as UserType, Checklist, Note } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface AdminUsersProps {
   users: UserType[];
@@ -43,15 +44,7 @@ export const AdminUsers = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            User Management
-          </h2>
-          <p className="text-muted-foreground">
-            Manage user accounts and permissions.
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button onClick={onAddUser} className="flex items-center gap-2">
           <Add01Icon className="h-4 w-4" />
           Add User
@@ -59,13 +52,15 @@ export const AdminUsers = ({
       </div>
 
       <div className="relative">
-        <Search01Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
+        <Search01Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+        <Input
+          id="searchUsers"
+          name="searchUsers"
           type="text"
           placeholder="Search users..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2"
+          className="pl-10"
         />
       </div>
 

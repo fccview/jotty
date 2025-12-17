@@ -7,6 +7,7 @@ import { Category, User } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMobileGestures } from "@/app/_hooks/useMobileGestures";
 import { isMobileDevice } from "@/app/_utils/global-utils";
+import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 
 interface LayoutProps {
   categories: Category[];
@@ -42,13 +43,7 @@ export const Layout = ({
   });
 
   if (!isInitialized) {
-    return (
-      <div className="jotty-layout flex h-screen bg-background w-full">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

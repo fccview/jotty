@@ -20,6 +20,7 @@ import { usePagination } from "@/app/_hooks/usePagination";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
+import { Logo } from "../../GlobalComponents/Layout/Logo/Logo";
 
 interface TasksPageClientProps {
   initialLists: Checklist[];
@@ -175,7 +176,7 @@ export const TasksPageClient = ({
     return (
       <div className="flex h-screen bg-background w-full">
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <Logo />
         </div>
       </div>
     );

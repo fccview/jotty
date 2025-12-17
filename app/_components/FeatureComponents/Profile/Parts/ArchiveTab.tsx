@@ -16,6 +16,7 @@ import {
   File02Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { ItemTypes } from "@/app/_types/enums";
 
 interface ArchiveTabProps {
@@ -94,13 +95,15 @@ export const ArchiveTab = ({
       </div>
 
       <div className="relative">
-        <Search01Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Search01Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+        <Input
+          id="searchArchive"
+          name="searchArchive"
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search archived items..."
-          className="w-full rounded-jotty border border-input bg-background py-2 pl-10 pr-10 text-sm focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
+          className="pl-10 pr-10 !space-y-0 [&>label]:hidden"
         />
         {searchQuery && (
           <Button

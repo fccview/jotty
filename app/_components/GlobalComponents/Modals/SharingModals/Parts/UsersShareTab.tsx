@@ -12,6 +12,7 @@ import {
 import { UserAvatar } from "../../../User/UserAvatar";
 import { Button } from "../../../Buttons/Button";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { cn } from "@/app/_utils/global-utils";
 
 export const UsersShareTab = ({
@@ -29,13 +30,15 @@ export const UsersShareTab = ({
   return (
     <div className="space-y-4">
       <div className="relative">
-        <Search01Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
+        <Search01Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+        <Input
+          id="searchUsers"
+          name="searchUsers"
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search users..."
-          className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring"
+          className="pl-10"
         />
       </div>
       <div className="max-h-48 overflow-y-auto">

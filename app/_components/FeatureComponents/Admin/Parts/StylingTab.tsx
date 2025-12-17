@@ -51,15 +51,6 @@ export const StylingTab = () => {
     <div className="space-y-6">
       <div className="bg-card">
         <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              Styling
-            </h2>
-            <p className="text-muted-foreground">
-              Configure the styling of the application.
-            </p>
-          </div>
-
           <FormWrapper
             title="Custom CSS"
             action={

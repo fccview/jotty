@@ -27,6 +27,7 @@ import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
 import { useEffect, useState } from "react";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
@@ -239,12 +240,14 @@ export const NoteEditorHeader = ({
             </Button>
             <div className="flex-1 min-w-0">
               {isEditing ? (
-                <input
+                <Input
+                  id="noteTitle"
+                  name="noteTitle"
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="text-xl font-bold bg-transparent border-none p-0 w-full focus:ring-0"
                   placeholder="Note title..."
+                  className="!space-y-0 [&>label]:hidden [&>input]:text-xl [&>input]:font-bold [&>input]:bg-transparent [&>input]:border-none [&>input]:p-0 [&>input]:focus:ring-0"
                 />
               ) : (
                 <div>

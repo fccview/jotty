@@ -115,20 +115,6 @@ export const AdminSharing = () => {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Global Sharing Overview
-          </h1>
-          <div className="text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-jotty">
-            {totalSharingRelationships || 0} sharing relationships
-          </div>
-        </div>
-        <p className="text-muted-foreground">
-          View and manage sharing activity across the platform
-        </p>
-      </div>
-
       <section className="space-y-6">
         <div className="rounded-md border bg-card p-6 shadow-sm">
           <div className="space-y-2 mb-6">

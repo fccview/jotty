@@ -62,7 +62,7 @@ export const CategoryTreeNode = ({
               <ArrowRight01Icon className="h-4 w-4" />
             )
           ) : (
-            <div className="w-5" />
+            <ArrowRight01Icon className="h-4 w-4 opacity-20" />
           )}
         </button>
         {isExpanded ? (

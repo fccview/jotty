@@ -11,6 +11,7 @@ import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 
 interface EditNoteModalProps {
   note: Note;
@@ -110,15 +111,14 @@ export const EditNoteModal = ({
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
-          <label className="block text-sm font-medium text-foreground mb-2">
-            Note Name *
-          </label>
-          <input
+          <Input
+            id="noteName"
+            name="noteName"
+            label="Note Name *"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter note name..."
-            className="w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
             required
             disabled={isLoading}
           />

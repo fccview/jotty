@@ -22,7 +22,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           {
             "jotty-button-default bg-primary text-primary-foreground hover:bg-primary/90":
               variant === "default",
-            "jotty-button-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90":
+            "jotty-button-destructive bg-secondary text-destructive-foreground hover:bg-destructive/90":
               variant === "destructive",
             "jotty-button-outline border border-input bg-background hover:bg-accent hover:text-accent-foreground":
               variant === "outline",

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "@/app/_styles/globals.css";
 import { ThemeProvider } from "@/app/_providers/ThemeProvider";
 import { AppModeProvider } from "@/app/_providers/AppModeProvider";
@@ -34,8 +33,6 @@ import {
 import { generateWebManifest } from "./_utils/global-utils";
 import path from "path";
 import { writeJsonFile } from "./_server/actions/file";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -229,7 +226,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} jotty-body`}>
+      <body className={`jotty-body`}>
         <AppModeProvider
           isDemoMode={settings?.isDemo || false}
           isRwMarkable={settings?.isRwMarkable || false}
