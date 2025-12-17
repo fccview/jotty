@@ -18,6 +18,9 @@ interface InputProps {
   className?: string;
   defaultValue?: string;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  autoFocus?: boolean;
+  min?: string;
+  max?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -39,6 +42,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       onFocus,
       onBlur,
       onKeyDown,
+      autoFocus,
+      min,
+      max,
       ...props
     },
     ref
@@ -60,6 +66,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         onFocus={onFocus}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
+        autoFocus={autoFocus}
+        min={min}
+        max={max}
         {...props}
         className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none ${className}`}
       />
