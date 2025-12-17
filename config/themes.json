@@ -2,6 +2,7 @@
   "custom-themes": {
     "sunset-orange": {
       "name": "Sunset Orange",
+      "icon": "SunsetIcon",
       "colors": {
         "--background": "255 251 235",
         "--background-secondary": "254 243 199",
@@ -27,7 +28,7 @@
     },
     "midnight-purple": {
       "name": "Midnight Purple",
-      "icon": "Moon",
+      "icon": "MoonCloudIcon",
       "colors": {
         "--background": "81 81 103",
         "--foreground": "205 214 244",

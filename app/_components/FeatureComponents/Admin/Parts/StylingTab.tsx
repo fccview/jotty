@@ -178,12 +178,12 @@ export const StylingTab = () => {
                 <p className="text-xs text-muted-foreground">
                   <a
                     className="text-primary hover:text-primary/80 underline"
-                    href="https://lucide.dev/icons/"
+                    href="https://hugeicons.com/icons?style=Stroke&type=Rounded"
                     target="_blank"
                   >
-                    Lucide icon
+                    Hugeicons
                   </a>{" "}
-                  name (e.g., PaintBrush04Icon, Sun03Icon, GibbousMoonIcon)
+                  icon name (e.g., PaintBrush04Icon, Sun03Icon, GibbousMoonIcon)
                 </p>
               </div>
             </div>

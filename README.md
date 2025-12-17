@@ -107,8 +107,9 @@ My recommended way to run `jotty·page` is with Docker, or you can use the handy
 2.  Create the data directory and set permissions:
 
     ```bash
-    mkdir -p data/users data/checklists data/notes data/sharing data/encryption cache
+    mkdir -p config data/users data/checklists data/notes data/sharing data/encryption cache
     sudo chown -R 1000:1000 data/
+    sudo chown -R 1000:1000 config/
     sudo chown -R 1000:1000 cache/
     ```
 
