@@ -1,7 +1,7 @@
 "use client";
 
 import { Copy01Icon, Tick02Icon, SourceCodeIcon } from "hugeicons-react";
-import { useState, ReactElement } from "react";
+import { useState, ReactElement, useMemo } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { getLanguageByValue } from "@/app/_utils/code-block-utils";
 import { cn, copyTextToClipboard } from "@/app/_utils/global-utils";
@@ -26,12 +26,20 @@ export const CodeBlockRenderer = ({
     children.props.className?.replace("language-", "") ||
     "plaintext";
 
-  const languageObj = getLanguageByValue(language.replace("hljs ", ""));
+  const languageObj = getLanguageByValue(language);
 
   const languageIcon = languageObj?.icon || (
     <SourceCodeIcon className="h-4 w-4" />
   );
-  const displayLanguage = languageObj?.label || language.replace("hljs ", "");
+  const displayLanguage = languageObj?.label || language;
+
+  const lineCount = useMemo(() => {
+    return code.split("\n").length;
+  }, [code]);
+
+  const lineNumbers = useMemo(() => {
+    return Array.from({ length: lineCount }, (_, i) => i + 1);
+  }, [lineCount]);
 
   return (
     <div
@@ -70,9 +78,20 @@ export const CodeBlockRenderer = ({
         </Button>
       </div>
 
-      <pre className="hljs !bg-transparent !p-4 !m-0 overflow-x-auto text-sm">
-        {children}
-      </pre>
+      <div className="flex min-h-full">
+        <div className="py-4 pl-2 pr-3 text-right select-none bg-[#292a2b] text-sm font-mono">
+          {lineNumbers.map((num) => (
+            <div key={num} className="leading-[21px] text-[#5c6370] opacity-50">
+              {num}
+            </div>
+          ))}
+        </div>
+        <pre
+          className={`!bg-transparent !p-4 !m-0 overflow-x-auto text-sm flex-1 language-${language}`}
+        >
+          {children}
+        </pre>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import Editor from "react-simple-code-editor";
-import { lowlight } from "@/app/_utils/lowlight-utils";
+import { prism } from "@/app/_utils/prism-utils";
 
 interface CssEditorProps {
   value: string;
@@ -12,27 +12,7 @@ export const CssEditor = ({ value, onChange }: CssEditorProps) => {
     if (!code) return code;
 
     try {
-      const tree = lowlight.highlight("css", code);
-
-      const highlightWithSpans = (node: any): string => {
-        if (node.type === "text") {
-          return node.value;
-        }
-
-        if (node.type === "element" && node.tagName === "span") {
-          const className = node.properties?.className?.join(" ") || "";
-          const content = node.children.map(highlightWithSpans).join("");
-          return `<span class="${className}" style="font-family: 'JetBrainsMono', 'Fira Code', 'Monaco', 'Consolas', monospace; font-size: 14px; font-weight: normal; font-style: normal; line-height: 1.5; letter-spacing: normal;">${content}</span>`;
-        }
-
-        if (node.children) {
-          return node.children.map(highlightWithSpans).join("");
-        }
-
-        return "";
-      };
-
-      return tree.children.map(highlightWithSpans).join("");
+      return prism.highlight("css", code);
     } catch (e) {
       console.error(e);
       return code;

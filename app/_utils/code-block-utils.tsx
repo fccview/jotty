@@ -13,7 +13,6 @@ import {
   AppleIcon,
   WazeIcon,
   GemIcon,
-  ThirdBracketIcon,
   PhpIcon,
   SqlIcon,
   Html5Icon,
@@ -98,7 +97,7 @@ export const popularCodeBlockLanguages: CodeBlockLanguage[] = [
   {
     value: "go",
     label: "Go",
-    icon: <JavaScriptIcon className={iconSize} />,
+    icon: <ThirdBracketSquareIcon className={iconSize} />,
     category: "Systems",
   },
   {
@@ -134,7 +133,7 @@ export const popularCodeBlockLanguages: CodeBlockLanguage[] = [
   {
     value: "json",
     label: "JSON",
-    icon: <ThirdBracketIcon className={iconSize} />,
+    icon: <ThirdBracketSquareIcon className={iconSize} />,
     category: "Data",
   },
   {

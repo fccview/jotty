@@ -12,12 +12,11 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
-import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
-import { LowlightPlugin } from "./lowlightPlugin";
+import { CodeBlock } from "@tiptap/extension-code-block";
+import { PrismPlugin } from "./prismPlugin";
 import { Color } from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Highlight } from "@tiptap/extension-highlight";
-import { lowlight } from "@/app/_utils/lowlight-utils";
 import { FileAttachmentExtension } from "@/app/_components/FeatureComponents/Notes/Parts/FileAttachment/FileAttachmentExtension";
 import { CodeBlockNodeView } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockNodeView";
 import { DetailsExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DetailsExtension";
@@ -114,22 +113,20 @@ export const createEditorExtensions = (
     InternalLink,
     TextUnderlineIcon,
     HardBreak,
-    CodeBlockLowlight.configure({
-      lowlight,
-      defaultLanguage: "plaintext",
-    }).extend({
+    CodeBlock.extend({
       addNodeView() {
         return ReactNodeViewRenderer(CodeBlockNodeView);
       },
       addProseMirrorPlugins() {
         return [
-          LowlightPlugin({
+          PrismPlugin({
             name: this.name,
-            lowlight,
-            defaultLanguage: this.options.defaultLanguage,
+            defaultLanguage: "plaintext",
           }),
         ];
       },
+    }).configure({
+      defaultLanguage: "plaintext",
     }),
     Link.configure({
       openOnClick: false,

@@ -37,26 +37,33 @@ export const handleTabInCodeBlock = (
     if (!event.shiftKey) {
       editor.chain().focus().insertContent("    ").run();
     }
-  } else {
-    const selectedText = state.doc.textBetween(from, to, "\n");
-    const lines = selectedText.split("\n");
-
-    if (event.shiftKey) {
-      const newText = lines
-        .map((line: string) =>
-          line.startsWith("    ")
-            ? line.substring(4)
-            : line.startsWith("\t")
-            ? line.substring(1)
-            : line
-        )
-        .join("\n");
-      editor.chain().focus().insertContentAt({ from, to }, newText).run();
-    } else {
-      const newText = lines.map((line: string) => "    " + line).join("\n");
-      editor.chain().focus().insertContentAt({ from, to }, newText).run();
-    }
+    return true;
   }
+
+  const selectedText = state.doc.textBetween(from, to, "\n");
+  const lines = selectedText.split("\n");
+  let newText: string;
+
+  if (event.shiftKey) {
+    newText = lines
+      .map((line: string) =>
+        line.startsWith("    ")
+          ? line.substring(4)
+          : line.startsWith("\t")
+          ? line.substring(1)
+          : line
+      )
+      .join("\n");
+  } else {
+    newText = lines.map((line: string) => "    " + line).join("\n");
+  }
+
+  const tr = state.tr.replaceWith(from, to, state.schema.text(newText));
+  const newTo = from + newText.length;
+  const newSelection = state.selection.constructor.create(tr.doc, from, newTo);
+  tr.setSelection(newSelection);
+  editor.view.dispatch(tr);
+
   return true;
 };
 

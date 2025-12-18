@@ -1,6 +1,5 @@
-
-@import 'highlight.js/styles/github-dark-dimmed.css';
-@import './languages-colors.css';
+@import './codeblock/languages-colors.css';
+@import './codeblock/prism-dark-theme.css';
 
 @tailwind base;
 @tailwind components;
@@ -727,7 +726,6 @@ p > code {
 }
 
 .code-block-container pre {
-  color: #aaaebc!important;
   background: #292a2b!important;
 }
 
@@ -743,11 +741,6 @@ p > code {
     border-top: 3px solid #6a6f74;
     background-color: #292a2b;
 }
-
-.code-block-container code .xml {
-    color: #aaaebc!important;
-}
-
 .code-block-container .language-header svg {
     stroke-width: 1;
 }
