@@ -115,7 +115,6 @@ export const CreateListModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1"
           >
             Cancel
           </Button>

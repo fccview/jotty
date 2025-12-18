@@ -198,7 +198,7 @@ export const popularCodeBlockLanguages: CodeBlockLanguage[] = [
   },
   {
     value: "plaintext",
-    label: "Plain Text",
+    label: "",
     icon: <File02Icon className={iconSize} />,
     category: "Other",
   },

@@ -31,7 +31,8 @@ export const CodeBlockRenderer = ({
   const languageIcon = languageObj?.icon || (
     <SourceCodeIcon className="h-4 w-4" />
   );
-  const displayLanguage = languageObj?.label || language;
+  const displayLanguage =
+    languageObj?.label || (language === "plaintext" ? "" : language);
 
   const lineCount = useMemo(() => {
     return code.split("\n").length;
@@ -51,7 +52,11 @@ export const CodeBlockRenderer = ({
       <div className="flex items-center justify-between">
         <div className="language-header text-[10px] text-[#abb2bf] bg-[#262626] px-4 py-1">
           <span className="bg-[#abb2bf]" />
-          <div className="flex items-center gap-1.5">
+          <div
+            className={`flex items-center ${
+              displayLanguage ? "gap-1.5" : "gap-0"
+            }`}
+          >
             <span
               className={`${languageObj?.value} language-icon text-xs rounded inline-block`}
             >

@@ -104,7 +104,6 @@ export const CreateCategoryModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 border-border text-foreground hover:bg-muted/50"
           >
             Cancel
           </Button>

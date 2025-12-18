@@ -423,6 +423,52 @@
         --input: 7 54 66;
         --ring: 38 139 210;
     }
+
+    .sakura-blue {
+        --background: 249 249 249;
+        --background-secondary: 241 241 241;
+        --foreground: 74 74 74;
+        --card: 249 249 249;
+        --card-foreground: 74 74 74;
+        --popover: 249 249 249;
+        --popover-foreground: 74 74 74;
+        --primary: 29 116 132;
+        --primary-foreground: 249 249 249;
+        --secondary: 241 241 241;
+        --secondary-foreground: 74 74 74;
+        --muted: 241 241 241;
+        --muted-foreground: 20 79 90;
+        --accent: 152 44 97;
+        --accent-foreground: 249 249 249;
+        --destructive: 239 68 68;
+        --destructive-foreground: 249 249 249;
+        --border: 204 204 204;
+        --input: 241 241 241;
+        --ring: 29 116 132;
+    }
+
+    .sakura-red {
+        --background: 249 249 249;
+        --background-secondary: 241 241 241;
+        --foreground: 74 74 74;
+        --card: 249 249 249;
+        --card-foreground: 74 74 74;
+        --popover: 249 249 249;
+        --popover-foreground: 74 74 74;
+        --primary: 152 44 97;
+        --primary-foreground: 249 249 249;
+        --secondary: 241 241 241;
+        --secondary-foreground: 74 74 74;
+        --muted: 241 241 241;
+        --muted-foreground: 20 79 90;
+        --accent: 29 116 132;
+        --accent-foreground: 249 249 249;
+        --destructive: 239 68 68;
+        --destructive-foreground: 249 249 249;
+        --border: 204 204 204;
+        --input: 241 241 241;
+        --ring: 152 44 97;
+    }
 }
 
 svg {
@@ -592,11 +638,6 @@ mark {
     font-style: italic;
 }
 
-.prose :where(:not(pre)) > code {
-    @apply bg-muted px-1 py-0.5 rounded text-sm;
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-}
-
 .prose blockquote {
     @apply border-l-4 border-primary pl-4 italic text-muted-foreground;
     margin: 1rem 0;
@@ -707,9 +748,9 @@ mark {
 
 p > code {
     background: #292a2b!important;
-    color: orange;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    color: #ce9178;
+    padding: 0.15rem 0.3rem;
+    border-radius: 0.15rem!important;
     font-family: "Google Sans Code Variable", monospace;
 }
 

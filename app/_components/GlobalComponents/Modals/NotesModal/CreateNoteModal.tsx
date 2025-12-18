@@ -107,7 +107,6 @@ export const CreateNoteModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isCreating}
-            className="flex-1"
           >
             Cancel
           </Button>

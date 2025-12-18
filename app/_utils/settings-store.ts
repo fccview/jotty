@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { useAppMode } from "../_providers/AppModeProvider";
 
 type BuiltInTheme =
   | "system"
@@ -17,7 +16,9 @@ type BuiltInTheme =
   | "catppuccin"
   | "rose-pine"
   | "gruvbox"
-  | "solarized-dark";
+  | "solarized-dark"
+  | "sakura-red"
+  | "sakura-blue";
 type Theme = BuiltInTheme | string;
 
 const getSystemTheme = (
