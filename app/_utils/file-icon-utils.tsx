@@ -13,23 +13,23 @@ export const getFileIcon = (mimeType: string, fileName: string) => {
   const ext = fileName.split(".").pop()?.toLowerCase();
 
   if (mimeType.startsWith("image/")) {
-    return <Image02Icon className="h-6 w-6 text-blue-500" />;
+    return <Image02Icon className="h-6 w-6" />;
   }
 
   if (mimeType === "application/pdf") {
-    return <File02Icon className="h-6 w-6 text-red-500" />;
+    return <File02Icon className="h-6 w-6" />;
   }
 
   if (mimeType.includes("word") || ext === "doc" || ext === "docx") {
-    return <File02Icon className="h-6 w-6 text-blue-600" />;
+    return <File02Icon className="h-6 w-6" />;
   }
 
   if (mimeType.includes("excel") || ext === "xls" || ext === "xlsx") {
-    return <File02Icon className="h-6 w-6 text-green-600" />;
+    return <File02Icon className="h-6 w-6" />;
   }
 
   if (mimeType.includes("powerpoint") || ext === "ppt" || ext === "pptx") {
-    return <Presentation01Icon className="h-6 w-6 text-orange-500" />;
+    return <Presentation01Icon className="h-6 w-6" />;
   }
 
   if (
@@ -42,15 +42,15 @@ export const getFileIcon = (mimeType: string, fileName: string) => {
     ext === "tar" ||
     ext === "gz"
   ) {
-    return <FolderZipIcon className="h-6 w-6 text-purple-500" />;
+    return <FolderZipIcon className="h-6 w-6" />;
   }
 
   if (mimeType.startsWith("video/")) {
-    return <Video02Icon className="h-6 w-6 text-pink-500" />;
+    return <Video02Icon className="h-6 w-6" />;
   }
 
   if (mimeType.startsWith("audio/")) {
-    return <MusicNoteSquare01Icon className="h-6 w-6 text-indigo-500" />;
+    return <MusicNoteSquare01Icon className="h-6 w-6" />;
   }
 
   if (
@@ -59,14 +59,14 @@ export const getFileIcon = (mimeType: string, fileName: string) => {
     ext === "csv" ||
     ext === "json"
   ) {
-    return <SourceCodeIcon className="h-6 w-6 text-gray-500" />;
+    return <SourceCodeIcon className="h-6 w-6" />;
   }
 
   if (mimeType.includes("database") || ext === "sql" || ext === "db") {
-    return <Database01Icon className="h-6 w-6 text-cyan-500" />;
+    return <Database01Icon className="h-6 w-6" />;
   }
 
-  return <File02Icon className="h-6 w-6 text-gray-500" />;
+  return <File02Icon className="h-6 w-6" />;
 };
 
 export const formatFileSize = (bytes: number) => {

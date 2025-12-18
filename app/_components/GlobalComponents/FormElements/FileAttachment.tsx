@@ -23,7 +23,7 @@ export const FileAttachment = ({
     <span className={`jotty-file-attachment inline-block ${className}`}>
       <span className="jotty-file-attachment-container bg-card border border-border rounded-jotty p-4 max-w-sm hover:shadow-lg transition-all duration-200 hover:border-primary/20 group block">
         <span className="jotty-file-attachment-content flex items-center gap-3">
-          <span className="jotty-file-attachment-icon flex-shrink-0 p-2 bg-muted rounded-jotty group-hover:bg-accent transition-colors block">
+          <span className="jotty-file-attachment-icon flex-shrink-0 p-2 bg-primary text-primary-foreground rounded-jotty group-hover:bg-accent group-hover:text-accent-foreground transition-colors block">
             {getFileIcon(mimeType, fileName)}
           </span>
           <span className="flex-1 min-w-0">
@@ -42,7 +42,7 @@ export const FileAttachment = ({
               variant="ghost"
               size="sm"
               onClick={() => window.open(url, "_blank")}
-              className="jotty-file-attachment-view-button h-8 w-8 p-0 hover:bg-primary/10"
+              className="jotty-file-attachment-view-button h-8 w-8 p-0"
               title="Open file"
             >
               <ViewIcon className="h-4 w-4" />
@@ -56,7 +56,7 @@ export const FileAttachment = ({
                 link.download = fileName;
                 link.click();
               }}
-              className="jotty-file-attachment-download-button h-8 w-8 p-0 hover:bg-primary/10"
+              className="jotty-file-attachment-download-button h-8 w-8 p-0"
               title="Download file"
             >
               <Download01Icon className="h-4 w-4" />
