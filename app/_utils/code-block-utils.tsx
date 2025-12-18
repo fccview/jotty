@@ -39,7 +39,7 @@ export interface CodeBlockLanguage {
 
 const iconSize = "h-5 w-5";
 
-export const popularCodeBlockLanguages: CodeBlockLanguage[] = [
+export const codeblockLangs: CodeBlockLanguage[] = [
   {
     value: "apache",
     label: "Apache",
@@ -120,7 +120,7 @@ export const popularCodeBlockLanguages: CodeBlockLanguage[] = [
   },
   {
     value: "javascript",
-    label: "JS",
+    label: "Javascript",
     icon: <JavaScriptIcon className={iconSize} />,
     category: "Web",
   },
@@ -297,23 +297,23 @@ export const popularCodeBlockLanguages: CodeBlockLanguage[] = [
     label: "YAML",
     icon: <File02Icon className={iconSize} />,
     category: "Data",
-  },
+  }
 ];
 
 export const getLanguageByValue = (
   value: string
 ): CodeBlockLanguage | undefined => {
-  return popularCodeBlockLanguages.find((lang) => lang.value === value);
+  return codeblockLangs.find((lang) => lang.value === value);
 };
 
 export const getLanguagesByCategory = (
   category: string
 ): CodeBlockLanguage[] => {
-  return popularCodeBlockLanguages.filter((lang) => lang.category === category);
+  return codeblockLangs.filter((lang) => lang.category === category);
 };
 
 export const getAllCategories = (): string[] => {
-  const categories = popularCodeBlockLanguages
+  const categories = codeblockLangs
     .map((lang) => lang.category)
     .filter((category): category is string => category !== undefined);
   return Array.from(new Set(categories));

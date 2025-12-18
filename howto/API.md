@@ -42,7 +42,7 @@ The API documentation runs as a separate Docker service and requires the main jo
 
    **Add the configuration** for the frontend in your docker compose file underneath your jotty settings
 
-   ```yml
+   ```yaml
     api-docs:
         image: redocly/redoc:latest
         container_name: jotty-api-docs

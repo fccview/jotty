@@ -3,7 +3,7 @@
 import { Editor } from "@tiptap/react";
 import { ArrowDown01Icon, SourceCodeIcon, Search01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { popularCodeBlockLanguages } from "@/app/_utils/code-block-utils";
+import { codeblockLangs } from "@/app/_utils/code-block-utils";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
@@ -19,11 +19,11 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
 
   const filteredLanguages = useMemo(() => {
     if (!searchTerm.trim()) {
-      return popularCodeBlockLanguages;
+      return codeblockLangs;
     }
 
     const searchLower = searchTerm.toLowerCase();
-    return popularCodeBlockLanguages.filter(
+    return codeblockLangs.filter(
       (lang: any) =>
         lang.label.toLowerCase().includes(searchLower) ||
         lang.value.toLowerCase().includes(searchLower)
@@ -84,9 +84,8 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
         <div
           className="fixed bg-background border border-border rounded-jotty shadow-lg min-w-[250px] max-h-[400px] overflow-hidden flex flex-col"
           style={{
-            top: `${
-              dropdownRef.current?.getBoundingClientRect().bottom || 0
-            }px`,
+            top: `${dropdownRef.current?.getBoundingClientRect().bottom || 0
+              }px`,
             left: `${dropdownRef.current?.getBoundingClientRect().left || 0}px`,
             pointerEvents: "auto",
           }}

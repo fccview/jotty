@@ -102,7 +102,7 @@ You can completely customize your PWA by creating an override manifest file. Thi
 
 ### Theme and Splash Screen Behavior
 
-**⚠️ Theme colors are "baked in" at install time**
+**Theme colors are "baked in" at install time**
 
 When you install the PWA, the current theme colors are captured and used for the splash screen. This means:
 
@@ -112,7 +112,7 @@ When you install the PWA, the current theme colors are captured and used for the
 
 ### Icon Changes Require Reinstallation
 
-**⚠️ Icon changes require app reinstallation**
+**Icon changes require app reinstallation**
 
 Similar to themes, PWA icons are cached during installation:
 
@@ -150,63 +150,4 @@ To remove the installed PWA:
 - Right-click the desktop shortcut
 - Select **"Delete"**
 
-## PWA Browser Support
-
-jotty·page works as a PWA in all modern browsers:
-
-- ✅ Chrome/Chromium (recommended)
-- ✅ Edge
-- ✅ Firefox
-- ✅ Safari (iOS 11.3+)
-- ✅ Samsung Internet
-
 **Note**: Some features may be limited in Firefox compared to Chrome-based browsers.
-
-## Troubleshooting PWA Issues
-
-### PWA Won't Install
-
-- Ensure you're using HTTPS (required for PWAs)
-- Check that the site meets PWA criteria (has manifest, service worker, etc.)
-- Try clearing browser cache and cookies
-
-### Splash Screen Shows Wrong Colors
-
-- This is expected behavior - colors are set at install time
-- Uninstall and reinstall the PWA after changing your theme
-
-### Icons Don't Update
-
-- This is expected behavior - icons are cached at install time
-- Uninstall and reinstall the PWA after changing icons
-
-### Missing Install Prompt
-
-- The prompt only appears when the browser determines the site is "installable"
-- Use the manual installation methods described above
-- Browsers hide the prompt if you've dismissed it previously
-
-### Web App Manifest
-
-The manifest file controls how your PWA appears when installed. Key properties:
-
-- `name`: Full app name (shown in installation prompt)
-- `short_name`: Short name (shown on home screen)
-- `description`: App description
-- `start_url`: URL to open when launching
-- `display`: How the app appears (`standalone` for app-like experience)
-- `theme_color`: Browser UI color
-- `background_color`: Splash screen background
-- `icons`: App icons in various sizes
-
-### PWA Standards Compliance
-
-jotty·page follows PWA best practices:
-
-- ✅ HTTPS requirement
-- ✅ Web App Manifest
-- ✅ Service Worker registration
-- ✅ Responsive design
-- ✅ Installable
-
-For more information about PWAs, visit the [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps).

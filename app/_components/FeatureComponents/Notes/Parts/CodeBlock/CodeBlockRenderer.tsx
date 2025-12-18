@@ -21,18 +21,28 @@ export const CodeBlockRenderer = ({
 }: CodeBlockRendererProps) => {
   const [copied, setCopied] = useState(false);
 
+  const languageMappers = [
+    { value: "plaintext", label: "text" },
+    { value: "yml", label: "yaml" },
+    { value: "js", label: "javascript" },
+    { value: "ts", label: "typescript" },
+    { value: "jsx", label: "javascript" },
+    { value: "tsx", label: "typescript" },
+  ]
+
   let language =
     langProp ||
     children.props.className?.replace("language-", "") ||
     "plaintext";
 
-  const languageObj = getLanguageByValue(language);
+  const languageObj = getLanguageByValue(languageMappers.find((lang) => language === lang.value)?.label || language);
 
   const languageIcon = languageObj?.icon || (
     <SourceCodeIcon className="h-4 w-4" />
   );
+
   const displayLanguage =
-    languageObj?.label || (language === "plaintext" ? "" : language);
+    languageObj?.label || (language === "plaintext" ? "text" : language);
 
   const lineCount = useMemo(() => {
     return code.split("\n").length;
@@ -53,9 +63,8 @@ export const CodeBlockRenderer = ({
         <div className="language-header text-[10px] text-[#abb2bf] bg-[#262626] px-4 py-1">
           <span className="bg-[#abb2bf]" />
           <div
-            className={`flex items-center ${
-              displayLanguage ? "gap-1.5" : "gap-0"
-            }`}
+            className={`flex items-center ${displayLanguage ? "gap-1.5" : "gap-0"
+              }`}
           >
             <span
               className={`${languageObj?.value} language-icon text-xs rounded inline-block`}
