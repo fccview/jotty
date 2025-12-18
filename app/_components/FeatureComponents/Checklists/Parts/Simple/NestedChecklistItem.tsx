@@ -272,7 +272,7 @@ const NestedChecklistItemComponent = ({
             variant="ghost"
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            className="h-6 w-6 p-0"
           >
             {isExpanded ? (
               <ArrowDown01Icon className="h-4 w-4" />

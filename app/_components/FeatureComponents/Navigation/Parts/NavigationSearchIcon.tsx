@@ -61,9 +61,9 @@ export const NavigationSearchIcon = ({
 
       <Button
         variant="ghost"
+        className="jotty-mobile-navigation-icon"
         size="icon"
         onClick={toggleSearch}
-        className="text-muted-foreground hover:text-foreground"
       >
         {isSearchOpen ? (
           <MultiplicationSignIcon className="h-5 w-5" />

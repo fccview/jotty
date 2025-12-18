@@ -23,8 +23,9 @@ export const ChecklistItemsWrapper = ({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <div
-            className={`w-2 h-2 rounded-full ${isCompleted ? "bg-green-500" : "bg-muted-foreground"
-              }`}
+            className={`w-2 h-2 rounded-full ${
+              isCompleted ? "bg-green-500" : "bg-muted-foreground"
+            }`}
           ></div>
           {title} ({count})
           {isLoading && (

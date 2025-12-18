@@ -31,7 +31,7 @@ export const SiteHeader = ({
               variant="ghost"
               size="sm"
               onClick={() => router.back()}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              className="h-8 w-8 p-0"
             >
               <ArrowLeft01Icon className="h-4 w-4" />
             </Button>

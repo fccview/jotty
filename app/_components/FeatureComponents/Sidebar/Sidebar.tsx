@@ -64,8 +64,8 @@ export const Sidebar = (props: SidebarProps) => {
       updatedMode = isNotesPage
         ? Modes.NOTES
         : isChecklistsPage
-          ? Modes.CHECKLISTS
-          : sidebar.mode || Modes.CHECKLISTS;
+        ? Modes.CHECKLISTS
+        : sidebar.mode || Modes.CHECKLISTS;
     }
 
     setMode(searchMode || updatedMode || Modes.CHECKLISTS);
@@ -333,7 +333,7 @@ export const Sidebar = (props: SidebarProps) => {
             note={sidebar.modalState.data as Note}
             categories={categories}
             onClose={sidebar.closeModal}
-            onUpdated={(customFunction: () => void = () => { }) => {
+            onUpdated={(customFunction: () => void = () => {}) => {
               sidebar.closeModal();
               sidebar.router.refresh();
               customFunction?.();

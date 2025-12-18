@@ -329,10 +329,6 @@ I would like to thank the following members for raising issues and help test/deb
   </tbody>
 </table>
 
-## License
-
-This project is licensed under [MIT License](LICENSE).
-
 ## Support
 
 For issues and questions, please open an issue on the GitHub repository.
