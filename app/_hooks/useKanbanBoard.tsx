@@ -196,6 +196,7 @@ export const useKanbanBoard = ({
     );
     if (updatedList) {
       setLocalChecklist(updatedList);
+      onUpdate(updatedList);
     }
     setIsLoading(false);
 
