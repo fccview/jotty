@@ -39,7 +39,6 @@ A self-hosted app for your checklists and notes.
 
 ## Quick nav
 
-- [How to contribute](#contribute)
 - [Features](#features)
 - [Getting Started](#getting-started)
   - [Docker Compose (Recommended)](#docker-compose)
