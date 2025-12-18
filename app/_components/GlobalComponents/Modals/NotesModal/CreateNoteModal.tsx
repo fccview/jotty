@@ -88,6 +88,7 @@ export const CreateNoteModal = ({
           placeholder="Enter note title..."
           required
           disabled={isCreating}
+          autoFocus
         />
 
         <CategoryInput

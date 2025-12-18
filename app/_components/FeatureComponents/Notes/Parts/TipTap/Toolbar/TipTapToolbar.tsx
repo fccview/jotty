@@ -5,7 +5,7 @@ import {
   TextStrikethroughIcon,
   SourceCodeIcon,
   Heading02Icon,
-  LeftToRightListBulletIcon,
+  RightToLeftListTriangleIcon,
   LeftToRightListNumberIcon,
   QuoteUpIcon,
   Attachment01Icon,
@@ -15,6 +15,7 @@ import {
   Tv02Icon,
   TextUnderlineIcon,
   Image02Icon,
+  LeftToRightListBulletIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
@@ -154,7 +155,7 @@ export const TiptapToolbar = ({
               }
             >
               {showLineNumbers ? (
-                <LeftToRightListBulletIcon className="h-4 w-4" />
+                <RightToLeftListTriangleIcon className="h-4 w-4" />
               ) : (
                 <LeftToRightListNumberIcon className="h-4 w-4" />
               )}

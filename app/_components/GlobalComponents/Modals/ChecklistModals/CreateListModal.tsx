@@ -90,6 +90,7 @@ export const CreateListModal = ({
           placeholder="Enter checklist name..."
           required
           disabled={isLoading}
+          autoFocus
         />
 
         <ChecklistTypeSelector

@@ -120,6 +120,7 @@ export const EditChecklistModal = ({
             placeholder="Enter checklist name..."
             required
             disabled={isLoading || unarchive}
+            autoFocus
           />
         </div>
 

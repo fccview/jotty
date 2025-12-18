@@ -90,6 +90,7 @@ export const CreateCategoryModal = ({
           placeholder="Enter category name..."
           required
           disabled={isLoading}
+          autoFocus
         />
 
         {notAllowedNames.includes(categoryName.trim().toLowerCase()) && (
