@@ -60,10 +60,9 @@ export const ShareModal = ({
         <div>
           {activeTab === "users" && hookResult.currentSharing.length > 0 && (
             <Button
-              variant="outline"
+              variant="destructive"
               onClick={hookResult.handleRemoveAllSharing}
               disabled={hookResult.isLoading}
-              className="text-destructive hover:text-destructive"
             >
               Remove All
             </Button>

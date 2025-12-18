@@ -383,10 +383,10 @@ const NestedChecklistItemComponent = ({
 
               {!isPublicView && (
                 <Button
-                  variant="ghost"
+                  variant="destructive"
                   size="sm"
                   onClick={() => onDelete(item.id)}
-                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                  className="h-8 w-8 p-0"
                 >
                   <Delete03Icon className="h-4 w-4" />
                 </Button>

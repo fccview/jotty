@@ -119,11 +119,11 @@ export const AdminUsers = ({
                   </Button>
                   {user.username !== username && (
                     <Button
-                      variant="ghost"
+                      variant="destructive"
                       size="sm"
                       onClick={() => onDeleteUser(user)}
                       disabled={deletingUser === user.username}
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      className="h-8 w-8 p-0"
                       title="Delete User"
                     >
                       {deletingUser === user.username ? (

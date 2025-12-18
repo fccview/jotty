@@ -21,10 +21,11 @@ export const SessionCard = ({
   const { isDemoMode } = useAppMode();
   return (
     <div
-      className={`jotty-session-card flex items-start justify-between p-4 rounded-jotty border ${session.isCurrent
+      className={`jotty-session-card flex items-start justify-between p-4 rounded-jotty border ${
+        session.isCurrent
           ? "bg-primary/5 border-primary/20"
           : "bg-background border-border"
-        }`}
+      }`}
     >
       <div className="flex items-start gap-4 flex-1 min-w-0">
         <div className="p-2 bg-muted rounded-jotty flex-shrink-0">
@@ -65,10 +66,10 @@ export const SessionCard = ({
       </div>
       {!session.isCurrent && !isDemoMode && (
         <Button
-          variant="ghost"
+          variant="destructive"
           size="sm"
           onClick={() => onTerminate(session.id)}
-          className="text-destructive hover:text-destructive flex-shrink-0 ml-2"
+          className="flex-shrink-0 ml-2"
           disabled={isTerminating}
         >
           {isTerminating ? (

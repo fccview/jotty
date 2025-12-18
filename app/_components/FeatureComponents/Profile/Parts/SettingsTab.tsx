@@ -628,7 +628,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <Dropdown
             value={currentSettings.defaultNoteFilter || "all"}
             onChange={(value) =>
-              handleSettingChange("defaultNoteFilter", value as DefaultNoteFilter)
+              handleSettingChange(
+                "defaultNoteFilter",
+                value as DefaultNoteFilter
+              )
             }
             options={defaultNoteFilterOptions}
             placeholder="Select default note filter"
@@ -651,7 +654,11 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <Button
             onClick={() =>
               handleSaveSection(
-                ["enableRecurrence", "showCompletedSuggestions", "defaultChecklistFilter"],
+                [
+                  "enableRecurrence",
+                  "showCompletedSuggestions",
+                  "defaultChecklistFilter",
+                ],
                 checklistSettingsSchema,
                 "Checklists"
               )
@@ -702,11 +709,16 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="default-checklist-filter">Default Checklist Filter</Label>
+          <Label htmlFor="default-checklist-filter">
+            Default Checklist Filter
+          </Label>
           <Dropdown
             value={currentSettings.defaultChecklistFilter || "all"}
             onChange={(value) =>
-              handleSettingChange("defaultChecklistFilter", value as DefaultChecklistFilter)
+              handleSettingChange(
+                "defaultChecklistFilter",
+                value as DefaultChecklistFilter
+              )
             }
             options={defaultChecklistFilterOptions}
             placeholder="Select default checklist filter"
@@ -738,8 +750,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               </span>
             ) : (
               <Button
-                variant="outline"
-                className="text-destructive hover:text-destructive"
+                variant="destructive"
                 onClick={() => setShowDeleteModal(true)}
               >
                 Delete Account

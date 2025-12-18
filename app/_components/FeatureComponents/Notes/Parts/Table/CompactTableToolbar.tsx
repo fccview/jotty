@@ -131,11 +131,9 @@ export const CompactTableToolbar = ({
         {tableItems.map((item, index) => (
           <Button
             key={index}
-            variant="ghost"
+            variant={item.destructive ? "destructive" : "ghost"}
             size="sm"
-            className={`h-6 px-2 text-xs ${
-              item.destructive ? "text-destructive hover:text-destructive" : ""
-            }`}
+            className="h-6 px-2 text-xs"
             onClick={item.command}
             title={item.label}
           >
