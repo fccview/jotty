@@ -1,0 +1,214 @@
+/*
+ * Hi fccview here! 
+ * If these colors feels familiar it's because THEY ARE :) 
+ * The colors have been taken from here https://gist.github.com/robertpeteuil/bb2dc86f3b3e25d203664d61410bfa30 
+ * Can't take credits for it <3
+ */
+
+.language-icon {
+    background-color: #aaaebc;
+    color: #262626;
+    padding: 2px;
+}
+
+.apache {
+    background-color: #D22128;
+    color: #e4dff0;
+}
+
+.bash {
+    background-color: #89E051;
+    color: #1c1d22;
+}
+
+.c {
+    background-color: #A8B9CC;
+    color: #1c1d22;
+}
+
+.clojure {
+    background-color: #5881D8;
+    color: #e4dff0;
+}
+
+.cpp {
+    background-color: #00599C;
+    color: #e4dff0;
+}
+
+.csharp {
+    background-color: #239120;
+    color: #e4dff0;
+}
+
+.css {
+    background-color: #1572B6;
+    color: #e4dff0;
+}
+
+.dart {
+    background-color: #0175C2;
+    color: #e4dff0;
+}
+
+.dockerfile {
+    background-color: #384d54;
+    color: #e4dff0;
+}
+
+.go {
+    background-color: #00ADD8;
+    color: #e4dff0;
+}
+
+.haskell {
+    background-color: #5D4F85;
+    color: #e4dff0;
+}
+
+.html {
+    background-color: #E34C26;
+    color: #e4dff0;
+}
+
+.java {
+    background-color: #ED8B00;
+    color: #1c1d22;
+}
+
+.javascript,
+.jsx {
+    background-color: #F1E05A;
+    color: #1c1d22;
+}
+
+.kotlin {
+    background-color: #7F52FF;
+    color: #e4dff0;
+}
+
+.latex {
+    background-color: #008080;
+    color: #e4dff0;
+}
+
+.less {
+    background-color: #1D365D;
+    color: #e4dff0;
+}
+
+.lua {
+    background-color: #000080;
+    color: #e4dff0;
+}
+
+.makefile {
+    background-color: #427819;
+    color: #e4dff0;
+}
+
+.markdown {
+    background-color: #083FA1;
+    color: #e4dff0;
+}
+
+.matlab {
+    background-color: #E16737;
+    color: #1c1d22;
+}
+
+.nginx {
+    background-color: #009639;
+    color: #e4dff0;
+}
+
+.perl {
+    background-color: #39457E;
+    color: #e4dff0;
+}
+
+.php {
+    background-color: #777BB4;
+    color: #e4dff0;
+}
+
+.plaintext {
+    background-color: #000000;
+    color: #e4dff0;
+}
+
+.powershell {
+    background-color: #012456;
+    color: #e4dff0;
+}
+
+.python {
+    background-color: #3776AB;
+    color: #e4dff0;
+}
+
+.r {
+    background-color: #276DC3;
+    color: #e4dff0;
+}
+
+.ruby {
+    background-color: #CC342D;
+    color: #e4dff0;
+}
+
+.rust {
+    background-color: #CE412B;
+    color: #e4dff0;
+}
+
+.scala {
+    background-color: #DC322F;
+    color: #e4dff0;
+}
+
+.scss {
+    background-color: #CC6699;
+    color: #1c1d22;
+}
+
+.shell {
+    background-color: #89E051;
+    color: #1c1d22;
+}
+
+.sql {
+    background-color: #CC2927;
+    color: #e4dff0;
+}
+
+.swift {
+    background-color: #FA7343;
+    color: #1c1d22;
+}
+
+.typescript,
+.tsx {
+    background-color: #3178C6;
+    color: #e4dff0;
+}
+
+.vhdl {
+    background-color: #ADB2CB;
+    color: #1c1d22;
+}
+
+.verilog {
+    background-color: #B2B7F8;
+    color: #1c1d22;
+}
+
+.xml {
+    background-color: #FF6600;
+    color: #1c1d22;
+}
+
+.yaml {
+    background-color: #CB171E;
+    color: #e4dff0;
+}

@@ -36,14 +36,21 @@ export const CodeBlockRenderer = ({
   return (
     <div
       className={cn(
-        "code-block-container relative group my-4 overflow-hidden bg-[#282c34]",
+        "code-block-container relative group my-4 overflow-hidden bg-[#1c1d22] rounded-jotty",
         className
       )}
     >
-      <div className="flex items-center justify-between px-4 py-1 bg-[#21252b] border-b border-[#181a1f]">
-        <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#abb2bf]">
-          {languageIcon}
-          <span className="uppercase tracking-wide">{displayLanguage}</span>
+      <div className="flex items-center justify-between">
+        <div className="language-header text-[10px] text-[#abb2bf] bg-[#262626] px-4 py-1">
+          <span className="bg-[#abb2bf]" />
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`${languageObj?.value} language-icon text-xs rounded inline-block`}
+            >
+              {languageIcon}
+            </span>
+            <span className="uppercase tracking-wide">{displayLanguage}</span>
+          </div>
         </div>
         <Button
           variant="ghost"
@@ -53,26 +60,7 @@ export const CodeBlockRenderer = ({
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           }}
-          className="h-6 w-6 p-0 text-gray-400"
-        >
-          {copied ? (
-            <Tick02Icon className="h-3 w-3 text-green-500" />
-          ) : (
-            <Copy01Icon className="h-3 w-3" />
-          )}
-        </Button>
-      </div>
-
-      <div className="absolute top-1 right-4 z-10">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            copyTextToClipboard(code);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          }}
-          className="transition-opacity opacity-0 group-hover:opacity-100 h-6 w-6 p-0 text-gray-400"
+          className="h-6 w-6 p-0 text-gray-400 hover:text-gray-200 hover:bg-transparent mr-2"
         >
           {copied ? (
             <Tick02Icon className="h-3 w-3 text-green-500" />

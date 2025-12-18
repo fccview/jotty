@@ -1,5 +1,6 @@
 
 @import 'highlight.js/styles/github-dark-dimmed.css';
+@import './languages-colors.css';
 
 @tailwind base;
 @tailwind components;
@@ -706,28 +707,12 @@ mark {
 }
 
 p > code {
-    background: rgba(0,0,0,0.8)!important;
+    background: #292a2b!important;
     color: orange;
     padding: 0.25rem 0.5rem;
     border-radius: 0.25rem;
     font-family: "Google Sans Code Variable", monospace;
 }
-
-.ProseMirror .hljs {
-  color: #abb2bf!important;
-  background: #282c34!important;
-  font-family: "Google Sans Code Variable" !important;
-}
-
-.ProseMirror .hljs * {
-  font-family: "Google Sans Code Variable" !important;   
-}
-
-.hljs .hljs {
-    padding: 0;
-    background: transparent;
-}
-
 
 .code-block-container,
 .code-block-container *,
@@ -740,15 +725,31 @@ p > code {
   filter: none !important;
   font-family: "Google Sans Code Variable" !important;
 }
+
 .code-block-container pre {
-  background: transparent !important;
-  color: #abb2bf !important;
+  color: #aaaebc!important;
+  background: #292a2b!important;
 }
 
-.code-block-container code[class*="language-"], 
-.code-block-container pre[class*="language-"] {
-  background: transparent !important;
-  color: #abb2bf !important;
+.code-block-container code span {
+    background: transparent!important;
+}
+
+.code-block-container .language-header {
+    color: #aaaebc;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+    border-top: 3px solid #6a6f74;
+    background-color: #292a2b;
+}
+
+.code-block-container code .xml {
+    color: #aaaebc!important;
+}
+
+.code-block-container .language-header svg {
+    stroke-width: 1;
 }
 
 .line-clamp-2 {

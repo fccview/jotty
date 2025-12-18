@@ -69,10 +69,14 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
           filteredLanguages.map((lang) => (
             <button
               key={lang.value}
-              className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent text-sm"
+              className="w-full flex items-center gap-2 px-3 py-1 text-left hover:bg-accent text-sm"
               onClick={() => setCodeBlock(lang.value)}
             >
-              {lang.icon}
+              <span
+                className={`${lang.value} language-icon rounded inline-block`}
+              >
+                {lang.icon}
+              </span>
               <span>{lang.label}</span>
             </button>
           ))
