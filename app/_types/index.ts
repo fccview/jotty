@@ -1,9 +1,20 @@
-import { TaskStatus, Modes, ItemTypes } from "./enums";
+import { Modes, ItemTypes } from "./enums";
 import { LinkIndex } from "../_server/actions/link";
-import { EncryptionSettings } from "./encryption";
 
 export type ChecklistType = "simple" | "task";
 export type ItemType = "checklist" | "note";
+
+export interface PGPKeyMetadata {
+  keyFingerprint: string;
+  createdAt: string;
+  algorithm: string;
+}
+
+export interface EncryptionSettings {
+  autoDecrypt: boolean;
+  hasKeys: boolean;
+  customKeyPath?: string;
+}
 
 export interface TimeEntry {
   id: string;
@@ -164,6 +175,8 @@ export interface User {
   disableRichEditor?: DisableRichEditor;
   markdownTheme?: MarkdownTheme;
   encryptionSettings?: EncryptionSettings;
+  defaultChecklistFilter?: DefaultChecklistFilter;
+  defaultNoteFilter?: DefaultNoteFilter;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -172,13 +185,29 @@ export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";
 export type LandingPage = Modes.CHECKLISTS | Modes.NOTES | "last-visited";
-export type MarkdownTheme = "prism" | "prism-dark" | "prism-funky" | "prism-okaidia" | "prism-tomorrow" | "prism-twilight" | "prism-coy" | "prism-solarizedlight";
+export type MarkdownTheme =
+  | "prism"
+  | "prism-dark"
+  | "prism-funky"
+  | "prism-okaidia"
+  | "prism-tomorrow"
+  | "prism-twilight"
+  | "prism-coy"
+  | "prism-solarizedlight";
 export type NotesDefaultMode = "edit" | "view";
 export type NotesAutoSaveInterval = 0 | 1000 | 5000 | 10000 | 15000 | 20000;
 export type FileRenameMode = "dash-case" | "minimal" | "none";
 export type PreferredDateFormat = "dd/mm/yyyy" | "mm/dd/yyyy";
 export type PreferredTimeFormat = "12-hours" | "24-hours";
 export type DisableRichEditor = "enable" | "disable";
+export type DefaultChecklistFilter =
+  | "all"
+  | "completed"
+  | "incomplete"
+  | "pinned"
+  | "task"
+  | "simple";
+export type DefaultNoteFilter = "all" | "recent" | "pinned";
 
 export interface SharedItem {
   id: string;

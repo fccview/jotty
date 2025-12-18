@@ -22,7 +22,7 @@ import {
   deleteKeys,
   setCustomKeyPath as setCustomKeyPathAction,
 } from "@/app/_server/actions/pgp";
-import { PGPKeyMetadata } from "@/app/_types/encryption";
+import { PGPKeyMetadata } from "@/app/_types";
 import { KeyGenerationModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/KeyGenerationModal";
 import { KeyImportModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/KeyImportModal";
 

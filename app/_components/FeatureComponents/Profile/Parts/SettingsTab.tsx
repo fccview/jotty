@@ -18,6 +18,8 @@ import {
   PreferredDateFormat,
   DisableRichEditor,
   MarkdownTheme,
+  DefaultChecklistFilter,
+  DefaultNoteFilter,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -49,6 +51,8 @@ const getSettingsFromUser = (user: User | null): Partial<User> => ({
   preferredTimeFormat: user?.preferredTimeFormat || "12-hours",
   disableRichEditor: user?.disableRichEditor || "disable",
   markdownTheme: user?.markdownTheme || "prism",
+  defaultChecklistFilter: user?.defaultChecklistFilter || "all",
+  defaultNoteFilter: user?.defaultNoteFilter || "all",
 });
 
 const pick = <T extends object, K extends keyof T>(
@@ -124,10 +128,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     "notesDefaultMode",
     "notesAutoSaveInterval",
     "disableRichEditor",
+    "defaultNoteFilter",
   ]);
   const hasChecklistsChanges = hasChanges([
     "enableRecurrence",
     "showCompletedSuggestions",
+    "defaultChecklistFilter",
   ]);
 
   const validateAndSave = async <T extends Record<string, any>>(
@@ -266,6 +272,21 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     { id: "last-visited", name: "Last visited page" },
     { id: Modes.CHECKLISTS, name: "Checklists" },
     { id: Modes.NOTES, name: "Notes" },
+  ];
+
+  const defaultChecklistFilterOptions = [
+    { id: "all", name: "All Checklists" },
+    { id: "completed", name: "Completed" },
+    { id: "incomplete", name: "Incomplete" },
+    { id: "pinned", name: "Pinned" },
+    { id: "task", name: "Task Lists" },
+    { id: "simple", name: "Simple Lists" },
+  ];
+
+  const defaultNoteFilterOptions = [
+    { id: "all", name: "All Notes" },
+    { id: "recent", name: "Recent" },
+    { id: "pinned", name: "Pinned" },
   ];
 
   return (
@@ -434,6 +455,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                   "notesDefaultEditor",
                   "tableSyntax",
                   "disableRichEditor",
+                  "defaultNoteFilter",
                 ],
                 editorSettingsSchema,
                 "Notes Preferences"
@@ -600,6 +622,27 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             in this mode.
           </p>
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="default-note-filter">Default Note Filter</Label>
+          <Dropdown
+            value={currentSettings.defaultNoteFilter || "all"}
+            onChange={(value) =>
+              handleSettingChange("defaultNoteFilter", value as DefaultNoteFilter)
+            }
+            options={defaultNoteFilterOptions}
+            placeholder="Select default note filter"
+            className="w-full"
+          />
+          {validationErrors.defaultNoteFilter && (
+            <p className="text-sm text-destructive">
+              {validationErrors.defaultNoteFilter}
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Choose the default filter to apply when opening the Notes page.
+          </p>
+        </div>
       </FormWrapper>
 
       <FormWrapper
@@ -608,7 +651,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <Button
             onClick={() =>
               handleSaveSection(
-                ["enableRecurrence", "showCompletedSuggestions"],
+                ["enableRecurrence", "showCompletedSuggestions", "defaultChecklistFilter"],
                 checklistSettingsSchema,
                 "Checklists"
               )
@@ -655,6 +698,27 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
           <p className="text-sm text-muted-foreground">
             When adding new tasks, show completed tasks as suggestions that can
             be re-enabled.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="default-checklist-filter">Default Checklist Filter</Label>
+          <Dropdown
+            value={currentSettings.defaultChecklistFilter || "all"}
+            onChange={(value) =>
+              handleSettingChange("defaultChecklistFilter", value as DefaultChecklistFilter)
+            }
+            options={defaultChecklistFilterOptions}
+            placeholder="Select default checklist filter"
+            className="w-full"
+          />
+          {validationErrors.defaultChecklistFilter && (
+            <p className="text-sm text-destructive">
+              {validationErrors.defaultChecklistFilter}
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Choose the default filter to apply when opening the Checklists page.
           </p>
         </div>
       </FormWrapper>
