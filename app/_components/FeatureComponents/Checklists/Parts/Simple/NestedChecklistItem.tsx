@@ -272,7 +272,7 @@ const NestedChecklistItemComponent = ({
             variant="ghost"
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+            className="h-6 w-6 p-0"
           >
             {isExpanded ? (
               <ArrowDown01Icon className="h-4 w-4" />
@@ -383,10 +383,10 @@ const NestedChecklistItemComponent = ({
 
               {!isPublicView && (
                 <Button
-                  variant="ghost"
+                  variant="destructive"
                   size="sm"
                   onClick={() => onDelete(item.id)}
-                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                  className="h-8 w-8 p-0"
                 >
                   <Delete03Icon className="h-4 w-4" />
                 </Button>

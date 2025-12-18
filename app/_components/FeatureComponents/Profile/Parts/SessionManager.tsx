@@ -22,9 +22,7 @@ export const SessionManager = () => {
   const { isDemoMode } = useAppMode();
 
   if (isLoading) {
-    return (
-      <Logo className="h-6 w-6 animate-pulse" />
-    );
+    return <Logo className="h-6 w-6 animate-pulse" />;
   }
 
   return (
@@ -40,13 +38,15 @@ export const SessionManager = () => {
         </div>
         {sessions.some((s) => !s.isCurrent) && !isDemoMode && (
           <Button
-            variant="outline"
+            variant="destructive"
             onClick={handleTerminateAllOtherSessions}
-            className="text-destructive hover:text-destructive"
             disabled={terminating.all}
           >
             {terminating.all ? (
-              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
+              <Logo
+                className="h-4 w-4 bg-background mr-2 animate-pulse"
+                pathClassName="fill-primary"
+              />
             ) : (
               <>
                 <Delete03Icon className="h-4 w-4 mr-2" />

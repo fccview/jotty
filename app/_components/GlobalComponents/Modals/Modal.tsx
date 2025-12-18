@@ -95,10 +95,10 @@ export const Modal = ({
             {title}
           </div>
           <Button
-            variant="ghost"
+            variant="destructive"
             size="sm"
             onClick={onClose}
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+            className="h-8 w-8 p-0"
           >
             <MultiplicationSignIcon className="h-4 w-4" />
           </Button>

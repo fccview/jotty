@@ -113,10 +113,10 @@ export const StylingTab = () => {
                       <PencilEdit02Icon className="h-3 w-3" />
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant="destructive"
                       size="sm"
                       onClick={() => handleDeleteTheme(theme.id)}
-                      className="h-6 w-6 p-0 text-destructive hover:text-destructive/80"
+                      className="h-6 w-6 p-0"
                     >
                       <Delete03Icon className="h-3 w-3" />
                     </Button>
@@ -205,12 +205,12 @@ export const StylingTab = () => {
                       value={
                         value
                           ? `#${value
-                            .split(" ")
-                            .map((v) => {
-                              const num = parseInt(v);
-                              return num.toString(16).padStart(2, "0");
-                            })
-                            .join("")}`
+                              .split(" ")
+                              .map((v) => {
+                                const num = parseInt(v);
+                                return num.toString(16).padStart(2, "0");
+                              })
+                              .join("")}`
                           : "#000000"
                       }
                       onChange={(e) => {

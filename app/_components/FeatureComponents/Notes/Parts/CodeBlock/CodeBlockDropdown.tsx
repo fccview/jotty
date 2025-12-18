@@ -3,7 +3,7 @@
 import { Editor } from "@tiptap/react";
 import { ArrowDown01Icon, SourceCodeIcon, Search01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { popularCodeBlockLanguages } from "@/app/_utils/code-block-utils";
+import { codeblockLangs } from "@/app/_utils/code-block-utils";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
@@ -19,11 +19,11 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
 
   const filteredLanguages = useMemo(() => {
     if (!searchTerm.trim()) {
-      return popularCodeBlockLanguages;
+      return codeblockLangs;
     }
 
     const searchLower = searchTerm.toLowerCase();
-    return popularCodeBlockLanguages.filter(
+    return codeblockLangs.filter(
       (lang: any) =>
         lang.label.toLowerCase().includes(searchLower) ||
         lang.value.toLowerCase().includes(searchLower)
@@ -84,9 +84,8 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
         <div
           className="fixed bg-background border border-border rounded-jotty shadow-lg min-w-[250px] max-h-[400px] overflow-hidden flex flex-col"
           style={{
-            top: `${
-              dropdownRef.current?.getBoundingClientRect().bottom || 0
-            }px`,
+            top: `${dropdownRef.current?.getBoundingClientRect().bottom || 0
+              }px`,
             left: `${dropdownRef.current?.getBoundingClientRect().left || 0}px`,
             pointerEvents: "auto",
           }}
@@ -110,10 +109,14 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
               filteredLanguages.map((lang) => (
                 <button
                   key={lang.value}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent text-sm"
+                  className="w-full flex items-center gap-2 px-3 py-1 text-left hover:bg-accent text-sm"
                   onClick={() => setCodeBlock(lang.value)}
                 >
-                  {lang.icon}
+                  <span
+                    className={`${lang.value} language-icon rounded inline-block`}
+                  >
+                    {lang.icon}
+                  </span>
                   <span>{lang.label}</span>
                 </button>
               ))

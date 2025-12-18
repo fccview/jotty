@@ -231,7 +231,7 @@ export const SidebarItem = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 opacity-40 hover:bg-muted/50 text-foreground group-hover/item:opacity-100 transition-opacity"
+            className="h-8 w-8 p-0 opacity-40 group-hover/item:opacity-100 transition-opacity"
           >
             <MoreHorizontalIcon className="h-4 w-4" />
           </Button>

@@ -1,429 +1,10 @@
-
-@import 'highlight.js/styles/github-dark-dimmed.css';
+@import './codeblock/languages-colors.css';
+@import './codeblock/prism-dark-theme.css';
+@import './themes/colors.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-    :root {
-        --background: 249 249 249;
-        --background-secondary: 249 248 252;
-        --foreground: 48 48 48;
-        --card: 249 249 249;
-        --card-foreground: var(--foreground);
-        --popover: 249 249 249;
-        --popover-foreground: var(--foreground);
-        --primary: 157 95 254;
-        --primary-foreground: 249 249 249;
-        --secondary: 243 240 249;
-        --secondary-foreground: var(--foreground);
-        --muted: 243 240 249;
-        --muted-foreground: 107 99 139;
-        --accent: 243 240 249;
-        --accent-foreground: var(--foreground);
-        --destructive: 239 68 68;
-        --destructive-foreground: 249 249 249;
-        --border: 228 223 240;
-        --input: 228 223 240;
-        --ring: var(--primary);
-    }
-
-    .default {
-        color: rgb(74 74 74);
-    }
-
-    .dark {
-        --background: 14 24 64;
-        --background-secondary: 76 22 132;
-        --foreground: 249 249 249;
-        --card: var(--background);
-        --card-foreground: var(--foreground);
-        --popover: var(--background);
-        --popover-foreground: var(--foreground);
-        --primary: 157 95 254;
-        --primary-foreground: var(--foreground);
-        --secondary: var(--background-secondary);
-        --secondary-foreground: var(--foreground);
-        --muted: var(--background-secondary);
-        --muted-foreground: 163 156 175;
-        --accent: var(--background-secondary);
-        --accent-foreground: var(--foreground);
-        --destructive: 239 68 68;
-        --destructive-foreground: var(--foreground);
-        --border: 38 47 63;
-        --input: 38 47 63;
-        --ring: var(--primary);
-    }
-
-    .rwmarkable-light {
-        --background: 249 249 249;
-        --background-secondary: 249 250 251;
-        --foreground: 48 48 48;
-        --card: 249 249 249;
-        --card-foreground: var(--foreground);
-        --popover: 249 249 249;
-        --popover-foreground: var(--foreground);
-        --primary: 37 99 235;
-        --primary-foreground: 249 249 249;
-        --secondary: 241 245 249;
-        --secondary-foreground: var(--foreground);
-        --muted: 241 245 249;
-        --muted-foreground: 100 116 139;
-        --accent: 241 245 249;
-        --accent-foreground: var(--foreground);
-        --destructive: 239 68 68;
-        --destructive-foreground: 249 249 249;
-        --border: 226 232 240;
-        --input: 226 232 240;
-        --ring: 37 99 235;
-    }
-
-    .rwmarkable-dark {
-        --background: 17 24 39;
-        --background-secondary: 31 41 55;
-        --foreground: 243 244 246;
-        --card: 17 24 39;
-        --card-foreground: 243 244 246;
-        --popover: 17 24 39;
-        --popover-foreground: 243 244 246;
-        --primary: 59 130 246;
-        --primary-foreground: 243 244 246;
-        --secondary: 31 41 55;
-        --secondary-foreground: 243 244 246;
-        --muted: 31 41 55;
-        --muted-foreground: 156 163 175;
-        --accent: 31 41 55;
-        --accent-foreground: 243 244 246;
-        --destructive: 239 68 68;
-        --destructive-foreground: 243 244 246;
-        --border: 38 47 63;
-        --input: 38 47 63;
-        --ring: 59 130 246;
-    }
-
-    .fccview {
-        --background: 12 20 53;
-        --background-secondary: 21 14 60;
-        --foreground: 243 244 246;
-        --card: 12 20 53;
-        --card-foreground: 243 244 246;
-        --popover: 12 20 53;
-        --popover-foreground: 243 244 246;
-        --primary: 205 6 157;
-        --primary-foreground: 243 244 246;
-        --secondary: 21 14 60;
-        --secondary-foreground: 243 244 246;
-        --muted: 21 14 60;
-        --muted-foreground: 163 156 175;
-        --accent: 21 14 60;
-        --accent-foreground: 243 244 246;
-        --destructive: 239 68 68;
-        --destructive-foreground: 243 244 246;
-        --border: 38 47 63;
-        --input: 38 47 63;
-        --ring: 205 6 157;
-    }
-
-    .black-white {
-        --background: 10 10 10;
-        --background-secondary: 29 29 33;
-        --foreground: 249 249 249;
-        --card: 10 10 10;
-        --card-foreground: 249 249 249;
-        --popover: 10 10 10;
-        --popover-foreground: 249 249 249;
-        --primary: 90 90 90;
-        --primary-foreground: 249 249 249;
-        --secondary: 49 51 57;
-        --secondary-foreground: 249 249 249;
-        --muted: 49 51 57;
-        --muted-foreground: 180 180 180;
-        --accent: 49 51 57;
-        --accent-foreground: 249 249 249;
-        --destructive: 239 68 68;
-        --destructive-foreground: 249 249 249;
-        --border: 49 51 57;
-        --input: 49 51 57;
-        --ring: 90 90 90;
-    }
-
-    .sunset {
-        --background: 254 242 242;
-        --background-secondary: 252 231 231;
-        --foreground: 74 74 74;
-        --card: 254 242 242;
-        --card-foreground: 74 74 74;
-        --popover: 254 242 242;
-        --popover-foreground: 74 74 74;
-        --primary: 220 38 38;
-        --primary-foreground: 254 242 242;
-        --secondary: 254 226 226;
-        --secondary-foreground: 74 74 74;
-        --muted: 254 226 226;
-        --muted-foreground: 155 28 28;
-        --accent: 254 226 226;
-        --accent-foreground: 74 74 74;
-        --destructive: 239 68 68;
-        --destructive-foreground: 254 242 242;
-        --border: 254 226 226;
-        --input: 254 226 226;
-        --ring: 220 38 38;
-    }
-
-    .ocean {
-        --background: 239 246 255;
-        --background-secondary: 219 234 254;
-        --foreground: 74 74 74;
-        --card: 239 246 255;
-        --card-foreground: 74 74 74;
-        --popover: 239 246 255;
-        --popover-foreground: 74 74 74;
-        --primary: 37 99 235;
-        --primary-foreground: 239 246 255;
-        --secondary: 219 234 254;
-        --secondary-foreground: 74 74 74;
-        --muted: 219 234 254;
-        --muted-foreground: 29 78 216;
-        --accent: 219 234 254;
-        --accent-foreground: 74 74 74;
-        --destructive: 239 68 68;
-        --destructive-foreground: 239 246 255;
-        --border: 219 234 254;
-        --input: 219 234 254;
-        --ring: 37 99 235;
-    }
-
-    .forest {
-        --background: 240 253 244;
-        --background-secondary: 220 252 231;
-        --foreground: 74 74 74;
-        --card: 240 253 244;
-        --card-foreground: 74 74 74;
-        --popover: 240 253 244;
-        --popover-foreground: 74 74 74;
-        --primary: 22 163 74;
-        --primary-foreground: 240 253 244;
-        --secondary: 220 252 231;
-        --secondary-foreground: 74 74 74;
-        --muted: 220 252 231;
-        --muted-foreground: 21 128 61;
-        --accent: 220 252 231;
-        --accent-foreground: 74 74 74;
-        --destructive: 239 68 68;
-        --destructive-foreground: 240 253 244;
-        --border: 220 252 231;
-        --input: 220 252 231;
-        --ring: 22 163 74;
-    }
-
-    .nord {
-        --background: 236 239 244;
-        --background-secondary: 229 233 240;
-        --foreground: 46 52 64;
-        --card: 236 239 244;
-        --card-foreground: 46 52 64;
-        --popover: 236 239 244;
-        --popover-foreground: 46 52 64;
-        --primary: 94 129 172;
-        --primary-foreground: 236 239 244;
-        --secondary: 229 233 240;
-        --secondary-foreground: 46 52 64;
-        --muted: 229 233 240;
-        --muted-foreground: 76 86 106;
-        --accent: 229 233 240;
-        --accent-foreground: 46 52 64;
-        --destructive: 191 97 106;
-        --destructive-foreground: 236 239 244;
-        --border: 229 233 240;
-        --input: 229 233 240;
-        --ring: 94 129 172;
-    }
-
-    .dracula {
-        --background: 40 42 54;
-        --background-secondary: 68 71 90;
-        --foreground: 248 248 242;
-        --card: 40 42 54;
-        --card-foreground: 248 248 242;
-        --popover: 40 42 54;
-        --popover-foreground: 248 248 242;
-        --primary: 189 147 249;
-        --primary-foreground: 40 42 54;
-        --secondary: 68 71 90;
-        --secondary-foreground: 248 248 242;
-        --muted: 68 71 90;
-        --muted-foreground: 139 233 253;
-        --accent: 68 71 90;
-        --accent-foreground: 248 248 242;
-        --destructive: 255 85 85;
-        --destructive-foreground: 40 42 54;
-        --border: 44 46 60;
-        --input: 44 46 60;
-        --ring: 189 147 249;
-    }
-
-    .monokai {
-        --background: 39 40 34;
-        --background-secondary: 58 59 50;
-        --foreground: 248 248 242;
-        --card: 39 40 34;
-        --card-foreground: 248 248 242;
-        --popover: 39 40 34;
-        --popover-foreground: 248 248 242;
-        --primary: 253 151 31;
-        --primary-foreground: 39 40 34;
-        --secondary: 58 59 50;
-        --secondary-foreground: 248 248 242;
-        --muted: 58 59 50;
-        --muted-foreground: 117 113 94;
-        --accent: 58 59 50;
-        --accent-foreground: 248 248 242;
-        --destructive: 249 38 114;
-        --destructive-foreground: 39 40 34;
-        --border: 58 59 50;
-        --input: 58 59 50;
-        --ring: 253 151 31;
-    }
-
-    .github-dark {
-        --background: 13 17 23;
-        --background-secondary: 33 38 45;
-        --foreground: 230 237 243;
-        --card: 13 17 23;
-        --card-foreground: 230 237 243;
-        --popover: 13 17 23;
-        --popover-foreground: 230 237 243;
-        --primary: 47 129 247;
-        --primary-foreground: 13 17 23;
-        --secondary: 33 38 45;
-        --secondary-foreground: 230 237 243;
-        --muted: 33 38 45;
-        --muted-foreground: 139 148 158;
-        --accent: 33 38 45;
-        --accent-foreground: 230 237 243;
-        --destructive: 248 81 73;
-        --destructive-foreground: 13 17 23;
-        --border: 33 38 45;
-        --input: 33 38 45;
-        --ring: 47 129 247;
-    }
-
-    .tokyo-night {
-        --background: 26 27 38;
-        --background-secondary: 41 42 57;
-        --foreground: 169 177 214;
-        --card: 26 27 38;
-        --card-foreground: 169 177 214;
-        --popover: 26 27 38;
-        --popover-foreground: 169 177 214;
-        --primary: 125 207 255;
-        --primary-foreground: 26 27 38;
-        --secondary: 41 42 57;
-        --secondary-foreground: 169 177 214;
-        --muted: 41 42 57;
-        --muted-foreground: 86 95 137;
-        --accent: 41 42 57;
-        --accent-foreground: 169 177 214;
-        --destructive: 247 118 142;
-        --destructive-foreground: 26 27 38;
-        --border: 41 42 57;
-        --input: 41 42 57;
-        --ring: 125 207 255;
-    }
-
-    .catppuccin {
-        --background: 30 30 46;
-        --background-secondary: 49 50 68;
-        --foreground: 205 214 244;
-        --card: 30 30 46;
-        --card-foreground: 205 214 244;
-        --popover: 30 30 46;
-        --popover-foreground: 205 214 244;
-        --primary: 137 180 250;
-        --primary-foreground: 30 30 46;
-        --secondary: 49 50 68;
-        --secondary-foreground: 205 214 244;
-        --muted: 49 50 68;
-        --muted-foreground: 166 173 200;
-        --accent: 49 50 68;
-        --accent-foreground: 205 214 244;
-        --destructive: 243 139 168;
-        --destructive-foreground: 30 30 46;
-        --border: 49 50 68;
-        --input: 49 50 68;
-        --ring: 137 180 250;
-    }
-
-    .rose-pine {
-        --background: 25 23 36;
-        --background-secondary: 39 35 51;
-        --foreground: 224 222 244;
-        --card: 25 23 36;
-        --card-foreground: 224 222 244;
-        --popover: 25 23 36;
-        --popover-foreground: 224 222 244;
-        --primary: 196 167 231;
-        --primary-foreground: 25 23 36;
-        --secondary: 39 35 51;
-        --secondary-foreground: 224 222 244;
-        --muted: 39 35 51;
-        --muted-foreground: 110 106 134;
-        --accent: 39 35 51;
-        --accent-foreground: 224 222 244;
-        --destructive: 235 111 146;
-        --destructive-foreground: 25 23 36;
-        --border: 39 35 51;
-        --input: 39 35 51;
-        --ring: 196 167 231;
-    }
-
-    .gruvbox {
-        --background: 40 40 40;
-        --background-secondary: 60 56 54;
-        --foreground: 235 219 178;
-        --card: 40 40 40;
-        --card-foreground: 235 219 178;
-        --popover: 40 40 40;
-        --popover-foreground: 235 219 178;
-        --primary: 250 189 47;
-        --primary-foreground: 40 40 40;
-        --secondary: 60 56 54;
-        --secondary-foreground: 235 219 178;
-        --muted: 60 56 54;
-        --muted-foreground: 168 153 132;
-        --accent: 60 56 54;
-        --accent-foreground: 235 219 178;
-        --destructive: 251 73 52;
-        --destructive-foreground: 40 40 40;
-        --border: 60 56 54;
-        --input: 60 56 54;
-        --ring: 250 189 47;
-    }
-
-    .solarized-dark {
-        --background: 0 43 54;
-        --background-secondary: 7 54 66;
-        --foreground: 147 161 161;
-        --card: 0 43 54;
-        --card-foreground: 147 161 161;
-        --popover: 0 43 54;
-        --popover-foreground: 147 161 161;
-        --primary: 38 139 210;
-        --primary-foreground: 0 43 54;
-        --secondary: 7 54 66;
-        --secondary-foreground: 147 161 161;
-        --muted: 7 54 66;
-        --muted-foreground: 88 110 117;
-        --accent: 7 54 66;
-        --accent-foreground: 147 161 161;
-        --destructive: 220 50 47;
-        --destructive-foreground: 0 43 54;
-        --border: 7 54 66;
-        --input: 7 54 66;
-        --ring: 38 139 210;
-    }
-}
 
 svg {
     stroke-width: 2;
@@ -486,6 +67,16 @@ h1, h2, h3, h4, h5, h6, .jotty-app-name {
 .jotty-app-name span {
     font-family: 'Work Sans Variable', sans-serif;
     font-weight: 500;
+}
+
+@media (max-width: 992px) {
+    .jotty-mobile-navigation-icon {
+        background: transparent!important;
+    }
+
+    .jotty-mobile-navigation-icon:hover {
+        color: rgb(var(--foreground))!important;
+    }
 }
 
 pre, code, 
@@ -590,11 +181,6 @@ mark {
 
 .prose em {
     font-style: italic;
-}
-
-.prose :where(:not(pre)) > code {
-    @apply bg-muted px-1 py-0.5 rounded text-sm;
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 .prose blockquote {
@@ -706,28 +292,12 @@ mark {
 }
 
 p > code {
-    background: rgba(0,0,0,0.8)!important;
-    color: orange;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    background: #292a2b!important;
+    color: #ce9178;
+    padding: 0.15rem 0.3rem;
+    border-radius: 0.15rem!important;
     font-family: "Google Sans Code Variable", monospace;
 }
-
-.ProseMirror .hljs {
-  color: #abb2bf!important;
-  background: #282c34!important;
-  font-family: "Google Sans Code Variable" !important;
-}
-
-.ProseMirror .hljs * {
-  font-family: "Google Sans Code Variable" !important;   
-}
-
-.hljs .hljs {
-    padding: 0;
-    background: transparent;
-}
-
 
 .code-block-container,
 .code-block-container *,
@@ -740,15 +310,25 @@ p > code {
   filter: none !important;
   font-family: "Google Sans Code Variable" !important;
 }
+
 .code-block-container pre {
-  background: transparent !important;
-  color: #abb2bf !important;
+  background: #292a2b!important;
 }
 
-.code-block-container code[class*="language-"], 
-.code-block-container pre[class*="language-"] {
-  background: transparent !important;
-  color: #abb2bf !important;
+.code-block-container code span {
+    background: transparent!important;
+}
+
+.code-block-container .language-header {
+    color: #aaaebc;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 14px;
+    border-top: 3px solid #6a6f74;
+    background-color: #292a2b;
+}
+.code-block-container .language-header svg {
+    stroke-width: 1;
 }
 
 .line-clamp-2 {

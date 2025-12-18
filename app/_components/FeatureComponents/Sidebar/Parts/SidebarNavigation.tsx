@@ -59,7 +59,7 @@ export const SidebarNavigation = ({
               "flex-1 justify-start gap-2 py-6",
               mode === modeOption.id
                 ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-accent-foreground"
             )}
           >
             <Icon className="h-4 w-4" />

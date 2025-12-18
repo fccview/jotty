@@ -2,50 +2,69 @@ import { findChildren } from "@tiptap/core";
 import type { Node as ProsemirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import Prism from "prismjs";
+import { prism } from "@/app/_utils/prism-utils";
 
-function parseNodes(
-  nodes: any[],
+function parsePrismTokens(
+  tokens: any[],
   className: string[] = []
 ): { text: string; classes: string[] }[] {
-  return nodes.flatMap((node) => {
-    const classes = [
-      ...className,
-      ...(node.properties ? node.properties.className : []),
-    ];
-    if (node.children) {
-      return parseNodes(node.children, classes);
-    }
-    return { text: node.value, classes };
-  });
-}
+  const result: { text: string; classes: string[] }[] = [];
 
-function getHighlightNodes(result: any) {
-  return result.value || result.children || [];
+  for (const token of tokens) {
+    if (typeof token === "string") {
+      result.push({ text: token, classes: className });
+    } else if (typeof token === "object" && token !== null) {
+      const tokenType = token.type || "";
+      const tokenAlias = token.alias || [];
+      const classes = [
+        ...className,
+        `token`,
+        tokenType,
+        ...(Array.isArray(tokenAlias)
+          ? tokenAlias
+          : typeof tokenAlias === "string"
+          ? [tokenAlias]
+          : []),
+      ].filter(Boolean);
+
+      if (token.content !== undefined) {
+        if (typeof token.content === "string") {
+          result.push({ text: token.content, classes });
+        } else if (Array.isArray(token.content)) {
+          result.push(...parsePrismTokens(token.content, classes));
+        }
+      }
+    }
+  }
+
+  return result;
 }
 
 function getDecorations({
   doc,
   name,
-  lowlight,
   defaultLanguage,
 }: {
   doc: ProsemirrorNode;
   name: string;
-  lowlight: any;
   defaultLanguage: string | null | undefined;
 }) {
   const decorations: Decoration[] = [];
 
   findChildren(doc, (node) => node.type.name === name).forEach((block) => {
     let from = block.pos + 1;
-    const language = block.node.attrs.language || defaultLanguage;
+    const language =
+      block.node.attrs.language || defaultLanguage || "plaintext";
 
-    if (language && lowlight.registered?.(language)) {
+    if (language && prism.registered(language)) {
       try {
-        const nodes = getHighlightNodes(
-          lowlight.highlight(language, block.node.textContent)
-        );
-        parseNodes(nodes).forEach((node) => {
+        const code = block.node.textContent;
+        const grammar = prism.languages[language];
+        const tokens = Prism.tokenize(code, grammar);
+        const parsedNodes = parsePrismTokens(tokens);
+
+        parsedNodes.forEach((node) => {
           const to = from + node.text.length;
           if (node.classes.length) {
             decorations.push(
@@ -66,20 +85,17 @@ function getDecorations({
   return DecorationSet.create(doc, decorations);
 }
 
-export function LowlightPlugin({
+export function PrismPlugin({
   name,
-  lowlight,
   defaultLanguage,
 }: {
   name: string;
-  lowlight: any;
   defaultLanguage: string | null | undefined;
 }) {
   return new Plugin({
-    key: new PluginKey("lowlight"),
+    key: new PluginKey("prism"),
     state: {
-      init: (_, { doc }) =>
-        getDecorations({ doc, name, lowlight, defaultLanguage }),
+      init: (_, { doc }) => getDecorations({ doc, name, defaultLanguage }),
       apply: (transaction, decorationSet, oldState, newState) => {
         if (!transaction.docChanged) {
           return decorationSet.map(transaction.mapping, transaction.doc);
@@ -113,7 +129,6 @@ export function LowlightPlugin({
           return getDecorations({
             doc: transaction.doc,
             name,
-            lowlight,
             defaultLanguage,
           });
         }

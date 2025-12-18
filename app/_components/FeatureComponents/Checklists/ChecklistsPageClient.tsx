@@ -47,7 +47,7 @@ export const ChecklistsPageClient = ({
   const { isInitialized } = useAppMode();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [checklistFilter, setChecklistFilter] =
-    useState<ChecklistFilter>("all");
+    useState<ChecklistFilter>(user?.defaultChecklistFilter || "all");
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
   const [recursive, setRecursive] = useState(false);

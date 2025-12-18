@@ -43,7 +43,7 @@ export const SearchInput = ({
           variant="ghost"
           size="sm"
           onClick={onClear}
-          className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 p-0 text-muted-foreground hover:text-foreground md:right-1 md:h-6 md:w-6 z-10"
+          className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 p-0 md:right-1 md:h-6 md:w-6 z-10"
         >
           <MultiplicationSignIcon className="h-4 w-4 md:h-3 md:w-3" />
         </Button>

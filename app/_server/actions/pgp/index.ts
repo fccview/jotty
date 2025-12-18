@@ -12,7 +12,7 @@ import {
   serverDeleteFile,
 } from "@/app/_server/actions/file";
 import { Result, User } from "@/app/_types";
-import { PGPKeyMetadata } from "@/app/_types/encryption";
+import { PGPKeyMetadata } from "@/app/_types";
 
 const _getEncryptionDir = async (username: string): Promise<string> => {
   const user = await getCurrentUser();
@@ -49,7 +49,8 @@ export const generateKeyPair = async (
           {
             name: name || user.username,
             email:
-              email || `${user.username}@${process.env.APP_URL || "jotty.local"}`,
+              email ||
+              `${user.username}@${process.env.APP_URL || "jotty.local"}`,
           },
         ],
         passphrase,
@@ -158,11 +159,12 @@ export const exportKeys = async (
     console.error(`Error exporting ${keyType} key:`, error);
     return {
       success: false,
-      error: `Failed to export ${keyType === "public" ? "public" : "private"} key`,
+      error: `Failed to export ${
+        keyType === "public" ? "public" : "private"
+      } key`,
     };
   }
 };
-
 
 export const getStoredKeys = async (): Promise<
   Result<{
@@ -193,7 +195,9 @@ export const getStoredKeys = async (): Promise<
 
       const metadata: PGPKeyMetadata = {
         keyFingerprint: fingerprint,
-        createdAt: keyCreationTime ? new Date(keyCreationTime).toISOString() : new Date().toISOString(),
+        createdAt: keyCreationTime
+          ? new Date(keyCreationTime).toISOString()
+          : new Date().toISOString(),
         algorithm,
       };
 
@@ -340,7 +344,10 @@ export const setCustomKeyPath = async (
     });
 
     if (!result.success || !result.data) {
-      return { success: false, error: result.error || "Failed to set custom key path" };
+      return {
+        success: false,
+        error: result.error || "Failed to set custom key path",
+      };
     }
 
     return { success: true, data: { user: result.data.user } };

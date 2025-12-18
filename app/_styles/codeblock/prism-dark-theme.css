@@ -1,0 +1,275 @@
+.code-block-container pre,
+.code-block-container code {
+	color: #d6e5f5;
+	font-size: 13px;
+	text-shadow: none;
+	font-family: Menlo, Monaco, Consolas, "Andale Mono", "Ubuntu Mono", "Courier New", monospace;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	line-height: 1.5;
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+.code-block-container pre::selection,
+.code-block-container code::selection,
+.code-block-container pre *::selection,
+.code-block-container code *::selection {
+	text-shadow: none;
+	background: #264F78;
+}
+
+@media print {
+	.code-block-container pre,
+	.code-block-container code {
+		text-shadow: none;
+	}
+}
+
+.code-block-container pre {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	background: #1e1e1e;
+}
+
+.code-block-container :not(pre) > code {
+	padding: .1em .3em;
+	border-radius: .3em;
+	color: #db4c69;
+	background: #1e1e1e;
+}
+/*********************************************************
+* Tokens
+*/
+.code-block-container .namespace {
+	opacity: .7;
+}
+
+.code-block-container .token.doctype .token.doctype-tag {
+	color: #569CD6;
+}
+
+.code-block-container .token.doctype .token.name {
+	color: #9cdcfe;
+}
+
+.code-block-container .token.comment,
+.code-block-container .token.prolog {
+	color: #6a9955;
+}
+
+.code-block-container .token.punctuation,
+.code-block-container .language-html .language-css .token.punctuation,
+.code-block-container .language-html .language-javascript .token.punctuation {
+	color: #d4d4d4;
+}
+
+.code-block-container .token.property,
+.code-block-container .token.tag,
+.code-block-container .token.boolean,
+.code-block-container .token.number,
+.code-block-container .token.constant,
+.code-block-container .token.symbol,
+.code-block-container .token.inserted,
+.code-block-container .token.unit {
+	color: #b5cea8;
+}
+
+.code-block-container .token.selector,
+.code-block-container .token.attr-name,
+.code-block-container .token.string,
+.code-block-container .token.char,
+.code-block-container .token.builtin,
+.code-block-container .token.deleted {
+	color: #ce9178;
+}
+
+.code-block-container .language-css .token.string.url {
+	text-decoration: underline;
+}
+
+.code-block-container .token.operator,
+.code-block-container .token.entity {
+	color: #d4d4d4;
+}
+
+.code-block-container .token.operator.arrow {
+	color: #569CD6;
+}
+
+.code-block-container .token.atrule {
+	color: #ce9178;
+}
+
+.code-block-container .token.atrule .token.rule {
+	color: #c586c0;
+}
+
+.code-block-container .token.atrule .token.url {
+	color: #9cdcfe;
+}
+
+.code-block-container .token.atrule .token.url .token.function {
+	color: #dcdcaa;
+}
+
+.code-block-container .token.atrule .token.url .token.punctuation {
+	color: #d4d4d4;
+}
+
+.code-block-container .token.keyword {
+	color: #569CD6;
+}
+
+.code-block-container .token.keyword.module,
+.code-block-container .token.keyword.control-flow {
+	color: #c586c0;
+}
+
+.code-block-container .token.function,
+.code-block-container .token.function .token.maybe-class-name {
+	color: #dcdcaa;
+}
+
+.code-block-container .token.regex {
+	color: #d16969;
+}
+
+.code-block-container .token.important {
+	color: #569cd6;
+}
+
+.code-block-container .token.italic {
+	font-style: italic;
+}
+
+.code-block-container .token.constant {
+	color: #9cdcfe;
+}
+
+.code-block-container .token.class-name,
+.code-block-container .token.maybe-class-name {
+	color: #4ec9b0;
+}
+
+.code-block-container .token.console {
+	color: #9cdcfe;
+}
+
+.code-block-container .token.parameter {
+	color: #9cdcfe;
+}
+
+.code-block-container .token.interpolation {
+	color: #9cdcfe;
+}
+
+.code-block-container .token.punctuation.interpolation-punctuation {
+	color: #569cd6;
+}
+
+.code-block-container .token.boolean {
+	color: #569cd6;
+}
+
+.code-block-container .token.property,
+.code-block-container .token.variable,
+.code-block-container .token.imports .token.maybe-class-name,
+.code-block-container .token.exports .token.maybe-class-name {
+	color: #9cdcfe;
+}
+
+.code-block-container .token.selector {
+	color: #d7ba7d;
+}
+
+.code-block-container .token.escape {
+	color: #d7ba7d;
+}
+
+.code-block-container .token.tag {
+	color: #569cd6;
+}
+
+.code-block-container .token.tag .token.punctuation {
+	color: #808080;
+}
+
+.code-block-container .token.cdata {
+	color: #808080;
+}
+
+.code-block-container .token.attr-name {
+	color: #9cdcfe;
+}
+
+.code-block-container .token.attr-value,
+.code-block-container .token.attr-value .token.punctuation {
+	color: #ce9178;
+}
+
+.code-block-container .token.attr-value .token.punctuation.attr-equals {
+	color: #d4d4d4;
+}
+
+.code-block-container .token.entity {
+	color: #569cd6;
+}
+
+.code-block-container .token.namespace {
+	color: #4ec9b0;
+}
+/*********************************************************
+* Language Specific
+*/
+
+.code-block-container pre[class*="language-javascript"],
+.code-block-container code[class*="language-javascript"],
+.code-block-container pre[class*="language-jsx"],
+.code-block-container code[class*="language-jsx"],
+.code-block-container pre[class*="language-typescript"],
+.code-block-container code[class*="language-typescript"],
+.code-block-container pre[class*="language-tsx"],
+.code-block-container code[class*="language-tsx"] {
+	color: #9cdcfe;
+}
+
+.code-block-container pre[class*="language-css"],
+.code-block-container code[class*="language-css"] {
+	color: #ce9178;
+}
+
+.code-block-container pre[class*="language-html"],
+.code-block-container code[class*="language-html"] {
+	color: #d4d4d4;
+}
+
+.code-block-container .code-block-container .language-regex .token.anchor {
+	color: #dcdcaa;
+}
+
+.code-block-container .language-html .token.punctuation {
+	color: #808080;
+}
+/*********************************************************
+* Line highlighting
+*/
+.code-block-container pre[class*="language-"] > code[class*="language-"] {
+	position: relative;
+	z-index: 1;
+}
+
+.code-block-container .line-highlight.line-highlight {
+	background: #f7ebc6;
+	box-shadow: inset 5px 0 0 #f7d87c;
+	z-index: 0;
+}

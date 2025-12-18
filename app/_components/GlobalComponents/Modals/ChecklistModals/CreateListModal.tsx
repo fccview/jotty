@@ -90,6 +90,7 @@ export const CreateListModal = ({
           placeholder="Enter checklist name..."
           required
           disabled={isLoading}
+          autoFocus
         />
 
         <ChecklistTypeSelector
@@ -115,7 +116,6 @@ export const CreateListModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1"
           >
             Cancel
           </Button>

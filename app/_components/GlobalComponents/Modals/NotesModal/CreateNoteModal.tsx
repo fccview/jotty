@@ -88,6 +88,7 @@ export const CreateNoteModal = ({
           placeholder="Enter note title..."
           required
           disabled={isCreating}
+          autoFocus
         />
 
         <CategoryInput
@@ -107,7 +108,6 @@ export const CreateNoteModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isCreating}
-            className="flex-1"
           >
             Cancel
           </Button>

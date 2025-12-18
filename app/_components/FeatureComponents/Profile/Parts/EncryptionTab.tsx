@@ -22,12 +22,12 @@ import {
   deleteKeys,
   setCustomKeyPath as setCustomKeyPathAction,
 } from "@/app/_server/actions/pgp";
-import { PGPKeyMetadata } from "@/app/_types/encryption";
+import { PGPKeyMetadata } from "@/app/_types";
 import { KeyGenerationModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/KeyGenerationModal";
 import { KeyImportModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/KeyImportModal";
 
 export const EncryptionTab = () => {
-  const { user, setUser } = useAppMode();
+  const { user, setUser, isDemoMode } = useAppMode();
   const { showToast } = useToast();
   const [hasKeys, setHasKeys] = useState(false);
   const [keyMetadata, setKeyMetadata] = useState<PGPKeyMetadata | null>(null);
@@ -260,55 +260,61 @@ export const EncryptionTab = () => {
       </FormWrapper>
 
       <FormWrapper title="Key Management">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {!hasKeys && (
-            <>
-              <Button
-                onClick={() => setShowGenerateModal(true)}
-                className="w-full"
-              >
-                <LockKeyIcon className="h-4 w-4 mr-2" />
-                Generate New Key Pair
-              </Button>
-              <Button
-                onClick={() => setShowImportModal(true)}
-                variant="outline"
-                className="w-full"
-              >
-                <Upload01Icon className="h-4 w-4 mr-2" />
-                Import Existing Keys
-              </Button>
-            </>
-          )}
-          {hasKeys && (
-            <>
-              <Button
-                onClick={() => handleExportKey("public")}
-                variant="outline"
-                className="w-full"
-              >
-                <Download01Icon className="h-4 w-4 mr-2" />
-                Export Public Key
-              </Button>
-              <Button
-                onClick={() => handleExportKey("private")}
-                variant="outline"
-                className="w-full"
-              >
-                <Download01Icon className="h-4 w-4 mr-2" />
-                Export Private Key
-              </Button>
-              <Button
-                onClick={() => setShowDeleteConfirm(true)}
-                variant="destructive"
-                className="w-full md:col-span-2"
-              >
-                <Delete03Icon className="h-4 w-4 mr-2" />
-                Delete Keys
-              </Button>
-            </>
-          )}
-        </div>
+        {!isDemoMode ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {!hasKeys && (
+              <>
+                <Button
+                  onClick={() => setShowGenerateModal(true)}
+                  className="w-full"
+                >
+                  <LockKeyIcon className="h-4 w-4 mr-2" />
+                  Generate New Key Pair
+                </Button>
+                <Button
+                  onClick={() => setShowImportModal(true)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Upload01Icon className="h-4 w-4 mr-2" />
+                  Import Existing Keys
+                </Button>
+              </>
+            )}
+            {hasKeys && (
+              <>
+                <Button
+                  onClick={() => handleExportKey("public")}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Download01Icon className="h-4 w-4 mr-2" />
+                  Export Public Key
+                </Button>
+                <Button
+                  onClick={() => handleExportKey("private")}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Download01Icon className="h-4 w-4 mr-2" />
+                  Export Private Key
+                </Button>
+                <Button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  variant="destructive"
+                  className="w-full md:col-span-2"
+                >
+                  <Delete03Icon className="h-4 w-4 mr-2" />
+                  Delete Keys
+                </Button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            Stored encryption keys are disabled in demo mode.
+          </div>
+        )}
       </FormWrapper>
 
       <FormWrapper title="Encryption Settings">
@@ -339,29 +345,35 @@ export const EncryptionTab = () => {
       </FormWrapper>
 
       <FormWrapper title="Custom Key Path (Local Installations)">
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Specify a custom (absolute) filesystem path for storing encryption
-            keys. This is only needed for local installations. Docker users
-            should map the default path in docker-compose.yml instead.
-          </p>
-          <Input
-            id="customKeyPath"
-            type="text"
-            label="Custom Path"
-            value={customKeyPath}
-            onChange={(e) => setCustomKeyPath(e.target.value)}
-            placeholder="/home/user/my-keys"
-            description="Must be an absolute path (e.g., /home/user/my-keys or C:\Users\user\my-keys)"
-          />
-          <Button
-            onClick={handleSaveCustomPath}
-            disabled={isSavingPath || !customKeyPath.trim()}
-            variant="outline"
-          >
-            {isSavingPath ? "Saving..." : "Set Custom Path"}
-          </Button>
-        </div>
+        {!isDemoMode ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Specify a custom (absolute) filesystem path for storing encryption
+              keys. This is only needed for local installations. Docker users
+              should map the default path in docker-compose.yml instead.
+            </p>
+            <Input
+              id="customKeyPath"
+              type="text"
+              label="Custom Path"
+              value={customKeyPath}
+              onChange={(e) => setCustomKeyPath(e.target.value)}
+              placeholder="/home/user/my-keys"
+              description="Must be an absolute path (e.g., /home/user/my-keys or C:\Users\user\my-keys)"
+            />
+            <Button
+              onClick={handleSaveCustomPath}
+              disabled={isSavingPath || !customKeyPath.trim()}
+              variant="outline"
+            >
+              {isSavingPath ? "Saving..." : "Set Custom Path"}
+            </Button>
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            Custom key path is disabled in demo mode
+          </div>
+        )}
       </FormWrapper>
 
       <KeyGenerationModal

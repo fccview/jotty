@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/app/_utils/global-utils";
+import { Button } from "../Buttons/Button";
 
 interface DropdownItem {
   type?: "item" | "divider";
@@ -79,21 +80,23 @@ export const DropdownMenu = ({
             }
 
             return (
-              <button
+              <Button
                 key={index}
+                variant={"ghost"}
+                size="sm"
                 onClick={() => item.onClick && handleItemClick(item.onClick)}
                 className={cn(
                   item.className || "",
-                  "w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-accent transition-colors text-left",
+                  "w-full flex items-center gap-3 text-sm transition-colors text-left rounded-none",
                   item.variant === "destructive" &&
-                    "text-destructive hover:bg-destructive/10"
+                    "text-destructive hover:bg-destructive"
                 )}
               >
                 {item.icon && (
                   <span className="flex-shrink-0 w-4 h-4">{item.icon}</span>
                 )}
                 <span className="flex-grow">{item.label}</span>
-              </button>
+              </Button>
             );
           })}
         </div>

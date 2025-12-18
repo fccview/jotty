@@ -51,7 +51,7 @@ export const QuickNav = ({
             variant="ghost"
             size="icon"
             onClick={onSidebarToggle}
-            className="text-muted-foreground hover:text-foreground lg:hidden"
+            className="lg:hidden jotty-mobile-navigation-icon"
           >
             <SidebarLeftIcon className="h-5 w-5" />
           </Button>
@@ -85,9 +85,7 @@ export const QuickNav = ({
               <CheckmarkSquare04Icon
                 className={cn(
                   "h-5 w-5",
-                  mode === Modes.CHECKLISTS
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  mode === Modes.CHECKLISTS ? "text-primary" : ""
                 )}
               />
             }
@@ -104,9 +102,7 @@ export const QuickNav = ({
               <File02Icon
                 className={cn(
                   "h-5 w-5",
-                  mode === Modes.NOTES
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  mode === Modes.NOTES ? "text-primary" : ""
                 )}
               />
             }

@@ -114,10 +114,9 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             {mode === "edit" && user && (
               <Button
                 type="button"
-                variant="outline"
+                variant="destructive"
                 onClick={handlers.handleDelete}
                 disabled={state.isLoading}
-                className="text-destructive hover:text-destructive"
               >
                 <Delete03Icon className="h-4 w-4 mr-2" /> Delete
               </Button>
@@ -135,7 +134,10 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             <Button type="submit" disabled={state.isLoading}>
               {state.isLoading ? (
                 <>
-                  <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
+                  <Logo
+                    className="h-4 w-4 bg-background mr-2 animate-pulse"
+                    pathClassName="fill-primary"
+                  />
                   Saving...
                 </>
               ) : (

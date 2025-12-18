@@ -274,9 +274,9 @@ export const InternalLinkComponent = ({
             onClick={handleToggleConversion}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-xs font-medium transition-all ${
               isJottyLink
-                ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
+                ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
                 : convertToBidirectional
-                ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30 border border-blue-500/30"
+                ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
                 : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
             }`}
             title={

@@ -102,7 +102,7 @@ export const UsersShareTab = ({
                     )}
                     <Button
                       size="sm"
-                      variant={isShared ? "outline" : "default"}
+                      variant={isShared ? "destructive" : "default"}
                       onClick={() =>
                         handleShare(
                           isShared ? "unshare" : "share",
@@ -110,14 +110,13 @@ export const UsersShareTab = ({
                         )
                       }
                       disabled={isLoading}
-                      className={cn(
-                        `w-full min-w-[80px]`,
-                        isShared &&
-                        "text-destructive hover:text-destructive min-w-[10px]"
-                      )}
+                      className="w-full min-w-[80px]"
                     >
                       {isLoading ? (
-                        <Logo className="h-3 w-3 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
+                        <Logo
+                          className="h-3 w-3 bg-background mr-2 animate-pulse"
+                          pathClassName="fill-primary"
+                        />
                       ) : isShared ? (
                         <UserMinus02Icon className="h-3 w-3 mr-1" />
                       ) : (

@@ -29,7 +29,7 @@ export const AdminSharedItemsList = ({
             {onUnshare && (
               <button
                 onClick={() => onUnshare(item)}
-                className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                className="p-1 text-destructive hover:text-destructive-foreground hover:bg-destructive transition-colors"
                 title={`Unshare ${item.id}`}
               >
                 <MultiplicationSignIcon className="h-4 w-4" />

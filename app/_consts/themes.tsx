@@ -15,7 +15,8 @@ import {
   Building02Icon,
   LaptopIcon,
   SourceCodeIcon,
-  LaptopProgrammingIcon
+  Tree07Icon,
+  LaptopProgrammingIcon,
 } from "hugeicons-react";
 
 import {
@@ -58,34 +59,36 @@ export const BUILT_IN_THEMES: Array<{
   name: string;
   icon: any;
 }> = [
-    { id: "system" as const, name: "System", icon: LaptopIcon },
-    { id: "light" as const, name: "Light", icon: Sun03Icon },
-    { id: "dark" as const, name: "Dark", icon: GibbousMoonIcon },
-    {
-      id: "rwmarkable-light" as const,
-      name: "RWMarkable Light",
-      icon: LegacyLogoBlue,
-    },
-    {
-      id: "rwmarkable-dark" as const,
-      name: "RWMarkable Dark",
-      icon: LegacyLogoBlue,
-    },
-    { id: "fccview" as const, name: "fccview", icon: SourceCodeIcon },
-    { id: "black-white" as const, name: "Black & White", icon: PaintBrush04Icon },
-    { id: "sunset" as const, name: "SunsetIcon", icon: SunsetIcon },
-    { id: "ocean" as const, name: "Ocean", icon: CurvyRightDirectionIcon },
-    { id: "forest" as const, name: "Forest", icon: Tree03Icon },
-    { id: "nord" as const, name: "Nord", icon: MoonCloudIcon },
-    { id: "dracula" as const, name: "Dracula", icon: PaintBrush04Icon },
-    { id: "monokai" as const, name: "Monokai", icon: LaptopProgrammingIcon },
-    { id: "github-dark" as const, name: "GitHub Dark", icon: GithubIcon },
-    { id: "tokyo-night" as const, name: "Tokyo Night", icon: Tv02Icon },
-    { id: "catppuccin" as const, name: "Catppuccin", icon: Coffee02Icon },
-    { id: "rose-pine" as const, name: "Rose Pine", icon: FlowerIcon },
-    { id: "gruvbox" as const, name: "Gruvbox", icon: FireIcon },
-    { id: "solarized-dark" as const, name: "Solarized Dark", icon: Leaf04Icon },
-  ];
+  { id: "system" as const, name: "System", icon: LaptopIcon },
+  { id: "light" as const, name: "Light", icon: Sun03Icon },
+  { id: "dark" as const, name: "Dark", icon: GibbousMoonIcon },
+  {
+    id: "rwmarkable-light" as const,
+    name: "RWMarkable Light",
+    icon: LegacyLogoBlue,
+  },
+  {
+    id: "rwmarkable-dark" as const,
+    name: "RWMarkable Dark",
+    icon: LegacyLogoBlue,
+  },
+  { id: "fccview" as const, name: "fccview", icon: SourceCodeIcon },
+  { id: "sakura-blue" as const, name: "oxalorg/sakura-blue", icon: FlowerIcon },
+  { id: "sakura-red" as const, name: "oxalorg/sakura-red", icon: FlowerIcon },
+  { id: "black-white" as const, name: "Black & White", icon: PaintBrush04Icon },
+  { id: "sunset" as const, name: "SunsetIcon", icon: SunsetIcon },
+  { id: "ocean" as const, name: "Ocean", icon: CurvyRightDirectionIcon },
+  { id: "forest" as const, name: "Forest", icon: Tree03Icon },
+  { id: "nord" as const, name: "Nord", icon: MoonCloudIcon },
+  { id: "dracula" as const, name: "Dracula", icon: PaintBrush04Icon },
+  { id: "monokai" as const, name: "Monokai", icon: LaptopProgrammingIcon },
+  { id: "github-dark" as const, name: "GitHub Dark", icon: GithubIcon },
+  { id: "tokyo-night" as const, name: "Tokyo Night", icon: Tv02Icon },
+  { id: "catppuccin" as const, name: "Catppuccin", icon: Coffee02Icon },
+  { id: "rose-pine" as const, name: "Rose Pine", icon: Tree07Icon },
+  { id: "gruvbox" as const, name: "Gruvbox", icon: FireIcon },
+  { id: "solarized-dark" as const, name: "Solarized Dark", icon: Leaf04Icon },
+];
 
 export const getAllThemes = async () => {
   const customConfig = await loadCustomThemes();
@@ -148,6 +151,7 @@ const THEME_BACKGROUND_COLORS: Record<string, string> = {
   "rose-pine": rgbToHex("25 23 36"),
   gruvbox: rgbToHex("40 40 40"),
   "solarized-dark": rgbToHex("0 43 54"),
+  sakura: rgbToHex("249 249 249"),
   system: rgbToHex("255 255 255"),
 };
 

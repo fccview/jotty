@@ -1,5 +1,6 @@
 import '@fontsource-variable/work-sans';
 import '@fontsource-variable/google-sans-code';
+import '@fontsource-variable/ibm-plex-sans';
 import '@fontsource-variable/inter';
 import type { Metadata, Viewport } from "next";
 import "@/app/_styles/globals.css";

@@ -30,6 +30,9 @@ export const editorSettingsSchema = z.object({
   markdownTheme: z.enum(["prism", "prism-dark", "prism-funky", "prism-okaidia", "prism-tomorrow", "prism-twilight", "prism-coy", "prism-solarizedlight"], {
     message: "Markdown theme must be a valid Prism theme",
   }),
+  defaultNoteFilter: z.enum(["all", "recent", "pinned"], {
+    message: "Default note filter must be 'all', 'recent', or 'pinned'",
+  }),
 });
 
 export const checklistSettingsSchema = z.object({
@@ -38,6 +41,9 @@ export const checklistSettingsSchema = z.object({
   }),
   showCompletedSuggestions: z.enum(["enable", "disable"], {
     message: "Show completed suggestions must be either 'enable' or 'disable'",
+  }),
+  defaultChecklistFilter: z.enum(["all", "completed", "incomplete", "pinned", "task", "simple"], {
+    message: "Default checklist filter must be 'all', 'completed', 'incomplete', 'pinned', 'task', or 'simple'",
   }),
 });
 

@@ -13,7 +13,7 @@ export const FileTabs = ({ activeTab, setActiveTab }: FileTabsProps) => (
         onClick={() => setActiveTab(tab)}
         className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
           activeTab === tab
-            ? "text-primary border-b-2 border-primary bg-accent/50"
+            ? "text-primary-foreground border-b-2 border-primary bg-primary"
             : "text-muted-foreground hover:text-foreground"
         }`}
       >

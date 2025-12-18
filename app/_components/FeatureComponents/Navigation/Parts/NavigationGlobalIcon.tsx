@@ -12,9 +12,9 @@ export const NavigationGlobalIcon = ({
   return (
     <Button
       variant="ghost"
+      className="jotty-mobile-navigation-icon"
       size="icon"
       onClick={() => onClick()}
-      className="text-muted-foreground hover:bg-transparent lg:hover:bg-muted lg:hover:text-foreground transition-colors"
     >
       {icon}
     </Button>

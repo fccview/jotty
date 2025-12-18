@@ -74,7 +74,7 @@ export const ChecklistHeader = ({
             variant="ghost"
             size="sm"
             onClick={onBack}
-            className="h-10 w-10 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            className="h-10 w-10 p-0"
           >
             <ArrowLeft01Icon className="h-4 w-4 lg:h-5 lg:w-5" />
           </Button>
@@ -87,7 +87,7 @@ export const ChecklistHeader = ({
               variant="ghost"
               size="sm"
               onClick={handleCopyId}
-              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              className="h-6 w-6 p-0"
               title={`Copy ID: ${checklist?.uuid || checklist?.id}`}
             >
               {copied ? (

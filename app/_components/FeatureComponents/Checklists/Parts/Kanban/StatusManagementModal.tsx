@@ -97,11 +97,11 @@ const SortableStatusItem = ({
       />
 
       <Button
-        variant="ghost"
+        variant="destructive"
         size="sm"
         onClick={() => onRemove(status.id)}
         disabled={!canRemove}
-        className="h-10 w-10 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+        className="h-10 w-10 p-0"
       >
         <Delete03Icon className="h-4 w-4" />
       </Button>

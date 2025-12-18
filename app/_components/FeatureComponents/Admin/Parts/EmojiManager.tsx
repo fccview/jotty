@@ -65,10 +65,10 @@ export const EmojiManager = () => {
                   <PencilEdit02Icon className="h-3 w-3" />
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="destructive"
                   size="sm"
                   onClick={() => handleDeleteEmoji(emoji.keyword)}
-                  className="h-6 w-6 p-0 text-destructive hover:text-destructive/80"
+                  className="h-6 w-6 p-0"
                 >
                   <Delete03Icon className="h-3 w-3" />
                 </Button>
@@ -141,7 +141,10 @@ export const EmojiManager = () => {
             <Button onClick={handleSaveEmoji} disabled={isSavingEmojis}>
               {isSavingEmojis ? (
                 <>
-                  <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
+                  <Logo
+                    className="h-4 w-4 bg-background mr-2 animate-pulse"
+                    pathClassName="fill-primary"
+                  />
                   Saving...
                 </>
               ) : editingEmoji ? (

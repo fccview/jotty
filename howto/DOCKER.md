@@ -38,7 +38,7 @@ container_name: jotty
 
 Sets a custom name for the running container. This makes it easier to manage with docker commands.
 
-```yml
+```yaml
 user: "1000:1000"
 ```
 
