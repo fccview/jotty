@@ -435,7 +435,7 @@ export const NoteEditorHeader = ({
                                 }
                               },
                             },
-                            ...(!isInViewMode ? [{
+                            ...(!isInViewMode && permissions?.canEdit ? [{
                               type: "item" as const,
                               label: "Decrypt",
                               icon: <LockKeyIcon className="h-4 w-4" />,
@@ -446,7 +446,7 @@ export const NoteEditorHeader = ({
                             }] : []),
                           ]
                         : [
-                            {
+                           ...(permissions?.canEdit ? [{
                               type: "item" as const,
                               label: "Encrypt Note",
                               icon: <LockKeyIcon className="h-4 w-4" />,
@@ -454,7 +454,7 @@ export const NoteEditorHeader = ({
                                 setEncryptionModalMode("encrypt");
                                 setShowEncryptionModal(true);
                               },
-                            },
+                            }] : []),
                           ]),
                       {
                         type: "item" as const,
