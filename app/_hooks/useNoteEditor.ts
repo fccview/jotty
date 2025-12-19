@@ -40,6 +40,9 @@ export const useNoteEditor = ({
   const [category, setCategory] = useState(note.category || "Uncategorized");
   const [editorContent, setEditorContent] = useState(() => {
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
+    if (note.encrypted) {
+      return contentWithoutMetadata;
+    }
     if (isMinimalMode) {
       return contentWithoutMetadata;
     }
@@ -88,7 +91,10 @@ export const useNoteEditor = ({
 
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
 
-    if (isMinimalMode) {
+    if (note.encrypted) {
+      setEditorContent(contentWithoutMetadata);
+      setIsMarkdownMode(true); // Treat as raw text
+    } else if (isMinimalMode) {
       setEditorContent(contentWithoutMetadata);
       setIsMarkdownMode(true);
     } else if (defaultEditorIsMarkdown) {
