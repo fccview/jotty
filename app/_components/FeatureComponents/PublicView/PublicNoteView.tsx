@@ -8,7 +8,9 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ReadingProgressBar } from "../../GlobalComponents/Layout/ReadingProgressBar";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { EncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/EncryptionModal";
+import { PGPEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPEncryptionModal";
+import { XChaChaEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/XChaChaEncryptionModal";
+import { detectEncryptionMethod } from "@/app/_utils/encryption-utils";
 
 interface PublicNoteViewProps {
   note: Note;
@@ -82,7 +84,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
               </div>
               <h3 className="text-xl font-semibold">This note is encrypted</h3>
               <p className="text-sm text-muted-foreground">
-                This note is protected with PGP encryption.
+                This note is protected with {detectEncryptionMethod(note.content) === "pgp" ? "PGP" : "XChaCha20-Poly1305"} encryption.
               </p>
               <div className="flex items-center justify-center gap-3 pt-4">
                 <Button
@@ -102,18 +104,32 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
           )}
         </div>
 
-        {note.encrypted && (
-          <EncryptionModal
-            isOpen={showEncryptionModal}
-            onClose={() => setShowEncryptionModal(false)}
-            mode="view"
-            noteContent={note.content}
-            onSuccess={(content) => {
-              setDecryptedContent(content);
-              setShowEncryptionModal(false);
-            }}
-          />
-        )}
+        {note.encrypted && (() => {
+          const method = detectEncryptionMethod(note.content);
+          return method === "pgp" ? (
+            <PGPEncryptionModal
+              isOpen={showEncryptionModal}
+              onClose={() => setShowEncryptionModal(false)}
+              mode="view"
+              noteContent={note.content}
+              onSuccess={(content) => {
+                setDecryptedContent(content);
+                setShowEncryptionModal(false);
+              }}
+            />
+          ) : (
+            <XChaChaEncryptionModal
+              isOpen={showEncryptionModal}
+              onClose={() => setShowEncryptionModal(false)}
+              mode="view"
+              noteContent={note.content}
+              onSuccess={(content) => {
+                setDecryptedContent(content);
+                setShowEncryptionModal(false);
+              }}
+            />
+          );
+        })()}
 
         <div className="mt-12 pt-8 border-t border-border text-center no-print">
           <p className="text-sm text-muted-foreground">

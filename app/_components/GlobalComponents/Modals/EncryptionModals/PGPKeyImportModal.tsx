@@ -8,17 +8,17 @@ import { Textarea } from "@/app/_components/GlobalComponents/FormElements/Textar
 import { importKeys } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
 
-interface KeyImportModalProps {
+interface PGPKeyImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export const KeyImportModal = ({
+export const PGPKeyImportModal = ({
   isOpen,
   onClose,
   onSuccess,
-}: KeyImportModalProps) => {
+}: PGPKeyImportModalProps) => {
   const { showToast } = useToast();
   const [publicKey, setPublicKey] = useState("");
   const [privateKey, setPrivateKey] = useState("");
@@ -43,7 +43,6 @@ export const KeyImportModal = ({
       return;
     }
 
-    // Validate ASCII-armored format
     if (!publicKey.includes("-----BEGIN PGP PUBLIC KEY BLOCK-----")) {
       showToast({
         type: "error",

@@ -15,7 +15,7 @@ import {
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
 
-interface EncryptionModalProps {
+interface PGPEncryptionModalProps {
   isOpen: boolean;
   onClose: () => void;
   mode: "encrypt" | "decrypt" | "view";
@@ -23,22 +23,24 @@ interface EncryptionModalProps {
   onSuccess: (content: string) => void;
 }
 
-export const EncryptionModal = ({
+export const PGPEncryptionModal = ({
   isOpen,
   onClose,
   mode,
   noteContent,
   onSuccess,
-}: EncryptionModalProps) => {
+}: PGPEncryptionModalProps) => {
   const { showToast } = useToast();
   const [useCustomKey, setUseCustomKey] = useState(false);
   const [customKey, setCustomKey] = useState("");
   const [passphrase, setPassphrase] = useState("");
+  const [signNote, setSignNote] = useState(false);
+  const [useStoredSigningKey, setUseStoredSigningKey] = useState(true);
+  const [signingKey, setSigningKey] = useState("");
+  const [signingPassphrase, setSigningPassphrase] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasStoredKeys, setHasStoredKeys] = useState(false);
-  const [isCheckingKeys, setIsCheckingKeys] = useState(false);
   const passphraseRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (isOpen) {
@@ -50,7 +52,6 @@ export const EncryptionModal = ({
   }, [isOpen, mode]);
 
   const checkStoredKeys = async () => {
-    setIsCheckingKeys(true);
     try {
       const result = await getStoredKeys();
       if (result.success && result.data) {
@@ -58,14 +59,13 @@ export const EncryptionModal = ({
         setHasStoredKeys(hasKeys);
         if (!hasKeys) {
           setUseCustomKey(true);
+          setUseStoredSigningKey(false);
         }
       }
     } catch (error) {
       console.error("Error checking stored keys:", error);
       setHasStoredKeys(false);
       setUseCustomKey(true);
-    } finally {
-      setIsCheckingKeys(false);
     }
   };
 
@@ -90,6 +90,25 @@ export const EncryptionModal = ({
       return;
     }
 
+    if (mode === "encrypt" && signNote) {
+      if (!useStoredSigningKey && !signingKey.trim()) {
+        showToast({
+          type: "error",
+          title: "Error",
+          message: "Private key is required for signing",
+        });
+        return;
+      }
+      if (!signingPassphrase.trim()) {
+        showToast({
+          type: "error",
+          title: "Error",
+          message: "Passphrase is required for signing",
+        });
+        return;
+      }
+    }
+
     if (mode === "decrypt" && !passphrase.trim()) {
       showToast({
         type: "error",
@@ -108,6 +127,15 @@ export const EncryptionModal = ({
         formData.append("useStoredKey", (!useCustomKey).toString());
         if (useCustomKey) {
           formData.append("publicKey", customKey.trim());
+        }
+        
+        formData.append("signNote", signNote.toString());
+        if (signNote) {
+          formData.append("useStoredSigningKey", useStoredSigningKey.toString());
+          if (!useStoredSigningKey) {
+            formData.append("signingKey", signingKey.trim());
+          }
+          formData.append("signingPassphrase", signingPassphrase);
         }
 
         const result = await encryptNoteContent(formData);
@@ -138,10 +166,25 @@ export const EncryptionModal = ({
         const result = await decryptNoteContent(formData);
 
         if (result.success && result.data) {
+          let message = "Note decrypted successfully";
+          let type: "success" | "info" = "success";
+          let title = "Success";
+
+          if (result.data.signature) {
+            if (result.data.signature.valid) {
+              message += ". Signature verified.";
+              title = "Decrypted & Verified";
+            } else {
+              message += ". Warning: Signature invalid or could not be verified.";
+              type = "info";
+              title = "Decrypted with Warning";
+            }
+          }
+
           showToast({
-            type: "success",
-            title: "Success",
-            message: "Note decrypted successfully",
+            type,
+            title,
+            message,
           });
           onSuccess(result.data.decryptedContent);
           handleClose();
@@ -168,6 +211,10 @@ export const EncryptionModal = ({
     setUseCustomKey(false);
     setCustomKey("");
     setPassphrase("");
+    setSignNote(false);
+    setUseStoredSigningKey(true);
+    setSigningKey("");
+    setSigningPassphrase("");
     onClose();
   };
 
@@ -280,6 +327,79 @@ export const EncryptionModal = ({
             required
             minHeight="200px"
           />
+        )}
+
+        {isEncrypt && (
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between gap-4">
+              <label
+                htmlFor="signNote"
+                className="flex-1 cursor-pointer"
+                onClick={() => setSignNote(!signNote)}
+              >
+                <div className="font-medium">Sign with private key</div>
+                <div className="text-sm text-muted-foreground">
+                  prove authenticity of this note
+                </div>
+              </label>
+              <Toggle
+                checked={signNote}
+                onCheckedChange={setSignNote}
+                size="md"
+              />
+            </div>
+
+            {signNote && (
+              <div className="pl-4 border-l-2 border-border space-y-4">
+                {hasStoredKeys && (
+                  <div className="flex items-center justify-between gap-4">
+                    <label
+                      htmlFor="useStoredSigningKey"
+                      className="flex-1 cursor-pointer"
+                      onClick={() => setUseStoredSigningKey(!useStoredSigningKey)}
+                    >
+                      <div className="font-medium text-sm">
+                        Use stored private key
+                      </div>
+                    </label>
+                    <Toggle
+                      checked={useStoredSigningKey}
+                      onCheckedChange={setUseStoredSigningKey}
+                      size="sm"
+                    />
+                  </div>
+                )}
+
+                {(!useStoredSigningKey || !hasStoredKeys) && (
+                  <Textarea
+                    id="signingKey"
+                    label="Private Key for Signing"
+                    value={signingKey}
+                    onChange={(e) => setSigningKey(e.target.value)}
+                    placeholder={`-----BEGIN PGP PRIVATE KEY BLOCK-----
+
+...
+
+-----END PGP PRIVATE KEY BLOCK-----`}
+                    disabled={isProcessing}
+                    required
+                    minHeight="150px"
+                  />
+                )}
+
+                <Input
+                  id="signingPassphrase"
+                  type="password"
+                  label="Signing Passphrase"
+                  value={signingPassphrase}
+                  onChange={(e) => setSigningPassphrase(e.target.value)}
+                  placeholder="Enter passphrase for signing key"
+                  disabled={isProcessing}
+                  required
+                />
+              </div>
+            )}
+          </div>
         )}
 
         {(mode === "decrypt" || mode === "view") && (

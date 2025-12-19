@@ -129,6 +129,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     "notesAutoSaveInterval",
     "disableRichEditor",
     "defaultNoteFilter",
+    "markdownTheme",
   ]);
   const hasChecklistsChanges = hasChanges([
     "enableRecurrence",
@@ -456,6 +457,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                   "tableSyntax",
                   "disableRichEditor",
                   "defaultNoteFilter",
+                  "markdownTheme",
                 ],
                 editorSettingsSchema,
                 "Notes Preferences"
