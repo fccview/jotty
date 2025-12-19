@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
 
         const themePath = path.join(
             process.cwd(),
-            "node_modules",
-            "prismjs",
+            "public",
             "themes",
+            "prism",
             `${theme}.css`
         );
 

@@ -170,6 +170,7 @@ export const NoteEditorHeader = ({
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
+    formData.append("originalCategory", note.category || "Uncategorized");
     if (note.uuid) {
       formData.append("uuid", note.uuid);
     }
@@ -198,6 +199,7 @@ export const NoteEditorHeader = ({
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
+    formData.append("originalCategory", note.category || "Uncategorized");
     if (note.uuid) {
       formData.append("uuid", note.uuid);
     }

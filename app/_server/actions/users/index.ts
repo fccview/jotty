@@ -1,29 +1,12 @@
 "use server";
 
 import {
-  ARCHIVED_DIR_NAME,
   CHECKLISTS_DIR,
   NOTES_DIR,
   USERS_FILE,
 } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import {
-  Checklist,
-  ImageSyntax,
-  LandingPage,
-  Note,
-  NotesAutoSaveInterval,
-  NotesDefaultEditor,
-  NotesDefaultMode,
-  Result,
-  TableSyntax,
-  EnableRecurrence,
-  ShowCompletedSuggestions,
-  FileRenameMode,
-  ItemType,
-  PreferredDateFormat,
-  PreferredTimeFormat,
-} from "@/app/_types";
+import { Result, ItemType } from "@/app/_types";
 import { User } from "@/app/_types";
 import {
   getSessionId,
@@ -33,10 +16,7 @@ import {
 import fs from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
-import { updateNote } from "@/app/_server/actions/note";
 import { ItemTypes, Modes } from "@/app/_types/enums";
-import { AppMode } from "@/app/_types";
-import { updateList } from "@/app/_server/actions/checklist";
 import { getFormData } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
 
