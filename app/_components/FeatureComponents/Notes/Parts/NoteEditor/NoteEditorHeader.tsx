@@ -22,6 +22,7 @@ import {
   Copy01Icon,
   ViewIcon,
   LockKeyIcon,
+  ViewOffSlashIcon,
 } from "hugeicons-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -41,9 +42,11 @@ import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
-import { EncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/EncryptionModal";
+import { PGPEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPEncryptionModal";
+import { XChaChaEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/XChaChaEncryptionModal";
 import { updateNote } from "@/app/_server/actions/note";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
+import { detectEncryptionMethod, isEncrypted, isValidXChaChaJSON } from "@/app/_utils/encryption-utils";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -225,6 +228,9 @@ export const NoteEditorHeader = ({
   const isPubliclyShared = itemDetails.isPublic;
 
   const canDelete = permissions?.canDelete;
+
+  const isContentStillEncrypted = isEncrypted(viewModel.editorContent || "");
+  const isInViewMode = note?.encrypted && !isContentStillEncrypted;
 
   return (
     <>
@@ -418,14 +424,18 @@ export const NoteEditorHeader = ({
                         ? [
                             {
                               type: "item" as const,
-                              label: "View",
-                              icon: <ViewIcon className="h-4 w-4" />,
+                              label: !isInViewMode ? "View" : "Hide",
+                              icon: !isInViewMode ? <ViewIcon className="h-4 w-4" /> : <ViewOffSlashIcon className="h-4 w-4" />,
                               onClick: () => {
-                                setEncryptionModalMode("view");
-                                setShowEncryptionModal(true);
+                                if (!isInViewMode) {
+                                  setEncryptionModalMode("view");
+                                  setShowEncryptionModal(true);
+                                } else {
+                                  window.location.reload();
+                                }
                               },
                             },
-                            {
+                            ...(!isInViewMode ? [{
                               type: "item" as const,
                               label: "Decrypt",
                               icon: <LockKeyIcon className="h-4 w-4" />,
@@ -433,7 +443,7 @@ export const NoteEditorHeader = ({
                                 setEncryptionModalMode("decrypt");
                                 setShowEncryptionModal(true);
                               },
-                            },
+                            }] : []),
                           ]
                         : [
                             {
@@ -508,19 +518,41 @@ export const NoteEditorHeader = ({
         onClose={() => setShowSharedWithModal(false)}
       />
 
-      <EncryptionModal
-        isOpen={showEncryptionModal}
-        onClose={() => setShowEncryptionModal(false)}
-        mode={encryptionModalMode}
-        noteContent={viewModel.editorContent}
-        onSuccess={
-          encryptionModalMode === "view"
-            ? handleViewDecryption
-            : encryptionModalMode === "decrypt"
-            ? handlePermanentDecryption
-            : handleEncryptionSuccess
-        }
-      />
+      {(() => {
+        const currentMethod = detectEncryptionMethod(note?.content || "");
+        const preferredMethod = user?.encryptionSettings?.method || "xchacha";
+        const methodToUse = encryptionModalMode === "encrypt" ? preferredMethod : currentMethod;
+
+        return methodToUse === "pgp" ? (
+          <PGPEncryptionModal
+            isOpen={showEncryptionModal}
+            onClose={() => setShowEncryptionModal(false)}
+            mode={encryptionModalMode}
+            noteContent={viewModel.editorContent}
+            onSuccess={
+              encryptionModalMode === "view"
+                ? handleViewDecryption
+                : encryptionModalMode === "decrypt"
+                ? handlePermanentDecryption
+                : handleEncryptionSuccess
+            }
+          />
+        ) : (
+          <XChaChaEncryptionModal
+            isOpen={showEncryptionModal}
+            onClose={() => setShowEncryptionModal(false)}
+            mode={encryptionModalMode}
+            noteContent={viewModel.editorContent}
+            onSuccess={
+              encryptionModalMode === "view"
+                ? handleViewDecryption
+                : encryptionModalMode === "decrypt"
+                ? handlePermanentDecryption
+                : handleEncryptionSuccess
+            }
+          />
+        );
+      })()}
     </>
   );
 };

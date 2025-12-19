@@ -13,6 +13,7 @@ import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/For
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
+import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { updateUserSettings } from "@/app/_server/actions/users";
@@ -22,9 +23,9 @@ import {
   deleteKeys,
   setCustomKeyPath as setCustomKeyPathAction,
 } from "@/app/_server/actions/pgp";
-import { PGPKeyMetadata } from "@/app/_types";
-import { KeyGenerationModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/KeyGenerationModal";
-import { KeyImportModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/KeyImportModal";
+import { PGPKeyMetadata, EncryptionMethod } from "@/app/_types";
+import { PGPKeyGenerationModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyGenerationModal";
+import { PGPKeyImportModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyImportModal";
 
 export const EncryptionTab = () => {
   const { user, setUser, isDemoMode } = useAppMode();
@@ -42,6 +43,7 @@ export const EncryptionTab = () => {
     user?.encryptionSettings?.customKeyPath ?? ""
   );
   const [isSavingPath, setIsSavingPath] = useState(false);
+  const method: EncryptionMethod = user?.encryptionSettings?.method || "xchacha";
 
   useEffect(() => {
     loadKeyStatus();
@@ -145,9 +147,10 @@ export const EncryptionTab = () => {
     try {
       const result = await updateUserSettings({
         encryptionSettings: {
-          ...user?.encryptionSettings,
+          method: user?.encryptionSettings?.method || "xchacha",
           hasKeys: user?.encryptionSettings?.hasKeys ?? false,
           autoDecrypt: enabled,
+          customKeyPath: user?.encryptionSettings?.customKeyPath,
         },
       });
 
@@ -215,9 +218,67 @@ export const EncryptionTab = () => {
     }
   };
 
+  const handleMethodChange = async (newMethod: string) => {
+    try {
+      const result = await updateUserSettings({
+        encryptionSettings: {
+          ...user?.encryptionSettings,
+          method: newMethod as EncryptionMethod,
+          hasKeys: user?.encryptionSettings?.hasKeys ?? false,
+          autoDecrypt: user?.encryptionSettings?.autoDecrypt ?? true,
+        },
+      });
+
+      if (result.success && result.data) {
+        setUser(result.data.user);
+        showToast({
+          type: "success",
+          title: "Success",
+          message: "Encryption method updated",
+        });
+      } else {
+        showToast({
+          type: "error",
+          title: "Error",
+          message: result.error || "Failed to update method",
+        });
+      }
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "An unexpected error occurred",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <FormWrapper title="Encryption Keys">
+      <FormWrapper title="Encryption Method">
+        <div className="space-y-4">
+          <Dropdown
+            value={method}
+            onChange={handleMethodChange}
+            options={[
+              { id: "xchacha", name: "XChaCha20-Poly1305 (Recommended)" },
+              { id: "pgp", name: "PGP" }
+            ]}
+            placeholder="Select encryption method"
+            className="w-full"
+          />
+          <InfoBox
+            variant="info"
+            title="Encryption Methods"
+            items={[
+              "XChaCha20-Poly1305: Modern, fast, passphrase-based encryption",
+              "PGP: Traditional public-key cryptography with key pair management"
+            ]}
+          />
+        </div>
+      </FormWrapper>
+
+      {method === "pgp" && (
+        <FormWrapper title="Encryption Keys">
         {isLoadingKeys ? (
           <div className="text-sm text-muted-foreground">Loading...</div>
         ) : hasKeys && keyMetadata ? (
@@ -258,7 +319,9 @@ export const EncryptionTab = () => {
           </div>
         )}
       </FormWrapper>
+      )}
 
+      {method === "pgp" && (
       <FormWrapper title="Key Management">
         {!isDemoMode ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -316,6 +379,7 @@ export const EncryptionTab = () => {
           </div>
         )}
       </FormWrapper>
+      )}
 
       <FormWrapper title="Encryption Settings">
         <div className="space-y-6">
@@ -344,6 +408,7 @@ export const EncryptionTab = () => {
         </div>
       </FormWrapper>
 
+      {method === "pgp" && (
       <FormWrapper title="Custom Key Path (Local Installations)">
         {!isDemoMode ? (
           <div className="space-y-4">
@@ -375,14 +440,15 @@ export const EncryptionTab = () => {
           </div>
         )}
       </FormWrapper>
+      )}
 
-      <KeyGenerationModal
+      <PGPKeyGenerationModal
         isOpen={showGenerateModal}
         onClose={() => setShowGenerateModal(false)}
         onSuccess={loadKeyStatus}
       />
 
-      <KeyImportModal
+      <PGPKeyImportModal
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
         onSuccess={loadKeyStatus}

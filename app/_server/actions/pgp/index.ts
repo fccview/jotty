@@ -68,8 +68,10 @@ export const generateKeyPair = async (
 
     await updateUserSettings({
       encryptionSettings: {
+        method: user.encryptionSettings?.method || "pgp",
         hasKeys: true,
         autoDecrypt: true,
+        customKeyPath: user.encryptionSettings?.customKeyPath,
       },
     });
 
@@ -114,8 +116,10 @@ export const importKeys = async (
 
       await updateUserSettings({
         encryptionSettings: {
+          method: user.encryptionSettings?.method || "pgp",
           hasKeys: true,
           autoDecrypt: true,
+          customKeyPath: user.encryptionSettings?.customKeyPath,
         },
       });
 
@@ -223,6 +227,10 @@ export const encryptNoteContent = async (
     const content = formData.get("content") as string;
     const useStoredKey = formData.get("useStoredKey") as string;
     let publicKey = formData.get("publicKey") as string;
+    const signNote = formData.get("signNote") === "true";
+    const useStoredSigningKey = formData.get("useStoredSigningKey") === "true";
+    let signingKey = formData.get("signingKey") as string;
+    const signingPassphrase = formData.get("signingPassphrase") as string;
 
     if (!content) {
       return { success: false, error: "Content is required" };
@@ -240,10 +248,40 @@ export const encryptNoteContent = async (
     }
 
     const publicKeyObj = await openpgp.readKey({ armoredKey: publicKey });
+    let signingKeyObj;
+
+    if (signNote) {
+      if (!signingPassphrase) {
+        return { success: false, error: "Signing passphrase is required" };
+      }
+
+      if (useStoredSigningKey) {
+        const keysDir = await _getEncryptionDir(user.username);
+        signingKey = await serverReadFile(path.join(keysDir, "private.asc"));
+
+        if (!signingKey) {
+          return { success: false, error: "No stored private key found for signing" };
+        }
+      } else if (!signingKey) {
+        return { success: false, error: "Private key is required for signing" };
+      }
+
+      try {
+        const privateKey = await openpgp.readPrivateKey({ armoredKey: signingKey });
+        signingKeyObj = await openpgp.decryptKey({
+          privateKey,
+          passphrase: signingPassphrase,
+        });
+      } catch (error) {
+        console.error("Error decrypting signing key:", error);
+        return { success: false, error: "Invalid signing key or passphrase" };
+      }
+    }
 
     const encrypted = await openpgp.encrypt({
       message: await openpgp.createMessage({ text: content }),
       encryptionKeys: publicKeyObj,
+      signingKeys: signingKeyObj,
     });
 
     return { success: true, data: { encryptedContent: encrypted } };
@@ -255,7 +293,7 @@ export const encryptNoteContent = async (
 
 export const decryptNoteContent = async (
   formData: FormData
-): Promise<Result<{ decryptedContent: string }>> => {
+): Promise<Result<{ decryptedContent: string; signature?: { valid: boolean; keyId?: string; error?: string } }>> => {
   try {
     const user = await getCurrentUser();
     if (!user?.username) {
@@ -300,14 +338,48 @@ export const decryptNoteContent = async (
         armoredMessage: encryptedContent,
       });
 
-      const { data: decrypted } = await openpgp.decrypt({
+      let verificationKeys;
+      try {
+        const keysDir = await _getEncryptionDir(user.username);
+        const publicKey = await serverReadFile(path.join(keysDir, "public.asc"));
+        if (publicKey) {
+          verificationKeys = await openpgp.readKey({ armoredKey: publicKey });
+        }
+      } catch {
+        // Continue without verification keys if they can't be loaded
+      }
+
+      const { data: decrypted, signatures } = await openpgp.decrypt({
         message,
         decryptionKeys: decryptedKey,
+        verificationKeys,
       });
 
-      return { success: true, data: { decryptedContent: decrypted as string } };
+      let signature;
+      if (signatures && signatures.length > 0) {
+        try {
+          const sig = signatures[0];
+          const valid = await sig.verified;
+          signature = {
+            valid,
+            keyId: sig.keyID.toHex(),
+          };
+        } catch (e) {
+          signature = {
+            valid: false,
+            error: "Signature verification failed",
+          };
+        }
+      }
+
+      return {
+        success: true,
+        data: {
+          decryptedContent: decrypted as string,
+          signature,
+        },
+      };
     } catch (decryptError) {
-      console.error("Decryption error:", decryptError);
       return {
         success: false,
         error:
@@ -337,6 +409,7 @@ export const setCustomKeyPath = async (
 
     const result = await updateUserSettings({
       encryptionSettings: {
+        method: user.encryptionSettings?.method || "pgp",
         hasKeys: user.encryptionSettings?.hasKeys ?? false,
         autoDecrypt: user.encryptionSettings?.autoDecrypt ?? true,
         customKeyPath: customPath,
@@ -371,8 +444,10 @@ export const deleteKeys = async (): Promise<Result<null>> => {
 
     await updateUserSettings({
       encryptionSettings: {
+        method: user.encryptionSettings?.method || "pgp",
         hasKeys: false,
         autoDecrypt: true,
+        customKeyPath: user.encryptionSettings?.customKeyPath,
       },
     });
 

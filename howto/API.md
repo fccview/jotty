@@ -1252,35 +1252,35 @@ Retrieves the current progress of an ongoing export operation.
 ### Health check (public endpoint)
 
 ```bash
-curl https://your-checklist-app.com/api/health
+curl https://jotty-instance.com/api/health
 ```
 
 ### Get all checklists
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/checklists
+     https://jotty-instance.com/api/checklists
 ```
 
 ### Filter checklists by category
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     "https://your-checklist-app.com/api/checklists?category=Work"
+     "https://jotty-instance.com/api/checklists?category=Work"
 ```
 
 ### Filter checklists by type
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     "https://your-checklist-app.com/api/checklists?type=task"
+     "https://jotty-instance.com/api/checklists?type=task"
 ```
 
 ### Search checklists
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     "https://your-checklist-app.com/api/checklists?q=meeting"
+     "https://jotty-instance.com/api/checklists?q=meeting"
 ```
 
 ### Create a checklist
@@ -1290,7 +1290,7 @@ curl -X POST \
      -H "x-api-key: ck_your_api_key_here" \
      -H "Content-Type: application/json" \
      -d '{"title": "My New Checklist", "category": "Work", "type": "simple"}' \
-     https://your-checklist-app.com/api/checklists
+     https://jotty-instance.com/api/checklists
 ```
 
 ### Update a checklist
@@ -1300,7 +1300,7 @@ curl -X PUT \
      -H "x-api-key: ck_your_api_key_here" \
      -H "Content-Type: application/json" \
      -d '{"title": "Updated Title", "category": "Personal"}' \
-     https://your-checklist-app.com/api/checklists/<checklist_id>
+     https://jotty-instance.com/api/checklists/<checklist_id>
 ```
 
 ### Delete a checklist
@@ -1308,7 +1308,7 @@ curl -X PUT \
 ```bash
 curl -X DELETE \
      -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/checklists/<checklist_id>
+     https://jotty-instance.com/api/checklists/<checklist_id>
 ```
 
 ### Add item to regular checklist
@@ -1318,7 +1318,7 @@ curl -X POST \
      -H "x-api-key: ck_your_api_key_here" \
      -H "Content-Type: application/json" \
      -d '{"text": "New task"}' \
-     https://your-checklist-app.com/api/checklists/<checklist_id>/items
+     https://jotty-instance.com/api/checklists/<checklist_id>/items
 ```
 
 ### Add item to task checklist
@@ -1328,7 +1328,7 @@ curl -X POST \
      -H "x-api-key: ck_your_api_key_here" \
      -H "Content-Type: application/json" \
      -d '{"text": "New task with status", "status": "in_progress", "time": 0}' \
-     https://your-checklist-app.com/api/checklists/<task_checklist_id>/items
+     https://jotty-instance.com/api/checklists/<task_checklist_id>/items
 ```
 
 ### Check item (mark as completed)
@@ -1336,7 +1336,7 @@ curl -X POST \
 ```bash
 curl -X PUT \
      -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/checklists/<checklist_id>/items/<item_index>/check
+     https://jotty-instance.com/api/checklists/<checklist_id>/items/<item_index>/check
 ```
 
 ### Uncheck item (mark as incomplete)
@@ -1344,28 +1344,28 @@ curl -X PUT \
 ```bash
 curl -X PUT \
      -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/checklists/<checklist_id>/items/<item_index>/uncheck
+     https://jotty-instance.com/api/checklists/<checklist_id>/items/<item_index>/uncheck
 ```
 
 ### Get all notes
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/notes
+     https://jotty-instance.com/api/notes
 ```
 
 ### Filter notes by category
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     "https://your-checklist-app.com/api/notes?category=Personal"
+     "https://jotty-instance.com/api/notes?category=Personal"
 ```
 
 ### Search notes
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     "https://your-checklist-app.com/api/notes?q=meeting"
+     "https://jotty-instance.com/api/notes?q=meeting"
 ```
 
 ### Create a note
@@ -1375,7 +1375,7 @@ curl -X POST \
      -H "x-api-key: ck_your_api_key_here" \
      -H "Content-Type: application/json" \
      -d '{"title": "My New Note", "content": "This is the content", "category": "Personal"}' \
-     https://your-checklist-app.com/api/notes
+     https://jotty-instance.com/api/notes
 ```
 
 ### Get user information
@@ -1383,18 +1383,18 @@ curl -X POST \
 ```bash
 # Get your own user info
 curl -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/user/your_username
+     https://jotty-instance.com/api/user/your_username
 
 # Get another user's public info
 curl -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/user/other_username
+     https://jotty-instance.com/api/user/other_username
 ```
 
 ### Get all categories
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/categories
+     https://jotty-instance.com/api/categories
 ```
 
 ### Get user summary statistics
@@ -1402,11 +1402,11 @@ curl -H "x-api-key: ck_your_api_key_here" \
 ```bash
 # Get summary for current user
 curl -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/summary
+     https://jotty-instance.com/api/summary
 
 # Get summary for specific user (admin only)
 curl -H "x-api-key: ck_admin_api_key_here" \
-     "https://your-checklist-app.com/api/summary?username=testuser"
+     "https://jotty-instance.com/api/summary?username=testuser"
 ```
 
 ### Export all checklists and notes
@@ -1416,7 +1416,7 @@ curl -X POST \
      -H "x-api-key: ck_your_api_key_here" \
      -H "Content-Type: application/json" \
      -d '{"type": "all_checklists_notes"}' \
-     https://your-checklist-app.com/api/exports
+     https://jotty-instance.com/api/exports
 ```
 
 ### Export user specific checklists and notes
@@ -1426,14 +1426,14 @@ curl -X POST \
      -H "x-api-key: ck_your_api_key_here" \
      -H "Content-Type: application/json" \
      -d '{"type": "user_checklists_notes", "username": "testuser"}' \
-     https://your-checklist-app.com/api/exports
+     https://jotty-instance.com/api/exports
 ```
 
 ### Get export progress
 
 ```bash
 curl -H "x-api-key: ck_your_api_key_here" \
-     https://your-checklist-app.com/api/exports
+     https://jotty-instance.com/api/exports
 ```
 
 ### Rebuild link index for a user (admin only)
@@ -1443,7 +1443,7 @@ curl -X POST \
      -H "x-api-key: ck_admin_api_key_here" \
      -H "Content-Type: application/json" \
      -d '{"username": "fccview"}' \
-     https://your-checklist-app.com/api/admin/rebuild-index
+     https://jotty-instance.com/api/admin/rebuild-index
 ```
 
 ## Cron Job Automation
@@ -1463,7 +1463,7 @@ Create a shell script (`rebuild-index.sh`) to rebuild the index for all users:
 
 # rebuild-index.sh - Rebuild link indexes for specific users
 API_KEY="ck_your_admin_api_key_here"
-BASE_URL="https://your-checklist-app.com"
+BASE_URL="https://jotty-instance.com"
 
 # Get all usernames (requires admin API access)
 usernames=("user1" "user2" "user3")
@@ -1525,7 +1525,7 @@ For rebuilding only your own index (non-admin users can only rebuild their own d
 # rebuild-my-index.sh - Rebuild link index for current user
 API_KEY="ck_your_api_key_here"
 USERNAME="your_username"
-BASE_URL="https://your-checklist-app.com"
+BASE_URL="https://jotty-instance.com"
 
 echo "Rebuilding link index for $USERNAME"
 

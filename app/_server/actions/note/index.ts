@@ -3,6 +3,7 @@
 import path from "path";
 import { Note, User } from "@/app/_types";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
+import { detectEncryptionMethod, isEncrypted } from "@/app/_utils/encryption-utils";
 import {
   getCurrentUser,
   getUserByNote,
@@ -236,9 +237,11 @@ const _noteToMarkdown = (note: Note): string => {
     content = lines.join("\n").trim();
   }
 
-  // Add encrypted flag if note is encrypted
   if (note.encrypted) {
     metadata.encrypted = true;
+    if (note.encryptionMethod) {
+      metadata.encryptionMethod = note.encryptionMethod;
+    }
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);
@@ -558,16 +561,15 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       return { error: "Permission denied" };
     }
 
-    // Detect if content is PGP encrypted
-    const isEncrypted = convertedContent.includes("-----BEGIN PGP MESSAGE-----");
-
+    const encryptionMethod = detectEncryptionMethod(convertedContent) || undefined;
     const updatedDoc = {
       ...note,
       title,
       content: convertedContent,
       category: category || note.category,
       updatedAt: new Date().toISOString(),
-      encrypted: isEncrypted,
+      encrypted: isEncrypted(convertedContent),
+      encryptionMethod,
     };
 
     const ownerDir = USER_NOTES_DIR(note.owner!);

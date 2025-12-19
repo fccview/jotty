@@ -10,17 +10,17 @@ import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/
 import { generateKeyPair } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
 
-interface KeyGenerationModalProps {
+interface PGPKeyGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export const KeyGenerationModal = ({
+export const PGPKeyGenerationModal = ({
   isOpen,
   onClose,
   onSuccess,
-}: KeyGenerationModalProps) => {
+}: PGPKeyGenerationModalProps) => {
   const { showToast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

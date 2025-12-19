@@ -3,6 +3,7 @@ import { LinkIndex } from "../_server/actions/link";
 
 export type ChecklistType = "simple" | "task";
 export type ItemType = "checklist" | "note";
+export type EncryptionMethod = "pgp" | "xchacha";
 
 export interface PGPKeyMetadata {
   keyFingerprint: string;
@@ -11,6 +12,7 @@ export interface PGPKeyMetadata {
 }
 
 export interface EncryptionSettings {
+  method: EncryptionMethod;
   autoDecrypt: boolean;
   hasKeys: boolean;
   customKeyPath?: string;
@@ -106,6 +108,7 @@ export interface Note {
   rawContent?: string;
   encrypted?: boolean;
   encryptedContent?: string;
+  encryptionMethod?: EncryptionMethod;
 }
 
 export interface NoteEditorViewModel {

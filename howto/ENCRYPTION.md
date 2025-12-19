@@ -1,15 +1,53 @@
-# PGP Encryption for Notes
+# Encryption for Notes
 
-Jotty supports PGP encryption for notes using 4096-bit RSA keys. 
-This allows you to securely encrypt sensitive notes so that only you (or those with your private key) can decrypt and read them.
+Jotty supports two encryption methods for securing your notes.
+
+## Encryption Methods
+
+### XChaCha20-Poly1305 (Default, Recommended)
+
+- **Simpler**: Uses a passphrase only, no key management required
+- **Faster**: Modern symmetric encryption algorithm
+- **Secure**: 256-bit keys derived using Argon2id key derivation
+- **Best for**: Most users who want simple, secure encryption
+
+### PGP
+
+- **Traditional**: Public-key cryptography with RSA-4096
+- **Key Management**: Requires generating/managing key pairs
+- **Interoperable**: Can encrypt/decrypt with external PGP tools
+- **Best for**: Users who need PGP compatibility or already have PGP keys
+
+**After a lot of reading around, I recommend XChaCha20 for most users** due to its simplicity and modern cryptographic design. I still love PGP so I have decided to implement both and let users decide which one they prefer (you can actually decrypt notes encrypted with both methods, but only one will be defaulted at once for encryption).
+
+You can switch methods in **Profile → Encryption → Encryption Method**.
 
 ---
 
-### 1. Set Up Encryption Keys
+### 1. Choose Your Encryption Method
+
+Navigate to **Profile → Encryption** tab:
+
+1. Select your preferred **Encryption Method**:
+   - **XChaCha20-Poly1305** - Passphrase-based encryption
+   - **PGP** - Key pair-based encryption
+
+### 2. Set Up Encryption
+
+#### For XChaCha20-Poly1305
+
+No setup required! Simply create a strong passphrase when encrypting your notes:
+
+- Use a passphrase of at least 12 characters
+- Include uppercase, lowercase, numbers, and symbols
+- **IMPORTANT**: Store this passphrase in your password vault
+- You'll need to enter it each time you encrypt or decrypt
+
+#### For PGP
 
 Navigate to **Profile → Encryption** tab and choose one of the following:
 
-#### Generate New Key Pair
+##### Generate New Key Pair
 
 1. Click **"Generate New Key Pair"**
 2. Enter your name and email (optional)
@@ -18,7 +56,7 @@ Navigate to **Profile → Encryption** tab and choose one of the following:
 4. Click **"Generate Keys"**
 5. Your keys will be generated and saved automatically
 
-#### Import Existing Keys
+##### Import Existing Keys
 
 1. Click **"Import Existing Keys"**
 2. Paste your ASCII-armored PGP public key (starts with `-----BEGIN PGP PUBLIC KEY BLOCK-----`)
@@ -27,11 +65,19 @@ Navigate to **Profile → Encryption** tab and choose one of the following:
 
 ---
 
-### 2. Encrypt a Note
+### 3. Encrypt a Note
 
 1. Open any note in the editor
 2. Click the **⋯** (more) menu in the top-right
 3. Select **"Encrypt Note"**
+
+#### For XChaCha20-Poly1305
+
+4. Enter your passphrase
+5. Click **"Encrypt"**
+
+#### For PGP
+
 4. Choose:
    - **Use stored keys**: Use your configured keys (default)
    - **Use custom keys**: Paste a specific public key
@@ -44,12 +90,20 @@ Navigate to **Profile → Encryption** tab and choose one of the following:
 
 ---
 
-### 3. Decrypt a Note
+### 4. Decrypt a Note
 
 1. Open the encrypted note
-   - If "Auto-decrypt on load" is enabled, you'll be prompted automatically, the note won't be decryptd on the server but only in the current tab session, refreshing the page will re-encrypt it
+   - If "Auto-decrypt on load" is enabled, you'll be prompted automatically, the note won't be decrypted on the server but only in the current tab session, refreshing the page will re-encrypt it
    - If disabled you'll just see a message like "This note is encrypted"
 2. If not auto-prompted, click **⋯** menu → **"Decrypt Note"**
+
+#### For XChaCha20-Poly1305
+
+3. Enter your passphrase (the same one you used to encrypt)
+4. Click **"Decrypt"**
+
+#### For PGP
+
 3. Choose your key source:
    - **Use stored keys**: Use your configured private key
    - **Use custom keys**: Paste a specific private key
@@ -76,7 +130,7 @@ When disabled:
 
 ---
 
-## Docker mapping
+## Docker Mapping (PGP Only)
 
 ### Mapping Custom Keys for Docker
 
@@ -120,7 +174,7 @@ If you want to use a custom location for your encryption keys (instead of the de
 
 ---
 
-## Local Installation (Non-Docker)
+## Local Installation (Non-Docker, PGP Only)
 
 ### Custom Key Path
 
@@ -141,13 +195,29 @@ For local installations, you can specify a custom absolute path for key storage:
 
 ## File Format
 
-Encrypted notes use YAML frontmatter to indicate encryption status:
+Encrypted notes use YAML frontmatter to indicate encryption status.
+
+### XChaCha20-Poly1305 Format
 
 ```markdown
 ---
 uuid: abc-123-def
 title: My Secret Note
 encrypted: true
+encryptionMethod: xchacha
+---
+
+{"alg":"xchacha20","salt":"a1b2c3...","nonce":"x1y2z3...","data":"encrypted..."}
+```
+
+### PGP Format
+
+```markdown
+---
+uuid: abc-123-def
+title: My Secret Note
+encrypted: true
+encryptionMethod: pgp
 ---
 
 -----BEGIN PGP MESSAGE-----
@@ -182,3 +252,8 @@ wcBMA... [encrypted content here] ...
 - No passphrase recovery mechanism (by design for security)
 - Lost passphrase = permanent loss of access to encrypted notes
 - Always maintain secure backups of your private key and passphrase
+
+
+# Coming soon
+
+Hi! fccview here! I understand some people may want ABSOLUTE privacy when encrypting, so I am going to (at some point in the future) encrypt frontmatter/title on top of the note body. This requires a lot of thinking as it will break a ton of features if not done properly, but I didn't want this to block the release of the current system.

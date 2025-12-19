@@ -14,6 +14,7 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalModeEditor";
 import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { detectEncryptionMethod, isEncrypted, isValidXChaChaJSON } from "@/app/_utils/encryption-utils";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -86,9 +87,10 @@ export const NoteEditorContent = ({
     permissions?.canEdit &&
     !encrypted;
 
-  const isContentEncrypted = encrypted && editorContent?.includes("-----BEGIN PGP MESSAGE-----");
+  const isContentEncrypted = isEncrypted(editorContent || "");
 
   if (isContentEncrypted) {
+    const encryptionType = detectEncryptionMethod(editorContent || "");
     return (
       <div className="flex-1 h-full pb-14 lg:pb-0 flex items-center justify-center">
         <div className="text-center space-y-4 max-w-md mx-auto px-6">
@@ -99,7 +101,7 @@ export const NoteEditorContent = ({
           </div>
           <h3 className="text-xl font-semibold">This note is encrypted</h3>
           <p className="text-sm text-muted-foreground">
-            This note is protected with PGP encryption.
+            This note is protected with {encryptionType === "pgp" ? "PGP" : "XChaCha20-Poly1305"} encryption.
           </p>
           <div className="flex items-center justify-center gap-3 pt-4">
             {onOpenViewModal && (
