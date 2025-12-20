@@ -6,6 +6,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { updateUserSettings } from "@/app/_server/actions/users";
 import {
   User,
+  Category,
   EnableRecurrence,
   ShowCompletedSuggestions,
   TableSyntax,
@@ -20,6 +21,7 @@ import {
   MarkdownTheme,
   DefaultChecklistFilter,
   DefaultNoteFilter,
+  QuickCreateNotes,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -35,6 +37,7 @@ import {
 
 interface SettingsTabProps {
   setShowDeleteModal: (show: boolean) => void;
+  notesCategories: Category[];
 }
 
 const getSettingsFromUser = (user: User | null): Partial<User> => ({
@@ -53,6 +56,8 @@ const getSettingsFromUser = (user: User | null): Partial<User> => ({
   markdownTheme: user?.markdownTheme || "prism",
   defaultChecklistFilter: user?.defaultChecklistFilter || "all",
   defaultNoteFilter: user?.defaultNoteFilter || "all",
+  quickCreateNotes: user?.quickCreateNotes || "disable",
+  quickCreateNotesCategory: user?.quickCreateNotesCategory || "",
 });
 
 const pick = <T extends object, K extends keyof T>(
@@ -68,7 +73,7 @@ const pick = <T extends object, K extends keyof T>(
   return result;
 };
 
-export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
+export const SettingsTab = ({ setShowDeleteModal, notesCategories }: SettingsTabProps) => {
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
   const { showToast } = useToast();
@@ -130,6 +135,8 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     "disableRichEditor",
     "defaultNoteFilter",
     "markdownTheme",
+    "quickCreateNotes",
+    "quickCreateNotesCategory",
   ]);
   const hasChecklistsChanges = hasChanges([
     "enableRecurrence",
@@ -458,6 +465,8 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                   "disableRichEditor",
                   "defaultNoteFilter",
                   "markdownTheme",
+                  "quickCreateNotes",
+                  "quickCreateNotesCategory",
                 ],
                 editorSettingsSchema,
                 "Notes Preferences"
@@ -648,6 +657,57 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             Choose the default filter to apply when opening the Notes page.
           </p>
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="quick-create-notes">Quick Create Notes</Label>
+          <Dropdown
+            value={currentSettings.quickCreateNotes || "disable"}
+            onChange={(value) =>
+              handleSettingChange("quickCreateNotes", value as QuickCreateNotes)
+            }
+            options={[
+              { id: "disable", name: "Show modal when creating notes" },
+              { id: "enable", name: "Skip modal and create instantly" },
+            ]}
+            placeholder="Select quick create mode"
+            className="w-full"
+          />
+          {validationErrors.quickCreateNotes && (
+            <p className="text-sm text-destructive">
+              {validationErrors.quickCreateNotes}
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            When enabled, clicking &quot;New Note&quot; skips the create note modal and gets you straight to writing.
+          </p>
+        </div>
+
+        {currentSettings.quickCreateNotes === "enable" && (
+          <div className="space-y-2">
+            <Label htmlFor="quick-create-notes-category">
+              Default Category for Quick Create
+            </Label>
+            <Dropdown
+              value={currentSettings.quickCreateNotesCategory || ""}
+              onChange={(value) =>
+                handleSettingChange("quickCreateNotesCategory", value)
+              }
+              options={[
+                { id: "", name: "Uncategorized" },
+                ...notesCategories.map((cat) => ({
+                  id: cat.path,
+                  name: cat.path,
+                })),
+              ]}
+              placeholder="Select default category"
+              className="w-full"
+            />
+            <p className="text-sm text-muted-foreground">
+              New notes will be created in this category when using quick
+              create.
+            </p>
+          </div>
+        )}
       </FormWrapper>
 
       <FormWrapper

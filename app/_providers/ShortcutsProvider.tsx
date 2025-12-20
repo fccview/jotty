@@ -19,6 +19,18 @@ import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "./AppModeProvider";
 import { useNavigationGuard } from "./NavigationGuardProvider";
+import { createNote } from "@/app/_server/actions/note";
+
+const generateDateTimeTitle = (): string => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  return `${year}-${month}-${day}_${hours}${minutes}${seconds}`;
+};
 
 interface ShortcutContextType {
   openCreateNoteModal: (initialCategory?: string) => void;
@@ -63,10 +75,35 @@ export const ShortcutProvider = ({
   const [initialParentCategory, setInitialParentCategory] =
     useState<string>("");
 
-  const openCreateNoteModal = useCallback((category?: string) => {
-    setInitialCategory(category || "");
-    setShowCreateNoteModal(true);
-  }, []);
+  const openCreateNoteModal = useCallback(
+    async (category?: string) => {
+      if (user?.quickCreateNotes === "enable") {
+        const title = generateDateTimeTitle();
+        const defaultCategory =
+          user?.quickCreateNotesCategory || category || "";
+
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("category", defaultCategory);
+        formData.append("content", "");
+
+        const result = await createNote(formData);
+
+        if (result.success && result.data) {
+          const categoryPath = buildCategoryPath(
+            result.data.category || "Uncategorized",
+            result.data.id
+          );
+          router.push(`/note/${categoryPath}?editor=true`);
+          router.refresh();
+        }
+      } else {
+        setInitialCategory(category || "");
+        setShowCreateNoteModal(true);
+      }
+    },
+    [user?.quickCreateNotes, user?.quickCreateNotesCategory, router]
+  );
 
   const openCreateChecklistModal = useCallback((category?: string) => {
     setInitialCategory(category || "");
