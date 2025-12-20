@@ -22,6 +22,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
+import { useTranslations } from "next-intl";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -42,6 +43,7 @@ export const ChecklistsPageClient = ({
   initialCategories,
   user,
 }: ChecklistsPageClientProps) => {
+  const t = useTranslations('checklists');
   const router = useRouter();
   const { openCreateChecklistModal } = useShortcut();
   const { isInitialized } = useAppMode();
@@ -53,12 +55,12 @@ export const ChecklistsPageClient = ({
   const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
-    { id: "all", name: "All Checklists" },
-    { id: "completed", name: "Completed" },
-    { id: "incomplete", name: "Incomplete" },
-    { id: "pinned", name: "Pinned" },
-    { id: "task", name: "Task Lists" },
-    { id: "simple", name: "Simple Lists" },
+    { id: "all", name: t('allChecklists') },
+    { id: "completed", name: t('completed') },
+    { id: "incomplete", name: t('incomplete') },
+    { id: "pinned", name: t('pinned') },
+    { id: "task", name: t('taskLists') },
+    { id: "simple", name: t('simpleLists') },
   ];
 
   const filteredLists = useMemo(() => {
@@ -178,17 +180,17 @@ export const ChecklistsPageClient = ({
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <SiteHeader
-            title="All Checklists"
-            description="Browse and manage all your checklists"
+            title={t('allChecklists')}
+            description={t('browseAndManage')}
           />
 
           <EmptyState
             icon={
               <CheckmarkSquare04Icon className="h-10 w-10 text-muted-foreground" />
             }
-            title="No Checklists yet"
-            description="Create your first checklist to start organizing your tasks."
-            buttonText="New Checklist"
+            title={t('noChecklistsYet')}
+            description={t('createFirstChecklist')}
+            buttonText={t('newChecklist')}
             onButtonClick={() => openCreateChecklistModal()}
           />
         </div>
@@ -200,8 +202,8 @@ export const ChecklistsPageClient = ({
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <SiteHeader
-          title="All Checklists"
-          description="Browse and manage all your checklists"
+          title={t('allChecklists')}
+          description={t('browseAndManage')}
         />
         <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -213,7 +215,7 @@ export const ChecklistsPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.totalLists}
                 </div>
-                <div className="text-xs text-muted-foreground">Lists</div>
+                <div className="text-xs text-muted-foreground">{t('lists')}</div>
               </div>
             </div>
 
@@ -225,7 +227,7 @@ export const ChecklistsPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completedItems}
                 </div>
-                <div className="text-xs text-muted-foreground">Completed</div>
+                <div className="text-xs text-muted-foreground">{t('completed')}</div>
               </div>
             </div>
 
@@ -237,7 +239,7 @@ export const ChecklistsPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.completionRate}%
                 </div>
-                <div className="text-xs text-muted-foreground">Progress</div>
+                <div className="text-xs text-muted-foreground">{t('progress')}</div>
               </div>
             </div>
 
@@ -249,7 +251,7 @@ export const ChecklistsPageClient = ({
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {stats.totalItems}
                 </div>
-                <div className="text-xs text-muted-foreground">Total Items</div>
+                <div className="text-xs text-muted-foreground">{t('totalItems')}</div>
               </div>
             </div>
           </div>
@@ -258,7 +260,7 @@ export const ChecklistsPageClient = ({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-8">
           <div className="lg:col-span-1">
             <FilterSidebar
-              title="By status"
+              title={t('byStatus')}
               filterValue={checklistFilter}
               filterOptions={filterOptions}
               onFilterChange={(value) =>
@@ -288,10 +290,10 @@ export const ChecklistsPageClient = ({
               <div className="text-center py-12">
                 <Folder01Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">
-                  No checklists found
+                  {t('noChecklistsFound')}
                 </h3>
                 <p className="text-muted-foreground">
-                  Try adjusting your filters or create a new checklist.
+                  {t('tryAdjustingFiltersChecklist')}
                 </p>
               </div>
             ) : (

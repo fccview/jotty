@@ -26,8 +26,10 @@ import {
 import { PGPKeyMetadata, EncryptionMethod } from "@/app/_types";
 import { PGPKeyGenerationModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyGenerationModal";
 import { PGPKeyImportModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyImportModal";
+import { useTranslations } from "next-intl";
 
 export const EncryptionTab = () => {
+  const t = useTranslations();
   const { user, setUser, isDemoMode } = useAppMode();
   const { showToast } = useToast();
   const [hasKeys, setHasKeys] = useState(false);
@@ -71,9 +73,7 @@ export const EncryptionTab = () => {
 
   const handleExportKey = async (keyType: "public" | "private") => {
     if (keyType === "private") {
-      const confirmed = window.confirm(
-        "WARNING: Your private key allows decryption of all encrypted notes. Only export if you understand the security implications. Continue?"
-      );
+      const confirmed = window.confirm(t('encryption.privateKeyWarning'));
       if (!confirmed) return;
     }
 
@@ -92,23 +92,21 @@ export const EncryptionTab = () => {
 
         showToast({
           type: "success",
-          title: "Success",
-          message: `${
-            keyType === "public" ? "Public" : "Private"
-          } key exported successfully`,
+          title: t('common.success'),
+          message: keyType === "public" ? t('encryption.publicKeyExported') : t('encryption.privateKeyExported'),
         });
       } else {
         showToast({
           type: "error",
-          title: "Error",
-          message: result.error || "Failed to export key",
+          title: t('common.error'),
+          message: result.error || t('encryption.failedToExportKey'),
         });
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "An unexpected error occurred",
+        title: t('common.error'),
+        message: t('encryption.unexpectedError'),
       });
     }
   };
@@ -119,8 +117,8 @@ export const EncryptionTab = () => {
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: "Keys deleted successfully",
+          title: t('common.success'),
+          message: t('encryption.keysDeleted'),
         });
         setHasKeys(false);
         setKeyMetadata(null);
@@ -129,15 +127,15 @@ export const EncryptionTab = () => {
       } else {
         showToast({
           type: "error",
-          title: "Error",
-          message: result.error || "Failed to delete keys",
+          title: t('common.error'),
+          message: result.error || t('encryption.failedToDeleteKeys'),
         });
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "An unexpected error occurred",
+        title: t('common.error'),
+        message: t('encryption.unexpectedError'),
       });
     }
   };
@@ -158,22 +156,22 @@ export const EncryptionTab = () => {
         setUser(result.data.user);
         showToast({
           type: "success",
-          title: "Success",
-          message: "Auto-decrypt setting updated",
+          title: t('common.success'),
+          message: t('encryption.autoDecryptUpdated'),
         });
       } else {
         showToast({
           type: "error",
-          title: "Error",
-          message: result.error || "Failed to update setting",
+          title: t('common.error'),
+          message: result.error || t('encryption.failedToUpdateSetting'),
         });
         setAutoDecrypt(!enabled);
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "An unexpected error occurred",
+        title: t('common.error'),
+        message: t('encryption.unexpectedError'),
       });
       setAutoDecrypt(!enabled);
     }
@@ -183,8 +181,8 @@ export const EncryptionTab = () => {
     if (!customKeyPath.trim()) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Please enter a valid path",
+        title: t('common.error'),
+        message: t('encryption.enterValidPath'),
       });
       return;
     }
@@ -196,22 +194,22 @@ export const EncryptionTab = () => {
         setUser(result.data.user);
         showToast({
           type: "success",
-          title: "Success",
-          message: "Custom key path set successfully",
+          title: t('common.success'),
+          message: t('encryption.customPathSet'),
         });
         loadKeyStatus();
       } else {
         showToast({
           type: "error",
-          title: "Error",
-          message: result.error || "Failed to set custom path",
+          title: t('common.error'),
+          message: result.error || t('encryption.failedToSetCustomPath'),
         });
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "An unexpected error occurred",
+        title: t('common.error'),
+        message: t('encryption.unexpectedError'),
       });
     } finally {
       setIsSavingPath(false);
@@ -233,75 +231,75 @@ export const EncryptionTab = () => {
         setUser(result.data.user);
         showToast({
           type: "success",
-          title: "Success",
-          message: "Encryption method updated",
+          title: t('common.success'),
+          message: t('encryption.methodUpdated'),
         });
       } else {
         showToast({
           type: "error",
-          title: "Error",
-          message: result.error || "Failed to update method",
+          title: t('common.error'),
+          message: result.error || t('encryption.failedToUpdateMethod'),
         });
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "An unexpected error occurred",
+        title: t('common.error'),
+        message: t('encryption.unexpectedError'),
       });
     }
   };
 
   return (
     <div className="space-y-6">
-      <FormWrapper title="Encryption Method">
+      <FormWrapper title={t('encryption.encryptionMethod')}>
         <div className="space-y-4">
           <Dropdown
             value={method}
             onChange={handleMethodChange}
             options={[
-              { id: "xchacha", name: "XChaCha20-Poly1305 (Recommended)" },
-              { id: "pgp", name: "PGP" }
+              { id: "xchacha", name: t('encryption.xchacha') },
+              { id: "pgp", name: t('encryption.pgp') }
             ]}
-            placeholder="Select encryption method"
+            placeholder={t('encryption.selectMethod')}
             className="w-full"
           />
           <InfoBox
             variant="info"
-            title="Encryption Methods"
+            title={t('encryption.encryptionMethodsTitle')}
             items={[
-              "XChaCha20-Poly1305: Modern, fast, passphrase-based encryption",
-              "PGP: Traditional public-key cryptography with key pair management"
+              t('encryption.xchachaDescription'),
+              t('encryption.pgpDescription')
             ]}
           />
         </div>
       </FormWrapper>
 
       {method === "pgp" && (
-        <FormWrapper title="Encryption Keys">
+        <FormWrapper title={t('encryption.encryptionKeys')}>
         {isLoadingKeys ? (
-          <div className="text-sm text-muted-foreground">Loading...</div>
+          <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
         ) : hasKeys && keyMetadata ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-primary">
               <LockKeyIcon className="h-5 w-5" />
-              <span className="font-medium">Keys configured</span>
+              <span className="font-medium">{t('encryption.keysConfigured')}</span>
             </div>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="text-muted-foreground">Fingerprint: </span>
+                <span className="text-muted-foreground">{t('encryption.fingerprint')}</span>
                 <span className="font-mono text-xs">
                   {keyMetadata.keyFingerprint}
                 </span>
               </div>
               <div>
-                <span className="text-muted-foreground">Created: </span>
+                <span className="text-muted-foreground">{t('encryption.created')}</span>
                 <span>
                   {new Date(keyMetadata.createdAt).toLocaleDateString()}
                 </span>
               </div>
               <div>
-                <span className="text-muted-foreground">Algorithm: </span>
+                <span className="text-muted-foreground">{t('encryption.algorithm')}</span>
                 <span>{keyMetadata.algorithm}</span>
               </div>
             </div>
@@ -310,11 +308,10 @@ export const EncryptionTab = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-muted-foreground">
               <LockKeyIcon className="h-5 w-5" />
-              <span>No encryption keys configured</span>
+              <span>{t('encryption.noKeysConfigured')}</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Generate a new key pair or import existing keys to enable note
-              encryption.
+              {t('encryption.generateOrImportKeys')}
             </p>
           </div>
         )}
@@ -322,7 +319,7 @@ export const EncryptionTab = () => {
       )}
 
       {method === "pgp" && (
-      <FormWrapper title="Key Management">
+      <FormWrapper title={t('encryption.keyManagement')}>
         {!isDemoMode ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {!hasKeys && (
@@ -332,7 +329,7 @@ export const EncryptionTab = () => {
                   className="w-full"
                 >
                   <LockKeyIcon className="h-4 w-4 mr-2" />
-                  Generate New Key Pair
+                  {t('encryption.generateNewKeyPair')}
                 </Button>
                 <Button
                   onClick={() => setShowImportModal(true)}
@@ -340,7 +337,7 @@ export const EncryptionTab = () => {
                   className="w-full"
                 >
                   <Upload01Icon className="h-4 w-4 mr-2" />
-                  Import Existing Keys
+                  {t('encryption.importExistingKeys')}
                 </Button>
               </>
             )}
@@ -352,7 +349,7 @@ export const EncryptionTab = () => {
                   className="w-full"
                 >
                   <Download01Icon className="h-4 w-4 mr-2" />
-                  Export Public Key
+                  {t('encryption.exportPublicKey')}
                 </Button>
                 <Button
                   onClick={() => handleExportKey("private")}
@@ -360,7 +357,7 @@ export const EncryptionTab = () => {
                   className="w-full"
                 >
                   <Download01Icon className="h-4 w-4 mr-2" />
-                  Export Private Key
+                  {t('encryption.exportPrivateKey')}
                 </Button>
                 <Button
                   onClick={() => setShowDeleteConfirm(true)}
@@ -368,20 +365,20 @@ export const EncryptionTab = () => {
                   className="w-full md:col-span-2"
                 >
                   <Delete03Icon className="h-4 w-4 mr-2" />
-                  Delete Keys
+                  {t('encryption.deleteKeys')}
                 </Button>
               </>
             )}
           </div>
         ) : (
           <div className="text-sm text-muted-foreground">
-            Stored encryption keys are disabled in demo mode.
+            {t('encryption.keysDisabledInDemo')}
           </div>
         )}
       </FormWrapper>
       )}
 
-      <FormWrapper title="Encryption Settings">
+      <FormWrapper title={t('encryption.encryptionSettings')}>
         <div className="space-y-6">
           <div className="flex items-center justify-between gap-4">
             <label
@@ -390,13 +387,10 @@ export const EncryptionTab = () => {
               onClick={() => handleAutoDecryptChange(!autoDecrypt)}
             >
               <div className="font-medium">
-                Prompt for passphrase when opening encrypted notes
+                {t('encryption.promptForPassphrase')}
               </div>
               <p className="text-sm text-muted-foreground">
-                If enabled, you will be prompted for your passphrase when
-                opening an encrypted note. The note will stay encrypted on the
-                server, but you will be able to see the decrypted content in the
-                current tab session.
+                {t('encryption.promptForPassphraseDescription')}
               </p>
             </label>
             <Toggle
@@ -409,34 +403,32 @@ export const EncryptionTab = () => {
       </FormWrapper>
 
       {method === "pgp" && (
-      <FormWrapper title="Custom Key Path (Local Installations)">
+      <FormWrapper title={t('encryption.customKeyPath')}>
         {!isDemoMode ? (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Specify a custom (absolute) filesystem path for storing encryption
-              keys. This is only needed for local installations. Docker users
-              should map the default path in docker-compose.yml instead.
+              {t('encryption.customKeyPathDescription')}
             </p>
             <Input
               id="customKeyPath"
               type="text"
-              label="Custom Path"
+              label={t('encryption.customPath')}
               value={customKeyPath}
               onChange={(e) => setCustomKeyPath(e.target.value)}
-              placeholder="/home/user/my-keys"
-              description="Must be an absolute path (e.g., /home/user/my-keys or C:\Users\user\my-keys)"
+              placeholder={t('encryption.customPathPlaceholder')}
+              description={t('encryption.customPathHelp')}
             />
             <Button
               onClick={handleSaveCustomPath}
               disabled={isSavingPath || !customKeyPath.trim()}
               variant="outline"
             >
-              {isSavingPath ? "Saving..." : "Set Custom Path"}
+              {isSavingPath ? t('common.saving') : t('encryption.setCustomPath')}
             </Button>
           </div>
         ) : (
           <div className="text-sm text-muted-foreground">
-            Custom key path is disabled in demo mode
+            {t('encryption.customPathDisabledInDemo')}
           </div>
         )}
       </FormWrapper>
@@ -459,22 +451,20 @@ export const EncryptionTab = () => {
           <div className="bg-background border border-border rounded-jotty p-6 max-w-md w-full mx-4">
             <div className="flex items-center gap-3 text-destructive mb-4">
               <Alert02Icon className="h-6 w-6" />
-              <h3 className="text-lg font-semibold">Delete Encryption Keys?</h3>
+              <h3 className="text-lg font-semibold">{t('encryption.deleteKeysConfirmTitle')}</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-6">
-              This will permanently delete your encryption keys. You will NOT be
-              able to decrypt any encrypted notes without re-importing your
-              private key. This action cannot be undone.
+              {t('encryption.deleteKeysConfirmMessage')}
             </p>
             <div className="flex justify-end gap-3">
               <Button
                 variant="outline"
                 onClick={() => setShowDeleteConfirm(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="destructive" onClick={handleDeleteKeys}>
-                Delete Keys
+                {t('encryption.deleteKeys')}
               </Button>
             </div>
           </div>

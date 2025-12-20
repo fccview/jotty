@@ -52,6 +52,7 @@
         "libsodium-wrappers-sumo": "^0.7.15",
         "mermaid": "^11.12.1",
         "next": "14.2.35",
+        "next-intl": "^4.6.1",
         "next-pwa": "^5.6.0",
         "next-themes": "^0.2.1",
         "openpgp": "^6.3.0",

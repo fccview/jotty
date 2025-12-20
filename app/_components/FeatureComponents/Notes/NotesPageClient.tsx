@@ -16,6 +16,7 @@ import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 import Masonry from "react-masonry-css";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
+import { useTranslations } from "next-intl";
 
 interface NotesPageClientProps {
   initialNotes: Note[];
@@ -30,6 +31,7 @@ export const NotesPageClient = ({
   initialCategories,
   user,
 }: NotesPageClientProps) => {
+  const t = useTranslations('notes');
   const router = useRouter();
   const { openCreateNoteModal } = useShortcut();
   const { isInitialized } = useAppMode();
@@ -40,9 +42,9 @@ export const NotesPageClient = ({
   const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
-    { id: "all", name: "All Notes" },
-    { id: "recent", name: "Recent" },
-    { id: "pinned", name: "Pinned" },
+    { id: "all", name: t('allNotes') },
+    { id: "recent", name: t('recent') },
+    { id: "pinned", name: t('pinned') },
   ];
 
   const filteredNotes = useMemo(() => {
@@ -137,14 +139,14 @@ export const NotesPageClient = ({
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
         <SiteHeader
-          title="All Notes"
-          description="Browse and manage all your notes"
+          title={t('allNotes')}
+          description={t('browseAndManage')}
         />
         <EmptyState
           icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
-          title="No notes yet"
-          description="Create your first note to get started with your knowledge base."
-          buttonText="Create New Note"
+          title={t('noNotesYet')}
+          description={t('createFirstNote')}
+          buttonText={t('createNewNote')}
           onButtonClick={() => openCreateNoteModal()}
         />
       </div>
@@ -154,8 +156,8 @@ export const NotesPageClient = ({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <SiteHeader
-        title="All Notes"
-        description="Browse and manage all your notes"
+        title={t('allNotes')}
+        description={t('browseAndManage')}
       />
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
@@ -188,10 +190,10 @@ export const NotesPageClient = ({
             <div className="text-center py-12">
               <File02Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                No notes found
+                {t('noNotesFound')}
               </h3>
               <p className="text-muted-foreground">
-                Try adjusting your filters or create a new note.
+                {t('tryAdjustingFilters')}
               </p>
             </div>
           ) : (

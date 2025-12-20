@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { getAllThemes } from "@/app/_consts/themes";
 import Link from "next/link";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
+  const t = useTranslations();
   const { user } = useAppMode();
   const {
     theme,
@@ -58,32 +60,29 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   }, [isOpen]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Settings">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('common.settings')}>
       <p className="text-sm text-muted-foreground mb-6">
-        These options only apply to the current browser session. Please check
-        your{" "}
-        <Link href="/profile" className="text-primary hover:underline">
-          account settings
-        </Link>{" "}
-        for permanent settings.
+        {t('settingsModal.sessionOnlyWarning', {
+          link: <Link href="/profile" className="text-primary hover:underline">{t('settingsModal.accountSettings')}</Link>
+        })}
       </p>
       <div className="mb-6">
-        <h3 className="text-sm font-medium mb-3">Theme</h3>
+        <h3 className="text-sm font-medium mb-3">{t('common.theme')}</h3>
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading themes...</div>
+          <div className="text-sm text-muted-foreground">{t('settings.loadingThemes')}</div>
         ) : (
           <Dropdown value={theme} options={themes} onChange={setTheme} />
         )}
       </div>
 
       <div className="mb-6">
-        <h3 className="text-sm font-medium mb-3">Notes</h3>
+        <h3 className="text-sm font-medium mb-3">{t('notes.title')}</h3>
         <div className="space-y-3">
           {user?.notesAutoSaveInterval !== 0 && (
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-2">
                 <FloppyDiskIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Autosave Notes</span>
+                <span className="text-sm">{t('settingsModal.autosaveNotes')}</span>
               </div>
               <div className="relative">
                 <input
@@ -110,7 +109,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
               <File02Icon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Show Note Preview on Cards</span>
+              <span className="text-sm">{t('settingsModal.showNotePreview')}</span>
             </div>
             <div className="relative">
               <input
@@ -136,7 +135,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
               <ArrowHorizontalIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Notes compact mode</span>
+              <span className="text-sm">{t('settingsModal.notesCompactMode')}</span>
             </div>
             <div className="relative">
               <input
@@ -160,12 +159,12 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           </label>
         </div>
 
-        <h3 className="text-sm font-medium mb-3 mt-6">Checklists</h3>
+        <h3 className="text-sm font-medium mb-3 mt-6">{t('checklists.title')}</h3>
         <div className="space-y-3">
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
               <SmileIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">Show Emojis on checklists</span>
+              <span className="text-sm">{t('settingsModal.showEmojis')}</span>
             </div>
             <div className="relative">
               <input
@@ -192,7 +191,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
             <div className="flex items-center gap-2">
               <CheckmarkSquare04Icon className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
-                Show completed tasks as suggestions
+                {t('settings.showCompletedSuggestions')}
               </span>
             </div>
             <div className="relative">
@@ -219,7 +218,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       </div>
 
       <div className="flex justify-end">
-        <Button onClick={onClose}>Done</Button>
+        <Button onClick={onClose}>{t('common.done')}</Button>
       </div>
     </Modal>
   );

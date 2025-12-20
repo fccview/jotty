@@ -21,6 +21,7 @@ import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { Logo } from "../../GlobalComponents/Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 interface TasksPageClientProps {
   initialLists: Checklist[];
@@ -41,6 +42,7 @@ export const TasksPageClient = ({
   initialCategories,
   user,
 }: TasksPageClientProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { openCreateChecklistModal } = useShortcut();
   const { isInitialized } = useAppMode();
@@ -50,12 +52,12 @@ export const TasksPageClient = ({
   const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
-    { id: "all", name: "All Tasks" },
-    { id: "completed", name: "Completed" },
-    { id: "incomplete", name: "Incomplete" },
-    { id: "pinned", name: "Pinned" },
-    { id: "todo", name: "To Do" },
-    { id: "in-progress", name: "In Progress" },
+    { id: "all", name: t('tasks.allTasks') },
+    { id: "completed", name: t('tasks.completed') },
+    { id: "incomplete", name: t('checklists.incomplete') },
+    { id: "pinned", name: t('checklists.pinned') },
+    { id: "todo", name: t('tasks.todo') },
+    { id: "in-progress", name: t('tasks.inProgress') },
   ];
 
   const filteredLists = useMemo(() => {
@@ -187,16 +189,16 @@ export const TasksPageClient = ({
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <SiteHeader
-            title="All Tasks"
-            description="Browse and manage all your task lists"
+            title={t('tasks.allTasks')}
+            description={t('tasks.browseAndManageTaskLists')}
           />
           <EmptyState
             icon={
               <TaskDaily01Icon className="h-10 w-10 text-muted-foreground" />
             }
-            title="No task lists yet"
-            description="Create your first task list to start managing your projects."
-            buttonText="New Task List"
+            title={t('tasks.noTaskListsYet')}
+            description={t('tasks.createFirstTaskList')}
+            buttonText={t('tasks.newTaskList')}
             onButtonClick={() => openCreateChecklistModal()}
           />
         </div>

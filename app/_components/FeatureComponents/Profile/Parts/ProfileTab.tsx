@@ -24,6 +24,7 @@ import { generateApiKey, getApiKey } from "@/app/_server/actions/api";
 import { User as UserData } from "@/app/_types";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
+import { useTranslations } from "next-intl";
 
 interface ProfileTabProps {
   user: UserData | null;
@@ -38,6 +39,7 @@ export const ProfileTab = ({
   setUser,
   isSsoUser,
 }: ProfileTabProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const [editedUsername, setEditedUsername] = useState(user?.username || "");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -129,12 +131,12 @@ export const ProfileTab = ({
 
   const handleSaveProfile = async () => {
     if (!editedUsername.trim()) {
-      setError("Username is required");
+      setError(t('profile.usernameRequired'));
       return;
     }
 
     if (newPassword && newPassword !== confirmPassword) {
-      setError("New passwords do not match");
+      setError(t('profile.passwordsDoNotMatch'));
       return;
     }
 
@@ -157,7 +159,7 @@ export const ProfileTab = ({
       const result = await updateProfile(formData);
 
       if (result.success) {
-        setSuccess("Profile updated successfully!");
+        setSuccess(t('profile.profileUpdated'));
         setUser((prev: UserType | null) =>
           prev
             ? { ...prev, username: editedUsername, avatarUrl: avatarUrl }
@@ -174,10 +176,10 @@ export const ProfileTab = ({
 
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(result.error || "Failed to update profile");
+        setError(result.error || t('profile.failedToUpdateProfile'));
       }
     } catch (error) {
-      setError("Failed to update profile. Please try again.");
+      setError(t('profile.failedToUpdateProfileRetry'));
     }
   };
 
@@ -197,13 +199,13 @@ export const ProfileTab = ({
         setUser((prev: UserType | null) =>
           prev ? { ...prev, avatarUrl: url } : null
         );
-        setSuccess("Avatar updated successfully!");
+        setSuccess(t('profile.avatarUpdated'));
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(result.error || "Failed to update avatar");
+        setError(result.error || t('profile.failedToUpdateAvatar'));
       }
     } catch (error) {
-      setError("Failed to update avatar. Please try again.");
+      setError(t('profile.failedToUpdateAvatarRetry'));
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -222,13 +224,13 @@ export const ProfileTab = ({
         setUser((prev: UserType | null) =>
           prev ? { ...prev, avatarUrl: undefined } : null
         );
-        setSuccess("Avatar removed successfully!");
+        setSuccess(t('profile.avatarRemoved'));
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(result.error || "Failed to remove avatar");
+        setError(result.error || t('profile.failedToRemoveAvatar'));
       }
     } catch (error) {
-      setError("Failed to remove avatar. Please try again.");
+      setError(t('profile.failedToRemoveAvatarRetry'));
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -245,7 +247,7 @@ export const ProfileTab = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{user?.username}&apos;s profile</h2>
+        <h2 className="text-2xl font-bold">{t('profile.usernameProfile', {username: user?.username})}</h2>
       </div>
 
       {error && (
@@ -287,7 +289,7 @@ export const ProfileTab = ({
                 disabled={isAvatarDisabled}
                 className="text-destructive hover:bg-destructive/10"
               >
-                Remove Avatar
+                {t('profile.removeAvatar')}
               </Button>
             )}
           </div>
@@ -296,10 +298,9 @@ export const ProfileTab = ({
           <div className="space-y-4">
             <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-jotty">
               <div>
-                <h3 className="font-medium">API Key</h3>
+                <h3 className="font-medium">{t('profile.apiKey')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Generate an API key for programmatic access to your checklists
-                  and notes
+                  {t('profile.apiKeyDescription')}
                 </p>
               </div>
               <div className="flex items-center justify-between gap-2 mt-2 md:mt-0">
@@ -313,7 +314,7 @@ export const ProfileTab = ({
                       size="sm"
                       onClick={() => setShowApiKey(!showApiKey)}
                       className="h-8 w-8 p-0"
-                      title={showApiKey ? "Hide API Key" : "Show API Key"}
+                      title={showApiKey ? t('profile.hideApiKey') : t('profile.showApiKey')}
                     >
                       {showApiKey ? (
                         <ViewOffSlashIcon className="h-4 w-4" />
@@ -326,7 +327,7 @@ export const ProfileTab = ({
                       size="sm"
                       onClick={handleCopyApiKey}
                       className="h-8 w-8 p-0"
-                      title="Copy API Key"
+                      title={t('profile.copyApiKey')}
                     >
                       <Copy01Icon className="h-4 w-4" />
                     </Button>
@@ -334,21 +335,21 @@ export const ProfileTab = ({
                 )}
                 {isDemoMode ? (
                   <span className="text-sm text-muted-foreground">
-                    disabled in demo mode
+                    {t('settings.disabledInDemoMode')}
                   </span>
                 ) : (
                   <Button
                     variant="outline"
                     onClick={handleGenerateApiKey}
                     disabled={isGenerating}
-                    title={apiKey ? "Regenerate API Key" : "Generate API Key"}
+                    title={apiKey ? t('profile.regenerateApiKey') : t('profile.generateApiKey')}
                   >
                     {apiKey ? (
                       <RefreshIcon className="h-4 w-4" />
                     ) : (
                       <LockKeyIcon className="h-4 w-4 mr-2" />
                     )}
-                    {isGenerating ? "Generating..." : apiKey ? "" : "Generate"}
+                    {isGenerating ? t('profile.generating') : apiKey ? "" : t('profile.generate')}
                   </Button>
                 )}
               </div>
@@ -356,22 +357,22 @@ export const ProfileTab = ({
           </div>
 
           <FormWrapper
-            title="Profile"
+            title={t('common.profile')}
             action={
               <Button
                 onClick={handleSaveProfile}
-                title="Save Profile"
+                title={t('profile.saveProfile')}
                 disabled={isSaveButtonDisabled}
                 size="sm"
               >
-                {isDemoMode ? "Disabled in demo mode" : "Save Profile"}
+                {isDemoMode ? t('settings.disabledInDemoMode') : t('profile.saveProfile')}
               </Button>
             }
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-foreground">
-                  Member Since
+                  {t('profile.memberSince')}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {user?.createdAt
@@ -380,16 +381,16 @@ export const ProfileTab = ({
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">User Type</p>
+                <p className="text-sm font-medium text-foreground">{t('profile.userType')}</p>
                 <p className="text-sm text-muted-foreground">
-                  {isAdmin ? "Admin" : "User"}
+                  {isAdmin ? t('common.admin') : t('common.user')}
                 </p>
               </div>
             </div>
             <div className="space-y-2">
               <Input
                 id="username"
-                label="Username"
+                label={t('common.username')}
                 type="text"
                 onChange={(e) => setEditedUsername(e.target.value)}
                 placeholder="Your username"
@@ -398,40 +399,39 @@ export const ProfileTab = ({
                 className="mt-1"
               />
               <p className="text-sm text-muted-foreground">
-                Updating your username will log you out and require you to log
-                in again.
+                {t('profile.usernameUpdateWarning')}
               </p>
             </div>
             <div className="space-y-2">
               <Input
                 id="current-password"
-                label="Current Password"
+                label={t('settings.currentPassword')}
                 type="password"
                 value={currentPassword}
                 disabled={isCurrentPasswordDisabled}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
+                placeholder={t('profile.enterCurrentPassword')}
               />
             </div>
             <div className="space-y-2">
               <Input
                 id="new-password"
-                label="New Password"
+                label={t('settings.newPassword')}
                 type="password"
                 value={newPassword}
                 disabled={isNewPasswordDisabled}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password"
+                placeholder={t('profile.enterNewPassword')}
               />
             </div>
             <div className="space-y-2">
               <Input
                 id="confirm-password"
-                label="Confirm New Password"
+                label={t('settings.confirmPassword')}
                 type="password"
                 disabled={isConfirmPasswordDisabled}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
+                placeholder={t('profile.confirmNewPassword')}
               />
             </div>
           </FormWrapper>

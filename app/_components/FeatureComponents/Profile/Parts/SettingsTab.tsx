@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { updateUserSettings } from "@/app/_server/actions/users";
+import { useTranslations } from "next-intl";
 import {
   User,
   EnableRecurrence,
@@ -69,6 +70,7 @@ const pick = <T extends object, K extends keyof T>(
 };
 
 export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
+  const t = useTranslations();
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
   const { showToast } = useToast();
@@ -212,92 +214,92 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   ];
 
   const timeFormatOptions = [
-    { id: "12-hours", name: "12 hours" },
-    { id: "24-hours", name: "24 hours" },
+    { id: "12-hours", name: t('settings.hours12') },
+    { id: "24-hours", name: t('settings.hours24') },
   ];
 
   const tableSyntaxOptions = [
-    { id: "markdown", name: "Markdown (e.g., | Header |)" },
-    { id: "html", name: "HTML (e.g., <table><tr><td>)" },
+    { id: "markdown", name: t('settings.markdownTableSyntax') },
+    { id: "html", name: t('settings.htmlTableSyntax') },
   ];
 
   const markdownThemeOptions = [
-    { id: "prism", name: "Default" },
-    { id: "prism-dark", name: "Dark" },
-    { id: "prism-funky", name: "Funky" },
-    { id: "prism-okaidia", name: "Okaidia" },
-    { id: "prism-tomorrow", name: "Tomorrow" },
-    { id: "prism-twilight", name: "Twilight" },
-    { id: "prism-coy", name: "Coy" },
-    { id: "prism-solarizedlight", name: "Solarized Light" },
+    { id: "prism", name: t('settings.default') },
+    { id: "prism-dark", name: t('settings.dark') },
+    { id: "prism-funky", name: t('settings.funky') },
+    { id: "prism-okaidia", name: t('settings.okaidia') },
+    { id: "prism-tomorrow", name: t('settings.tomorrow') },
+    { id: "prism-twilight", name: t('settings.twilight') },
+    { id: "prism-coy", name: t('settings.coy') },
+    { id: "prism-solarizedlight", name: t('settings.solarizedLight') },
   ];
 
   const autoSaveIntervalOptions = [
-    { id: 0, name: "Disabled" },
-    { id: 1000, name: "1 second" },
-    { id: 5000, name: "5 seconds" },
-    { id: 10000, name: "10 seconds" },
-    { id: 15000, name: "15 seconds" },
-    { id: 20000, name: "20 seconds" },
-    { id: 25000, name: "25 seconds" },
-    { id: 30000, name: "30 seconds" },
+    { id: 0, name: t('settings.disabled') },
+    { id: 1000, name: t('settings.seconds', { count: 1 }) },
+    { id: 5000, name: t('settings.seconds', { count: 5 }) },
+    { id: 10000, name: t('settings.seconds', { count: 10 }) },
+    { id: 15000, name: t('settings.seconds', { count: 15 }) },
+    { id: 20000, name: t('settings.seconds', { count: 20 }) },
+    { id: 25000, name: t('settings.seconds', { count: 25 }) },
+    { id: 30000, name: t('settings.seconds', { count: 30 }) },
   ];
 
   const notesDefaultEditorOptions = [
-    { id: "wysiwyg", name: "Rich Text Editor" },
-    { id: "markdown", name: "Markdown" },
+    { id: "wysiwyg", name: t('settings.richTextEditor') },
+    { id: "markdown", name: t('settings.markdown') },
   ];
 
   const notesDefaultModeOptions = [
-    { id: "edit", name: "Edit" },
-    { id: "view", name: "View" },
+    { id: "edit", name: t('settings.edit') },
+    { id: "view", name: t('settings.view') },
   ];
 
   const enableRecurrenceOptions = [
-    { id: "enable", name: "Enable" },
-    { id: "disable", name: "Disable" },
+    { id: "enable", name: t('settings.enable') },
+    { id: "disable", name: t('settings.disable') },
   ];
 
   const showCompletedSuggestionsOptions = [
-    { id: "enable", name: "Enable" },
-    { id: "disable", name: "Disable" },
+    { id: "enable", name: t('settings.enable') },
+    { id: "disable", name: t('settings.disable') },
   ];
 
   const fileRenameModeOptions = [
-    { id: "dash-case", name: "Dash case (e.g., my-file-name.md)" },
-    { id: "minimal", name: "Minimal (remove invalid characters only)" },
-    { id: "none", name: "No rename (keep original filename)" },
+    { id: "dash-case", name: t('settings.dashCase') },
+    { id: "minimal", name: t('settings.minimal') },
+    { id: "none", name: t('settings.noRename') },
   ];
 
   const landingPageOptions = [
-    { id: "last-visited", name: "Last visited page" },
-    { id: Modes.CHECKLISTS, name: "Checklists" },
-    { id: Modes.NOTES, name: "Notes" },
+    { id: "last-visited", name: t('settings.lastVisitedPage') },
+    { id: Modes.CHECKLISTS, name: t('checklists.title') },
+    { id: Modes.NOTES, name: t('notes.title') },
   ];
 
   const defaultChecklistFilterOptions = [
-    { id: "all", name: "All Checklists" },
-    { id: "completed", name: "Completed" },
-    { id: "incomplete", name: "Incomplete" },
-    { id: "pinned", name: "Pinned" },
-    { id: "task", name: "Task Lists" },
-    { id: "simple", name: "Simple Lists" },
+    { id: "all", name: t('checklists.allChecklists') },
+    { id: "completed", name: t('checklists.completed') },
+    { id: "incomplete", name: t('checklists.incomplete') },
+    { id: "pinned", name: t('checklists.pinned') },
+    { id: "task", name: t('checklists.taskLists') },
+    { id: "simple", name: t('checklists.simpleLists') },
   ];
 
   const defaultNoteFilterOptions = [
-    { id: "all", name: "All Notes" },
-    { id: "recent", name: "Recent" },
-    { id: "pinned", name: "Pinned" },
+    { id: "all", name: t('notes.allNotes') },
+    { id: "recent", name: t('notes.recent') },
+    { id: "pinned", name: t('notes.pinned') },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Account Settings</h2>
+        <h2 className="text-2xl font-bold">{t('settings.accountSettings')}</h2>
       </div>
 
       <FormWrapper
-        title="General"
+        title={t('settings.general')}
         action={
           <Button
             onClick={() =>
@@ -316,16 +318,16 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             disabled={!hasGeneralChanges}
             size="sm"
           >
-            Save General
+            {t('settings.saveGeneral')}
           </Button>
         }
       >
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="preferred-theme">Preferred Theme</Label>
+            <Label htmlFor="preferred-theme">{t('settings.preferredTheme')}</Label>
             {loadingThemes ? (
               <div className="text-sm text-muted-foreground">
-                Loading themes...
+                {t('settings.loadingThemes')}
               </div>
             ) : (
               <Dropdown
@@ -338,7 +340,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                   name: theme.name,
                   icon: theme.icon,
                 }))}
-                placeholder="Select a theme"
+                placeholder={t('settings.selectTheme')}
                 className="w-full"
               />
             )}
@@ -348,19 +350,19 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               </p>
             )}
             <p className="text-sm text-muted-foreground">
-              Choose your preferred theme across all devices.
+              {t('settings.choosePreferredTheme')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="landing-page">Initial Landing Page</Label>
+            <Label htmlFor="landing-page">{t('settings.initialLandingPage')}</Label>
             <Dropdown
               value={currentSettings.landingPage || Modes.CHECKLISTS}
               onChange={(value) =>
                 handleSettingChange("landingPage", value as LandingPage)
               }
               options={landingPageOptions}
-              placeholder="Select landing page"
+              placeholder={t('settings.selectLandingPage')}
               className="w-full"
             />
             {validationErrors.landingPage && (
@@ -369,19 +371,19 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               </p>
             )}
             <p className="text-sm text-muted-foreground">
-              Select the default page to load after logging in.
+              {t('settings.selectDefaultPageAfterLogin')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="file-rename-mode">File Rename Mode</Label>
+            <Label htmlFor="file-rename-mode">{t('settings.fileRenameMode')}</Label>
             <Dropdown
               value={currentSettings.fileRenameMode || "dash-case"}
               onChange={(value) =>
                 handleSettingChange("fileRenameMode", value as FileRenameMode)
               }
               options={fileRenameModeOptions}
-              placeholder="Select file rename mode"
+              placeholder={t('settings.selectFileRenameMode')}
               className="w-full"
             />
             {validationErrors.fileRenameMode && (
@@ -390,12 +392,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               </p>
             )}
             <p className="text-sm text-muted-foreground">
-              Choose how files are renamed when saving notes and checklists.
+              {t('settings.chooseFileRenameMode')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="preferred-date-format">Preferred Date Format</Label>
+            <Label htmlFor="preferred-date-format">{t('settings.preferredDateFormat')}</Label>
             <Dropdown
               value={currentSettings.preferredDateFormat || "dd/mm/yyyy"}
               onChange={(value) =>
@@ -405,7 +407,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                 )
               }
               options={dateFormatOptions}
-              placeholder="Select date format"
+              placeholder={t('settings.selectDateFormat')}
               className="w-full"
             />
             {validationErrors.preferredDateFormat && (
@@ -414,12 +416,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               </p>
             )}
             <p className="text-sm text-muted-foreground">
-              Choose your preferred date format.
+              {t('settings.choosePreferredDateFormat')}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="preferred-time-format">Preferred Time Format</Label>
+            <Label htmlFor="preferred-time-format">{t('settings.preferredTimeFormat')}</Label>
             <Dropdown
               value={currentSettings.preferredTimeFormat || "12-hours"}
               onChange={(value) =>
@@ -429,7 +431,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
                 )
               }
               options={timeFormatOptions}
-              placeholder="Select time format"
+              placeholder={t('settings.selectTimeFormat')}
               className="w-full"
             />
             {validationErrors.preferredTimeFormat && (
@@ -438,14 +440,14 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               </p>
             )}
             <p className="text-sm text-muted-foreground">
-              Choose your preferred time format.
+              {t('settings.choosePreferredTimeFormat')}
             </p>
           </div>
         </div>
       </FormWrapper>
 
       <FormWrapper
-        title="Notes Preferences"
+        title={t('settings.notesPreferences')}
         action={
           <Button
             onClick={() =>
@@ -466,12 +468,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             disabled={!hasEditorChanges}
             size="sm"
           >
-            Save Editor
+            {t('settings.saveEditor')}
           </Button>
         }
       >
         <div className="space-y-2">
-          <Label htmlFor="auto-save-interval">Auto Save Interval</Label>
+          <Label htmlFor="auto-save-interval">{t('settings.autoSaveInterval')}</Label>
           <Dropdown
             value={currentSettings.notesAutoSaveInterval || 5000}
             onChange={(value) =>
@@ -481,7 +483,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               )
             }
             options={autoSaveIntervalOptions}
-            placeholder="Select auto save interval"
+            placeholder={t('settings.selectAutoSaveInterval')}
             className="w-full"
           />
           {validationErrors.notesAutoSaveInterval && (
@@ -490,19 +492,19 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose the interval for automatic saving of your notes.
+            {t('settings.chooseAutoSaveInterval')}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="notes-default-editor">Default Mode</Label>
+          <Label htmlFor="notes-default-editor">{t('settings.defaultMode')}</Label>
           <Dropdown
             value={currentSettings.notesDefaultMode || "view"}
             onChange={(value) =>
               handleSettingChange("notesDefaultMode", value as NotesDefaultMode)
             }
             options={notesDefaultModeOptions}
-            placeholder="Select notes default mode"
+            placeholder={t('settings.selectNotesDefaultMode')}
             className="w-full"
           />
           {validationErrors.notesDefaultMode && (
@@ -511,18 +513,16 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose if the note is automatically in edit mode or not{" "}
-            {
-              notesDefaultModeOptions.find(
+            {t('settings.chooseNotesDefaultMode', {
+              mode: notesDefaultModeOptions.find(
                 (option) => option.id !== currentSettings.notesDefaultMode
-              )?.name
-            }{" "}
-            button in the note editor).
+              )?.name || ""
+            })}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="notes-default-editor">Default Editor</Label>
+          <Label htmlFor="notes-default-editor">{t('settings.defaultEditor')}</Label>
           <Dropdown
             value={currentSettings.notesDefaultEditor || "wysiwyg"}
             onChange={(value) =>
@@ -532,7 +532,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               )
             }
             options={notesDefaultEditorOptions}
-            placeholder="Select notes default editor"
+            placeholder={t('settings.selectNotesDefaultEditor')}
             className="w-full"
           />
           {validationErrors.notesDefaultEditor && (
@@ -541,26 +541,23 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose the default editor for your notes - (you can always switch by
-            clicking on the{" "}
-            {
-              notesDefaultEditorOptions.find(
+            {t('settings.chooseDefaultEditor', {
+              editor: notesDefaultEditorOptions.find(
                 (option) => option.id !== currentSettings.notesDefaultEditor
-              )?.name
-            }{" "}
-            button in the note editor).
+              )?.name || ""
+            })}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="table-syntax">Table Syntax in Notes</Label>
+          <Label htmlFor="table-syntax">{t('settings.tableSyntaxInNotes')}</Label>
           <Dropdown
             value={currentSettings.tableSyntax || "html"}
             onChange={(value) =>
               handleSettingChange("tableSyntax", value as TableSyntax)
             }
             options={tableSyntaxOptions}
-            placeholder="Select table syntax"
+            placeholder={t('settings.selectTableSyntax')}
             className="w-full"
           />
           {validationErrors.tableSyntax && (
@@ -569,19 +566,19 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose how tables are rendered in your notes.
+            {t('settings.chooseTableSyntax')}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="markdown-theme">Markdown Syntax Theme</Label>
+          <Label htmlFor="markdown-theme">{t('settings.markdownSyntaxTheme')}</Label>
           <Dropdown
             value={currentSettings.markdownTheme || "prism"}
             onChange={(value) =>
               handleSettingChange("markdownTheme", value as MarkdownTheme)
             }
             options={markdownThemeOptions}
-            placeholder="Select syntax theme"
+            placeholder={t('settings.selectSyntaxTheme')}
             className="w-full"
           />
           {validationErrors.markdownTheme && (
@@ -590,13 +587,13 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose the syntax highlighting theme for the markdown editor.
+            {t('settings.chooseSyntaxTheme')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="disable-rich-editor">
-            Minimal Mode (Disable Rich Text Editor)
+            {t('settings.minimalMode')}
           </Label>
           <Dropdown
             value={currentSettings.disableRichEditor || "disable"}
@@ -607,10 +604,10 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               );
             }}
             options={[
-              { id: "disable", name: "Use Rich Text Editor" },
-              { id: "enable", name: "Markdown Only" },
+              { id: "disable", name: t('settings.useRichTextEditor') },
+              { id: "enable", name: t('settings.markdownOnly') },
             ]}
-            placeholder="Select minimal mode"
+            placeholder={t('settings.selectMinimalMode')}
             className="w-full"
           />
           {validationErrors.disableRichEditor && (
@@ -619,14 +616,12 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            When enabled, uses a simple markdown renderer instead of the rich
-            text editor. Advanced features like bilateral linking will not work
-            in this mode.
+            {t('settings.minimalModeDescription')}
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="default-note-filter">Default Note Filter</Label>
+          <Label htmlFor="default-note-filter">{t('settings.defaultNoteFilter')}</Label>
           <Dropdown
             value={currentSettings.defaultNoteFilter || "all"}
             onChange={(value) =>
@@ -636,7 +631,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               )
             }
             options={defaultNoteFilterOptions}
-            placeholder="Select default note filter"
+            placeholder={t('settings.selectDefaultNoteFilter')}
             className="w-full"
           />
           {validationErrors.defaultNoteFilter && (
@@ -645,13 +640,13 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose the default filter to apply when opening the Notes page.
+            {t('settings.chooseDefaultNoteFilter')}
           </p>
         </div>
       </FormWrapper>
 
       <FormWrapper
-        title="Checklists Preferences"
+        title={t('settings.checklistsPreferences')}
         action={
           <Button
             onClick={() =>
@@ -668,14 +663,14 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             disabled={!hasChecklistsChanges}
             size="sm"
           >
-            Save Checklists
+            {t('settings.saveChecklists')}
           </Button>
         }
       >
         <div className="space-y-2">
           <Label htmlFor="enable-recurrence">
-            Recurring checklists{" "}
-            <span className="text-sm text-muted-foreground">(Beta)</span>
+            {t('settings.recurringChecklists')}{" "}
+            <span className="text-sm text-muted-foreground">{t('settings.beta')}</span>
           </Label>
           <Dropdown
             value={currentSettings.enableRecurrence || "disable"}
@@ -683,14 +678,14 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               handleSettingChange("enableRecurrence", value as EnableRecurrence)
             }
             options={enableRecurrenceOptions}
-            placeholder="Select enable to add recurring checklists"
+            placeholder={t('settings.selectEnableRecurring')}
             className="w-full"
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="show-completed-suggestions">
-            Show completed tasks as suggestions
+            {t('settings.showCompletedSuggestions')}
           </Label>
           <Dropdown
             value={currentSettings.showCompletedSuggestions || "enable"}
@@ -701,18 +696,17 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               )
             }
             options={showCompletedSuggestionsOptions}
-            placeholder="Select whether to show completed tasks as suggestions"
+            placeholder={t('settings.selectShowCompletedSuggestions')}
             className="w-full"
           />
           <p className="text-sm text-muted-foreground">
-            When adding new tasks, show completed tasks as suggestions that can
-            be re-enabled.
+            {t('settings.completedSuggestionsDescription')}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="default-checklist-filter">
-            Default Checklist Filter
+            {t('settings.defaultChecklistFilter')}
           </Label>
           <Dropdown
             value={currentSettings.defaultChecklistFilter || "all"}
@@ -723,7 +717,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
               )
             }
             options={defaultChecklistFilterOptions}
-            placeholder="Select default checklist filter"
+            placeholder={t('settings.selectDefaultChecklistFilter')}
             className="w-full"
           />
           {validationErrors.defaultChecklistFilter && (
@@ -732,30 +726,30 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            Choose the default filter to apply when opening the Checklists page.
+            {t('settings.chooseDefaultChecklistFilter')}
           </p>
         </div>
       </FormWrapper>
 
-      <FormWrapper title="Account Management">
+      <FormWrapper title={t('settings.accountManagement')}>
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-jotty">
             <div>
-              <h4 className="font-medium">Delete Account</h4>
+              <h4 className="font-medium">{t('settings.deleteAccount')}</h4>
               <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data
+                {t('settings.deleteAccountDescription')}
               </p>
             </div>
             {isDemoMode ? (
               <span className="text-sm text-muted-foreground">
-                disabled in demo mode
+                {t('settings.disabledInDemoMode')}
               </span>
             ) : (
               <Button
                 variant="destructive"
                 onClick={() => setShowDeleteModal(true)}
               >
-                Delete Account
+                {t('settings.deleteAccount')}
               </Button>
             )}
           </div>
