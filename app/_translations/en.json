@@ -527,7 +527,7 @@
     "deleteKeysConfirmMessage": "This will permanently delete your encryption keys. You will NOT be able to decrypt any encrypted notes without re-importing your private key. This action cannot be undone."
   },
   "settingsModal": {
-    "sessionOnlyWarning": "These options only apply to the current browser session. Please check your {link} for permanent settings.",
+    "sessionOnlyPrefix": "These options only apply to the current browser session. For permanent settings please check your",
     "accountSettings": "account settings",
     "autosaveNotes": "Autosave Notes",
     "showNotePreview": "Show Note Preview on Cards",

@@ -15,8 +15,10 @@ import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/For
 import { DynamicIcon } from "@/app/_components/GlobalComponents/Icons/DynamicIcon";
 import { useState } from "react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 export const StylingTab = () => {
+  const t = useTranslations();
   const {
     css,
     isLoadingCss,
@@ -247,15 +249,11 @@ export const StylingTab = () => {
                 variant="outline"
                 onClick={() => setThemeModalOpen(false)}
                 disabled={isSavingThemes}
-              >
-                Cancel
-              </Button>
+              >{t('common.cancel')}</Button>
               <Button onClick={handleSaveTheme} disabled={isSavingThemes}>
                 {isSavingThemes ? (
                   <>
-                    <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
+                    <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />{t('common.saving')}</>
                 ) : editingTheme ? (
                   "Update Theme"
                 ) : (

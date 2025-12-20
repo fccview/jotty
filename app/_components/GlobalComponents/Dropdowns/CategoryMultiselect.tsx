@@ -11,6 +11,7 @@ import {
 import { cn } from "@/app/_utils/global-utils";
 import { Category } from "@/app/_types";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface CategoryMultiselectProps {
   categories: Category[];
@@ -126,6 +127,7 @@ export const CategoryMultiselect = ({
   recursive = false,
   onRecursiveChange,
 }: CategoryMultiselectProps) => {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -226,9 +228,7 @@ export const CategoryMultiselect = ({
                 size="sm"
                 onClick={onClearAll}
                 className="h-6 px-2 text-xs"
-              >
-                Clear
-              </Button>
+              >{t('common.clear')}</Button>
             )}
           </div>
         </div>

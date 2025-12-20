@@ -9,6 +9,7 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { cn } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface ColorPickerProps {
   isVisible: boolean;
@@ -53,6 +54,7 @@ export const ColorPicker = ({
   position,
   targetElement,
 }: ColorPickerProps) => {
+  const t = useTranslations();
   const [customColor, setCustomColor] = useState("");
   const [isCustomMode, setIsCustomMode] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -204,9 +206,7 @@ export const ColorPicker = ({
               onClick={handleCustomColorSubmit}
               disabled={!customColor}
               className="text-xs"
-            >
-              Apply
-            </Button>
+            >{t('common.apply')}</Button>
           </div>
         </div>
       </div>

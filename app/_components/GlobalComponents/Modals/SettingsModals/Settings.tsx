@@ -62,9 +62,8 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('common.settings')}>
       <p className="text-sm text-muted-foreground mb-6">
-        {t('settingsModal.sessionOnlyWarning', {
-          link: <Link href="/profile" className="text-primary hover:underline">{t('settingsModal.accountSettings')}</Link>
-        })}
+        {t('settingsModal.sessionOnlyPrefix')}{' '}
+        <Link href="/profile" className="text-primary hover:underline">{t('settingsModal.accountSettings')}</Link>.
       </p>
       <div className="mb-6">
         <h3 className="text-sm font-medium mb-3">{t('common.theme')}</h3>
@@ -92,14 +91,12 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   className="sr-only"
                 />
                 <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    autosaveNotes ? "bg-primary" : "bg-muted"
-                  }`}
+                  className={`block w-10 h-6 rounded-full transition-colors ${autosaveNotes ? "bg-primary" : "bg-muted"
+                    }`}
                 >
                   <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      autosaveNotes ? "translate-x-4" : "translate-x-0"
-                    }`}
+                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${autosaveNotes ? "translate-x-4" : "translate-x-0"
+                      }`}
                   />
                 </div>
               </div>
@@ -119,14 +116,12 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 className="sr-only"
               />
               <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  showMarkdownPreview ? "bg-primary" : "bg-muted"
-                }`}
+                className={`block w-10 h-6 rounded-full transition-colors ${showMarkdownPreview ? "bg-primary" : "bg-muted"
+                  }`}
               >
                 <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    showMarkdownPreview ? "translate-x-4" : "translate-x-0"
-                  }`}
+                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${showMarkdownPreview ? "translate-x-4" : "translate-x-0"
+                    }`}
                 />
               </div>
             </div>
@@ -145,14 +140,12 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 className="sr-only"
               />
               <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  compactMode ? "bg-primary" : "bg-muted"
-                }`}
+                className={`block w-10 h-6 rounded-full transition-colors ${compactMode ? "bg-primary" : "bg-muted"
+                  }`}
               >
                 <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    compactMode ? "translate-x-4" : "translate-x-0"
-                  }`}
+                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${compactMode ? "translate-x-4" : "translate-x-0"
+                    }`}
                 />
               </div>
             </div>
@@ -174,14 +167,12 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 className="sr-only"
               />
               <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  showEmojis ? "bg-primary" : "bg-muted"
-                }`}
+                className={`block w-10 h-6 rounded-full transition-colors ${showEmojis ? "bg-primary" : "bg-muted"
+                  }`}
               >
                 <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    showEmojis ? "translate-x-4" : "translate-x-0"
-                  }`}
+                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${showEmojis ? "translate-x-4" : "translate-x-0"
+                    }`}
                 />
               </div>
             </div>
@@ -202,14 +193,12 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 className="sr-only"
               />
               <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  showCompletedSuggestions ? "bg-primary" : "bg-muted"
-                }`}
+                className={`block w-10 h-6 rounded-full transition-colors ${showCompletedSuggestions ? "bg-primary" : "bg-muted"
+                  }`}
               >
                 <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    showCompletedSuggestions ? "translate-x-4" : "translate-x-0"
-                  }`}
+                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${showCompletedSuggestions ? "translate-x-4" : "translate-x-0"
+                    }`}
                 />
               </div>
             </div>

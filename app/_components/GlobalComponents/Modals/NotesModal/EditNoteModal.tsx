@@ -12,6 +12,7 @@ import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface EditNoteModalProps {
   note: Note;
@@ -28,6 +29,7 @@ export const EditNoteModal = ({
   onUpdated,
   unarchive,
 }: EditNoteModalProps) => {
+  const t = useTranslations();
   const { user } = useAppMode();
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
@@ -130,9 +132,7 @@ export const EditNoteModal = ({
 
         {isOwner && (
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Category
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
             <CategoryTreeSelector
               categories={categories}
               selectedCategory={
@@ -152,9 +152,7 @@ export const EditNoteModal = ({
             onClick={onClose}
             disabled={isLoading}
             className="flex-1"
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={isLoading || !title.trim()}

@@ -24,6 +24,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TaskStatus } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 const defaultStatusColors: Record<string, string> = {
   [TaskStatus.TODO]: "#6b7280",
@@ -124,6 +125,7 @@ export const StatusManagementModal = ({
   onSave,
   itemsByStatus = {},
 }: StatusManagementModalProps) => {
+  const t = useTranslations();
   const [statuses, setStatuses] = useState<KanbanStatus[]>(
     currentStatuses.map((s) => ({
       ...s,
@@ -243,9 +245,7 @@ export const StatusManagementModal = ({
         </Button>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
+          <Button type="button" variant="outline" onClick={handleClose}>{t('common.cancel')}</Button>
           <Button onClick={handleSave}>Save Changes</Button>
         </div>
       </div>

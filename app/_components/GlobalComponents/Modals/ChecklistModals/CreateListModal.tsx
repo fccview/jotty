@@ -11,6 +11,7 @@ import { ChecklistTypeSelector } from "../../../FeatureComponents/Checklists/Par
 import { Modes } from "@/app/_types/enums";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface CreateListModalProps {
   onClose: () => void;
@@ -25,6 +26,7 @@ export const CreateListModal = ({
   categories,
   initialCategory = "",
 }: CreateListModalProps) => {
+  const t = useTranslations();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(initialCategory);
   const [newCategory, setNewCategory] = useState("");
@@ -116,9 +118,7 @@ export const CreateListModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={

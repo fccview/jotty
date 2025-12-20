@@ -15,6 +15,7 @@ import { User as UserType } from "@/app/_types";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Logo } from "../../Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ interface UserManagementModalProps {
 }
 
 export const UserManagementModal = (props: UserManagementModalProps) => {
+  const t = useTranslations();
   const { isOpen, onClose, mode, user } = props;
   const { state, setters, handlers } = useUserManagementModal(props);
 
@@ -46,7 +48,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
         <Input
           id="username"
           name="username"
-          label="Username"
+          label={t('common.username')}
           type="text"
           value={state.username}
           onChange={(e) => setters.setUsername(e.target.value)}
@@ -94,8 +96,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
                 htmlFor="changePassword"
                 className="flex items-center gap-2 text-sm cursor-pointer"
               >
-                <SquareLock01Icon className="h-4 w-4" /> Change Password
-              </label>
+                <SquareLock01Icon className="h-4 w-4" />{t('settings.changePassword')}</label>
             </div>
             {state.changePassword && (
               <PasswordFields
@@ -118,8 +119,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
                 onClick={handlers.handleDelete}
                 disabled={state.isLoading}
               >
-                <Delete03Icon className="h-4 w-4 mr-2" /> Delete
-              </Button>
+                <Delete03Icon className="h-4 w-4 mr-2" />{t('common.delete')}</Button>
             )}
           </div>
           <div className="flex gap-2">
@@ -128,18 +128,14 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
               variant="outline"
               onClick={onClose}
               disabled={state.isLoading}
-            >
-              Cancel
-            </Button>
+            >{t('common.cancel')}</Button>
             <Button type="submit" disabled={state.isLoading}>
               {state.isLoading ? (
                 <>
                   <Logo
                     className="h-4 w-4 bg-background mr-2 animate-pulse"
                     pathClassName="fill-primary"
-                  />
-                  Saving...
-                </>
+                  />{t('common.saving')}</>
               ) : (
                 <>
                   <FloppyDiskIcon className="h-4 w-4 mr-2" />

@@ -16,6 +16,7 @@ import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -28,6 +29,7 @@ export const AdminContent = ({
   allDocs,
   users,
 }: AdminContentProps) => {
+  const t = useTranslations();
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
   const [rebuildingIndex, setRebuildingIndex] = useState<string | null>(null);
 
@@ -199,7 +201,7 @@ export const AdminContent = ({
                   {hasContent ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <AdminContentColumn
-                        title="Checklists"
+                        title={t('checklists.title')}
                         icon={<CheckmarkSquare04Icon className="h-4 w-4" />}
                         items={checklists.map((list) => ({
                           ...list,
@@ -211,7 +213,7 @@ export const AdminContent = ({
                         }))}
                       />
                       <AdminContentColumn
-                        title="Notes"
+                        title={t('notes.title')}
                         icon={<File02Icon className="h-4 w-4" />}
                         items={notes.map((doc) => ({
                           ...doc,

@@ -9,6 +9,7 @@ import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
 import { generateKeyPair } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTranslations } from "next-intl";
 
 interface PGPKeyGenerationModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const PGPKeyGenerationModal = ({
   onClose,
   onSuccess,
 }: PGPKeyGenerationModalProps) => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -185,9 +187,7 @@ export const PGPKeyGenerationModal = ({
               variant="outline"
               onClick={handleClose}
               disabled={isGenerating}
-            >
-              Cancel
-            </Button>
+            >{t('common.cancel')}</Button>
             <Button type="submit" disabled={isGenerating}>
               {isGenerating ? "Generating..." : "Generate Keys"}
             </Button>
@@ -225,7 +225,7 @@ export const PGPKeyGenerationModal = ({
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={handleClose}>Done</Button>
+            <Button onClick={handleClose}>{t('common.done')}</Button>
           </div>
         </div>
       )}

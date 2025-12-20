@@ -7,6 +7,7 @@ import {
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { useTranslations } from "next-intl";
 
 interface PaginationProps {
   currentPage: number;
@@ -29,6 +30,7 @@ export const Pagination = ({
   variant = "default",
   className = "",
 }: PaginationProps) => {
+  const t = useTranslations();
   const getVisiblePages = () => {
     const delta = 2;
     const range = [];
@@ -111,9 +113,7 @@ export const Pagination = ({
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="flex-1 h-8 text-xs"
-          >
-            Next
-            <ArrowRight01Icon className="h-3 w-3 ml-1" />
+          >{t('common.next')}<ArrowRight01Icon className="h-3 w-3 ml-1" />
           </Button>
         </div>
       </div>

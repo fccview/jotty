@@ -19,6 +19,7 @@ import { USERS_FILE } from "@/app/_consts/files";
 import { StylingTab } from "./Parts/StylingTab";
 import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
 import { Loading } from "../../GlobalComponents/Layout/Loading";
+import { useTranslations } from "next-intl";
 
 interface AdminClientProps {
   username: string;
@@ -36,6 +37,7 @@ const getInitialTab = (): AdminTabsEnum => {
 };
 
 export const AdminClient = ({ username }: AdminClientProps) => {
+  const t = useTranslations();
   const [users, setUsers] = useState<User[]>([]);
   const [allLists, setAllLists] = useState<Checklist[]>([]);
   const [allDocs, setAllDocs] = useState<Note[]>([]);
@@ -148,7 +150,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
 
   return (
     <div className="space-y-6">
-      <SiteHeader title="Admin Dashboard" />
+      <SiteHeader title={t('admin.adminDashboard')} />
 
       <AdminTabs activeTab={activeTab} onTabChange={handleTabChange} />
 

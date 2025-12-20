@@ -18,6 +18,7 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { ItemTypes } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface ArchiveTabProps {
   user: User | null;
@@ -32,6 +33,7 @@ export const ArchiveTab = ({
   listsCategories,
   notesCategories,
 }: ArchiveTabProps) => {
+  const t = useTranslations();
   const [showEditNoteModal, setShowEditNoteModal] = useState(false);
   const [showEditChecklistModal, setShowEditChecklistModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ArchivedItem | null>(null);
@@ -127,9 +129,7 @@ export const ArchiveTab = ({
               >
                 <div className="flex items-center gap-2">
                   <CheckmarkSquare04Icon className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-medium text-foreground">
-                    Checklists
-                  </h3>
+                  <h3 className="text-lg font-medium text-foreground">{t('checklists.title')}</h3>
                   <span className="text-sm text-muted-foreground">
                     ({archivedChecklists.length})
                   </span>
@@ -163,7 +163,7 @@ export const ArchiveTab = ({
               >
                 <div className="flex items-center gap-2">
                   <File02Icon className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-medium text-foreground">Notes</h3>
+                  <h3 className="text-lg font-medium text-foreground">{t('notes.title')}</h3>
                   <span className="text-sm text-muted-foreground">
                     ({archivedNotes.length})
                   </span>

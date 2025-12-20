@@ -17,6 +17,7 @@ import {
 import { useChecklistHome } from "@/app/_hooks/useChecklistHome";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface ChecklistHomeProps {
   lists: Checklist[];
@@ -31,6 +32,7 @@ export const ChecklistHome = ({
   onCreateModal,
   onSelectChecklist,
 }: ChecklistHomeProps) => {
+  const t = useTranslations();
   const { userSharedItems } = useAppMode();
 
   const {
@@ -64,8 +66,8 @@ export const ChecklistHome = ({
       <div className="h-full flex items-center justify-center">
         <EmptyState
           title="No Checklists Yet"
-          description="Create your first checklist to start organizing your tasks."
-          buttonText="New Checklist"
+          description={t('checklists.createFirstChecklist')}
+          buttonText={t('checklists.newChecklist')}
           onButtonClick={() => onCreateModal()}
           icon={
             <CheckmarkSquare04Icon className="h-10 w-10 text-muted-foreground" />
@@ -80,9 +82,7 @@ export const ChecklistHome = ({
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
-              Checklists
-            </h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">{t('checklists.title')}</h1>
           </div>
           <div className="flex gap-2">
             <Button
@@ -100,7 +100,7 @@ export const ChecklistHome = ({
               className="flex-1 sm:size-lg"
             >
               <Add01Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">New Checklist</span>
+              <span className="hidden sm:inline">{t('checklists.newChecklist')}</span>
               <span className="sm:hidden">New</span>
             </Button>
           </div>
@@ -109,9 +109,7 @@ export const ChecklistHome = ({
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Pinned
-              </h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('notes.pinned')}</h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
             <DndContext

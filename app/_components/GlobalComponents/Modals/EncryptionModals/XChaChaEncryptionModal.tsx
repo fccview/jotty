@@ -10,6 +10,7 @@ import {
   decryptXChaCha,
 } from "@/app/_server/actions/xchacha";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTranslations } from "next-intl";
 
 interface XChaChaEncryptionModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const XChaChaEncryptionModal = ({
   noteContent,
   onSuccess,
 }: XChaChaEncryptionModalProps) => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [passphrase, setPassphrase] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -173,9 +175,7 @@ export const XChaChaEncryptionModal = ({
             variant="outline"
             onClick={handleClose}
             disabled={isProcessing}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button type="submit" disabled={isProcessing}>
             {isProcessing ? `${actionLabel}ing...` : actionLabel}
           </Button>

@@ -6,6 +6,7 @@ import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { RecurrenceSelector } from "@/app/_components/GlobalComponents/FormElements/RecurrenceSelector";
 import { Input } from "../../FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface AddItemWithRecurrenceModalProps {
   initialItemText: string;
@@ -20,6 +21,7 @@ export const AddItemWithRecurrenceModal = ({
   onSubmit,
   isLoading = false,
 }: AddItemWithRecurrenceModalProps) => {
+  const t = useTranslations();
   const [text, setText] = useState(initialItemText || "");
   const [recurrence, setRecurrence] = useState<RecurrenceRule | undefined>();
   const textInputRef = useRef<HTMLInputElement>(null);
@@ -65,9 +67,7 @@ export const AddItemWithRecurrenceModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={isLoading || !text.trim()}

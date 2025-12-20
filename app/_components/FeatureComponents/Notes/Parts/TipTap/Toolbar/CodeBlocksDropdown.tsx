@@ -6,12 +6,14 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { codeblockLangs } from "@/app/_utils/code-block-utils";
 import { useState, useMemo } from "react";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
+import { useTranslations } from "next-intl";
 
 interface CodeBlockDropdownProps {
   editor: Editor | null;
 }
 
 export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
+  const t = useTranslations();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredLanguages = useMemo(() => {
@@ -42,7 +44,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
       size="sm"
       onMouseDown={(e) => e.preventDefault()}
       className="flex items-center gap-1"
-      title="Code"
+      title={t('editor.code')}
     >
       <SourceCodeIcon className="h-4 w-4" />
       <ArrowDown01Icon className="h-3 w-3" />

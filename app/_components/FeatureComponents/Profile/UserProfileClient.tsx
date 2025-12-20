@@ -23,6 +23,7 @@ import { ArchivedItem } from "@/app/_server/actions/archived";
 import { LinkIndex } from "@/app/_server/actions/link";
 import { LinksTab } from "@/app/_components/FeatureComponents/Profile/Parts/LinksTab";
 import { ProfileTabs } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface UserProfileClientProps {
   isSsoUser: boolean;
@@ -41,6 +42,7 @@ export const UserProfileClient = ({
   notesCategories,
   linkIndex,
 }: UserProfileClientProps) => {
+  const t = useTranslations();
   const { user, appSettings } = useAppMode();
   const [activeTab, setActiveTab] = useState<ProfileTabs>(ProfileTabs.PROFILE);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -80,8 +82,8 @@ export const UserProfileClient = ({
   return (
     <div className="space-y-6">
       <SiteHeader
-        title="User Profile"
-        description="Manage your account settings and preferences"
+        title={t('profile.userProfile')}
+        description={t('profile.manageAccount')}
       />
 
       <div className="bg-muted p-1 rounded-jotty">

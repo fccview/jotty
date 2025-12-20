@@ -3,6 +3,7 @@ import { Button } from "../Buttons/Button";
 import { CategoryTreeSelector } from "../Dropdowns/CategoryTreeSelector";
 import { Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { useTranslations } from "next-intl";
 
 interface CategoryInputProps {
   categories: Category[];
@@ -25,6 +26,7 @@ export const CategoryInput = ({
   onShowNewCategoryChange,
   disabled,
 }: CategoryInputProps) => {
+  const t = useTranslations();
   const selectedCategoryName = selectedCategory
     ? categories.find((c) => c.path === selectedCategory)?.name ||
       selectedCategory
@@ -37,9 +39,7 @@ export const CategoryInput = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-foreground mb-2">
-        Category
-      </label>
+      <label className="block text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
       {showNewCategory ? (
         <div className="space-y-2">
           <div className="flex gap-2 items-center">
@@ -56,9 +56,7 @@ export const CategoryInput = ({
               variant="outline"
               onClick={() => onShowNewCategoryChange(false)}
               disabled={disabled}
-            >
-              Cancel
-            </Button>
+            >{t('common.cancel')}</Button>
           </div>
           {isNotAllowedName && (
             <div className="text-xs text-destructive  ">

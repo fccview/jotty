@@ -13,6 +13,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { useMemo } from "react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useTranslations } from "next-intl";
 
 interface ChecklistCardProps {
   list: Checklist;
@@ -33,6 +34,7 @@ export const ChecklistCard = ({
   sharer,
   fixedWidth,
 }: ChecklistCardProps) => {
+  const t = useTranslations();
   const {
     attributes,
     listeners,
@@ -126,7 +128,7 @@ export const ChecklistCard = ({
 
       <div className="mb-3">
         <div className="flex justify-between text-xs text-muted-foreground mb-1">
-          <span>Progress</span>
+          <span>{t('checklists.progress')}</span>
           <span>{completionRate}%</span>
         </div>
         <div className="w-full bg-muted rounded-full h-2">

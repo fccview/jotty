@@ -21,6 +21,7 @@ import { useMemo } from "react";
 import { ActiveSharersBarChart } from "./ActiveSharersBarChart";
 import { ShareTypePieChart } from "./ShareTypePieChart";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useTranslations } from "next-intl";
 
 const handleUnsharePublicItem = async (
   item: { id: string; category: string },
@@ -46,6 +47,7 @@ const handleUnsharePublicItem = async (
 };
 
 export const AdminSharing = () => {
+  const t = useTranslations();
   const { allSharedItems, globalSharing: rawGlobalSharing } = useAppMode();
   const colors = useThemeColors();
 
@@ -157,9 +159,7 @@ export const AdminSharing = () => {
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium">
-                        User
-                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">{t('common.user')}</th>
                       <th className="px-4 py-3 text-left text-sm font-medium">
                         Items Shared
                       </th>
@@ -230,7 +230,7 @@ export const AdminSharing = () => {
                   <CheckmarkSquare04Icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold">Shared Checklists</h4>
+                  <h4 className="font-semibold">{t('checklists.sharedChecklists')}</h4>
                   <p className="text-sm text-muted-foreground">
                     {totalSharedChecklists} checklists
                   </p>
@@ -247,7 +247,7 @@ export const AdminSharing = () => {
                   <File02Icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold">Shared Notes</h4>
+                  <h4 className="font-semibold">{t('notes.sharedNotes')}</h4>
                   <p className="text-sm text-muted-foreground">
                     {totalSharedNotes} notes
                   </p>

@@ -15,6 +15,7 @@ import { getUsername } from "@/app/_server/actions/users";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 const ResponsiveNetwork = dynamic(
   () => import("@nivo/network").then((mod) => mod.ResponsiveNetwork),
@@ -100,6 +101,7 @@ interface NetworkLink {
 }
 
 export const LinksTab = ({ linkIndex }: LinksTabProps) => {
+  const t = useTranslations();
   const { notes, checklists } = useAppMode();
   const [hoveredNode, setHoveredNode] = useState<any>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -272,7 +274,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalNodes}
                 </div>
-                <div className="text-xs text-muted-foreground">Total Items</div>
+                <div className="text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
               </div>
             </div>
 
@@ -284,7 +286,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalLinks}
                 </div>
-                <div className="text-xs text-muted-foreground">Connections</div>
+                <div className="text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
               </div>
             </div>
 
@@ -350,7 +352,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalNodes}
               </div>
-              <div className="text-xs text-muted-foreground">Total Items</div>
+              <div className="text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
             </div>
           </div>
 
@@ -362,7 +364,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalLinks}
               </div>
-              <div className="text-xs text-muted-foreground">Connections</div>
+              <div className="text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
             </div>
           </div>
 
@@ -390,11 +392,11 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>Notes</span>
+                  <span>{t('notes.title')}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>Checklists</span>
+                  <span>{t('checklists.title')}</span>
                 </div>
               </div>
               <Button

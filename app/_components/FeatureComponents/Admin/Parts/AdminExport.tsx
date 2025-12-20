@@ -5,6 +5,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { ExportProgress, ExportResult, User } from "@/app/_types";
+import { useTranslations } from "next-intl";
 import {
   exportAllChecklistsNotes,
   exportUserChecklistsNotes,
@@ -62,6 +63,7 @@ interface ExportContentProps {
 }
 
 export const ExportContent = ({ users }: ExportContentProps) => {
+  const t = useTranslations();
   const [selectedExportType, setSelectedExportType] = useState<ExportType>(
     exportOptions[3].id
   );
@@ -196,9 +198,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
           onClick={handleExport}
           disabled={isExportDisabled}
           className="w-full md:w-auto"
-        >
-          Export Data
-        </Button>
+        >{t('settings.exportData')}</Button>
       </div>
 
       {exporting && (

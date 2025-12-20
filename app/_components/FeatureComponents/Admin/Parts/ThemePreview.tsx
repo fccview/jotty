@@ -3,6 +3,7 @@ import { DynamicLogo } from "@/app/_components/GlobalComponents/Layout/Logo/Dyna
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 import {
   CheckmarkCircle04Icon,
   Clock01Icon,
@@ -39,6 +40,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
   colors,
   focusedColor,
 }) => {
+  const t = useTranslations();
   const themeStyles = useMemo(() => {
     const cssVars: { [key: string]: string } = {};
     Object.entries(colors).forEach(([key, value]) => {
@@ -110,16 +112,16 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           className={`w-full ${getHighlightClass(
             "--input"
           )} ${getHighlightClass("--border")}`}
-          label="Search"
+          label={t('common.search')}
         />
       </div>
 
       <div className="px-3 space-y-3">
         <NoteCard
           note={sampleNote}
-          onSelect={() => {}}
+          onSelect={() => { }}
           isPinned={false}
-          onTogglePin={() => {}}
+          onTogglePin={() => { }}
         />
 
         <div
@@ -206,9 +208,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
             variant="link"
             size="sm"
             className={getHighlightClass("--primary")}
-          >
-            Link
-          </Button>
+          >{t('editor.link')}</Button>
         </div>
 
         <div className="space-y-3">
@@ -327,18 +327,14 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           </div>
 
           <div className="flex gap-2">
-            <Button size="sm" className={getHighlightClass("--primary")}>
-              Save
-            </Button>
+            <Button size="sm" className={getHighlightClass("--primary")}>{t('common.save')}</Button>
             <Button
               variant="outline"
               size="sm"
               className={`${getHighlightClass("--border")} ${getHighlightClass(
                 "--secondary"
               )}`}
-            >
-              Cancel
-            </Button>
+            >{t('common.cancel')}</Button>
           </div>
         </div>
       </div>

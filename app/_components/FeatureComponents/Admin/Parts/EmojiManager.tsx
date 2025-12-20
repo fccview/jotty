@@ -10,8 +10,10 @@ import {
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useEmojis } from "@/app/_hooks/useEmojis";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 export const EmojiManager = () => {
+  const t = useTranslations();
   const {
     isLoadingEmojis,
     isSavingEmojis,
@@ -135,18 +137,14 @@ export const EmojiManager = () => {
               variant="outline"
               onClick={() => setEmojiModalOpen(false)}
               disabled={isSavingEmojis}
-            >
-              Cancel
-            </Button>
+            >{t('common.cancel')}</Button>
             <Button onClick={handleSaveEmoji} disabled={isSavingEmojis}>
               {isSavingEmojis ? (
                 <>
                   <Logo
                     className="h-4 w-4 bg-background mr-2 animate-pulse"
                     pathClassName="fill-primary"
-                  />
-                  Saving...
-                </>
+                  />{t('common.saving')}</>
               ) : editingEmoji ? (
                 "Update Emoji"
               ) : (

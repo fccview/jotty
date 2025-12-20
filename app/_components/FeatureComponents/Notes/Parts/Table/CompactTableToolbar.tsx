@@ -12,6 +12,7 @@ import {
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 interface CompactTableToolbarProps {
   editor: Editor;
@@ -26,6 +27,7 @@ export const CompactTableToolbar = ({
   position,
   targetElement,
 }: CompactTableToolbarProps) => {
+  const t = useTranslations();
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -125,7 +127,7 @@ export const CompactTableToolbar = ({
     >
       <div className="flex items-center gap-1">
         <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded text-xs text-muted-foreground">
-          <span>Table</span>
+          <span>{t('editor.table')}</span>
         </div>
 
         {tableItems.map((item, index) => (

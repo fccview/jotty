@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Alert02Icon } from "hugeicons-react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface BulkPasteModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const BulkPasteModal = ({
   onSubmit,
   isLoading = false,
 }: BulkPasteModalProps) => {
+  const t = useTranslations();
   const [itemsText, setItemsText] = useState("");
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
 
@@ -127,9 +129,7 @@ Item 3...`}
                 variant="outline"
                 onClick={handleClose}
                 disabled={isLoading}
-              >
-                Cancel
-              </Button>
+              >{t('common.cancel')}</Button>
               <Button type="submit" disabled={isLoading || !itemsText.trim()}>
                 {isLoading
                   ? "Adding..."

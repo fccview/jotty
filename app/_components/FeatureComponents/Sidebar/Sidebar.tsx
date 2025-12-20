@@ -25,8 +25,10 @@ import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
 import { NavigationHelpIcon } from "../Navigation/Parts/NavigationHelpIcon";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 export const Sidebar = (props: SidebarProps) => {
+  const t = useTranslations();
   const {
     isOpen,
     onClose,
@@ -172,9 +174,7 @@ export const Sidebar = (props: SidebarProps) => {
           >
             <div className="px-2 pt-2">
               <div className="flex items-center justify-between">
-                <h3 className="jotty-sidebar-categories-title text-xs font-bold uppercase text-muted-foreground tracking-wider">
-                  Categories
-                </h3>
+                <h3 className="jotty-sidebar-categories-title text-xs font-bold uppercase text-muted-foreground tracking-wider">{t('notes.categories')}</h3>
                 <button
                   onClick={sidebar.handleToggleAllCategories}
                   className="jotty-sidebar-categories-toggle-all text-xs font-medium text-primary hover:underline focus:outline-none"
@@ -234,9 +234,7 @@ export const Sidebar = (props: SidebarProps) => {
               />
               <span className="truncate">{user?.username}</span>
               {user?.isAdmin && (
-                <span className="px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded">
-                  Admin
-                </span>
+                <span className="px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded">{t('admin.title')}</span>
               )}
             </button>
             <Button

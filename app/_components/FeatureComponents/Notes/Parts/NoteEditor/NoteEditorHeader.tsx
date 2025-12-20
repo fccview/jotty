@@ -47,6 +47,7 @@ import { XChaChaEncryptionModal } from "@/app/_components/GlobalComponents/Modal
 import { updateNote } from "@/app/_server/actions/note";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { detectEncryptionMethod, isEncrypted, isValidXChaChaJSON } from "@/app/_utils/encryption-utils";
+import { useTranslations } from "next-intl";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -73,6 +74,7 @@ export const NoteEditorHeader = ({
   onOpenDecryptModal,
   onOpenViewModal,
 }: NoteEditorHeaderProps) => {
+  const t = useTranslations();
   const metadata = useMetadata();
   const {
     title,
@@ -329,9 +331,7 @@ export const NoteEditorHeader = ({
                   </div>
                 )}
 
-                <Button variant="outline" size="sm" onClick={handleCancel}>
-                  Cancel
-                </Button>
+                <Button variant="outline" size="sm" onClick={handleCancel}>{t('common.cancel')}</Button>
                 <Button
                   size="sm"
                   onClick={() => {
@@ -346,12 +346,12 @@ export const NoteEditorHeader = ({
                         className="h-4 w-4 bg-background mr-2 animate-pulse"
                         pathClassName="fill-primary"
                       />
-                      <span className="hidden lg:inline">Saving...</span>
+                      <span className="hidden lg:inline">{t('common.saving')}</span>
                     </>
                   ) : (
                     <>
                       <FloppyDiskIcon className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2" />
-                      <span className="hidden lg:inline">Save</span>
+                      <span className="hidden lg:inline">{t('common.save')}</span>
                     </>
                   )}
                 </Button>
@@ -389,7 +389,7 @@ export const NoteEditorHeader = ({
                       variant="outline"
                       size="icon"
                       onClick={handleEdit}
-                      title="Edit"
+                      title={t('common.edit')}
                     >
                       <FileEditIcon className="h-5 w-5" />
                     </Button>

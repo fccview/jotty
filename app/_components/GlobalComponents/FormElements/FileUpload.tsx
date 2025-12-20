@@ -7,6 +7,7 @@ import {
 import { formatFileSize } from "@/app/_utils/file-icon-utils";
 import { Orbit01Icon } from "hugeicons-react";
 import { Logo } from "../Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 interface FileUploadProps {
   activeTab: "images" | "videos" | "files";
@@ -26,7 +27,9 @@ export const FileUpload = ({
   isUploading,
   uploadError,
   fileSizeError,
-}: FileUploadProps) => (
+}: FileUploadProps) => {
+  const t = useTranslations();
+  return (
   <div className="jotty-file-upload p-6 border-b border-border">
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
       <input
@@ -69,9 +72,7 @@ export const FileUpload = ({
               {formatFileSize(selectedFile.size)}
             </span>
             {!isUploading && !uploadError && (
-              <Button onClick={onUpload} size="sm" className="w-full sm:w-auto">
-                Upload
-              </Button>
+              <Button onClick={onUpload} size="sm" className="w-full sm:w-auto">{t('common.upload')}</Button>
             )}
           </div>
 
@@ -98,4 +99,5 @@ export const FileUpload = ({
       )}
     </div>
   </div>
-);
+  );
+};

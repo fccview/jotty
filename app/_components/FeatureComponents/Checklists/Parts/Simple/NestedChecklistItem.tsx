@@ -26,6 +26,7 @@ import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
 import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useTranslations } from "next-intl";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -66,6 +67,7 @@ const NestedChecklistItemComponent = ({
   isAnyItemDragging = false,
   overItem = null,
 }: NestedChecklistItemProps) => {
+  const t = useTranslations();
   const { usersPublicData, user } = useAppMode();
   const { permissions } = usePermissions();
   const getUserAvatarUrl = (username: string) => {
@@ -214,13 +216,13 @@ const NestedChecklistItemComponent = ({
       className={cn(
         "relative my-1",
         hasChildren &&
-          !isChild &&
-          "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+        !isChild &&
+        "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
         !hasChildren &&
-          !isChild &&
-          "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+        !isChild &&
+        "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
         isChild &&
-          "ml-4 pl-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
+        "ml-4 pl-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
         "first:mt-0 transition-colors duration-150",
         isActive && "bg-muted/20",
         isDragging && "opacity-50 z-50",
@@ -237,7 +239,7 @@ const NestedChecklistItemComponent = ({
           isChild ? "px-2.5 py-2" : "p-3",
           completed && "opacity-80",
           !permissions?.canEdit &&
-            "opacity-50 cursor-not-allowed pointer-events-none"
+          "opacity-50 cursor-not-allowed pointer-events-none"
         )}
       >
         {!isPublicView && !isDragDisabled && permissions?.canEdit && (
@@ -449,9 +451,7 @@ const NestedChecklistItemComponent = ({
               size="sm"
               disabled={!newSubItemText.trim()}
               className="px-3"
-            >
-              Add
-            </Button>
+            >{t('common.add')}</Button>
             <Button
               type="button"
               variant="ghost"

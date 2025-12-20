@@ -5,6 +5,7 @@ import { ReactNodeViewRenderer } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
+import { useTranslations } from "next-intl";
 
 export const DrawioNodeView = ({
   node,
@@ -13,6 +14,7 @@ export const DrawioNodeView = ({
   editor,
   extension,
 }: any) => {
+  const t = useTranslations();
   const [isEditing, setIsEditing] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const themeMode = node.attrs.themeMode || "light";
@@ -137,9 +139,7 @@ export const DrawioNodeView = ({
               <button
                 onClick={() => setIsEditing(false)}
                 className="px-3 py-1 bg-muted hover:bg-muted/80 rounded text-sm"
-              >
-                Close
-              </button>
+              >{t('common.close')}</button>
             </div>
             <iframe
               ref={iframeRef}
@@ -171,16 +171,12 @@ export const DrawioNodeView = ({
                 onClick={openDrawio}
                 className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
                 title="Edit diagram"
-              >
-                Edit
-              </button>
+              >{t('common.edit')}</button>
               <button
                 onClick={handleDelete}
                 className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-xs hover:bg-destructive/90"
                 title="Delete diagram"
-              >
-                Delete
-              </button>
+              >{t('common.delete')}</button>
             </div>
             <div
               className="drawio-svg-container flex justify-center items-center"
@@ -204,9 +200,7 @@ export const DrawioNodeView = ({
             <button
               onClick={handleDelete}
               className="ml-2 px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
-            >
-              Delete
-            </button>
+            >{t('common.delete')}</button>
           </div>
         )}
       </div>

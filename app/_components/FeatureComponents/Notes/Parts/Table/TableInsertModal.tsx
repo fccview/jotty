@@ -5,6 +5,7 @@ import { Editor } from "@tiptap/react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface TableInsertModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const TableInsertModal = ({
   onClose,
   editor,
 }: TableInsertModalProps) => {
+  const t = useTranslations();
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(3);
 
@@ -30,7 +32,7 @@ export const TableInsertModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Insert Table">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('editor.insertTable')}>
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <Input
@@ -61,16 +63,12 @@ export const TableInsertModal = ({
             variant="outline"
             onClick={onClose}
             className="flex-1 border-border text-foreground hover:bg-muted/50"
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="button"
             onClick={handleInsert}
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            Insert Table
-          </Button>
+          >{t('editor.insertTable')}</Button>
         </div>
       </div>
     </Modal>

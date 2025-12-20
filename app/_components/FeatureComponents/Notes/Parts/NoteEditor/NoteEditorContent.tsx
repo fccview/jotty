@@ -15,6 +15,7 @@ import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Par
 import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { detectEncryptionMethod, isEncrypted, isValidXChaChaJSON } from "@/app/_utils/encryption-utils";
+import { useTranslations } from "next-intl";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -39,6 +40,7 @@ export const NoteEditorContent = ({
   onOpenDecryptModal,
   onOpenViewModal,
 }: NoteEditorContentProps) => {
+  const t = useTranslations();
   const { user, linkIndex, notes, checklists, appSettings } = useAppMode();
   const { compactMode } = useSettings();
   const searchParams = useSearchParams();
@@ -110,18 +112,14 @@ export const NoteEditorContent = ({
                 onClick={onOpenViewModal}
                 className="flex items-center gap-2"
               >
-                <ViewIcon className="h-4 w-4" />
-                View
-              </Button>
+                <ViewIcon className="h-4 w-4" />{t('settings.view')}</Button>
             )}
             {onOpenDecryptModal && (
               <Button
                 onClick={onOpenDecryptModal}
                 className="flex items-center gap-2"
               >
-                <SquareUnlock01Icon className="h-4 w-4" />
-                Decrypt
-              </Button>
+                <SquareUnlock01Icon className="h-4 w-4" />{t('encryption.decrypt')}</Button>
             )}
           </div>
         </div>

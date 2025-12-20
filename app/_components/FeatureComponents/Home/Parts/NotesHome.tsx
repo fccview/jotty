@@ -14,6 +14,7 @@ import {
 import { useNotesHome } from "@/app/_hooks/useNotesHome";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface NotesHomeProps {
   notes: Note[];
@@ -30,6 +31,7 @@ export const NotesHome = ({
   onCreateModal,
   onSelectNote,
 }: NotesHomeProps) => {
+  const t = useTranslations();
   const { userSharedItems } = useAppMode();
 
   const {
@@ -61,9 +63,9 @@ export const NotesHome = ({
       <div className="flex-1 overflow-y-auto bg-background h-full">
         <EmptyState
           icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
-          title="No notes yet"
-          description="Create your first note to get started with your knowledge base."
-          buttonText="Create New Note"
+          title={t('notes.noNotesYet')}
+          description={t('notes.createFirstNote')}
+          buttonText={t('notes.createNewNote')}
           onButtonClick={() => onCreateModal()}
         />
       </div>
@@ -75,9 +77,7 @@ export const NotesHome = ({
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
-              Notes
-            </h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">{t('notes.title')}</h1>
           </div>
           <div className="flex gap-2">
             <Button
@@ -86,7 +86,7 @@ export const NotesHome = ({
               size="sm"
               className="flex-1 sm:size-lg"
             >
-              <span className="hidden sm:inline">All Notes</span>
+              <span className="hidden sm:inline">{t('notes.allNotes')}</span>
               <span className="sm:hidden">All</span>
             </Button>
             <Button
@@ -104,9 +104,7 @@ export const NotesHome = ({
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Pinned
-              </h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('notes.pinned')}</h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
             <DndContext

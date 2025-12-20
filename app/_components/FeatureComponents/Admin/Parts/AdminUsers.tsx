@@ -12,6 +12,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { User as UserType, Checklist, Note } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface AdminUsersProps {
   users: UserType[];
@@ -38,6 +39,7 @@ export const AdminUsers = ({
   username,
   deletingUser,
 }: AdminUsersProps) => {
+  const t = useTranslations();
   const filteredUsers = users.filter((user) =>
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -113,7 +115,7 @@ export const AdminUsers = ({
                     size="sm"
                     onClick={() => onEditUser(user)}
                     className="h-8 w-8 p-0"
-                    title="Edit User"
+                    title={t('admin.editUser')}
                   >
                     <UserEdit01Icon className="h-4 w-4" />
                   </Button>
@@ -124,7 +126,7 @@ export const AdminUsers = ({
                       onClick={() => onDeleteUser(user)}
                       disabled={deletingUser === user.username}
                       className="h-8 w-8 p-0"
-                      title="Delete User"
+                      title={t('admin.deleteUser')}
                     >
                       {deletingUser === user.username ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-destructive mx-auto"></div>

@@ -6,6 +6,7 @@ import { Modal } from "../Modal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface RenameCategoryModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const RenameCategoryModal = ({
   onClose,
   onRename,
 }: RenameCategoryModalProps) => {
+  const t = useTranslations();
   const categoryName = categoryPath.split("/").pop() || categoryPath;
   const [newName, setNewName] = useState(categoryName);
   const [isRenaming, setIsRenaming] = useState(false);
@@ -83,9 +85,7 @@ export const RenameCategoryModal = ({
             variant="outline"
             onClick={handleClose}
             disabled={isRenaming}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={!newName.trim() || newName === categoryName || isRenaming}

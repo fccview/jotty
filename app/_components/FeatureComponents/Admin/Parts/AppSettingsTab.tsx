@@ -17,8 +17,10 @@ import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown"
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 export const AppSettingsTab = () => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const { updateFavicons } = useFaviconUpdate();
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -225,8 +227,7 @@ export const AppSettingsTab = () => {
           <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
             {isSaving ? (
               <>
-                <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" /> Saving...
-              </>
+                <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />{t('common.saving')}</>
             ) : (
               "Save Changes"
             )}
@@ -235,9 +236,7 @@ export const AppSettingsTab = () => {
             variant="outline"
             onClick={() => window.location.reload()}
             disabled={isSaving || !hasChanges}
-          >
-            Reset
-          </Button>
+          >{t('common.reset')}</Button>
           {hasChanges && (
             <p className="text-sm text-muted-foreground">
               You have unsaved changes.

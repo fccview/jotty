@@ -9,6 +9,7 @@ import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown"
 import { TaskStatus } from "@/app/_types/enums";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Undo02Icon } from "@hugeicons/core-free-icons";
+import { useTranslations } from "next-intl";
 
 interface ArchivedItemsModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export const ArchivedItemsModal = ({
   onUnarchive,
   statuses,
 }: ArchivedItemsModalProps) => {
+  const t = useTranslations();
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const statusMap = useMemo(() => {
@@ -141,9 +143,7 @@ export const ArchivedItemsModal = ({
         )}
 
         <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
+          <Button variant="outline" onClick={onClose}>{t('common.close')}</Button>
         </div>
       </div>
     </Modal>

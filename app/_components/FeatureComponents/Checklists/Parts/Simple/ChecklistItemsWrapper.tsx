@@ -1,4 +1,5 @@
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useTranslations } from "next-intl";
 
 interface checklistItemsWrapperProps {
   title: string;
@@ -17,6 +18,7 @@ export const ChecklistItemsWrapper = ({
   isLoading,
   isCompleted = false,
 }: checklistItemsWrapperProps) => {
+  const t = useTranslations();
   const { permissions } = usePermissions();
   return (
     <div className="bg-card border-b border-border pb-4 lg:border-0">
@@ -29,9 +31,7 @@ export const ChecklistItemsWrapper = ({
           ></div>
           {title} ({count})
           {isLoading && (
-            <span className="ml-2 text-sm text-muted-foreground">
-              Saving...
-            </span>
+            <span className="ml-2 text-sm text-muted-foreground">{t('common.saving')}</span>
           )}
         </h3>
         {permissions?.canEdit && (

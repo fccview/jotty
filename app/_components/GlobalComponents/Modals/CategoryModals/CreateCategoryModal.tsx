@@ -9,6 +9,7 @@ import { useToast } from "@/app/_providers/ToastProvider";
 import { AppMode, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface CreateCategoryModalProps {
   onClose: () => void;
@@ -25,6 +26,7 @@ export const CreateCategoryModal = ({
   categories = [],
   initialParent = "",
 }: CreateCategoryModalProps) => {
+  const t = useTranslations();
   const [categoryName, setCategoryName] = useState("");
   const [parentCategory, setParentCategory] = useState(initialParent);
   const [isLoading, setIsLoading] = useState(false);
@@ -105,9 +107,7 @@ export const CreateCategoryModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={

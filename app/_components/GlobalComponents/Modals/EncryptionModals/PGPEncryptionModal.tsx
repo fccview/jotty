@@ -14,6 +14,7 @@ import {
 } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface PGPEncryptionModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export const PGPEncryptionModal = ({
   noteContent,
   onSuccess,
 }: PGPEncryptionModalProps) => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [useCustomKey, setUseCustomKey] = useState(false);
   const [customKey, setCustomKey] = useState("");
@@ -422,9 +424,7 @@ export const PGPEncryptionModal = ({
             variant="outline"
             onClick={handleClose}
             disabled={isProcessing}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button type="submit" disabled={isProcessing}>
             {isProcessing ? `${actionLabel}ing...` : actionLabel}
           </Button>

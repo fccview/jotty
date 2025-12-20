@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "../FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface ImageSizeModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const ImageSizeModal = ({
   currentHeight,
   imageUrl,
 }: ImageSizeModalProps) => {
+  const t = useTranslations();
   const [width, setWidth] = useState<string>("");
   const [height, setHeight] = useState<string>("");
 
@@ -64,7 +66,7 @@ export const ImageSizeModal = ({
           <div className="flex justify-center">
             <img
               src={imageUrl}
-              alt="Preview"
+              alt={t('editor.preview')}
               className="max-w-full max-h-48 object-contain rounded border"
               style={{
                 width: width ? `${width}px` : "auto",
@@ -107,16 +109,10 @@ export const ImageSizeModal = ({
         </div>
 
         <div className="flex justify-between pt-4">
-          <Button variant="outline" onClick={handleReset} className="text-sm">
-            Reset
-          </Button>
+          <Button variant="outline" onClick={handleReset} className="text-sm">{t('common.reset')}</Button>
           <div className="space-x-2">
-            <Button variant="outline" onClick={onClose} className="text-sm">
-              Cancel
-            </Button>
-            <Button onClick={handleConfirm} className="text-sm">
-              Apply
-            </Button>
+            <Button variant="outline" onClick={onClose} className="text-sm">{t('common.cancel')}</Button>
+            <Button onClick={handleConfirm} className="text-sm">{t('common.apply')}</Button>
           </div>
         </div>
       </div>
