@@ -10,6 +10,7 @@ import {
 import { StatCard } from "@/app/_components/GlobalComponents/Cards/StatCard";
 import { ReactNode } from "react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface AdminStats {
   totalUsers: number;
@@ -23,6 +24,7 @@ interface AdminOverviewProps {
 }
 
 export const AdminOverview = ({ stats }: AdminOverviewProps) => {
+  const t = useTranslations();
   const { appVersion } = useAppMode();
 
   const statCards = [
@@ -79,13 +81,13 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Regular Users</span>
+              <span className="text-muted-foreground">{t('admin.regularUsers')}</span>
               <span className="font-medium">
                 {stats.totalUsers - stats.adminUsers}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Admin Users</span>
+              <span className="text-muted-foreground">{t('admin.adminUsers')}</span>
               <span className="font-medium">{stats.adminUsers}</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
@@ -105,7 +107,7 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Total Content</span>
+              <span className="text-muted-foreground">{t('admin.totalContent')}</span>
               <span className="font-medium">
                 {stats.totalChecklists + stats.totalNotes}
               </span>

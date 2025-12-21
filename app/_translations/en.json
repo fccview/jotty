@@ -4,6 +4,7 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
+    "new": "New",
     "close": "Close",
     "confirm": "Confirm",
     "loading": "Loading...",
@@ -82,7 +83,26 @@
     "modified": "Modified",
     "deleted": "Deleted",
     "saving": "Saving...",
-    "done": "Done"
+    "done": "Done",
+    "uploading": "Uploading...",
+    "open": "Open",
+    "enterPassword": "Enter password",
+    "confirmPassword": "Confirm password",
+    "openFile": "Open file",
+    "downloadFile": "Download file",
+    "deleteFile": "Delete file",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "currentIcon": "Current icon",
+    "dropImageOrClick": "Drop image or click to upload",
+    "selectRecurrencePattern": "Select recurrence pattern",
+    "clearEndDate": "Clear end date",
+    "selectStartDate": "Select Start Date",
+    "selectEndDateOptional": "Select End Date (Optional)",
+    "api": "API",
+    "appLogo": "App Logo",
+    "readingProgress": "Reading progress",
+    "filesAndImages": "Files & Images"
   },
   "auth": {
     "loginTitle": "Login",
@@ -117,6 +137,7 @@
   },
   "notes": {
     "title": "Notes",
+    "newNote": "New Note",
     "allNotes": "All Notes",
     "recent": "Recent",
     "pinned": "Pinned",
@@ -140,7 +161,15 @@
     "newCategory": "New Category",
     "saveNote": "Save Note",
     "discardChanges": "Discard Changes",
-    "unsavedChanges": "You have unsaved changes"
+    "unsavedChanges": "You have unsaved changes",
+    "drawioNoPreview": "Draw.io diagram (no preview available)",
+    "mermaidError": "Mermaid Error:",
+    "referencedBy": "Referenced By",
+    "noHeadingsFound": "No headings found",
+    "contents": "Contents",
+    "searchNotesAndChecklists": "Search notes and checklists...",
+    "noResultsFound": "No results found",
+    "startWritingAbove": "Start writing your note above!"
   },
   "checklists": {
     "title": "Checklists",
@@ -171,7 +200,18 @@
     "removeItem": "Remove Item",
     "checkItem": "Check Item",
     "uncheckItem": "Uncheck Item",
-    "pending": "Pending"
+    "pending": "Pending",
+    "loadingChecklist": "Loading checklist...",
+    "doNotRefresh": "Do not refresh the page.",
+    "addNewItem": "Add new item...",
+    "bulkAddItems": "Bulk add items",
+    "bulk": "Bulk",
+    "addRecurringItem": "Add recurring item",
+    "addNewTask": "Add new task...",
+    "publiclyShared": "Publicly shared",
+    "subtasks": "Subtasks",
+    "overallProgress": "Overall progress",
+    "emptyChecklist": "This checklist is empty."
   },
   "tasks": {
     "title": "Tasks",
@@ -199,7 +239,8 @@
     "newTaskList": "New Task List",
     "taskLists": "Task Lists",
     "noTaskListsFound": "No task lists found",
-    "tryAdjustingFiltersTaskList": "Try adjusting your filters or create a new task list."
+    "tryAdjustingFiltersTaskList": "Try adjusting your filters or create a new task list.",
+    "totalTime": "Total time:"
   },
   "profile": {
     "userProfile": "User Profile",
@@ -238,7 +279,11 @@
     "failedToUpdateAvatarRetry": "Failed to update avatar. Please try again.",
     "avatarRemoved": "Avatar removed successfully!",
     "failedToRemoveAvatar": "Failed to remove avatar",
-    "failedToRemoveAvatarRetry": "Failed to remove avatar. Please try again."
+    "failedToRemoveAvatarRetry": "Failed to remove avatar. Please try again.",
+    "activeSessions": "Active Sessions",
+    "activeSession": "{count} active session",
+    "activeSession_plural": "{count} active sessions",
+    "terminateAllOthers": "Terminate All Others"
   },
   "settings": {
     "title": "Settings",
@@ -357,7 +402,11 @@
     "systemSettings": "System Settings",
     "logs": "Logs",
     "backups": "Backups",
-    "maintenance": "Maintenance"
+    "maintenance": "Maintenance",
+    "regularUsers": "Regular Users",
+    "adminUsers": "Admin Users",
+    "totalContent": "Total Content",
+    "noSharedItems": "No shared items"
   },
   "errors": {
     "notFound": "Not Found",
@@ -448,7 +497,22 @@
     "toggleBulletList": "Toggle bullet list",
     "toggleBlockquote": "Toggle blockquote",
     "toggleLink": "Toggle link",
-    "editImageSize": "Edit image size"
+    "editImageSize": "Edit image size",
+    "editorFeatures": "Editor Features",
+    "slashCommands": "Slash Commands",
+    "bubbleMenu": "Bubble Menu",
+    "tableToolbar": "Table Toolbar",
+    "externalServices": "External Services",
+    "diagrams": "Diagrams",
+    "mermaidDiagram": "Mermaid Diagram",
+    "drawioDiagram": "Draw.io Diagram",
+    "linkType": "Link Type:",
+    "bidirectional": "Bidirectional",
+    "pathBased": "Path-Based",
+    "encryptedNote": "Encrypted note",
+    "searchFonts": "Search fonts...",
+    "noFontsFound": "No fonts found",
+    "syntaxTheme": "Syntax theme"
   },
   "sharing": {
     "share": "Share",
@@ -465,7 +529,10 @@
     "canDelete": "Can Delete",
     "removeAccess": "Remove Access",
     "shareSettings": "Share Settings",
-    "stopSharing": "Stop Sharing"
+    "stopSharing": "Stop Sharing",
+    "publicAccess": "Public Access",
+    "copyUrl": "Copy URL",
+    "publiclyAccessible": "Publicly accessible"
   },
   "encryption": {
     "encrypt": "Encrypt",
@@ -533,5 +600,18 @@
     "showNotePreview": "Show Note Preview on Cards",
     "notesCompactMode": "Notes compact mode",
     "showEmojis": "Show Emojis on checklists"
+  },
+  "migration": {
+    "migrationComplete": "Migration Complete",
+    "sharingUpdateRequired": "Sharing System Update Required",
+    "migrationFailed": "Migration failed",
+    "migrating": "Migrating...",
+    "startMigration": "Start Migration",
+    "migrationSuccessful": "Migration Successful",
+    "returnToApp": "Return to App",
+    "adminAccessRequired": "Admin Access Required",
+    "adminAccessDescription": "This migration requires administrator privileges. Please contact an administrator to perform the system migration.",
+    "whatsHappening": "What's happening?",
+    "sharingDataMigrationDescription": "The system needs to migrate your sharing data. This is a one-time process that requires administrator access."
   }
 }

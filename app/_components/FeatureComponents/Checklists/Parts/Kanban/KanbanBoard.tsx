@@ -26,10 +26,8 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { Settings01Icon, Archive02Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { updateChecklistStatuses } from "@/app/_server/actions/checklist";
-import {
-  archiveItem,
-  unarchiveItem,
-} from "@/app/_server/actions/checklist-item";
+import { unarchiveItem } from "@/app/_server/actions/checklist-item";
+import { useTranslations } from "next-intl";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -60,6 +58,7 @@ const defaultStatuses: KanbanStatus[] = [
 ];
 
 export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
+  const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
@@ -184,7 +183,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           isLoading={isLoading}
           autoFocus={true}
           focusKey={focusKey}
-          placeholder="Add new task..."
+          placeholder={t('checklists.addNewTask')}
           submitButtonText="Add Task"
         />
       )}
@@ -229,11 +228,10 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 return (
                   <div
                     key={column.id}
-                    className={`${
-                      columns.length > 4
-                        ? "flex-shrink-0 min-w-[20%]"
-                        : "min-w-[24%] "
-                    }`}
+                    className={`${columns.length > 4
+                      ? "flex-shrink-0 min-w-[20%]"
+                      : "min-w-[24%] "
+                      }`}
                   >
                     <KanbanColumn
                       checklist={localChecklist}

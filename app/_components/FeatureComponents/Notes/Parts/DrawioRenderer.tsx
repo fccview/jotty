@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
+import { useTranslations } from "next-intl";
 
 interface DrawioRendererProps {
   svgData: string;
@@ -15,13 +16,14 @@ export const DrawioRenderer = ({
   className = "",
 }: DrawioRendererProps) => {
   const [themeMode, setThemeMode] = useState(initialTheme);
+  const t = useTranslations();
 
   if (!svgData) {
     return (
       <div
         className={`border border-border rounded p-4 my-4 text-center text-muted-foreground ${className}`}
       >
-        <p>Draw.io diagram (no preview available)</p>
+        <p>{t("notes.drawioNoPreview")}</p>
       </div>
     );
   }

@@ -17,6 +17,7 @@ import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown"
 import Calendar from "@/app/_components/FeatureComponents/Calendar/Calendar";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface RecurrenceSelectorProps {
   value?: RecurrenceRule;
@@ -29,6 +30,7 @@ export const RecurrenceSelector = ({
   onChange,
   disabled = false,
 }: RecurrenceSelectorProps) => {
+  const t = useTranslations();
   const [selectedPreset, setSelectedPreset] = useState<string>(
     value?.rrule || ""
   );
@@ -135,7 +137,7 @@ export const RecurrenceSelector = ({
           id: preset.value,
           name: preset.label,
         }))}
-        placeholder="Select recurrence pattern"
+        placeholder={t('common.selectRecurrencePattern')}
       />
 
       {selectedPreset && selectedPreset !== "" && (
@@ -176,7 +178,7 @@ export const RecurrenceSelector = ({
                     type="button"
                     onClick={handleClearEndDate}
                     className="text-muted-foreground hover:text-foreground transition-colors"
-                    title="Clear end date"
+                    title={t('common.clearEndDate')}
                   >
                     <MultiplicationSignIcon className="h-4 w-4" />
                   </button>
@@ -200,7 +202,7 @@ export const RecurrenceSelector = ({
       <Modal
         isOpen={showStartCalendar}
         onClose={() => setShowStartCalendar(false)}
-        title="Select Start Date"
+        title={t('common.selectStartDate')}
         className="!max-w-[380px] mx-auto"
       >
         <Calendar
@@ -214,7 +216,7 @@ export const RecurrenceSelector = ({
       <Modal
         isOpen={showEndCalendar}
         onClose={() => setShowEndCalendar(false)}
-        title="Select End Date (Optional)"
+        title={t('common.selectEndDateOptional')}
         className="!max-w-[380px] mx-auto"
       >
         <Calendar

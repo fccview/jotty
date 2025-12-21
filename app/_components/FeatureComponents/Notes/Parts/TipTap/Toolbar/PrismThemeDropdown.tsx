@@ -8,6 +8,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { updateUserSettings } from "@/app/_server/actions/users";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const themeOptions: { id: MarkdownTheme; name: string }[] = [
     { id: "prism", name: "Default" },
@@ -28,6 +29,7 @@ export const PrismThemeDropdown = ({ isMarkdownMode }: PrismThemeDropdownProps) 
     const { user, setUser } = useAppMode();
     const { showToast } = useToast();
     const router = useRouter();
+    const t = useTranslations();
     const currentTheme = user?.markdownTheme || "prism";
 
     if (!isMarkdownMode) return null;
@@ -70,7 +72,7 @@ export const PrismThemeDropdown = ({ isMarkdownMode }: PrismThemeDropdownProps) 
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             className="flex items-center gap-1"
-            title="Syntax theme"
+            title={t("editor.syntaxTheme")}
         >
             <PaintBrush04Icon className="h-4 w-4" />
             <ArrowDown01Icon className="h-3 w-3" />

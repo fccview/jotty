@@ -9,8 +9,10 @@ import {
   getAppSettings,
   updateAppSettings,
 } from "@/app/_server/actions/config";
+import { useTranslations } from "next-intl";
 
 export const EditorSettingsTab = () => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -145,7 +147,7 @@ export const EditorSettingsTab = () => {
       <div className="bg-card border border-border rounded-jotty p-6">
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Editor Features</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('editor.editorFeatures')}</h3>
             <p className="text-muted-foreground text-sm">
               Configure which editor features are enabled for all users.
             </p>
@@ -154,7 +156,7 @@ export const EditorSettingsTab = () => {
           <div className="space-y-4">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="space-y-1">
-                <div className="text-sm font-medium">Slash Commands</div>
+                <div className="text-sm font-medium">{t('editor.slashCommands')}</div>
                 <p className="text-xs text-muted-foreground">
                   Enable the slash command menu (type &quot;/&quot; to insert
                   elements)
@@ -189,7 +191,7 @@ export const EditorSettingsTab = () => {
 
             <label className="flex items-center justify-between cursor-pointer">
               <div className="space-y-1">
-                <div className="text-sm font-medium">Bubble Menu</div>
+                <div className="text-sm font-medium">{t('editor.bubbleMenu')}</div>
                 <p className="text-xs text-muted-foreground">
                   Enable the floating toolbar that appears when text is selected
                 </p>
@@ -221,7 +223,7 @@ export const EditorSettingsTab = () => {
 
             <label className="flex items-center justify-between cursor-pointer">
               <div className="space-y-1">
-                <div className="text-sm font-medium">Table Toolbar</div>
+                <div className="text-sm font-medium">{t('editor.tableToolbar')}</div>
                 <p className="text-xs text-muted-foreground">
                   Enable the toolbar that appears when editing tables
                 </p>
@@ -299,7 +301,7 @@ export const EditorSettingsTab = () => {
           </div>
 
           <div className="pt-4 border-t border-border">
-            <h3 className="text-lg font-semibold mb-2">External Services</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('editor.externalServices')}</h3>
             <p className="text-muted-foreground text-sm mb-4">
               Configure external service URLs for editor integrations.
             </p>

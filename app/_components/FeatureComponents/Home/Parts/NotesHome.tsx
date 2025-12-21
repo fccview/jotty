@@ -95,8 +95,8 @@ export const NotesHome = ({
               className="flex-1 sm:size-lg"
             >
               <Add01Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">New Note</span>
-              <span className="sm:hidden">New</span>
+              <span className="hidden sm:inline">{t('notes.newNote')}</span>
+              <span className="sm:hidden">{t('common.new')}</span>
             </Button>
           </div>
         </div>
@@ -144,7 +144,7 @@ export const NotesHome = ({
                 {activeNote ? (
                   <NoteCard
                     note={activeNote}
-                    onSelect={() => {}}
+                    onSelect={() => { }}
                     isPinned={true}
                     isDraggable={false}
                     sharer={getNoteSharer(activeNote)}

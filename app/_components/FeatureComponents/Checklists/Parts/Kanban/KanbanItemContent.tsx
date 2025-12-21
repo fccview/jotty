@@ -7,6 +7,7 @@ import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/Progr
 import { Item, KanbanStatus } from "@/app/_types";
 import { TaskStatusLabels } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useTranslations } from "next-intl";
 
 interface KanbanItemContentProps {
   item: Item;
@@ -48,6 +49,7 @@ const KanbanItemContentComponent = ({
   formatDateTimeString,
 }: KanbanItemContentProps) => {
   const { permissions } = usePermissions();
+  const t = useTranslations();
 
   const getStatusLabel = (status?: string) => {
     if (!status) return TaskStatusLabels.TODO;
@@ -152,11 +154,10 @@ const KanbanItemContentComponent = ({
         {item.lastModifiedBy && isShared && (
           <div
             className="flex items-center gap-1"
-            title={`Last modified by ${item.lastModifiedBy}${
-              item.lastModifiedAt
-                ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
-                : ""
-            }`}
+            title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
+              ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
+              : ""
+              }`}
           >
             <UserAvatar
               username={item.lastModifiedBy}
@@ -173,7 +174,7 @@ const KanbanItemContentComponent = ({
       {item.children && item.children.length > 0 && (
         <>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Subtasks</span>
+            <span>{t("checklists.subtasks")}</span>
             <span>
               {item.children.filter((c) => c.completed).length}/
               {item.children.length}
@@ -183,7 +184,7 @@ const KanbanItemContentComponent = ({
             progress={Math.round(
               (item.children.filter((c) => c.completed).length /
                 item.children.length) *
-                100
+              100
             )}
           />
         </>

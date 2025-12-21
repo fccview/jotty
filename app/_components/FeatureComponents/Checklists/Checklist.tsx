@@ -13,6 +13,7 @@ import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
 import { useRouter } from "next/navigation";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useTranslations } from "next-intl";
 
 interface ChecklistViewProps {
   list: Checklist;
@@ -37,6 +38,7 @@ export const ChecklistView = ({
   isAdmin = false,
   sensors,
 }: ChecklistViewProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -86,7 +88,7 @@ export const ChecklistView = ({
           onEdit={() => onEdit?.(list)}
         />
         <div className="flex-1 flex items-center justify-center">
-          <p>Loading checklist...</p>
+          <p>{t('checklists.loadingChecklist')}</p>
         </div>
       </div>
     );
@@ -116,7 +118,7 @@ export const ChecklistView = ({
                   <label className="block">
                     Deleting {deletingItemsCount} item(s)
                   </label>
-                  <label>Do not refresh the page.</label>
+                  <label>{t('checklists.doNotRefresh')}</label>
                 </>
               ),
             },
@@ -136,7 +138,7 @@ export const ChecklistView = ({
                   <label className="block">
                     Syncing {pendingTogglesCount} item(s)
                   </label>
-                  <label>Do not refresh the page.</label>
+                  <label>{t('checklists.doNotRefresh')}</label>
                 </>
               ),
             },
@@ -155,7 +157,7 @@ export const ChecklistView = ({
           isLoading={isLoading}
           autoFocus={true}
           focusKey={focusKey}
-          placeholder="Add new item..."
+          placeholder={t('checklists.addNewItem')}
           submitButtonText="Add Item"
         />
       )}

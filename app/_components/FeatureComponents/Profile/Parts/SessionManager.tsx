@@ -7,6 +7,7 @@ import { SessionCard } from "@/app/_components/GlobalComponents/Cards/SessionCar
 import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/FeedbackMessage";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 export const SessionManager = () => {
   const {
@@ -20,6 +21,7 @@ export const SessionManager = () => {
   } = useSessionManager();
 
   const { isDemoMode } = useAppMode();
+  const t = useTranslations();
 
   if (isLoading) {
     return <Logo className="h-6 w-6 animate-pulse" />;
@@ -31,9 +33,9 @@ export const SessionManager = () => {
 
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Active Sessions</h3>
+          <h3 className="text-lg font-semibold">{t("profile.activeSessions")}</h3>
           <p className="text-sm text-muted-foreground">
-            {sessions.length} active session{sessions.length !== 1 && "s"}
+            {t(sessions.length === 1 ? "profile.activeSession" : "profile.activeSession_plural", { count: sessions.length })}
           </p>
         </div>
         {sessions.some((s) => !s.isCurrent) && !isDemoMode && (
@@ -50,7 +52,7 @@ export const SessionManager = () => {
             ) : (
               <>
                 <Delete03Icon className="h-4 w-4 mr-2" />
-                Terminate All Others
+                {t("profile.terminateAllOthers")}
               </>
             )}
           </Button>

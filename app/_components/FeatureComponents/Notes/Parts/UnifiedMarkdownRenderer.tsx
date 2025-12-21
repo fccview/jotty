@@ -26,6 +26,7 @@ import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { NoteFooterStats } from "@/app/_components/GlobalComponents/Statistics/NoteFooterStats";
+import { useTranslations } from "next-intl";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -50,6 +51,7 @@ export const UnifiedMarkdownRenderer = ({
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
+  const t = useTranslations();
   const { contentWithoutMetadata } = extractYamlMetadata(content);
 
   const processedContent = contentWithoutMetadata.replace(
@@ -95,7 +97,7 @@ export const UnifiedMarkdownRenderer = ({
             &quot;{displayQuote}&quot;
           </p>
           <p className="text-sm text-muted-foreground mt-4">
-            Start writing your note above!
+            {t("notes.startWritingAbove")}
           </p>
         </div>
       </div>
@@ -195,7 +197,7 @@ export const UnifiedMarkdownRenderer = ({
               },
             }}
             editor={undefined as any}
-            updateAttributes={() => {}}
+            updateAttributes={() => { }}
           />
         );
       }
@@ -207,8 +209,8 @@ export const UnifiedMarkdownRenderer = ({
         const mimeType = isImage
           ? "image/jpeg"
           : isVideo
-          ? "video/mp4"
-          : "application/octet-stream";
+            ? "video/mp4"
+            : "application/octet-stream";
 
         if (isImage) {
           return (

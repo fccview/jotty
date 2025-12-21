@@ -27,6 +27,7 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useState } from "react";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
+import { useTranslations } from "next-intl";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -49,6 +50,7 @@ export const ChecklistHeader = ({
   onArchive,
   onClone,
 }: ChecklistHeaderProps) => {
+  const t = useTranslations();
   const metadata = useMetadata();
   const { handleCopyId, copied } = useChecklist({
     list: checklist,
@@ -98,7 +100,7 @@ export const ChecklistHeader = ({
             </Button>
 
             {isPubliclyShared && (
-              <span title="Publicly shared">
+              <span title={t('checklists.publiclyShared')}>
                 <Globe02Icon className="h-3 w-3 text-primary" />
               </span>
             )}

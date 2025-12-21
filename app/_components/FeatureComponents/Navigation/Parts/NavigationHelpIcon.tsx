@@ -18,6 +18,7 @@ import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Not
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import path from "path";
 import { HOWTO_DIR } from "@/app/_consts/files";
+import { useTranslations } from "next-intl";
 
 interface TabItem {
   id: string;
@@ -26,7 +27,7 @@ interface TabItem {
   filename: string;
 }
 
-const helpFiles: TabItem[] = [
+const helpFiles = (t: any) => [
   {
     id: "shortcuts",
     name: "Shortcuts",
@@ -43,7 +44,7 @@ const helpFiles: TabItem[] = [
     id: "api",
     name: "API",
     filename: path.join(HOWTO_DIR, "API.md"),
-    icon: <span className="text-xs font-mono">API</span>,
+    icon: <span className="text-xs font-mono">{t('common.api')}</span>,
   },
   {
     id: "customisations",
@@ -84,6 +85,7 @@ const helpFiles: TabItem[] = [
 ];
 
 export const NavigationHelpIcon = () => {
+  const t = useTranslations();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string>("shortcuts");
   const [helpContent, setHelpContent] = useState<string>("");
@@ -98,7 +100,7 @@ export const NavigationHelpIcon = () => {
   ]);
 
   const loadHelpContent = async (fileId: string) => {
-    const file = helpFiles.find((f) => f.id === fileId);
+    const file = helpFiles(t).find((f) => f.id === fileId);
     if (!file) return;
 
     try {
@@ -131,7 +133,7 @@ export const NavigationHelpIcon = () => {
       >
         <div className="flex flex-col h-full max-h-[calc(80vh-8rem)]">
           <Tabs
-            tabs={helpFiles}
+            tabs={helpFiles(t)}
             activeTab={selectedFile}
             onTabClick={setSelectedFile}
           />

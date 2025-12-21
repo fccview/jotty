@@ -21,7 +21,7 @@ export const locales = getAvailableLocales();
 export type Locale = string;
 
 export default getRequestConfig(async () => {
-  const locale = process.env.DEFAULT_LOCALE || 'en';
+  const locale = process.env.LOCALE || 'en';
 
   const availableLocales = getAvailableLocales();
   if (!availableLocales.includes(locale)) {

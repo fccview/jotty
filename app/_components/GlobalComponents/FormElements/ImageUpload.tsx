@@ -10,6 +10,7 @@ import {
 import { uploadAppIcon } from "@/app/_server/actions/config";
 import { AppSettings } from "@/app/_types";
 import { Logo } from "../Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 interface ImageUploadProps {
   label: string;
@@ -93,6 +94,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   onUpload,
   customUploadAction,
 }) => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -228,7 +230,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         {isUploading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-jotty">
             <Logo className="h-6 w-6 animate-pulse" />
-            <p className="text-sm mt-2">Uploading...</p>
+            <p className="text-sm mt-2">{t('common.uploading')}</p>
           </div>
         )}
       </div>

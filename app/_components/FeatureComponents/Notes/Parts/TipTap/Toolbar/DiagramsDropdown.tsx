@@ -9,12 +9,14 @@ import {
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
+import { useTranslations } from "next-intl";
 
 interface DiagramsDropdownProps {
   editor: Editor | null;
 }
 
 export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
+  const t = useTranslations();
   if (!editor) return null;
 
   const insertMermaid = () => {
@@ -41,7 +43,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
       size="sm"
       onMouseDown={(e) => e.preventDefault()}
       className="flex items-center gap-1"
-      title="Diagrams"
+      title={t('editor.diagrams')}
     >
       <GravityIcon className="h-4 w-4" />
       <ArrowDown01Icon className="h-3 w-3" />
@@ -59,7 +61,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
             <DocumentCodeIcon className="h-5 w-5" />
           </div>
           <div className="flex-1">
-            <div className="font-medium">Mermaid Diagram</div>
+            <div className="font-medium">{t('editor.mermaidDiagram')}</div>
             <div className="text-xs text-muted-foreground">
               Text-based flowcharts & diagrams
             </div>
@@ -74,7 +76,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
             <DrawingModeIcon className="h-5 w-5" />
           </div>
           <div className="flex-1">
-            <div className="font-medium">Draw.io Diagram</div>
+            <div className="font-medium">{t('editor.drawioDiagram')}</div>
             <div className="text-xs text-muted-foreground">
               Visual diagram editor
             </div>

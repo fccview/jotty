@@ -30,6 +30,7 @@ import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { useTranslations } from "next-intl";
 
 interface SidebarItemProps {
   item: Checklist | Note;
@@ -50,6 +51,7 @@ export const SidebarItem = ({
   style,
   user,
 }: SidebarItemProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
@@ -207,7 +209,7 @@ export const SidebarItem = ({
 
         <div className="flex items-center gap-1 flex-shrink-0">
           {mode === Modes.NOTES && "encrypted" in item && item.encrypted && (
-            <span title="Encrypted note">
+            <span title={t('editor.encryptedNote')}>
               <LockKeyIcon className="h-4 w-4 text-primary" />
             </span>
           )}
@@ -217,7 +219,7 @@ export const SidebarItem = ({
             </span>
           )}
           {isPubliclyShared && (
-            <span title="Publicly shared">
+            <span title={t('checklists.publiclyShared')}>
               <Globe02Icon className="h-4 w-4 text-primary" />
             </span>
           )}
