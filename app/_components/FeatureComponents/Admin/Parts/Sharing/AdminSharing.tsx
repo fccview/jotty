@@ -9,7 +9,6 @@ import {
 import { AdminSharedItemsList } from "@/app/_components/FeatureComponents/Admin/Parts/Sharing/AdminSharedItemsList";
 import {
   calculateMostActiveSharers,
-  transformGlobalSharingToNetworkData,
   useThemeColors,
 } from "@/app/_components/FeatureComponents/Admin/Parts/Sharing/AdminSharingFunctions";
 import { ItemType } from "@/app/_types";
@@ -18,8 +17,6 @@ import { unshareWith } from "@/app/_server/actions/sharing";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { ItemTypes } from "@/app/_types/enums";
 import { useMemo } from "react";
-import { ActiveSharersBarChart } from "./ActiveSharersBarChart";
-import { ShareTypePieChart } from "./ShareTypePieChart";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useTranslations } from "next-intl";
 
@@ -57,9 +54,6 @@ export const AdminSharing = () => {
     (allSharedItems?.public.checklists.length || 0) +
     (allSharedItems?.public.notes.length || 0);
 
-  const totalUniqueSharedItems =
-    totalSharedChecklists + totalSharedNotes + totalPublicShares;
-
   const totalSharingRelationships =
     Object.values(rawGlobalSharing?.checklists || {}).reduce(
       (sum: number, entries) =>
@@ -77,52 +71,14 @@ export const AdminSharing = () => {
     [rawGlobalSharing]
   );
 
-  const pieChartData = useMemo(
-    () => [
-      { name: "Checklists", value: totalSharedChecklists },
-      { name: "Notes", value: totalSharedNotes },
-    ],
-    [totalSharedChecklists, totalSharedNotes]
-  );
-
-  const networkData = useMemo(
-    () => transformGlobalSharingToNetworkData(rawGlobalSharing, colors),
-    [rawGlobalSharing, colors]
-  );
-
-  const stats = [
-    {
-      title: "Shared Checklists",
-      value: totalSharedChecklists,
-      icon: (
-        <CheckmarkSquare04Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-      ),
-    },
-    {
-      title: "Shared Notes",
-      value: totalSharedNotes,
-      icon: <File02Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
-    },
-    {
-      title: "Public Shares",
-      value: totalPublicShares,
-      icon: <Globe02Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
-    },
-    {
-      title: "Total Shares",
-      value: totalUniqueSharedItems,
-      icon: <UserMultipleIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />,
-    },
-  ];
-
   return (
     <div className="space-y-8">
       <section className="space-y-6">
         <div className="rounded-md border bg-card p-6 shadow-sm">
           <div className="space-y-2 mb-6">
-            <h3 className="text-lg font-semibold">Sharing Activity Overview</h3>
+            <h3 className="text-lg font-semibold">{t('admin.sharingOverview')}</h3>
             <p className="text-sm text-muted-foreground">
-              Detailed breakdown of sharing patterns and user engagement
+              {t('admin.detailedSharingBreakdown')}
             </p>
           </div>
           <div className="space-y-4">
@@ -132,7 +88,7 @@ export const AdminSharing = () => {
                   {Object.keys(rawGlobalSharing?.checklists || {}).length}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Active Checklist Sharers
+                  {t('admin.activeChecklistSharers')}
                 </div>
               </div>
               <div className="bg-muted/50 rounded-jotty p-4">
@@ -140,7 +96,7 @@ export const AdminSharing = () => {
                   {Object.keys(rawGlobalSharing?.notes || {}).length}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Active Note Sharers
+                  {t('admin.activeNotesSharers')}
                 </div>
               </div>
               <div className="bg-muted/50 rounded-jotty p-4">
@@ -148,23 +104,23 @@ export const AdminSharing = () => {
                   {totalSharingRelationships}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Total Sharing Actions
+                  {t('admin.totalSharing')}
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h4 className="font-semibold">Top Contributors</h4>
+              <h4 className="font-semibold">{t('admin.topContributors')}</h4>
               <div className="overflow-hidden rounded-jotty border">
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-medium">{t('common.user')}</th>
                       <th className="px-4 py-3 text-left text-sm font-medium">
-                        Items Shared
+                        {t('admin.itemsShared')}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium">
-                        Activity Level
+                        {t('admin.activityLevel')}
                       </th>
                     </tr>
                   </thead>
@@ -193,7 +149,7 @@ export const AdminSharing = () => {
                                   width: `${Math.min(
                                     (sharer.sharedCount /
                                       mostActiveSharers[0].sharedCount) *
-                                      100,
+                                    100,
                                     100
                                   )}%`,
                                 }}
@@ -201,12 +157,12 @@ export const AdminSharing = () => {
                             </div>
                             <span className="text-xs text-muted-foreground">
                               {sharer.sharedCount >
-                              mostActiveSharers[0].sharedCount * 0.8
-                                ? "High"
+                                mostActiveSharers[0].sharedCount * 0.8
+                                ? t('common.high')
                                 : sharer.sharedCount >
                                   mostActiveSharers[0].sharedCount * 0.5
-                                ? "Medium"
-                                : "Low"}
+                                  ? t('common.medium')
+                                  : t('common.low')}
                             </span>
                           </div>
                         </td>
@@ -221,7 +177,7 @@ export const AdminSharing = () => {
       </section>
 
       <section className="space-y-6">
-        <h2 className="text-xl font-semibold">Shared Content Management</h2>
+        <h2 className="text-xl font-semibold">{t('admin.sharedCMS')}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="space-y-4">
             <div className="rounded-md border bg-card p-6 shadow-sm">
@@ -232,7 +188,7 @@ export const AdminSharing = () => {
                 <div>
                   <h4 className="font-semibold">{t('checklists.sharedChecklists')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {totalSharedChecklists} checklists
+                    {totalSharedChecklists} {t('checklists.title')}
                   </p>
                 </div>
               </div>
@@ -249,7 +205,7 @@ export const AdminSharing = () => {
                 <div>
                   <h4 className="font-semibold">{t('notes.sharedNotes')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {totalSharedNotes} notes
+                    {totalSharedNotes} {t('notes.title')}
                   </p>
                 </div>
               </div>
@@ -264,9 +220,9 @@ export const AdminSharing = () => {
                   <Globe02Icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h4 className="font-semibold">Public Shares</h4>
+                  <h4 className="font-semibold">{t('sharing.publicShares')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {totalPublicShares} public items
+                    {t('admin.totalPublicItems', { count: totalPublicShares })}
                   </p>
                 </div>
               </div>

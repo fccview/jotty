@@ -38,7 +38,7 @@ export const TableInsertModal = ({
           <Input
             id="rows"
             name="rows"
-            label="Rows"
+            label={t("editor.rows")}
             type="number"
             min="1"
             max="10"
@@ -48,7 +48,7 @@ export const TableInsertModal = ({
           <Input
             id="cols"
             name="cols"
-            label="Columns"
+            label={t("editor.columns")}
             type="number"
             min="1"
             max="10"

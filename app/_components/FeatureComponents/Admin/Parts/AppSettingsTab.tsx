@@ -35,16 +35,16 @@ export const AppSettingsTab = () => {
         if (result.success && result.data) {
           setSettings(result.data);
         } else {
-          throw new Error(result.error || "Failed to load settings");
+          throw new Error(result.error || t("admin.failedToLoadSettings"));
         }
       } catch (error) {
         showToast({
           type: "error",
-          title: "Load Error",
+          title: t("admin.loadError"),
           message:
             error instanceof Error
               ? error.message
-              : "Could not fetch settings.",
+              : t("admin.couldNotFetchSettings"),
         });
       }
     };
@@ -69,20 +69,20 @@ export const AppSettingsTab = () => {
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: "Settings saved successfully.",
+          title: t("common.success"),
+          message: t("admin.settingsSavedSuccessfully"),
         });
         setHasChanges(false);
         updateFavicons();
       } else {
-        throw new Error(result.error || "Failed to save settings");
+        throw new Error(result.error || t("admin.failedToSaveSettings"));
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Save Error",
+        title: t("admin.saveError"),
         message:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+          error instanceof Error ? error.message : t("admin.unknownErrorOccurred"),
       });
     } finally {
       setIsSaving(false);
@@ -94,42 +94,42 @@ export const AppSettingsTab = () => {
   const formFields = [
     {
       id: "appName",
-      label: "Application Name",
-      description: "Appears in the browser tab and PWA name.",
+      label: t("admin.applicationName"),
+      description: t("admin.applicationNameDescription"),
       placeholder: isRwMarkable ? "rwMarkable" : "jotty·page",
     },
     {
       id: "appDescription",
-      label: "Application Description",
-      description: "Used for search engines and PWA description.",
-      placeholder: "A simple, fast, and lightweight checklist...",
+      label: t("admin.applicationDescription"),
+      description: t("admin.applicationDescriptionText"),
+      placeholder: t("admin.applicationDescriptionPlaceholder"),
     },
   ] as const;
 
   const iconFields = [
     {
-      label: "16x16 Favicon",
-      description: "Small favicon for browser tabs.",
+      label: t("admin.favicon16"),
+      description: t("admin.favicon16Description"),
       iconType: "16x16Icon",
     },
     {
-      label: "32x32 Favicon",
-      description: "Standard favicon for most browsers.",
+      label: t("admin.favicon32"),
+      description: t("admin.favicon32Description"),
       iconType: "32x32Icon",
     },
     {
-      label: "180x180 Apple Touch Icon",
-      description: "Icon for iOS home screen.",
+      label: t("admin.appleTouchIcon"),
+      description: t("admin.appleTouchIconDescription"),
       iconType: "180x180Icon",
     },
     {
-      label: "192x192 Icon",
-      description: "Icon for Android home screen.",
+      label: t("admin.icon192"),
+      description: t("admin.icon192Description"),
       iconType: "192x192Icon",
     },
     {
-      label: "512x512 Icon",
-      description: "High-resolution icon for PWA splash screens.",
+      label: t("admin.icon512"),
+      description: t("admin.icon512Description"),
       iconType: "512x512Icon",
     },
   ] as const;
@@ -151,46 +151,42 @@ export const AppSettingsTab = () => {
         </div>
         <div>
           <Label htmlFor="notifyNewUpdates" className="block mb-3">
-            Notify me of new updates
+            {t("admin.notifyNewUpdates")}
           </Label>
           <Dropdown
             value={settings?.notifyNewUpdates || "yes"}
             onChange={(value) => handleInputChange("notifyNewUpdates", value)}
             options={[
-              { id: "yes", name: "Yes" },
-              { id: "no", name: "No" },
+              { id: "yes", name: t("common.yes") },
+              { id: "no", name: t("common.no") },
             ]}
           />
         </div>
         <div>
           <Label htmlFor="parseContent" className="block mb-3">
-            Always show parsed content
+            {t("admin.parseContent")}
           </Label>
           <Dropdown
             value={settings?.parseContent || "yes"}
             onChange={(value) => handleInputChange("parseContent", value)}
             options={[
-              { id: "yes", name: "Yes" },
-              { id: "no", name: "No" },
+              { id: "yes", name: t("common.yes") },
+              { id: "no", name: t("common.no") },
             ]}
           />
           <span className="text-xs text-muted-foreground">
-            When enabled this setting will show the parsed titles in the
-            sidebar, search results, and overall across the app. <br />
-            When disabled, the original file names will be sanitised, made human
-            readable and shown instead.
+            {t("admin.parseContentEnabledDescription")} <br />
+            {t("admin.parseContentDisabledDescription")}
             <br />
             <span className="font-bold">
-              Setting this to &quot;no&quot; will improve performance on large
-              datasets but may impact readability - especially on filenames with
-              non latin characters.
+              {t("admin.parseContentPerformanceWarning")}
             </span>
           </span>
         </div>
         <div>
           <Input
-            label="Maximum file upload size"
-            description="The maximum file size allowed for uploads in MB (applies to images, videos, and files)"
+            label={t("admin.maximumFileUploadSize")}
+            description={t("admin.maxFileSizeDescription")}
             type="number"
             id="maximumFileSize"
             defaultValue={
@@ -208,7 +204,7 @@ export const AppSettingsTab = () => {
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold mb-4">Application Icons</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("admin.applicationIcons")}</h3>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {iconFields.map((field) => (
               <ImageUpload
@@ -229,7 +225,7 @@ export const AppSettingsTab = () => {
               <>
                 <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />{t('common.saving')}</>
             ) : (
-              "Save Changes"
+              t("admin.saveChanges")
             )}
           </Button>
           <Button
@@ -239,7 +235,7 @@ export const AppSettingsTab = () => {
           >{t('common.reset')}</Button>
           {hasChanges && (
             <p className="text-sm text-muted-foreground">
-              You have unsaved changes.
+              {t("admin.unsavedChanges")}
             </p>
           )}
         </div>

@@ -292,7 +292,7 @@ export const SubtaskModal = ({
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all text-base"
-                placeholder="Enter task title..."
+                placeholder={t("checklists.enterTaskTitle")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -446,7 +446,7 @@ export const SubtaskModal = ({
                   type="text"
                   value={newSubtaskText}
                   onChange={(e) => setNewSubtaskText(e.target.value)}
-                  placeholder="Add a subtask..."
+                  placeholder={t("checklists.addSubtask")}
                   className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {

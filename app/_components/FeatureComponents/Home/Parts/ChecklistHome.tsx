@@ -91,8 +91,8 @@ export const ChecklistHome = ({
               size="sm"
               className="flex-1 sm:size-lg"
             >
-              <span className="hidden sm:inline">All Lists</span>
-              <span className="sm:hidden">All</span>
+              <span className="hidden sm:inline">{t('checklists.allLists')}</span>
+              <span className="sm:hidden">{t('common.all')}</span>
             </Button>
             <Button
               onClick={() => onCreateModal()}
@@ -101,7 +101,7 @@ export const ChecklistHome = ({
             >
               <Add01Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
               <span className="hidden sm:inline">{t('checklists.newChecklist')}</span>
-              <span className="sm:hidden">New</span>
+              <span className="sm:hidden">{t('common.new')}</span>
             </Button>
           </div>
         </div>
@@ -109,7 +109,7 @@ export const ChecklistHome = ({
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('notes.pinned')}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('common.pinned')}</h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
             <DndContext
@@ -141,7 +141,7 @@ export const ChecklistHome = ({
                 {activeList ? (
                   <ChecklistCard
                     list={activeList}
-                    onSelect={() => {}}
+                    onSelect={() => { }}
                     isPinned={true}
                     isDraggable={false}
                     sharer={getListSharer(activeList)}
@@ -159,7 +159,7 @@ export const ChecklistHome = ({
               <div>
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    Recent Tasks
+                    {t('tasks.recentTasks')}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
@@ -168,8 +168,8 @@ export const ChecklistHome = ({
                     size="sm"
                     className="ml-2"
                   >
-                    <span className="hidden sm:inline">Show All Tasks</span>
-                    <span className="sm:hidden">All</span>
+                    <span className="hidden sm:inline">{t('tasks.showAllTasks')}</span>
+                    <span className="sm:hidden">{t('common.all')}</span>
                     <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
                   </Button>
                 </div>
@@ -192,7 +192,7 @@ export const ChecklistHome = ({
               <div>
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    Recent Checklists
+                    {t('checklists.recent')}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
@@ -201,8 +201,8 @@ export const ChecklistHome = ({
                     size="sm"
                     className="ml-2"
                   >
-                    <span className="hidden sm:inline">Show All</span>
-                    <span className="sm:hidden">All</span>
+                    <span className="hidden sm:inline">{t('common.showAll')}</span>
+                    <span className="sm:hidden">{t('common.all')}</span>
                     <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
                   </Button>
                 </div>

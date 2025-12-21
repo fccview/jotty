@@ -66,17 +66,17 @@ export const CreateCategoryModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Create New Category">
+    <Modal isOpen={true} onClose={onClose} title={t('common.createCategoryHeader')}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Parent Category (Optional)
+            {t('common.parentCategory')}
           </label>
           <CategoryTreeSelector
             categories={categories}
             selectedCategory={parentCategory}
             onCategorySelect={setParentCategory}
-            placeholder="No parent (root level)"
+            placeholder={t('common.noParent')}
             className="w-full"
             isInModal={true}
           />
@@ -89,7 +89,7 @@ export const CreateCategoryModal = ({
           type="text"
           value={categoryName}
           onChange={(e) => setCategoryName(e.target.value)}
-          placeholder="Enter category name..."
+          placeholder={t('common.categoryNamePlaceholder')}
           required
           disabled={isLoading}
           autoFocus
@@ -97,7 +97,7 @@ export const CreateCategoryModal = ({
 
         {notAllowedNames.includes(categoryName.trim().toLowerCase()) && (
           <div className="text-xs text-destructive">
-            {categoryName} is not allowed. Please choose a different name.
+            {t('common.notAllowedName', { name: categoryName })}
           </div>
         )}
 
@@ -117,7 +117,7 @@ export const CreateCategoryModal = ({
             }
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {isLoading ? "Creating..." : "Create Category"}
+            {isLoading ? t('common.loading') : t('common.createCategory')}
           </Button>
         </div>
       </form>

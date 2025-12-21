@@ -47,16 +47,16 @@ export const EditorSettingsTab = () => {
             editor: editorSettings,
           });
         } else {
-          throw new Error(result.error || "Failed to load settings");
+          throw new Error(result.error || t("admin.failedToLoadSettings"));
         }
       } catch (error) {
         showToast({
           type: "error",
-          title: "Load Error",
+          title: t("admin.loadError"),
           message:
             error instanceof Error
               ? error.message
-              : "Could not fetch settings.",
+              : t("admin.couldNotFetchSettings"),
         });
       }
     };
@@ -121,19 +121,19 @@ export const EditorSettingsTab = () => {
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: "Editor settings saved successfully.",
+          title: t("common.success"),
+          message: t("admin.editorSettingsSaved"),
         });
         setHasChanges(false);
       } else {
-        throw new Error(result.error || "Failed to save settings");
+        throw new Error(result.error || t("admin.failedToSaveSettings"));
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Save Error",
+        title: t("admin.saveError"),
         message:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+          error instanceof Error ? error.message : t("admin.unknownErrorOccurred"),
       });
     } finally {
       setIsSaving(false);
@@ -149,7 +149,7 @@ export const EditorSettingsTab = () => {
           <div>
             <h3 className="text-lg font-semibold mb-2">{t('editor.editorFeatures')}</h3>
             <p className="text-muted-foreground text-sm">
-              Configure which editor features are enabled for all users.
+              {t("admin.configureEditorFeatures")}
             </p>
           </div>
 
@@ -158,8 +158,7 @@ export const EditorSettingsTab = () => {
               <div className="space-y-1">
                 <div className="text-sm font-medium">{t('editor.slashCommands')}</div>
                 <p className="text-xs text-muted-foreground">
-                  Enable the slash command menu (type &quot;/&quot; to insert
-                  elements)
+                  {t("admin.enableSlashCommandsDescription")}
                 </p>
               </div>
               <div className="relative">
@@ -193,7 +192,7 @@ export const EditorSettingsTab = () => {
               <div className="space-y-1">
                 <div className="text-sm font-medium">{t('editor.bubbleMenu')}</div>
                 <p className="text-xs text-muted-foreground">
-                  Enable the floating toolbar that appears when text is selected
+                  {t("admin.enableBubbleMenuDescription")}
                 </p>
               </div>
               <div className="relative">
@@ -225,7 +224,7 @@ export const EditorSettingsTab = () => {
               <div className="space-y-1">
                 <div className="text-sm font-medium">{t('editor.tableToolbar')}</div>
                 <p className="text-xs text-muted-foreground">
-                  Enable the toolbar that appears when editing tables
+                  {t("admin.enableTableToolbarDescription")}
                 </p>
               </div>
               <div className="relative">
@@ -258,17 +257,15 @@ export const EditorSettingsTab = () => {
             <label className="flex items-center justify-between cursor-pointer">
               <div className="space-y-1">
                 <div className="text-sm font-medium">
-                  Bilateral Links
+                  {t("admin.bilateralLinks")}
                   <span className="ml-1 text-xs text-muted-foreground">
-                    (Experimental)
+                    {t("admin.experimental")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Enable the ability to link to notes and checklists in the same
-                  document.
+                  {t("admin.bilateralLinksDescription")}
                   <span className="mt-1 block text-xs italic text-muted-foreground">
-                    This feature is experimental and may not work as expected.
-                    It may also end up being removed/deprecated in the future.
+                    {t("admin.bilateralLinksWarning")}
                   </span>
                 </p>
               </div>
@@ -303,22 +300,21 @@ export const EditorSettingsTab = () => {
           <div className="pt-4 border-t border-border">
             <h3 className="text-lg font-semibold mb-2">{t('editor.externalServices')}</h3>
             <p className="text-muted-foreground text-sm mb-4">
-              Configure external service URLs for editor integrations.
+              {t("admin.configureExternalServices")}
             </p>
 
             <div className="space-y-2">
               <label className="block">
                 <div className="text-sm font-medium mb-1">
-                  Draw.io URL
+                  {t("admin.drawioUrl")}
                   <span className="ml-1 text-xs text-muted-foreground">
-                    (Optional)
+                    {t("admin.optional")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Specify a custom Draw.io instance URL. Leave empty to use the
-                  default public instance (https://embed.diagrams.net).
+                  {t("admin.drawioUrlDescription")}
                   <span className="mt-1 block text-xs italic">
-                    Example for self-hosted: https://your-domain.com/drawio
+                    {t("admin.drawioUrlExample")}
                   </span>
                 </p>
                 <Input
@@ -343,7 +339,7 @@ export const EditorSettingsTab = () => {
           disabled={!hasChanges || isSaving}
           className="min-w-24"
         >
-          {isSaving ? "Saving..." : "Save Changes"}
+          {isSaving ? t("admin.saving") : t("admin.saveChanges")}
         </Button>
       </div>
     </div>

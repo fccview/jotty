@@ -66,8 +66,8 @@ export const Sidebar = (props: SidebarProps) => {
       updatedMode = isNotesPage
         ? Modes.NOTES
         : isChecklistsPage
-        ? Modes.CHECKLISTS
-        : sidebar.mode || Modes.CHECKLISTS;
+          ? Modes.CHECKLISTS
+          : sidebar.mode || Modes.CHECKLISTS;
     }
 
     setMode(searchMode || updatedMode || Modes.CHECKLISTS);
@@ -179,7 +179,7 @@ export const Sidebar = (props: SidebarProps) => {
                   onClick={sidebar.handleToggleAllCategories}
                   className="jotty-sidebar-categories-toggle-all text-xs font-medium text-primary hover:underline focus:outline-none"
                 >
-                  {sidebar.areAnyCollapsed ? "Expand All" : "Collapse All"}
+                  {sidebar.areAnyCollapsed ? t("common.expandAll") : t("common.collapseAll")}
                 </button>
               </div>
             </div>
@@ -331,7 +331,7 @@ export const Sidebar = (props: SidebarProps) => {
             note={sidebar.modalState.data as Note}
             categories={categories}
             onClose={sidebar.closeModal}
-            onUpdated={(customFunction: () => void = () => {}) => {
+            onUpdated={(customFunction: () => void = () => { }) => {
               sidebar.closeModal();
               sidebar.router.refresh();
               customFunction?.();

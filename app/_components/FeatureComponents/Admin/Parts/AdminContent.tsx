@@ -102,10 +102,10 @@ export const AdminContent = ({
     setRebuildingIndex(username);
     try {
       await rebuildLinkIndex(username);
-      alert(`Successfully rebuilt link index for ${username}`);
+      alert(t('admin.successfullyRebuiltIndex', { username }));
     } catch (error) {
       console.error("Failed to rebuild index:", error);
-      alert(`Failed to rebuild link index for ${username}`);
+      alert(`${t('admin.failedToRebuildIndex', { username })}`);
     } finally {
       setRebuildingIndex(null);
     }
@@ -113,21 +113,20 @@ export const AdminContent = ({
 
   return (
     <div className="space-y-6">
-      <Accordion title="Data Export" defaultOpen={false} className="mb-6">
+      <Accordion title={t('admin.dataExport')} defaultOpen={false} className="mb-6">
         <ExportContent users={users} />
       </Accordion>
 
       <div className="md:flex items-center justify-between">
         <div className="flex items-center gap-4 mt-4 md:mt-0">
           <span className="text-sm text-muted-foreground">
-            {allLists.length + allDocs.length} total items across {users.length}{" "}
-            users
+            {t('admin.totalItems', { items: allLists.length + allDocs.length, userCount: users.length })}
           </span>
           <button
             onClick={toggleAll}
             className="text-sm text-primary hover:text-primary/80 font-medium"
           >
-            {isAllExpanded ? "Collapse All" : "Expand All"}
+            {isAllExpanded ? t('common.collapseAll') : t('common.expandAll')}
           </button>
         </div>
       </div>
@@ -164,7 +163,7 @@ export const AdminContent = ({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {checklists.length} checklists • {notes.length} notes
+                      {t('admin.userContent', { checklistsLength: checklists.length, notesLength: notes.length })}
                     </p>
                   </div>
                 </div>
@@ -180,8 +179,8 @@ export const AdminContent = ({
                     title="Rebuild link indexex"
                   >
                     {rebuildingIndex === user.username
-                      ? "Rebuilding..."
-                      : "Rebuild Indexes"}
+                      ? t('admin.rebuilding')
+                      : t('admin.rebuildIndexes')}
                   </Button>
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">

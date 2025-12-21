@@ -39,16 +39,19 @@ export const RenameCategoryModal = ({
       await onRename(categoryPath, newName.trim());
       showToast({
         type: "success",
-        title: "Category renamed successfully!",
-        message: `Category "${categoryName}" renamed to "${newName.trim()}"`,
+        title: t("toasts.categoryRenamedSuccessfully"),
+        message: t("toasts.categoryRenamedSuccessfullyMessage", {
+          categoryName,
+          newName: newName.trim(),
+        }),
       });
       onClose();
     } catch (error) {
       console.error("Failed to rename category:", error);
       showToast({
         type: "error",
-        title: "Failed to rename category",
-        message: "An error occurred while renaming the category.",
+        title: t("toasts.failedToRenameCategory"),
+        message: t("toasts.failedToRenameCategoryMessage"),
       });
     } finally {
       router.refresh();
@@ -62,20 +65,20 @@ export const RenameCategoryModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Rename Category">
+    <Modal isOpen={true} onClose={onClose} title={t("common.renameCategory")}>
       <p className="text-sm text-muted-foreground mb-4">
-        Enter a new name for &quot;{categoryName}&quot;
+        {t("common.enterNewCategoryName", { categoryName })}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           id="categoryName"
           name="categoryName"
-          label="Category Name"
+          label={t("common.categoryName")}
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="Enter category name..."
+          placeholder={t('common.enterCategoryName')}
           autoFocus
         />
 
@@ -90,7 +93,7 @@ export const RenameCategoryModal = ({
             type="submit"
             disabled={!newName.trim() || newName === categoryName || isRenaming}
           >
-            {isRenaming ? "Renaming..." : "Rename"}
+            {isRenaming ? t('common.renaming') : t('common.rename')}
           </Button>
         </div>
       </form>

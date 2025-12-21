@@ -68,45 +68,45 @@ export const CompactTableToolbar = ({
   const tableItems = [
     {
       icon: <ArrowUp04Icon className="h-3 w-3" />,
-      label: "Add Row Above",
+      label: t("editor.addRowAbove"),
       command: () =>
         handleCommand(() => editor.chain().focus().addRowBefore().run()),
     },
     {
       icon: <ArrowDown04Icon className="h-3 w-3" />,
-      label: "Add Row Below",
+      label: t("editor.addRowBelow"),
       command: () =>
         handleCommand(() => editor.chain().focus().addRowAfter().run()),
     },
     {
       icon: <ArrowLeft04Icon className="h-3 w-3" />,
-      label: "Add Column Left",
+      label: t("editor.addColumnLeft"),
       command: () =>
         handleCommand(() => editor.chain().focus().addColumnBefore().run()),
     },
     {
       icon: <ArrowRight04Icon className="h-3 w-3" />,
-      label: "Add Column Right",
+      label: t("editor.addColumnRight"),
       command: () =>
         handleCommand(() => editor.chain().focus().addColumnAfter().run()),
     },
     {
       icon: <MinusSignIcon className="h-3 w-3" />,
-      label: "Delete Row",
+      label: t("editor.deleteRow"),
       command: () =>
         handleCommand(() => editor.chain().focus().deleteRow().run()),
       destructive: true,
     },
     {
       icon: <MultiplicationSignIcon className="h-3 w-3" />,
-      label: "Delete Column",
+      label: t("editor.deleteColumn"),
       command: () =>
         handleCommand(() => editor.chain().focus().deleteColumn().run()),
       destructive: true,
     },
     {
       icon: <Delete03Icon className="h-3 w-3" />,
-      label: "Delete Table",
+      label: t("editor.deleteTable"),
       command: () =>
         handleCommand(() => editor.chain().focus().deleteTable().run()),
       destructive: true,

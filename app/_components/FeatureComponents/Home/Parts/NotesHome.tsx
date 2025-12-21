@@ -104,7 +104,7 @@ export const NotesHome = ({
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('notes.pinned')}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('common.pinned')}</h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
             <DndContext
@@ -160,7 +160,7 @@ export const NotesHome = ({
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Recent Notes
+                {t('notes.recent')}
               </h2>
               <div className="flex-1 h-px bg-border"></div>
               <Button
@@ -169,8 +169,8 @@ export const NotesHome = ({
                 size="sm"
                 className="ml-2"
               >
-                <span className="hidden sm:inline">Show All</span>
-                <span className="sm:hidden">All</span>
+                <span className="hidden sm:inline">{t('common.showAll')}</span>
+                <span className="sm:hidden">{t('common.all')}</span>
                 <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </div>

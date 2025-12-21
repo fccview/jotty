@@ -36,7 +36,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={mode === "add" ? "Add New User" : "Edit User"}
+      title={mode === "add" ? t('auth.createUser') : t('admin.editUser')}
     >
       <form onSubmit={handlers.handleSubmit} className="space-y-4">
         {state.error && (
@@ -52,7 +52,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
           type="text"
           value={state.username}
           onChange={(e) => setters.setUsername(e.target.value)}
-          placeholder="Enter username"
+          placeholder={t('admin.enterUsername')}
           disabled={state.isLoading}
         />
         {mode === "add" && (
@@ -78,7 +78,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             htmlFor="isAdmin"
             className="flex items-center gap-2 text-sm cursor-pointer"
           >
-            <ShieldUserIcon className="h-4 w-4" /> Admin privileges
+            <ShieldUserIcon className="h-4 w-4" /> {t('admin.privileges')}
           </label>
         </div>
         {mode === "edit" && (
@@ -139,7 +139,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
               ) : (
                 <>
                   <FloppyDiskIcon className="h-4 w-4 mr-2" />
-                  {mode === "add" ? "Create User" : "Save Changes"}
+                  {mode === "add" ? t('auth.createUser') : t('common.saveChanges')}
                 </>
               )}
             </Button>

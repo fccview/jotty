@@ -83,11 +83,11 @@ export const CreateNoteModal = ({
           ref={titleInputRef}
           id="title"
           name="title"
-          label="Title *"
+          label={t('notes.noteTitle')}
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter note title..."
+          placeholder={t('notes.enterNoteTitle')}
           required
           disabled={isCreating}
           autoFocus
@@ -116,7 +116,7 @@ export const CreateNoteModal = ({
             disabled={!title.trim() || isCreating}
             className="flex-1"
           >
-            {isCreating ? "Creating..." : "Create Note"}
+            {isCreating ? t('common.creating') : t('common.create')}
           </Button>
         </div>
       </form>

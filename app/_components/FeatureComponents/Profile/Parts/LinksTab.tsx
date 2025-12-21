@@ -387,7 +387,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
       <div className="bg-card border border-border rounded-md p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Link Network</h3>
+            <h3 className="text-lg font-semibold">{t('profile.linkNetwork')}</h3>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
@@ -410,7 +410,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <RefreshIcon
                   className={`h-3 w-3 ${rebuildingIndex ? "animate-spin" : ""}`}
                 />
-                {rebuildingIndex ? "Rebuilding..." : "Rebuild Indexes"}
+                {rebuildingIndex ? t('admin.rebuilding') : t('admin.rebuildIndexes')}
               </Button>
             </div>
           </div>
@@ -459,20 +459,16 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 {hoveredNode.data.connectionCount >= 5
                   ? " (highly connected)"
                   : hoveredNode.data.connectionCount >= 2
-                  ? " (moderately connected)"
-                  : hoveredNode.data.connectionCount === 0
-                  ? " (isolated)"
-                  : ""}
+                    ? " (moderately connected)"
+                    : hoveredNode.data.connectionCount === 0
+                      ? " (isolated)"
+                      : ""}
               </div>
               <div className="text-xs text-muted-foreground mt-1 font-mono line-clamp-1">
                 {hoveredNode.data.id}
               </div>
             </div>
           )}
-
-          <div className="text-sm text-muted-foreground text-center">
-            Hover nodes for details • Circle size indicates connections
-          </div>
         </div>
       </div>
     </div>

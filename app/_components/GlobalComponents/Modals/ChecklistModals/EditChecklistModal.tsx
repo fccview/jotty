@@ -138,6 +138,7 @@ export const EditChecklistModal = ({
               selectedCategory={category}
               onCategorySelect={setCategory}
               className="w-full"
+              placeholder={t('common.selectCategory')}
               isInModal={true}
             />
           </div>
@@ -159,8 +160,8 @@ export const EditChecklistModal = ({
             {isLoading
               ? "Updating..."
               : unarchive
-              ? "Unarchive Checklist"
-              : "Update Checklist"}
+                ? "Unarchive Checklist"
+                : "Update Checklist"}
           </Button>
         </div>
       </form>

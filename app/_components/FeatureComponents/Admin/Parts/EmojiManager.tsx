@@ -32,7 +32,7 @@ export const EmojiManager = () => {
   return (
     <>
       <FormWrapper
-        title="Custom Emojis"
+        title={t('admin.customEmojis')}
         action={
           <Button
             onClick={handleCreateEmoji}
@@ -40,7 +40,7 @@ export const EmojiManager = () => {
             size="sm"
           >
             <Add01Icon className="mr-2 h-3 w-3" />
-            Add Emoji
+            {t('admin.addEmoji')}
           </Button>
         }
         contentMaxHeight="300px"
@@ -79,8 +79,7 @@ export const EmojiManager = () => {
           ))}
           {getCustomEmojis().length === 0 && !isLoadingEmojis && (
             <p className="text-sm text-muted-foreground col-span-full text-center py-4">
-              No custom emojis created yet. Click &quot;Add Emoji&quot; to get
-              started.
+              {t('admin.noEmojisYet')}
             </p>
           )}
           {isLoadingEmojis && (
@@ -100,7 +99,7 @@ export const EmojiManager = () => {
         <div className="space-y-4">
           <Input
             id="emojiKeyword"
-            label="Keyword"
+            label={t('common.keyword')}
             type="text"
             value={emojiForm.keyword}
             onChange={(e) => handleEmojiFormChange("keyword", e.target.value)}
@@ -110,7 +109,7 @@ export const EmojiManager = () => {
 
           <div className="space-y-2">
             <label htmlFor="emojiEmoji" className="text-sm font-medium">
-              Emoji
+              {t('common.emoji')}
             </label>
             <div className="flex space-x-2">
               <Input
@@ -127,8 +126,7 @@ export const EmojiManager = () => {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Enter any emoji or use emoji picker (Win: Win+.; Mac:
-              Ctrl+Cmd+Space)
+              {t('admin.enterAnyEmoji')}
             </p>
           </div>
 
@@ -146,9 +144,9 @@ export const EmojiManager = () => {
                     pathClassName="fill-primary"
                   />{t('common.saving')}</>
               ) : editingEmoji ? (
-                "Update Emoji"
+                t('common.update')
               ) : (
-                "Add Emoji"
+                t('common.add')
               )}
             </Button>
           </div>

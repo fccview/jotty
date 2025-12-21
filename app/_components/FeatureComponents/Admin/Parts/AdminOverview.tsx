@@ -29,27 +29,27 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
 
   const statCards = [
     {
-      title: "App Version",
+      title: t("admin.appVersion"),
       value: appVersion || "",
       icon: <GithubIcon className="h-6 w-6 text-primary" />,
     },
     {
-      title: "Total Users",
+      title: t("admin.totalUsers"),
       value: stats.totalUsers,
       icon: <UserMultipleIcon className="h-6 w-6 text-primary" />,
     },
     {
-      title: "Admin Users",
+      title: t("admin.adminUsers"),
       value: stats.adminUsers,
       icon: <ShieldUserIcon className="h-6 w-6 text-primary" />,
     },
     {
-      title: "Total Checklists",
+      title: t("admin.totalChecklists"),
       value: stats.totalChecklists,
       icon: <CheckmarkSquare04Icon className="h-6 w-6 text-primary" />,
     },
     {
-      title: "Total Notes",
+      title: t("admin.totalNotes"),
       value: stats.totalNotes,
       icon: <File02Icon className="h-6 w-6 text-primary" />,
     },
@@ -77,7 +77,7 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="p-6 rounded-jotty border border-border bg-card">
           <h3 className="text-lg font-semibold text-foreground mb-4">
-            User Distribution
+            {t("admin.userDistribution")}
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -103,7 +103,7 @@ export const AdminOverview = ({ stats }: AdminOverviewProps) => {
 
         <div className="p-6 rounded-jotty border border-border bg-card">
           <h3 className="text-lg font-semibold text-foreground mb-4">
-            Content Overview
+            {t("admin.contentOverview")}
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">

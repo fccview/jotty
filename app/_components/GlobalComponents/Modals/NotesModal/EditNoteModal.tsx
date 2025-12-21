@@ -139,6 +139,7 @@ export const EditNoteModal = ({
                 category !== ARCHIVED_DIR_NAME ? category : "Uncategorized"
               }
               onCategorySelect={setCategory}
+              placeholder={t('common.selectCategory')}
               className="w-full"
               isInModal={true}
             />
@@ -161,8 +162,8 @@ export const EditNoteModal = ({
             {isLoading
               ? "Updating..."
               : unarchive
-              ? "Unarchive Note"
-              : "Update Note"}
+                ? "Unarchive Note"
+                : "Update Note"}
           </Button>
         </div>
       </form>

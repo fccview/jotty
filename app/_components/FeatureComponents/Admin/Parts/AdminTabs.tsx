@@ -12,46 +12,50 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
+
 interface AdminTabsProps {
   activeTab: AdminTabsEnum;
   onTabChange: (tab: AdminTabsEnum) => void;
 }
 
 export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
+  const t = useTranslations();
+
   const tabs = [
     {
       id: AdminTabsEnum.OVERVIEW,
-      label: "Overview",
+      label: t("admin.overview"),
       icon: Activity03Icon,
     },
     {
       id: AdminTabsEnum.USERS,
-      label: "Users",
+      label: t("admin.users"),
       icon: UserMultipleIcon,
     },
     {
       id: AdminTabsEnum.CONTENT,
-      label: "Content",
+      label: t("admin.content"),
       icon: File02Icon,
     },
     {
       id: AdminTabsEnum.SHARING,
-      label: "Sharing",
+      label: t("admin.sharing"),
       icon: Globe02Icon,
     },
     {
       id: AdminTabsEnum.EDITOR,
-      label: "Editor",
+      label: t("admin.editor"),
       icon: BookEditIcon,
     },
     {
       id: AdminTabsEnum.STYLING,
-      label: "Styling",
+      label: t("admin.styling"),
       icon: PaintBrush04Icon,
     },
     {
       id: AdminTabsEnum.SETTINGS,
-      label: "Settings",
+      label: t("common.settings"),
       icon: Settings01Icon,
     },
   ];

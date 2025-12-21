@@ -55,7 +55,7 @@ export const TasksPageClient = ({
     { id: "all", name: t('tasks.allTasks') },
     { id: "completed", name: t('tasks.completed') },
     { id: "incomplete", name: t('checklists.incomplete') },
-    { id: "pinned", name: t('checklists.pinned') },
+    { id: "pinned", name: t('common.pinned') },
     { id: "todo", name: t('tasks.todo') },
     { id: "in-progress", name: t('tasks.inProgress') },
   ];
@@ -325,15 +325,14 @@ export const TasksPageClient = ({
                       key={list.id}
                       list={list}
                       onSelect={(list) => {
-                        const categoryPath = `${
-                          list.category || "Uncategorized"
-                        }/${list.id}`;
+                        const categoryPath = `${list.category || "Uncategorized"
+                          }/${list.id}`;
                         router.push(`/checklist/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedLists?.includes(
                         `${list.category || "Uncategorized"}/${list.id}`
                       )}
-                      onTogglePin={() => {}}
+                      onTogglePin={() => { }}
                     />
                   ))}
                 </div>

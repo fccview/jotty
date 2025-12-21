@@ -6,6 +6,7 @@ import { SearchInput } from "./Parts/SearchInput";
 import { SearchResults } from "./Parts/SearchResults";
 import { useSearch } from "@/app/_hooks/useSearch";
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 interface SearchBarProps {
   mode: AppMode;
@@ -22,6 +23,7 @@ export const SearchBar = ({
   autoFocus = false,
   onResultSelect,
 }: SearchBarProps) => {
+  const t = useTranslations();
   const {
     isOpen,
     setIsOpen,
@@ -42,6 +44,8 @@ export const SearchBar = ({
     }
   }, [autoFocus, inputRef]);
 
+  const translatedMode = mode === "notes" ? t('notes.title') : t('checklists.title')
+
   return (
     <div
       ref={containerRef}
@@ -53,7 +57,7 @@ export const SearchBar = ({
         onQueryChange={setQuery}
         onClear={() => setQuery("")}
         onFocus={() => setIsOpen(true)}
-        placeholder={`Search ${mode}... (⌘K)`}
+        placeholder={t('global.searchPlaceholder', { mode: translatedMode })}
         inputRef={inputRef}
         className={cn("transition-all")}
       />

@@ -281,7 +281,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
     { id: "all", name: t('checklists.allChecklists') },
     { id: "completed", name: t('checklists.completed') },
     { id: "incomplete", name: t('checklists.incomplete') },
-    { id: "pinned", name: t('checklists.pinned') },
+    { id: "pinned", name: t('common.pinned') },
     { id: "task", name: t('checklists.taskLists') },
     { id: "simple", name: t('checklists.simpleLists') },
   ];
@@ -289,7 +289,7 @@ export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const defaultNoteFilterOptions = [
     { id: "all", name: t('notes.allNotes') },
     { id: "recent", name: t('notes.recent') },
-    { id: "pinned", name: t('notes.pinned') },
+    { id: "pinned", name: t('common.pinned') },
   ];
 
   return (

@@ -147,12 +147,10 @@ export const NoteEditorHeader = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${
-        note?.uuid
-          ? note?.uuid
-          : `${encodeCategoryPath(note?.category || "Uncategorized")}/${
-              note?.id
-            }`
+      `${note?.uuid
+        ? note?.uuid
+        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id
+        }`
       }`
     );
     if (success) {
@@ -239,9 +237,8 @@ export const NoteEditorHeader = ({
   return (
     <>
       <div
-        className={`bg-background border-b border-border px-4 ${
-          isEditing ? "py-[11px]" : "py-3"
-        } sticky top-0 z-20 no-print`}
+        className={`bg-background border-b border-border px-4 ${isEditing ? "py-[11px]" : "py-3"
+          } sticky top-0 z-20 no-print`}
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0 focus-within:min-w-[90%] lg:focus-within:min-w-[20%] transition-all duration-100">
@@ -261,7 +258,7 @@ export const NoteEditorHeader = ({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Note title..."
+                  placeholder={t("checklists.noteTitle")}
                   className="!space-y-0 [&>label]:hidden [&>input]:text-xl [&>input]:font-bold [&>input]:bg-transparent [&>input]:border-none [&>input]:p-0 [&>input]:focus:ring-0"
                 />
               ) : (
@@ -275,13 +272,12 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0"
-                      title={`Copy ID: ${
-                        note?.uuid
+                      title={`Copy ID: ${note?.uuid
                           ? note?.uuid
                           : `${encodeCategoryPath(
-                              note?.category || "Uncategorized"
-                            )}/${note?.id}`
-                      }`}
+                            note?.category || "Uncategorized"
+                          )}/${note?.id}`
+                        }`}
                     >
                       {copied ? (
                         <Tick02Icon className="h-3 w-3 text-green-500" />
@@ -327,6 +323,7 @@ export const NoteEditorHeader = ({
                       categories={categories}
                       selectedCategory={category}
                       onCategorySelect={viewModel.setCategory}
+                      placeholder={t('common.selectCategory')}
                     />
                   </div>
                 )}
@@ -404,60 +401,60 @@ export const NoteEditorHeader = ({
                     items={[
                       ...(permissions?.isOwner
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Share",
-                              icon: <Share08Icon className="h-4 w-4" />,
-                              onClick: () => setShowShareModal(true),
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Share",
+                            icon: <Share08Icon className="h-4 w-4" />,
+                            onClick: () => setShowShareModal(true),
+                          },
+                        ]
                         : []),
                       ...(onClone
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Clone",
-                              icon: <Copy01Icon className="h-4 w-4" />,
-                              onClick: onClone,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Clone",
+                            icon: <Copy01Icon className="h-4 w-4" />,
+                            onClick: onClone,
+                          },
+                        ]
                         : []),
                       ...(note?.encrypted
                         ? [
-                            {
-                              type: "item" as const,
-                              label: !isInViewMode ? "View" : "Hide",
-                              icon: !isInViewMode ? <ViewIcon className="h-4 w-4" /> : <ViewOffSlashIcon className="h-4 w-4" />,
-                              onClick: () => {
-                                if (!isInViewMode) {
-                                  setEncryptionModalMode("view");
-                                  setShowEncryptionModal(true);
-                                } else {
-                                  window.location.reload();
-                                }
-                              },
+                          {
+                            type: "item" as const,
+                            label: !isInViewMode ? "View" : "Hide",
+                            icon: !isInViewMode ? <ViewIcon className="h-4 w-4" /> : <ViewOffSlashIcon className="h-4 w-4" />,
+                            onClick: () => {
+                              if (!isInViewMode) {
+                                setEncryptionModalMode("view");
+                                setShowEncryptionModal(true);
+                              } else {
+                                window.location.reload();
+                              }
                             },
-                            ...(!isInViewMode && permissions?.canEdit ? [{
-                              type: "item" as const,
-                              label: "Decrypt",
-                              icon: <LockKeyIcon className="h-4 w-4" />,
-                              onClick: () => {
-                                setEncryptionModalMode("decrypt");
-                                setShowEncryptionModal(true);
-                              },
-                            }] : []),
-                          ]
+                          },
+                          ...(!isInViewMode && permissions?.canEdit ? [{
+                            type: "item" as const,
+                            label: "Decrypt",
+                            icon: <LockKeyIcon className="h-4 w-4" />,
+                            onClick: () => {
+                              setEncryptionModalMode("decrypt");
+                              setShowEncryptionModal(true);
+                            },
+                          }] : []),
+                        ]
                         : [
-                           ...(permissions?.canEdit ? [{
-                              type: "item" as const,
-                              label: "Encrypt Note",
-                              icon: <LockKeyIcon className="h-4 w-4" />,
-                              onClick: () => {
-                                setEncryptionModalMode("encrypt");
-                                setShowEncryptionModal(true);
-                              },
-                            }] : []),
-                          ]),
+                          ...(permissions?.canEdit ? [{
+                            type: "item" as const,
+                            label: "Encrypt Note",
+                            icon: <LockKeyIcon className="h-4 w-4" />,
+                            onClick: () => {
+                              setEncryptionModalMode("encrypt");
+                              setShowEncryptionModal(true);
+                            },
+                          }] : []),
+                        ]),
                       {
                         type: "item" as const,
                         label: "Print / Save as PDF",
@@ -477,24 +474,24 @@ export const NoteEditorHeader = ({
                       },
                       ...(permissions?.canDelete
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Archive",
-                              icon: <Archive02Icon className="h-4 w-4" />,
-                              onClick: handleArchive,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Archive",
+                            icon: <Archive02Icon className="h-4 w-4" />,
+                            onClick: handleArchive,
+                          },
+                        ]
                         : []),
                       ...(canDelete
                         ? [
-                            {
-                              type: "item" as const,
-                              label: "Delete",
-                              icon: <Delete03Icon className="h-4 w-4" />,
-                              onClick: handleDelete,
-                              variant: "destructive" as const,
-                            },
-                          ]
+                          {
+                            type: "item" as const,
+                            label: "Delete",
+                            icon: <Delete03Icon className="h-4 w-4" />,
+                            onClick: handleDelete,
+                            variant: "destructive" as const,
+                          },
+                        ]
                         : []),
                     ]}
                   />
@@ -535,8 +532,8 @@ export const NoteEditorHeader = ({
               encryptionModalMode === "view"
                 ? handleViewDecryption
                 : encryptionModalMode === "decrypt"
-                ? handlePermanentDecryption
-                : handleEncryptionSuccess
+                  ? handlePermanentDecryption
+                  : handleEncryptionSuccess
             }
           />
         ) : (
@@ -549,8 +546,8 @@ export const NoteEditorHeader = ({
               encryptionModalMode === "view"
                 ? handleViewDecryption
                 : encryptionModalMode === "decrypt"
-                ? handlePermanentDecryption
-                : handleEncryptionSuccess
+                  ? handlePermanentDecryption
+                  : handleEncryptionSuccess
             }
           />
         );

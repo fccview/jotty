@@ -101,9 +101,11 @@ export const NoteEditorContent = ({
               <LockKeyIcon className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <h3 className="text-xl font-semibold">This note is encrypted</h3>
+          <h3 className="text-xl font-semibold">{t("encryption.thisNoteIsEncrypted")}</h3>
           <p className="text-sm text-muted-foreground">
-            This note is protected with {encryptionType === "pgp" ? "PGP" : "XChaCha20-Poly1305"} encryption.
+            {t("encryption.noteProtectedWith", {
+              type: encryptionType === "pgp" ? t("encryption.pgp") : t("encryption.xchacha")
+            })}
           </p>
           <div className="flex items-center justify-center gap-3 pt-4">
             {onOpenViewModal && (

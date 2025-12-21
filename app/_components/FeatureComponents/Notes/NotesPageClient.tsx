@@ -31,7 +31,7 @@ export const NotesPageClient = ({
   initialCategories,
   user,
 }: NotesPageClientProps) => {
-  const t = useTranslations('notes');
+  const t = useTranslations();
   const router = useRouter();
   const { openCreateNoteModal } = useShortcut();
   const { isInitialized } = useAppMode();
@@ -42,9 +42,9 @@ export const NotesPageClient = ({
   const [recursive, setRecursive] = useState(false);
 
   const filterOptions = [
-    { id: "all", name: t('allNotes') },
-    { id: "recent", name: t('recent') },
-    { id: "pinned", name: t('pinned') },
+    { id: "all", name: t('notes.allNotes') },
+    { id: "recent", name: t('notes.recent') },
+    { id: "pinned", name: t('common.pinned') },
   ];
 
   const filteredNotes = useMemo(() => {
@@ -139,14 +139,14 @@ export const NotesPageClient = ({
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
         <SiteHeader
-          title={t('allNotes')}
-          description={t('browseAndManage')}
+          title={t('notes.allNotes')}
+          description={t('notes.browseAndManage')}
         />
         <EmptyState
           icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
-          title={t('noNotesYet')}
-          description={t('createFirstNote')}
-          buttonText={t('createNewNote')}
+          title={t('notes.noNotesYet')}
+          description={t('notes.createFirstNote')}
+          buttonText={t('notes.createNewNote')}
           onButtonClick={() => openCreateNoteModal()}
         />
       </div>
@@ -156,8 +156,8 @@ export const NotesPageClient = ({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <SiteHeader
-        title={t('allNotes')}
-        description={t('browseAndManage')}
+        title={t('notes.allNotes')}
+        description={t('notes.browseAndManage')}
       />
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
@@ -190,10 +190,10 @@ export const NotesPageClient = ({
             <div className="text-center py-12">
               <File02Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                {t('noNotesFound')}
+                {t('notes.noNotesFound')}
               </h3>
               <p className="text-muted-foreground">
-                {t('tryAdjustingFilters')}
+                {t('notes.tryAdjustingFilters')}
               </p>
             </div>
           ) : (
@@ -208,9 +208,8 @@ export const NotesPageClient = ({
                     <NoteCard
                       note={note}
                       onSelect={(note) => {
-                        const categoryPath = `${
-                          note.category || "Uncategorized"
-                        }/${note.id}`;
+                        const categoryPath = `${note.category || "Uncategorized"
+                          }/${note.id}`;
                         router.push(`/note/${categoryPath}`);
                       }}
                       isPinned={user?.pinnedNotes?.includes(

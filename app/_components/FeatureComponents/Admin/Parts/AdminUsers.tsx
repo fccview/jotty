@@ -49,7 +49,7 @@ export const AdminUsers = ({
       <div className="flex items-center justify-end">
         <Button onClick={onAddUser} className="flex items-center gap-2">
           <Add01Icon className="h-4 w-4" />
-          Add User
+          {t("admin.addUser")}
         </Button>
       </div>
 
@@ -59,7 +59,7 @@ export const AdminUsers = ({
           id="searchUsers"
           name="searchUsers"
           type="text"
-          placeholder="Search users..."
+          placeholder={t("admin.searchUsers")}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10"
@@ -96,7 +96,7 @@ export const AdminUsers = ({
                       </h3>
                       {user.username === username && (
                         <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
-                          You
+                          {t("admin.you")}
                         </span>
                       )}
                       {user.isAdmin && (
@@ -104,8 +104,11 @@ export const AdminUsers = ({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {user.isAdmin ? "Admin" : "User"} • {userChecklists}{" "}
-                      checklists, {userDocs} notes
+                      {t("admin.userRole", {
+                        role: user.isAdmin ? t("common.admin") : t("common.user"),
+                        checklists: userChecklists,
+                        notes: userDocs,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -147,12 +150,12 @@ export const AdminUsers = ({
               <UserIcon className="h-8 w-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">
-              {searchQuery ? "No users found" : "No users yet"}
+              {searchQuery ? t("admin.noUsersFound") : t("admin.noUsersYet")}
             </h3>
             <p className="text-muted-foreground">
               {searchQuery
-                ? "No users match your search criteria."
-                : "Users will appear here once they register."}
+                ? t("admin.noUsersMatchSearch")
+                : t("admin.usersWillAppear")}
             </p>
           </div>
         )}

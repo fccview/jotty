@@ -21,7 +21,7 @@ export const PasswordFields = ({
     <>
       <div>
         <label className="block text-sm font-medium mb-2">
-          {isEditMode ? "New Password" : "Password"}
+          {!isEditMode ? t('settings.newPassword') : t('common.password')}
         </label>
         <input
           type="password"
@@ -34,7 +34,7 @@ export const PasswordFields = ({
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">
-          Confirm {isEditMode && "New"} Password
+          {!isEditMode ? t('admin.confirmNewPassword') : t('common.confirmPassword')}
         </label>
         <input
           type="password"

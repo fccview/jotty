@@ -275,8 +275,8 @@ export const ProfileTab = ({
             />
             {!isDemoMode && (
               <ImageUpload
-                label="Avatar"
-                description="Upload a profile picture (PNG, JPG, WebP up to 5MB)"
+                label={t("profile.avatar")}
+                description={t("profile.uploadProfilePicture")}
                 currentUrl={avatarUrl || ""}
                 onUpload={handleAvatarUpload}
                 customUploadAction={uploadUserAvatar}
@@ -377,7 +377,7 @@ export const ProfileTab = ({
                 <p className="text-sm text-muted-foreground">
                   {user?.createdAt
                     ? formatDateString(user.createdAt)
-                    : "Unknown"}
+                    : t('profile.unknown')}
                 </p>
               </div>
               <div>
@@ -393,7 +393,7 @@ export const ProfileTab = ({
                 label={t('common.username')}
                 type="text"
                 onChange={(e) => setEditedUsername(e.target.value)}
-                placeholder="Your username"
+                placeholder={t('profile.yourUsername')}
                 defaultValue={user?.username}
                 disabled={isUsernameDisabled}
                 className="mt-1"

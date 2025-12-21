@@ -79,17 +79,17 @@ export const CreateListModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Create New Checklist">
+    <Modal isOpen={true} onClose={onClose} title={t('checklists.createChecklistHeader')}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Input
           ref={titleInputRef}
           id="checklistName"
           name="checklistName"
-          label="Checklist Name *"
+          label={`${t('checklists.checklistName')} *`}
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter checklist name..."
+          placeholder={t('checklists.checklistNamePlaceholder')}
           required
           disabled={isLoading}
           autoFocus
@@ -128,7 +128,7 @@ export const CreateListModal = ({
             }
             className="flex-1"
           >
-            {isLoading ? "Creating..." : "Create Checklist"}
+            {isLoading ? t('common.creating') : t('checklists.createChecklist')}
           </Button>
         </div>
       </form>

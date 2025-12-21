@@ -89,26 +89,26 @@ export const UserProfileClient = ({
       <div className="bg-muted p-1 rounded-jotty">
         <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
           {[
-            { id: ProfileTabs.PROFILE, label: "Profile", icon: UserIcon },
-            { id: ProfileTabs.SESSIONS, label: "Sessions", icon: Tv02Icon },
-            { id: ProfileTabs.ARCHIVE, label: "Archive", icon: Archive02Icon },
+            { id: ProfileTabs.PROFILE, label: t('profile.profileTab'), icon: UserIcon },
+            { id: ProfileTabs.SESSIONS, label: t('profile.sessionsTab'), icon: Tv02Icon },
+            { id: ProfileTabs.ARCHIVE, label: t('profile.archiveTab'), icon: Archive02Icon },
             ...(appSettings?.editor?.enableBilateralLinks
               ? [
-                  {
-                    id: ProfileTabs.CONNECTIONS,
-                    label: "Connections",
-                    icon: SharedWifiIcon,
-                  },
-                ]
+                {
+                  id: ProfileTabs.CONNECTIONS,
+                  label: t('profile.connectionsTab'),
+                  icon: SharedWifiIcon,
+                },
+              ]
               : []),
             {
               id: ProfileTabs.ENCRYPTION,
-              label: "Encryption (beta)",
+              label: t('profile.encryptionTab'),
               icon: LockKeyIcon,
             },
             {
               id: ProfileTabs.SETTINGS,
-              label: "Settings",
+              label: t('profile.settingsTab'),
               icon: Settings01Icon,
             },
           ].map((tab) => {
@@ -134,7 +134,7 @@ export const UserProfileClient = ({
           <ProfileTab
             user={user}
             isAdmin={isAdmin}
-            setUser={() => {}}
+            setUser={() => { }}
             isSsoUser={isSsoUser}
           />
         )}

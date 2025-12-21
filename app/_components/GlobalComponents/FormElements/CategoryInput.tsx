@@ -29,8 +29,8 @@ export const CategoryInput = ({
   const t = useTranslations();
   const selectedCategoryName = selectedCategory
     ? categories.find((c) => c.path === selectedCategory)?.name ||
-      selectedCategory
-    : "Root level";
+    selectedCategory
+    : t('common.rootLevel');
 
   const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
   const isNotAllowedName = notAllowedNames.includes(
@@ -48,7 +48,7 @@ export const CategoryInput = ({
               value={newCategory}
               onChange={(e) => onNewCategoryChange(e.target.value)}
               className="flex-1 px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
-              placeholder="Enter new category name..."
+              placeholder={t('common.categoryNamePlaceholder')}
               disabled={disabled}
             />
             <Button
@@ -59,13 +59,13 @@ export const CategoryInput = ({
             >{t('common.cancel')}</Button>
           </div>
           {isNotAllowedName && (
-            <div className="text-xs text-destructive  ">
-              {newCategory} is not allowed. Please choose a different name.
+            <div className="text-xs text-destructive">
+              {t('common.notAllowedName', { name: newCategory })}
             </div>
           )}
           {!isNotAllowedName && (
             <div className="text-xs text-muted-foreground">
-              New category will be created in:{" "}
+              {t('common.categoryWillBeCreatedIn')}{" "}
               <strong>{selectedCategoryName}</strong>
             </div>
           )}
@@ -77,6 +77,7 @@ export const CategoryInput = ({
             selectedCategory={selectedCategory}
             onCategorySelect={onCategoryChange}
             className="flex-1"
+            placeholder={t('common.selectCategory')}
             isInModal
           />
           <Button

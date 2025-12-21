@@ -87,11 +87,10 @@ export const ArchiveTab = ({
       <div className="md:flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground">
-            Archived Content
+            {t('profile.archivedContent')}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
-            {archivedItems.length}{" "}
-            {archivedItems.length === 1 ? "item" : "items"} archived
+            {t('profile.archivedItemsCount', { archivedItemsCount: archivedItems.length })}
           </p>
         </div>
       </div>
@@ -104,7 +103,7 @@ export const ArchiveTab = ({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search archived items..."
+          placeholder={t("checklists.searchArchivedItems")}
           className="pl-10 pr-10 !space-y-0 [&>label]:hidden"
         />
         {searchQuery && (
@@ -192,14 +191,14 @@ export const ArchiveTab = ({
           {filteredItems.length === 0 && searchQuery && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
-                No archived items found matching &quot;{searchQuery}&quot;
+                {t('profile.noArchivedItemsFound', { searchQuery })}
               </p>
             </div>
           )}
         </>
       ) : (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No archived content found</p>
+          <p className="text-muted-foreground">{t('profile.noArchivedContent')}</p>
         </div>
       )}
 
