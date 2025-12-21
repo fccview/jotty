@@ -55,8 +55,10 @@ export const ChecklistCard = ({
   const displayTitle = parsedData?.title || list.title;
   const displayItems = parsedData?.items || list.items;
 
-  const totalItems = displayItems?.length || 0;
-  const completedItems = displayItems?.filter((item) =>
+  const activeItems = displayItems?.filter((item) => !item.isArchived);
+
+  const totalItems = activeItems?.length || 0;
+  const completedItems = activeItems?.filter((item) =>
     isItemCompleted(item, list.type)
   ).length;
   const completionRate =
@@ -137,7 +139,7 @@ export const ChecklistCard = ({
         </div>
       </div>
 
-      {list.type === "task" && <TaskSpecificDetails items={displayItems} />}
+      {list.type === "task" && <TaskSpecificDetails items={activeItems} />}
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
