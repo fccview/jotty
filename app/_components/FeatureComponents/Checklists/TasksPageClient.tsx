@@ -135,28 +135,31 @@ export const TasksPageClient = ({
   };
 
   const stats = useMemo(() => {
-    const totalTasks = initialLists.length;
-    const completedTasks = initialLists.reduce((acc, list) => {
+    const filteredInitialLists = initialLists.map((list) => {
+      return { ...list, items: list.items.filter((item) => !item.isArchived) };
+    });
+    const totalTasks = filteredInitialLists.length;
+    const completedTasks = filteredInitialLists.reduce((acc, list) => {
       return (
         acc +
         list.items.filter((item) => isItemCompleted(item, list.type)).length
       );
     }, 0);
-    const totalItems = initialLists.reduce(
+    const totalItems = filteredInitialLists.reduce(
       (acc, list) => acc + list.items.length,
       0
     );
     const completionRate =
       totalItems > 0 ? Math.round((completedTasks / totalItems) * 100) : 0;
 
-    const todoTasks = initialLists.reduce((acc, list) => {
+    const todoTasks = filteredInitialLists.reduce((acc, list) => {
       return (
         acc +
         list.items.filter((item) => item.status === TaskStatus.TODO).length
       );
     }, 0);
 
-    const inProgressTasks = initialLists.reduce((acc, list) => {
+    const inProgressTasks = filteredInitialLists.reduce((acc, list) => {
       return (
         acc +
         list.items.filter((item) => item.status === TaskStatus.IN_PROGRESS)
