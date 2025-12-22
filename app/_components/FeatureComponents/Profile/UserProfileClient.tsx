@@ -150,7 +150,10 @@ export const UserProfileClient = ({
         )}
         {activeTab === ProfileTabs.ENCRYPTION && <EncryptionTab />}
         {activeTab === ProfileTabs.SETTINGS && (
-          <SettingsTab setShowDeleteModal={setShowDeleteModal} />
+          <SettingsTab
+            setShowDeleteModal={setShowDeleteModal}
+            notesCategories={notesCategories}
+          />
         )}
       </div>
 
