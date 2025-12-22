@@ -184,7 +184,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           autoFocus={true}
           focusKey={focusKey}
           placeholder={t('checklists.addNewTask')}
-          submitButtonText="Add Task"
+          submitButtonText={t('tasks.addTask')}
         />
       )}
       <div className="flex gap-2 px-4 pt-4 pb-2 w-full justify-end">
@@ -196,7 +196,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             className="text-xs"
           >
             <Settings01Icon className="h-3 w-3 mr-1" />
-            Manage Statuses
+            {t('tasks.manageStatuses')}
           </Button>
         )}
         <Button
@@ -206,7 +206,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           className="text-xs"
         >
           <Archive02Icon className="h-3 w-3 mr-1" />
-          View Archived
+          {t('tasks.viewArchived')}
         </Button>
       </div>
       <div className="flex-1 pb-[8.5em]">

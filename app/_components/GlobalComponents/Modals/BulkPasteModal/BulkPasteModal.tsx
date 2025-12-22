@@ -56,7 +56,7 @@ export const BulkPasteModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Bulk Add Items"
+      title={t('checklists.bulkAddItems')}
       className="lg:max-w-lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">

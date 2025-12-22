@@ -250,10 +250,14 @@
     "checklistName": "Checklist name",
     "checklistNamePlaceholder": "Enter checklist name...",
     "createChecklistHeader": "Create a new checklist",
-    "allLists": "All lists"
+    "allLists": "All lists",
+    "addItemWithRecurrence": "Add Item with Recurrence",
+    "recurringItemText": "Recurring Item Text",
+    "recurringItemTextPlaceholder": "Enter the text for the recurring item"
   },
   "tasks": {
     "title": "Tasks",
+    "addTask": "Add Task",
     "createTask": "Create Task",
     "editTask": "Edit Task",
     "deleteTask": "Delete Task",
@@ -281,7 +285,9 @@
     "tryAdjustingFiltersTaskList": "Try adjusting your filters or create a new task list.",
     "totalTime": "Total time:",
     "recentTasks": "Recent Tasks",
-    "showAllTasks": "Show all tasks"
+    "showAllTasks": "Show all tasks",
+    "manageStatuses": "Manage Statuses",
+    "viewArchived": "View Archived"
   },
   "profile": {
     "userProfile": "User Profile",

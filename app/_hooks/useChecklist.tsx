@@ -453,8 +453,10 @@ export const useChecklist = ({
 
       let newIndex = targetSiblings.findIndex((item) => item.id === overId);
 
-      if (activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInNew.index) {
-        newIndex = newIndex;
+      const isDraggingDown = activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInfo.index;
+
+      if (isDraggingDown) {
+        newIndex = newIndex + 1;
       }
 
       targetSiblings.splice(newIndex, 0, activeInNew.item);

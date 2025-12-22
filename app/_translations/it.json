@@ -233,8 +233,8 @@
     "loadingChecklist": "Caricamento lista...",
     "doNotRefresh": "Non aggiornare la pagina.",
     "addNewItem": "Aggiungi nuovo elemento...",
-    "bulkAddItems": "Aggiunta massiva elementi",
-    "bulk": "Massivo",
+    "bulkAddItems": "Aggiungi in bulk",
+    "bulk": "In bulk",
     "addRecurringItem": "Aggiungi elemento ricorrente",
     "addNewTask": "Aggiungi nuova attività...",
     "publiclyShared": "Condivisa pubblicamente",
@@ -250,7 +250,10 @@
     "checklistName": "Nome della lista",
     "checklistNamePlaceholder": "Inserisci il nome della lista...",
     "createChecklistHeader": "Crea una nuova lista",
-    "allLists": "Tutte le liste"
+    "allLists": "Tutte le liste",
+    "addItemWithRecurrence": "Aggiungi elemento con ricorrenza",
+    "recurringItemText": "Testo dell'articolo ricorrente",
+    "recurringItemTextPlaceholder": "Inserisci il testo per l'elemento ricorrente"
   },
   "tasks": {
     "title": "Attività",
@@ -281,7 +284,10 @@
     "tryAdjustingFiltersTaskList": "Prova a modificare i filtri o crea una nuova lista di attività.",
     "totalTime": "Tempo totale:",
     "recentTasks": "Attività recenti",
-    "showAllTasks": "Tutte le attività"
+    "showAllTasks": "Tutte le attività",
+    "addTask": "Aggiungi attività",
+    "viewArchived": "Visualizza archiviati",
+    "manageStatuses": "Gestisci gli stati"
   },
   "profile": {
     "userProfile": "Profilo Utente",

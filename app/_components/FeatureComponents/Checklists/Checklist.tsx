@@ -123,7 +123,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 
@@ -143,7 +143,7 @@ export const ChecklistView = ({
               ),
             },
           ]}
-          onRemove={() => {}}
+          onRemove={() => { }}
         ></ToastContainer>
       )}
 
@@ -158,7 +158,7 @@ export const ChecklistView = ({
           autoFocus={true}
           focusKey={focusKey}
           placeholder={t('checklists.addNewItem')}
-          submitButtonText="Add Item"
+          submitButtonText={t('checklists.addItem')}
         />
       )}
 

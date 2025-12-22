@@ -163,21 +163,21 @@ export const StatusManagementModal = ({
 
   const handleRemoveStatus = (id: string) => {
     const itemCount = itemsByStatus[id] || 0;
-    const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
-    const firstStatus = sortedStatuses[0];
+
+    const remainingStatuses = statuses.filter((s) => s.id !== id);
+    const sortedRemainingStatuses = [...remainingStatuses].sort((a, b) => a.order - b.order);
+    const targetStatus = sortedRemainingStatuses[0];
 
     if (itemCount > 0) {
       const confirmed = confirm(
         `This status has ${itemCount} item${itemCount > 1 ? "s" : ""}. ` +
-          `${itemCount > 1 ? "They" : "It"} will be moved to "${
-            firstStatus?.label || "the first status"
-          }". Continue?`
+        `${itemCount > 1 ? "They" : "It"} will be moved to "${targetStatus?.label || "the first remaining status"
+        }". Continue?`
       );
       if (!confirmed) return;
     }
 
-    const newStatuses = statuses.filter((s) => s.id !== id);
-    setStatuses(newStatuses.map((s, index) => ({ ...s, order: index })));
+    setStatuses(remainingStatuses.map((s, index) => ({ ...s, order: index })));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {

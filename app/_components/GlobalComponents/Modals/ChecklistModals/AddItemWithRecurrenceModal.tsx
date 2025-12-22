@@ -39,17 +39,17 @@ export const AddItemWithRecurrenceModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Add Item with Recurrence">
+    <Modal isOpen={true} onClose={onClose} title={t('checklists.addItemWithRecurrence')}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <Input
             id="item-text"
             ref={textInputRef}
-            label="Recurring Item Text *"
+            label={`${t('checklists.recurringItemText')} *`}
             type="text"
             defaultValue={initialItemText}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Enter the text for the recurring item"
+            placeholder={t('checklists.recurringItemTextPlaceholder')}
             required
             disabled={isLoading}
           />
@@ -73,7 +73,7 @@ export const AddItemWithRecurrenceModal = ({
             disabled={isLoading || !text.trim()}
             className="flex-1"
           >
-            {isLoading ? "Adding..." : "Add Item"}
+            {isLoading ? t('common.loading') : t('checklists.addItem')}
           </Button>
         </div>
       </form>
