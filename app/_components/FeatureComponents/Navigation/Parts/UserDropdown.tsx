@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Settings01Icon, ShieldUserIcon, UserIcon, Logout01Icon, HelpCircleIcon, ArrowDown01Icon } from "hugeicons-react";
+import { Settings01Icon, UserIcon, Logout01Icon, HelpCircleIcon, ArrowDown01Icon, LaptopPhoneSyncIcon } from "hugeicons-react";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useRouter } from "next/navigation";
@@ -39,24 +39,15 @@ export const UserDropdown = ({
 
   const dropdownItems = [
     {
-      label: t("profile.userSettings"),
-      icon: <UserIcon className="h-4 w-4" />,
-      onClick: () => checkNavigation(() => router.push("/profile")),
+      label: t("profile.settingsDashboard"),
+      icon: <Settings01Icon className="h-4 w-4" />,
+      onClick: () => checkNavigation(() => router.push("/settings")),
     },
     {
       label: t("profile.deviceSettings"),
-      icon: <Settings01Icon className="h-4 w-4" />,
+      icon: <LaptopPhoneSyncIcon className="h-4 w-4" />,
       onClick: () => checkNavigation(() => onOpenSettings()),
     },
-    ...(isAdmin
-      ? [
-          {
-            label: t("profile.adminSettings"),
-            icon: <ShieldUserIcon className="h-4 w-4" />,
-            onClick: () => checkNavigation(() => router.push("/admin")),
-          },
-        ]
-      : []),
     {
       type: "divider" as const,
     },

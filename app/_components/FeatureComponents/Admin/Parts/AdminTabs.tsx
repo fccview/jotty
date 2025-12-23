@@ -46,7 +46,7 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
     },
     {
       id: AdminTabsEnum.AUDIT_LOGS,
-      label: t("admin.auditLogs"),
+      label: t("admin.adminLogs"),
       icon: FileScriptIcon,
     },
     {

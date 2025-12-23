@@ -537,10 +537,18 @@ export const createList = async (formData: FormData) => {
       );
     }
 
-    await logContentEvent("checklist_created", "checklist", newList.id, newList.title, true, { category: newList.category });
+    await logContentEvent("checklist_created", "checklist", newList.uuid!, newList.title, true, { category: newList.category });
 
     return { success: true, data: newList };
   } catch (error) {
+    const {
+      title,
+      uuid,
+    } = getFormData(formData, [
+      "title",
+      "uuid",
+    ]);
+    await logContentEvent("checklist_created", "checklist", uuid!, title || "unknown", false);
     console.error("Error creating list:", error);
     return { error: "Failed to create list" };
   }
@@ -723,14 +731,19 @@ export const updateList = async (formData: FormData) => {
       );
     }
 
-    await logContentEvent("checklist_updated", "checklist", updatedList.id, updatedList.title, true, { category: updatedList.category });
+    await logContentEvent("checklist_updated", "checklist", updatedList.uuid!, updatedList.title, true, { category: updatedList.category });
 
     return { success: true, data: updatedList };
   } catch (error) {
     try {
-      const id = formData.get("id") as string;
-      const title = formData.get("title") as string;
-      await logContentEvent("checklist_updated", "checklist", id || "unknown", title || "unknown", false);
+      const {
+        title,
+        uuid,
+      } = getFormData(formData, [
+        "title",
+        "uuid",
+      ]);
+      await logContentEvent("checklist_updated", "checklist", uuid!, title || "unknown", false);
     } catch { }
     return { error: "Failed to update list" };
   }
@@ -830,12 +843,18 @@ export const deleteList = async (formData: FormData) => {
         error
       );
     }
-    await logContentEvent("checklist_deleted", "checklist", list.id || "unknown", list.title || "unknown", true, { category: list.category });
+    await logContentEvent("checklist_deleted", "checklist", list.uuid || "unknown", list.title || "unknown", true, { category: list.category });
     return { success: true };
   } catch (error) {
     try {
-      const id = formData.get("id") as string;
-      await logContentEvent("checklist_deleted", "checklist", id || "unknown", "unknown", false);
+      const {
+        title,
+        uuid,
+      } = getFormData(formData, [
+        "title",
+        "uuid",
+      ]);
+      await logContentEvent("checklist_deleted", "checklist", uuid || "unknown", title || "unknown", false);
     } catch { }
     return { error: "Failed to delete list" };
   }

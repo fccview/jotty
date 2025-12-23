@@ -1,0 +1,104 @@
+"use client";
+
+import { useState } from "react";
+import { AdminUsers } from "@/app/_components/FeatureComponents/Admin/Parts/AdminUsers";
+import { UserManagementModal } from "@/app/_components/GlobalComponents/Modals/UserModals/UserManagementModal";
+import { User, Checklist, Note } from "@/app/_types";
+import { deleteUser } from "@/app/_server/actions/users";
+import { readJsonFile } from "@/app/_server/actions/file";
+import { USERS_FILE } from "@/app/_consts/files";
+import { getAllLists } from "@/app/_server/actions/checklist";
+import { getAllNotes } from "@/app/_server/actions/note";
+
+interface AdminUsersClientProps {
+  initialUsers: User[];
+  initialLists: Checklist[];
+  initialDocs: Note[];
+  username: string;
+}
+
+export function AdminUsersClient({ initialUsers, initialLists, initialDocs, username }: AdminUsersClientProps) {
+  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [userModalMode, setUserModalMode] = useState<"add" | "edit">("add");
+  const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
+  const [deletingUser, setDeletingUser] = useState<string | null>(null);
+
+  const loadData = async () => {
+    try {
+      const [usersData] = await Promise.all([
+        readJsonFile(USERS_FILE),
+      ]);
+
+      setUsers(usersData);
+    } catch (error) {
+      console.error("Error loading data:", error);
+    }
+  };
+
+  const handleAddUser = () => {
+    setUserModalMode("add");
+    setSelectedUser(undefined);
+    setShowUserModal(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setUserModalMode("edit");
+    setSelectedUser(user);
+    setShowUserModal(true);
+  };
+
+  const handleDeleteUser = async (user: User) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete user "${user.username}"? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingUser(user.username);
+    try {
+      const formData = new FormData();
+      formData.append("username", user.username);
+
+      const result = await deleteUser(formData);
+
+      if (result.success) {
+        setUsers((prev) => prev.filter((u) => u.username !== user.username));
+      } else {
+        alert(result.error || "Failed to delete user");
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("Failed to delete user");
+    } finally {
+      setDeletingUser(null);
+    }
+  };
+
+  return (
+    <>
+      <AdminUsers
+        users={users}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onAddUser={handleAddUser}
+        onEditUser={handleEditUser}
+        onDeleteUser={handleDeleteUser}
+        allLists={initialLists}
+        allDocs={initialDocs}
+        username={username}
+        deletingUser={deletingUser}
+      />
+      <UserManagementModal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        mode={userModalMode}
+        user={selectedUser}
+        onSuccess={loadData}
+      />
+    </>
+  );
+}

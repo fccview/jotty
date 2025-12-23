@@ -3,6 +3,7 @@
 import {
   CheckmarkSquare04Icon,
   File02Icon,
+  Logout01Icon,
   SidebarLeftIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -16,6 +17,7 @@ import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
 import { NavigationHelpIcon } from "../Navigation/Parts/NavigationHelpIcon";
 import { UserDropdown } from "../Navigation/Parts/UserDropdown";
+import { logout } from "@/app/_server/actions/auth";
 
 interface QuickNavProps {
   showSidebarToggle?: boolean;
@@ -35,6 +37,11 @@ export const QuickNav = ({
   const router = useRouter();
   const { mode } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/auth/login");
+  };
 
   return (
     <header className="lg:border-b lg:border-border no-print">
@@ -58,13 +65,22 @@ export const QuickNav = ({
         <div className="hidden lg:flex lg:items-center lg:gap-2">
           <NavigationSearchIcon onModeChange={onModeChange} />
 
-          {user && onOpenSettings && (
+          {user && onOpenSettings ? (
             <UserDropdown
               username={user.username}
               avatarUrl={user.avatarUrl}
               isAdmin={user.isAdmin}
               onOpenSettings={onOpenSettings}
             />
+          ) : (
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={handleLogout}
+              className="lg:hidden jotty-mobile-navigation-icon"
+            >
+              <Logout01Icon className="h-5 w-5" />
+            </Button>
           )}
         </div>
 

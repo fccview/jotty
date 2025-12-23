@@ -30,7 +30,6 @@ export const Sidebar = (props: SidebarProps) => {
     onOpenCreateModal,
     onOpenCategoryModal,
     user,
-    onOpenSettings,
   } = props;
 
   const { checkNavigation } = useNavigationGuard();
@@ -156,7 +155,7 @@ export const Sidebar = (props: SidebarProps) => {
                   )}
                 </div>
               </a>
-            </div> 
+            </div>
           </div>
           <SidebarNavigation
             mode={mode}

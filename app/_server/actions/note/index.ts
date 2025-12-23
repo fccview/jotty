@@ -496,10 +496,11 @@ export const createNote = async (formData: FormData) => {
       );
     }
 
-    await logContentEvent("note_created", "note", newDoc.id, newDoc.title, true, { category: newDoc.category });
+    await logContentEvent("note_created", "note", newDoc.uuid!, newDoc.title, true, { category: newDoc.category });
 
     return { success: true, data: newDoc };
   } catch (error) {
+    const { title } = getFormData(formData, ["title"]);
     console.error("Error creating note:", error);
     await logContentEvent("note_created", "note", "", title || "unknown", false);
     return { error: "Failed to create note" };
@@ -514,7 +515,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       content,
       category,
       originalCategory,
-      unarchive,
       user,
       uuid,
     } = getFormData(formData, [
@@ -523,7 +523,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       "content",
       "category",
       "originalCategory",
-      "unarchive",
       "user",
       "uuid",
     ]);
@@ -689,11 +688,18 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       );
     }
 
-    await logContentEvent("note_updated", "note", updatedDoc.id, updatedDoc.title, true, { category: updatedDoc.category });
+    await logContentEvent("note_updated", "note", note.uuid!, updatedDoc.title, true, { category: updatedDoc.category });
 
     return { success: true, data: updatedDoc };
   } catch (error) {
-    await logContentEvent("note_updated", "note", id || "unknown", title || "unknown", false);
+    const {
+      title,
+      uuid,
+    } = getFormData(formData, [
+      "title",
+      "uuid",
+    ]);
+    await logContentEvent("note_updated", "note", uuid!, title || "unknown", false);
     return { error: "Failed to update note" };
   }
 };
@@ -783,11 +789,17 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       );
     }
 
-    await logContentEvent("note_deleted", "note", note.id, note.title, true, { category: note.category });
+    await logContentEvent("note_deleted", "note", note.uuid!, note.title!, true, { category: note.category });
 
     return { success: true };
   } catch (error) {
-    await logContentEvent("note_deleted", "note", id || "unknown", "unknown", false);
+    const {
+      uuid,
+    } = getFormData(formData, [
+      "uuid",
+    ]);
+    const note = await getNoteById(uuid!, "");
+    await logContentEvent("note_deleted", "note", uuid!, note?.title || "unknown", false);
     return { error: "Failed to delete note" };
   }
 };

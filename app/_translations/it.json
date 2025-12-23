@@ -362,8 +362,9 @@
     "noArchivedItemsFound": "Nessun elemento archiviato trovato per la ricerca \"{searchQuery}\"",
     "linkNetwork": "Rete di collegamento",
     "userSettings": "Impostazioni utente",
-    "deviceSettings": "Configurazioni dispositivo",
-    "adminSettings": "Pannello amministrazione"
+    "deviceSettings": "Impostazioni della sessione",
+    "adminSettings": "Pannello amministrazione",
+    "settingsDashboard": "Pannello di controllo delle impostazioni"
   },
   "settings": {
     "title": "Impostazioni",
@@ -626,7 +627,8 @@
     "allUsersData": "Dati di tutti gli account utente",
     "allUsersDataDescription": "Esporta un file JSON con tutte le informazioni sugli account utente (nomi utente, stato admin, ecc.). Questo NON include il contenuto delle loro liste o note.",
     "wholeDataFolder": "Intera cartella dati (Backup)",
-    "wholeDataFolderDescription": "Esporta l'intera cartella 'data', inclusi tutti i contenuti utente, metadati e impostazioni. Usa con cautela poiché questo può essere un file di grandi dimensioni."
+    "wholeDataFolderDescription": "Esporta l'intera cartella 'data', inclusi tutti i contenuti utente, metadati e impostazioni. Usa con cautela poiché questo può essere un file di grandi dimensioni.",
+    "adminLogs": "Registri di amministrazione"
   },
   "errors": {
     "notFound": "Non Trovato",
