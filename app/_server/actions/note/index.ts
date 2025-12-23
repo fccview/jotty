@@ -54,6 +54,7 @@ import {
 } from "@/app/_utils/yaml-metadata-utils";
 import { extractYamlMetadata as stripYaml } from "@/app/_utils/yaml-metadata-utils";
 import { getAppSettings } from "../config";
+import { logContentEvent } from "@/app/_server/actions/log";
 
 interface GetNotesOptions {
   username?: string;
@@ -495,9 +496,12 @@ export const createNote = async (formData: FormData) => {
       );
     }
 
+    await logContentEvent("note_created", "note", newDoc.id, newDoc.title, true, { category: newDoc.category });
+
     return { success: true, data: newDoc };
   } catch (error) {
     console.error("Error creating note:", error);
+    await logContentEvent("note_created", "note", "", title || "unknown", false);
     return { error: "Failed to create note" };
   }
 };
@@ -685,8 +689,11 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       );
     }
 
+    await logContentEvent("note_updated", "note", updatedDoc.id, updatedDoc.title, true, { category: updatedDoc.category });
+
     return { success: true, data: updatedDoc };
   } catch (error) {
+    await logContentEvent("note_updated", "note", id || "unknown", title || "unknown", false);
     return { error: "Failed to update note" };
   }
 };
@@ -776,8 +783,11 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       );
     }
 
+    await logContentEvent("note_deleted", "note", note.id, note.title, true, { category: note.category });
+
     return { success: true };
   } catch (error) {
+    await logContentEvent("note_deleted", "note", id || "unknown", "unknown", false);
     return { error: "Failed to delete note" };
   }
 };

@@ -21,6 +21,8 @@ import {
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import fs from "fs/promises";
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
+import { logAuthEvent } from "../log";
+import { getUsername } from "../users";
 
 interface User {
   username: string;
@@ -115,6 +117,8 @@ export const register = async (formData: FormData) => {
   await ensureDir(CHECKLISTS_DIR(username));
   await ensureDir(NOTES_DIR(username));
 
+  await logAuthEvent("register", username, true);
+
   redirect("/");
 };
 
@@ -132,6 +136,7 @@ export const login = async (formData: FormData) => {
   );
 
   if (!user || user.passwordHash !== hashPassword(password)) {
+    await logAuthEvent("login", username, false, "Invalid username or password");
     return { error: "Invalid username or password" };
   }
 
@@ -167,10 +172,14 @@ export const login = async (formData: FormData) => {
     path: "/",
   });
 
+  await logAuthEvent("login", user.username, true);
+
   redirect("/");
 };
 
 export const logout = async () => {
+  const username = await getUsername();
+
   const cookieName =
     process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
       ? "__Host-session"
@@ -192,6 +201,8 @@ export const logout = async () => {
       cookies().delete(cookieName);
     }
   }
+
+  await logAuthEvent("logout", username || "unknown", true);
 
   if (process.env.SSO_MODE === "oidc") {
     redirect("/api/oidc/logout");

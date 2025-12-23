@@ -8,6 +8,7 @@ import {
   Settings01Icon,
   BookEditIcon,
   PaintBrush04Icon,
+  FileScriptIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -42,6 +43,11 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
       id: AdminTabsEnum.SHARING,
       label: t("admin.sharing"),
       icon: Globe02Icon,
+    },
+    {
+      id: AdminTabsEnum.AUDIT_LOGS,
+      label: t("admin.auditLogs"),
+      icon: FileScriptIcon,
     },
     {
       id: AdminTabsEnum.EDITOR,

@@ -6,6 +6,7 @@ import { Result } from "@/app/_types";
 import { readJsonFile, writeJsonFile } from "../file";
 import { SESSION_DATA_FILE, SESSIONS_FILE } from "@/app/_consts/files";
 import { getCurrentUser } from "../users";
+import { logAuthEvent } from "@/app/_server/actions/log";
 
 export interface SessionData {
   id: string;
@@ -178,11 +179,14 @@ export const terminateSession = async (
 
     await removeSession(sessionId);
 
+    await logAuthEvent("session_terminated", currentUser.username, true);
+
     return {
       success: true,
       data: null,
     };
   } catch (error) {
+    await logAuthEvent("session_terminated", "unknown", false, "Failed to terminate session");
     console.error("Error terminating session:", error);
     return {
       success: false,

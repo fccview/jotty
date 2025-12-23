@@ -19,6 +19,7 @@ import path from "path";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { getFormData } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
+import { logUserEvent } from "@/app/_server/actions/log";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -360,12 +361,15 @@ export const createUser = async (
 
     const { passwordHash: _, ...userWithoutPassword } = newUser;
 
+    await logUserEvent("user_created", username, true, { isAdmin });
+
     return {
       success: true,
       data: userWithoutPassword,
     };
   } catch (error) {
     console.error("Error creating user:", error);
+    await logUserEvent("user_created", username || "unknown", false);
     return {
       success: false,
       error: "Failed to create user",
@@ -399,7 +403,15 @@ export const deleteUser = async (formData: FormData): Promise<Result<null>> => {
       return { success: false, error: "Username is required" };
     }
 
-    return await _deleteUserCore(usernameToDelete);
+    const result = await _deleteUserCore(usernameToDelete);
+
+    if (result.success) {
+      await logUserEvent("user_deleted", usernameToDelete, true);
+    } else {
+      await logUserEvent("user_deleted", usernameToDelete, false, { error: result.error });
+    }
+
+    return result;
   } catch (error) {
     console.error("Error in deleteUser:", error);
     return { success: false, error: "Failed to delete user" };
@@ -515,8 +527,11 @@ export const updateProfile = async (
 
     const result = await _updateUserCore(currentUser.username, updates);
     if (!result.success) {
+      await logUserEvent("profile_updated", currentUser.username, false, { error: result.error });
       return { success: false, error: result.error };
     }
+
+    await logUserEvent("profile_updated", currentUser.username, true, { changes: Object.keys(updates) });
 
     return { success: true, data: null };
   } catch (error) {
@@ -565,7 +580,15 @@ export const updateUser = async (
         .digest("hex");
     }
 
-    return await _updateUserCore(targetUsername, updates);
+    const result = await _updateUserCore(targetUsername, updates);
+
+    if (result.success) {
+      await logUserEvent("user_updated", targetUsername, true, { changes: Object.keys(updates) });
+    } else {
+      await logUserEvent("user_updated", targetUsername, false, { error: result.error });
+    }
+
+    return result;
   } catch (error) {
     console.error("Error updating user:", error);
     return { success: false, error: "Failed to update user" };

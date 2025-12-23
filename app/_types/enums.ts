@@ -39,6 +39,7 @@ export enum AdminTabs {
   USERS = "users",
   CONTENT = "content",
   SHARING = "sharing",
+  AUDIT_LOGS = "audit_logs",
   SETTINGS = "settings",
   EDITOR = "editor",
   STYLING = "styling",
@@ -51,4 +52,5 @@ export enum ProfileTabs {
   CONNECTIONS = "connections",
   ENCRYPTION = "encryption",
   USER_PREFERENCES = "userPreferences",
+  AUDIT_LOGS = "audit_logs",
 }

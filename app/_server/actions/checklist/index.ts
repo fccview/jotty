@@ -56,6 +56,7 @@ import {
 } from "@/app/_utils/recurrence-utils";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { checkUserPermission } from "@/app/_server/actions/sharing";
+import { logContentEvent } from "@/app/_server/actions/log";
 
 interface GetChecklistsOptions {
   username?: string;
@@ -87,11 +88,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -110,11 +111,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -163,9 +164,9 @@ const readListsRecursively = async (
             );
             lists.push(parsedList);
           }
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -379,7 +380,7 @@ export const getListById = async (
       (list.id === id || list.uuid === id) &&
       (!category ||
         list.category?.toLowerCase() ===
-          decodeCategoryPath(category).toLowerCase())
+        decodeCategoryPath(category).toLowerCase())
   );
 
   if (list && "rawContent" in list) {
@@ -536,6 +537,8 @@ export const createList = async (formData: FormData) => {
       );
     }
 
+    await logContentEvent("checklist_created", "checklist", newList.id, newList.title, true, { category: newList.category });
+
     return { success: true, data: newList };
   } catch (error) {
     console.error("Error creating list:", error);
@@ -649,9 +652,8 @@ export const updateList = async (formData: FormData) => {
     try {
       const content = updatedList.items.map((i) => i.text).join("\n");
       const links = await parseInternalLinks(content);
-      const newItemKey = `${updatedList.category || "Uncategorized"}/${
-        updatedList.id
-      }`;
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
+        }`;
 
       const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
       if (oldItemKey !== newItemKey) {
@@ -721,8 +723,15 @@ export const updateList = async (formData: FormData) => {
       );
     }
 
+    await logContentEvent("checklist_updated", "checklist", updatedList.id, updatedList.title, true, { category: updatedList.category });
+
     return { success: true, data: updatedList };
   } catch (error) {
+    try {
+      const id = formData.get("id") as string;
+      const title = formData.get("title") as string;
+      await logContentEvent("checklist_updated", "checklist", id || "unknown", title || "unknown", false);
+    } catch { }
     return { error: "Failed to update list" };
   }
 };
@@ -776,11 +785,11 @@ export const deleteList = async (formData: FormData) => {
     } else {
       const userDir = apiUser
         ? path.join(
-            process.cwd(),
-            "data",
-            CHECKLISTS_FOLDER,
-            currentUser.username
-          )
+          process.cwd(),
+          "data",
+          CHECKLISTS_FOLDER,
+          currentUser.username
+        )
         : await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(userDir, category, `${id}.md`);
     }
@@ -821,8 +830,13 @@ export const deleteList = async (formData: FormData) => {
         error
       );
     }
+    await logContentEvent("checklist_deleted", "checklist", list.id || "unknown", list.title || "unknown", true, { category: list.category });
     return { success: true };
   } catch (error) {
+    try {
+      const id = formData.get("id") as string;
+      await logContentEvent("checklist_deleted", "checklist", id || "unknown", "unknown", false);
+    } catch { }
     return { error: "Failed to delete list" };
   }
 };

@@ -80,9 +80,8 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         />
       ) : (
         <span
-          className={`${sizeClasses[size]}${
-            size === "xs" ? " !text-[8px]" : ""
-          } flex items-center justify-center`}
+          className={`${sizeClasses[size]}${size === "xs" ? " !text-[8px]" : ""
+            } flex items-center justify-center`}
         >
           {initials}
         </span>

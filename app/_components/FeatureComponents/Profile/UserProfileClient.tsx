@@ -8,6 +8,7 @@ import {
   LockKeyIcon,
   Archive02Icon,
   Settings01Icon,
+  Activity03Icon,
 } from "hugeicons-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
 import { Category } from "@/app/_types";
@@ -22,6 +23,7 @@ import { ArchiveTab } from "./Parts/ArchiveTab";
 import { ArchivedItem } from "@/app/_server/actions/archived";
 import { LinkIndex } from "@/app/_server/actions/link";
 import { LinksTab } from "@/app/_components/FeatureComponents/Profile/Parts/LinksTab";
+import { AuditLogsTab } from "@/app/_components/FeatureComponents/Profile/Parts/AuditLogsTab";
 import { ProfileTabs } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
 
@@ -111,6 +113,11 @@ export const UserProfileClient = ({
               label: t('profile.userPreferencesTab'),
               icon: Settings01Icon,
             },
+            {
+              id: ProfileTabs.AUDIT_LOGS,
+              label: t('profile.auditLogsTab'),
+              icon: Activity03Icon,
+            },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -154,6 +161,7 @@ export const UserProfileClient = ({
         {activeTab === ProfileTabs.USER_PREFERENCES && (
           <UserPreferencesTab setShowDeleteModal={setShowDeleteModal} />
         )}
+        {activeTab === ProfileTabs.AUDIT_LOGS && <AuditLogsTab />}
       </div>
 
       <DeleteAccountModal

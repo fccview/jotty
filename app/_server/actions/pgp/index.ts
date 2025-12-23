@@ -13,6 +13,7 @@ import {
 } from "@/app/_server/actions/file";
 import { Result, User } from "@/app/_types";
 import { PGPKeyMetadata } from "@/app/_types";
+import { logAudit } from "@/app/_server/actions/log";
 
 const _getEncryptionDir = async (username: string): Promise<string> => {
   const user = await getCurrentUser();
@@ -75,11 +76,26 @@ export const generateKeyPair = async (
       },
     });
 
+    await logAudit({
+      level: "INFO",
+      action: "settings_updated",
+      category: "settings",
+      success: true,
+      metadata: { action: "pgp_key_generated" },
+    });
+
     return {
       success: true,
       data: { publicKey, privateKey, fingerprint },
     };
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "settings_updated",
+      category: "settings",
+      success: false,
+      errorMessage: "Failed to generate PGP key pair",
+    });
     console.error("Error generating key pair:", error);
     return { success: false, error: "Failed to generate key pair" };
   }
@@ -163,9 +179,8 @@ export const exportKeys = async (
     console.error(`Error exporting ${keyType} key:`, error);
     return {
       success: false,
-      error: `Failed to export ${
-        keyType === "public" ? "public" : "private"
-      } key`,
+      error: `Failed to export ${keyType === "public" ? "public" : "private"
+        } key`,
     };
   }
 };
@@ -284,8 +299,23 @@ export const encryptNoteContent = async (
       signingKeys: signingKeyObj,
     });
 
+    await logAudit({
+      level: "INFO",
+      action: "note_encrypted",
+      category: "encryption",
+      success: true,
+      metadata: { method: "pgp", signed: signNote },
+    });
+
     return { success: true, data: { encryptedContent: encrypted } };
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "note_encrypted",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to encrypt note",
+    });
     console.error("Error encrypting note:", error);
     return { success: false, error: "Failed to encrypt note content" };
   }
@@ -380,6 +410,14 @@ export const decryptNoteContent = async (
         },
       };
     } catch (decryptError) {
+      await logAudit({
+        level: "WARNING",
+        action: "note_decrypted",
+        category: "encryption",
+        success: false,
+        errorMessage: "Failed to decrypt note - invalid passphrase or key",
+        metadata: { method: "pgp" },
+      });
       return {
         success: false,
         error:
