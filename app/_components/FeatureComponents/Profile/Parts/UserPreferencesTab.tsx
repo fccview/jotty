@@ -69,7 +69,7 @@ const pick = <T extends object, K extends keyof T>(
   return result;
 };
 
-export const SettingsTab = ({ setShowDeleteModal }: SettingsTabProps) => {
+export const UserPreferencesTab = ({ setShowDeleteModal }: SettingsTabProps) => {
   const t = useTranslations();
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();

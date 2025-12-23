@@ -50,5 +50,5 @@ export enum ProfileTabs {
   ARCHIVE = "archive",
   CONNECTIONS = "connections",
   ENCRYPTION = "encryption",
-  SETTINGS = "settings",
+  USER_PREFERENCES = "userPreferences",
 }

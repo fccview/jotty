@@ -138,7 +138,8 @@
     "recursive": "Ricorsivo",
     "itemsPerPage": "Articoli per pagina",
     "page": "Pagina",
-    "pageOfPages": "{currentPage} di {totalPages}"
+    "pageOfPages": "{currentPage} di {totalPages}",
+    "searchPlaceholder": "Cerca note e liste... (⌘K)"
   },
   "auth": {
     "loginTitle": "Login",
@@ -295,7 +296,9 @@
     "showAllTasks": "Tutte le attività",
     "addTask": "Aggiungi attività",
     "viewArchived": "Visualizza archiviati",
-    "manageStatuses": "Gestisci gli stati"
+    "manageStatuses": "Gestisci gli stati",
+    "customizeStatuses": "Personalizza gli stati per questa bacheca kanban. \nAggiungi, rimuovi o riordina gli stati.",
+    "addStatus": "Aggiungi stato"
   },
   "profile": {
     "userProfile": "Profilo Utente",
@@ -305,7 +308,7 @@
     "archiveTab": "Archivio",
     "connectionsTab": "Connessioni",
     "encryptionTab": "Crittografia (beta)",
-    "settingsTab": "Impostazioni",
+    "userPreferencesTab": "Preferenze",
     "usernameProfile": "Profilo di {username}",
     "apiKey": "Chiave API",
     "apiKeyDescription": "Genera una chiave API per l'accesso programmatico alle tue liste e note",
@@ -347,7 +350,10 @@
     "archivedContent": "Contenuto archiviato",
     "noArchivedContent": "Nessun contenuto archiviato trovato",
     "noArchivedItemsFound": "Nessun elemento archiviato trovato per la ricerca \"{searchQuery}\"",
-    "linkNetwork": "Rete di collegamento"
+    "linkNetwork": "Rete di collegamento",
+    "userSettings": "Impostazioni utente",
+    "deviceSettings": "Configurazioni dispositivo",
+    "adminSettings": "Pannello amministrazione"
   },
   "settings": {
     "title": "Impostazioni",
@@ -404,8 +410,8 @@
     "recurringChecklists": "Liste ricorrenti",
     "beta": "(Beta)",
     "selectEnableRecurring": "Seleziona abilita per aggiungere liste ricorrenti",
-    "showCompletedSuggestions": "Mostra attività completate come suggerimenti",
-    "selectShowCompletedSuggestions": "Seleziona se mostrare le attività completate come suggerimenti",
+    "showCompletedSuggestions": "Mostra item completati come suggerimenti",
+    "selectShowCompletedSuggestions": "Seleziona se mostrare gli item completati come suggerimenti",
     "completedSuggestionsDescription": "Quando aggiungi nuove attività, mostra le attività completate come suggerimenti che possono essere riabilitati.",
     "defaultChecklistFilter": "Filtro Lista Predefinito",
     "selectDefaultChecklistFilter": "Seleziona filtro lista predefinito",
@@ -433,8 +439,8 @@
     "seconds_plural": "{count} secondi",
     "hours12": "12 ore",
     "hours24": "24 ore",
-    "markdownTableSyntax": "Markdown (es. | Intestazione |)",
-    "htmlTableSyntax": "HTML (es. <table><tr><td>)",
+    "markdownTableSyntax": "Markdown",
+    "htmlTableSyntax": "HTML",
     "default": "Predefinito",
     "dark": "Scuro",
     "funky": "Funky",
@@ -831,8 +837,5 @@
     "failedToRenameCategory": "Impossibile rinominare la categoria",
     "categoryRenamedSuccessfullyMessage": "La categoria {categoryName} è stata rinominata {newName}",
     "failedToRenameCategoryMessage": "Si è verificato un errore durante la ridenominazione della categoria."
-  },
-  "global": {
-    "searchPlaceholder": "Cerca {mode}... (⌘K)"
   }
 }

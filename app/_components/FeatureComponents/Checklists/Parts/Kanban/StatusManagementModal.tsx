@@ -206,13 +206,12 @@ export const StatusManagementModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Manage Statuses"
+      title={t('tasks.manageStatuses')}
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Customize the statuses for this kanban board. Add, remove, or reorder
-          statuses.
+          {t('tasks.customizeStatuses')}
         </p>
 
         <DndContext
@@ -241,12 +240,12 @@ export const StatusManagementModal = ({
 
         <Button variant="outline" onClick={handleAddStatus} className="w-full">
           <Add01Icon className="h-4 w-4 mr-2" />
-          Add Status
+          {t('tasks.addStatus')}
         </Button>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
           <Button type="button" variant="outline" onClick={handleClose}>{t('common.cancel')}</Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
         </div>
       </div>
     </Modal>

@@ -19,7 +19,7 @@ export const SidebarActions = ({
 }: SidebarActionsProps) => {
   const t = useTranslations();
   return (
-    <div className="px-4 pt-4 pb-2 lg:pt-4 lg:pb-4 space-y-2 border-t border-border">
+    <div className="p-2 space-y-2 border-t border-border">
       <div className="flex gap-2 items-center">
         <Button
           onClick={(e) => {

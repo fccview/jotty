@@ -139,7 +139,8 @@
     "recursive": "Recursive",
     "itemsPerPage": "Items per page",
     "page": "Page",
-    "pageOfPages": "{currentPage} of {totalPages}"
+    "pageOfPages": "{currentPage} of {totalPages}",
+    "searchPlaceholder": "Search notes and checklists... (⌘K)"
   },
   "auth": {
     "loginTitle": "Login",
@@ -295,7 +296,9 @@
     "recentTasks": "Recent Tasks",
     "showAllTasks": "Show all tasks",
     "manageStatuses": "Manage Statuses",
-    "viewArchived": "View Archived"
+    "viewArchived": "View Archived",
+    "customizeStatuses": "Customize the statuses for this kanban board. Add, remove, or reorder statuses.",
+    "addStatus": "Add status"
   },
   "profile": {
     "userProfile": "User Profile",
@@ -305,7 +308,10 @@
     "archiveTab": "Archive",
     "connectionsTab": "Connections",
     "encryptionTab": "Encryption (beta)",
-    "settingsTab": "Settings",
+    "userPreferencesTab": "User Preferences",
+    "userSettings": "User Settings",
+    "deviceSettings": "Device Configurations",
+    "adminSettings": "Admin Dashboard",
     "usernameProfile": "{username}'s profile",
     "apiKey": "API Key",
     "apiKeyDescription": "Generate an API key for programmatic access to your checklists and notes",
@@ -433,8 +439,8 @@
     "seconds_plural": "{count} seconds",
     "hours12": "12 hours",
     "hours24": "24 hours",
-    "markdownTableSyntax": "Markdown (e.g., | Header |)",
-    "htmlTableSyntax": "HTML (e.g., <table><tr><td>)",
+    "markdownTableSyntax": "Markdown",
+    "htmlTableSyntax": "HTML",
     "default": "Default",
     "dark": "Dark",
     "funky": "Funky",
@@ -831,8 +837,5 @@
     "failedToRenameCategory": "Failed to rename category",
     "categoryRenamedSuccessfullyMessage": "Category {categoryName} renamed to {newName}",
     "failedToRenameCategoryMessage": "An error occurred while renaming the category."
-  },
-  "global": {
-    "searchPlaceholder": "Search {mode}... (⌘K)"
   }
 }

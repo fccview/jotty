@@ -57,7 +57,7 @@ export const SearchBar = ({
         onQueryChange={setQuery}
         onClear={() => setQuery("")}
         onFocus={() => setIsOpen(true)}
-        placeholder={t('global.searchPlaceholder', { mode: translatedMode })}
+        placeholder={t('common.searchPlaceholder')}
         inputRef={inputRef}
         className={cn("transition-all")}
       />

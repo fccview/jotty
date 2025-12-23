@@ -65,7 +65,7 @@ export const Layout = ({
           showSidebarToggle
           onSidebarToggle={() => setSidebarOpen(true)}
           onOpenSettings={onOpenSettings}
-          isAdmin={user?.isAdmin || false}
+          user={user}
           onModeChange={setMode}
         />
 

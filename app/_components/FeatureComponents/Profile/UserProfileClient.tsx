@@ -14,7 +14,7 @@ import { Category } from "@/app/_types";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
 import { ProfileTab } from "./Parts/ProfileTab";
 import { SessionsTab } from "./Parts/SessionsTab";
-import { SettingsTab } from "./Parts/SettingsTab";
+import { UserPreferencesTab } from "./Parts/UserPreferencesTab";
 import { EncryptionTab } from "./Parts/EncryptionTab";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Button } from "../../GlobalComponents/Buttons/Button";
@@ -107,8 +107,8 @@ export const UserProfileClient = ({
               icon: LockKeyIcon,
             },
             {
-              id: ProfileTabs.SETTINGS,
-              label: t('profile.settingsTab'),
+              id: ProfileTabs.USER_PREFERENCES,
+              label: t('profile.userPreferencesTab'),
               icon: Settings01Icon,
             },
           ].map((tab) => {
@@ -151,8 +151,8 @@ export const UserProfileClient = ({
           <LinksTab linkIndex={linkIndex} />
         )}
         {activeTab === ProfileTabs.ENCRYPTION && <EncryptionTab />}
-        {activeTab === ProfileTabs.SETTINGS && (
-          <SettingsTab setShowDeleteModal={setShowDeleteModal} />
+        {activeTab === ProfileTabs.USER_PREFERENCES && (
+          <UserPreferencesTab setShowDeleteModal={setShowDeleteModal} />
         )}
       </div>
 
