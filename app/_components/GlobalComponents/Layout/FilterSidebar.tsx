@@ -4,6 +4,7 @@ import { FilterVerticalIcon } from "hugeicons-react";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { CategoryMultiselect } from "@/app/_components/GlobalComponents/Dropdowns/CategoryMultiselect";
 import { Category } from "@/app/_types";
+import { useTranslations } from "next-intl";
 
 interface FilterSidebarProps {
   title: string;
@@ -34,6 +35,7 @@ export const FilterSidebar = ({
   pagination,
   className = "",
 }: FilterSidebarProps) => {
+  const t = useTranslations("");
   return (
     <div
       className={`jotty-filter-sidebar lg:sticky lg:top-20 space-y-6 ${className}`}
@@ -42,7 +44,7 @@ export const FilterSidebar = ({
         <div className="jotty-filter-sidebar-header-icon flex items-center gap-2 mb-4">
           <FilterVerticalIcon className="h-4 w-4 text-muted-foreground" />
           <span className="jotty-filter-sidebar-header-title font-medium text-foreground">
-            Filters
+            {t('common.filters')}
           </span>
         </div>
 
@@ -65,6 +67,7 @@ export const FilterSidebar = ({
             onSelectionChange={onCategorySelectionChange}
             onClearAll={onClearAllCategories}
             recursive={recursive}
+            placeholder={t('common.filterByCategories')}
             onRecursiveChange={onRecursiveChange}
           />
         </div>

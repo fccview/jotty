@@ -162,7 +162,7 @@ export const NotesPageClient = ({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
           <FilterSidebar
-            title="By type"
+            title={t('notes.byType')}
             filterValue={noteFilter}
             filterOptions={filterOptions}
             onFilterChange={(value) => setNoteFilter(value as NoteFilter)}

@@ -132,7 +132,14 @@
     "enterCategoryName": "Enter category name...",
     "renaming": "Renaming...",
     "rename": "Rename",
-    "enterNewCategoryName": "Enter a new name for \"{categoryName}\""
+    "enterNewCategoryName": "Enter a new name for \"{categoryName}\"",
+    "filters": "Filters",
+    "filterByCategories": "Filter by categories...",
+    "byCategory": "By category",
+    "recursive": "Recursive",
+    "itemsPerPage": "Items per page",
+    "page": "Page",
+    "pageOfPages": "{currentPage} of {totalPages}"
   },
   "auth": {
     "loginTitle": "Login",
@@ -200,7 +207,8 @@
     "searchNotesAndChecklists": "Search notes and checklists...",
     "noResultsFound": "No results found",
     "startWritingAbove": "Start writing your note above!",
-    "enterNoteTitle": "Enter note title..."
+    "enterNoteTitle": "Enter note title...",
+    "byType": "By type"
   },
   "checklists": {
     "title": "Checklists",

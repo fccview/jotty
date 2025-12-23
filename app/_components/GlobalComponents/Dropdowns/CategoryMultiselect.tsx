@@ -209,7 +209,7 @@ export const CategoryMultiselect = ({
     <div ref={containerRef} className={cn("relative", className)}>
       <div className="jotty-category-multiselect space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-foreground">By Category</h3>
+          <h3 className="text-sm font-medium text-foreground">{t('common.byCategory')}</h3>
           <div className="flex items-center gap-2">
             {onRecursiveChange && (
               <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
@@ -219,7 +219,7 @@ export const CategoryMultiselect = ({
                   onChange={(e) => onRecursiveChange(e.target.checked)}
                   className="h-3 w-3"
                 />
-                Recursive
+                {t('common.recursive')}
               </label>
             )}
             {selectedCategories.length > 0 && onClearAll && (

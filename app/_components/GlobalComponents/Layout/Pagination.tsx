@@ -76,16 +76,16 @@ export const Pagination = ({
     >
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-foreground">Page</span>
+          <span className="text-sm font-medium text-foreground">{t('common.page')}</span>
           <span className="text-xs text-muted-foreground">
-            {currentPage} of {totalPages}
+            {t('common.pageOfPages', { currentPage, totalPages })}
           </span>
         </div>
 
         {itemsPerPage && onItemsPerPageChange && (
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">
-              Items per page
+              {t('common.itemsPerPage')}
             </label>
             <Dropdown
               value={itemsPerPage.toString()}
@@ -105,7 +105,7 @@ export const Pagination = ({
             className="flex-1 h-8 text-xs"
           >
             <ArrowLeft01Icon className="h-3 w-3 mr-1" />
-            Prev
+            {t('common.previous')}
           </Button>
           <Button
             variant="outline"
