@@ -159,7 +159,10 @@ export const UserProfileClient = ({
         )}
         {activeTab === ProfileTabs.ENCRYPTION && <EncryptionTab />}
         {activeTab === ProfileTabs.USER_PREFERENCES && (
-          <UserPreferencesTab setShowDeleteModal={setShowDeleteModal} />
+          <UserPreferencesTab
+            setShowDeleteModal={setShowDeleteModal}
+            noteCategories={notesCategories}
+          />
         )}
         {activeTab === ProfileTabs.AUDIT_LOGS && <AuditLogsTab />}
       </div>

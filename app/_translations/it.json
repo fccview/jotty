@@ -491,7 +491,14 @@
       "cardForegroundColor": "Questo testo utilizza il colore di primo piano della carta",
       "sampleInputLabel": "Ingresso campione",
       "sampleInputPlaceholder": "Inserisci del testo..."
-    }
+    },
+    "defaultCategory": "Categoria predefinita per le note di creazione rapida",
+    "selectDefaultCategory": "Seleziona la categoria predefinita...",
+    "defaultCategoryDescription": "Le nuove note verranno create in questa categoria quando si utilizza la creazione rapida.",
+    "quickCreateNotesDescription": "Se abilitato, la creazione di una nuova nota salta la modalità di creazione della nota e ti porta direttamente all'editor delle note.",
+    "selectQuickCreateNotes": "Seleziona le note di creazione rapida",
+    "quickCreateNotesSkipModal": "Salta la modalità modale e crea immediatamente",
+    "quickCreateNotesShowModal": "Mostra modale durante la creazione delle note"
   },
   "admin": {
     "title": "Admin",

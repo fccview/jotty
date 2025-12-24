@@ -180,6 +180,8 @@ export interface User {
   encryptionSettings?: EncryptionSettings;
   defaultChecklistFilter?: DefaultChecklistFilter;
   defaultNoteFilter?: DefaultNoteFilter;
+  quickCreateNotes?: QuickCreateNotes;
+  quickCreateNotesCategory?: string;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -211,6 +213,7 @@ export type DefaultChecklistFilter =
   | "task"
   | "simple";
 export type DefaultNoteFilter = "all" | "recent" | "pinned";
+export type QuickCreateNotes = "enable" | "disable";
 
 export interface SharedItem {
   id: string;
