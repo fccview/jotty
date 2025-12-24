@@ -33,6 +33,10 @@ export const editorSettingsSchema = z.object({
   defaultNoteFilter: z.enum(["all", "recent", "pinned"], {
     message: "Default note filter must be 'all', 'recent', or 'pinned'",
   }),
+  quickCreateNotes: z.enum(["enable", "disable"], {
+    message: "Quick create notes must be either 'enable' or 'disable'",
+  }),
+  quickCreateNotesCategory: z.string().optional(),
 });
 
 export const checklistSettingsSchema = z.object({

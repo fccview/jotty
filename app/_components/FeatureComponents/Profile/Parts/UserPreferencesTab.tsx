@@ -7,6 +7,7 @@ import { updateUserSettings } from "@/app/_server/actions/users";
 import { useTranslations } from "next-intl";
 import {
   User,
+  Category,
   EnableRecurrence,
   ShowCompletedSuggestions,
   TableSyntax,
@@ -21,6 +22,7 @@ import {
   MarkdownTheme,
   DefaultChecklistFilter,
   DefaultNoteFilter,
+  QuickCreateNotes,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -36,6 +38,7 @@ import {
 
 interface SettingsTabProps {
   setShowDeleteModal: (show: boolean) => void;
+  noteCategories: Category[];
 }
 
 const getSettingsFromUser = (user: User | null): Partial<User> => ({
@@ -54,6 +57,8 @@ const getSettingsFromUser = (user: User | null): Partial<User> => ({
   markdownTheme: user?.markdownTheme || "prism",
   defaultChecklistFilter: user?.defaultChecklistFilter || "all",
   defaultNoteFilter: user?.defaultNoteFilter || "all",
+  quickCreateNotes: user?.quickCreateNotes || "disable",
+  quickCreateNotesCategory: user?.quickCreateNotesCategory || "",
 });
 
 const pick = <T extends object, K extends keyof T>(
@@ -69,7 +74,7 @@ const pick = <T extends object, K extends keyof T>(
   return result;
 };
 
-export const UserPreferencesTab = ({ setShowDeleteModal }: SettingsTabProps) => {
+export const UserPreferencesTab = ({ setShowDeleteModal, noteCategories }: SettingsTabProps) => {
   const t = useTranslations();
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
@@ -132,6 +137,8 @@ export const UserPreferencesTab = ({ setShowDeleteModal }: SettingsTabProps) => 
     "disableRichEditor",
     "defaultNoteFilter",
     "markdownTheme",
+    "quickCreateNotes",
+    "quickCreateNotesCategory",
   ]);
   const hasChecklistsChanges = hasChanges([
     "enableRecurrence",
@@ -460,6 +467,8 @@ export const UserPreferencesTab = ({ setShowDeleteModal }: SettingsTabProps) => 
                   "disableRichEditor",
                   "defaultNoteFilter",
                   "markdownTheme",
+                  "quickCreateNotes",
+                  "quickCreateNotesCategory",
                 ],
                 editorSettingsSchema,
                 "Notes Preferences"
@@ -643,6 +652,58 @@ export const UserPreferencesTab = ({ setShowDeleteModal }: SettingsTabProps) => 
             {t('settings.chooseDefaultNoteFilter')}
           </p>
         </div>
+       <div className="space-y-2">
+          <Label htmlFor="quick-create-notes">{t('settings.quickCreateNotes')}</Label>
+          <Dropdown
+            value={currentSettings.quickCreateNotes || "disable"}
+            onChange={(value) =>
+              handleSettingChange("quickCreateNotes", value as QuickCreateNotes)
+            }
+            options={[
+              { id: "disable", name: t('settings.quickCreateNotesShowModal') },
+              { id: "enable", name: t('settings.quickCreateNotesSkipModal') },
+            ]}
+            placeholder={t('settings.selectQuickCreateNotes')}
+            className="w-full"
+          />
+          {validationErrors.quickCreateNotes && (
+            <p className="text-sm text-destructive">
+              {validationErrors.quickCreateNotes}
+            </p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            {t('settings.quickCreateNotesDescription')}
+          </p>
+        </div>
+
+        {currentSettings.quickCreateNotes === "enable" && (
+          <div className="space-y-2">
+            <Label htmlFor="quick-create-notes-category">
+              {t('settings.defaultCategory')}
+            </Label>
+            <Dropdown
+              value={currentSettings.quickCreateNotesCategory || ""}
+              onChange={(value) =>
+                handleSettingChange("quickCreateNotesCategory", value)
+              }
+              options={[
+                { id: "", name: "Uncategorized" },
+                ...noteCategories
+                  .filter((cat) => cat.path && cat.path.toLowerCase() !== "uncategorized")
+                  .map((cat) => ({
+                    id: cat.path,
+                    name: cat.path,
+                  })),
+              ]}
+              placeholder={t('settings.selectDefaultCategory')}
+              className="w-full"
+            />
+            <p className="text-sm text-muted-foreground">
+              {t('settings.defaultCategoryDescription')}
+            </p>
+          </div>
+        )}
+
       </FormWrapper>
 
       <FormWrapper
