@@ -365,7 +365,8 @@
     "noArchivedContent": "No archived content found",
     "noArchivedItemsFound": "No archived items found matching &quot;{searchQuery}&quot;",
     "linkNetwork": "Link Network",
-    "settingsDashboard": "Settings dashboard"
+    "settingsDashboard": "Settings dashboard",
+    "auditLogsTab": "User logs"
   },
   "settings": {
     "title": "Settings",

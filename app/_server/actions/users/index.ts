@@ -299,8 +299,9 @@ async function _updateUserCore(
 export const createUser = async (
   formData: FormData
 ): Promise<Result<Omit<User, "passwordHash">>> => {
+  const username = formData.get("username") as string;
+
   try {
-    const username = formData.get("username") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
     const isAdmin = formData.get("isAdmin") === "true";

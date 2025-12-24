@@ -318,7 +318,7 @@
     "connectionsTab": "Connessioni",
     "encryptionTab": "Crittografia (beta)",
     "userPreferencesTab": "Preferenze",
-    "auditLogsTab": "Registri di Audit",
+    "auditLogsTab": "Logs utente",
     "usernameProfile": "Profilo di {username}",
     "apiKey": "Chiave API",
     "apiKeyDescription": "Genera una chiave API per l'accesso programmatico alle tue liste e note",
@@ -363,6 +363,7 @@
     "linkNetwork": "Rete di collegamento",
     "userSettings": "Impostazioni utente",
     "deviceSettings": "Impostazioni della sessione",
+    "quickSettingsHeader": "Impostazioni rapide (dispositivo)",
     "adminSettings": "Pannello amministrazione",
     "settingsDashboard": "Pannello di controllo delle impostazioni"
   },

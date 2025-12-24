@@ -36,9 +36,9 @@ import {
   checklistSettingsSchema,
   generalSettingsSchema,
 } from "@/app/_schemas/user-schemas";
+import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
 
 interface SettingsTabProps {
-  setShowDeleteModal: (show: boolean) => void;
   noteCategories: Category[];
 }
 
@@ -75,11 +75,12 @@ const pick = <T extends object, K extends keyof T>(
   return result;
 };
 
-export const UserPreferencesTab = ({ setShowDeleteModal, noteCategories }: SettingsTabProps) => {
+export const UserPreferencesTab = ({ noteCategories }: SettingsTabProps) => {
   const t = useTranslations();
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
   const { showToast } = useToast();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [allThemes, setAllThemes] = useState<any[]>([]);
   const [loadingThemes, setLoadingThemes] = useState(true);
   const [initialSettings, setInitialSettings] = useState<Partial<User>>(
@@ -809,6 +810,11 @@ export const UserPreferencesTab = ({ setShowDeleteModal, noteCategories }: Setti
           </div>
         </div>
       </FormWrapper>
+
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 };

@@ -12,7 +12,6 @@ import {
 } from "hugeicons-react";
 import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
 import { Category } from "@/app/_types";
-import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
 import { ProfileTab } from "./Parts/ProfileTab";
 import { SessionsTab } from "./Parts/SessionsTab";
 import { UserPreferencesTab } from "./Parts/UserPreferencesTab";
@@ -47,7 +46,6 @@ export const UserProfileClient = ({
   const t = useTranslations();
   const { user, appSettings } = useAppMode();
   const [activeTab, setActiveTab] = useState<ProfileTabs>(ProfileTabs.PROFILE);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
   const handleTabChange = (newTab: ProfileTabs) => {
@@ -157,20 +155,14 @@ export const UserProfileClient = ({
         {activeTab === ProfileTabs.CONNECTIONS && (
           <LinksTab linkIndex={linkIndex} />
         )}
-        {activeTab === ProfileTabs.ENCRYPTION && <EncryptionTab />}
+        {activeTab === ProfileTabs.ENCRYPTION && <EncryptionTab initialKeyData={{ hasKeys: false, metadata: null }} />}
         {activeTab === ProfileTabs.USER_PREFERENCES && (
           <UserPreferencesTab
-            setShowDeleteModal={setShowDeleteModal}
             noteCategories={notesCategories}
           />
         )}
-        {activeTab === ProfileTabs.AUDIT_LOGS && <AuditLogsTab />}
+        {activeTab === ProfileTabs.AUDIT_LOGS && <AuditLogsTab initialLogs={[]} initialTotal={0} />}
       </div>
-
-      <DeleteAccountModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-      />
     </div>
   );
 };

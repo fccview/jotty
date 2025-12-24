@@ -1,19 +1,10 @@
-"use client";
-
 import { UserPreferencesTab } from "@/app/_components/FeatureComponents/Profile/Parts/UserPreferencesTab";
-import { useState } from "react";
-import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
+import { getCategories } from "@/app/_server/actions/category";
+import { Modes } from "@/app/_types/enums";
 
-export default function UserPreferencesPage() {
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
+export default async function UserPreferencesPage() {
+    const notesCategoriesResult = await getCategories(Modes.NOTES);
+    const notesCategories = notesCategoriesResult.success ? notesCategoriesResult.data : [];
 
-    return (
-        <>
-            <UserPreferencesTab setShowDeleteModal={setShowDeleteModal} />
-            <DeleteAccountModal
-                isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-            />
-        </>
-    );
+    return <UserPreferencesTab noteCategories={notesCategories || []} />;
 }

@@ -93,7 +93,7 @@ export const useNoteEditor = ({
 
     if (note.encrypted) {
       setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true); // Treat as raw text
+      setIsMarkdownMode(true);
     } else if (isMinimalMode) {
       setEditorContent(contentWithoutMetadata);
       setIsMarkdownMode(true);

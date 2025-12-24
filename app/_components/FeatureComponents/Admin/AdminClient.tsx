@@ -177,7 +177,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
           <AdminContent allLists={allLists} allDocs={allDocs} users={users} />
         )}
         {activeTab === AdminTabsEnum.SHARING && <AdminSharing />}
-        {activeTab === AdminTabsEnum.AUDIT_LOGS && <AdminAuditLogs />}
+        {activeTab === AdminTabsEnum.AUDIT_LOGS && <AdminAuditLogs initialLogs={[]} initialTotal={0} />}
         {activeTab === AdminTabsEnum.SETTINGS && <AppSettingsTab />}
         {activeTab === AdminTabsEnum.EDITOR && <EditorSettingsTab />}
         {activeTab === AdminTabsEnum.STYLING && <StylingTab />}
