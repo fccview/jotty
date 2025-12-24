@@ -21,6 +21,7 @@ import {
   encodeCategoryPath,
 } from "@/app/_utils/global-utils";
 import { encodeId } from "@/app/_utils/global-utils";
+import { logAudit } from "@/app/_server/actions/log";
 
 export const createCategory = async (formData: FormData) => {
   try {
@@ -33,8 +34,26 @@ export const createCategory = async (formData: FormData) => {
     const categoryDir = path.join(userDir, categoryPath);
     await ensureDir(categoryDir);
 
+    await logAudit({
+      level: "INFO",
+      action: "category_created",
+      category: mode === Modes.NOTES ? "note" : "checklist",
+      success: true,
+      metadata: { categoryName: name, parentCategory: parent, mode },
+    });
+
     return { success: true, data: { name, count: 0 } };
   } catch (error) {
+    const name = formData.get("name") as string;
+    const mode = formData.get("mode") as Modes;
+    await logAudit({
+      level: "ERROR",
+      action: "category_created",
+      category: mode === Modes.NOTES ? "note" : "checklist",
+      success: false,
+      errorMessage: "Failed to create category",
+      metadata: { categoryName: name },
+    });
     return { error: "Failed to create category" };
   }
 };
@@ -48,6 +67,14 @@ export const deleteCategory = async (formData: FormData) => {
     const categoryDir = path.join(userDir, categoryPath);
     await serverDeleteDir(categoryDir);
 
+    await logAudit({
+      level: "INFO",
+      action: "category_deleted",
+      category: mode === Modes.NOTES ? "note" : "checklist",
+      success: true,
+      metadata: { categoryPath, mode },
+    });
+
     try {
       revalidatePath("/");
     } catch (error) {
@@ -58,6 +85,16 @@ export const deleteCategory = async (formData: FormData) => {
     }
     return { success: true };
   } catch (error) {
+    const categoryPath = formData.get("path") as string;
+    const mode = formData.get("mode") as Modes;
+    await logAudit({
+      level: "ERROR",
+      action: "category_deleted",
+      category: mode === Modes.NOTES ? "note" : "checklist",
+      success: false,
+      errorMessage: "Failed to delete category",
+      metadata: { categoryPath },
+    });
     return { error: "Failed to delete category" };
   }
 };
@@ -69,6 +106,13 @@ export const renameCategory = async (formData: FormData) => {
     const mode = formData.get("mode") as Modes;
 
     if (!oldPath || !newName) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_renamed",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Both old path and new name are required",
+      });
       return { error: "Both old path and new name are required" };
     }
 
@@ -86,6 +130,14 @@ export const renameCategory = async (formData: FormData) => {
         .then(() => true)
         .catch(() => false))
     ) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_renamed",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Category not found",
+        metadata: { oldPath },
+      });
       return { error: "Category not found" };
     }
 
@@ -95,10 +147,26 @@ export const renameCategory = async (formData: FormData) => {
         .then(() => true)
         .catch(() => false)
     ) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_renamed",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Category with new name already exists",
+        metadata: { oldPath, newName },
+      });
       return { error: "Category with new name already exists" };
     }
 
     await fs.rename(oldCategoryDir, newCategoryDir);
+
+    await logAudit({
+      level: "INFO",
+      action: "category_renamed",
+      category: mode === Modes.NOTES ? "note" : "checklist",
+      success: true,
+      metadata: { oldPath, newPath, newName, mode },
+    });
 
     try {
       revalidatePath("/");
@@ -110,6 +178,16 @@ export const renameCategory = async (formData: FormData) => {
     }
     return { success: true };
   } catch (error) {
+    const oldPath = formData.get("oldPath") as string;
+    const mode = formData.get("mode") as Modes;
+    await logAudit({
+      level: "ERROR",
+      action: "category_renamed",
+      category: mode === Modes.NOTES ? "note" : "checklist",
+      success: false,
+      errorMessage: "Failed to rename category",
+      metadata: { oldPath },
+    });
     return { error: "Failed to rename category" };
   }
 };
@@ -429,7 +507,6 @@ export const moveNode = async (formData: FormData) => {
         } else {
           const fileContent = await fs.readFile(newPath, "utf-8");
           const titleMatch = fileContent.match(/^# (.+)$/m);
-          const title = titleMatch ? titleMatch[1] : activeId;
 
           const oldCategory = activeParentPath || "Uncategorized";
           const newCategory = newParentPath || "Uncategorized";
@@ -542,9 +619,33 @@ export const moveNode = async (formData: FormData) => {
       }
     }
 
+    await logAudit({
+      level: "INFO",
+      action: "category_moved",
+      category: mode === Modes.NOTES ? "note" : "checklist",
+      success: true,
+      metadata: {
+        activeType,
+        activeId: activeType === "item" ? activeId : activeCategoryPath,
+        oldParent: activeParentPath,
+        newParent: newParentPath,
+        mode,
+      },
+    });
+
     revalidatePath("/");
     return { success: true };
   } catch (error: any) {
+    const mode = formData.get("mode") as Modes;
+    const activeType = formData.get("activeType") as "item" | "category";
+    await logAudit({
+      level: "ERROR",
+      action: "category_moved",
+      category: mode === Modes.NOTES ? "note" : "checklist",
+      success: false,
+      errorMessage: `Failed to move node: ${error.message}`,
+      metadata: { activeType },
+    });
     return { error: `Failed to move node: ${error.message}` };
   }
 };

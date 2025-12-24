@@ -76,17 +76,21 @@ export const AuditLogsTabClient = ({ initialLogs, initialTotal }: AuditLogsTabCl
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold">{t("auditLogs.title")}</h2>
-                    <p className="text-sm text-muted-foreground">
-                        {t("auditLogs.userDescription")}
-                    </p>
-                </div>
+            <AuditLogsFilters
+                filters={filters}
+                onFiltersChange={(newFilters) => {
+                    setFilters(newFilters);
+                    setPage(1);
+                }}
+                showUserFilter={false}
+            />
+
+            <div className="flex items-center justify-end">
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none w-full sm:w-auto"
                         onClick={() => handleExport("json")}
                         disabled={isExporting || logs.length === 0}
                     >
@@ -100,6 +104,7 @@ export const AuditLogsTabClient = ({ initialLogs, initialTotal }: AuditLogsTabCl
                     <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none w-full sm:w-auto"
                         onClick={() => handleExport("csv")}
                         disabled={isExporting || logs.length === 0}
                     >
@@ -112,15 +117,6 @@ export const AuditLogsTabClient = ({ initialLogs, initialTotal }: AuditLogsTabCl
                     </Button>
                 </div>
             </div>
-
-            <AuditLogsFilters
-                filters={filters}
-                onFiltersChange={(newFilters) => {
-                    setFilters(newFilters);
-                    setPage(1);
-                }}
-                showUserFilter={false}
-            />
 
             {isLoading ? (
                 <div className="flex items-center justify-center py-12">

@@ -132,24 +132,24 @@ export const XChaChaEncryptionModal = ({
             isEncrypt
               ? "Encrypting Note"
               : isView
-              ? "View Decrypted Content"
-              : "Decrypting Note"
+                ? "View Decrypted Content"
+                : "Decrypting Note"
           }
           items={
             isEncrypt
               ? [
-                  "Note content will be encrypted with XChaCha20-Poly1305",
-                  "Only someone with the passphrase can decrypt it",
-                  "Note title/frontmatter will remain unencrypted",
-                  "Your passphrase will NEVER be stored on the server",
-                ]
+                "Note content will be encrypted with XChaCha20-Poly1305",
+                "Only someone with the passphrase can decrypt it",
+                "Note title/frontmatter will remain unencrypted",
+                "Your passphrase will NEVER be stored on the server",
+              ]
               : isView
-              ? [
+                ? [
                   "Note content will be decrypted for viewing only",
                   "Note will remain encrypted on the server",
                   "You cannot edit encrypted notes",
                 ]
-              : [
+                : [
                   "This will decrypt the note content",
                   "Note content will be restored as unencrypted",
                   "You will be able to edit the note content after decryption",

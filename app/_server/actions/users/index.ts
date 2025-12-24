@@ -19,7 +19,7 @@ import path from "path";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { getFormData } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
-import { logUserEvent } from "@/app/_server/actions/log";
+import { logUserEvent, logAudit } from "@/app/_server/actions/log";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -632,6 +632,7 @@ export const updateUserSettings = async (
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
+      await logUserEvent("user_settings_updated", "unknown", false, { error: "Not authenticated" });
       return { success: false, error: "Not authenticated" };
     }
 
@@ -653,9 +654,27 @@ export const updateUserSettings = async (
     allUsers[userIndex] = updatedUser;
     await writeJsonFile(allUsers, USERS_FILE);
 
+    await logAudit({
+      level: "INFO",
+      action: "user_settings_updated",
+      category: "settings",
+      success: true,
+      metadata: {
+        changes: Object.keys(updates),
+        settingsUpdated: updates,
+      },
+    });
+
     return { success: true, data: { user: updatedUser } };
   } catch (error) {
     console.error("Error updating user settings:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "user_settings_updated",
+      category: "settings",
+      success: false,
+      errorMessage: "Failed to update user settings",
+    });
     return { success: false, error: "Failed to update user settings" };
   }
 };

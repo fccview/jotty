@@ -142,7 +142,7 @@ export const logAuthEvent = async (
 };
 
 export const logUserEvent = async (
-  action: "user_created" | "user_updated" | "user_deleted" | "profile_updated",
+  action: "user_created" | "user_updated" | "user_deleted" | "profile_updated" | "user_settings_updated",
   targetUser: string,
   success: boolean,
   metadata?: AuditMetadata
@@ -150,7 +150,7 @@ export const logUserEvent = async (
   await logAudit({
     level: "INFO",
     action,
-    category: "user",
+    category: action === "user_settings_updated" ? "settings" : "user",
     resourceType: "user",
     resourceId: targetUser,
     success,

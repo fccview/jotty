@@ -13,6 +13,7 @@ import { Modes } from "@/app/_types/enums";
 import { getNoteById } from "../note";
 import { AppSettings } from "@/app/_types";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
+import { logAudit } from "@/app/_server/actions/log";
 
 const DATA_SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
 const CONFIG_SETTINGS_PATH = path.join(
@@ -127,10 +128,24 @@ export const saveCustomEmojis = async (
   try {
     const admin = await isAdmin();
     if (!admin) {
+      await logAudit({
+        level: "WARNING",
+        action: "custom_emoji_saved",
+        category: "settings",
+        success: false,
+        errorMessage: "Unauthorized",
+      });
       return { success: false, error: "Unauthorized" };
     }
 
     if (!validateEmojiConfig(emojis)) {
+      await logAudit({
+        level: "WARNING",
+        action: "custom_emoji_saved",
+        category: "settings",
+        success: false,
+        errorMessage: "Invalid emoji configuration",
+      });
       return { success: false, error: "Invalid emoji configuration" };
     }
 
@@ -144,9 +159,24 @@ export const saveCustomEmojis = async (
 
     await fs.writeFile(emojisPath, JSON.stringify(emojis, null, 2), "utf-8");
 
+    await logAudit({
+      level: "INFO",
+      action: "custom_emoji_saved",
+      category: "settings",
+      success: true,
+      metadata: { emojiCount: Object.keys(emojis["custom-emojis"] || {}).length },
+    });
+
     return { success: true, data: null };
   } catch (error) {
     console.error("Error saving custom emojis:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "custom_emoji_saved",
+      category: "settings",
+      success: false,
+      errorMessage: "Failed to save custom emojis",
+    });
     return { success: false, error: "Failed to save custom emojis" };
   }
 };
@@ -251,6 +281,13 @@ export const updateAppSettings = async (
   try {
     const admin = await isAdmin();
     if (!admin) {
+      await logAudit({
+        level: "WARNING",
+        action: "app_settings_updated",
+        category: "settings",
+        success: false,
+        errorMessage: "Unauthorized",
+      });
       return { success: false, error: "Unauthorized" };
     }
 
@@ -307,12 +344,33 @@ export const updateAppSettings = async (
 
     await fs.writeFile(DATA_SETTINGS_PATH, JSON.stringify(settings, null, 2));
 
+    await logAudit({
+      level: "INFO",
+      action: "app_settings_updated",
+      category: "settings",
+      success: true,
+      metadata: {
+        appName,
+        notifyNewUpdates,
+        parseContent,
+        maximumFileSize,
+        editorSettings,
+      },
+    });
+
     revalidatePath("/admin");
     revalidatePath("/");
 
     return { success: true, data: null };
   } catch (error) {
     console.error("Error saving app settings:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "app_settings_updated",
+      category: "settings",
+      success: false,
+      errorMessage: "Failed to save settings",
+    });
     return { success: false, error: "Failed to save settings" };
   }
 };
@@ -408,6 +466,13 @@ export const saveCustomCSS = async (css: string): Promise<Result<null>> => {
   try {
     const admin = await isAdmin();
     if (!admin) {
+      await logAudit({
+        level: "WARNING",
+        action: "custom_css_saved",
+        category: "settings",
+        success: false,
+        errorMessage: "Unauthorized",
+      });
       return { success: false, error: "Unauthorized" };
     }
 
@@ -421,9 +486,24 @@ export const saveCustomCSS = async (css: string): Promise<Result<null>> => {
 
     await fs.writeFile(cssPath, css, "utf-8");
 
+    await logAudit({
+      level: "INFO",
+      action: "custom_css_saved",
+      category: "settings",
+      success: true,
+      metadata: { cssLength: css.length },
+    });
+
     return { success: true, data: null };
   } catch (error) {
     console.error("Error saving custom CSS:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "custom_css_saved",
+      category: "settings",
+      success: false,
+      errorMessage: "Failed to save custom CSS",
+    });
     return { success: false, error: "Failed to save custom CSS" };
   }
 };
@@ -450,10 +530,24 @@ export const saveCustomThemes = async (
   try {
     const admin = await isAdmin();
     if (!admin) {
+      await logAudit({
+        level: "WARNING",
+        action: "custom_theme_saved",
+        category: "settings",
+        success: false,
+        errorMessage: "Unauthorized",
+      });
       return { success: false, error: "Unauthorized" };
     }
 
     if (!validateThemeConfig(themes)) {
+      await logAudit({
+        level: "WARNING",
+        action: "custom_theme_saved",
+        category: "settings",
+        success: false,
+        errorMessage: "Invalid theme configuration",
+      });
       return { success: false, error: "Invalid theme configuration" };
     }
 
@@ -467,9 +561,24 @@ export const saveCustomThemes = async (
 
     await fs.writeFile(themesPath, JSON.stringify(themes, null, 2), "utf-8");
 
+    await logAudit({
+      level: "INFO",
+      action: "custom_theme_saved",
+      category: "settings",
+      success: true,
+      metadata: { themeCount: Object.keys(themes["custom-themes"] || {}).length },
+    });
+
     return { success: true, data: null };
   } catch (error) {
     console.error("Error saving custom themes:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "custom_theme_saved",
+      category: "settings",
+      success: false,
+      errorMessage: "Failed to save custom themes",
+    });
     return { success: false, error: "Failed to save custom themes" };
   }
 };

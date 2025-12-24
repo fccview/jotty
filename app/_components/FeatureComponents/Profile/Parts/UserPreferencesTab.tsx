@@ -303,10 +303,6 @@ export const UserPreferencesTab = ({ noteCategories }: SettingsTabProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t('settings.accountSettings')}</h2>
-      </div>
-
       <FormWrapper
         title={t('settings.general')}
         action={

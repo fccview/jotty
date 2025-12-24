@@ -63,7 +63,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     <Modal isOpen={isOpen} onClose={onClose} title={t('profile.quickSettingsHeader')}>
       <p className="text-sm text-muted-foreground mb-6">
         {t('settingsModal.sessionOnlyPrefix')}{' '}
-        <Link href="/profile" className="text-primary hover:underline">{t('settingsModal.accountSettings')}</Link>.
+        <Link href="/settings/user-preferences" className="text-primary hover:underline">{t('settingsModal.accountSettings')}</Link>.
       </p>
       <div className="mb-6">
         <h3 className="text-sm font-medium mb-3">{t('common.theme')}</h3>

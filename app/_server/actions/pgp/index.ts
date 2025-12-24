@@ -78,10 +78,10 @@ export const generateKeyPair = async (
 
     await logAudit({
       level: "INFO",
-      action: "settings_updated",
-      category: "settings",
+      action: "encryption_keys_generated",
+      category: "encryption",
       success: true,
-      metadata: { action: "pgp_key_generated" },
+      metadata: { method: "pgp", algorithm: "rsa4096" },
     });
 
     return {
@@ -91,8 +91,8 @@ export const generateKeyPair = async (
   } catch (error) {
     await logAudit({
       level: "ERROR",
-      action: "settings_updated",
-      category: "settings",
+      action: "encryption_keys_generated",
+      category: "encryption",
       success: false,
       errorMessage: "Failed to generate PGP key pair",
     });
@@ -139,9 +139,24 @@ export const importKeys = async (
         },
       });
 
+      await logAudit({
+        level: "INFO",
+        action: "encryption_keys_imported",
+        category: "encryption",
+        success: true,
+        metadata: { method: "pgp", fingerprint },
+      });
+
       return { success: true, data: { fingerprint } };
     } catch (keyError) {
       console.error("Invalid keys:", keyError);
+      await logAudit({
+        level: "WARNING",
+        action: "encryption_keys_imported",
+        category: "encryption",
+        success: false,
+        errorMessage: "Invalid keys provided",
+      });
       return {
         success: false,
         error: "Invalid keys. Ensure they are valid ASCII-armored PGP keys.",
@@ -149,6 +164,13 @@ export const importKeys = async (
     }
   } catch (error) {
     console.error("Error importing keys:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "encryption_keys_imported",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to import keys",
+    });
     return { success: false, error: "Failed to import keys" };
   }
 };
@@ -455,15 +477,37 @@ export const setCustomKeyPath = async (
     });
 
     if (!result.success || !result.data) {
+      await logAudit({
+        level: "ERROR",
+        action: "encryption_key_path_changed",
+        category: "encryption",
+        success: false,
+        errorMessage: result.error || "Failed to set custom key path",
+      });
       return {
         success: false,
         error: result.error || "Failed to set custom key path",
       };
     }
 
+    await logAudit({
+      level: "INFO",
+      action: "encryption_key_path_changed",
+      category: "encryption",
+      success: true,
+      metadata: { customPath },
+    });
+
     return { success: true, data: { user: result.data.user } };
   } catch (error) {
     console.error("Error setting custom key path:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "encryption_key_path_changed",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to set custom key path",
+    });
     return { success: false, error: "Failed to set custom key path" };
   }
 };
@@ -489,9 +533,24 @@ export const deleteKeys = async (): Promise<Result<null>> => {
       },
     });
 
+    await logAudit({
+      level: "INFO",
+      action: "encryption_keys_deleted",
+      category: "encryption",
+      success: true,
+      metadata: { method: "pgp" },
+    });
+
     return { success: true, data: null };
   } catch (error) {
     console.error("Error deleting keys:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "encryption_keys_deleted",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to delete keys",
+    });
     return { success: false, error: "Failed to delete keys" };
   }
 };

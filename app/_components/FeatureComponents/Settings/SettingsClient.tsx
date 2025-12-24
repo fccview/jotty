@@ -25,7 +25,7 @@ export const SettingsClient = ({
             onOpenCategoryModal={openCreateCategoryModal}
             user={user}
         >
-            <div className="container mx-auto px-4 py-6 max-w-7xl h-full overflow-y-auto">
+            <div className="w-full px-4 py-6 h-full overflow-y-auto">
                 {children}
             </div>
         </Layout>

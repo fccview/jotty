@@ -102,17 +102,21 @@ export const AdminAuditLogsClient = ({ initialLogs, initialTotal }: AdminAuditLo
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold">{t("auditLogs.title")}</h2>
-                    <p className="text-sm text-muted-foreground">
-                        {t("auditLogs.adminDescription")}
-                    </p>
-                </div>
-                <div className="flex gap-2">
+            <AuditLogsFilters
+                filters={filters}
+                onFiltersChange={(newFilters) => {
+                    setFilters(newFilters);
+                    setPage(1);
+                }}
+                showUserFilter={true}
+            />
+
+            <div className="flex items-center justify-end">
+                <div className="flex gap-2 flex-wrap">
                     <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none"
                         onClick={() => handleExport("json")}
                         disabled={isExporting || logs.length === 0}
                     >
@@ -126,6 +130,7 @@ export const AdminAuditLogsClient = ({ initialLogs, initialTotal }: AdminAuditLo
                     <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none"
                         onClick={() => handleExport("csv")}
                         disabled={isExporting || logs.length === 0}
                     >
@@ -139,6 +144,7 @@ export const AdminAuditLogsClient = ({ initialLogs, initialTotal }: AdminAuditLo
                     <Button
                         variant="destructive"
                         size="sm"
+                        className="w-full sm:w-auto"
                         onClick={handleCleanup}
                         disabled={isCleaning}
                     >
@@ -151,15 +157,6 @@ export const AdminAuditLogsClient = ({ initialLogs, initialTotal }: AdminAuditLo
                     </Button>
                 </div>
             </div>
-
-            <AuditLogsFilters
-                filters={filters}
-                onFiltersChange={(newFilters) => {
-                    setFilters(newFilters);
-                    setPage(1);
-                }}
-                showUserFilter={true}
-            />
 
             {isLoading ? (
                 <div className="flex items-center justify-center py-12">

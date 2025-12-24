@@ -591,6 +591,16 @@ export const updateItemPermissions = async (
   const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
 
   if (!sharingData[username]) {
+    await logAudit({
+      level: "WARNING",
+      action: "share_permissions_updated",
+      category: "sharing",
+      success: false,
+      resourceType: itemType,
+      resourceId: item,
+      errorMessage: "Item not shared with this user",
+      metadata: { targetUser: username },
+    });
     return { success: false, error: "Item not shared with this user" };
   }
 
@@ -605,15 +615,49 @@ export const updateItemPermissions = async (
   }
 
   if (entryIndex === -1) {
+    await logAudit({
+      level: "WARNING",
+      action: "share_permissions_updated",
+      category: "sharing",
+      success: false,
+      resourceType: itemType,
+      resourceId: item,
+      errorMessage: "Item not shared with this user",
+      metadata: { targetUser: username },
+    });
     return { success: false, error: "Item not shared with this user" };
   }
 
+  const oldPermissions = sharingData[username][entryIndex].permissions;
   sharingData[username][entryIndex].permissions = permissions;
 
   try {
     await writeShareFile(itemType, sharingData);
+    await logAudit({
+      level: "INFO",
+      action: "share_permissions_updated",
+      category: "sharing",
+      success: true,
+      resourceType: itemType,
+      resourceId: item,
+      metadata: {
+        targetUser: username,
+        oldPermissions,
+        newPermissions: permissions
+      },
+    });
     return { success: true, data: null };
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "share_permissions_updated",
+      category: "sharing",
+      success: false,
+      resourceType: itemType,
+      resourceId: item,
+      errorMessage: "Failed to update permissions",
+      metadata: { targetUser: username },
+    });
     return { success: false, error: "Failed to update permissions" };
   }
 };
