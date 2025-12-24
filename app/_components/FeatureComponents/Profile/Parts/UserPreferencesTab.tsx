@@ -26,6 +26,7 @@ import {
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { useToast } from "@/app/_providers/ToastProvider";
@@ -652,7 +653,7 @@ export const UserPreferencesTab = ({ setShowDeleteModal, noteCategories }: Setti
             {t('settings.chooseDefaultNoteFilter')}
           </p>
         </div>
-       <div className="space-y-2">
+        <div className="space-y-2">
           <Label htmlFor="quick-create-notes">{t('settings.quickCreateNotes')}</Label>
           <Dropdown
             value={currentSettings.quickCreateNotes || "disable"}
@@ -681,20 +682,12 @@ export const UserPreferencesTab = ({ setShowDeleteModal, noteCategories }: Setti
             <Label htmlFor="quick-create-notes-category">
               {t('settings.defaultCategory')}
             </Label>
-            <Dropdown
-              value={currentSettings.quickCreateNotesCategory || ""}
-              onChange={(value) =>
+            <CategoryTreeSelector
+              categories={noteCategories}
+              selectedCategory={currentSettings.quickCreateNotesCategory || ""}
+              onCategorySelect={(value) =>
                 handleSettingChange("quickCreateNotesCategory", value)
               }
-              options={[
-                { id: "", name: "Uncategorized" },
-                ...noteCategories
-                  .filter((cat) => cat.path && cat.path.toLowerCase() !== "uncategorized")
-                  .map((cat) => ({
-                    id: cat.path,
-                    name: cat.path,
-                  })),
-              ]}
               placeholder={t('settings.selectDefaultCategory')}
               className="w-full"
             />
