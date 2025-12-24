@@ -12,7 +12,6 @@ import { AdminOverview } from "./Parts/AdminOverview";
 import { AdminUsers } from "./Parts/AdminUsers";
 import { AdminContent } from "./Parts/AdminContent";
 import { AdminSharing } from "./Parts/Sharing/AdminSharing";
-import { AdminAuditLogs } from "./Parts/AdminAuditLogs";
 import { AppSettingsTab } from "./Parts/AppSettingsTab";
 import { EditorSettingsTab } from "./Parts/EditorSettingsTab";
 import { readJsonFile } from "@/app/_server/actions/file";
@@ -21,6 +20,7 @@ import { StylingTab } from "./Parts/StylingTab";
 import { AdminTabs as AdminTabsEnum } from "@/app/_types/enums";
 import { Loading } from "../../GlobalComponents/Layout/Loading";
 import { useTranslations } from "next-intl";
+import { AdminAuditLogsClient } from "./Parts/AdminAuditLogsClient";
 
 interface AdminClientProps {
   username: string;
@@ -177,7 +177,7 @@ export const AdminClient = ({ username }: AdminClientProps) => {
           <AdminContent allLists={allLists} allDocs={allDocs} users={users} />
         )}
         {activeTab === AdminTabsEnum.SHARING && <AdminSharing />}
-        {activeTab === AdminTabsEnum.AUDIT_LOGS && <AdminAuditLogs initialLogs={[]} initialTotal={0} />}
+        {activeTab === AdminTabsEnum.AUDIT_LOGS && <AdminAuditLogsClient initialLogs={[]} initialTotal={0} />}
         {activeTab === AdminTabsEnum.SETTINGS && <AppSettingsTab />}
         {activeTab === AdminTabsEnum.EDITOR && <EditorSettingsTab />}
         {activeTab === AdminTabsEnum.STYLING && <StylingTab />}

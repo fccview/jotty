@@ -1,3 +1,5 @@
+"use client";
+
 import { Checklist, Note } from "@/app/_types";
 import { LinkForwardIcon } from "hugeicons-react";
 import Link from "next/link";

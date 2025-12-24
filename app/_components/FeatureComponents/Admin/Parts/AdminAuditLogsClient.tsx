@@ -8,7 +8,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Download01Icon, Delete03Icon, ArrowLeft01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
-import { getAuditLogs, exportAuditLogs, cleanupOldLogs, getAuditLogStats } from "@/app/_server/actions/log";
+import { getAuditLogs, exportAuditLogs, cleanupOldLogs } from "@/app/_server/actions/log";
 
 interface AdminAuditLogsClientProps {
     initialLogs: AuditLogEntry[];

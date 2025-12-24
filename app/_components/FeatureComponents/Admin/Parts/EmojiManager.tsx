@@ -1,8 +1,9 @@
+"use client";
+
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import {
-  Orbit01Icon,
   Add01Icon,
   PencilEdit02Icon,
   Delete03Icon,

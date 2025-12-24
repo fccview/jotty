@@ -1,3 +1,5 @@
+"use client";
+
 import { CssEditor } from "@/app/_components/GlobalComponents/FormElements/CSSEditor";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
@@ -206,12 +208,12 @@ export const StylingTab = () => {
                       value={
                         value
                           ? `#${value
-                              .split(" ")
-                              .map((v) => {
-                                const num = parseInt(v);
-                                return num.toString(16).padStart(2, "0");
-                              })
-                              .join("")}`
+                            .split(" ")
+                            .map((v) => {
+                              const num = parseInt(v);
+                              return num.toString(16).padStart(2, "0");
+                            })
+                            .join("")}`
                           : "#000000"
                       }
                       onChange={(e) => {

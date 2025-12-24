@@ -1,6 +1,6 @@
 "use client";
 
-import { Delete03Icon, Orbit01Icon } from "hugeicons-react";
+import { Delete03Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useSessionManager } from "@/app/_hooks/useSessionManager";
 import { SessionCard } from "@/app/_components/GlobalComponents/Cards/SessionCard";

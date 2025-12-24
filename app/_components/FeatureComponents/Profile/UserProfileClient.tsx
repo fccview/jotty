@@ -15,16 +15,16 @@ import { Category } from "@/app/_types";
 import { ProfileTab } from "./Parts/ProfileTab";
 import { SessionsTab } from "./Parts/SessionsTab";
 import { UserPreferencesTab } from "./Parts/UserPreferencesTab";
-import { EncryptionTab } from "./Parts/EncryptionTab";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Button } from "../../GlobalComponents/Buttons/Button";
 import { ArchiveTab } from "./Parts/ArchiveTab";
 import { ArchivedItem } from "@/app/_server/actions/archived";
 import { LinkIndex } from "@/app/_server/actions/link";
 import { LinksTab } from "@/app/_components/FeatureComponents/Profile/Parts/LinksTab";
-import { AuditLogsTab } from "@/app/_components/FeatureComponents/Profile/Parts/AuditLogsTab";
+import { AuditLogsTabClient } from "@/app/_components/FeatureComponents/Profile/Parts/AuditLogsTabClient";
 import { ProfileTabs } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
+import { EncryptionTabClient } from "./Parts/EncryptionTabClient";
 
 interface UserProfileClientProps {
   isSsoUser: boolean;
@@ -155,13 +155,13 @@ export const UserProfileClient = ({
         {activeTab === ProfileTabs.CONNECTIONS && (
           <LinksTab linkIndex={linkIndex} />
         )}
-        {activeTab === ProfileTabs.ENCRYPTION && <EncryptionTab initialKeyData={{ hasKeys: false, metadata: null }} />}
+        {activeTab === ProfileTabs.ENCRYPTION && <EncryptionTabClient initialKeyData={{ hasKeys: false, metadata: null }} />}
         {activeTab === ProfileTabs.USER_PREFERENCES && (
           <UserPreferencesTab
             noteCategories={notesCategories}
           />
         )}
-        {activeTab === ProfileTabs.AUDIT_LOGS && <AuditLogsTab initialLogs={[]} initialTotal={0} />}
+        {activeTab === ProfileTabs.AUDIT_LOGS && <AuditLogsTabClient initialLogs={[]} initialTotal={0} />}
       </div>
     </div>
   );
