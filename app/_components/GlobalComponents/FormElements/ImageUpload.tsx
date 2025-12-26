@@ -21,6 +21,7 @@ interface ImageUploadProps {
   customUploadAction?: (
     formData: FormData
   ) => Promise<{ success: boolean; data?: { url: string }; error?: string }>;
+  disabled?: boolean;
 }
 
 type IconSizeKey =
@@ -93,6 +94,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   currentUrl,
   onUpload,
   customUploadAction,
+  disabled = false,
 }) => {
   const t = useTranslations();
   const { showToast } = useToast();
@@ -100,7 +102,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   const [dragOver, setDragOver] = useState(false);
 
   const handleFileSelect = async (file: File | null) => {
-    if (!file) return;
+    if (!file || disabled) return;
 
     if (!file.type.startsWith("image/")) {
       return showToast({
@@ -170,6 +172,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
+    if (disabled) return;
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
@@ -180,13 +183,16 @@ export const ImageUpload: FC<ImageUploadProps> = ({
       <Label className="text-sm font-medium">{label}</Label>
       <p className="text-xs text-muted-foreground">{description}</p>
       <div
-        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${dragOver
+        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${
+          disabled
+            ? "border-muted-foreground/15 bg-muted/30 cursor-not-allowed"
+            : dragOver
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/25 hover:border-muted-foreground/50"
           }`}
         onDragOver={(e) => {
           e.preventDefault();
-          setDragOver(true);
+          if (!disabled) setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
@@ -210,6 +216,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
               size="sm"
               onClick={() => onUpload(iconType, "")}
               className="flex-shrink-0 h-8 w-8 p-0"
+              disabled={disabled}
             >
               <MultiplicationSignIcon className="h-4 w-4" />
             </Button>
@@ -218,7 +225,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         {!currentUrl && !isUploading && (
           <label
             htmlFor={`upload-${iconType || "avatar"}`}
-            className="text-center cursor-pointer block"
+            className={`text-center block ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           >
             <Image02Icon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm font-medium">Drop image or click to upload</p>
@@ -242,7 +249,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         }
         className="hidden"
         id={`upload-${iconType || "avatar"}`}
-        disabled={isUploading}
+        disabled={isUploading || disabled}
       />
     </div>
   );

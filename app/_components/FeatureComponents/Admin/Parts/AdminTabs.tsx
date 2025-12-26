@@ -18,12 +18,13 @@ import { useTranslations } from "next-intl";
 interface AdminTabsProps {
   activeTab: AdminTabsEnum;
   onTabChange: (tab: AdminTabsEnum) => void;
+  hasContentAccess?: boolean;
 }
 
-export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
+export const AdminTabs = ({ activeTab, onTabChange, hasContentAccess = true }: AdminTabsProps) => {
   const t = useTranslations();
 
-  const tabs = [
+  const allTabs = [
     {
       id: AdminTabsEnum.OVERVIEW,
       label: t("admin.overview"),
@@ -65,6 +66,10 @@ export const AdminTabs = ({ activeTab, onTabChange }: AdminTabsProps) => {
       icon: Settings01Icon,
     },
   ];
+
+  const tabs = hasContentAccess
+    ? allTabs
+    : allTabs.filter(tab => tab.id !== AdminTabsEnum.CONTENT);
 
   return (
     <div className="bg-muted p-1 rounded-jotty">

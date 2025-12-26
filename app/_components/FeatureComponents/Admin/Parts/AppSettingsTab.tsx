@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Orbit01Icon } from "hugeicons-react";
+import { Orbit01Icon, AlertCircleIcon } from "hugeicons-react";
 import { useToast } from "@/app/_providers/ToastProvider";
 import {
   getAppSettings,
@@ -26,7 +26,8 @@ export const AppSettingsTab = () => {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const { isRwMarkable } = useAppMode();
+  const { isRwMarkable, user } = useAppMode();
+  const isSuperAdmin = user?.isSuperAdmin || false;
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -136,6 +137,19 @@ export const AppSettingsTab = () => {
 
   return (
     <div className="space-y-6">
+      {!isSuperAdmin && (
+        <div className="bg-muted border border-border rounded-jotty p-4 flex items-start gap-3">
+          <AlertCircleIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {t("admin.superAdminOnly")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("admin.viewOnlySettingsNotice")}
+            </p>
+          </div>
+        </div>
+      )}
       <div className="bg-background border border-border rounded-jotty p-6 space-y-8">
         <div className="grid gap-6 md:grid-cols-2">
           {formFields.map((field) => (
@@ -146,6 +160,7 @@ export const AppSettingsTab = () => {
               type="text"
               value={settings[field.id]}
               onChange={(e) => handleInputChange(field.id, e.target.value)}
+              disabled={!isSuperAdmin}
             />
           ))}
         </div>
@@ -160,6 +175,7 @@ export const AppSettingsTab = () => {
               { id: "yes", name: t("common.yes") },
               { id: "no", name: t("common.no") },
             ]}
+            disabled={!isSuperAdmin}
           />
         </div>
         <div>
@@ -173,6 +189,7 @@ export const AppSettingsTab = () => {
               { id: "yes", name: t("common.yes") },
               { id: "no", name: t("common.no") },
             ]}
+            disabled={!isSuperAdmin}
           />
           <span className="text-xs text-muted-foreground">
             {t("admin.parseContentEnabledDescription")} <br />
@@ -181,6 +198,30 @@ export const AppSettingsTab = () => {
             <span className="font-bold">
               {t("admin.parseContentPerformanceWarning")}
             </span>
+          </span>
+        </div>
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Label htmlFor="adminContentAccess" className="block">
+              {t("admin.adminContentAccess")}
+            </Label>
+            {!isSuperAdmin && (
+              <span className="text-xs text-muted-foreground italic">
+                ({t("admin.superAdminOnly")})
+              </span>
+            )}
+          </div>
+          <Dropdown
+            value={settings?.adminContentAccess || "yes"}
+            onChange={(value) => handleInputChange("adminContentAccess", value)}
+            options={[
+              { id: "yes", name: t("admin.adminContentAccessYes") },
+              { id: "no", name: t("admin.adminContentAccessNo") },
+            ]}
+            disabled={!isSuperAdmin}
+          />
+          <span className="text-xs text-muted-foreground">
+            {t("admin.adminContentAccessDescription")}
           </span>
         </div>
         <div>
@@ -200,6 +241,7 @@ export const AppSettingsTab = () => {
                 (Number(e.target.value) * 1024 * 1024).toString()
               )
             }
+            disabled={!isSuperAdmin}
           />
         </div>
 
@@ -214,13 +256,14 @@ export const AppSettingsTab = () => {
                 onUpload={(iconType, url) =>
                   handleInputChange(iconType || "", url)
                 }
+                disabled={!isSuperAdmin}
               />
             ))}
           </div>
         </div>
 
         <div className="flex items-center gap-3 pt-6 border-t">
-          <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
+          <Button onClick={handleSave} disabled={isSaving || !hasChanges || !isSuperAdmin}>
             {isSaving ? (
               <>
                 <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />{t('common.saving')}</>
@@ -231,9 +274,9 @@ export const AppSettingsTab = () => {
           <Button
             variant="outline"
             onClick={() => window.location.reload()}
-            disabled={isSaving || !hasChanges}
+            disabled={isSaving || !hasChanges || !isSuperAdmin}
           >{t('common.reset')}</Button>
-          {hasChanges && (
+          {hasChanges && isSuperAdmin && (
             <p className="text-sm text-muted-foreground">
               {t("admin.unsavedChanges")}
             </p>

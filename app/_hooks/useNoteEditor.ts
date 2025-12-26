@@ -124,10 +124,6 @@ export const useNoteEditor = ({
 
   const handleSave = useCallback(
     async (autosaveNotes = false) => {
-      const owner = await getUserByNote(
-        note.id,
-        note.category || "Uncategorized"
-      );
       const useAutosave = autosaveNotes ? true : false;
       if (!useAutosave) {
         setStatus((prev) => ({ ...prev, isSaving: true }));
@@ -142,7 +138,7 @@ export const useNoteEditor = ({
       formData.append("content", cleanContent);
       formData.append("category", useAutosave ? (note.category || "Uncategorized") : category);
       formData.append("originalCategory", note.category || "Uncategorized");
-      formData.append("user", owner.data?.username || "");
+      formData.append("user", note.owner || user?.username || "");
       formData.append("uuid", note.uuid || "");
 
       const result = await updateNote(formData, useAutosave);

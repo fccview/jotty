@@ -204,11 +204,8 @@ export const AdminContent = ({
                         icon={<CheckmarkSquare04Icon className="h-4 w-4" />}
                         items={checklists.map((list) => ({
                           ...list,
-                          link: `/checklist/${buildCategoryPath(
-                            list.category || "Uncategorized",
-                            list.id
-                          )}`,
-                          details: `${list.category} • ${list.items.length} items`,
+                          link: `/admin/checklist/${list.uuid}`,
+                          details: `${list.owner} • ${list.category} • ${list.items.length} items`,
                         }))}
                       />
                       <AdminContentColumn
@@ -216,11 +213,8 @@ export const AdminContent = ({
                         icon={<File02Icon className="h-4 w-4" />}
                         items={notes.map((doc) => ({
                           ...doc,
-                          link: `/note/${buildCategoryPath(
-                            doc.category || "Uncategorized",
-                            doc.id
-                          )}`,
-                          details: `${doc.category} • ${doc.content.length} characters`,
+                          link: `/admin/note/${doc.uuid}`,
+                          details: `${doc.owner} • ${doc.category} • ${doc.content.length} characters`,
                         }))}
                       />
                     </div>

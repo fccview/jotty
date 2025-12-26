@@ -636,7 +636,9 @@
     "allUsersData": "所有用户账户数据",
     "allUsersDataDescription": "导出包含所有用户账户信息（用户名、管理员状态等）的 JSON 文件。这**不包含**他们的清单或笔记内容。",
     "wholeDataFolder": "整个 Data 文件夹 (备份)",
-    "wholeDataFolderDescription": "导出整个 'data' 文件夹，包括所有用户内容、元数据和设置。请谨慎使用，文件可能很大。"
+    "wholeDataFolderDescription": "导出整个 'data' 文件夹，包括所有用户内容、元数据和设置。请谨慎使用，文件可能很大。",
+    "contentHidden": "隐藏内容详情",
+    "noSharingPermissionsLabel": "根据您的内容访问权限隐藏特定的共享项目。"
   },
   "errors": {
     "notFound": "未找到",

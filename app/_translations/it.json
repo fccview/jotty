@@ -636,7 +636,9 @@
     "allUsersData": "Dati Account di tutti gli utenti",
     "allUsersDataDescription": "Esporta un JSON con le info account di tutti (username, stato admin, ecc.). NON include i contenuti delle note.",
     "wholeDataFolder": "Intera cartella dati (Backup)",
-    "wholeDataFolderDescription": "Esporta l'intera cartella 'data', inclusi contenuti, metadati e impostazioni. Attenzione: il file può essere grande."
+    "wholeDataFolderDescription": "Esporta l'intera cartella 'data', inclusi contenuti, metadati e impostazioni. Attenzione: il file può essere grande.",
+    "contentHidden": "Dettagli del contenuto nascosti",
+    "noSharingPermissionsLabel": "Elementi condivisi specifici vengono nascosti in base alle autorizzazioni di accesso ai contenuti."
   },
   "errors": {
     "notFound": "Non Trovato",

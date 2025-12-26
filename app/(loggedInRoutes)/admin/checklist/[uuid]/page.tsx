@@ -4,19 +4,17 @@ import {
   getUserChecklists,
 } from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
-import { getAllLists } from "@/app/_server/actions/checklist";
 import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { ChecklistClient } from "@/app/_components/FeatureComponents/Checklists/Parts/ChecklistClient";
 import { Modes } from "@/app/_types/enums";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
-import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
-interface ChecklistPageProps {
+interface AdminChecklistPageProps {
   params: {
-    categoryPath: string[];
+    uuid: string;
   };
 }
 
@@ -24,32 +22,22 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
-}: ChecklistPageProps): Promise<Metadata> {
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
-
-  return getMedatadaTitle(Modes.CHECKLISTS, id, category);
+}: AdminChecklistPageProps): Promise<Metadata> {
+  const { uuid } = params;
+  return getMedatadaTitle(Modes.CHECKLISTS, uuid, "Admin");
 }
 
-export default async function ChecklistPage({ params }: ChecklistPageProps) {
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
+export default async function AdminChecklistPage({ params }: AdminChecklistPageProps) {
+  const { uuid } = params;
   const user = await getCurrentUser();
-  const username = user?.username || "";
   const hasContentAccess = await canAccessAllContent();
 
+  if (!hasContentAccess) {
+    redirect("/");
+  }
+
   const [listsResult, categoriesResult] = await Promise.all([
-    getUserChecklists({ username }),
+    getUserChecklists({ username: user?.username }),
     getCategories(Modes.CHECKLISTS),
   ]);
 
@@ -57,16 +45,7 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
     redirect("/");
   }
 
-  let checklist = await getListById(id, username, category);
-
-  if (!checklist && hasContentAccess) {
-    const allListsResult = await getAllLists();
-    if (allListsResult.success && allListsResult.data) {
-      checklist = allListsResult.data.find(
-        (list) => list.id === id && list.category === category
-      );
-    }
-  }
+  const checklist = await getListById(uuid);
 
   if (!checklist) {
     redirect("/");

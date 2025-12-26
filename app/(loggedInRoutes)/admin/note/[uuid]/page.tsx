@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import {
-  getAllNotes,
   CheckForNeedsMigration,
   getNoteById,
   getUserNotes,
@@ -11,13 +10,12 @@ import { Modes } from "@/app/_types/enums";
 import { getCategories } from "@/app/_server/actions/category";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
-import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
-interface NotePageProps {
+interface AdminNotePageProps {
   params: {
-    categoryPath: string[];
+    uuid: string;
   };
 }
 
@@ -25,29 +23,18 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
-}: NotePageProps): Promise<Metadata> {
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
-
-  return getMedatadaTitle(Modes.NOTES, id, category);
+}: AdminNotePageProps): Promise<Metadata> {
+  const { uuid } = params;
+  return getMedatadaTitle(Modes.NOTES, uuid, "Admin");
 }
 
-export default async function NotePage({ params }: NotePageProps) {
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
-  const user = await getCurrentUser();
-  const username = user?.username || "";
+export default async function AdminNotePage({ params }: AdminNotePageProps) {
+  const { uuid } = params;
   const hasContentAccess = await canAccessAllContent();
+
+  if (!hasContentAccess) {
+    redirect("/");
+  }
 
   await CheckForNeedsMigration();
 
@@ -60,16 +47,7 @@ export default async function NotePage({ params }: NotePageProps) {
     redirect("/");
   }
 
-  let note = await getNoteById(id, category, username);
-
-  if (!note && hasContentAccess) {
-    const allDocsResult = await getAllNotes();
-    if (allDocsResult.success && allDocsResult.data) {
-      note = allDocsResult.data.find(
-        (doc) => doc.id === id && doc.category === category
-      );
-    }
-  }
+  const note = await getNoteById(uuid);
 
   if (!note) {
     redirect("/");

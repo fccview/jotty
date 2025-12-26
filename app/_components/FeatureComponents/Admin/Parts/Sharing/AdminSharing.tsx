@@ -45,8 +45,12 @@ const handleUnsharePublicItem = async (
 
 export const AdminSharing = () => {
   const t = useTranslations();
-  const { allSharedItems, globalSharing: rawGlobalSharing } = useAppMode();
+  const { allSharedItems, globalSharing: rawGlobalSharing, user, appSettings } = useAppMode();
   const colors = useThemeColors();
+
+  const isSuperAdmin = user?.isSuperAdmin || false;
+  const adminContentAccess = appSettings?.adminContentAccess || "yes";
+  const hasContentAccess = isSuperAdmin || adminContentAccess !== "no";
 
   const totalSharedChecklists = allSharedItems?.checklists.length || 0;
   const totalSharedNotes = allSharedItems?.notes.length || 0;
@@ -178,72 +182,87 @@ export const AdminSharing = () => {
 
       <section className="space-y-6">
         <h2 className="text-xl font-semibold">{t('admin.sharedCMS')}</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="space-y-4">
-            <div className="rounded-md border bg-card p-6 shadow-sm">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="rounded-jotty bg-primary/10 p-2">
-                  <CheckmarkSquare04Icon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-semibold">{t('checklists.sharedChecklists')}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {totalSharedChecklists} {t('checklists.title')}
-                  </p>
-                </div>
-              </div>
-              <AdminSharedItemsList items={allSharedItems?.checklists || []} />
+        {!hasContentAccess && (
+          <div className="bg-muted border border-border rounded-jotty p-4 flex items-start gap-3">
+            <Globe02Icon className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">
+                {t('admin.contentHidden')}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('admin.noSharingPermissionsLabel')}
+              </p>
             </div>
           </div>
+        )}
+        {hasContentAccess && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="space-y-4">
+              <div className="rounded-md border bg-card p-6 shadow-sm">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="rounded-jotty bg-primary/10 p-2">
+                    <CheckmarkSquare04Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">{t('checklists.sharedChecklists')}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {totalSharedChecklists} {t('checklists.title')}
+                    </p>
+                  </div>
+                </div>
+                <AdminSharedItemsList items={allSharedItems?.checklists || []} />
+              </div>
+            </div>
 
-          <div className="space-y-4">
-            <div className="rounded-md border bg-card p-6 shadow-sm">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="rounded-jotty bg-primary/10 p-2">
-                  <File02Icon className="h-5 w-5 text-primary" />
+            <div className="space-y-4">
+              <div className="rounded-md border bg-card p-6 shadow-sm">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="rounded-jotty bg-primary/10 p-2">
+                    <File02Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">{t('notes.sharedNotes')}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {totalSharedNotes} {t('notes.title')}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold">{t('notes.sharedNotes')}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {totalSharedNotes} {t('notes.title')}
-                  </p>
-                </div>
+                <AdminSharedItemsList items={allSharedItems?.notes || []} />
               </div>
-              <AdminSharedItemsList items={allSharedItems?.notes || []} />
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <div className="rounded-md border bg-card p-6 shadow-sm">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="rounded-jotty bg-primary/10 p-2">
-                  <Globe02Icon className="h-5 w-5 text-primary" />
+            <div className="space-y-4">
+              <div className="rounded-md border bg-card p-6 shadow-sm">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="rounded-jotty bg-primary/10 p-2">
+                    <Globe02Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">{t('sharing.publicShares')}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t('admin.totalPublicItems', { count: totalPublicShares })}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold">{t('sharing.publicShares')}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {t('admin.totalPublicItems', { count: totalPublicShares })}
-                  </p>
-                </div>
+                <AdminSharedItemsList
+                  items={[
+                    ...(allSharedItems?.public.checklists || []),
+                    ...(allSharedItems?.public.notes || []),
+                  ]}
+                  onUnshare={(item) => {
+                    const isChecklist = allSharedItems?.public.checklists.some(
+                      (c) => c.id === item.id && c.category === item.category
+                    );
+                    handleUnsharePublicItem(
+                      item,
+                      isChecklist ? ItemTypes.CHECKLIST : ItemTypes.NOTE
+                    );
+                  }}
+                />
               </div>
-              <AdminSharedItemsList
-                items={[
-                  ...(allSharedItems?.public.checklists || []),
-                  ...(allSharedItems?.public.notes || []),
-                ]}
-                onUnshare={(item) => {
-                  const isChecklist = allSharedItems?.public.checklists.some(
-                    (c) => c.id === item.id && c.category === item.category
-                  );
-                  handleUnsharePublicItem(
-                    item,
-                    isChecklist ? ItemTypes.CHECKLIST : ItemTypes.NOTE
-                  );
-                }}
-              />
             </div>
           </div>
-        </div>
+        )}
       </section>
     </div>
   );

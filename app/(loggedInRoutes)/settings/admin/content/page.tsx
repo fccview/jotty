@@ -3,13 +3,13 @@ import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllNotes } from "@/app/_server/actions/note";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
-import { isAdmin } from "@/app/_server/actions/users";
+import { canAccessAllContent } from "@/app/_server/actions/users";
 import { notFound } from "next/navigation";
 
 export default async function AdminContentPage() {
-    const admin = await isAdmin();
+    const hasAccess = await canAccessAllContent();
 
-    if (!admin) {
+    if (!hasAccess) {
         return notFound();
     }
 

@@ -397,8 +397,15 @@ export const decryptNoteContent = async (
         if (publicKey) {
           verificationKeys = await openpgp.readKey({ armoredKey: publicKey });
         }
-      } catch {
-        // Continue without verification keys if they can't be loaded
+      } catch (error) {
+        const { logAudit } = await import("@/app/_server/actions/log");
+        await logAudit({
+          level: "DEBUG",
+          action: "key_load",
+          category: "encryption",
+          success: false,
+          errorMessage: "Failed to load verification keys - continuing without verification",
+        });
       }
 
       const { data: decrypted, signatures } = await openpgp.decrypt({

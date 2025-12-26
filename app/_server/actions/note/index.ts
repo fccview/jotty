@@ -405,7 +405,15 @@ const _checkDataFilesNeedMigration = async (): Promise<boolean> => {
           }
         }
       } catch (error) {
-        // Continue checking other directories
+        const { logAudit } = await import("@/app/_server/actions/log");
+        await logAudit({
+          level: "DEBUG",
+          action: "migration_check",
+          category: "note",
+          success: false,
+          errorMessage: "Error checking directory for migration",
+          metadata: { error: String(error) }
+        });
       }
 
       return false;
@@ -423,8 +431,15 @@ const _checkForMigrationNeeded = async (): Promise<boolean> => {
     const { SHARED_ITEMS_FILE } = await import("@/app/_consts/files");
     await fs.access(SHARED_ITEMS_FILE);
     return true;
-  } catch {
-    // No sharing migration needed
+  } catch (error) {
+    const { logAudit } = await import("@/app/_server/actions/log");
+    await logAudit({
+      level: "DEBUG",
+      action: "migration_check",
+      category: "sharing",
+      success: false,
+      errorMessage: "Shared items file doesn't exist - no migration needed",
+    });
   }
 
   try {
@@ -1084,8 +1099,8 @@ export const cloneNote = async (formData: FormData) => {
     const newId = path.basename(filename, ".md");
     const clonedNote = await getNoteById(
       newId,
-      currentUser?.username,
-      targetCategory
+      targetCategory,
+      currentUser?.username
     );
 
     try {

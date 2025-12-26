@@ -209,6 +209,7 @@ export const getSettings = async () => {
       notifyNewUpdates: "yes",
       maximumFileSize: MAX_FILE_SIZE,
       parseContent: "yes",
+      adminContentAccess: "yes",
       editor: {
         enableSlashCommands: true,
         enableBubbleMenu: true,
@@ -249,6 +250,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
           notifyNewUpdates: "yes",
           parseContent: "yes",
           maximumFileSize: MAX_FILE_SIZE,
+          adminContentAccess: "yes",
           editor: {
             enableSlashCommands: true,
             enableBubbleMenu: true,
@@ -257,6 +259,10 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
           },
         };
       }
+    }
+
+    if (!settings.adminContentAccess) {
+      settings.adminContentAccess = "yes";
     }
 
     if (!settings.editor) {
@@ -279,16 +285,27 @@ export const updateAppSettings = async (
   formData: FormData
 ): Promise<Result<null>> => {
   try {
-    const admin = await isAdmin();
-    if (!admin) {
+    const currentUser = await getCurrentUser();
+    if (!currentUser?.isAdmin) {
       await logAudit({
         level: "WARNING",
         action: "app_settings_updated",
         category: "settings",
         success: false,
-        errorMessage: "Unauthorized",
+        errorMessage: "Unauthorized: Admin access required",
       });
-      return { success: false, error: "Unauthorized" };
+      return { success: false, error: "Unauthorized: Admin access required" };
+    }
+
+    if (!currentUser?.isSuperAdmin) {
+      await logAudit({
+        level: "WARNING",
+        action: "app_settings_updated",
+        category: "settings",
+        success: false,
+        errorMessage: "Unauthorized: Super admin access required",
+      });
+      return { success: false, error: "Unauthorized: Only the system owner can modify app settings" };
     }
 
     const appName = (formData.get("appName") as string) || "";
@@ -304,6 +321,8 @@ export const updateAppSettings = async (
       (formData.get("parseContent") as "yes" | "no") || "yes";
     const maximumFileSize =
       Number(formData.get("maximumFileSize")) || MAX_FILE_SIZE;
+    const adminContentAccess =
+      (formData.get("adminContentAccess") as "yes" | "no") || "yes";
 
     let editorSettings = {
       enableSlashCommands: true,
@@ -332,6 +351,7 @@ export const updateAppSettings = async (
       notifyNewUpdates: notifyNewUpdates,
       parseContent: parseContent,
       maximumFileSize: maximumFileSize,
+      adminContentAccess: adminContentAccess,
       editor: editorSettings,
     };
 
@@ -379,9 +399,13 @@ export const uploadAppIcon = async (
   formData: FormData
 ): Promise<Result<{ url: string; filename: string }>> => {
   try {
-    const admin = await isAdmin();
-    if (!admin) {
-      return { success: false, error: "Unauthorized" };
+    const currentUser = await getCurrentUser();
+    if (!currentUser?.isAdmin) {
+      return { success: false, error: "Unauthorized: Admin access required" };
+    }
+
+    if (!currentUser?.isSuperAdmin) {
+      return { success: false, error: "Unauthorized: Only the system owner can upload app icons" };
     }
 
     const file = formData.get("file") as File;

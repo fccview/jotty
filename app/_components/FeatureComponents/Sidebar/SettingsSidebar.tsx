@@ -52,11 +52,15 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
     const pathname = usePathname();
     const router = useRouter();
     const { checkNavigation } = useNavigationGuard();
-    const { isDemoMode, isRwMarkable, appSettings } = useAppMode();
+    const { isDemoMode, isRwMarkable, appSettings, user } = useAppMode();
     const { sidebarWidth, isResizing, startResizing } = useSettingsSidebar();
 
     const [profileCollapsed, setProfileCollapsed] = useState(false);
     const [adminCollapsed, setAdminCollapsed] = useState(false);
+
+    const isSuperAdmin = user?.isSuperAdmin || false;
+    const adminContentAccess = appSettings?.adminContentAccess || "yes";
+    const hasContentAccess = isSuperAdmin || adminContentAccess !== "no";
 
     const profileItems: SettingsNavItem[] = [
         {
@@ -107,7 +111,7 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
         },
     ];
 
-    const adminItems: SettingsNavItem[] = [
+    const allAdminItems: SettingsNavItem[] = [
         {
             id: "overview",
             label: t("admin.overview"),
@@ -157,6 +161,10 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
             path: "/settings/admin/audit-logs",
         },
     ];
+
+    const adminItems = hasContentAccess
+        ? allAdminItems
+        : allAdminItems.filter(item => item.id !== "content");
 
     const sections: SettingsSection[] = [
         {

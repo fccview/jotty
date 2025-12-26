@@ -358,15 +358,12 @@ export const useChecklist = ({
 
   const handleEditItem = async (itemId: string, text: string) => {
     const formData = new FormData();
-    const owner = await getUserByChecklist(
-      localList.id,
-      localList.category || "Uncategorized"
-    );
+    const currentUser = await getCurrentUser();
     formData.append("listId", localList.id);
     formData.append("itemId", itemId);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
-    formData.append("user", owner.data?.username || "");
+    formData.append("user", localList.owner || currentUser?.username || "");
 
     const result = await updateItem(localList, formData);
 
@@ -579,14 +576,9 @@ export const useChecklist = ({
     }
     const result = await createItem(localList, formData, currentUser?.username);
 
-    const checklistOwner = await getUserByChecklist(
-      localList.id,
-      localList.category || "Uncategorized"
-    );
-
     const updatedList = await getListById(
       localList.id,
-      checklistOwner?.data?.username,
+      localList.owner || currentUser?.username,
       localList.category
     );
 

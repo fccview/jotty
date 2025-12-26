@@ -13,6 +13,7 @@ import { User as UserType, Checklist, Note } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface AdminUsersProps {
     users: UserType[];
@@ -40,6 +41,9 @@ export const AdminUsers = ({
     deletingUser,
 }: AdminUsersProps) => {
     const t = useTranslations();
+    const { user: currentUser } = useAppMode();
+    const isSuperAdmin = currentUser?.isSuperAdmin || false;
+
     const filteredUsers = users.filter((user) =>
         user.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -102,6 +106,11 @@ export const AdminUsers = ({
                                             {user.isAdmin && (
                                                 <ShieldUserIcon className="h-4 w-4 text-primary" />
                                             )}
+                                            {user.isSuperAdmin && (
+                                                <span className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium">
+                                                    {t("admin.systemOwner")}
+                                                </span>
+                                            )}
                                         </div>
                                         <p className="text-sm text-muted-foreground">
                                             {t("admin.userRole", {
@@ -118,7 +127,8 @@ export const AdminUsers = ({
                                         size="sm"
                                         onClick={() => onEditUser(user)}
                                         className="h-8 w-8 p-0"
-                                        title={t('admin.editUser')}
+                                        title={user.isSuperAdmin && !isSuperAdmin ? t("admin.systemOwner") : t('admin.editUser')}
+                                        disabled={user.isSuperAdmin && !isSuperAdmin}
                                     >
                                         <UserEdit01Icon className="h-4 w-4" />
                                     </Button>
@@ -127,9 +137,9 @@ export const AdminUsers = ({
                                             variant="destructive"
                                             size="sm"
                                             onClick={() => onDeleteUser(user)}
-                                            disabled={deletingUser === user.username}
+                                            disabled={deletingUser === user.username || (user.isSuperAdmin && !isSuperAdmin)}
                                             className="h-8 w-8 p-0"
-                                            title={t('admin.deleteUser')}
+                                            title={user.isSuperAdmin && !isSuperAdmin ? t("admin.cannotDeleteSuperAdmin") : t('admin.deleteUser')}
                                         >
                                             {deletingUser === user.username ? (
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-destructive mx-auto"></div>

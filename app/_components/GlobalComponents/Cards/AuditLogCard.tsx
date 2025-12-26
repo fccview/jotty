@@ -71,9 +71,21 @@ const getLevelBadgeColor = (level: string) => {
 };
 
 export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) => {
-  const { isDemoMode } = useAppMode();
+  const { isDemoMode, user, appSettings } = useAppMode();
   const t = useTranslations();
   const [showDetails, setShowDetails] = useState(false);
+
+  const isSuperAdmin = user?.isSuperAdmin || false;
+  const adminContentAccess = appSettings?.adminContentAccess || "yes";
+  const hasContentAccess = isSuperAdmin || adminContentAccess !== "no";
+  const isOwnLog = user?.username === log.username;
+
+  const shouldRedactContent = !hasContentAccess && !isOwnLog && (
+    log.resourceType === "checklist" ||
+    log.resourceType === "note"
+  );
+
+  const displayResourceTitle = shouldRedactContent ? t("admin.auditLogContentRedacted") : log.resourceTitle;
 
   const categoryKey = log.category === "user" ? "userManagement" : log.category;
 
@@ -106,10 +118,10 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
       success: log.success,
       ...(log.resourceType && { resourceType: log.resourceType }),
       ...(log.resourceId && { resourceId: log.resourceId }),
-      ...(log.resourceTitle && { resourceTitle: log.resourceTitle }),
+      ...(log.resourceTitle && { resourceTitle: shouldRedactContent ? t("admin.auditLogContentRedacted") : log.resourceTitle }),
       ...(log.ipAddress && { ipAddress: isDemoMode ? "Hidden" : log.ipAddress }),
       ...(log.userAgent && { userAgent: isDemoMode ? "Hidden" : log.userAgent }),
-      ...(log.metadata && { metadata: log.metadata }),
+      ...(log.metadata && { metadata: shouldRedactContent && log.metadata ? { ...log.metadata, targetUser: log.metadata.targetUser } : log.metadata }),
       ...(log.errorMessage && { errorMessage: log.errorMessage }),
       ...(log.duration && { duration: `${log.duration}ms` }),
     },
@@ -149,7 +161,12 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
             {log.resourceType && log.resourceTitle && (
               <div className="text-sm text-muted-foreground">
                 <span className="font-medium capitalize">{log.resourceType}:</span>{" "}
-                <span className="font-mono text-xs">{log.resourceTitle}</span>
+                <span className="font-mono text-xs">{displayResourceTitle}</span>
+                {log.resourceId && (
+                  <span className="text-xs text-muted-foreground ml-2">
+                    (ID: {log.resourceId})
+                  </span>
+                )}
               </div>
             )}
 

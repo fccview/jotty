@@ -154,7 +154,14 @@ const _getUserByItemUuid = async (
         }
       } catch (error) {
         console.log("Error checking user", user.username, ":", error);
-        // Continue to next user
+        await logAudit({
+          level: "DEBUG",
+          action: "user_item_check",
+          category: "user",
+          success: false,
+          errorMessage: `Error checking items for user: ${user.username}`,
+          metadata: { error: String(error) }
+        });
         continue;
       }
     }
@@ -181,6 +188,11 @@ async function _deleteUserCore(username: string): Promise<Result<null>> {
   }
 
   const userToDelete = allUsers[userIndex];
+
+  if (userToDelete.isSuperAdmin) {
+    return { success: false, error: "Cannot delete the super admin (system owner)" };
+  }
+
   if (userToDelete.isAdmin) {
     const adminCount = allUsers.filter((user: User) => user.isAdmin).length;
     if (adminCount === 1) {
@@ -550,11 +562,11 @@ export const updateUser = async (
       return { success: false, error: "Unauthorized: Admin access required" };
     }
 
-    const { targetUsername, newUsername, password, admin } = getFormData(
+    const { username: targetUsername, newUsername, password, isAdmin: adminStr } = getFormData(
       formData,
       ["username", "newUsername", "password", "isAdmin"]
     );
-    const isAdmin = admin === "true";
+    const isAdmin = adminStr === "true";
     const updates: UserUpdatePayload = {};
 
     if (!targetUsername || !newUsername || newUsername.length < 3) {
@@ -564,9 +576,46 @@ export const updateUser = async (
       };
     }
 
+    const allUsers = await readJsonFile(USERS_FILE);
+    const targetUser = allUsers.find((u: User) => u.username === targetUsername);
+
+    if (!targetUser) {
+      return { success: false, error: "User not found" };
+    }
+
+    if (targetUser.isSuperAdmin && !adminUser?.isSuperAdmin) {
+      await logUserEvent("user_updated", targetUsername, false, {
+        error: "Unauthorized: Cannot modify super admin",
+        attemptedBy: adminUser?.username
+      });
+      return {
+        success: false,
+        error: "Unauthorized: Cannot modify the system owner account"
+      };
+    }
+
+    if (targetUser.isSuperAdmin && adminUser?.username !== targetUsername) {
+      await logUserEvent("user_updated", targetUsername, false, {
+        error: "Unauthorized: Only super admin can modify their own account",
+        attemptedBy: adminUser?.username
+      });
+      return {
+        success: false,
+        error: "Only the system owner can modify their own account"
+      };
+    }
+
     if (newUsername !== targetUsername) {
       updates.username = newUsername;
     }
+
+    if (targetUser.isSuperAdmin && !isAdmin) {
+      return {
+        success: false,
+        error: "Cannot remove admin privileges from the system owner"
+      };
+    }
+
     updates.isAdmin = isAdmin;
 
     if (password) {
@@ -703,4 +752,27 @@ export const getUserByNote = async (
   noteCategory: string
 ): Promise<Result<User>> => {
   return _getUserByItem(noteID, noteCategory, ItemTypes.NOTE);
+};
+
+export const canAccessAllContent = async (): Promise<boolean> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return false;
+
+    if (currentUser.isSuperAdmin) return true;
+
+    if (!currentUser.isAdmin) return false;
+
+    const { getAppSettings } = await import("@/app/_server/actions/config");
+    const settingsResult = await getAppSettings();
+
+    if (!settingsResult.success || !settingsResult.data) {
+      return true;
+    }
+
+    return settingsResult.data.adminContentAccess !== "no";
+  } catch (error) {
+    console.error("Error checking content access:", error);
+    return true;
+  }
 };

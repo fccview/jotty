@@ -291,6 +291,7 @@ export interface AppSettings {
   notifyNewUpdates: "yes" | "no";
   parseContent: "yes" | "no";
   maximumFileSize: number;
+  adminContentAccess?: "yes" | "no";
   editor: {
     enableSlashCommands: boolean;
     enableBubbleMenu: boolean;
@@ -385,7 +386,9 @@ export type AuditCategory =
   | "settings"
   | "encryption"
   | "api"
-  | "system";
+  | "system"
+  | "file"
+  | "upload";
 
 export type AuditAction =
   | "login"
@@ -432,7 +435,13 @@ export type AuditAction =
   | "api_key_generated"
   | "api_request"
   | "export_created"
-  | "logs_cleaned";
+  | "logs_cleaned"
+  | "file_delete"
+  | "dir_delete"
+  | "migration_check"
+  | "key_load"
+  | "file_scan"
+  | "user_item_check";
 
 export interface AuditMetadata {
   [key: string]: any;
