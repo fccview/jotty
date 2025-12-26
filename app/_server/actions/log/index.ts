@@ -36,7 +36,7 @@ const shouldLog = (level: AuditLogLevel): boolean => {
   return LOG_LEVEL_PRIORITY[level] >= LOG_LEVEL_PRIORITY[configuredLevel];
 };
 
-const getDailyLogPath = (username: string, date: Date = new Date()): string => {
+export const getDailyLogPath = async (username: string, date: Date = new Date()): Promise<string> => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
@@ -109,7 +109,7 @@ export const logAudit = async (params: {
 };
 
 const writeToDailyLog = async (entry: AuditLogEntry, username: string): Promise<void> => {
-  const logFilePath = getDailyLogPath(username);
+  const logFilePath = await getDailyLogPath(username);
   await ensureDir(path.dirname(logFilePath));
 
   let logs: AuditLogEntry[] = [];
@@ -195,7 +195,7 @@ export const getAuditLogs = async (
     ? new Date(filters.startDate)
     : new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const dates = getDateRange(startDate, endDate);
+  const dates = await getDateRange(startDate, endDate);
 
   if (isUserAdmin && !filters.username) {
     const { USERS_FILE } = await import("@/app/_consts/files");
@@ -203,7 +203,7 @@ export const getAuditLogs = async (
 
     for (const user of users) {
       for (const date of dates) {
-        const logPath = getDailyLogPath(user.username, date);
+        const logPath = await getDailyLogPath(user.username, date);
 
         try {
           const content = await fs.readFile(logPath, "utf-8");
@@ -220,7 +220,7 @@ export const getAuditLogs = async (
       : currentUser.username;
 
     for (const date of dates) {
-      const logPath = getDailyLogPath(targetUsername, date);
+      const logPath = await getDailyLogPath(targetUsername, date);
 
       try {
         const content = await fs.readFile(logPath, "utf-8");
@@ -263,7 +263,7 @@ export const getAuditLogs = async (
   return { logs: paginatedLogs, total };
 };
 
-const getDateRange = (start: Date, end: Date): Date[] => {
+export const getDateRange = async (start: Date, end: Date): Promise<Date[]> => {
   const dates: Date[] = [];
   const current = new Date(start);
 
@@ -339,14 +339,207 @@ const convertToCSV = (logs: AuditLogEntry[]): string => {
   return csvContent;
 };
 
-export const cleanupOldLogs = async (): Promise<{
+export const checkCleanupNeeded = async (
+  username?: string
+): Promise<{
+  needed: boolean;
+  count: number;
+  maxAge: number;
+}> => {
+  try {
+    const { getSettings } = await import("@/app/_server/actions/config");
+    const settings = await getSettings();
+    const maxLogAgeDays = settings?.maxLogAgeDays ?? 0;
+
+    if (maxLogAgeDays === 0) {
+      return { needed: false, count: 0, maxAge: 0 };
+    }
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - maxLogAgeDays);
+
+    let oldFileCount = 0;
+    const logsBaseDir = path.join(process.cwd(), "data/logs");
+
+    try {
+      await fs.access(logsBaseDir);
+    } catch {
+      return { needed: false, count: 0, maxAge: maxLogAgeDays };
+    }
+
+    const userDirs = username
+      ? [{ name: username, isDirectory: () => true }]
+      : await fs.readdir(logsBaseDir, { withFileTypes: true });
+
+    for (const userEntry of userDirs) {
+      if (!userEntry.isDirectory()) continue;
+
+      const userPath = path.join(logsBaseDir, userEntry.name);
+
+      try {
+        const years = await fs.readdir(userPath, { withFileTypes: true });
+
+        for (const yearEntry of years) {
+          if (!yearEntry.isDirectory()) continue;
+
+          const yearPath = path.join(userPath, yearEntry.name);
+          const months = await fs.readdir(yearPath, { withFileTypes: true });
+
+          for (const monthEntry of months) {
+            if (!monthEntry.isDirectory()) continue;
+
+            const monthPath = path.join(yearPath, monthEntry.name);
+            const days = await fs.readdir(monthPath, { withFileTypes: true });
+
+            for (const dayEntry of days) {
+              if (!dayEntry.isFile() || !dayEntry.name.endsWith(".json")) continue;
+
+              const day = dayEntry.name.replace(".json", "");
+              const fileDate = new Date(
+                `${yearEntry.name}-${monthEntry.name}-${day}`
+              );
+
+              if (fileDate < cutoffDate) {
+                oldFileCount++;
+              }
+            }
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return {
+      needed: oldFileCount > 0,
+      count: oldFileCount,
+      maxAge: maxLogAgeDays,
+    };
+  } catch (error) {
+    console.error("Error checking cleanup needed:", error);
+    return { needed: false, count: 0, maxAge: 0 };
+  }
+};
+
+export const cleanupOldLogs = async (
+  username?: string,
+  maxAgeDays?: number
+): Promise<{
   success: boolean;
   deletedFiles: number;
   error?: string;
 }> => {
   try {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    let ageDays = maxAgeDays;
+
+    if (ageDays === undefined) {
+      const { getSettings } = await import("@/app/_server/actions/config");
+      const settings = await getSettings();
+      ageDays = settings?.maxLogAgeDays ?? 0;
+    }
+
+    if (ageDays === 0) {
+      return { success: true, deletedFiles: 0 };
+    }
+
+    if (!ageDays || ageDays < 0) {
+      return { success: true, deletedFiles: 0 };
+    }
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - ageDays);
+
+    let deletedCount = 0;
+    const logsBaseDir = path.join(process.cwd(), "data/logs");
+
+    try {
+      await fs.access(logsBaseDir);
+    } catch {
+      return { success: true, deletedFiles: 0 };
+    }
+
+    const userDirs = username
+      ? [{ name: username, isDirectory: () => true }]
+      : await fs.readdir(logsBaseDir, { withFileTypes: true });
+
+    for (const userEntry of userDirs) {
+      if (!userEntry.isDirectory()) continue;
+
+      const userPath = path.join(logsBaseDir, userEntry.name);
+
+      try {
+        const years = await fs.readdir(userPath, { withFileTypes: true });
+
+        for (const yearEntry of years) {
+          if (!yearEntry.isDirectory()) continue;
+
+          const yearPath = path.join(userPath, yearEntry.name);
+          const months = await fs.readdir(yearPath, { withFileTypes: true });
+
+          for (const monthEntry of months) {
+            if (!monthEntry.isDirectory()) continue;
+
+            const monthPath = path.join(yearPath, monthEntry.name);
+            const days = await fs.readdir(monthPath, { withFileTypes: true });
+
+            for (const dayEntry of days) {
+              if (!dayEntry.isFile() || !dayEntry.name.endsWith(".json")) continue;
+
+              const day = dayEntry.name.replace(".json", "");
+              const fileDate = new Date(
+                `${yearEntry.name}-${monthEntry.name}-${day}`
+              );
+
+              if (fileDate < cutoffDate) {
+                const filePath = path.join(monthPath, dayEntry.name);
+                await fs.unlink(filePath);
+                deletedCount++;
+              }
+            }
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    const currentUser = await getCurrentUser();
+
+    await logAudit({
+      level: "INFO",
+      action: "logs_cleaned",
+      category: "system",
+      success: true,
+      username: currentUser?.username || username || "unknown",
+      metadata: { deletedFiles: deletedCount, maxAgeDays: ageDays },
+    });
+
+    return { success: true, deletedFiles: deletedCount };
+  } catch (error: any) {
+    return {
+      success: false,
+      deletedFiles: 0,
+      error: error.message || "Cleanup failed",
+    };
+  }
+};
+
+export const deleteAllLogs = async (): Promise<{
+  success: boolean;
+  deletedFiles: number;
+  error?: string;
+}> => {
+  try {
+    const currentUser = await getCurrentUser();
+    const admin = await isAdmin();
+
+    if (!admin) {
+      return {
+        success: false,
+        deletedFiles: 0,
+        error: "Admin access required",
+      };
+    }
 
     let deletedCount = 0;
     const logsBaseDir = path.join(process.cwd(), "data/logs");
@@ -363,45 +556,43 @@ export const cleanupOldLogs = async (): Promise<{
       if (!userEntry.isDirectory()) continue;
 
       const userPath = path.join(logsBaseDir, userEntry.name);
-      const years = await fs.readdir(userPath, { withFileTypes: true });
 
-      for (const yearEntry of years) {
-        if (!yearEntry.isDirectory()) continue;
+      try {
+        const years = await fs.readdir(userPath, { withFileTypes: true });
 
-        const yearPath = path.join(userPath, yearEntry.name);
-        const months = await fs.readdir(yearPath, { withFileTypes: true });
+        for (const yearEntry of years) {
+          if (!yearEntry.isDirectory()) continue;
 
-        for (const monthEntry of months) {
-          if (!monthEntry.isDirectory()) continue;
+          const yearPath = path.join(userPath, yearEntry.name);
+          const months = await fs.readdir(yearPath, { withFileTypes: true });
 
-          const monthPath = path.join(yearPath, monthEntry.name);
-          const days = await fs.readdir(monthPath, { withFileTypes: true });
+          for (const monthEntry of months) {
+            if (!monthEntry.isDirectory()) continue;
 
-          for (const dayEntry of days) {
-            if (!dayEntry.isFile() || !dayEntry.name.endsWith(".json")) continue;
+            const monthPath = path.join(yearPath, monthEntry.name);
+            const days = await fs.readdir(monthPath, { withFileTypes: true });
 
-            const day = dayEntry.name.replace(".json", "");
-            const fileDate = new Date(
-              `${yearEntry.name}-${monthEntry.name}-${day}`
-            );
+            for (const dayEntry of days) {
+              if (!dayEntry.isFile() || !dayEntry.name.endsWith(".json")) continue;
 
-            if (fileDate < thirtyDaysAgo) {
               const filePath = path.join(monthPath, dayEntry.name);
               await fs.unlink(filePath);
               deletedCount++;
             }
           }
         }
+      } catch {
+        continue;
       }
     }
 
     await logAudit({
-      level: "INFO",
+      level: "WARNING",
       action: "logs_cleaned",
       category: "system",
       success: true,
-      username: "system",
-      metadata: { deletedFiles: deletedCount },
+      username: currentUser?.username || "unknown",
+      metadata: { deletedFiles: deletedCount, deleteAll: true },
     });
 
     return { success: true, deletedFiles: deletedCount };
@@ -409,7 +600,7 @@ export const cleanupOldLogs = async (): Promise<{
     return {
       success: false,
       deletedFiles: 0,
-      error: error.message || "Cleanup failed",
+      error: error.message || "Delete all logs failed",
     };
   }
 };

@@ -294,6 +294,7 @@ export interface AppSettings {
   parseContent: "yes" | "no";
   maximumFileSize: number;
   adminContentAccess?: "yes" | "no";
+  maxLogAgeDays?: number;
   editor: {
     enableSlashCommands: boolean;
     enableBubbleMenu: boolean;

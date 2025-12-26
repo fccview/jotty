@@ -5,24 +5,39 @@ import { AuditLogEntry, AuditLogFilters } from "@/app/_types";
 import { AuditLogCard } from "@/app/_components/GlobalComponents/Cards/AuditLogCard";
 import { AuditLogsFilters } from "@/app/_components/GlobalComponents/Filters/AuditLogsFilters";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Download01Icon, ArrowLeft01Icon, ArrowRight01Icon } from "hugeicons-react";
+import { Download01Icon, ArrowLeft01Icon, ArrowRight01Icon, AlertCircleIcon } from "hugeicons-react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
-import { getAuditLogs, exportAuditLogs } from "@/app/_server/actions/log";
+import { getAuditLogs, exportAuditLogs, cleanupOldLogs } from "@/app/_server/actions/log";
+import { useToast } from "@/app/_providers/ToastProvider";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface AuditLogsTabClientProps {
     initialLogs: AuditLogEntry[];
     initialTotal: number;
+    cleanupNeeded: boolean;
+    oldLogsCount: number;
+    maxLogAge: number;
 }
 
-export const AuditLogsTabClient = ({ initialLogs, initialTotal }: AuditLogsTabClientProps) => {
+export const AuditLogsTabClient = ({
+    initialLogs,
+    initialTotal,
+    cleanupNeeded,
+    oldLogsCount,
+    maxLogAge
+}: AuditLogsTabClientProps) => {
     const t = useTranslations();
+    const { showToast } = useToast();
+    const { user } = useAppMode();
     const [logs, setLogs] = useState<AuditLogEntry[]>(initialLogs);
     const [filters, setFilters] = useState<AuditLogFilters>({});
     const [isLoading, setIsLoading] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [isCleaning, setIsCleaning] = useState(false);
     const [total, setTotal] = useState(initialTotal);
     const [page, setPage] = useState(1);
+    const [showCleanupCard, setShowCleanupCard] = useState(cleanupNeeded);
     const limit = 20;
 
     useEffect(() => {
@@ -72,6 +87,40 @@ export const AuditLogsTabClient = ({ initialLogs, initialTotal }: AuditLogsTabCl
         }
     };
 
+    const handleCleanupNow = async () => {
+        setIsCleaning(true);
+        try {
+            const result = await cleanupOldLogs(user?.username);
+
+            if (result.success) {
+                showToast({
+                    type: "success",
+                    title: t("auditLogs.cleanupSuccess"),
+                    message: t("auditLogs.cleanupSuccessMessage", {
+                        count: result.deletedFiles
+                    })
+                });
+                setShowCleanupCard(false);
+                fetchLogs();
+            } else {
+                showToast({
+                    type: "error",
+                    title: t("auditLogs.cleanupError"),
+                    message: result.error || t("auditLogs.cleanupError")
+                });
+            }
+        } catch (error) {
+            console.error("Error cleaning up logs:", error);
+            showToast({
+                type: "error",
+                title: t("auditLogs.cleanupError"),
+                message: error instanceof Error ? error.message : t("auditLogs.cleanupError")
+            });
+        } finally {
+            setIsCleaning(false);
+        }
+    };
+
     const totalPages = Math.ceil(total / limit);
 
     return (
@@ -84,6 +133,49 @@ export const AuditLogsTabClient = ({ initialLogs, initialTotal }: AuditLogsTabCl
                 }}
                 showUserFilter={false}
             />
+
+            {showCleanupCard && maxLogAge > 0 && (
+                <div className="bg-warning/10 border border-warning rounded-jotty p-4">
+                    <div className="flex items-start gap-3">
+                        <AlertCircleIcon className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground">
+                                {t("auditLogs.oldLogsFound", {
+                                    count: oldLogsCount,
+                                    days: maxLogAge
+                                })}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                {t("auditLogs.oldLogsFoundDescription")}
+                            </p>
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                            <Button
+                                size="sm"
+                                onClick={handleCleanupNow}
+                                disabled={isCleaning}
+                            >
+                                {isCleaning ? (
+                                    <>
+                                        <Logo className="h-4 w-4 mr-2 animate-pulse" />
+                                        {t("common.cleaning")}
+                                    </>
+                                ) : (
+                                    t("auditLogs.cleanUpNow")
+                                )}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowCleanupCard(false)}
+                                disabled={isCleaning}
+                            >
+                                {t("common.dismiss")}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex items-center justify-end">
                 <div className="flex gap-2">

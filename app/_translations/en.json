@@ -150,7 +150,9 @@
     "category": "Category",
     "exportJson": "Export JSON",
     "exportCsv": "Export CSV",
-    "showingResults": "Showing {start}-{end} of {total}"
+    "showingResults": "Showing {start}-{end} of {total}",
+    "dismiss": "Dismiss",
+    "cleaning": "Cleaning..."
   },
   "auth": {
     "loginTitle": "Login",
@@ -648,7 +650,9 @@
     "noSharingPermissionsLabel": "Specific shared items are hidden based on your content access permissions.",
     "contentHidden": "Content details hidden",
     "viewOnlySettingsNotice": "Only the system owner can modify these settings.",
-    "auditLogContentRedacted": "[Content Hidden]"
+    "auditLogContentRedacted": "[Content Hidden]",
+    "maxLogAgeDays": "Maximum Log Age (days)",
+    "maxLogAgeDaysDescription": "Set how long audit logs are retained. When viewing the audit logs page, you'll be prompted to clean up logs older than this threshold. Set to 0 for unlimited retention (no automatic cleanup prompts)."
   },
   "errors": {
     "notFound": "Not Found",
@@ -942,7 +946,13 @@
     "exportJSON": "Export JSON",
     "exportCSV": "Export CSV",
     "cleanupOldLogs": "Cleanup Old Logs",
-    "confirmCleanup": "Are you sure you want to delete all logs older than 30 days? This action cannot be undone.",
+    "confirmCleanup": "Are you sure you want to delete logs older than {days} days? This will affect ALL users and cannot be undone.",
+    "confirmCleanupUnlimited": "No automatic cleanup is configured (unlimited retention). You can still manually delete old logs if needed.",
+    "deleteAllLogsModalTitle": "Delete All Audit Logs",
+    "deleteAllLogsWarning": "This will delete ALL logs, not just old ones",
+    "deleteAllLogsWarningDescription": "The entire audit log history will be erased from the system.",
+    "deletingAllLogs": "Deleting All Logs...",
+    "deleteAllLogsButton": "Delete All Logs",
     "cleanupSuccess": "Successfully deleted {count} old log files",
     "cleanupError": "Failed to cleanup old logs",
     "userDescription": "View all your activity and actions in the system",
@@ -1023,6 +1033,10 @@
     "logscleaned": "Logs Cleaned",
     "recentActivity": "Recent Activity",
     "topActions": "Top Actions",
-    "mostActiveUsers": "Most Active Users"
+    "mostActiveUsers": "Most Active Users",
+    "oldLogsFound": "There are {count} log files older than {days} days.",
+    "oldLogsFoundDescription": "Would you like to clean them up? This action cannot be undone.",
+    "cleanUpNow": "Clean Up Now",
+    "cleanupSuccessMessage": "Successfully deleted {count} old log files."
   }
 }

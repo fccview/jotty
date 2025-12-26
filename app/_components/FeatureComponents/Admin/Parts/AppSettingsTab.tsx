@@ -246,6 +246,20 @@ export const AppSettingsTab = () => {
         </div>
 
         <div>
+          <Input
+            label={t("admin.maxLogAgeDays")}
+            description={t("admin.maxLogAgeDaysDescription")}
+            type="number"
+            id="maxLogAgeDays"
+            min="0"
+            value={(settings?.maxLogAgeDays ?? 0).toString()}
+            onChange={(e) => handleInputChange("maxLogAgeDays", e.target.value)}
+            disabled={!isSuperAdmin}
+            placeholder="0"
+          />
+        </div>
+
+        <div>
           <h3 className="text-lg font-semibold mb-4">{t("admin.applicationIcons")}</h3>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {iconFields.map((field) => (

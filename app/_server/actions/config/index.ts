@@ -323,6 +323,7 @@ export const updateAppSettings = async (
       Number(formData.get("maximumFileSize")) || MAX_FILE_SIZE;
     const adminContentAccess =
       (formData.get("adminContentAccess") as "yes" | "no") || "yes";
+    const maxLogAgeDays = Number(formData.get("maxLogAgeDays")) || 0;
 
     let editorSettings = {
       enableSlashCommands: true,
@@ -352,6 +353,7 @@ export const updateAppSettings = async (
       parseContent: parseContent,
       maximumFileSize: maximumFileSize,
       adminContentAccess: adminContentAccess,
+      maxLogAgeDays: maxLogAgeDays,
       editor: editorSettings,
     };
 
