@@ -9,15 +9,16 @@ import {
   encryptXChaCha,
   decryptXChaCha,
 } from "@/app/_server/actions/xchacha";
+import { logAudit } from "@/app/_server/actions/log";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useTranslations } from "next-intl";
 
 interface XChaChaEncryptionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: "encrypt" | "decrypt" | "view";
+  mode: "encrypt" | "decrypt" | "view" | "edit" | "save";
   noteContent: string;
-  onSuccess: (content: string) => void;
+  onSuccess: (content: string, passphrase?: string, method?: string) => void;
 }
 
 export const XChaChaEncryptionModal = ({
@@ -45,14 +46,44 @@ export const XChaChaEncryptionModal = ({
     if (!passphrase.trim()) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Passphrase is required",
+        title: t("common.error"),
+        message: t("encryption.passphraseRequired"),
       });
       return;
     }
 
     setIsProcessing(true);
     try {
+      if (mode === "save") {
+        const validateFormData = new FormData();
+        validateFormData.append("encryptedContent", noteContent);
+        validateFormData.append("passphrase", passphrase);
+
+        const validateResult = await decryptXChaCha(validateFormData);
+
+        if (!validateResult.success) {
+          await logAudit({
+            level: "WARNING",
+            action: "note_saved_encrypted",
+            category: "encryption",
+            success: false,
+            errorMessage: t("encryption.incorrectPassphraseForXChaChaSave")
+          });
+          showToast({
+            type: "error",
+            title: t("common.error"),
+            message: t("encryption.incorrectPassphrase"),
+          });
+          setIsProcessing(false);
+          return;
+        }
+
+        onSuccess("", passphrase, "xchacha");
+        handleClose();
+        setIsProcessing(false);
+        return;
+      }
+
       const formData = new FormData();
 
       if (mode === "encrypt") {
@@ -64,16 +95,16 @@ export const XChaChaEncryptionModal = ({
         if (result.success && result.data) {
           showToast({
             type: "success",
-            title: "Success",
-            message: "Note encrypted successfully",
+            title: t("common.success"),
+            message: t("encryption.noteEncryptedSuccessfully"),
           });
           onSuccess(result.data.encryptedContent);
           handleClose();
         } else {
           showToast({
             type: "error",
-            title: "Error",
-            message: result.error || "Failed to encrypt note",
+            title: t("common.error"),
+            message: result.error || t("encryption.failedToEncryptNote"),
           });
         }
       } else {
@@ -85,24 +116,24 @@ export const XChaChaEncryptionModal = ({
         if (result.success && result.data) {
           showToast({
             type: "success",
-            title: "Success",
-            message: "Note decrypted successfully",
+            title: t("common.success"),
+            message: t("encryption.noteDecryptedSuccessfully"),
           });
-          onSuccess(result.data.decryptedContent);
+          onSuccess(result.data.decryptedContent, passphrase, "xchacha");
           handleClose();
         } else {
           showToast({
             type: "error",
-            title: "Error",
-            message: result.error || "Failed to decrypt note",
+            title: t("common.error"),
+            message: result.error || t("encryption.failedToDecryptNote"),
           });
         }
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "An unexpected error occurred",
+        title: t("common.error"),
+        message: t("encryption.unexpectedError"),
       });
     } finally {
       setIsProcessing(false);
@@ -116,13 +147,16 @@ export const XChaChaEncryptionModal = ({
 
   const isEncrypt = mode === "encrypt";
   const isView = mode === "view";
-  const actionLabel = isEncrypt ? "Encrypt" : isView ? "View" : "Decrypt";
+  const isEdit = mode === "edit";
+  const isSave = mode === "save";
+  const actionLabel = isEncrypt ? t("encryption.encrypt") : isView ? t("common.view") : isEdit ? t("encryption.editingEncryptedNote") : isSave ? t("common.save") : t("encryption.decrypt");
+  const modalTitle = isEncrypt ? t("encryption.encryptNote") : isView ? t("encryption.viewNote") : isEdit ? t("encryption.editNote") : isSave ? t("encryption.saveEncryptedNote") : t("encryption.decryptNote");
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={`${actionLabel} Note`}
+      title={modalTitle}
       className="max-w-2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -130,30 +164,46 @@ export const XChaChaEncryptionModal = ({
           variant="info"
           title={
             isEncrypt
-              ? "Encrypting Note"
+              ? t("encryption.encryptingNote")
               : isView
-                ? "View Decrypted Content"
-                : "Decrypting Note"
+                ? t("encryption.viewDecryptedContent")
+                : isEdit
+                  ? t("encryption.editingEncryptedNote")
+                  : isSave
+                    ? t("encryption.saveEncryptedNote")
+                    : t("encryption.decryptingNote")
           }
           items={
             isEncrypt
               ? [
-                "Note content will be encrypted with XChaCha20-Poly1305",
-                "Only someone with the passphrase can decrypt it",
-                "Note title/frontmatter will remain unencrypted",
-                "Your passphrase will NEVER be stored on the server",
+                t("encryption.noteContentWillBeEncrypted"),
+                t("encryption.onlySomeoneWithPassphraseCanDecrypt"),
+                t("encryption.noteTitleWillRemainUnencrypted"),
+                t("encryption.passphraseNeverStoredOnServer"),
               ]
               : isView
                 ? [
-                  "Note content will be decrypted for viewing only",
-                  "Note will remain encrypted on the server",
-                  "You cannot edit encrypted notes",
+                  t("encryption.noteWillBeDecryptedForViewing"),
+                  t("encryption.noteWillStayEncrypted"),
+                  t("encryption.cannotEditEncryptedNotes"),
                 ]
-                : [
-                  "This will decrypt the note content",
-                  "Note content will be restored as unencrypted",
-                  "You will be able to edit the note content after decryption",
-                ]
+                : isEdit
+                  ? [
+                    t("encryption.enterPassphraseToEdit"),
+                    t("encryption.noteWillStayEncrypted"),
+                    t("encryption.autoSaveDisabledForEncrypted"),
+                  ]
+                  : isSave
+                    ? [
+                      t("encryption.enterPassphraseToSave"),
+                      t("encryption.noteWillBeEncryptedBeforeSaving"),
+                      t("encryption.noteWillStayEncrypted"),
+                    ]
+                    : [
+                      t("encryption.thisWillDecryptNote"),
+                      t("encryption.noteWillBeRestoredAsUnencrypted"),
+                      t("encryption.youWillBeAbleToEditAfterDecryption"),
+                    ]
           }
         />
 
@@ -161,10 +211,10 @@ export const XChaChaEncryptionModal = ({
           ref={passphraseRef}
           id="passphrase"
           type="password"
-          label="Passphrase"
+          label={t("encryption.passphrase")}
           value={passphrase}
           onChange={(e) => setPassphrase(e.target.value)}
-          placeholder="Enter your passphrase"
+          placeholder={t("encryption.enterYourPassphrase")}
           disabled={isProcessing}
           required
         />

@@ -832,7 +832,13 @@
     "setCustomPath": "Imposta Percorso",
     "customPathDisabledInDemo": "Percorso personalizzato disabilitato in demo",
     "deleteKeysConfirmTitle": "Eliminare Chiavi Crittografia?",
-    "deleteKeysConfirmMessage": "Questo eliminerà permanentemente le tue chiavi. NON potrai più decriptare le note senza re-importare la chiave privata. L'azione è irreversibile."
+    "deleteKeysConfirmMessage": "Questo eliminerà permanentemente le tue chiavi. NON potrai più decriptare le note senza re-importare la chiave privata. L'azione è irreversibile.",
+    "editEncrypted": "Modifica (Mantieni Crittografata)",
+    "editingEncryptedNote": "Modifica Nota Crittografata",
+    "autoSaveDisabledForEncrypted": "Il salvataggio automatico è disabilitato per le note crittografate. Ricordati di salvare manualmente!",
+    "enterPassphraseToEdit": "Inserisci la tua passphrase per modificare questa nota crittografata",
+    "noteWillStayEncrypted": "La nota rimarrà crittografata sul server",
+    "savingEncryptedNote": "Crittografia e salvataggio della nota..."
   },
   "settingsModal": {
     "sessionOnlyPrefix": "Queste opzioni si applicano solo alla sessione corrente. Per modifiche permanenti vai su",
@@ -929,6 +935,8 @@
     "notearchived": "Nota Archiviata",
     "noteencrypted": "Nota Criptata",
     "notedecrypted": "Nota Decriptata",
+    "noteeditedencrypted": "Nota Modificata (Crittografata)",
+    "notesavedencrypted": "Nota Salvata (Crittografata)",
     "itemShared": "Elemento Condiviso",
     "itemshared": "Elemento Condiviso",
     "itemUnshared": "Condivisione Rimossa",

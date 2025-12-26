@@ -44,7 +44,7 @@ export default getRequestConfig(async () => {
     const customTranslationPath = path.join(
       process.cwd(),
       'config',
-      customTranslationFile
+      customTranslationFile || 'custom-translations.json'
     );
 
     try {

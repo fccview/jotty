@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   convertMarkdownToHtml,
   convertHtmlToMarkdownUnified,
@@ -8,6 +9,9 @@ import {
 import { useSettings } from "@/app/_utils/settings-store";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
+import { encryptNoteContent } from "@/app/_server/actions/pgp";
+import { encryptXChaCha } from "@/app/_server/actions/xchacha";
+import { logContentEvent, logAudit } from "@/app/_server/actions/log";
 import {
   buildCategoryPath,
   encodeCategoryPath,
@@ -31,6 +35,7 @@ export const useNoteEditor = ({
   onDelete,
   onBack,
 }: UseNoteEditorProps) => {
+  const t = useTranslations();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAppMode();
@@ -68,6 +73,7 @@ export const useNoteEditor = ({
   });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
+  const [isEditingEncrypted, setIsEditingEncrypted] = useState(false);
 
   const { autosaveNotes } = useSettings();
   const {
@@ -123,19 +129,85 @@ export const useNoteEditor = ({
   }, [derivedMarkdownContent, title, category, note, isEditing]);
 
   const handleSave = useCallback(
-    async (autosaveNotes = false) => {
+    async (autosaveNotes = false, passphrase?: string) => {
+      if (isEditingEncrypted && !passphrase) {
+        console.error("Cannot save encrypted note without passphrase");
+        return;
+      }
+
       const useAutosave = autosaveNotes ? true : false;
       if (!useAutosave) {
         setStatus((prev) => ({ ...prev, isSaving: true }));
       }
+
       const { contentWithoutMetadata: cleanContent } = extractYamlMetadata(
         derivedMarkdownContent
       );
 
+      let contentToSave = cleanContent;
+
+      if (isEditingEncrypted && passphrase && note.encryptionMethod) {
+        try {
+          const encryptFormData = new FormData();
+          encryptFormData.append("content", cleanContent);
+
+          if (note.encryptionMethod === "pgp") {
+            encryptFormData.append("useStoredKey", "true");
+
+            try {
+              const signingData = JSON.parse(passphrase);
+              if (signingData.signNote) {
+                encryptFormData.append("signNote", "true");
+                encryptFormData.append("useStoredSigningKey", signingData.useStoredSigningKey.toString());
+                encryptFormData.append("signingPassphrase", signingData.signingPassphrase);
+              }
+            } catch (parseError) {
+              await logAudit({
+                level: "DEBUG",
+                action: "note_saved_encrypted",
+                category: "note",
+                success: true,
+                metadata: { message: t("encryption.pgpSaveWithoutSigning"), error: String(parseError) }
+              });
+            }
+
+            const encryptResult = await encryptNoteContent(encryptFormData);
+            if (encryptResult.success && encryptResult.data) {
+              contentToSave = encryptResult.data.encryptedContent;
+            } else {
+              setStatus((prev) => ({ ...prev, isSaving: false }));
+              throw new Error(encryptResult.error || "Encryption failed");
+            }
+          } else if (note.encryptionMethod === "xchacha") {
+            encryptFormData.append("passphrase", passphrase);
+            const encryptResult = await encryptXChaCha(encryptFormData);
+            if (encryptResult.success && encryptResult.data) {
+              contentToSave = encryptResult.data.encryptedContent;
+            } else {
+              setStatus((prev) => ({ ...prev, isSaving: false }));
+              throw new Error(encryptResult.error || "Encryption failed");
+            }
+          }
+
+          await logContentEvent(
+            "note_saved_encrypted",
+            "note",
+            note.id,
+            title,
+            true,
+            { encryptionMethod: note.encryptionMethod }
+          );
+        } catch (error) {
+          console.error("Error encrypting note:", error);
+          setStatus((prev) => ({ ...prev, isSaving: false }));
+          return;
+        }
+      }
+
       const formData = new FormData();
       formData.append("id", note.id);
       formData.append("title", useAutosave ? note.title : title);
-      formData.append("content", cleanContent);
+      formData.append("content", contentToSave);
       formData.append("category", useAutosave ? (note.category || "Uncategorized") : category);
       formData.append("originalCategory", note.category || "Uncategorized");
       formData.append("user", note.owner || user?.username || "");
@@ -152,6 +224,7 @@ export const useNoteEditor = ({
       if (result.success && result.data) {
         onUpdate(result.data);
         setIsEditing(false);
+        setIsEditingEncrypted(false);
 
         const categoryPath = buildCategoryPath(
           category || "Uncategorized",
@@ -160,7 +233,16 @@ export const useNoteEditor = ({
         router.push(`/note/${categoryPath}`);
       }
     },
-    [note.id, title, derivedMarkdownContent, category, onUpdate, router]
+    [
+      note.id,
+      note.encryptionMethod,
+      title,
+      derivedMarkdownContent,
+      category,
+      onUpdate,
+      router,
+      isEditingEncrypted,
+    ]
   );
 
   useEffect(() => {
@@ -171,7 +253,8 @@ export const useNoteEditor = ({
       user?.notesAutoSaveInterval !== 0 &&
       autosaveNotes &&
       isEditMode &&
-      hasUnsavedChanges
+      hasUnsavedChanges &&
+      !isEditingEncrypted
     ) {
       autosaveTimeoutRef.current = setTimeout(() => {
         setStatus((prev) => ({ ...prev, isAutoSaving: true }));
@@ -191,6 +274,7 @@ export const useNoteEditor = ({
     hasUnsavedChanges,
     handleSave,
     user?.notesDefaultMode,
+    isEditingEncrypted,
   ]);
 
   useEffect(() => {
@@ -243,6 +327,24 @@ export const useNoteEditor = ({
   const handleUnsavedChangesSave = () =>
     handleSave().then(() => executePendingNavigation());
   const handleUnsavedChangesDiscard = () => executePendingNavigation();
+
+  const handleEditEncrypted = useCallback(
+    (passphrase: string, method: string, decryptedContent: string) => {
+      setIsEditingEncrypted(true);
+      setEditorContent(decryptedContent);
+      setIsEditing(true);
+
+      logContentEvent(
+        "note_edited_encrypted",
+        "note",
+        note.id,
+        note.title,
+        true,
+        { encryptionMethod: method }
+      );
+    },
+    [note.id, note.title]
+  );
 
   const handlePrint = () => {
     setIsPrinting(true);
@@ -323,5 +425,7 @@ export const useNoteEditor = ({
     handlePrint,
     isPrinting,
     setIsPrinting,
+    isEditingEncrypted,
+    handleEditEncrypted,
   };
 };

@@ -27,6 +27,7 @@ interface NoteEditorContentProps {
   encrypted?: boolean;
   onOpenDecryptModal?: () => void;
   onOpenViewModal?: () => void;
+  isEditingEncrypted?: boolean;
 }
 
 export const NoteEditorContent = ({
@@ -39,6 +40,7 @@ export const NoteEditorContent = ({
   encrypted,
   onOpenDecryptModal,
   onOpenViewModal,
+  isEditingEncrypted,
 }: NoteEditorContentProps) => {
   const t = useTranslations();
   const { user, linkIndex, notes, checklists, appSettings } = useAppMode();
@@ -87,7 +89,7 @@ export const NoteEditorContent = ({
   const isEditMode =
     (notesDefaultMode === "edit" || editor === "true" || isEditing) &&
     permissions?.canEdit &&
-    !encrypted;
+    (!encrypted || isEditingEncrypted);
 
   const isContentEncrypted = isEncrypted(editorContent || "");
 

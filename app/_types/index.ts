@@ -125,7 +125,7 @@ export interface NoteEditorViewModel {
   };
   handleEdit: () => void;
   handleCancel: () => void;
-  handleSave: () => void;
+  handleSave: (autosaveNotes?: boolean, passphrase?: string) => void;
   handleDelete: () => void;
   handleEditorContentChange: (content: string, isMarkdown: boolean) => void;
   showUnsavedChangesModal: boolean;
@@ -136,6 +136,8 @@ export interface NoteEditorViewModel {
   handlePrint: () => void;
   isPrinting: boolean;
   setIsPrinting: (isPrinting: boolean) => void;
+  isEditingEncrypted: boolean;
+  handleEditEncrypted: (passphrase: string, method: string, decryptedContent: string) => void;
 }
 
 export interface Category {
@@ -413,6 +415,8 @@ export type AuditAction =
   | "note_restored"
   | "note_encrypted"
   | "note_decrypted"
+  | "note_edited_encrypted"
+  | "note_saved_encrypted"
   | "item_shared"
   | "item_unshared"
   | "share_permissions_updated"

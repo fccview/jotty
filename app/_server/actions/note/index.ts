@@ -97,6 +97,7 @@ const _parseMarkdownNote = (
     owner,
     isShared,
     encrypted: metadata.encrypted || false,
+    encryptionMethod: metadata.encryptionMethod,
   };
 };
 
@@ -932,6 +933,7 @@ export const getNoteById = async (
       content: parsedData.content,
       uuid: finalUuid,
       encrypted: parsedData.encrypted || false,
+      encryptionMethod: parsedData.encryptionMethod,
     };
     return result as Note;
   }

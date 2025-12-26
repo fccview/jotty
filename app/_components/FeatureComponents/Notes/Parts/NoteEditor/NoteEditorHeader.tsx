@@ -23,6 +23,7 @@ import {
   ViewIcon,
   LockKeyIcon,
   ViewOffSlashIcon,
+  MessageLock02Icon,
 } from "hugeicons-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -87,12 +88,13 @@ export const NoteEditorHeader = ({
     handleSave,
     handleDelete,
     isPrinting,
+    isEditingEncrypted,
   } = viewModel;
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
   const [encryptionModalMode, setEncryptionModalMode] = useState<
-    "encrypt" | "decrypt" | "view"
+    "encrypt" | "decrypt" | "view" | "edit" | "save"
   >("encrypt");
   const [hasPromptedForDecryption, setHasPromptedForDecryption] =
     useState(false);
@@ -162,6 +164,21 @@ export const NoteEditorHeader = ({
   const handleViewDecryption = (decryptedContent: string) => {
     viewModel.handleEditorContentChange(decryptedContent, true);
     setShowEncryptionModal(false);
+  };
+
+  const handleEditEncrypted = (decryptedContent: string, passphrase?: string, method?: string) => {
+    if (passphrase && method) {
+      viewModel.handleEditEncrypted(passphrase, method, decryptedContent);
+      setShowEncryptionModal(false);
+    }
+  };
+
+  const handleSaveEncrypted = (decryptedContent: string, passphrase?: string, method?: string) => {
+    const saveParam = method === "pgp" ? decryptedContent : passphrase;
+    if (saveParam || method === "pgp") {
+      handleSave(false, saveParam);
+      setShowEncryptionModal(false);
+    }
   };
 
   const handlePermanentDecryption = async (newContent: string) => {
@@ -273,10 +290,10 @@ export const NoteEditorHeader = ({
                       }}
                       className="h-6 w-6 p-0"
                       title={`Copy ID: ${note?.uuid
-                          ? note?.uuid
-                          : `${encodeCategoryPath(
-                            note?.category || "Uncategorized"
-                          )}/${note?.id}`
+                        ? note?.uuid
+                        : `${encodeCategoryPath(
+                          note?.category || "Uncategorized"
+                        )}/${note?.id}`
                         }`}
                     >
                       {copied ? (
@@ -332,7 +349,12 @@ export const NoteEditorHeader = ({
                 <Button
                   size="sm"
                   onClick={() => {
-                    handleSave();
+                    if (isEditingEncrypted) {
+                      setEncryptionModalMode("save");
+                      setShowEncryptionModal(true);
+                    } else {
+                      handleSave();
+                    }
                   }}
                   className="fixed bottom-[150px] right-4 rounded-full py-6 lg:py-0 lg:rounded-jotty lg:relative lg:bottom-auto lg:right-auto z-10"
                   disabled={status.isSaving || status.isAutoSaving}
@@ -381,14 +403,25 @@ export const NoteEditorHeader = ({
                       </Button>
                     )}
 
-                  {permissions?.canEdit && !note?.encrypted && (
+                  {permissions?.canEdit && (
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={handleEdit}
-                      title={t('common.edit')}
+                      onClick={() => {
+                        if (note?.encrypted) {
+                          setEncryptionModalMode("edit");
+                          setShowEncryptionModal(true);
+                        } else {
+                          handleEdit();
+                        }
+                      }}
+                      title={note?.encrypted ? t('encryption.editEncrypted') : t('common.edit')}
                     >
-                      <FileEditIcon className="h-5 w-5" />
+                      {note?.encrypted ? (
+                        <MessageLock02Icon className="h-5 w-5" />
+                      ) : (
+                        <FileEditIcon className="h-5 w-5" />
+                      )}
                     </Button>
                   )}
                   <DropdownMenu
@@ -527,13 +560,21 @@ export const NoteEditorHeader = ({
             isOpen={showEncryptionModal}
             onClose={() => setShowEncryptionModal(false)}
             mode={encryptionModalMode}
-            noteContent={viewModel.editorContent}
+            noteContent={
+              encryptionModalMode === "view" || encryptionModalMode === "edit" || encryptionModalMode === "save"
+                ? note.content
+                : viewModel.editorContent
+            }
             onSuccess={
               encryptionModalMode === "view"
                 ? handleViewDecryption
-                : encryptionModalMode === "decrypt"
-                  ? handlePermanentDecryption
-                  : handleEncryptionSuccess
+                : encryptionModalMode === "edit"
+                  ? handleEditEncrypted
+                  : encryptionModalMode === "save"
+                    ? handleSaveEncrypted
+                    : encryptionModalMode === "decrypt"
+                      ? handlePermanentDecryption
+                      : handleEncryptionSuccess
             }
           />
         ) : (
@@ -541,13 +582,21 @@ export const NoteEditorHeader = ({
             isOpen={showEncryptionModal}
             onClose={() => setShowEncryptionModal(false)}
             mode={encryptionModalMode}
-            noteContent={viewModel.editorContent}
+            noteContent={
+              encryptionModalMode === "view" || encryptionModalMode === "edit" || encryptionModalMode === "save"
+                ? note.content
+                : viewModel.editorContent
+            }
             onSuccess={
               encryptionModalMode === "view"
                 ? handleViewDecryption
-                : encryptionModalMode === "decrypt"
-                  ? handlePermanentDecryption
-                  : handleEncryptionSuccess
+                : encryptionModalMode === "edit"
+                  ? handleEditEncrypted
+                  : encryptionModalMode === "save"
+                    ? handleSaveEncrypted
+                    : encryptionModalMode === "decrypt"
+                      ? handlePermanentDecryption
+                      : handleEncryptionSuccess
             }
           />
         );
