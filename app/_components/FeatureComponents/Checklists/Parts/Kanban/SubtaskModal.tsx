@@ -254,7 +254,7 @@ export const SubtaskModal = ({
       <div className="border-t border-border pt-4">
         <div className="bg-muted/30 rounded-jotty p-3 border border-border/50">
           <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Metadata
+            {t("auditLogs.metadata")}
           </h5>
           <div className="space-y-1.5">
             {metadata.map((text, i) => (
@@ -356,7 +356,7 @@ export const SubtaskModal = ({
                 <MultiplicationSignIcon className="h-4 w-4 mr-2" />{t('common.cancel')}</Button>
               <Button onClick={handleSave}>
                 <FloppyDiskIcon className="h-4 w-4 mr-2" />
-                Save Changes
+                {t("admin.saveChanges")}
               </Button>
             </div>
           </div>
@@ -380,7 +380,7 @@ export const SubtaskModal = ({
           <div className="border-t border-border pt-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <span>Subtasks</span>
+                <span>{t("checklists.subtasks")}</span>
                 {item.children?.length ? (
                   <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                     {item.children.filter((s) => s.completed).length} /{" "}

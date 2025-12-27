@@ -208,7 +208,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.totalTasks}
               </div>
-              <div className="text-xs text-muted-foreground">Task Lists</div>
+              <div className="text-xs text-muted-foreground">{t("tasks.taskLists")}</div>
             </div>
           </div>
 
@@ -220,7 +220,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.completedTasks}
               </div>
-              <div className="text-xs text-muted-foreground">Completed</div>
+              <div className="text-xs text-muted-foreground">{t("tasks.completed")}</div>
             </div>
           </div>
 
@@ -232,7 +232,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.completionRate}%
               </div>
-              <div className="text-xs text-muted-foreground">Progress</div>
+              <div className="text-xs text-muted-foreground">{t("checklists.progress")}</div>
             </div>
           </div>
 
@@ -244,7 +244,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.todoTasks}
               </div>
-              <div className="text-xs text-muted-foreground">To Do</div>
+              <div className="text-xs text-muted-foreground">{t("tasks.todo")}</div>
             </div>
           </div>
 
@@ -256,7 +256,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.inProgressTasks}
               </div>
-              <div className="text-xs text-muted-foreground">In Progress</div>
+              <div className="text-xs text-muted-foreground">{t("tasks.inProgress")}</div>
             </div>
           </div>
         </div>
@@ -266,10 +266,10 @@ export const TasksPageClient = ({
         <div className="text-center py-12">
           <TaskDaily01Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">
-            No task lists found
+            {t("tasks.noTaskListsFound")}
           </h3>
           <p className="text-muted-foreground">
-            Try adjusting your filters or create a new task list.
+            {t("tasks.tryAdjustingFiltersTaskList")}
           </p>
         </div>
       ) : (

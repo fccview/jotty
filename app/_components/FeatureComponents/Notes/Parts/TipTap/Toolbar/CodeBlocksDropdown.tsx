@@ -58,7 +58,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
           <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search languages..."
+            placeholder={t("editor.searchLanguages")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}

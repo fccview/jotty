@@ -188,7 +188,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
                 name: user.username,
               }))}
               disabled={exporting}
-              placeholder="Select a user to export"
+              placeholder={t("admin.selectUserToExport")}
               className="w-full"
             />
           </div>

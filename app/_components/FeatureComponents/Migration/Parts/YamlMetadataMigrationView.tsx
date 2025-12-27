@@ -64,7 +64,7 @@ export const YamlMetadataMigrationView = ({
           <>
             <InfoCard
               icon={<InformationCircleIcon className="h-5 w-5 text-primary" />}
-              title="What's changing?"
+              title={t("migration.whatsChanging")}
             >
               <p className="text-sm">
                 We&apos;re moving from inline title extraction (first{" "}
@@ -136,7 +136,7 @@ checklistType: task|simple
 
             <InfoCard
               icon={<ShieldUserIcon className="h-5 w-5 text-amber-600" />}
-              title="Automatic Backup Included"
+              title={t("migration.automaticBackupIncluded")}
               variant={InfoCardVariant.WARNING}
             >
               <p>
@@ -148,7 +148,7 @@ checklistType: task|simple
 
             <InfoCard
               icon={<File02Icon className="h-5 w-5 text-primary" />}
-              title="YAML Frontmatter is Industry Standard"
+              title={t("migration.yamlFrontmatterIndustryStandard")}
             >
               <p className="text-sm mb-3">
                 YAML metadata at the top of documents is a widely adopted

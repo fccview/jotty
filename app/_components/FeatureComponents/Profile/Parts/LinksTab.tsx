@@ -405,7 +405,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 onClick={handleRebuildIndex}
                 disabled={rebuildingIndex}
                 className="flex items-center gap-2"
-                title="Rebuild link indexes to update connection data"
+                title={t("profile.rebuildLinkIndexes")}
               >
                 <RefreshIcon
                   className={`h-3 w-3 ${rebuildingIndex ? "animate-spin" : ""}`}

@@ -121,7 +121,7 @@ export const UpdatePrompt = () => {
           <Button onClick={handleCloseModal} variant="ghost">{t('common.close')}</Button>
           {releaseUrl && (
             <Button onClick={() => window.open(releaseUrl, "_blank")}>
-              View on GitHub
+              {t("common.viewOnGithub")}
             </Button>
           )}
         </div>

@@ -205,7 +205,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
               className="w-12 h-12 object-contain rounded border"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">Current icon</p>
+              <p className="text-sm font-medium truncate">{t("common.currentIcon")}</p>
               <p className="text-xs text-muted-foreground truncate">
                 {currentUrl.split("/").pop()}
               </p>
@@ -228,7 +228,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
             className={`text-center block ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           >
             <Image02Icon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm font-medium">Drop image or click to upload</p>
+            <p className="text-sm font-medium">{t("common.dropImageOrClick")}</p>
             <p className="text-xs text-muted-foreground">
               PNG, JPG, WebP up to 5MB
             </p>

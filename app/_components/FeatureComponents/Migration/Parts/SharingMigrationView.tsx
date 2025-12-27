@@ -58,7 +58,7 @@ export const SharingMigrationView = ({
           <>
             <InfoCard
               icon={<InformationCircleIcon className="h-5 w-5 text-primary" />}
-              title="What's happening?"
+              title={t("migration.whatsHappening")}
             >
               <p className="text-sm">
                 I&apos;m migrating from the old{" "}
@@ -134,7 +134,7 @@ export const SharingMigrationView = ({
 
             <InfoCard
               icon={<Alert02Icon className="h-5 w-5 text-amber-600" />}
-              title="Important: Backup Your Data"
+              title={t("migration.importantBackupData")}
               variant={InfoCardVariant.WARNING}
             >
               <p>
