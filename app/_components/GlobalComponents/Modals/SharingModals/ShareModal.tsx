@@ -9,6 +9,7 @@ import { UsersShareTab } from "./Parts/UsersShareTab";
 import { PublicShareTab } from "./Parts/PublicShareTabs";
 import { ItemType } from "@/app/_types";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
+import { useTranslations } from "next-intl";
 
 export const ShareModal = ({
   isOpen,
@@ -17,6 +18,7 @@ export const ShareModal = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
+  const t = useTranslations();
   const metadata = useMetadata();
 
   const hookResult = useSharingTools({
@@ -73,9 +75,7 @@ export const ShareModal = ({
             variant="outline"
             onClick={onClose}
             disabled={hookResult.isLoading}
-          >
-            Close
-          </Button>
+          >{t('common.close')}</Button>
         </div>
       </div>
     </Modal>

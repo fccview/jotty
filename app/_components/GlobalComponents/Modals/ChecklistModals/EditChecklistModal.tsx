@@ -11,6 +11,7 @@ import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface EditChecklistModalProps {
   checklist: Checklist;
@@ -27,6 +28,7 @@ export const EditChecklistModal = ({
   onUpdated,
   unarchive,
 }: EditChecklistModalProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { user } = useAppMode();
   const [title, setTitle] = useState(initialChecklist.title);
@@ -130,14 +132,13 @@ export const EditChecklistModal = ({
 
         {isOwner && (
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Category
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
             <CategoryTreeSelector
               categories={categories}
               selectedCategory={category}
               onCategorySelect={setCategory}
               className="w-full"
+              placeholder={t('common.selectCategory')}
               isInModal={true}
             />
           </div>
@@ -150,9 +151,7 @@ export const EditChecklistModal = ({
             onClick={onClose}
             disabled={isLoading}
             className="flex-1"
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={isLoading || !title.trim()}
@@ -161,8 +160,8 @@ export const EditChecklistModal = ({
             {isLoading
               ? "Updating..."
               : unarchive
-              ? "Unarchive Checklist"
-              : "Update Checklist"}
+                ? "Unarchive Checklist"
+                : "Update Checklist"}
           </Button>
         </div>
       </form>

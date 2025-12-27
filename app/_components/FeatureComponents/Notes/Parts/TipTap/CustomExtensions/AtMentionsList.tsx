@@ -15,6 +15,7 @@ import {
 } from "hugeicons-react";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface AtMentionItem {
   title: string;
@@ -35,6 +36,7 @@ export const AtMentionsList = forwardRef<
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations();
 
   const filteredItems = items.filter(
     (item) =>
@@ -153,7 +155,7 @@ export const AtMentionsList = forwardRef<
         <input
           ref={searchInputRef}
           type="text"
-          placeholder="Search notes and checklists..."
+          placeholder={t("notes.searchNotesAndChecklists")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
@@ -180,7 +182,7 @@ export const AtMentionsList = forwardRef<
           </>
         ) : (
           <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-            No results found
+            {t("notes.noResultsFound")}
           </div>
         )}
       </div>

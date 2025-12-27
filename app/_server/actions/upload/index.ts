@@ -270,8 +270,15 @@ export const getFiles = async () => {
             uploadedAt: stats.birthtime.toISOString(),
           });
         }
-      } catch {
-        // Directory doesn't exist
+      } catch (error) {
+        const { logAudit } = await import("@/app/_server/actions/log");
+        await logAudit({
+          level: "DEBUG",
+          action: "file_scan",
+          category: "upload",
+          success: false,
+          errorMessage: `Directory doesn't exist: ${dirInfo.path}`,
+        });
       }
     }
 

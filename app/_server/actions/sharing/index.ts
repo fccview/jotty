@@ -18,6 +18,7 @@ import {
 } from "@/app/_server/actions/users";
 import { CHECKLISTS_DIR, NOTES_DIR } from "@/app/_consts/files";
 import fs from "fs/promises";
+import { logAudit } from "@/app/_server/actions/log";
 
 const getItemUuid = async (
   user: string,
@@ -143,8 +144,29 @@ export const shareWith = async (
 
     await writeShareFile(itemType, sharingData);
 
+    await logAudit({
+      level: "INFO",
+      action: "item_shared",
+      category: "sharing",
+      success: true,
+      resourceType: itemType,
+      resourceId: item,
+      resourceTitle: item,
+      metadata: { receiver: receiverUsername, permissions },
+    });
+
     return { success: true, data: null };
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "item_shared",
+      category: "sharing",
+      success: false,
+      resourceType: itemType,
+      resourceId: item,
+      resourceTitle: item,
+      errorMessage: error instanceof Error ? error.message : "Failed to share item",
+    });
     console.error("Error in shareWith:", error);
     return { success: false, error: "Failed to share item" };
   }
@@ -357,7 +379,27 @@ export const unshareWith = async (
   }
   try {
     await writeShareFile(itemType, sharingData);
+    await logAudit({
+      level: "INFO",
+      action: "item_unshared",
+      category: "sharing",
+      success: true,
+      resourceType: itemType,
+      resourceId: item,
+      resourceTitle: item,
+      metadata: { receiver: receiverUsername },
+    });
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "item_unshared",
+      category: "sharing",
+      success: false,
+      resourceType: itemType,
+      resourceId: item,
+      resourceTitle: item,
+      errorMessage: "Failed to write unshare file",
+    });
     return { success: false, error: "Failed to write unshare file" };
   }
 
@@ -549,6 +591,16 @@ export const updateItemPermissions = async (
   const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
 
   if (!sharingData[username]) {
+    await logAudit({
+      level: "WARNING",
+      action: "share_permissions_updated",
+      category: "sharing",
+      success: false,
+      resourceType: itemType,
+      resourceId: item,
+      errorMessage: "Item not shared with this user",
+      metadata: { targetUser: username },
+    });
     return { success: false, error: "Item not shared with this user" };
   }
 
@@ -563,15 +615,49 @@ export const updateItemPermissions = async (
   }
 
   if (entryIndex === -1) {
+    await logAudit({
+      level: "WARNING",
+      action: "share_permissions_updated",
+      category: "sharing",
+      success: false,
+      resourceType: itemType,
+      resourceId: item,
+      errorMessage: "Item not shared with this user",
+      metadata: { targetUser: username },
+    });
     return { success: false, error: "Item not shared with this user" };
   }
 
+  const oldPermissions = sharingData[username][entryIndex].permissions;
   sharingData[username][entryIndex].permissions = permissions;
 
   try {
     await writeShareFile(itemType, sharingData);
+    await logAudit({
+      level: "INFO",
+      action: "share_permissions_updated",
+      category: "sharing",
+      success: true,
+      resourceType: itemType,
+      resourceId: item,
+      metadata: {
+        targetUser: username,
+        oldPermissions,
+        newPermissions: permissions
+      },
+    });
     return { success: true, data: null };
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "share_permissions_updated",
+      category: "sharing",
+      success: false,
+      resourceType: itemType,
+      resourceId: item,
+      errorMessage: "Failed to update permissions",
+      metadata: { targetUser: username },
+    });
     return { success: false, error: "Failed to update permissions" };
   }
 };

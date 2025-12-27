@@ -258,7 +258,7 @@ I would like to thank the following members for raising issues and help test/deb
         <a href="https://github.com/Isotop7"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/8883656?v=4&size=100"><br />Isotop7</a>
       </td>
       <td align="center" valign="top" width="20%">
-        <a href="https://github.com/bluegumcity"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/142639670?v=4&size=100"><br />bluegumcity</a>
+        <a href="https://github.com/gavdgavd"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/7753641?v=4&size=100"><br />gavdgavd</a>
       </td>
     </tr>
     <tr>
@@ -313,6 +313,9 @@ I would like to thank the following members for raising issues and help test/deb
       </td>
     </tr>
     <tr>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/bluegumcity"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/142639670?v=4&size=100"><br />bluegumcity</a>
+      </td>
       <td align="center" valign="top" width="20%">
         <a href="https://github.com/4rft5"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/74219775?s=100&v=4"><br />4rft5</a>
       </td>

@@ -13,6 +13,7 @@ import {
 } from "@/app/_server/actions/file";
 import { Result, User } from "@/app/_types";
 import { PGPKeyMetadata } from "@/app/_types";
+import { logAudit } from "@/app/_server/actions/log";
 
 const _getEncryptionDir = async (username: string): Promise<string> => {
   const user = await getCurrentUser();
@@ -75,11 +76,26 @@ export const generateKeyPair = async (
       },
     });
 
+    await logAudit({
+      level: "INFO",
+      action: "encryption_keys_generated",
+      category: "encryption",
+      success: true,
+      metadata: { method: "pgp", algorithm: "rsa4096" },
+    });
+
     return {
       success: true,
       data: { publicKey, privateKey, fingerprint },
     };
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "encryption_keys_generated",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to generate PGP key pair",
+    });
     console.error("Error generating key pair:", error);
     return { success: false, error: "Failed to generate key pair" };
   }
@@ -123,9 +139,24 @@ export const importKeys = async (
         },
       });
 
+      await logAudit({
+        level: "INFO",
+        action: "encryption_keys_imported",
+        category: "encryption",
+        success: true,
+        metadata: { method: "pgp", fingerprint },
+      });
+
       return { success: true, data: { fingerprint } };
     } catch (keyError) {
       console.error("Invalid keys:", keyError);
+      await logAudit({
+        level: "WARNING",
+        action: "encryption_keys_imported",
+        category: "encryption",
+        success: false,
+        errorMessage: "Invalid keys provided",
+      });
       return {
         success: false,
         error: "Invalid keys. Ensure they are valid ASCII-armored PGP keys.",
@@ -133,6 +164,13 @@ export const importKeys = async (
     }
   } catch (error) {
     console.error("Error importing keys:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "encryption_keys_imported",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to import keys",
+    });
     return { success: false, error: "Failed to import keys" };
   }
 };
@@ -163,9 +201,8 @@ export const exportKeys = async (
     console.error(`Error exporting ${keyType} key:`, error);
     return {
       success: false,
-      error: `Failed to export ${
-        keyType === "public" ? "public" : "private"
-      } key`,
+      error: `Failed to export ${keyType === "public" ? "public" : "private"
+        } key`,
     };
   }
 };
@@ -231,6 +268,7 @@ export const encryptNoteContent = async (
     const useStoredSigningKey = formData.get("useStoredSigningKey") === "true";
     let signingKey = formData.get("signingKey") as string;
     const signingPassphrase = formData.get("signingPassphrase") as string;
+    const skipAuditLog = formData.get("skipAuditLog") === "true";
 
     if (!content) {
       return { success: false, error: "Content is required" };
@@ -284,8 +322,25 @@ export const encryptNoteContent = async (
       signingKeys: signingKeyObj,
     });
 
+    if (!skipAuditLog) {
+      await logAudit({
+        level: "INFO",
+        action: "note_encrypted",
+        category: "encryption",
+        success: true,
+        metadata: { method: "pgp", signed: signNote },
+      });
+    }
+
     return { success: true, data: { encryptedContent: encrypted } };
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "note_encrypted",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to encrypt note",
+    });
     console.error("Error encrypting note:", error);
     return { success: false, error: "Failed to encrypt note content" };
   }
@@ -345,8 +400,15 @@ export const decryptNoteContent = async (
         if (publicKey) {
           verificationKeys = await openpgp.readKey({ armoredKey: publicKey });
         }
-      } catch {
-        // Continue without verification keys if they can't be loaded
+      } catch (error) {
+        const { logAudit } = await import("@/app/_server/actions/log");
+        await logAudit({
+          level: "DEBUG",
+          action: "key_load",
+          category: "encryption",
+          success: false,
+          errorMessage: "Failed to load verification keys - continuing without verification",
+        });
       }
 
       const { data: decrypted, signatures } = await openpgp.decrypt({
@@ -380,15 +442,22 @@ export const decryptNoteContent = async (
         },
       };
     } catch (decryptError) {
+      await logAudit({
+        level: "WARNING",
+        action: "note_decrypted",
+        category: "encryption",
+        success: false,
+        errorMessage: "Incorrect decryption password or key",
+        metadata: { method: "pgp" },
+      });
       return {
         success: false,
-        error:
-          "Failed to decrypt. Check your passphrase and ensure the private key matches.",
+        error: "Incorrect decryption password or key",
       };
     }
   } catch (error) {
     console.error("Error decrypting note:", error);
-    return { success: false, error: "Failed to decrypt note" };
+    return { success: false, error: "Incorrect decryption password or key" };
   }
 };
 
@@ -417,15 +486,37 @@ export const setCustomKeyPath = async (
     });
 
     if (!result.success || !result.data) {
+      await logAudit({
+        level: "ERROR",
+        action: "encryption_key_path_changed",
+        category: "encryption",
+        success: false,
+        errorMessage: result.error || "Failed to set custom key path",
+      });
       return {
         success: false,
         error: result.error || "Failed to set custom key path",
       };
     }
 
+    await logAudit({
+      level: "INFO",
+      action: "encryption_key_path_changed",
+      category: "encryption",
+      success: true,
+      metadata: { customPath },
+    });
+
     return { success: true, data: { user: result.data.user } };
   } catch (error) {
     console.error("Error setting custom key path:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "encryption_key_path_changed",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to set custom key path",
+    });
     return { success: false, error: "Failed to set custom key path" };
   }
 };
@@ -451,9 +542,24 @@ export const deleteKeys = async (): Promise<Result<null>> => {
       },
     });
 
+    await logAudit({
+      level: "INFO",
+      action: "encryption_keys_deleted",
+      category: "encryption",
+      success: true,
+      metadata: { method: "pgp" },
+    });
+
     return { success: true, data: null };
   } catch (error) {
     console.error("Error deleting keys:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "encryption_keys_deleted",
+      category: "encryption",
+      success: false,
+      errorMessage: "Failed to delete keys",
+    });
     return { success: false, error: "Failed to delete keys" };
   }
 };

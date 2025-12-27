@@ -7,6 +7,7 @@ import {
   MONTHS,
 } from "@/app/_hooks/useCalendar";
 import { cn } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 export interface CalendarProps extends UseCalendarProps {
   className?: string;
@@ -25,6 +26,7 @@ const YEAR_OPTIONS = Array.from({ length: 11 }, (_, i) => {
 });
 
 export default function Calendar(props: CalendarProps) {
+  const t = useTranslations();
   const { className = "", ...calendarProps } = props;
 
   const {
@@ -48,7 +50,7 @@ export default function Calendar(props: CalendarProps) {
               onClick={handlePreviousMonth}
               className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <span className="sr-only">Previous month</span>
+              <span className="sr-only">{t('common.previousMonth')}</span>
               <ArrowLeft01Icon aria-hidden="true" className="size-5" />
             </button>
             <div className="flex-auto flex items-center justify-center gap-2">
@@ -80,7 +82,7 @@ export default function Calendar(props: CalendarProps) {
               onClick={handleNextMonth}
               className="-m-1.5 flex flex-none items-center justify-center p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <span className="sr-only">Next month</span>
+              <span className="sr-only">{t('common.nextMonth')}</span>
               <ArrowRight01Icon aria-hidden="true" className="size-5" />
             </button>
           </div>
@@ -136,21 +138,19 @@ export default function Calendar(props: CalendarProps) {
                     dateTime={day.date.toISOString()}
                     className={`
                       mx-auto flex size-7 items-center justify-center rounded-full
-                      ${
-                        (day.isSelected ||
-                          day.isRangeStart ||
-                          day.isRangeEnd) &&
+                      ${(day.isSelected ||
+                        day.isRangeStart ||
+                        day.isRangeEnd) &&
                         !day.isToday
-                          ? "bg-foreground text-background"
-                          : ""
+                        ? "bg-foreground text-background"
+                        : ""
                       }
-                      ${
-                        (day.isSelected ||
-                          day.isRangeStart ||
-                          day.isRangeEnd) &&
+                      ${(day.isSelected ||
+                        day.isRangeStart ||
+                        day.isRangeEnd) &&
                         day.isToday
-                          ? "bg-primary text-primary-foreground"
-                          : ""
+                        ? "bg-primary text-primary-foreground"
+                        : ""
                       }
                     `}
                   >

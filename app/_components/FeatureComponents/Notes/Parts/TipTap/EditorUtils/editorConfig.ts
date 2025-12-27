@@ -26,6 +26,7 @@ import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/T
 import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
 import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
+import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { getContrastColor } from "@/app/_utils/color-utils";
 
@@ -40,6 +41,7 @@ interface EditorSettings {
   enableTableToolbar: boolean;
   enableBilateralLinks: boolean;
   drawioUrl?: string;
+  drawioProxyEnabled?: boolean;
 }
 
 interface EditorData {
@@ -160,7 +162,9 @@ export const createEditorExtensions = (
     MermaidExtension,
     DrawioExtension.configure({
       drawioUrl: settings.drawioUrl || "https://embed.diagrams.net",
+      drawioProxyEnabled: settings.drawioProxyEnabled || false,
     }),
+    ExcalidrawExtension,
     Table.extend({
       content: "tableRow+",
     }).configure({

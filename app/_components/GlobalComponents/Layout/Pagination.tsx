@@ -7,6 +7,7 @@ import {
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { useTranslations } from "next-intl";
 
 interface PaginationProps {
   currentPage: number;
@@ -15,8 +16,9 @@ interface PaginationProps {
   itemsPerPage?: number;
   onItemsPerPageChange?: (itemsPerPage: number) => void;
   totalItems?: number;
-  variant?: "default" | "compact";
+  variant?: "default" | "compact" | "sidebar";
   className?: string;
+  dropdownDirection?: "down" | "up";
 }
 
 export const Pagination = ({
@@ -28,7 +30,9 @@ export const Pagination = ({
   totalItems,
   variant = "default",
   className = "",
+  dropdownDirection = "down",
 }: PaginationProps) => {
+  const t = useTranslations();
   const getVisiblePages = () => {
     const delta = 2;
     const range = [];
@@ -68,28 +72,31 @@ export const Pagination = ({
     { id: "120", name: "120 per page" },
   ];
 
+  const isSidebar = variant === "sidebar";
+
   return (
-    <div
-      className={`bg-card border border-border rounded-jotty p-4 ${className}`}
-    >
-      <div className="space-y-3">
+    <div className={className}>
+      <div className={isSidebar ? "space-y-3" : "space-y-3 bg-card border border-border rounded-jotty p-4"}>
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-foreground">Page</span>
+          <span className={isSidebar ? "text-xs font-bold uppercase text-muted-foreground tracking-wider" : "text-sm font-medium text-foreground"}>
+            {t('common.page')}
+          </span>
           <span className="text-xs text-muted-foreground">
-            {currentPage} of {totalPages}
+            {t('common.pageOfPages', { currentPage, totalPages })}
           </span>
         </div>
 
         {itemsPerPage && onItemsPerPageChange && (
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">
-              Items per page
+            <label className="text-xs text-muted-foreground mb-2 block">
+              {t('common.itemsPerPage')}
             </label>
             <Dropdown
               value={itemsPerPage.toString()}
               options={itemsPerPageOptions}
               onChange={(value) => onItemsPerPageChange(parseInt(value))}
               className="w-full"
+              direction={dropdownDirection}
             />
           </div>
         )}
@@ -103,7 +110,7 @@ export const Pagination = ({
             className="flex-1 h-8 text-xs"
           >
             <ArrowLeft01Icon className="h-3 w-3 mr-1" />
-            Prev
+            {t('common.previous')}
           </Button>
           <Button
             variant="outline"
@@ -111,9 +118,7 @@ export const Pagination = ({
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="flex-1 h-8 text-xs"
-          >
-            Next
-            <ArrowRight01Icon className="h-3 w-3 ml-1" />
+          >{t('common.next')}<ArrowRight01Icon className="h-3 w-3 ml-1" />
           </Button>
         </div>
       </div>

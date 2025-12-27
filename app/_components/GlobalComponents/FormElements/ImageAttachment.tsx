@@ -3,6 +3,7 @@
 import { Download01Icon, ViewIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 interface ImageAttachmentProps {
   url: string;
@@ -15,6 +16,7 @@ export const ImageAttachment = ({
   fileName,
   className = "",
 }: ImageAttachmentProps) => {
+  const t = useTranslations();
   const displayName = fileName.replace(/ \(\d+\)/, "").replace(/\.\w+$/, "");
 
   return (
@@ -39,9 +41,7 @@ export const ImageAttachment = ({
                 onClick={() => window.open(url, "_blank")}
                 className="bg-white/90 hover:bg-white text-black"
               >
-                <ViewIcon className="h-4 w-4 mr-1" />
-                View
-              </Button>
+                <ViewIcon className="h-4 w-4 mr-1" />{t('settings.view')}</Button>
               <Button
                 variant="secondary"
                 size="sm"
@@ -53,9 +53,7 @@ export const ImageAttachment = ({
                 }}
                 className="bg-white/90 hover:bg-white text-black"
               >
-                <Download01Icon className="h-4 w-4 mr-1" />
-                Download
-              </Button>
+                <Download01Icon className="h-4 w-4 mr-1" />{t('common.download')}</Button>
             </span>
           </span>
         </span>

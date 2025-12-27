@@ -1247,6 +1247,266 @@ Retrieves the current progress of an ongoing export operation.
 }
 ```
 
+## Audit Logs
+
+The audit logs API provides comprehensive tracking and monitoring of all user actions in the system. These endpoints allow you to retrieve, export, analyze, and manage audit logs.
+
+### GET /logs
+
+Retrieve audit logs with optional filtering and pagination.
+
+**Access:**
+- Regular users can only view their own logs
+- Admins can view all users' logs
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| username | string | No | Filter by username (admin only, defaults to current user for non-admins) |
+| action | string | No | Filter by action type (e.g., "login", "logout", "checklist_created") |
+| category | string | No | Filter by category (auth, user, checklist, note, sharing, settings, encryption, api, system, file, upload) |
+| level | string | No | Filter by log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
+| startDate | string (ISO 8601) | No | Start date for log range (defaults to 30 days ago) |
+| endDate | string (ISO 8601) | No | End date for log range (defaults to now) |
+| success | boolean | No | Filter by success status |
+| limit | integer | No | Number of logs to return (default: 50) |
+| offset | integer | No | Number of logs to skip (default: 0) |
+
+**Request Example:**
+
+```bash
+curl -X GET "http://localhost:3000/api/logs?category=auth&limit=10&success=true" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "logs": [
+    {
+      "id": "1766778674300",
+      "uuid": "4a0d76b5-18de-400c-8b36-5fbdd9d8299b",
+      "timestamp": "2025-12-26T19:51:14.300Z",
+      "level": "INFO",
+      "username": "fccview",
+      "action": "login",
+      "category": "auth",
+      "resourceType": null,
+      "resourceId": null,
+      "resourceTitle": null,
+      "metadata": {},
+      "ipAddress": "::ffff:192.168.86.20",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      "success": true,
+      "errorMessage": null,
+      "duration": 150
+    }
+  ],
+  "total": 1
+}
+```
+
+### POST /logs/export
+
+Export audit logs in JSON or CSV format.
+
+**Access:**
+- Regular users can only export their own logs
+- Admins can export logs for all users or specific users
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| format | string | Yes | Export format: "json" or "csv" |
+| filters | object | No | Same filter options as GET /logs |
+
+**Request Example (JSON):**
+
+```bash
+curl -X POST "http://localhost:3000/api/logs/export" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "format": "json",
+    "filters": {
+      "category": "checklist",
+      "startDate": "2025-12-01T00:00:00Z",
+      "endDate": "2025-12-26T23:59:59Z",
+      "limit": 100
+    }
+  }'
+```
+
+**Request Example (CSV):**
+
+```bash
+curl -X POST "http://localhost:3000/api/logs/export" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "format": "csv",
+    "filters": {
+      "success": false,
+      "level": "ERROR"
+    }
+  }' > error_logs.csv
+```
+
+**Response (JSON format):**
+
+Returns a JSON array of log entries with the Content-Disposition header set for file download.
+
+**Response (CSV format):**
+
+Returns a CSV file with headers:
+```
+Timestamp,Level,Username,Action,Category,Resource Type,Resource ID,Resource Title,Success,IP Address,Error Message
+```
+
+### GET /logs/stats
+
+Retrieve aggregated statistics for audit logs (admin only).
+
+**Access:** Admin only
+
+**Request Example:**
+
+```bash
+curl -X GET "http://localhost:3000/api/logs/stats" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "totalLogs": 1250,
+  "logsByLevel": {
+    "DEBUG": 50,
+    "INFO": 800,
+    "WARNING": 300,
+    "ERROR": 90,
+    "CRITICAL": 10
+  },
+  "logsByCategory": {
+    "auth": 450,
+    "user": 200,
+    "checklist": 300,
+    "note": 250,
+    "system": 50
+  },
+  "topActions": [
+    {
+      "action": "login",
+      "count": 350
+    },
+    {
+      "action": "checklist_updated",
+      "count": 245
+    }
+  ],
+  "topUsers": [
+    {
+      "username": "fccview",
+      "count": 425
+    },
+    {
+      "username": "john_doe",
+      "count": 380
+    }
+  ],
+  "recentActivity": [
+    {
+      "id": "1766778674300",
+      "uuid": "4a0d76b5-18de-400c-8b36-5fbdd9d8299b",
+      "timestamp": "2025-12-26T19:51:14.300Z",
+      "level": "WARNING",
+      "username": "fccview",
+      "action": "logs_cleaned",
+      "category": "system",
+      "metadata": {
+        "deletedFiles": 4
+      },
+      "ipAddress": "::ffff:192.168.86.20",
+      "userAgent": "Mozilla/5.0...",
+      "success": true
+    }
+  ]
+}
+```
+
+### POST /logs/cleanup
+
+Delete audit logs older than the configured retention period (admin only).
+
+**Access:** Admin only
+
+**Request Example:**
+
+```bash
+curl -X POST "http://localhost:3000/api/logs/cleanup" \
+  -H "x-api-key: YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "deletedFiles": 15
+}
+```
+
+### Audit Log Fields
+
+Each audit log entry contains the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unix timestamp as string |
+| uuid | string | Generated UUID for the log entry |
+| timestamp | string | ISO 8601 format timestamp |
+| level | string | Log severity level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
+| username | string | Username of the user who performed the action |
+| action | string | Type of action performed |
+| category | string | Category of the log entry |
+| resourceType | string | Type of resource affected (e.g., "checklist", "note") |
+| resourceId | string | UUID of the affected resource |
+| resourceTitle | string | Human-readable name of the affected resource |
+| metadata | object | Custom data object with additional context |
+| ipAddress | string | IP address of the request |
+| userAgent | string | User agent string from the request |
+| success | boolean | Whether the action was successful |
+| errorMessage | string | Error message if the action failed |
+| duration | integer | Duration of the action in milliseconds |
+
+### Common Audit Actions
+
+**Authentication:**
+- `login`, `logout`, `register`, `session_terminated`
+
+**User Management:**
+- `user_created`, `user_updated`, `user_deleted`, `profile_updated`, `user_settings_updated`
+
+**Checklists:**
+- `checklist_created`, `checklist_updated`, `checklist_deleted`, `checklist_shared`, `checklist_unshared`
+
+**Notes:**
+- `note_created`, `note_updated`, `note_deleted`, `note_shared`, `note_unshared`
+
+**Encryption:**
+- `note_encrypted`, `note_decrypted`, `encryption_keys_generated`, `encryption_keys_imported`
+
+**System:**
+- `logs_cleaned`, `export_created`, `migration_check`, `file_scan`
+
+**API:**
+- `api_key_generated`, `api_request`
+
 ## Usage Examples
 
 ### Health check (public endpoint)

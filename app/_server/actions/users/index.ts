@@ -19,6 +19,7 @@ import path from "path";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { getFormData } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
+import { logUserEvent, logAudit } from "@/app/_server/actions/log";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -153,7 +154,14 @@ const _getUserByItemUuid = async (
         }
       } catch (error) {
         console.log("Error checking user", user.username, ":", error);
-        // Continue to next user
+        await logAudit({
+          level: "DEBUG",
+          action: "user_item_check",
+          category: "user",
+          success: false,
+          errorMessage: `Error checking items for user: ${user.username}`,
+          metadata: { error: String(error) }
+        });
         continue;
       }
     }
@@ -180,6 +188,11 @@ async function _deleteUserCore(username: string): Promise<Result<null>> {
   }
 
   const userToDelete = allUsers[userIndex];
+
+  if (userToDelete.isSuperAdmin) {
+    return { success: false, error: "Cannot delete the super admin (system owner)" };
+  }
+
   if (userToDelete.isAdmin) {
     const adminCount = allUsers.filter((user: User) => user.isAdmin).length;
     if (adminCount === 1) {
@@ -298,8 +311,9 @@ async function _updateUserCore(
 export const createUser = async (
   formData: FormData
 ): Promise<Result<Omit<User, "passwordHash">>> => {
+  const username = formData.get("username") as string;
+
   try {
-    const username = formData.get("username") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
     const isAdmin = formData.get("isAdmin") === "true";
@@ -360,12 +374,15 @@ export const createUser = async (
 
     const { passwordHash: _, ...userWithoutPassword } = newUser;
 
+    await logUserEvent("user_created", username, true, { isAdmin });
+
     return {
       success: true,
       data: userWithoutPassword,
     };
   } catch (error) {
     console.error("Error creating user:", error);
+    await logUserEvent("user_created", username || "unknown", false);
     return {
       success: false,
       error: "Failed to create user",
@@ -399,7 +416,15 @@ export const deleteUser = async (formData: FormData): Promise<Result<null>> => {
       return { success: false, error: "Username is required" };
     }
 
-    return await _deleteUserCore(usernameToDelete);
+    const result = await _deleteUserCore(usernameToDelete);
+
+    if (result.success) {
+      await logUserEvent("user_deleted", usernameToDelete, true);
+    } else {
+      await logUserEvent("user_deleted", usernameToDelete, false, { error: result.error });
+    }
+
+    return result;
   } catch (error) {
     console.error("Error in deleteUser:", error);
     return { success: false, error: "Failed to delete user" };
@@ -515,8 +540,11 @@ export const updateProfile = async (
 
     const result = await _updateUserCore(currentUser.username, updates);
     if (!result.success) {
+      await logUserEvent("profile_updated", currentUser.username, false, { error: result.error });
       return { success: false, error: result.error };
     }
+
+    await logUserEvent("profile_updated", currentUser.username, true, { changes: Object.keys(updates) });
 
     return { success: true, data: null };
   } catch (error) {
@@ -534,11 +562,11 @@ export const updateUser = async (
       return { success: false, error: "Unauthorized: Admin access required" };
     }
 
-    const { targetUsername, newUsername, password, admin } = getFormData(
+    const { username: targetUsername, newUsername, password, isAdmin: adminStr } = getFormData(
       formData,
       ["username", "newUsername", "password", "isAdmin"]
     );
-    const isAdmin = admin === "true";
+    const isAdmin = adminStr === "true";
     const updates: UserUpdatePayload = {};
 
     if (!targetUsername || !newUsername || newUsername.length < 3) {
@@ -548,9 +576,46 @@ export const updateUser = async (
       };
     }
 
+    const allUsers = await readJsonFile(USERS_FILE);
+    const targetUser = allUsers.find((u: User) => u.username === targetUsername);
+
+    if (!targetUser) {
+      return { success: false, error: "User not found" };
+    }
+
+    if (targetUser.isSuperAdmin && !adminUser?.isSuperAdmin) {
+      await logUserEvent("user_updated", targetUsername, false, {
+        error: "Unauthorized: Cannot modify super admin",
+        attemptedBy: adminUser?.username
+      });
+      return {
+        success: false,
+        error: "Unauthorized: Cannot modify the system owner account"
+      };
+    }
+
+    if (targetUser.isSuperAdmin && adminUser?.username !== targetUsername) {
+      await logUserEvent("user_updated", targetUsername, false, {
+        error: "Unauthorized: Only super admin can modify their own account",
+        attemptedBy: adminUser?.username
+      });
+      return {
+        success: false,
+        error: "Only the system owner can modify their own account"
+      };
+    }
+
     if (newUsername !== targetUsername) {
       updates.username = newUsername;
     }
+
+    if (targetUser.isSuperAdmin && !isAdmin) {
+      return {
+        success: false,
+        error: "Cannot remove admin privileges from the system owner"
+      };
+    }
+
     updates.isAdmin = isAdmin;
 
     if (password) {
@@ -565,7 +630,15 @@ export const updateUser = async (
         .digest("hex");
     }
 
-    return await _updateUserCore(targetUsername, updates);
+    const result = await _updateUserCore(targetUsername, updates);
+
+    if (result.success) {
+      await logUserEvent("user_updated", targetUsername, true, { changes: Object.keys(updates) });
+    } else {
+      await logUserEvent("user_updated", targetUsername, false, { error: result.error });
+    }
+
+    return result;
   } catch (error) {
     console.error("Error updating user:", error);
     return { success: false, error: "Failed to update user" };
@@ -608,6 +681,7 @@ export const updateUserSettings = async (
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
+      await logUserEvent("user_settings_updated", "unknown", false, { error: "Not authenticated" });
       return { success: false, error: "Not authenticated" };
     }
 
@@ -629,9 +703,27 @@ export const updateUserSettings = async (
     allUsers[userIndex] = updatedUser;
     await writeJsonFile(allUsers, USERS_FILE);
 
+    await logAudit({
+      level: "INFO",
+      action: "user_settings_updated",
+      category: "settings",
+      success: true,
+      metadata: {
+        changes: Object.keys(updates),
+        settingsUpdated: updates,
+      },
+    });
+
     return { success: true, data: { user: updatedUser } };
   } catch (error) {
     console.error("Error updating user settings:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "user_settings_updated",
+      category: "settings",
+      success: false,
+      errorMessage: "Failed to update user settings",
+    });
     return { success: false, error: "Failed to update user settings" };
   }
 };
@@ -660,4 +752,27 @@ export const getUserByNote = async (
   noteCategory: string
 ): Promise<Result<User>> => {
   return _getUserByItem(noteID, noteCategory, ItemTypes.NOTE);
+};
+
+export const canAccessAllContent = async (): Promise<boolean> => {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return false;
+
+    if (currentUser.isSuperAdmin) return true;
+
+    if (!currentUser.isAdmin) return false;
+
+    const { getAppSettings } = await import("@/app/_server/actions/config");
+    const settingsResult = await getAppSettings();
+
+    if (!settingsResult.success || !settingsResult.data) {
+      return true;
+    }
+
+    return settingsResult.data.adminContentAccess !== "no";
+  } catch (error) {
+    console.error("Error checking content access:", error);
+    return true;
+  }
 };

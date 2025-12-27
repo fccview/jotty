@@ -15,6 +15,7 @@ import {
   SquareArrowDown02Icon,
   SharedWifiIcon,
   DrawingModeIcon,
+  PencilIcon,
 } from "hugeicons-react";
 import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommandsList";
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
@@ -182,6 +183,14 @@ const slashCommands: SlashCommandItem[] = [
     icon: <DrawingModeIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).insertDrawIo().run();
+    },
+  },
+  {
+    title: "Excalidraw Diagram",
+    description: "Create an Excalidraw diagram",
+    icon: <PencilIcon className="h-4 w-4" />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).insertExcalidraw().run();
     },
   },
 ];

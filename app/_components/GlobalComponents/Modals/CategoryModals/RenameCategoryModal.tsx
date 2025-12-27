@@ -6,6 +6,7 @@ import { Modal } from "../Modal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface RenameCategoryModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const RenameCategoryModal = ({
   onClose,
   onRename,
 }: RenameCategoryModalProps) => {
+  const t = useTranslations();
   const categoryName = categoryPath.split("/").pop() || categoryPath;
   const [newName, setNewName] = useState(categoryName);
   const [isRenaming, setIsRenaming] = useState(false);
@@ -37,16 +39,19 @@ export const RenameCategoryModal = ({
       await onRename(categoryPath, newName.trim());
       showToast({
         type: "success",
-        title: "Category renamed successfully!",
-        message: `Category "${categoryName}" renamed to "${newName.trim()}"`,
+        title: t("toasts.categoryRenamedSuccessfully"),
+        message: t("toasts.categoryRenamedSuccessfullyMessage", {
+          categoryName,
+          newName: newName.trim(),
+        }),
       });
       onClose();
     } catch (error) {
       console.error("Failed to rename category:", error);
       showToast({
         type: "error",
-        title: "Failed to rename category",
-        message: "An error occurred while renaming the category.",
+        title: t("toasts.failedToRenameCategory"),
+        message: t("toasts.failedToRenameCategoryMessage"),
       });
     } finally {
       router.refresh();
@@ -60,20 +65,20 @@ export const RenameCategoryModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Rename Category">
+    <Modal isOpen={true} onClose={onClose} title={t("common.renameCategory")}>
       <p className="text-sm text-muted-foreground mb-4">
-        Enter a new name for &quot;{categoryName}&quot;
+        {t("common.enterNewCategoryName", { categoryName })}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           id="categoryName"
           name="categoryName"
-          label="Category Name"
+          label={t("common.categoryName")}
           type="text"
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
-          placeholder="Enter category name..."
+          placeholder={t('common.enterCategoryName')}
           autoFocus
         />
 
@@ -83,14 +88,12 @@ export const RenameCategoryModal = ({
             variant="outline"
             onClick={handleClose}
             disabled={isRenaming}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={!newName.trim() || newName === categoryName || isRenaming}
           >
-            {isRenaming ? "Renaming..." : "Rename"}
+            {isRenaming ? t('common.renaming') : t('common.rename')}
           </Button>
         </div>
       </form>

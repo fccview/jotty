@@ -7,6 +7,7 @@ import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
 import { Textarea } from "@/app/_components/GlobalComponents/FormElements/Textarea";
 import { importKeys } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTranslations } from "next-intl";
 
 interface PGPKeyImportModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const PGPKeyImportModal = ({
   onClose,
   onSuccess,
 }: PGPKeyImportModalProps) => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [publicKey, setPublicKey] = useState("");
   const [privateKey, setPrivateKey] = useState("");
@@ -111,7 +113,7 @@ export const PGPKeyImportModal = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         <InfoBox
           variant="info"
-          title="Import Existing Keys"
+          title={t('encryption.importExistingKeys')}
           items={[
             "Paste your ASCII-armored PGP keys below",
             "Keys must start with -----BEGIN PGP...",
@@ -156,9 +158,7 @@ lQdGBF...
             variant="outline"
             onClick={handleClose}
             disabled={isImporting}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button type="submit" disabled={isImporting}>
             {isImporting ? "Importing..." : "Import Keys"}
           </Button>

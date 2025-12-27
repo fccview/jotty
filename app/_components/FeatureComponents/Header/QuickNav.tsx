@@ -3,27 +3,27 @@
 import {
   CheckmarkSquare04Icon,
   File02Icon,
+  Logout01Icon,
   SidebarLeftIcon,
-  Settings01Icon,
-  ShieldUserIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
-import { AppMode } from "@/app/_types";
+import { AppMode, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { cn } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
-import { NavigationLogoutIcon } from "../Navigation/Parts/NavigationLogoutIcon";
 import { NavigationHelpIcon } from "../Navigation/Parts/NavigationHelpIcon";
+import { UserDropdown } from "../Navigation/Parts/UserDropdown";
+import { logout } from "@/app/_server/actions/auth";
 
 interface QuickNavProps {
   showSidebarToggle?: boolean;
   onSidebarToggle?: () => void;
   onOpenSettings?: () => void;
-  isAdmin: boolean;
+  user: User | null;
   onModeChange?: (mode: AppMode) => void;
 }
 
@@ -31,12 +31,17 @@ export const QuickNav = ({
   showSidebarToggle = false,
   onSidebarToggle,
   onOpenSettings,
-  isAdmin,
+  user,
   onModeChange,
 }: QuickNavProps) => {
   const router = useRouter();
   const { mode } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/auth/login");
+  };
 
   return (
     <header className="lg:border-b lg:border-border no-print">
@@ -60,23 +65,23 @@ export const QuickNav = ({
         <div className="hidden lg:flex lg:items-center lg:gap-2">
           <NavigationSearchIcon onModeChange={onModeChange} />
 
-          <NavigationHelpIcon />
-
-          {onOpenSettings && (
-            <NavigationGlobalIcon
-              icon={<Settings01Icon className="h-5 w-5" />}
-              onClick={() => checkNavigation(() => onOpenSettings())}
+          {user && onOpenSettings ? (
+            <UserDropdown
+              username={user.username}
+              avatarUrl={user.avatarUrl}
+              isAdmin={user.isAdmin}
+              onOpenSettings={onOpenSettings}
             />
+          ) : (
+            <Button
+              variant="destructive"
+              size="icon"
+              onClick={handleLogout}
+              className="jotty-mobile-navigation-icon"
+            >
+              <Logout01Icon className="h-5 w-5" />
+            </Button>
           )}
-
-          {isAdmin && (
-            <NavigationGlobalIcon
-              icon={<ShieldUserIcon className="h-5 w-5" />}
-              onClick={() => checkNavigation(() => router.push("/admin"))}
-            />
-          )}
-
-          <NavigationLogoutIcon />
         </div>
 
         <div className="contents lg:hidden">

@@ -7,8 +7,10 @@ import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Orbit01Icon } from "hugeicons-react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
+  const t = useTranslations('auth');
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
@@ -34,7 +36,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           throw error;
         }
       }
-      setError("An error occurred. Please try again.");
+      setError(t('errorOccurred'));
       setIsLoading(false);
     }
   }
@@ -43,7 +45,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Welcome back
+          {t('welcomeBack')}
         </h1>
       </div>
 
@@ -59,10 +61,10 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           >
             {isSsoLoading ? (
               <>
-                <Logo className="h-4 w-4 mr-2 animate-pulse" /> Signing In...
+                <Logo className="h-4 w-4 mr-2 animate-pulse" /> {t('signingIn')}
               </>
             ) : (
-              "Sign in with SSO"
+              t('signInWithSSO')
             )}
           </Button>
           <div className="relative !mt-8">
@@ -71,7 +73,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             </div>
             <div className="relative flex justify-center text-xs text-muted-foreground">
               <span className="bg-background px-2">
-                or continue with local account
+                {t('orContinueWith')}
               </span>
             </div>
           </div>
@@ -80,8 +82,8 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
 
       {isDemoMode && (
         <div className="bg-muted p-3 rounded-jotty">
-          <strong>username: </strong>demo <br />
-          <strong>password: </strong>demodemo
+          <strong>{t('usernameLabel')}: </strong>demo <br />
+          <strong>{t('passwordLabel')}: </strong>demodemo
         </div>
       )}
 
@@ -95,13 +97,13 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         <div className="space-y-2">
           <Input
             id="username"
-            label="Username"
+            label={t('usernameLabel')}
             name="username"
             type="text"
             required
             disabled={isLoading || isSsoLoading}
             className="mt-1"
-            placeholder="Enter your username"
+            placeholder={t('enterUsername')}
             defaultValue=""
             autoComplete="username"
           />
@@ -110,13 +112,13 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         <div className="space-y-2">
           <Input
             id="password"
-            label="Password"
+            label={t('passwordLabel')}
             name="password"
             type="password"
             required
             disabled={isLoading || isSsoLoading}
             className="mt-1"
-            placeholder="Enter your password"
+            placeholder={t('enterPassword')}
             autoComplete="current-password"
             defaultValue=""
           />
@@ -129,17 +131,17 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         >
           {isLoading ? (
             <>
-              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" /> Signing In...
+              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" /> {t('signingIn')}
             </>
           ) : (
-            "Sign In"
+            t('signInButton')
           )}
         </Button>
       </form>
 
       {appVersion && (
         <div className="text-center text-xs text-muted-foreground">
-          Version {appVersion}
+          {t('version', { version: appVersion })}
         </div>
       )}
     </div>

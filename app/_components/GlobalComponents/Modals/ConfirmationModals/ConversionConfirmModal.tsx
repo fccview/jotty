@@ -5,6 +5,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { ChecklistType } from "@/app/_types";
 import { InfoBox } from "../../Cards/InfoBox";
+import { useTranslations } from "next-intl";
 
 interface ConversionConfirmModalProps {
   isOpen: boolean;
@@ -49,6 +50,7 @@ export const ConversionConfirmModal = ({
   currentType,
   newType,
 }: ConversionConfirmModalProps) => {
+  const t = useTranslations();
   const isDestructive = newType === "simple" && currentType === "task";
 
   return (
@@ -82,9 +84,7 @@ export const ConversionConfirmModal = ({
       </div>
 
       <div className="flex gap-3 mt-6">
-        <Button variant="outline" onClick={onClose} className="flex-1">
-          Cancel
-        </Button>
+        <Button variant="outline" onClick={onClose} className="flex-1">{t('common.cancel')}</Button>
         <Button
           variant={isDestructive ? "destructive" : "default"}
           onClick={() => {

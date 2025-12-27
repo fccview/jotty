@@ -3,6 +3,7 @@
 import { Download01Icon, ViewIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { getFileIcon, getFileTypeDisplay } from "@/app/_utils/file-icon-utils";
+import { useTranslations } from "next-intl";
 
 interface FileAttachmentProps {
   url: string;
@@ -17,6 +18,7 @@ export const FileAttachment = ({
   mimeType,
   className = "",
 }: FileAttachmentProps) => {
+  const t = useTranslations();
   const displayName = fileName.replace(/ \(\d+\)/, "").replace(/\.\w+$/, "");
 
   return (
@@ -43,7 +45,7 @@ export const FileAttachment = ({
               size="sm"
               onClick={() => window.open(url, "_blank")}
               className="jotty-file-attachment-view-button h-8 w-8 p-0"
-              title="Open file"
+              title={t('common.openFile')}
             >
               <ViewIcon className="h-4 w-4" />
             </Button>
@@ -57,7 +59,7 @@ export const FileAttachment = ({
                 link.click();
               }}
               className="jotty-file-attachment-download-button h-8 w-8 p-0"
-              title="Download file"
+              title={t('common.downloadFile')}
             >
               <Download01Icon className="h-4 w-4" />
             </Button>

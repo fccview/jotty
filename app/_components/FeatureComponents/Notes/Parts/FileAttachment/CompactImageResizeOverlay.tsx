@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Image02Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface CompactImageResizeOverlayProps {
   isVisible: boolean;
@@ -28,6 +29,7 @@ export const CompactImageResizeOverlay = ({
   imageUrl,
   targetElement,
 }: CompactImageResizeOverlayProps) => {
+  const t = useTranslations();
   const [width, setWidth] = useState<string>("");
   const [height, setHeight] = useState<string>("");
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -166,12 +168,8 @@ export const CompactImageResizeOverlay = ({
             size="sm"
             onClick={onClose}
             className="text-xs"
-          >
-            Cancel
-          </Button>
-          <Button size="sm" onClick={handleApply} className="text-xs">
-            Apply
-          </Button>
+          >{t('common.cancel')}</Button>
+          <Button size="sm" onClick={handleApply} className="text-xs">{t('common.apply')}</Button>
         </div>
       </div>
     </div>

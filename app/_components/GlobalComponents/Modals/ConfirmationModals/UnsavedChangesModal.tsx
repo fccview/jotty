@@ -3,6 +3,7 @@
 import { FloppyDiskIcon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { useTranslations } from "next-intl";
 
 interface UnsavedChangesModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const UnsavedChangesModal = ({
   onDiscard,
   noteTitle = "this note",
 }: UnsavedChangesModalProps) => {
+  const t = useTranslations();
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Unsaved Changes">
       <div className="space-y-4">
@@ -39,9 +41,7 @@ export const UnsavedChangesModal = ({
 
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <Button variant="outline" onClick={onClose} className="flex-1">
-          <MultiplicationSignIcon className="h-4 w-4 mr-2" />
-          Cancel
-        </Button>
+          <MultiplicationSignIcon className="h-4 w-4 mr-2" />{t('common.cancel')}</Button>
         <Button
           variant="outline"
           onClick={() => {

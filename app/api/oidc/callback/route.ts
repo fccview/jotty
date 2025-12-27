@@ -9,6 +9,7 @@ import { jwtVerify, createRemoteJWKSet } from "jose";
 import { createSession } from "@/app/_server/actions/session";
 import { ensureCorDirsAndFiles, readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
+import { logAudit } from "@/app/_server/actions/log";
 
 function base64UrlEncode(buffer: Buffer) {
   return buffer
@@ -18,7 +19,7 @@ function base64UrlEncode(buffer: Buffer) {
     .replace(/=+$/g, "");
 }
 
-function checkClaims(allowedClaimValues: string | undefined, availableClaimValues: string[] | string){
+function checkClaims(allowedClaimValues: string | undefined, availableClaimValues: string[] | string) {
   let available: string[] = [];
   if (Array.isArray(availableClaimValues)) {
     available = availableClaimValues;
@@ -152,6 +153,7 @@ export async function GET(request: NextRequest) {
     token_endpoint: string;
     jwks_uri: string;
     issuer: string;
+    userinfo_endpoint?: string;
   };
   const tokenEndpoint = discovery.token_endpoint;
   const jwksUri = discovery.jwks_uri;
@@ -182,8 +184,12 @@ export async function GET(request: NextRequest) {
   if (!tokenRes.ok) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
-  const token = (await tokenRes.json()) as { id_token?: string };
+  const token = (await tokenRes.json()) as {
+    id_token?: string;
+    access_token?: string;
+  };
   const idToken = token.id_token;
+  const accessToken = token.access_token;
   if (!idToken) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
@@ -203,6 +209,82 @@ export async function GET(request: NextRequest) {
 
   if (nonce && claims.nonce && claims.nonce !== nonce) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
+  }
+
+  const missingIdentityClaims = !claims.preferred_username && !claims.email;
+  const missingAuthzClaims = !claims.groups && !claims.roles;
+  const needsUserinfo =
+    (missingIdentityClaims || missingAuthzClaims) &&
+    discovery.userinfo_endpoint &&
+    accessToken;
+
+  if (needsUserinfo) {
+    try {
+      if (process.env.DEBUGGER) {
+        console.log(
+          "OIDC USERINFO FALLBACK - Critical claims missing from ID token, fetching from userinfo endpoint:",
+          {
+            hasPreferredUsername: !!claims.preferred_username,
+            hasEmail: !!claims.email,
+            hasGroups: !!claims.groups,
+            hasRoles: !!claims.roles,
+            missingIdentityClaims,
+            missingAuthzClaims,
+            userinfoEndpoint: discovery.userinfo_endpoint,
+            hasAccessToken: !!accessToken,
+          }
+        );
+      }
+
+      const userinfoResponse = await fetch(discovery.userinfo_endpoint!, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (userinfoResponse.ok) {
+        const userinfoClaims = await userinfoResponse.json();
+
+        if (process.env.DEBUGGER) {
+          console.log(
+            "OIDC USERINFO FALLBACK - Successfully fetched claims from userinfo endpoint:",
+            userinfoClaims
+          );
+        }
+
+        claims = { ...userinfoClaims, ...claims };
+
+        await logAudit({
+          level: "DEBUG",
+          action: "login",
+          category: "auth",
+          success: true,
+          username: "system",
+          metadata: {
+            oidcUserinfoFallback: true,
+            userinfoEndpoint: discovery.userinfo_endpoint,
+            claimsFetched: Object.keys(userinfoClaims),
+          },
+        });
+      } else {
+        if (process.env.DEBUGGER) {
+          console.warn(
+            "OIDC USERINFO FALLBACK - Userinfo endpoint request failed, continuing with ID token claims:",
+            {
+              status: userinfoResponse.status,
+              statusText: userinfoResponse.statusText,
+            }
+          );
+        }
+      }
+    } catch (error) {
+      if (process.env.DEBUGGER) {
+        console.warn(
+          "OIDC USERINFO FALLBACK - Error fetching from userinfo endpoint, continuing with ID token claims:",
+          error
+        );
+      }
+    }
   }
 
   const preferred = claims.preferred_username as string | undefined;

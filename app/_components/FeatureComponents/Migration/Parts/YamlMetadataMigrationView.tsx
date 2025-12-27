@@ -13,6 +13,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { RefreshIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { migrateToYamlMetadataFormat } from "@/app/_server/actions/migration/index";
+import { useTranslations } from "next-intl";
 
 interface YamlMetadataMigrationViewProps {
   onMigrate: () => void;
@@ -30,6 +31,7 @@ export const YamlMetadataMigrationView = ({
   error,
   migrationResult,
 }: YamlMetadataMigrationViewProps) => {
+  const t = useTranslations();
   const [hasBackedUp, setHasBackedUp] = useState(false);
 
   const isMigrationComplete = migrationResult !== null;
@@ -321,7 +323,7 @@ checklistType: task|simple
                 icon={
                   <InformationCircleIcon className="h-4 w-4 text-destructive" />
                 }
-                title="Migration failed"
+                title={t('migration.migrationFailed')}
                 variant={InfoCardVariant.DESTRUCTIVE}
               >
                 <p>{error}</p>
@@ -412,9 +414,7 @@ checklistType: task|simple
 
             {migrationResult.migrated && (
               <div className="flex justify-center pt-2">
-                <Button onClick={() => (window.location.href = "/")} size="lg">
-                  Return to App
-                </Button>
+                <Button onClick={() => (window.location.href = "/")} size="lg">{t('migration.returnToApp')}</Button>
               </div>
             )}
           </div>

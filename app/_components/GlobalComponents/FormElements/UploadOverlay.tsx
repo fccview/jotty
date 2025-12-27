@@ -7,6 +7,7 @@ import {
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Logo } from "../Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 interface UploadOverlayProps {
   isVisible: boolean;
@@ -25,6 +26,7 @@ export const UploadOverlay = ({
   onCancel,
   onRetry,
 }: UploadOverlayProps) => {
+  const t = useTranslations();
   if (!isVisible) return null;
 
   return (
@@ -76,9 +78,7 @@ export const UploadOverlay = ({
                 size="sm"
                 onClick={onCancel}
                 disabled={!onCancel}
-              >
-                Cancel
-              </Button>
+              >{t('common.cancel')}</Button>
             )}
             {uploadError && onRetry && (
               <Button variant="outline" size="sm" onClick={onRetry}>
@@ -86,9 +86,7 @@ export const UploadOverlay = ({
               </Button>
             )}
             {!isUploading && !uploadError && (
-              <Button size="sm" onClick={() => window.location.reload()}>
-                Close
-              </Button>
+              <Button size="sm" onClick={() => window.location.reload()}>{t('common.close')}</Button>
             )}
           </div>
         </div>

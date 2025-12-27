@@ -5,6 +5,7 @@ import { ReactNodeViewRenderer } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
+import { useTranslations } from "next-intl";
 
 const getCSSVariable = (variable: string): string => {
   if (typeof window === "undefined") return "";
@@ -58,6 +59,7 @@ export const MermaidNodeView = ({
   updateAttributes,
   deleteNode,
 }: any) => {
+  const t = useTranslations();
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -118,21 +120,15 @@ export const MermaidNodeView = ({
               <button
                 onClick={handleSave}
                 className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
-              >
-                Save
-              </button>
+              >{t('common.save')}</button>
               <button
                 onClick={handleCancel}
                 className="px-3 py-1 bg-muted text-foreground rounded text-sm hover:bg-muted/80"
-              >
-                Cancel
-              </button>
+              >{t('common.cancel')}</button>
               <button
                 onClick={handleDelete}
                 className="px-3 py-1 bg-destructive text-destructive-foreground rounded text-sm hover:bg-destructive/90 ml-auto"
-              >
-                Delete
-              </button>
+              >{t('common.delete')}</button>
             </div>
           </div>
         ) : (
@@ -142,16 +138,12 @@ export const MermaidNodeView = ({
                 onClick={() => setIsEditing(true)}
                 className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
                 title="Edit diagram"
-              >
-                Edit
-              </button>
+              >{t('common.edit')}</button>
               <button
                 onClick={handleDelete}
                 className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-xs hover:bg-destructive/90"
                 title="Delete diagram"
-              >
-                Delete
-              </button>
+              >{t('common.delete')}</button>
             </div>
             {error ? (
               <div className="text-destructive text-sm p-3 bg-destructive/10 rounded border border-destructive">

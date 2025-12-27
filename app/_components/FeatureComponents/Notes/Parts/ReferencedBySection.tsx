@@ -5,6 +5,7 @@ import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface ReferencingItem {
   type: ItemType;
@@ -21,6 +22,7 @@ export const ReferencedBySection = ({
   referencingItems,
 }: ReferencedBySectionProps) => {
   const router = useRouter();
+  const t = useTranslations();
   if (referencingItems.length === 0) return null;
 
   const handleItemClick = (item: ReferencingItem) => {
@@ -31,7 +33,7 @@ export const ReferencedBySection = ({
   return (
     <div className="mt-8 space-y-4">
       <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-        <span>Referenced By</span>
+        <span>{t("notes.referencedBy")}</span>
         <span className="text-sm text-muted-foreground font-normal">
           ({referencingItems.length})
         </span>

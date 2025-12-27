@@ -15,6 +15,7 @@ import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { cn } from "@/app/_utils/global-utils";
 import { Logo } from "../../../Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 export const UsersShareTab = ({
   filteredUsers,
@@ -28,6 +29,7 @@ export const UsersShareTab = ({
   setSearchQuery,
   isLoading,
 }: any) => {
+  const t = useTranslations();
   return (
     <div className="space-y-4">
       <div className="relative">
@@ -121,9 +123,7 @@ export const UsersShareTab = ({
                         <UserMinus02Icon className="h-3 w-3 mr-1" />
                       ) : (
                         <>
-                          <UserAdd01Icon className="h-3 w-3 mr-1" />
-                          Share
-                        </>
+                          <UserAdd01Icon className="h-3 w-3 mr-1" />{t('sharing.share')}</>
                       )}
                     </Button>
                   </div>
@@ -171,7 +171,7 @@ export const UsersShareTab = ({
                         className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <PencilEdit02Icon className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs font-medium">Edit</span>
+                        <span className="text-xs font-medium">{t('common.edit')}</span>
                         <Toggle
                           size="sm"
                           checked={permissions.canEdit}
@@ -198,7 +198,7 @@ export const UsersShareTab = ({
                         className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <Delete03Icon className="h-3 w-3 text-destructive" />
-                        <span className="text-xs font-medium">Delete</span>
+                        <span className="text-xs font-medium">{t('common.delete')}</span>
                         <Toggle
                           size="sm"
                           checked={permissions.canDelete}

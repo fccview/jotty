@@ -14,6 +14,7 @@ import { Modal } from "../Modal";
 import { InfoCardVariant } from "@/app/_components/GlobalComponents/Cards/InfoCard";
 import { InfoBox } from "../../Cards/InfoBox";
 import { deleteAccount } from "@/app/_server/actions/users";
+import { useTranslations } from "next-intl";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const DeleteAccountModal = ({
   isOpen,
   onClose,
 }: DeleteAccountModalProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -72,7 +74,7 @@ export const DeleteAccountModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Delete Account">
+    <Modal isOpen={true} onClose={onClose} title={t('settings.deleteAccount')}>
       <div className="space-y-4">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
@@ -101,9 +103,7 @@ export const DeleteAccountModal = ({
           ></InfoBox>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Confirm Password
-            </label>
+            <label className="block text-sm font-medium mb-2">{t('settings.confirmPassword')}</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -133,9 +133,7 @@ export const DeleteAccountModal = ({
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>{t('common.cancel')}</Button>
           <Button
             onClick={handleDelete}
             disabled={isLoading}
@@ -145,9 +143,7 @@ export const DeleteAccountModal = ({
               "Deleting..."
             ) : (
               <>
-                <Delete03Icon className="h-4 w-4 mr-2" />
-                Delete Account
-              </>
+                <Delete03Icon className="h-4 w-4 mr-2" />{t('settings.deleteAccount')}</>
             )}
           </Button>
         </div>

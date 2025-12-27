@@ -12,6 +12,7 @@ import {
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 interface CompactTableToolbarProps {
   editor: Editor;
@@ -26,6 +27,7 @@ export const CompactTableToolbar = ({
   position,
   targetElement,
 }: CompactTableToolbarProps) => {
+  const t = useTranslations();
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,45 +68,45 @@ export const CompactTableToolbar = ({
   const tableItems = [
     {
       icon: <ArrowUp04Icon className="h-3 w-3" />,
-      label: "Add Row Above",
+      label: t("editor.addRowAbove"),
       command: () =>
         handleCommand(() => editor.chain().focus().addRowBefore().run()),
     },
     {
       icon: <ArrowDown04Icon className="h-3 w-3" />,
-      label: "Add Row Below",
+      label: t("editor.addRowBelow"),
       command: () =>
         handleCommand(() => editor.chain().focus().addRowAfter().run()),
     },
     {
       icon: <ArrowLeft04Icon className="h-3 w-3" />,
-      label: "Add Column Left",
+      label: t("editor.addColumnLeft"),
       command: () =>
         handleCommand(() => editor.chain().focus().addColumnBefore().run()),
     },
     {
       icon: <ArrowRight04Icon className="h-3 w-3" />,
-      label: "Add Column Right",
+      label: t("editor.addColumnRight"),
       command: () =>
         handleCommand(() => editor.chain().focus().addColumnAfter().run()),
     },
     {
       icon: <MinusSignIcon className="h-3 w-3" />,
-      label: "Delete Row",
+      label: t("editor.deleteRow"),
       command: () =>
         handleCommand(() => editor.chain().focus().deleteRow().run()),
       destructive: true,
     },
     {
       icon: <MultiplicationSignIcon className="h-3 w-3" />,
-      label: "Delete Column",
+      label: t("editor.deleteColumn"),
       command: () =>
         handleCommand(() => editor.chain().focus().deleteColumn().run()),
       destructive: true,
     },
     {
       icon: <Delete03Icon className="h-3 w-3" />,
-      label: "Delete Table",
+      label: t("editor.deleteTable"),
       command: () =>
         handleCommand(() => editor.chain().focus().deleteTable().run()),
       destructive: true,
@@ -125,7 +127,7 @@ export const CompactTableToolbar = ({
     >
       <div className="flex items-center gap-1">
         <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded text-xs text-muted-foreground">
-          <span>Table</span>
+          <span>{t('editor.table')}</span>
         </div>
 
         {tableItems.map((item, index) => (

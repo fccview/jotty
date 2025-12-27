@@ -13,6 +13,7 @@ import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Not
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface MinimalModeEditorProps {
   isEditing: boolean;
@@ -27,6 +28,7 @@ export const MinimalModeEditor = ({
   onEditorContentChange,
   compactMode,
 }: MinimalModeEditorProps) => {
+  const t = useTranslations();
   const { contentWithoutMetadata } = extractYamlMetadata(noteContent);
   const [markdownContent, setMarkdownContent] = useState(
     contentWithoutMetadata
@@ -122,7 +124,7 @@ export const MinimalModeEditor = ({
             title="Markdown Editor"
           >
             <File02Icon className="h-4 w-4 mr-2" />
-            <span>Markdown</span>
+            <span>{t('editor.markdown')}</span>
           </Button>
 
           <Button
@@ -134,7 +136,7 @@ export const MinimalModeEditor = ({
             title="Preview Mode"
           >
             <ViewIcon className="h-4 w-4 mr-2" />
-            <span>Preview</span>
+            <span>{t('editor.preview')}</span>
           </Button>
         </div>
       </div>

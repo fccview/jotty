@@ -50,8 +50,8 @@ export const handleTabInCodeBlock = (
         line.startsWith("    ")
           ? line.substring(4)
           : line.startsWith("\t")
-          ? line.substring(1)
-          : line
+            ? line.substring(1)
+            : line
       )
       .join("\n");
   } else {

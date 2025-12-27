@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { LeftToRightListBulletIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { extractHeadings as extractHeadingsFromMarkdown } from "@/app/_utils/markdown-utils";
+import { useTranslations } from "next-intl";
 
 interface Heading {
   id: string;
@@ -108,6 +109,7 @@ export const TableOfContents = ({
   className,
 }: TableOfContentsProps) => {
   const { headings, activeHeading, setActiveHeading } = useTableOfContents(content, isEditing);
+  const t = useTranslations();
 
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
@@ -119,7 +121,7 @@ export const TableOfContents = ({
 
   const renderContent = () => {
     if (headings.length === 0) {
-      return <p className="text-sm text-muted-foreground">No headings found</p>;
+      return <p className="text-sm text-muted-foreground">{t("notes.noHeadingsFound")}</p>;
     }
     return (
       <nav className="flex-1">
@@ -152,7 +154,7 @@ export const TableOfContents = ({
       <div className="p-3 border-b border-border">
         <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
           <LeftToRightListBulletIcon className="h-4 w-4" />
-          Contents
+          {t("notes.contents")}
         </h3>
       </div>
       <div className="p-3 flex-1 flex flex-col overflow-y-auto hide-scrollbar max-h-[calc(100vh-200px)]">

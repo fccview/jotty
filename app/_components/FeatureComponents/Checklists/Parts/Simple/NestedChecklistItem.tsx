@@ -26,6 +26,7 @@ import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
 import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useTranslations } from "next-intl";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -66,6 +67,7 @@ const NestedChecklistItemComponent = ({
   isAnyItemDragging = false,
   overItem = null,
 }: NestedChecklistItemProps) => {
+  const t = useTranslations();
   const { usersPublicData, user } = useAppMode();
   const { permissions } = usePermissions();
   const getUserAvatarUrl = (username: string) => {
@@ -97,9 +99,11 @@ const NestedChecklistItemComponent = ({
   const [showAddSubItem, setShowAddSubItem] = useState(false);
   const [newSubItemText, setNewSubItemText] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [dropdownOpenUpward, setDropdownOpenUpward] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -160,6 +164,36 @@ const NestedChecklistItemComponent = ({
     }
   };
 
+  const handleDropdownToggle = () => {
+    if (!isDropdownOpen && dropdownButtonRef.current) {
+      const rect = dropdownButtonRef.current.getBoundingClientRect();
+
+      let scrollParent: HTMLElement | null = dropdownButtonRef.current.parentElement;
+      while (scrollParent) {
+        if (scrollParent.classList.contains('checklist-todo-container')) {
+          break;
+        }
+        scrollParent = scrollParent.parentElement;
+      }
+
+      let shouldOpenUpward = false;
+
+      if (scrollParent) {
+        const containerRect = scrollParent.getBoundingClientRect();
+        const containerStyle = window.getComputedStyle(scrollParent);
+        const paddingBottom = parseInt(containerStyle.paddingBottom) || 0;
+
+        const actualSpaceBelow = containerRect.bottom - rect.bottom - paddingBottom;
+        const threshold = 200;
+
+        shouldOpenUpward = actualSpaceBelow < threshold;
+      }
+
+      setDropdownOpenUpward(shouldOpenUpward);
+    }
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   const handleDropdownAction = (actionId: string) => {
     setIsDropdownOpen(false);
     switch (actionId) {
@@ -214,17 +248,18 @@ const NestedChecklistItemComponent = ({
       className={cn(
         "relative my-1",
         hasChildren &&
-          !isChild &&
-          "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+        !isChild &&
+        "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
         !hasChildren &&
-          !isChild &&
-          "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+        !isChild &&
+        "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
         isChild &&
-          "ml-4 pl-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
+        "ml-4 pl-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
         "first:mt-0 transition-colors duration-150",
         isActive && "bg-muted/20",
         isDragging && "opacity-50 z-50",
-        isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0"
+        isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0",
+        isDropdownOpen && "z-50"
       )}
     >
       {isOver && overPosition === "before" && (
@@ -237,7 +272,7 @@ const NestedChecklistItemComponent = ({
           isChild ? "px-2.5 py-2" : "p-3",
           completed && "opacity-80",
           !permissions?.canEdit &&
-            "opacity-50 cursor-not-allowed pointer-events-none"
+          "opacity-50 cursor-not-allowed pointer-events-none"
         )}
       >
         {!isPublicView && !isDragDisabled && permissions?.canEdit && (
@@ -332,9 +367,9 @@ const NestedChecklistItemComponent = ({
                 onMouseLeave={() => setIsActive(false)}
               >
                 {item.completed || completed ? (
-                  <CheckmarkSquare02Icon className="h-6 w-6 text-primary mr-2 !stroke-1" />
+                  <CheckmarkSquare02Icon className="h-6 w-6 min-w-6 text-primary mr-2 !stroke-1" />
                 ) : (
-                  <SquareIcon className="h-6 w-6 text-muted-foreground mr-2 !stroke-1" />
+                  <SquareIcon className="h-6 w-6 min-w-6 text-muted-foreground mr-2 !stroke-1" />
                 )}
 
                 {item.recurrence && user?.enableRecurrence === "enable" && (
@@ -396,16 +431,22 @@ const NestedChecklistItemComponent = ({
             {!isPublicView && (
               <div className="lg:hidden relative" ref={dropdownRef}>
                 <Button
+                  ref={dropdownButtonRef}
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  onClick={handleDropdownToggle}
                   className="h-8 w-8 p-0"
                 >
                   <MoreHorizontalIcon className="h-4 w-4" />
                 </Button>
 
+
+
                 {isDropdownOpen && (
-                  <div className="absolute right-0 z-50 w-48 mt-1 bg-card border border-border rounded-jotty shadow-lg">
+                  <div className={cn(
+                    "absolute right-0 z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
+                    dropdownOpenUpward ? "bottom-full mb-1 top-auto" : "top-full mt-1"
+                  )}>
                     <div className="py-1">
                       {dropdownOptions.map((option) => (
                         <button
@@ -449,9 +490,7 @@ const NestedChecklistItemComponent = ({
               size="sm"
               disabled={!newSubItemText.trim()}
               className="px-3"
-            >
-              Add
-            </Button>
+            >{t('common.add')}</Button>
             <Button
               type="button"
               variant="ghost"

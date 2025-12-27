@@ -15,6 +15,7 @@ import { getUsername } from "@/app/_server/actions/users";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 const ResponsiveNetwork = dynamic(
   () => import("@nivo/network").then((mod) => mod.ResponsiveNetwork),
@@ -100,6 +101,7 @@ interface NetworkLink {
 }
 
 export const LinksTab = ({ linkIndex }: LinksTabProps) => {
+  const t = useTranslations();
   const { notes, checklists } = useAppMode();
   const [hoveredNode, setHoveredNode] = useState<any>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -272,7 +274,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalNodes}
                 </div>
-                <div className="text-xs text-muted-foreground">Total Items</div>
+                <div className="text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
               </div>
             </div>
 
@@ -284,7 +286,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalLinks}
                 </div>
-                <div className="text-xs text-muted-foreground">Connections</div>
+                <div className="text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
               </div>
             </div>
 
@@ -350,7 +352,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalNodes}
               </div>
-              <div className="text-xs text-muted-foreground">Total Items</div>
+              <div className="text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
             </div>
           </div>
 
@@ -362,7 +364,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalLinks}
               </div>
-              <div className="text-xs text-muted-foreground">Connections</div>
+              <div className="text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
             </div>
           </div>
 
@@ -385,16 +387,16 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
       <div className="bg-card border border-border rounded-md p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Link Network</h3>
+            <h3 className="text-lg font-semibold">{t('profile.linkNetwork')}</h3>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>Notes</span>
+                  <span>{t('notes.title')}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>Checklists</span>
+                  <span>{t('checklists.title')}</span>
                 </div>
               </div>
               <Button
@@ -408,7 +410,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <RefreshIcon
                   className={`h-3 w-3 ${rebuildingIndex ? "animate-spin" : ""}`}
                 />
-                {rebuildingIndex ? "Rebuilding..." : "Rebuild Indexes"}
+                {rebuildingIndex ? t('admin.rebuilding') : t('admin.rebuildIndexes')}
               </Button>
             </div>
           </div>
@@ -457,20 +459,16 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 {hoveredNode.data.connectionCount >= 5
                   ? " (highly connected)"
                   : hoveredNode.data.connectionCount >= 2
-                  ? " (moderately connected)"
-                  : hoveredNode.data.connectionCount === 0
-                  ? " (isolated)"
-                  : ""}
+                    ? " (moderately connected)"
+                    : hoveredNode.data.connectionCount === 0
+                      ? " (isolated)"
+                      : ""}
               </div>
               <div className="text-xs text-muted-foreground mt-1 font-mono line-clamp-1">
                 {hoveredNode.data.id}
               </div>
             </div>
           )}
-
-          <div className="text-sm text-muted-foreground text-center">
-            Hover nodes for details • Circle size indicates connections
-          </div>
         </div>
       </div>
     </div>

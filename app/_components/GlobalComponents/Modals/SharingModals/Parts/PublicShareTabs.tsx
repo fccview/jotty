@@ -8,6 +8,7 @@ import {
 } from "hugeicons-react";
 import { Copy01Icon } from "hugeicons-react";
 import { Logo } from "../../../Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 interface PublicShareTabProps {
   isLoading: boolean;
@@ -26,6 +27,7 @@ export const PublicShareTab = ({
   itemType,
   itemTitle,
 }: PublicShareTabProps) => {
+  const t = useTranslations();
   const handleCopyUrl = async () => {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -108,7 +110,7 @@ export const PublicShareTab = ({
   return (
     <div className="space-y-4">
       <div className="p-4 bg-muted/30 rounded-jotty border border-border">
-        <h4 className="font-medium">Public Access</h4>
+        <h4 className="font-medium">{t('sharing.publicAccess')}</h4>
         <p className="text-sm text-muted-foreground mb-3">
           Make this {itemType} accessible to anyone with the link.
         </p>
@@ -143,7 +145,7 @@ export const PublicShareTab = ({
               onClick={handleCopyUrl}
               size="sm"
               variant="outline"
-              title="Copy URL"
+              title={t('sharing.copyUrl')}
             >
               <Copy01Icon className="h-4 w-4" />
             </Button>

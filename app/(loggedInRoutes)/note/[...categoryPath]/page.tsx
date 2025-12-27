@@ -5,7 +5,7 @@ import {
   getNoteById,
   getUserNotes,
 } from "@/app/_server/actions/note";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { NoteClient } from "@/app/_components/FeatureComponents/Notes/NoteClient";
 import { Modes } from "@/app/_types/enums";
 import { getCategories } from "@/app/_server/actions/category";
@@ -47,7 +47,7 @@ export default async function NotePage({ params }: NotePageProps) {
       : decodeCategoryPath(encodedCategoryPath);
   const user = await getCurrentUser();
   const username = user?.username || "";
-  const isAdminUser = user?.isAdmin || false;
+  const hasContentAccess = await canAccessAllContent();
 
   await CheckForNeedsMigration();
 
@@ -62,7 +62,7 @@ export default async function NotePage({ params }: NotePageProps) {
 
   let note = await getNoteById(id, category, username);
 
-  if (!note && isAdminUser) {
+  if (!note && hasContentAccess) {
     const allDocsResult = await getAllNotes();
     if (allDocsResult.success && allDocsResult.data) {
       note = allDocsResult.data.find(

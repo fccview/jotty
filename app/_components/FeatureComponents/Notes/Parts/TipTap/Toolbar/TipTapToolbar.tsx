@@ -28,6 +28,7 @@ import { useState } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ExtraItemsDropdown";
 import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/PrismThemeDropdown";
+import { useTranslations } from "next-intl";
 
 type ToolbarProps = {
   editor: Editor | null;
@@ -50,6 +51,7 @@ export const TiptapToolbar = ({
   onTogglePreview,
   markdownContent = "",
 }: ToolbarProps) => {
+  const t = useTranslations('editor');
   const [showFileModal, setShowFileModal] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
   const [showImageSizeModal, setShowImageSizeModal] = useState(false);
@@ -67,7 +69,7 @@ export const TiptapToolbar = ({
 
   const setLink = () => {
     const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("URL", previousUrl);
+    const url = window.prompt(t('url'), previousUrl);
 
     if (url === null) return;
     if (url === "") {
@@ -151,7 +153,7 @@ export const TiptapToolbar = ({
               onClick={onToggleLineNumbers}
               className="flex-shrink-0 hidden lg:flex"
               title={
-                showLineNumbers ? "Hide line numbers" : "Show line numbers"
+                showLineNumbers ? t('hideLineNumbers') : t('showLineNumbers')
               }
             >
               {showLineNumbers ? (
@@ -173,17 +175,17 @@ export const TiptapToolbar = ({
               onMouseDown={(e) => e.preventDefault()}
               onClick={onTogglePreview}
               className="flex-shrink-0 hidden lg:flex"
-              title={showPreview ? "Hide preview" : "Show preview"}
+              title={showPreview ? t('hidePreview') : t('showPreview')}
             >
               {showPreview ? (
                 <>
                   <ViewOffSlashIcon className="h-4 w-4 mr-2" />
-                  <span>Edit</span>
+                  <span>{t('edit')}</span>
                 </>
               ) : (
                 <>
                   <ViewIcon className="h-4 w-4 mr-2" />
-                  <span>Preview</span>
+                  <span>{t('preview')}</span>
                 </>
               )}
             </Button>
@@ -194,17 +196,17 @@ export const TiptapToolbar = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={toggleMode}
             className="flex-shrink-0 hidden lg:flex"
-            title="Toggle editor mode"
+            title={t('toggleEditorMode')}
           >
             {isMarkdownMode ? (
               <>
                 <Tv02Icon className="h-4 w-4 mr-2" />
-                <span>Rich Editor</span>
+                <span>{t('richEditor')}</span>
               </>
             ) : (
               <>
                 <File02Icon className="h-4 w-4 mr-2" />
-                <span>Markdown</span>
+                <span>{t('markdown')}</span>
               </>
             )}
           </Button>
@@ -219,14 +221,14 @@ export const TiptapToolbar = ({
                 size="sm"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={onTogglePreview}
-                title={showPreview ? "Hide preview" : "Show preview"}
+                title={showPreview ? t('hidePreview') : t('showPreview')}
               >
                 {showPreview ? (
                   <ViewOffSlashIcon className="h-4 w-4 mr-2" />
                 ) : (
                   <ViewIcon className="h-4 w-4 mr-2" />
                 )}
-                <span>Preview</span>
+                <span>{t('preview')}</span>
               </Button>
             )}
             <Button
@@ -235,10 +237,10 @@ export const TiptapToolbar = ({
               size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={toggleMode}
-              title="Toggle rich editor mode"
+              title={t('toggleRichEditorMode')}
             >
               <Tv02Icon className="h-4 w-4 mr-2" />
-              <span>Rich Editor</span>
+              <span>{t('richEditor')}</span>
             </Button>
 
             <Button
@@ -247,10 +249,10 @@ export const TiptapToolbar = ({
               size="sm"
               onMouseDown={(e) => e.preventDefault()}
               onClick={toggleMode}
-              title="Toggle markdown mode"
+              title={t('toggleMarkdownMode')}
             >
               <File02Icon className="h-4 w-4 mr-2" />
-              <span>Markdown</span>
+              <span>{t('markdown')}</span>
             </Button>
           </div>
         </div>
@@ -269,7 +271,7 @@ export const TiptapToolbar = ({
             onClick={() =>
               handleButtonClick(() => editor.chain().focus().toggleBold().run())
             }
-            title="Toggle bold"
+            title={t('toggleBold')}
           >
             <TextBoldIcon className="h-4 w-4" />
           </Button>
@@ -282,7 +284,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleItalic().run()
               )
             }
-            title="Toggle italic"
+            title={t('toggleItalic')}
           >
             <TextItalicIcon className="h-4 w-4" />
           </Button>
@@ -295,7 +297,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleUnderline().run()
               )
             }
-            title="Toggle underline"
+            title={t('toggleUnderline')}
           >
             <TextUnderlineIcon className="h-4 w-4" />
           </Button>
@@ -308,7 +310,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleStrike().run()
               )
             }
-            title="Toggle strikethrough"
+            title={t('toggleStrikethrough')}
           >
             <TextStrikethroughIcon className="h-4 w-4" />
           </Button>
@@ -319,7 +321,7 @@ export const TiptapToolbar = ({
             onClick={() =>
               handleButtonClick(() => editor.chain().focus().toggleCode().run())
             }
-            title="Toggle inline code"
+            title={t('toggleInlineCode')}
           >
             <SourceCodeIcon className="h-4 w-4" />
           </Button>
@@ -337,7 +339,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleHeading({ level: 2 }).run()
               )
             }
-            title="Toggle heading 2"
+            title={t('toggleHeading2')}
           >
             <Heading02Icon className="h-4 w-4" />
           </Button>
@@ -350,7 +352,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleBulletList().run()
               )
             }
-            title="Toggle bullet list"
+            title={t('toggleBulletList')}
           >
             <LeftToRightListBulletIcon className="h-4 w-4" />
           </Button>
@@ -363,7 +365,7 @@ export const TiptapToolbar = ({
                 editor.chain().focus().toggleBlockquote().run()
               )
             }
-            title="Toggle blockquote"
+            title={t('toggleBlockquote')}
           >
             <QuoteUpIcon className="h-4 w-4" />
           </Button>
@@ -372,7 +374,7 @@ export const TiptapToolbar = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleButtonClick(setLink)}
-            title="Toggle link"
+            title={t('toggleLink')}
           >
             <Attachment01Icon className="h-4 w-4" />
           </Button>
@@ -387,7 +389,7 @@ export const TiptapToolbar = ({
                 setSelectedImageHeight(selectedImageAttrs.height);
                 setShowImageSizeModal(true);
               }}
-              title="Edit image size"
+              title={t('editImageSize')}
             >
               <Image02Icon className="h-4 w-4" />
             </Button>

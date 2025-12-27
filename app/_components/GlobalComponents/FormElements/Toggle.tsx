@@ -8,6 +8,7 @@ interface ToggleProps {
   disabled?: boolean;
   className?: string;
   size?: "sm" | "md" | "lg";
+  id?: string;
 }
 
 export const Toggle = ({
@@ -16,6 +17,7 @@ export const Toggle = ({
   disabled = false,
   className,
   size = "md",
+  id,
 }: ToggleProps) => {
   const sizeClasses = {
     sm: "h-4 w-7",
@@ -42,6 +44,7 @@ export const Toggle = ({
       aria-checked={checked}
       disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
+      id={id}
       className={cn(
         "jotty-toggle relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         checked

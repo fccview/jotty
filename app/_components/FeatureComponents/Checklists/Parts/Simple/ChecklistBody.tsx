@@ -165,7 +165,7 @@ export const ChecklistBody = ({
           onDragOver={onDragOver}
         >
           <SortableContext items={items} strategy={verticalListSortingStrategy}>
-            <div className="w-full space-y-4 overflow-hidden">
+            <div className="w-full min-h-[200px] space-y-4 overflow-hidden checklist-todo-container">
               {incompleteItems.length > 0 && (
                 <ChecklistItemsWrapper
                   title={TaskStatusLabels.TODO}
@@ -273,10 +273,10 @@ export const ChecklistBody = ({
                   item={activeItem}
                   index={0}
                   level={0}
-                  onToggle={() => {}}
-                  onDelete={() => {}}
-                  onEdit={() => {}}
-                  onAddSubItem={() => {}}
+                  onToggle={() => { }}
+                  onDelete={() => { }}
+                  onEdit={() => { }}
+                  onAddSubItem={() => { }}
                   isDeletingItem={false}
                   isDragDisabled={true}
                   checklist={localList}

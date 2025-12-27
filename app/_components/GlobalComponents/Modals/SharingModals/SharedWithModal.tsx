@@ -1,5 +1,6 @@
 import { Modal } from "../Modal";
 import { UserAvatar } from "../../User/UserAvatar";
+import { useTranslations } from "next-intl";
 
 interface SharedWithModalProps {
   usernames: string[];
@@ -12,10 +13,11 @@ export const SharedWithModal = ({
   isOpen,
   onClose,
 }: SharedWithModalProps) => {
+  const t = useTranslations();
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Shared With">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("sharing.sharedWith")}>
       <div className="space-y-4 py-6">
         {usernames.map((username) => (
           <div

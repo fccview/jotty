@@ -363,6 +363,33 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     },
   });
 
+  service.addRule("excalidraw", {
+    filter: (node) => {
+      return (
+        node.nodeName === "DIV" &&
+        (node as HTMLElement).hasAttribute("data-excalidraw")
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const diagramData = element.getAttribute("data-excalidraw-data") || "";
+      const svgData = element.getAttribute("data-excalidraw-svg") || "";
+      const themeMode = element.getAttribute("data-excalidraw-theme") || "light";
+
+      const dataBase64 =
+        typeof btoa !== "undefined"
+          ? btoa(diagramData)
+          : Buffer.from(diagramData).toString("base64");
+
+      const svgBase64 =
+        typeof btoa !== "undefined"
+          ? btoa(svgData)
+          : Buffer.from(svgData).toString("base64");
+
+      return `\n<!-- excalidraw-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n`;
+    },
+  });
+
   return service;
 };
 
@@ -423,7 +450,46 @@ const markdownProcessor = unified()
                   },
                 ];
               } catch (e) {
-                // Silently ignore invalid base64 (happens with empty diagrams)
+              }
+            }
+          }
+          if (commentValue.includes("excalidraw-diagram")) {
+            const dataMatch = commentValue.match(/data:\s*([^\n]+)/);
+            const svgMatch = commentValue.match(/svg:\s*([^\n]+)/);
+            const themeMatch = commentValue.match(/theme:\s*([^\n]+)/);
+
+            if (dataMatch) {
+              const dataBase64 = dataMatch[1].trim();
+              const svgBase64 = svgMatch ? svgMatch[1].trim() : "";
+              const themeMode = themeMatch ? themeMatch[1].trim() : "light";
+
+              try {
+                const diagramData =
+                  typeof atob !== "undefined"
+                    ? atob(dataBase64)
+                    : Buffer.from(dataBase64, "base64").toString();
+
+                const svgData = svgBase64
+                  ? typeof atob !== "undefined"
+                    ? atob(svgBase64)
+                    : Buffer.from(svgBase64, "base64").toString()
+                  : "";
+
+                node.type = "element";
+                node.tagName = "div";
+                node.properties = {
+                  "data-excalidraw": "",
+                  "data-excalidraw-data": diagramData,
+                  "data-excalidraw-svg": svgData,
+                  "data-excalidraw-theme": themeMode,
+                };
+                node.children = [
+                  {
+                    type: "text",
+                    value: "[Excalidraw Diagram]",
+                  },
+                ];
+              } catch (e) {
               }
             }
           }

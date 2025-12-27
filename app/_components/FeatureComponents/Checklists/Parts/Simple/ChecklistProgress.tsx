@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckmarkCircle04Icon, ArrowDown01Icon, ArrowRight01Icon, CircleIcon } from "hugeicons-react";
 import { Checklist, Item } from "@/app/_types";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
+import { useTranslations } from "next-intl";
 
 interface ChecklistProgressProps {
   checklist: Checklist;
@@ -31,6 +32,7 @@ const countItems = (items: Item[]): { total: number; completed: number } => {
 
 export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const t = useTranslations();
   const { total: totalCount, completed: completedCount } = countItems(checklist.items);
   const progress = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
@@ -68,7 +70,7 @@ export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
         <div className="border-t border-border/30 px-3 py-2 animate-in slide-in-from-top-2 duration-200">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Overall progress</span>
+              <span>{t("checklists.overallProgress")}</span>
               <span className="font-semibold text-foreground">{Math.round(progress)}%</span>
             </div>
             <ProgressBar progress={progress} />

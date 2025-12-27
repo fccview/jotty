@@ -18,6 +18,7 @@ interface DropdownProps {
   disabled?: boolean;
   placeholder?: string;
   iconDropdown?: boolean;
+  direction?: "down" | "up";
 }
 
 export const Dropdown = ({
@@ -28,6 +29,7 @@ export const Dropdown = ({
   disabled = false,
   placeholder = "",
   iconDropdown = false,
+  direction = "down",
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -107,7 +109,10 @@ export const Dropdown = ({
       )}
 
       {isOpen && !disabled && (
-        <div className="jotty-dropdown-menu absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] mt-1 bg-card border border-border rounded-jotty shadow-lg max-h-48 overflow-y-auto">
+        <div className={cn(
+          "jotty-dropdown-menu absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] bg-card border border-border rounded-jotty shadow-lg max-h-48 overflow-y-auto",
+          direction === "up" ? "bottom-full mb-1" : "mt-1"
+        )}>
           <div className="py-1">
             {options.map((option) => (
               <button

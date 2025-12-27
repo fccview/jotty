@@ -41,12 +41,14 @@ interface SettingsState {
   autosaveNotes: boolean;
   showMarkdownPreview: boolean;
   showCompletedSuggestions: boolean;
+  viewMode: 'card' | 'list' | 'grid';
   setTheme: (theme: Theme) => void;
   setShowEmojis: (show: boolean) => void;
   setAutosaveNotes: (enabled: boolean) => void;
   setShowMarkdownPreview: (show: boolean) => void;
   setShowCompletedSuggestions: (show: boolean) => void;
   setCompactMode: (compact: boolean) => void;
+  setViewMode: (mode: 'card' | 'list' | 'grid') => void;
   getResolvedTheme: (
     isRwMarkable: boolean,
     userPreferredTheme?: string
@@ -63,6 +65,7 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
       showMarkdownPreview: false,
       showCompletedSuggestions: true,
       compactMode: false,
+      viewMode: 'card',
       setTheme: (theme) => set({ theme }),
       setShowEmojis: (show) => set({ showEmojis: show }),
       setAutosaveNotes: (enabled) => set({ autosaveNotes: enabled }),
@@ -70,6 +73,7 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
       setShowCompletedSuggestions: (show) =>
         set({ showCompletedSuggestions: show }),
       setCompactMode: (compact) => set({ compactMode: compact }),
+      setViewMode: (mode) => set({ viewMode: mode }),
       getResolvedTheme: (
         isRwMarkable: boolean,
         userPreferredTheme?: string

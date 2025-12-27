@@ -19,6 +19,7 @@ import { SidebarItem } from "@/app/_components/FeatureComponents/Sidebar/Parts/S
 import { Modes } from "@/app/_types/enums";
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
+import { useTranslations } from "next-intl";
 
 interface CategoryRendererProps {
   category: Category;
@@ -38,6 +39,7 @@ interface CategoryRendererProps {
 }
 
 export const CategoryRenderer = (props: CategoryRendererProps) => {
+  const t = useTranslations();
   const {
     category,
     allCategories,
@@ -82,7 +84,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
 
   const dropdownItems = [
     {
-      label: `New ${mode === Modes.CHECKLISTS ? "Checklist" : "Note"}`,
+      label: t(mode === Modes.CHECKLISTS ? "checklists.newChecklist" : "notes.newNote"),
       onClick: () => onQuickCreate(category.path),
       icon:
         mode === Modes.CHECKLISTS ? (
@@ -92,23 +94,22 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
         ),
     },
     {
-      label: "New Category",
+      label: t("common.newCategory"),
       onClick: () => onCreateSubcategory(category.path),
       icon: <FolderAddIcon className="h-4 w-4" />,
     },
     { type: "divider" as const },
     {
-      label: "Rename Category",
+      label: t("common.renameCategory"),
       onClick: () => onRenameCategory(category.path),
     },
     {
-      label: "Delete Category",
+      label: t("common.deleteCategory"),
       onClick: () => onDeleteCategory(category.path),
       variant: "destructive" as const,
     },
   ];
 
-  const firstChild = subCategories[0] || categoryItems[0];
   const firstChildType = subCategories[0] ? "category" : "item";
   const firstChildId = subCategories[0]
     ? `category::${subCategories[0].path}`

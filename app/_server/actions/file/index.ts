@@ -136,7 +136,14 @@ export const serverDeleteFile = async (filePath: string) => {
   try {
     await fs.unlink(filePath);
   } catch (error) {
-    // Ignore if file doesn't exist
+    const { logAudit } = await import("@/app/_server/actions/log");
+    await logAudit({
+      level: "DEBUG",
+      action: "file_delete",
+      category: "file",
+      success: false,
+      errorMessage: `File delete failed (may not exist): ${filePath}`,
+    });
   }
 };
 
@@ -152,7 +159,14 @@ export const serverDeleteDir = async (dirPath: string) => {
   try {
     await fs.rm(dirPath, { recursive: true });
   } catch (error) {
-    // Ignore if directory doesn't exist
+    const { logAudit } = await import("@/app/_server/actions/log");
+    await logAudit({
+      level: "DEBUG",
+      action: "dir_delete",
+      category: "file",
+      success: false,
+      errorMessage: `Directory delete failed (may not exist): ${dirPath}`,
+    });
   }
 };
 

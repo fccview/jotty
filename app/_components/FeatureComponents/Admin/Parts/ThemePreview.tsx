@@ -3,6 +3,7 @@ import { DynamicLogo } from "@/app/_components/GlobalComponents/Layout/Logo/Dyna
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 import {
   CheckmarkCircle04Icon,
   Clock01Icon,
@@ -14,31 +15,23 @@ interface ThemePreviewProps {
   focusedColor?: string | null;
 }
 
-const sampleNote = {
-  id: "preview-note",
-  title: "Project Ideas",
-  content: `# Project Brainstorm
 
-## Mobile App Features
-- **Dark mode toggle** with smooth transitions
-- **Offline support** for critical features
-- **Push notifications** for reminders
-
-## Backend Improvements
-- **API rate limiting** to prevent abuse
-- **Database optimization** for faster queries
-- **Caching layer** for improved performance
-
-*This is just a preview of the note content...*`,
-  category: "work/projects",
-  createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-  updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-};
 
 export const ThemePreview: React.FC<ThemePreviewProps> = ({
   colors,
   focusedColor,
 }) => {
+  const t = useTranslations();
+
+  const sampleNote = useMemo(() => ({
+    id: "preview-note",
+    title: t('settings.customTheme.sampleNoteTitle'),
+    content: t('settings.customTheme.sampleNoteContent'),
+    category: t('settings.customTheme.sampleNoteCategory'),
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+  }), [t]);
+
   const themeStyles = useMemo(() => {
     const cssVars: { [key: string]: string } = {};
     Object.entries(colors).forEach(([key, value]) => {
@@ -48,28 +41,6 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
     });
     return cssVars;
   }, [colors]);
-
-  const colorMappings: { [key: string]: string[] } = {
-    "--background": ["bg-background"],
-    "--foreground": ["text-foreground"],
-    "--card": ["bg-card"],
-    "--card-foreground": ["text-card-foreground"],
-    "--popover": ["bg-popover"],
-    "--popover-foreground": ["text-popover-foreground"],
-    "--primary": ["bg-primary", "text-primary"],
-    "--primary-foreground": ["text-primary-foreground"],
-    "--secondary": ["bg-secondary"],
-    "--secondary-foreground": ["text-secondary-foreground"],
-    "--muted": ["bg-muted"],
-    "--muted-foreground": ["text-muted-foreground"],
-    "--accent": ["bg-accent"],
-    "--accent-foreground": ["text-accent-foreground"],
-    "--destructive": ["bg-destructive"],
-    "--destructive-foreground": ["text-destructive-foreground"],
-    "--border": ["border-border"],
-    "--input": ["bg-input", "border-input"],
-    "--ring": ["ring-ring"],
-  };
 
   const getHighlightClass = (colorVar: string) => {
     if (focusedColor === colorVar) {
@@ -106,20 +77,20 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
         <Input
           id="preview-search"
           type="text"
-          placeholder="Search notes and checklists..."
+          placeholder={t('settings.customTheme.searchPlaceholder')}
           className={`w-full ${getHighlightClass(
             "--input"
           )} ${getHighlightClass("--border")}`}
-          label="Search"
+          label={t('common.search')}
         />
       </div>
 
       <div className="px-3 space-y-3">
         <NoteCard
           note={sampleNote}
-          onSelect={() => {}}
+          onSelect={() => { }}
           isPinned={false}
-          onTogglePin={() => {}}
+          onTogglePin={() => { }}
         />
 
         <div
@@ -133,14 +104,14 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
                 "--foreground"
               )}`}
             >
-              Weekly Progress
+              {t('settings.customTheme.weeklyProgress')}
             </h4>
             <span
               className={`text-sm text-muted-foreground ${getHighlightClass(
                 "--muted-foreground"
               )}`}
             >
-              7/10 tasks
+              {t('settings.customTheme.tasksProgress')}
             </span>
           </div>
           <div
@@ -162,11 +133,11 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           >
             <div className="flex items-center gap-1">
               <CheckmarkCircle04Icon className="h-3 w-3" />
-              <span>7 completed</span>
+              <span>{t('settings.customTheme.tasksCompleted')}</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock01Icon className="h-3 w-3" />
-              <span>3 remaining</span>
+              <span>{t('settings.customTheme.tasksRemaining')}</span>
             </div>
           </div>
         </div>
@@ -177,14 +148,14 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
             size="sm"
             className={getHighlightClass("--primary")}
           >
-            Primary Action
+            {t('settings.customTheme.primaryAction')}
           </Button>
           <Button
             variant="destructive"
             size="sm"
             className={getHighlightClass("--destructive")}
           >
-            Destructive
+            {t('settings.customTheme.destructiveAction')}
           </Button>
           <Button
             variant="outline"
@@ -193,22 +164,20 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
               "--secondary"
             )}`}
           >
-            Secondary
+            {t('settings.customTheme.secondaryAction')}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             className={getHighlightClass("--accent")}
           >
-            Ghost
+            {t('settings.customTheme.ghostAction')}
           </Button>
           <Button
             variant="link"
             size="sm"
             className={getHighlightClass("--primary")}
-          >
-            Link
-          </Button>
+          >{t('editor.link')}</Button>
         </div>
 
         <div className="space-y-3">
@@ -220,7 +189,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
             <div className="flex items-center gap-2">
               <CheckmarkCircle04Icon className="h-4 w-4 text-primary" />
               <span className="text-sm text-primary font-medium">
-                Success message
+                {t('settings.customTheme.successMessage')}
               </span>
             </div>
           </div>
@@ -233,7 +202,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
             <div className="flex items-center gap-2">
               <CheckmarkCircle04Icon className="h-4 w-4 text-destructive" />
               <span className="text-sm text-destructive font-medium">
-                Error message
+                {t('settings.customTheme.errorMessage')}
               </span>
             </div>
           </div>
@@ -244,7 +213,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
                 "--primary"
               )} ${getHighlightClass("--border")}`}
             >
-              Active Tab
+              {t('settings.customTheme.activeTab')}
             </button>
             <button
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50 ${getHighlightClass(
@@ -253,7 +222,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
                 "--muted"
               )}`}
             >
-              Inactive Tab
+              {t('settings.customTheme.inactiveTab')}
             </button>
           </div>
 
@@ -268,7 +237,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
                   "--popover-foreground"
                 )}`}
               >
-                Calendar day
+                {t('settings.customTheme.calendarDay')}
               </span>
               <span className="text-xs text-muted-foreground">15</span>
             </div>
@@ -284,10 +253,10 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
                 "--card-foreground"
               )}`}
             >
-              Card Title
+              {t('settings.customTheme.cardTitle')}
             </h4>
             <p className="text-muted-foreground text-sm mt-1">
-              This text uses card-foreground color
+              {t('settings.customTheme.cardForegroundColor')}
             </p>
           </div>
         </div>
@@ -300,8 +269,8 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           <Input
             id="preview-sample-input"
             type="text"
-            label="Sample Input"
-            placeholder="Enter some text..."
+            label={t('settings.customTheme.sampleInputLabel')}
+            placeholder={t('settings.customTheme.sampleInputPlaceholder')}
             className={`${getHighlightClass("--input")} ${getHighlightClass(
               "--border"
             )}`}
@@ -313,11 +282,10 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
                 "--foreground"
               )}`}
             >
-              Focus to see ring color
+              {t('settings.customTheme.focusToSeeRingColor')}
             </label>
             <input
               type="text"
-              placeholder="Focus me to see ring-ring color"
               className={`w-full px-3 py-2 text-sm border border-input bg-background rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 ${getHighlightClass(
                 "--input"
               )} ${getHighlightClass("--border")} ${getHighlightClass(
@@ -327,18 +295,14 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           </div>
 
           <div className="flex gap-2">
-            <Button size="sm" className={getHighlightClass("--primary")}>
-              Save
-            </Button>
+            <Button size="sm" className={getHighlightClass("--primary")}>{t('common.save')}</Button>
             <Button
               variant="outline"
               size="sm"
               className={`${getHighlightClass("--border")} ${getHighlightClass(
                 "--secondary"
               )}`}
-            >
-              Cancel
-            </Button>
+            >{t('common.cancel')}</Button>
           </div>
         </div>
       </div>

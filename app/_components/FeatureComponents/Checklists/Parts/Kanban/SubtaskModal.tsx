@@ -18,6 +18,7 @@ import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checkli
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
+import { useTranslations } from "next-intl";
 
 interface SubtaskModalProps {
   checklist: Checklist;
@@ -48,6 +49,7 @@ export const SubtaskModal = ({
   category,
   isShared,
 }: SubtaskModalProps) => {
+  const t = useTranslations();
   const { permissions } = usePermissions();
   const { formatDateTimeString } = usePreferredDateTime();
 
@@ -284,15 +286,13 @@ export const SubtaskModal = ({
         {isEditing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Task Title
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-2">{t('tasks.taskTitle')}</label>
               <input
                 type="text"
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all text-base"
-                placeholder="Enter task title..."
+                placeholder={t("checklists.enterTaskTitle")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -309,9 +309,7 @@ export const SubtaskModal = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Description
-              </label>
+              <label className="block text-sm font-medium text-foreground mb-2">{t('common.description')}</label>
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
@@ -358,9 +356,7 @@ export const SubtaskModal = ({
                   setIsEditing(false);
                 }}
               >
-                <MultiplicationSignIcon className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
+                <MultiplicationSignIcon className="h-4 w-4 mr-2" />{t('common.cancel')}</Button>
               <Button onClick={handleSave}>
                 <FloppyDiskIcon className="h-4 w-4 mr-2" />
                 Save Changes
@@ -450,7 +446,7 @@ export const SubtaskModal = ({
                   type="text"
                   value={newSubtaskText}
                   onChange={(e) => setNewSubtaskText(e.target.value)}
-                  placeholder="Add a subtask..."
+                  placeholder={t("checklists.addSubtask")}
                   className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {

@@ -12,6 +12,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 interface VideoAttachmentProps {
   url: string;
@@ -26,6 +27,7 @@ export const VideoAttachment = ({
   mimeType,
   className = "",
 }: VideoAttachmentProps) => {
+  const t = useTranslations();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [showControls, setShowControls] = useState(false);
@@ -151,9 +153,7 @@ export const VideoAttachment = ({
                       }}
                       className="bg-white/90 hover:bg-white text-black"
                     >
-                      <ViewIcon className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
+                      <ViewIcon className="h-4 w-4 mr-1" />{t('settings.view')}</Button>
                     <Button
                       variant="secondary"
                       size="sm"
@@ -166,9 +166,7 @@ export const VideoAttachment = ({
                       }}
                       className="bg-white/90 hover:bg-white text-black"
                     >
-                      <Download01Icon className="h-4 w-4 mr-1" />
-                      Download
-                    </Button>
+                      <Download01Icon className="h-4 w-4 mr-1" />{t('common.download')}</Button>
                   </span>
                 </span>
               </span>

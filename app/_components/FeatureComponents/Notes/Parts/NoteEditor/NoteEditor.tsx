@@ -58,6 +58,7 @@ export const NoteEditor = ({
             encrypted={note.encrypted}
             onOpenDecryptModal={() => decryptModalRef.current?.()}
             onOpenViewModal={() => viewModalRef.current?.()}
+            isEditingEncrypted={viewModel.isEditingEncrypted}
           />
         </div>
 

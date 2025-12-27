@@ -5,7 +5,7 @@ import {
 } from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
 import { getAllLists } from "@/app/_server/actions/checklist";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { ChecklistClient } from "@/app/_components/FeatureComponents/Checklists/Parts/ChecklistClient";
 import { Modes } from "@/app/_types/enums";
 import type { Metadata } from "next";
@@ -46,7 +46,7 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
       : decodeCategoryPath(encodedCategoryPath);
   const user = await getCurrentUser();
   const username = user?.username || "";
-  const isAdminUser = user?.isAdmin || false;
+  const hasContentAccess = await canAccessAllContent();
 
   const [listsResult, categoriesResult] = await Promise.all([
     getUserChecklists({ username }),
@@ -59,7 +59,7 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
 
   let checklist = await getListById(id, username, category);
 
-  if (!checklist && isAdminUser) {
+  if (!checklist && hasContentAccess) {
     const allListsResult = await getAllLists();
     if (allListsResult.success && allListsResult.data) {
       checklist = allListsResult.data.find(
