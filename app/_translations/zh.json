@@ -638,7 +638,8 @@
     "wholeDataFolder": "整个 Data 文件夹 (备份)",
     "wholeDataFolderDescription": "导出整个 'data' 文件夹，包括所有用户内容、元数据和设置。请谨慎使用，文件可能很大。",
     "contentHidden": "隐藏内容详情",
-    "noSharingPermissionsLabel": "根据您的内容访问权限隐藏特定的共享项目。"
+    "noSharingPermissionsLabel": "根据您的内容访问权限隐藏特定的共享项目。",
+    "appPreferences": "应用程序偏好设置"
   },
   "errors": {
     "notFound": "未找到",

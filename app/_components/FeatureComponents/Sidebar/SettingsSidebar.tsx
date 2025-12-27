@@ -26,6 +26,7 @@ import {
     ArrowDown01Icon,
     ArrowRight01Icon,
     AppleReminderIcon,
+    TeachingIcon,
 } from "hugeicons-react";
 
 interface SettingsSidebarProps {
@@ -76,6 +77,12 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
             path: "/settings/sessions",
         },
         {
+            id: "user-audit-logs",
+            label: t("profile.userLogsTab"),
+            icon: TeachingIcon,
+            path: "/settings/user-audit-logs",
+        },
+        {
             id: "archive",
             label: t("profile.archiveTab"),
             icon: Archive02Icon,
@@ -103,12 +110,6 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
             icon: Settings01Icon,
             path: "/settings/user-preferences",
         },
-        {
-            id: "user-audit-logs",
-            label: t("profile.userLogsTab"),
-            icon: AppleReminderIcon,
-            path: "/settings/user-audit-logs",
-        },
     ];
 
     const allAdminItems: SettingsNavItem[] = [
@@ -117,6 +118,12 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
             label: t("admin.overview"),
             icon: Activity03Icon,
             path: "/settings/admin/overview",
+        },
+        {
+            id: "admin-audit-logs",
+            label: t("admin.adminLogs"),
+            icon: AppleReminderIcon,
+            path: "/settings/admin/audit-logs",
         },
         {
             id: "users",
@@ -150,15 +157,9 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
         },
         {
             id: "site-preferences",
-            label: t("common.settings"),
+            label: t("admin.appPreferences"),
             icon: Settings01Icon,
             path: "/settings/admin/site-preferences",
-        },
-        {
-            id: "admin-audit-logs",
-            label: t("admin.adminLogs"),
-            icon: FileScriptIcon,
-            path: "/settings/admin/audit-logs",
         },
     ];
 

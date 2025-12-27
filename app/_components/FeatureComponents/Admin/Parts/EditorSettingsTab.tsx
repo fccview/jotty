@@ -239,45 +239,47 @@ export const EditorSettingsTab = () => {
             </p>
 
             <div className="space-y-4">
-              <label className="block">
-                <div className="text-sm font-medium mb-1">
-                  {t("admin.drawioUrl")}
-                  <span className="ml-1 text-xs text-muted-foreground">
-                    {t("admin.optional")}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mb-2">
-                  {t("admin.drawioUrlDescription")}
-                  <span className="mt-1 block text-xs italic">
-                    {t("admin.drawioUrlExample")}
-                  </span>
-                </p>
-                <Input
-                  id="drawioUrl"
-                  type="text"
-                  value={settings.editor.drawioUrl || ""}
-                  onChange={(e) =>
-                    handleInputChange("drawioUrl", e.target.value)
-                  }
-                  placeholder="https://embed.diagrams.net"
-                  className="w-full"
-                />
-              </label>
-
-              <div className="flex items-center justify-between">
-                <label htmlFor="drawioProxyEnabled" className="space-y-1 cursor-pointer">
-                  <div className="text-sm font-medium">{t("admin.drawioProxyEnabled")}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {t("admin.drawioProxyEnabledDescription")}
+              <div className="border border-border rounded-jotty p-4 space-y-4">
+                <label className="block">
+                  <div className="text-sm font-medium mb-1">
+                    {t("admin.drawioUrl")}
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      {t("admin.optional")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {t("admin.drawioUrlDescription")}
+                    <span className="mt-1 block text-xs italic">
+                      {t("admin.drawioUrlExample")}
+                    </span>
                   </p>
+                  <Input
+                    id="drawioUrl"
+                    type="text"
+                    value={settings.editor.drawioUrl || ""}
+                    onChange={(e) =>
+                      handleInputChange("drawioUrl", e.target.value)
+                    }
+                    placeholder="https://embed.diagrams.net"
+                    className="w-full"
+                  />
                 </label>
-                <Toggle
-                  id="drawioProxyEnabled"
-                  checked={settings.editor.drawioProxyEnabled || false}
-                  onCheckedChange={(checked) =>
-                    handleToggleChange("drawioProxyEnabled", checked)
-                  }
-                />
+
+                <div className="flex items-center justify-between">
+                  <label htmlFor="drawioProxyEnabled" className="space-y-1 cursor-pointer">
+                    <div className="text-sm font-medium">{t("admin.drawioProxyEnabled")}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {t("admin.drawioProxyEnabledDescription")}
+                    </p>
+                  </label>
+                  <Toggle
+                    id="drawioProxyEnabled"
+                    checked={settings.editor.drawioProxyEnabled || false}
+                    onCheckedChange={(checked) =>
+                      handleToggleChange("drawioProxyEnabled", checked)
+                    }
+                  />
+                </div>
               </div>
             </div>
           </div>

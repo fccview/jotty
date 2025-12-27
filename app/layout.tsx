@@ -221,6 +221,7 @@ export default async function RootLayout({
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
         <link rel="icon" href="/app-icons/favicon.ico" />
+        <link rel="stylesheet" href="/themes/excalidraw/excalidraw.css" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />

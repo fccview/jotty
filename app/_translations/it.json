@@ -638,7 +638,8 @@
     "wholeDataFolder": "Intera cartella dati (Backup)",
     "wholeDataFolderDescription": "Esporta l'intera cartella 'data', inclusi contenuti, metadati e impostazioni. Attenzione: il file può essere grande.",
     "contentHidden": "Dettagli del contenuto nascosti",
-    "noSharingPermissionsLabel": "Elementi condivisi specifici vengono nascosti in base alle autorizzazioni di accesso ai contenuti."
+    "noSharingPermissionsLabel": "Elementi condivisi specifici vengono nascosti in base alle autorizzazioni di accesso ai contenuti.",
+    "appPreferences": "Preferenze dell'app"
   },
   "errors": {
     "notFound": "Non Trovato",

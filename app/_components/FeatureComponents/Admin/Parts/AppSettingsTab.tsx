@@ -177,6 +177,9 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
+          <span className="text-xs text-muted-foreground">
+            {t("admin.thisUsesGithubAPI")}
+          </span>
         </div>
         <div>
           <Label htmlFor="parseContent" className="block mb-3">

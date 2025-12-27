@@ -24,7 +24,7 @@ export const DrawioNodeView = ({
     extension.storage?.drawioUrl || "https://embed.diagrams.net";
 
   const drawioBaseUrl = drawioProxyEnabled
-    ? `/api/drawio-proxy`
+    ? `/api/diagram-proxy`
     : configuredDrawioUrl;
 
   const drawioUrl = `${drawioBaseUrl}/?embed=1&ui=kennedy&spin=1&proto=json&saveAndExit=1&noSaveBtn=0`;
