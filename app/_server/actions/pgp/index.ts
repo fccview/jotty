@@ -268,6 +268,7 @@ export const encryptNoteContent = async (
     const useStoredSigningKey = formData.get("useStoredSigningKey") === "true";
     let signingKey = formData.get("signingKey") as string;
     const signingPassphrase = formData.get("signingPassphrase") as string;
+    const skipAuditLog = formData.get("skipAuditLog") === "true";
 
     if (!content) {
       return { success: false, error: "Content is required" };
@@ -321,13 +322,15 @@ export const encryptNoteContent = async (
       signingKeys: signingKeyObj,
     });
 
-    await logAudit({
-      level: "INFO",
-      action: "note_encrypted",
-      category: "encryption",
-      success: true,
-      metadata: { method: "pgp", signed: signNote },
-    });
+    if (!skipAuditLog) {
+      await logAudit({
+        level: "INFO",
+        action: "note_encrypted",
+        category: "encryption",
+        success: true,
+        metadata: { method: "pgp", signed: signNote },
+      });
+    }
 
     return { success: true, data: { encryptedContent: encrypted } };
   } catch (error) {
@@ -444,18 +447,17 @@ export const decryptNoteContent = async (
         action: "note_decrypted",
         category: "encryption",
         success: false,
-        errorMessage: "Failed to decrypt note - invalid passphrase or key",
+        errorMessage: "Incorrect decryption password or key",
         metadata: { method: "pgp" },
       });
       return {
         success: false,
-        error:
-          "Failed to decrypt. Check your passphrase and ensure the private key matches.",
+        error: "Incorrect decryption password or key",
       };
     }
   } catch (error) {
     console.error("Error decrypting note:", error);
-    return { success: false, error: "Failed to decrypt note" };
+    return { success: false, error: "Incorrect decryption password or key" };
   }
 };
 

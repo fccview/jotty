@@ -301,6 +301,7 @@ export interface AppSettings {
     enableTableToolbar: boolean;
     enableBilateralLinks: boolean;
     drawioUrl?: string;
+    drawioProxyEnabled?: boolean;
   };
 }
 

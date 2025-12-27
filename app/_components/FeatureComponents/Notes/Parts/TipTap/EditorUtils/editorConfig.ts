@@ -40,6 +40,7 @@ interface EditorSettings {
   enableTableToolbar: boolean;
   enableBilateralLinks: boolean;
   drawioUrl?: string;
+  drawioProxyEnabled?: boolean;
 }
 
 interface EditorData {
@@ -160,6 +161,7 @@ export const createEditorExtensions = (
     MermaidExtension,
     DrawioExtension.configure({
       drawioUrl: settings.drawioUrl || "https://embed.diagrams.net",
+      drawioProxyEnabled: settings.drawioProxyEnabled || false,
     }),
     Table.extend({
       content: "tableRow+",

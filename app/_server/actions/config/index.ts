@@ -215,6 +215,7 @@ export const getSettings = async () => {
         enableBubbleMenu: true,
         enableTableToolbar: true,
         enableBilateralLinks: true,
+        drawioProxyEnabled: false,
       },
     };
   }
@@ -256,6 +257,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
             enableBubbleMenu: true,
             enableTableToolbar: true,
             enableBilateralLinks: true,
+            drawioProxyEnabled: false,
           },
         };
       }
@@ -271,6 +273,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
         enableBubbleMenu: true,
         enableTableToolbar: true,
         enableBilateralLinks: true,
+        drawioProxyEnabled: false,
       };
     }
 

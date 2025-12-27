@@ -604,6 +604,8 @@
     "optional": "(Optional)",
     "drawioUrlDescription": "Specify a custom Draw.io instance URL. Leave empty to use the default public instance (https://embed.diagrams.net).",
     "drawioUrlExample": "Example for self-hosted: https://your-domain.com/drawio",
+    "drawioProxyEnabled": "Proxy Draw.io via Jotty",
+    "drawioProxyEnabledDescription": "Enable this to route Draw.io traffic through Jotty's server. Required for internal Docker network URLs (e.g., http://drawio:8080) that aren't accessible from users' browsers.",
     "saving": "Saving...",
     "editorSettingsSaved": "Editor settings saved successfully.",
     "customEmojis": "Emoji Personalizzate",

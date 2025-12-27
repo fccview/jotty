@@ -20,6 +20,7 @@ export const encryptXChaCha = async (
     const sod = await getSodium();
     const content = formData.get("content") as string;
     const passphrase = formData.get("passphrase") as string;
+    const skipAuditLog = formData.get("skipAuditLog") === "true";
 
     if (!content || !passphrase) return { success: false, error: "Missing data" };
 
@@ -51,13 +52,15 @@ export const encryptXChaCha = async (
       data: sod.to_hex(ciphertext)
     };
 
-    await logAudit({
-      level: "INFO",
-      action: "note_encrypted",
-      category: "encryption",
-      success: true,
-      metadata: { method: "xchacha20" },
-    });
+    if (!skipAuditLog) {
+      await logAudit({
+        level: "INFO",
+        action: "note_encrypted",
+        category: "encryption",
+        success: true,
+        metadata: { method: "xchacha20" },
+      });
+    }
 
     return {
       success: true,
@@ -119,14 +122,6 @@ export const decryptXChaCha = async (
       key
     );
 
-    await logAudit({
-      level: "INFO",
-      action: "note_decrypted",
-      category: "encryption",
-      success: true,
-      metadata: { method: "xchacha20" },
-    });
-
     return {
       success: true,
       data: { decryptedContent: sod.to_string(decrypted) }
@@ -138,9 +133,9 @@ export const decryptXChaCha = async (
       action: "note_decrypted",
       category: "encryption",
       success: false,
-      errorMessage: "XChaCha decryption failed - wrong password",
+      errorMessage: "Incorrect decryption password",
     });
     console.error("XChaCha Decryption Error:", error);
-    return { success: false, error: "Decryption failed (Wrong password?)" };
+    return { success: false, error: "Incorrect decryption password" };
   }
 };

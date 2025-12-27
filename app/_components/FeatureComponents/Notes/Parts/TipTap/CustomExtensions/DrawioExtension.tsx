@@ -19,15 +19,24 @@ export const DrawioNodeView = ({
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const themeMode = node.attrs.themeMode || "light";
 
-  const drawioBaseUrl =
+  const drawioProxyEnabled = extension.storage?.drawioProxyEnabled || false;
+  const configuredDrawioUrl =
     extension.storage?.drawioUrl || "https://embed.diagrams.net";
+
+  const drawioBaseUrl = drawioProxyEnabled
+    ? `/api/drawio-proxy`
+    : configuredDrawioUrl;
+
   const drawioUrl = `${drawioBaseUrl}/?embed=1&ui=kennedy&spin=1&proto=json&saveAndExit=1&noSaveBtn=0`;
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      const drawioOrigin = new URL(drawioBaseUrl).origin;
+      const expectedOrigin = drawioProxyEnabled
+        ? window.location.origin
+        : new URL(drawioBaseUrl, window.location.origin).origin;
+
       if (
-        event.origin !== drawioOrigin &&
+        event.origin !== expectedOrigin &&
         !event.origin.includes("diagrams.net")
       )
         return;
@@ -37,7 +46,9 @@ export const DrawioNodeView = ({
       if (typeof event.data === "string" && event.data.length > 0) {
         try {
           const message = JSON.parse(event.data);
-          const drawioOrigin = new URL(drawioBaseUrl).origin;
+          const drawioOrigin = drawioProxyEnabled
+            ? window.location.origin
+            : new URL(drawioBaseUrl, window.location.origin).origin;
 
           if (message.event === "init") {
             const iframe = iframeRef.current;
@@ -208,7 +219,10 @@ export const DrawioNodeView = ({
   );
 };
 
-export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
+export const DrawioExtension = Node.create<{
+  drawioUrl?: string;
+  drawioProxyEnabled?: boolean;
+}>({
   name: "drawio",
   group: "block",
   atom: true,
@@ -217,6 +231,7 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
   addOptions() {
     return {
       drawioUrl: "https://embed.diagrams.net",
+      drawioProxyEnabled: false,
     };
   },
 
@@ -296,6 +311,7 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
   addStorage() {
     return {
       drawioUrl: this.options.drawioUrl,
+      drawioProxyEnabled: this.options.drawioProxyEnabled,
     };
   },
 

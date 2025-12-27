@@ -150,6 +150,7 @@ export const useNoteEditor = ({
         try {
           const encryptFormData = new FormData();
           encryptFormData.append("content", cleanContent);
+          encryptFormData.append("skipAuditLog", "true");
 
           if (note.encryptionMethod === "pgp") {
             encryptFormData.append("useStoredKey", "true");
@@ -192,7 +193,7 @@ export const useNoteEditor = ({
           await logContentEvent(
             "note_saved_encrypted",
             "note",
-            note.id,
+            note.uuid!,
             title,
             true,
             { encryptionMethod: note.encryptionMethod }
@@ -333,17 +334,8 @@ export const useNoteEditor = ({
       setIsEditingEncrypted(true);
       setEditorContent(decryptedContent);
       setIsEditing(true);
-
-      logContentEvent(
-        "note_edited_encrypted",
-        "note",
-        note.id,
-        note.title,
-        true,
-        { encryptionMethod: method }
-      );
     },
-    [note.id, note.title]
+    [note.uuid, note.title]
   );
 
   const handlePrint = () => {

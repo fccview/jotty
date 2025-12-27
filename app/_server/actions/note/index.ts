@@ -704,7 +704,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       );
     }
 
-    await logContentEvent("note_updated", "note", note.uuid!, updatedDoc.title, true, { category: updatedDoc.category });
+    if (!updatedDoc.encrypted) {
+      await logContentEvent("note_updated", "note", note.uuid!, updatedDoc.title, true, { category: updatedDoc.category });
+    }
 
     return { success: true, data: updatedDoc };
   } catch (error) {

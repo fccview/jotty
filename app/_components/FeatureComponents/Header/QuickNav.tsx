@@ -77,7 +77,7 @@ export const QuickNav = ({
               variant="destructive"
               size="icon"
               onClick={handleLogout}
-              className="lg:hidden jotty-mobile-navigation-icon"
+              className="jotty-mobile-navigation-icon"
             >
               <Logout01Icon className="h-5 w-5" />
             </Button>

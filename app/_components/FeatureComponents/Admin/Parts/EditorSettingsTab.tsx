@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppSettings } from "@/app/_types";
 import {
@@ -41,6 +42,10 @@ export const EditorSettingsTab = () => {
                 ? result.data.editor?.enableBilateralLinks
                 : true,
             drawioUrl: result.data.editor?.drawioUrl || "",
+            drawioProxyEnabled:
+              typeof result.data.editor?.drawioProxyEnabled === "boolean"
+                ? result.data.editor?.drawioProxyEnabled
+                : false,
           };
           setSettings({
             ...result.data,
@@ -154,108 +159,56 @@ export const EditorSettingsTab = () => {
           </div>
 
           <div className="space-y-4">
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableSlashCommands" className="space-y-1 cursor-pointer">
                 <div className="text-sm font-medium">{t('editor.slashCommands')}</div>
                 <p className="text-xs text-muted-foreground">
                   {t("admin.enableSlashCommandsDescription")}
                 </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={settings.editor.enableSlashCommands}
-                  onChange={(e) =>
-                    handleToggleChange("enableSlashCommands", e.target.checked)
-                  }
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    settings.editor.enableSlashCommands
-                      ? "bg-primary"
-                      : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      settings.editor.enableSlashCommands
-                        ? "translate-x-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
+              </label>
+              <Toggle
+                id="enableSlashCommands"
+                checked={settings.editor.enableSlashCommands}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableSlashCommands", checked)
+                }
+              />
+            </div>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableBubbleMenu" className="space-y-1 cursor-pointer">
                 <div className="text-sm font-medium">{t('editor.bubbleMenu')}</div>
                 <p className="text-xs text-muted-foreground">
                   {t("admin.enableBubbleMenuDescription")}
                 </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={settings.editor.enableBubbleMenu}
-                  onChange={(e) =>
-                    handleToggleChange("enableBubbleMenu", e.target.checked)
-                  }
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    settings.editor.enableBubbleMenu ? "bg-primary" : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      settings.editor.enableBubbleMenu
-                        ? "translate-x-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
+              </label>
+              <Toggle
+                id="enableBubbleMenu"
+                checked={settings.editor.enableBubbleMenu}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableBubbleMenu", checked)
+                }
+              />
+            </div>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableTableToolbar" className="space-y-1 cursor-pointer">
                 <div className="text-sm font-medium">{t('editor.tableToolbar')}</div>
                 <p className="text-xs text-muted-foreground">
                   {t("admin.enableTableToolbarDescription")}
                 </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={settings.editor.enableTableToolbar}
-                  onChange={(e) =>
-                    handleToggleChange("enableTableToolbar", e.target.checked)
-                  }
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    settings.editor.enableTableToolbar
-                      ? "bg-primary"
-                      : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      settings.editor.enableTableToolbar
-                        ? "translate-x-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
+              </label>
+              <Toggle
+                id="enableTableToolbar"
+                checked={settings.editor.enableTableToolbar}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableTableToolbar", checked)
+                }
+              />
+            </div>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableBilateralLinks" className="space-y-1 cursor-pointer">
                 <div className="text-sm font-medium">
                   {t("admin.bilateralLinks")}
                   <span className="ml-1 text-xs text-muted-foreground">
@@ -268,33 +221,15 @@ export const EditorSettingsTab = () => {
                     {t("admin.bilateralLinksWarning")}
                   </span>
                 </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={settings.editor.enableBilateralLinks}
-                  onChange={(e) =>
-                    handleToggleChange("enableBilateralLinks", e.target.checked)
-                  }
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    settings.editor.enableBilateralLinks
-                      ? "bg-primary"
-                      : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      settings.editor.enableBilateralLinks
-                        ? "translate-x-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
+              </label>
+              <Toggle
+                id="enableBilateralLinks"
+                checked={settings.editor.enableBilateralLinks}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableBilateralLinks", checked)
+                }
+              />
+            </div>
           </div>
 
           <div className="pt-4 border-t border-border">
@@ -303,7 +238,7 @@ export const EditorSettingsTab = () => {
               {t("admin.configureExternalServices")}
             </p>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <label className="block">
                 <div className="text-sm font-medium mb-1">
                   {t("admin.drawioUrl")}
@@ -328,6 +263,22 @@ export const EditorSettingsTab = () => {
                   className="w-full"
                 />
               </label>
+
+              <div className="flex items-center justify-between">
+                <label htmlFor="drawioProxyEnabled" className="space-y-1 cursor-pointer">
+                  <div className="text-sm font-medium">{t("admin.drawioProxyEnabled")}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("admin.drawioProxyEnabledDescription")}
+                  </p>
+                </label>
+                <Toggle
+                  id="drawioProxyEnabled"
+                  checked={settings.editor.drawioProxyEnabled || false}
+                  onCheckedChange={(checked) =>
+                    handleToggleChange("drawioProxyEnabled", checked)
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
