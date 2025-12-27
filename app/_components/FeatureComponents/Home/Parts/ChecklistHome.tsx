@@ -18,6 +18,9 @@ import { useChecklistHome } from "@/app/_hooks/useChecklistHome";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
+import { useSettings } from "@/app/_utils/settings-store";
+import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
+import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
 
 interface ChecklistHomeProps {
   lists: Checklist[];
@@ -34,6 +37,7 @@ export const ChecklistHome = ({
 }: ChecklistHomeProps) => {
   const t = useTranslations();
   const { userSharedItems } = useAppMode();
+  const { viewMode } = useSettings();
 
   const {
     sensors,
@@ -43,8 +47,6 @@ export const ChecklistHome = ({
     recent,
     taskLists,
     simpleLists,
-    stats,
-    completionRate,
     handleTogglePin,
     isListPinned,
     activeList,
@@ -122,31 +124,85 @@ export const ChecklistHome = ({
                 items={pinned.map((list) => list.uuid || list.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {pinned.map((list) => (
-                    <ChecklistCard
-                      key={`pinned-${list.category}-${list.uuid || list.id}`}
-                      list={list}
-                      onSelect={onSelectChecklist!}
-                      isPinned={true}
-                      onTogglePin={handleTogglePin}
-                      isDraggable={true}
-                      sharer={getListSharer(list)}
-                    />
-                  ))}
-                </div>
+                {viewMode === 'card' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {pinned.map((list) => (
+                      <ChecklistCard
+                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={true}
+                        onTogglePin={handleTogglePin}
+                        isDraggable={true}
+                        sharer={getListSharer(list)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'list' && (
+                  <div className="space-y-3">
+                    {pinned.map((list) => (
+                      <ChecklistListItem
+                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={true}
+                        onTogglePin={handleTogglePin}
+                        sharer={getListSharer(list)}
+                        isDraggable={true}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'grid' && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {pinned.map((list) => (
+                      <ChecklistGridItem
+                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={true}
+                        onTogglePin={handleTogglePin}
+                        sharer={getListSharer(list)}
+                        isDraggable={true}
+                      />
+                    ))}
+                  </div>
+                )}
               </SortableContext>
 
               <DragOverlay>
                 {activeList ? (
-                  <ChecklistCard
-                    list={activeList}
-                    onSelect={() => { }}
-                    isPinned={true}
-                    isDraggable={false}
-                    sharer={getListSharer(activeList)}
-                    fixedWidth={draggedItemWidth || undefined}
-                  />
+                  <>
+                    {viewMode === 'card' && (
+                      <ChecklistCard
+                        list={activeList}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        isDraggable={false}
+                        sharer={getListSharer(activeList)}
+                        fixedWidth={draggedItemWidth || undefined}
+                      />
+                    )}
+                    {viewMode === 'list' && (
+                      <ChecklistListItem
+                        list={activeList}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        sharer={getListSharer(activeList)}
+                      />
+                    )}
+                    {viewMode === 'grid' && (
+                      <ChecklistGridItem
+                        list={activeList}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        sharer={getListSharer(activeList)}
+                      />
+                    )}
+                  </>
                 ) : null}
               </DragOverlay>
             </DndContext>
@@ -173,18 +229,50 @@ export const ChecklistHome = ({
                     <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {taskLists.map((list) => (
-                    <ChecklistCard
-                      key={`task-${list.category}-${list.id}`}
-                      list={list}
-                      onSelect={onSelectChecklist!}
-                      isPinned={isListPinned(list)}
-                      onTogglePin={handleTogglePin}
-                      sharer={getListSharer(list)}
-                    />
-                  ))}
-                </div>
+                {viewMode === 'card' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {taskLists.map((list) => (
+                      <ChecklistCard
+                        key={`task-${list.category}-${list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={isListPinned(list)}
+                        onTogglePin={handleTogglePin}
+                        sharer={getListSharer(list)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'list' && (
+                  <div className="space-y-3">
+                    {taskLists.map((list) => (
+                      <ChecklistListItem
+                        key={`task-${list.category}-${list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={isListPinned(list)}
+                        onTogglePin={handleTogglePin}
+                        sharer={getListSharer(list)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'grid' && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {taskLists.map((list) => (
+                      <ChecklistGridItem
+                        key={`task-${list.category}-${list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={isListPinned(list)}
+                        onTogglePin={handleTogglePin}
+                        sharer={getListSharer(list)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -206,18 +294,50 @@ export const ChecklistHome = ({
                     <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {simpleLists.map((list) => (
-                    <ChecklistCard
-                      key={`simple-${list.category}-${list.id}`}
-                      list={list}
-                      onSelect={onSelectChecklist!}
-                      isPinned={isListPinned(list)}
-                      onTogglePin={handleTogglePin}
-                      sharer={getListSharer(list)}
-                    />
-                  ))}
-                </div>
+                {viewMode === 'card' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {simpleLists.map((list) => (
+                      <ChecklistCard
+                        key={`simple-${list.category}-${list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={isListPinned(list)}
+                        onTogglePin={handleTogglePin}
+                        sharer={getListSharer(list)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'list' && (
+                  <div className="space-y-3">
+                    {simpleLists.map((list) => (
+                      <ChecklistListItem
+                        key={`simple-${list.category}-${list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={isListPinned(list)}
+                        onTogglePin={handleTogglePin}
+                        sharer={getListSharer(list)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'grid' && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {simpleLists.map((list) => (
+                      <ChecklistGridItem
+                        key={`simple-${list.category}-${list.id}`}
+                        list={list}
+                        onSelect={onSelectChecklist!}
+                        isPinned={isListPinned(list)}
+                        onTogglePin={handleTogglePin}
+                        sharer={getListSharer(list)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -77,12 +77,12 @@ export const EditorSettingsTab = () => {
     setSettings((prev) =>
       prev
         ? {
-            ...prev,
-            editor: {
-              ...prev.editor,
-              [field]: value,
-            },
-          }
+          ...prev,
+          editor: {
+            ...prev.editor,
+            [field]: value,
+          },
+        }
         : null
     );
     setHasChanges(true);
@@ -97,12 +97,12 @@ export const EditorSettingsTab = () => {
     setSettings((prev) =>
       prev
         ? {
-            ...prev,
-            editor: {
-              ...prev.editor,
-              [field]: value,
-            },
-          }
+          ...prev,
+          editor: {
+            ...prev.editor,
+            [field]: value,
+          },
+        }
         : null
     );
     setHasChanges(true);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   TaskDaily01Icon,
@@ -9,56 +9,44 @@ import {
   AlertCircleIcon,
   PlayCircleIcon,
 } from "hugeicons-react";
-import { Checklist, Category, User } from "@/app/_types";
+import { Checklist, User } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
-import { Pagination } from "@/app/_components/GlobalComponents/Layout/Pagination";
-import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
-import { FilterSidebar } from "@/app/_components/GlobalComponents/Layout/FilterSidebar";
+import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
+import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
 import { usePagination } from "@/app/_hooks/usePagination";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { Logo } from "../../GlobalComponents/Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
+import { useSettings } from "@/app/_utils/settings-store";
+import { useTasksFilter } from "./TasksClient";
 
 interface TasksPageClientProps {
   initialLists: Checklist[];
-  initialCategories: Category[];
   user: User | null;
 }
 
-type TaskFilter =
-  | "all"
-  | "completed"
-  | "incomplete"
-  | "pinned"
-  | "todo"
-  | "in-progress";
-
 export const TasksPageClient = ({
   initialLists,
-  initialCategories,
   user,
 }: TasksPageClientProps) => {
   const t = useTranslations();
   const router = useRouter();
   const { openCreateChecklistModal } = useShortcut();
   const { isInitialized } = useAppMode();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [taskFilter, setTaskFilter] = useState<TaskFilter>("all");
-  const [itemsPerPage, setItemsPerPage] = useState(12);
-  const [recursive, setRecursive] = useState(false);
+  const { viewMode } = useSettings();
 
-  const filterOptions = [
-    { id: "all", name: t('tasks.allTasks') },
-    { id: "completed", name: t('tasks.completed') },
-    { id: "incomplete", name: t('checklists.incomplete') },
-    { id: "pinned", name: t('common.pinned') },
-    { id: "todo", name: t('tasks.todo') },
-    { id: "in-progress", name: t('tasks.inProgress') },
-  ];
+  const {
+    taskFilter,
+    selectedCategories,
+    recursive,
+    itemsPerPage,
+    setItemsPerPage,
+    setPaginationInfo,
+  } = useTasksFilter();
 
   const filteredLists = useMemo(() => {
     let filtered = [...initialLists];
@@ -66,8 +54,9 @@ export const TasksPageClient = ({
     if (taskFilter === "pinned") {
       const pinnedPaths = user?.pinnedLists || [];
       filtered = filtered.filter((list) => {
-        const itemPath = `${list.category || "Uncategorized"}/${list.id}`;
-        return pinnedPaths.includes(itemPath);
+        const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
+        const idPath = `${list.category || "Uncategorized"}/${list.id}`;
+        return pinnedPaths.includes(uuidPath) || pinnedPaths.includes(idPath);
       });
     } else if (taskFilter === "completed") {
       filtered = filtered.filter(
@@ -130,9 +119,15 @@ export const TasksPageClient = ({
     onItemsPerPageChange: setItemsPerPage,
   });
 
-  const handleClearAllCategories = () => {
-    setSelectedCategories([]);
-  };
+  useEffect(() => {
+    setPaginationInfo({
+      currentPage,
+      totalPages,
+      totalItems,
+      onPageChange: goToPage,
+      onItemsPerPageChange: handleItemsPerPageChange,
+    });
+  }, [currentPage, totalPages, totalItems, goToPage, handleItemsPerPageChange, setPaginationInfo]);
 
   const stats = useMemo(() => {
     const filteredInitialLists = initialLists.map((list) => {
@@ -189,158 +184,154 @@ export const TasksPageClient = ({
 
   if (initialLists.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <SiteHeader
-            title={t('tasks.allTasks')}
-            description={t('tasks.browseAndManageTaskLists')}
-          />
-          <EmptyState
-            icon={
-              <TaskDaily01Icon className="h-10 w-10 text-muted-foreground" />
-            }
-            title={t('tasks.noTaskListsYet')}
-            description={t('tasks.createFirstTaskList')}
-            buttonText={t('tasks.newTaskList')}
-            onButtonClick={() => openCreateChecklistModal()}
-          />
-        </div>
-      </div>
+      <EmptyState
+        icon={
+          <TaskDaily01Icon className="h-10 w-10 text-muted-foreground" />
+        }
+        title={t('tasks.noTaskListsYet')}
+        description={t('tasks.createFirstTaskList')}
+        buttonText={t('tasks.newTaskList')}
+        onButtonClick={() => openCreateChecklistModal()}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <SiteHeader
-          title="All Tasks"
-          description="Browse and manage all your task lists"
-        />
-        <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6">
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <TaskDaily01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.totalTasks}
-                </div>
-                <div className="text-xs text-muted-foreground">Task Lists</div>
-              </div>
+    <>
+      <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <TaskDaily01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <CheckmarkCircle04Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.totalTasks}
               </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.completedTasks}
-                </div>
-                <div className="text-xs text-muted-foreground">Completed</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <TradeUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.completionRate}%
-                </div>
-                <div className="text-xs text-muted-foreground">Progress</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <AlertCircleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.todoTasks}
-                </div>
-                <div className="text-xs text-muted-foreground">To Do</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <PlayCircleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.inProgressTasks}
-                </div>
-                <div className="text-xs text-muted-foreground">In Progress</div>
-              </div>
+              <div className="text-xs text-muted-foreground">Task Lists</div>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <FilterSidebar
-              title="By status"
-              filterValue={taskFilter}
-              filterOptions={filterOptions}
-              onFilterChange={(value) => setTaskFilter(value as TaskFilter)}
-              categories={initialCategories}
-              selectedCategories={selectedCategories}
-              onCategorySelectionChange={setSelectedCategories}
-              onClearAllCategories={handleClearAllCategories}
-              recursive={recursive}
-              onRecursiveChange={setRecursive}
-              pagination={
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={goToPage}
-                  itemsPerPage={itemsPerPage}
-                  onItemsPerPageChange={handleItemsPerPageChange}
-                  totalItems={totalItems}
-                />
-              }
-            />
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <CheckmarkCircle04Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.completedTasks}
+              </div>
+              <div className="text-xs text-muted-foreground">Completed</div>
+            </div>
           </div>
 
-          <div className="lg:col-span-3">
-            {paginatedItems.length === 0 ? (
-              <div className="text-center py-12">
-                <TaskDaily01Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  No task lists found
-                </h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your filters or create a new task list.
-                </p>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <TradeUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.completionRate}%
               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {paginatedItems.map((list) => (
-                    <ChecklistCard
-                      key={list.id}
-                      list={list}
-                      onSelect={(list) => {
-                        const categoryPath = `${list.category || "Uncategorized"
-                          }/${list.id}`;
-                        router.push(`/checklist/${categoryPath}`);
-                      }}
-                      isPinned={user?.pinnedLists?.includes(
-                        `${list.category || "Uncategorized"}/${list.id}`
-                      )}
-                      onTogglePin={() => { }}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+              <div className="text-xs text-muted-foreground">Progress</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <AlertCircleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.todoTasks}
+              </div>
+              <div className="text-xs text-muted-foreground">To Do</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <PlayCircleIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.inProgressTasks}
+              </div>
+              <div className="text-xs text-muted-foreground">In Progress</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {paginatedItems.length === 0 ? (
+        <div className="text-center py-12">
+          <TaskDaily01Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            No task lists found
+          </h3>
+          <p className="text-muted-foreground">
+            Try adjusting your filters or create a new task list.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-6">
+          {viewMode === 'card' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {paginatedItems.map((list) => (
+                <ChecklistCard
+                  key={list.id}
+                  list={list}
+                  onSelect={(list) => {
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    router.push(`/checklist/${categoryPath}`);
+                  }}
+                  isPinned={user?.pinnedLists?.includes(
+                    `${list.category || "Uncategorized"}/${list.id}`
+                  )}
+                  onTogglePin={() => { }}
+                />
+              ))}
+            </div>
+          )}
+
+          {viewMode === 'list' && (
+            <div className="space-y-3">
+              {paginatedItems.map((list) => (
+                <ChecklistListItem
+                  key={list.id}
+                  list={list}
+                  onSelect={(list) => {
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    router.push(`/checklist/${categoryPath}`);
+                  }}
+                  isPinned={user?.pinnedLists?.includes(
+                    `${list.category || "Uncategorized"}/${list.id}`
+                  )}
+                  onTogglePin={() => { }}
+                />
+              ))}
+            </div>
+          )}
+
+          {viewMode === 'grid' && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {paginatedItems.map((list) => (
+                <ChecklistGridItem
+                  key={list.id}
+                  list={list}
+                  onSelect={(list) => {
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    router.push(`/checklist/${categoryPath}`);
+                  }}
+                  isPinned={user?.pinnedLists?.includes(
+                    `${list.category || "Uncategorized"}/${list.id}`
+                  )}
+                  onTogglePin={() => { }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 };

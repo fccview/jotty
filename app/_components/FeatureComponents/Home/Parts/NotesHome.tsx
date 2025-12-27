@@ -15,6 +15,9 @@ import { useNotesHome } from "@/app/_hooks/useNotesHome";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
+import { useSettings } from "@/app/_utils/settings-store";
+import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
+import { NoteGridItem } from "@/app/_components/GlobalComponents/Cards/NoteGridItem";
 
 interface NotesHomeProps {
   notes: Note[];
@@ -33,6 +36,7 @@ export const NotesHome = ({
 }: NotesHomeProps) => {
   const t = useTranslations();
   const { userSharedItems } = useAppMode();
+  const { viewMode } = useSettings();
 
   const {
     sensors,
@@ -117,39 +121,93 @@ export const NotesHome = ({
                 items={pinned.map((note) => note.uuid || note.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <Masonry
-                  breakpointCols={breakpointColumnsObj}
-                  className="flex w-auto -ml-6"
-                  columnClassName="pl-6 bg-clip-padding"
-                >
-                  {pinned.map((note) => (
-                    <div
-                      key={`pinned-${note.category}-${note.uuid || note.id}`}
-                      className="mb-6"
-                    >
-                      <NoteCard
+                {viewMode === 'card' && (
+                  <Masonry
+                    breakpointCols={breakpointColumnsObj}
+                    className="flex w-auto -ml-6"
+                    columnClassName="pl-6 bg-clip-padding"
+                  >
+                    {pinned.map((note) => (
+                      <div
+                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        className="mb-6"
+                      >
+                        <NoteCard
+                          note={note}
+                          onSelect={onSelectNote}
+                          isPinned={true}
+                          onTogglePin={handleTogglePin}
+                          isDraggable={true}
+                          sharer={getNoteSharer(note)}
+                        />
+                      </div>
+                    ))}
+                  </Masonry>
+                )}
+
+                {viewMode === 'list' && (
+                  <div className="space-y-3">
+                    {pinned.map((note) => (
+                      <NoteListItem
+                        key={`pinned-${note.category}-${note.uuid || note.id}`}
                         note={note}
                         onSelect={onSelectNote}
                         isPinned={true}
                         onTogglePin={handleTogglePin}
-                        isDraggable={true}
                         sharer={getNoteSharer(note)}
+                        isDraggable={true}
                       />
-                    </div>
-                  ))}
-                </Masonry>
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'grid' && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {pinned.map((note) => (
+                      <NoteGridItem
+                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        note={note}
+                        onSelect={onSelectNote}
+                        isPinned={true}
+                        onTogglePin={handleTogglePin}
+                        sharer={getNoteSharer(note)}
+                        isDraggable={true}
+                      />
+                    ))}
+                  </div>
+                )}
               </SortableContext>
 
               <DragOverlay>
                 {activeNote ? (
-                  <NoteCard
-                    note={activeNote}
-                    onSelect={() => { }}
-                    isPinned={true}
-                    isDraggable={false}
-                    sharer={getNoteSharer(activeNote)}
-                    fixedWidth={draggedItemWidth || undefined}
-                  />
+                  <>
+                    {viewMode === 'card' && (
+                      <NoteCard
+                        note={activeNote}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        isDraggable={false}
+                        sharer={getNoteSharer(activeNote)}
+                        fixedWidth={draggedItemWidth || undefined}
+                      />
+                    )}
+                    {viewMode === 'list' && (
+                      <NoteListItem
+                        note={activeNote}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        sharer={getNoteSharer(activeNote)}
+                      />
+                    )}
+                    {viewMode === 'grid' && (
+                      <NoteGridItem
+                        note={activeNote}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        sharer={getNoteSharer(activeNote)}
+                      />
+                    )}
+                  </>
                 ) : null}
               </DragOverlay>
             </DndContext>
@@ -174,26 +232,59 @@ export const NotesHome = ({
                 <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </div>
-            <Masonry
-              breakpointCols={breakpointColumnsObj}
-              className="flex w-auto -ml-6"
-              columnClassName="pl-6 bg-clip-padding"
-            >
-              {recent.map((note) => (
-                <div
-                  key={`recent-${note.category}-${note.id}`}
-                  className="mb-6"
-                >
-                  <NoteCard
+
+            {viewMode === 'card' && (
+              <Masonry
+                breakpointCols={breakpointColumnsObj}
+                className="flex w-auto -ml-6"
+                columnClassName="pl-6 bg-clip-padding"
+              >
+                {recent.map((note) => (
+                  <div
+                    key={`recent-${note.category}-${note.id}`}
+                    className="mb-6"
+                  >
+                    <NoteCard
+                      note={note}
+                      onSelect={onSelectNote}
+                      isPinned={isNotePinned(note)}
+                      onTogglePin={handleTogglePin}
+                      sharer={getNoteSharer(note)}
+                    />
+                  </div>
+                ))}
+              </Masonry>
+            )}
+
+            {viewMode === 'list' && (
+              <div className="space-y-3">
+                {recent.map((note) => (
+                  <NoteListItem
+                    key={`recent-${note.category}-${note.id}`}
                     note={note}
                     onSelect={onSelectNote}
                     isPinned={isNotePinned(note)}
                     onTogglePin={handleTogglePin}
                     sharer={getNoteSharer(note)}
                   />
-                </div>
-              ))}
-            </Masonry>
+                ))}
+              </div>
+            )}
+
+            {viewMode === 'grid' && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {recent.map((note) => (
+                  <NoteGridItem
+                    key={`recent-${note.category}-${note.id}`}
+                    note={note}
+                    onSelect={onSelectNote}
+                    isPinned={isNotePinned(note)}
+                    onTogglePin={handleTogglePin}
+                    sharer={getNoteSharer(note)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

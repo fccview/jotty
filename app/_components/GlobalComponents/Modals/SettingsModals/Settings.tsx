@@ -6,6 +6,9 @@ import {
   File02Icon,
   ArrowHorizontalIcon,
   CheckmarkSquare04Icon,
+  SchoolReportCardIcon,
+  ListViewIcon,
+  GridViewIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -31,12 +34,14 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     autosaveNotes,
     showMarkdownPreview,
     showCompletedSuggestions,
+    viewMode,
     setTheme,
     setShowEmojis,
     setAutosaveNotes,
     setShowMarkdownPreview,
     setShowCompletedSuggestions,
     setCompactMode,
+    setViewMode,
     compactMode,
   } = useSettings();
   const [themes, setThemes] = useState<any[]>([]);
@@ -72,6 +77,36 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         ) : (
           <Dropdown value={theme} options={themes} onChange={setTheme} />
         )}
+      </div>
+
+      <div className="mb-6">
+        <h3 className="text-sm font-medium mb-3">{t('settingsModal.viewMode')}</h3>
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            onClick={() => setViewMode('card')}
+            className={`flex flex-col items-center gap-2 p-3 rounded-md border transition-all ${viewMode === 'card' ? 'border-primary color-primary' : 'border-border hover:border-primary/50'
+              }`}
+          >
+            <SchoolReportCardIcon className="h-5 w-5" />
+            <span className="text-xs font-medium">{t('settingsModal.viewModeCard')}</span>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`flex flex-col items-center gap-2 p-3 rounded-md border transition-all ${viewMode === 'list' ? 'border-primary color-primary' : 'border-border hover:border-primary/50'
+              }`}
+          >
+            <ListViewIcon className="h-5 w-5" />
+            <span className="text-xs font-medium">{t('settingsModal.viewModeList')}</span>
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`flex flex-col items-center gap-2 p-3 rounded-md border transition-all ${viewMode === 'grid' ? 'border-primary color-primary' : 'border-border hover:border-primary/50'
+              }`}
+          >
+            <GridViewIcon className="h-5 w-5" />
+            <span className="text-xs font-medium">{t('settingsModal.viewModeGrid')}</span>
+          </button>
+        </div>
       </div>
 
       <div className="mb-6">

@@ -20,6 +20,7 @@ interface LayoutProps {
   onCategoryRenamed?: (oldName: string, newName: string) => void;
   children: React.ReactNode;
   user: User | null;
+  customSidebar?: (props: { isOpen: boolean; onClose: () => void }) => React.ReactNode;
 }
 
 export const Layout = ({
@@ -31,6 +32,7 @@ export const Layout = ({
   onCategoryRenamed,
   user,
   children,
+  customSidebar,
 }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { setMode, isInitialized } = useAppMode();
@@ -53,7 +55,9 @@ export const Layout = ({
 
   return (
     <div className="jotty-layout flex h-screen bg-background w-full overflow-hidden relative pb-16 lg:pb-0">
-      {isSettingsPage ? (
+      {customSidebar ? (
+        customSidebar({ isOpen: sidebarOpen, onClose: () => setSidebarOpen(false) })
+      ) : isSettingsPage ? (
         <SettingsSidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}

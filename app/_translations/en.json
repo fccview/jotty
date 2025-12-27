@@ -229,6 +229,7 @@
     "allChecklists": "All Checklists",
     "completed": "Completed",
     "incomplete": "Incomplete",
+    "pinned": "Pinned",
     "taskLists": "Task Lists",
     "simpleLists": "Simple Lists",
     "browseAndManage": "Browse and manage all your checklists",
@@ -921,7 +922,11 @@
     "autosaveNotes": "Autosave Notes",
     "showNotePreview": "Show Note Preview on Cards",
     "notesCompactMode": "Notes compact mode",
-    "showEmojis": "Show Emojis on checklists"
+    "showEmojis": "Show Emojis on checklists",
+    "viewMode": "View Mode",
+    "viewModeCard": "Cards",
+    "viewModeList": "List",
+    "viewModeGrid": "Grid"
   },
   "migration": {
     "migrationComplete": "Migration Complete",

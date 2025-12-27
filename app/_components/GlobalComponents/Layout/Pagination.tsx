@@ -16,8 +16,9 @@ interface PaginationProps {
   itemsPerPage?: number;
   onItemsPerPageChange?: (itemsPerPage: number) => void;
   totalItems?: number;
-  variant?: "default" | "compact";
+  variant?: "default" | "compact" | "sidebar";
   className?: string;
+  dropdownDirection?: "down" | "up";
 }
 
 export const Pagination = ({
@@ -29,6 +30,7 @@ export const Pagination = ({
   totalItems,
   variant = "default",
   className = "",
+  dropdownDirection = "down",
 }: PaginationProps) => {
   const t = useTranslations();
   const getVisiblePages = () => {
@@ -70,13 +72,15 @@ export const Pagination = ({
     { id: "120", name: "120 per page" },
   ];
 
+  const isSidebar = variant === "sidebar";
+
   return (
-    <div
-      className={`bg-card border border-border rounded-jotty p-4 ${className}`}
-    >
-      <div className="space-y-3">
+    <div className={className}>
+      <div className={isSidebar ? "space-y-3" : "space-y-3 bg-card border border-border rounded-jotty p-4"}>
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-foreground">{t('common.page')}</span>
+          <span className={isSidebar ? "text-xs font-bold uppercase text-muted-foreground tracking-wider" : "text-sm font-medium text-foreground"}>
+            {t('common.page')}
+          </span>
           <span className="text-xs text-muted-foreground">
             {t('common.pageOfPages', { currentPage, totalPages })}
           </span>
@@ -84,7 +88,7 @@ export const Pagination = ({
 
         {itemsPerPage && onItemsPerPageChange && (
           <div>
-            <label className="text-xs text-muted-foreground mb-1 block">
+            <label className="text-xs text-muted-foreground mb-2 block">
               {t('common.itemsPerPage')}
             </label>
             <Dropdown
@@ -92,6 +96,7 @@ export const Pagination = ({
               options={itemsPerPageOptions}
               onChange={(value) => onItemsPerPageChange(parseInt(value))}
               className="w-full"
+              direction={dropdownDirection}
             />
           </div>
         )}

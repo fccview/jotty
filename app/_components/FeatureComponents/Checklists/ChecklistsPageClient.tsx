@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Folder01Icon,
@@ -9,12 +9,9 @@ import {
   Clock01Icon,
   CheckmarkSquare04Icon,
 } from "hugeicons-react";
-import { Checklist, Category, User } from "@/app/_types";
+import { Checklist, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
-import { Pagination } from "@/app/_components/GlobalComponents/Layout/Pagination";
-import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
-import { FilterSidebar } from "@/app/_components/GlobalComponents/Layout/FilterSidebar";
 import { usePagination } from "@/app/_hooks/usePagination";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
@@ -23,45 +20,34 @@ import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 import { useTranslations } from "next-intl";
+import { useSettings } from "@/app/_utils/settings-store";
+import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
+import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
+import { useChecklistsFilter } from "@/app/_components/FeatureComponents/Checklists/ChecklistsClient";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
-  initialCategories: Category[];
   user: User | null;
 }
 
-type ChecklistFilter =
-  | "all"
-  | "completed"
-  | "incomplete"
-  | "pinned"
-  | "task"
-  | "simple";
-
 export const ChecklistsPageClient = ({
   initialLists,
-  initialCategories,
   user,
 }: ChecklistsPageClientProps) => {
   const t = useTranslations('checklists');
   const router = useRouter();
   const { openCreateChecklistModal } = useShortcut();
   const { isInitialized } = useAppMode();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [checklistFilter, setChecklistFilter] =
-    useState<ChecklistFilter>(user?.defaultChecklistFilter || "all");
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const { viewMode } = useSettings();
+  const {
+    checklistFilter,
+    selectedCategories,
+    recursive,
+    itemsPerPage,
+    setItemsPerPage,
+    setPaginationInfo,
+  } = useChecklistsFilter();
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
-  const [recursive, setRecursive] = useState(false);
-
-  const filterOptions = [
-    { id: "all", name: t('allChecklists') },
-    { id: "completed", name: t('completed') },
-    { id: "incomplete", name: t('incomplete') },
-    { id: "pinned", name: t('pinned') },
-    { id: "task", name: t('taskLists') },
-    { id: "simple", name: t('simpleLists') },
-  ];
 
   const filteredLists = useMemo(() => {
     let filtered = [...initialLists];
@@ -69,8 +55,9 @@ export const ChecklistsPageClient = ({
     if (checklistFilter === "pinned") {
       const pinnedPaths = user?.pinnedLists || [];
       filtered = filtered.filter((list) => {
-        const itemPath = `${list.category || "Uncategorized"}/${list.id}`;
-        return pinnedPaths.includes(itemPath);
+        const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
+        const idPath = `${list.category || "Uncategorized"}/${list.id}`;
+        return pinnedPaths.includes(uuidPath) || pinnedPaths.includes(idPath);
       });
     } else if (checklistFilter === "completed") {
       filtered = filtered.filter(
@@ -116,22 +103,21 @@ export const ChecklistsPageClient = ({
     user?.pinnedLists,
   ]);
 
-  const {
-    currentPage,
-    totalPages,
-    paginatedItems,
-    goToPage,
-    totalItems,
-    handleItemsPerPageChange,
-  } = usePagination({
+  const { currentPage, totalPages, paginatedItems, goToPage, totalItems, handleItemsPerPageChange } = usePagination({
     items: filteredLists,
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
   });
 
-  const handleClearAllCategories = () => {
-    setSelectedCategories([]);
-  };
+  useEffect(() => {
+    setPaginationInfo({
+      currentPage,
+      totalPages,
+      totalItems,
+      onPageChange: goToPage,
+      onItemsPerPageChange: handleItemsPerPageChange,
+    });
+  }, [currentPage, totalPages, totalItems, goToPage, handleItemsPerPageChange, setPaginationInfo]);
 
   const handleTogglePin = async (list: Checklist) => {
     if (!user || isTogglingPin === list.id) return;
@@ -177,150 +163,142 @@ export const ChecklistsPageClient = ({
 
   if (initialLists.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <SiteHeader
-            title={t('allChecklists')}
-            description={t('browseAndManage')}
-          />
-
-          <EmptyState
-            icon={
-              <CheckmarkSquare04Icon className="h-10 w-10 text-muted-foreground" />
-            }
-            title={t('noChecklistsYet')}
-            description={t('createFirstChecklist')}
-            buttonText={t('newChecklist')}
-            onButtonClick={() => openCreateChecklistModal()}
-          />
-        </div>
-      </div>
+      <EmptyState
+        icon={
+          <CheckmarkSquare04Icon className="h-10 w-10 text-muted-foreground" />
+        }
+        title={t('noChecklistsYet')}
+        description={t('createFirstChecklist')}
+        buttonText={t('newChecklist')}
+        onButtonClick={() => openCreateChecklistModal()}
+      />
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <SiteHeader
-          title={t('allChecklists')}
-          description={t('browseAndManage')}
-        />
-        <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <Folder01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.totalLists}
-                </div>
-                <div className="text-xs text-muted-foreground">{t('lists')}</div>
-              </div>
+    <div className="w-full">
+      <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <Folder01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <CheckmarkCircle04Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.totalLists}
               </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.completedItems}
-                </div>
-                <div className="text-xs text-muted-foreground">{t('completed')}</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <TradeUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.completionRate}%
-                </div>
-                <div className="text-xs text-muted-foreground">{t('progress')}</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <Clock01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.totalItems}
-                </div>
-                <div className="text-xs text-muted-foreground">{t('totalItems')}</div>
-              </div>
+              <div className="text-xs text-muted-foreground">{t('lists')}</div>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-8">
-          <div className="lg:col-span-1">
-            <FilterSidebar
-              title={t('byStatus')}
-              filterValue={checklistFilter}
-              filterOptions={filterOptions}
-              onFilterChange={(value) =>
-                setChecklistFilter(value as ChecklistFilter)
-              }
-              categories={initialCategories}
-              selectedCategories={selectedCategories}
-              onCategorySelectionChange={setSelectedCategories}
-              onClearAllCategories={handleClearAllCategories}
-              recursive={recursive}
-              onRecursiveChange={setRecursive}
-              pagination={
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={goToPage}
-                  itemsPerPage={itemsPerPage}
-                  onItemsPerPageChange={handleItemsPerPageChange}
-                  totalItems={totalItems}
-                />
-              }
-            />
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <CheckmarkCircle04Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.completedItems}
+              </div>
+              <div className="text-xs text-muted-foreground">{t('completed')}</div>
+            </div>
           </div>
 
-          <div className="lg:col-span-3">
-            {paginatedItems.length === 0 ? (
-              <div className="text-center py-12">
-                <Folder01Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  {t('noChecklistsFound')}
-                </h3>
-                <p className="text-muted-foreground">
-                  {t('tryAdjustingFiltersChecklist')}
-                </p>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <TradeUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.completionRate}%
               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {paginatedItems.map((list) => (
-                    <ChecklistCard
-                      key={list.id}
-                      list={list}
-                      onSelect={(list) => {
-                        const categoryPath = `${
-                          list.category || "Uncategorized"
-                        }/${list.id}`;
-                        router.push(`/checklist/${categoryPath}`);
-                      }}
-                      isPinned={user?.pinnedLists?.includes(
-                        `${list.category || "Uncategorized"}/${list.id}`
-                      )}
-                      onTogglePin={() => handleTogglePin(list)}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+              <div className="text-xs text-muted-foreground">{t('progress')}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary rounded-jotty">
+              <Clock01Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+            </div>
+            <div>
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
+                {stats.totalItems}
+              </div>
+              <div className="text-xs text-muted-foreground">{t('totalItems')}</div>
+            </div>
           </div>
         </div>
       </div>
+
+      {paginatedItems.length === 0 ? (
+        <div className="text-center py-12">
+          <Folder01Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            {t('noChecklistsFound')}
+          </h3>
+          <p className="text-muted-foreground">
+            {t('tryAdjustingFiltersChecklist')}
+          </p>
+        </div>
+      ) : (
+        <div className="mt-6">
+          {viewMode === 'card' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {paginatedItems.map((list) => (
+                <ChecklistCard
+                  key={list.id}
+                  list={list}
+                  onSelect={(list) => {
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    router.push(`/checklist/${categoryPath}`);
+                  }}
+                  isPinned={user?.pinnedLists?.includes(
+                    `${list.category || "Uncategorized"}/${list.id}`
+                  )}
+                  onTogglePin={() => handleTogglePin(list)}
+                />
+              ))}
+            </div>
+          )}
+
+          {viewMode === 'list' && (
+            <div className="space-y-3">
+              {paginatedItems.map((list) => (
+                <ChecklistListItem
+                  key={list.id}
+                  list={list}
+                  onSelect={(list) => {
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    router.push(`/checklist/${categoryPath}`);
+                  }}
+                  isPinned={user?.pinnedLists?.includes(
+                    `${list.category || "Uncategorized"}/${list.id}`
+                  )}
+                  onTogglePin={() => handleTogglePin(list)}
+                />
+              ))}
+            </div>
+          )}
+
+          {viewMode === 'grid' && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {paginatedItems.map((list) => (
+                <ChecklistGridItem
+                  key={list.id}
+                  list={list}
+                  onSelect={(list) => {
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    router.push(`/checklist/${categoryPath}`);
+                  }}
+                  isPinned={user?.pinnedLists?.includes(
+                    `${list.category || "Uncategorized"}/${list.id}`
+                  )}
+                  onTogglePin={() => handleTogglePin(list)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

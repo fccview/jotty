@@ -280,16 +280,17 @@ export const ExcalidrawExtension = Node.create({
     });
   },
 
+  /** @ts-ignore */
   addCommands() {
     return {
       insertExcalidraw:
         () =>
-        ({ commands }: any) => {
-          return commands.insertContent({
-            type: this.name,
-            attrs: { diagramData: null },
-          });
-        },
+          ({ commands }: any) => {
+            return commands.insertContent({
+              type: this.name,
+              attrs: { diagramData: null },
+            });
+          },
     };
   },
 });
