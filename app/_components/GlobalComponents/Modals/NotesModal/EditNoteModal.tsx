@@ -60,8 +60,8 @@ export const EditNoteModal = ({
 
   if (!note) {
     return (
-      <Modal isOpen={true} onClose={onClose} title="Note not found">
-        <p>Note not found</p>
+      <Modal isOpen={true} onClose={onClose} title={t("notes.noteNotFound")}>
+        <p>{t("notes.noteNotFound")}</p>
       </Modal>
     );
   }
@@ -109,18 +109,18 @@ export const EditNoteModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={unarchive ? "Unarchive Note" : "Edit Note"}
+      title={unarchive ? t("notes.unarchiveNote") : t("notes.editNote")}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
           <Input
             id="noteName"
             name="noteName"
-            label="Note Name *"
+            label={`${t("notes.noteTitle")} *`}
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter note name..."
+            placeholder={t("notes.enterNoteName")}
             required
             disabled={isLoading}
           />
@@ -160,10 +160,10 @@ export const EditNoteModal = ({
             className="flex-1"
           >
             {isLoading
-              ? "Updating..."
+              ? t("checklists.updating")
               : unarchive
-                ? "Unarchive Note"
-                : "Update Note"}
+                ? t("notes.unarchiveNote")
+                : t("notes.updateNote")}
           </Button>
         </div>
       </form>

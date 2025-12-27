@@ -59,8 +59,8 @@ export const EditChecklistModal = ({
 
   if (!checklist) {
     return (
-      <Modal isOpen={true} onClose={onClose} title="Checklist not found">
-        <p>Checklist not found</p>
+      <Modal isOpen={true} onClose={onClose} title={t("checklists.checklistNotFound")}>
+        <p>{t("checklists.checklistNotFound")}</p>
       </Modal>
     );
   }
@@ -108,18 +108,18 @@ export const EditChecklistModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={unarchive ? "Unarchive Checklist" : "Edit Checklist"}
+      title={unarchive ? t("checklists.unarchiveChecklist") : t("checklists.editChecklist")}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
           <Input
             id="checklistName"
             name="checklistName"
-            label="Checklist Name *"
+            label={`${t("checklists.checklistName")} *`}
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter checklist name..."
+            placeholder={t("checklists.enterChecklistName")}
             required
             disabled={isLoading || unarchive}
             autoFocus
@@ -158,10 +158,10 @@ export const EditChecklistModal = ({
             className="flex-1"
           >
             {isLoading
-              ? "Updating..."
+              ? t("checklists.updating")
               : unarchive
-                ? "Unarchive Checklist"
-                : "Update Checklist"}
+                ? t("checklists.unarchiveChecklist")
+                : t("checklists.updateChecklist")}
           </Button>
         </div>
       </form>

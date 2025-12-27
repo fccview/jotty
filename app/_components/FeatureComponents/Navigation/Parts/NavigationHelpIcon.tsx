@@ -8,6 +8,7 @@ import {
   PaintBrush04Icon,
   LaptopProgrammingIcon,
   LockKeyIcon,
+  TranslationIcon,
 } from "hugeicons-react";
 import { NavigationGlobalIcon } from "./NavigationGlobalIcon";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
@@ -30,57 +31,63 @@ interface TabItem {
 const helpFiles = (t: any) => [
   {
     id: "shortcuts",
-    name: "Shortcuts",
+    name: t("help.shortcuts"),
     filename: path.join(HOWTO_DIR, "SHORTCUTS.md"),
     icon: <kbd className="text-xs bg-muted px-1 py-0.5 rounded">⌘K</kbd>,
   },
   {
     id: "markdown",
-    name: "Markdown Guide",
+    name: t("help.markdownGuide"),
     filename: path.join(HOWTO_DIR, "MARKDOWN.md"),
     icon: <span className="text-xs font-mono">#</span>,
   },
   {
     id: "api",
-    name: "API",
+    name: t("common.api"),
     filename: path.join(HOWTO_DIR, "API.md"),
     icon: <span className="text-xs font-mono">{t('common.api')}</span>,
   },
   {
     id: "customisations",
-    name: "Customisations",
+    name: t("help.customisations"),
     filename: path.join(HOWTO_DIR, "CUSTOMISATIONS.md"),
     icon: <PaintBrush04Icon className="h-4 w-4" />,
   },
   {
     id: "docker",
-    name: "Docker",
+    name: t("help.docker"),
     filename: path.join(HOWTO_DIR, "DOCKER.md"),
     icon: <LaptopProgrammingIcon className="h-4 w-4" />,
   },
   {
     id: "env-variables",
-    name: "Env Variables",
+    name: t("help.envVariables"),
     filename: path.join(HOWTO_DIR, "ENV-VARIABLES.md"),
     icon: <LockKeyIcon className="h-4 w-4" />,
   },
   {
     id: "pwa",
-    name: "PWA",
+    name: t("help.pwa"),
     filename: path.join(HOWTO_DIR, "PWA.md"),
     icon: <SmartPhone01Icon className="h-4 w-4" />,
   },
   {
     id: "encryption",
-    name: "Encryption",
+    name: t("help.encryption"),
     filename: path.join(HOWTO_DIR, "ENCRYPTION.md"),
     icon: <LockKeyIcon className="h-4 w-4" />,
   },
   {
     id: "sso",
-    name: "SSO",
+    name: t("help.sso"),
     filename: path.join(HOWTO_DIR, "SSO.md"),
     icon: <SquareLock01Icon className="h-4 w-4" />,
+  },
+  {
+    id: "translations",
+    name: t("help.translations"),
+    filename: path.join(HOWTO_DIR, "TRANSLATIONS.md"),
+    icon: <TranslationIcon className="h-4 w-4" />,
   },
 ];
 
@@ -128,7 +135,7 @@ export const NavigationHelpIcon = () => {
       <Modal
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
-        title={"How to"}
+        title={t("help.howTo")}
         className="lg:max-h-[80vh] lg:!max-w-[80vw] lg:!w-[80vw]"
       >
         <div className="flex flex-col h-full max-h-[calc(80vh-8rem)]">

@@ -113,7 +113,7 @@ export const ExcalidrawNodeView = ({
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
           <div className="bg-background rounded-jotty shadow-xl w-[95vw] h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-3 border-b border-border">
-              <h3 className="font-semibold">Edit Excalidraw Diagram</h3>
+              <h3 className="font-semibold">{t("editor.editDiagram")}</h3>
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsEditing(false)}
@@ -157,14 +157,14 @@ export const ExcalidrawNodeView = ({
               <button
                 onClick={() => setIsEditing(true)}
                 className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
-                title="Edit diagram"
+                title={t("editor.editDiagram")}
               >
                 {t('common.edit')}
               </button>
               <button
                 onClick={handleDelete}
                 className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-xs hover:bg-destructive/90"
-                title="Delete diagram"
+                title={t("editor.deleteDiagram")}
               >
                 {t('common.delete')}
               </button>
@@ -186,7 +186,7 @@ export const ExcalidrawNodeView = ({
               onClick={() => setIsEditing(true)}
               className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
             >
-              Create Diagram
+              {t("editor.createExcalidrawDiagram")}
             </button>
             <button
               onClick={handleDelete}

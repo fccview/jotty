@@ -48,6 +48,7 @@ const SortableStatusItem = ({
   onRemove,
   canRemove,
 }: SortableStatusItemProps) => {
+  const t = useTranslations();
   const {
     attributes,
     listeners,
@@ -84,7 +85,7 @@ const SortableStatusItem = ({
           type="text"
           value={status.label}
           onChange={(e) => onUpdateLabel(status.id, e.target.value)}
-          placeholder="Status name"
+          placeholder={t("checklists.statusName")}
           className="!space-y-0 [&>label]:hidden"
         />
       </div>
@@ -94,7 +95,7 @@ const SortableStatusItem = ({
         value={status.color || defaultStatusColors[status.id] || "#6b7280"}
         onChange={(e) => onUpdateColor(status.id, e.target.value)}
         className="w-12 h-10 border border-input rounded-jotty cursor-pointer"
-        title="Status color"
+        title={t("checklists.statusColor")}
       />
 
       <Button

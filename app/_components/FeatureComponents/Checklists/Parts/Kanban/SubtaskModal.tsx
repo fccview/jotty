@@ -68,15 +68,12 @@ export const SubtaskModal = ({
   }, [initialItem]);
 
   const descriptionHtml = useMemo(() => {
-    if (!item.description)
-      return '<p class="text-muted-foreground text-sm opacity-50">No description</p>';
+    const noDescText = `<p class="text-muted-foreground text-sm opacity-50">${t("checklists.noDescription")}</p>`;
+    if (!item.description) return noDescText;
     const unsanitized = unsanitizeDescription(item.description);
     const withLineBreaks = unsanitized.replace(/\n/g, "  \n");
-    return (
-      convertMarkdownToHtml(withLineBreaks) ||
-      '<p class="text-muted-foreground text-sm opacity-50">No description</p>'
-    );
-  }, [item.description]);
+    return convertMarkdownToHtml(withLineBreaks) || noDescText;
+  }, [item.description, t]);
 
   const findItemInChecklist = (
     checklist: Checklist,
@@ -279,7 +276,7 @@ export const SubtaskModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={item.text || "Untitled Task"}
+      title={item.text || t("checklists.untitledTask")}
       className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] !max-h-[80vh] overflow-y-auto"
     >
       <div className="space-y-6">
@@ -314,7 +311,7 @@ export const SubtaskModal = ({
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all min-h-[120px] text-base resize-y"
-                placeholder="Add a description (optional)..."
+                placeholder={t("checklists.addDescriptionOptional")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.ctrlKey) {
                     e.preventDefault();

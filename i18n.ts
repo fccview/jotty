@@ -2,6 +2,30 @@ import { getRequestConfig } from 'next-intl/server';
 import path from 'path';
 import fs from 'fs';
 
+function _fallbackMerger(target: any, source: any): any {
+  const output = { ...target };
+
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach(key => {
+      if (isObject(source[key])) {
+        if (!(key in target)) {
+          output[key] = source[key];
+        } else {
+          output[key] = _fallbackMerger(target[key], source[key]);
+        }
+      } else {
+        output[key] = source[key];
+      }
+    });
+  }
+
+  return output;
+}
+
+function isObject(item: any): boolean {
+  return item && typeof item === 'object' && !Array.isArray(item);
+}
+
 export const getAvailableLocales = (): string[] => {
   const translationsDir = path.join(process.cwd(), 'app', '_translations');
 
@@ -35,7 +59,11 @@ export default getRequestConfig(async () => {
     };
   }
 
-  const defaultMessages = (await import(`./app/_translations/${locale}.json`)).default;
+  const englishMessages = (await import(`./app/_translations/en.json`)).default;
+
+  const localeMessages = locale !== 'en'
+    ? (await import(`./app/_translations/${locale}.json`)).default
+    : {};
 
   const customTranslationFile = process.env.CUSTOM_TRANSLATION_FILE;
   let customMessages = {};
@@ -58,10 +86,15 @@ export default getRequestConfig(async () => {
     }
   }
 
-  const messages = {
-    ...defaultMessages,
-    ...customMessages,
-  };
+  let messages = englishMessages;
+
+  if (locale !== 'en') {
+    messages = _fallbackMerger(englishMessages, localeMessages);
+  }
+
+  if (Object.keys(customMessages).length > 0) {
+    messages = _fallbackMerger(messages, customMessages);
+  }
 
   return {
     locale,

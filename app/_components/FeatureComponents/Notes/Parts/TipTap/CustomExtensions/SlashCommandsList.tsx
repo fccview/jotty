@@ -3,6 +3,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { SlashCommandItem } from "./SlashCommands";
 import { cn } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface SlashCommandsListProps {
   items: SlashCommandItem[];
@@ -13,6 +14,7 @@ export const SlashCommandsList = forwardRef<
   { onKeyDown: (event: KeyboardEvent) => boolean },
   SlashCommandsListProps
 >(({ items, command }, ref) => {
+  const t = useTranslations();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const selectItem = (index: number) => {
@@ -121,7 +123,7 @@ export const SlashCommandsList = forwardRef<
         </div>
       ) : (
         <div className="px-3 py-2 text-sm text-muted-foreground">
-          No results found
+          {t("common.noResultsFound")}
         </div>
       )}
     </div>

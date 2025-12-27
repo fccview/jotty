@@ -58,7 +58,7 @@ export const ImageSizeModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Image Size"
+      title={t("editor.imageSize")}
       className="!max-w-md"
     >
       <div className="space-y-4">
@@ -81,11 +81,11 @@ export const ImageSizeModal = ({
             <div>
               <Input
                 id="width"
-                label="Width (px)"
+                label={t("editor.widthPx")}
                 type="number"
                 value={width}
                 onChange={(e) => handleWidthChange(e.target.value)}
-                placeholder="Auto"
+                placeholder={t("common.auto")}
                 className="w-full px-3 py-2 border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-primary"
               />
             </div>
@@ -93,18 +93,18 @@ export const ImageSizeModal = ({
             <div>
               <Input
                 id="height"
-                label="Height (px)"
+                label={t("editor.heightPx")}
                 type="number"
                 value={height}
                 onChange={(e) => handleHeightChange(e.target.value)}
-                placeholder="Auto"
+                placeholder={t("common.auto")}
                 className="w-full px-3 py-2 border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-primary"
               />
             </div>
           </div>
 
           <div className="text-xs text-muted-foreground">
-            Leave empty for automatic sizing
+            {t("editor.leaveEmptyForAutoSize")}
           </div>
         </div>
 

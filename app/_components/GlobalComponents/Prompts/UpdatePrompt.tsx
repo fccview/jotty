@@ -105,7 +105,7 @@ export const UpdatePrompt = () => {
       <Modal
         isOpen={showReleaseNotesModal}
         onClose={handleCloseModal}
-        title={`Release Notes v${latestVersion}`}
+        title={t("common.releaseNotes", { version: latestVersion || "" })}
         className="lg:max-h-[80vh] lg:!max-w-[80vw] lg:!w-[80vw]"
       >
         <div className="flex flex-col h-full max-h-[calc(80vh-10rem)]">
@@ -123,7 +123,7 @@ export const UpdatePrompt = () => {
           <Button onClick={handleCloseModal} variant="ghost">{t('common.close')}</Button>
           {releaseUrl && (
             <Button onClick={() => window.open(releaseUrl, "_blank")}>
-              View on GitHub
+              {t("common.viewOnGithub")}
             </Button>
           )}
         </div>
@@ -139,11 +139,12 @@ export const UpdatePrompt = () => {
             </div>
             <div>
               <h3 className="font-medium text-foreground hover:underline">
-                New version: {latestVersion}
+                {t("common.newVersion", { version: latestVersion || "" })}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Click to see release notes{" "}
-                {isRwMarkable ? "rwMarkable" : "jotty·page"}
+                {t("common.clickToSeeReleaseNotes", {
+                  appName: isRwMarkable ? "rwMarkable" : "jotty·page"
+                })}
               </p>
             </div>
           </div>

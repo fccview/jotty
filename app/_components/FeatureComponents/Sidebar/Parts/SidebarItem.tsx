@@ -99,7 +99,7 @@ export const SidebarItem = ({
     ...(onEditItem
       ? [
           {
-            label: "Edit",
+            label: t("common.edit"),
             onClick: () => onEditItem(item),
             icon: <PencilEdit02Icon className="h-4 w-4" />,
           },
@@ -107,7 +107,7 @@ export const SidebarItem = ({
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
+      label: isItemPinned() ? t("common.unpinFromHome") : t("common.pinToHome"),
       onClick: handleTogglePin,
       icon: isItemPinned() ? (
         <PinOffIcon className="h-4 w-4" />
@@ -119,7 +119,7 @@ export const SidebarItem = ({
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
           {
-            label: "Archive",
+            label: t("common.archive"),
             onClick: async () => {
               const result = await toggleArchive(item, mode);
               if (result.success) {
@@ -132,10 +132,10 @@ export const SidebarItem = ({
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: "Delete",
+      label: t("common.delete"),
       onClick: async () => {
         const confirmed = window.confirm(
-          `Are you sure you want to delete "${item.title}"?`
+          t("common.confirmDeleteItem", { itemTitle: item.title })
         );
 
         if (!confirmed) return;

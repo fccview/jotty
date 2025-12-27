@@ -142,22 +142,22 @@ export const CompactImageResizeOverlay = ({
         <div className="grid grid-cols-2 gap-2">
           <Input
             id="width"
-            label="Width (px)"
+            label={t("editor.widthPx")}
             type="number"
             defaultValue={width}
             value={width}
             onChange={(e) => handleWidthChange(e.target.value)}
-            placeholder="Auto"
+            placeholder={t("common.auto")}
             className="text-xs"
           />
           <Input
             id="height"
-            label="Height (px)"
+            label={t("editor.heightPx")}
             type="number"
             defaultValue={height}
             value={height}
             onChange={(e) => handleHeightChange(e.target.value)}
-            placeholder="Auto"
+            placeholder={t("common.auto")}
             className="text-xs"
           />
         </div>

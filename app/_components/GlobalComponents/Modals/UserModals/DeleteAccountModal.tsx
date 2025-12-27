@@ -92,7 +92,7 @@ export const DeleteAccountModal = ({
 
         <div className="space-y-4">
           <InfoBox
-            title="Warning: This action cannot be undone"
+            title={t("settings.deleteAccountWarning")}
             variant={InfoCardVariant.WARNING}
             items={[
               "All your checklists and notes will be permanently deleted",
@@ -110,7 +110,7 @@ export const DeleteAccountModal = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-3 py-2 bg-background border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring pr-10"
-                placeholder="Enter your password to confirm"
+                placeholder={t("settings.enterPasswordToConfirm")}
                 disabled={isLoading}
               />
               <button

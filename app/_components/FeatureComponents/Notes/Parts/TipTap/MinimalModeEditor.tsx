@@ -74,10 +74,10 @@ export const MinimalModeEditor = ({
       <div className="bg-background border-b border-border px-4 py-2 items-center justify-between sticky top-0 z-10 hidden lg:flex">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-foreground">
-            Minimal Mode
+            {t("editor.minimalMode")}
           </span>
           <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-            {showPreview ? "Preview" : "Raw Markdown"}
+            {showPreview ? t("editor.preview") : t("editor.rawMarkdown")}
           </span>
         </div>
         <div className="hidden lg:flex items-center gap-2">
@@ -85,7 +85,7 @@ export const MinimalModeEditor = ({
             variant="ghost"
             size="sm"
             onClick={() => setShowLineNumbers(!showLineNumbers)}
-            title={showLineNumbers ? "Hide line numbers" : "Show line numbers"}
+            title={showLineNumbers ? t("editor.hideLineNumbers") : t("editor.showLineNumbers")}
             className="h-8 px-2"
           >
             {showLineNumbers ? (
@@ -98,7 +98,7 @@ export const MinimalModeEditor = ({
             variant="ghost"
             size="sm"
             onClick={() => setShowPreview(!showPreview)}
-            title={showPreview ? "Show editor" : "Show preview"}
+            title={showPreview ? t("editor.showEditor") : t("editor.showPreview")}
             className="h-8 px-2"
           >
             {showPreview ? (
@@ -107,7 +107,7 @@ export const MinimalModeEditor = ({
               <ViewIcon className="h-4 w-4" />
             )}
             <span className="ml-1 text-xs">
-              {showPreview ? "Edit" : "Preview"}
+              {showPreview ? t("common.edit") : t("editor.preview")}
             </span>
           </Button>
         </div>
@@ -121,7 +121,7 @@ export const MinimalModeEditor = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setShowPreview(false)}
-            title="Markdown Editor"
+            title={t("editor.markdownEditor")}
           >
             <File02Icon className="h-4 w-4 mr-2" />
             <span>{t('editor.markdown')}</span>
@@ -133,7 +133,7 @@ export const MinimalModeEditor = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setShowPreview(true)}
-            title="Preview Mode"
+            title={t("editor.previewMode")}
           >
             <ViewIcon className="h-4 w-4 mr-2" />
             <span>{t('editor.preview')}</span>

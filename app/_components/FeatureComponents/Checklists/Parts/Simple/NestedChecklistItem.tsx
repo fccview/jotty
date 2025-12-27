@@ -399,7 +399,7 @@ const NestedChecklistItemComponent = ({
                   size="sm"
                   onClick={() => setShowAddSubItem(!showAddSubItem)}
                   className="h-8 w-8 p-0"
-                  title="Add sub-item"
+                  title={t("checklists.addSubItem")}
                 >
                   <Add01Icon className="h-4 w-4" />
                 </Button>
@@ -480,7 +480,7 @@ const NestedChecklistItemComponent = ({
                 type="text"
                 value={newSubItemText}
                 onChange={(e) => setNewSubItemText(e.target.value)}
-                placeholder="Add sub-item..."
+                placeholder={t("checklists.addSubItemPlaceholder")}
                 className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-none focus:ring-ring"
                 autoFocus
               />

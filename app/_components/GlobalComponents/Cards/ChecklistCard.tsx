@@ -111,7 +111,7 @@ export const ChecklistCard = ({
               className={`${
                 isPinned ? "opacity-100" : "opacity-0"
               } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
-              title={isPinned ? "Unpin" : "PinIcon"}
+              title={isPinned ? t("common.unpin") : t("common.pin")}
             >
               {isPinned ? (
                 <PinOffIcon className="h-3 w-3 text-muted-foreground hover:text-primary" />
@@ -149,7 +149,7 @@ export const ChecklistCard = ({
             <div className="flex items-center gap-1">
               <UserAvatar username={sharer} size="xs" />
               <span className="text-xs text-muted-foreground">
-                Shared by {sharer}
+                {t("common.sharedBy", { sharer })}
               </span>
             </div>
           )}
@@ -157,7 +157,7 @@ export const ChecklistCard = ({
             <>
               <CheckmarkCircle04Icon className="h-3 w-3" />
               <span>
-                {completedItems}/{totalItems} completed
+                {t("common.itemsCompleted", { completedItems, totalItems })}
               </span>
             </>
           )}

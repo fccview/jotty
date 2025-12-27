@@ -307,7 +307,7 @@ export const NoteEditorHeader = ({
                       <LockKeyIcon className="h-4 w-4 text-primary flex-shrink-0" />
                     )}
                     {isPubliclyShared && (
-                      <span title="Publicly shared">
+                      <span title={t("notes.publiclySharedNote")}>
                         <Globe02Icon className="h-4 w-4 text-primary" />
                       </span>
                     )}
@@ -385,7 +385,7 @@ export const NoteEditorHeader = ({
                         variant="outline"
                         size="icon"
                         onClick={() => handleSave()}
-                        title="Quick Save"
+                        title={t("notes.quickSave")}
                         className="text-primary hover:text-primary/80"
                       >
                         {status.isSaving ? (

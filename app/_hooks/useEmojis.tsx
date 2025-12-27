@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTranslations } from "next-intl";
 import {
   loadCustomEmojis,
   saveCustomEmojis,
@@ -12,6 +13,7 @@ interface EmojiFormData {
 
 export const useEmojis = () => {
   const { showToast } = useToast();
+  const t = useTranslations();
 
   const [emojis, setEmojis] = useState<Record<string, string>>({});
   const [isLoadingEmojis, setIsLoadingEmojis] = useState(true);
@@ -32,8 +34,8 @@ export const useEmojis = () => {
       console.error("Error loading emojis:", error);
       showToast({
         type: "error",
-        title: "Load Error",
-        message: "Failed to load custom emojis",
+        title: t("errors.loadError"),
+        message: t("errors.failedToLoadCustomEmojis"),
       });
     } finally {
       setIsLoadingEmojis(false);
@@ -69,22 +71,22 @@ export const useEmojis = () => {
         setEmojis(newEmojis);
         showToast({
           type: "success",
-          title: "Success",
-          message: "Emoji deleted successfully",
+          title: t("common.success"),
+          message: t("errors.emojiDeletedSuccessfully"),
         });
       } else {
         showToast({
           type: "error",
-          title: "Delete Error",
-          message: result.error || "Failed to delete emoji",
+          title: t("errors.deleteError"),
+          message: result.error || t("errors.failedToDeleteEmoji"),
         });
       }
     } catch (error) {
       console.error("Error deleting emoji:", error);
       showToast({
         type: "error",
-        title: "Delete Error",
-        message: "Failed to delete emoji",
+        title: t("errors.deleteError"),
+        message: t("errors.failedToDeleteEmoji"),
       });
     }
   };
@@ -96,8 +98,8 @@ export const useEmojis = () => {
       if (!emojiForm.keyword.trim() || !emojiForm.emoji.trim()) {
         showToast({
           type: "error",
-          title: "Validation Error",
-          message: "Keyword and emoji are required",
+          title: t("errors.validationError"),
+          message: t("errors.keywordAndEmojiRequired"),
         });
         return;
       }
@@ -105,8 +107,8 @@ export const useEmojis = () => {
       if (!editingEmoji && emojis[emojiForm.keyword.trim()]) {
         showToast({
           type: "error",
-          title: "Duplicate Keyword",
-          message: "Keyword already exists",
+          title: t("errors.duplicateKeyword"),
+          message: t("errors.keywordAlreadyExists"),
         });
         return;
       }
@@ -125,24 +127,24 @@ export const useEmojis = () => {
         setEmojiModalOpen(false);
         showToast({
           type: "success",
-          title: "Success",
+          title: t("common.success"),
           message: editingEmoji
-            ? "Emoji updated successfully"
-            : "Emoji created successfully",
+            ? t("errors.emojiUpdatedSuccessfully")
+            : t("errors.emojiCreatedSuccessfully"),
         });
       } else {
         showToast({
           type: "error",
-          title: "Save Error",
-          message: result.error || "Failed to save emoji",
+          title: t("errors.saveError"),
+          message: result.error || t("errors.failedToSaveEmoji"),
         });
       }
     } catch (error) {
       console.error("Error saving emoji:", error);
       showToast({
         type: "error",
-        title: "Save Error",
-        message: "Failed to save emoji",
+        title: t("errors.saveError"),
+        message: t("errors.failedToSaveEmoji"),
       });
     } finally {
       setIsSavingEmojis(false);

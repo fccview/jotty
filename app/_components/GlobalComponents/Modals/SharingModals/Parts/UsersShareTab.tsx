@@ -40,7 +40,7 @@ export const UsersShareTab = ({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search users..."
+          placeholder={t("sharing.searchUsers")}
           className="pl-10"
         />
       </div>
@@ -89,7 +89,7 @@ export const UsersShareTab = ({
                         }
                         disabled={isLoading}
                         className="flex items-center gap-1 px-2 py-1 rounded-jotty bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors disabled:opacity-50"
-                        title="Toggle all permissions"
+                        title={t("sharing.toggleAllPermissions")}
                       >
                         <Settings01Icon className="h-3 w-3 text-primary" />
                         <Toggle

@@ -16,25 +16,12 @@ interface ConversionConfirmModalProps {
 }
 
 const TYPE_CONFIG = {
-  simple: { label: "Simple Checklist", Icon: CheckmarkSquare04Icon },
-  task: { label: "Task Project", Icon: TaskDaily01Icon },
+  simple: { Icon: CheckmarkSquare04Icon },
+  task: { Icon: TaskDaily01Icon },
 };
 
-const DATA_LOSS_WARNINGS = [
-  "All task statuses will be reset",
-  "Time tracking data will be lost",
-  "Estimated times will be removed",
-  "Target dates will be cleared",
-];
-
-const ENHANCED_FEATURES = [
-  "Kanban board with drag & drop",
-  "Task status tracking (Todo, In Progress, etc.)",
-  "Time tracking with a built-in timer",
-];
-
-const TypeDisplay = ({ type }: { type: ChecklistType }) => {
-  const { label, Icon } = TYPE_CONFIG[type];
+const TypeDisplay = ({ type, label }: { type: ChecklistType; label: string }) => {
+  const { Icon } = TYPE_CONFIG[type];
   return (
     <div className="flex items-center gap-2">
       <Icon className="h-4 w-4 text-primary" />
@@ -53,24 +40,45 @@ export const ConversionConfirmModal = ({
   const t = useTranslations();
   const isDestructive = newType === "simple" && currentType === "task";
 
+  const DATA_LOSS_WARNINGS = [
+    t("checklists.allTaskStatusesReset"),
+    t("checklists.timeTrackingDataLost"),
+    t("checklists.estimatedTimesRemoved"),
+    t("checklists.targetDatesCleared"),
+  ];
+
+  const ENHANCED_FEATURES = [
+    t("checklists.kanbanBoardWithDragDrop"),
+    t("checklists.taskStatusTracking"),
+    t("checklists.timeTrackingWithTimer"),
+  ];
+
+  const currentLabel = currentType === "simple"
+    ? t("checklists.simpleChecklist")
+    : t("checklists.taskProject");
+
+  const newLabel = newType === "simple"
+    ? t("checklists.simpleChecklist")
+    : t("checklists.taskProject");
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Convert Checklist Type">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("checklists.convertChecklistType")}>
       <div className="space-y-4">
         <div className="flex items-center justify-center gap-3 p-3 bg-muted/50 rounded-jotty">
-          <TypeDisplay type={currentType} />
+          <TypeDisplay type={currentType} label={currentLabel} />
           <span className="text-muted-foreground">→</span>
-          <TypeDisplay type={newType} />
+          <TypeDisplay type={newType} label={newLabel} />
         </div>
 
         {isDestructive ? (
           <InfoBox
-            title="⚠️ Data Loss Warning"
+            title={t("checklists.dataLossWarning")}
             items={DATA_LOSS_WARNINGS}
             variant="warning"
           />
         ) : (
           <InfoBox
-            title="✨ Enhanced Features"
+            title={t("checklists.enhancedFeatures")}
             items={ENHANCED_FEATURES}
             variant="info"
           />
@@ -78,13 +86,15 @@ export const ConversionConfirmModal = ({
 
         <p className="text-sm text-muted-foreground">
           {isDestructive
-            ? "This action cannot be undone. Are you sure you want to convert?"
-            : "Are you sure you want to convert this checklist type?"}
+            ? t("checklists.actionCannotBeUndone")
+            : t("checklists.actionCannotBeUndone")}
         </p>
       </div>
 
       <div className="flex gap-3 mt-6">
-        <Button variant="outline" onClick={onClose} className="flex-1">{t('common.cancel')}</Button>
+        <Button variant="outline" onClick={onClose} className="flex-1">
+          {t("common.cancel")}
+        </Button>
         <Button
           variant={isDestructive ? "destructive" : "default"}
           onClick={() => {
@@ -93,7 +103,7 @@ export const ConversionConfirmModal = ({
           }}
           className="flex-1"
         >
-          {isDestructive ? "Convert & Lose Data" : "Convert"}
+          {isDestructive ? t("checklists.convertAndLoseData") : t("checklists.convert")}
         </Button>
       </div>
     </Modal>

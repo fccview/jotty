@@ -85,7 +85,7 @@ export const CreateCategoryModal = ({
         <Input
           id="categoryName"
           name="categoryName"
-          label="Category Name *"
+          label={`${t('common.categoryName')} *`}
           type="text"
           value={categoryName}
           onChange={(e) => setCategoryName(e.target.value)}

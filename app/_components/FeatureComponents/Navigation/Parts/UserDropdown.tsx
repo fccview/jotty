@@ -76,7 +76,7 @@ export const UserDropdown = ({
       <DropdownMenu
         align="right"
         trigger={
-          <div className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity px-2 py-1.5 rounded-jotty hover:bg-accent">
+          <div className="flex items-center gap-1.5 cursor-pointer transition-opacity px-2 py-1.5 rounded-jotty hover:bg-accent group">
             <div className="hidden sm:block">
               <UserAvatar
                 username={username}
@@ -91,10 +91,10 @@ export const UserDropdown = ({
                 size="md"
               />
             </div>
-            <span className="text-sm font-medium text-foreground hidden sm:inline-block">
+            <span className="text-sm font-medium text-foreground hidden sm:inline-block group-hover:text-accent-foreground">
               {username}
             </span>
-            <ArrowDown01Icon className="h-4 w-4 text-muted-foreground hidden sm:block" />
+            <ArrowDown01Icon className="h-4 w-4 text-muted-foreground hidden sm:block group-hover:text-accent-foreground" />
           </div>
         }
         items={dropdownItems}

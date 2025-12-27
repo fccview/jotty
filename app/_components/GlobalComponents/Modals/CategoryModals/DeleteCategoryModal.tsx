@@ -35,7 +35,7 @@ export const DeleteCategoryModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Delete Category">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("common.deleteCategory")}>
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Are you sure you want to delete the category &quot;{categoryName}
@@ -54,7 +54,7 @@ export const DeleteCategoryModal = ({
             onClick={handleConfirm}
             disabled={isLoading}
           >
-            {isLoading ? "Deleting..." : "Delete"}
+            {isLoading ? t("common.deleting") : t("common.delete")}
           </Button>
         </div>
       </div>

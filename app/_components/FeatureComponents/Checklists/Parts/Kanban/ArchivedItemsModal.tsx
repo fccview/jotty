@@ -68,7 +68,7 @@ export const ArchivedItemsModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Archived Items"
+      title={t("checklists.archivedItems")}
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">

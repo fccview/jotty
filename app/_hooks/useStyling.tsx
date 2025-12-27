@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTranslations } from "next-intl";
 import {
   loadCustomCSS,
   saveCustomCSS,
@@ -36,6 +37,7 @@ interface ThemeFormData {
 
 export const useStyling = () => {
   const { showToast } = useToast();
+  const t = useTranslations();
 
   const [css, setCss] = useState("");
   const [isLoadingCss, setIsLoadingCss] = useState(true);
@@ -82,15 +84,15 @@ export const useStyling = () => {
         } else {
           showToast({
             type: "error",
-            title: "Load Error",
-            message: result.error || "Failed to load custom CSS",
+            title: t("errors.loadError"),
+            message: result.error || t("errors.failedToLoadCustomCSS"),
           });
         }
       } catch (error) {
         showToast({
           type: "error",
-          title: "Load Error",
-          message: "Could not load custom CSS.",
+          title: t("errors.loadError"),
+          message: t("errors.couldNotLoadCustomCSS"),
         });
       } finally {
         setIsLoadingCss(false);
@@ -104,8 +106,8 @@ export const useStyling = () => {
       } catch (error) {
         showToast({
           type: "error",
-          title: "Load Error",
-          message: "Could not load themes.",
+          title: t("errors.loadError"),
+          message: t("errors.couldNotLoadThemes"),
         });
       } finally {
         setIsLoadingThemes(false);
@@ -157,8 +159,8 @@ export const useStyling = () => {
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: "Custom CSS saved successfully.",
+          title: t("common.success"),
+          message: t("errors.customCSSSavedSuccessfully"),
         });
         setHasCssChanges(false);
         window.dispatchEvent(new CustomEvent("css-updated"));
@@ -168,9 +170,9 @@ export const useStyling = () => {
     } catch (error) {
       showToast({
         type: "error",
-        title: "Save Error",
+        title: t("errors.saveError"),
         message:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+          error instanceof Error ? error.message : t("errors.anUnknownErrorOccurred"),
       });
     } finally {
       setIsSavingCss(false);
@@ -216,8 +218,8 @@ export const useStyling = () => {
     ) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Theme not found.",
+        title: t("common.error"),
+        message: t("errors.themeNotFound"),
       });
       return;
     }
@@ -271,8 +273,8 @@ export const useStyling = () => {
       if (!customThemes[themeId]) {
         showToast({
           type: "error",
-          title: "Error",
-          message: "Theme not found.",
+          title: t("common.error"),
+          message: t("errors.themeNotFound"),
         });
         return;
       }
@@ -283,8 +285,8 @@ export const useStyling = () => {
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: "Theme deleted successfully.",
+          title: t("common.success"),
+          message: t("errors.themeDeletedSuccessfully"),
         });
 
         const allThemes = await getAllThemes();
@@ -295,9 +297,9 @@ export const useStyling = () => {
     } catch (error) {
       showToast({
         type: "error",
-        title: "Delete Error",
+        title: t("errors.deleteError"),
         message:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+          error instanceof Error ? error.message : t("errors.anUnknownErrorOccurred"),
       });
     }
   };
@@ -306,8 +308,8 @@ export const useStyling = () => {
     if (!themeForm.name.trim()) {
       showToast({
         type: "error",
-        title: "Validation Error",
-        message: "Theme name is required.",
+        title: t("errors.validationError"),
+        message: t("errors.themeNameRequired"),
       });
       return;
     }
@@ -338,9 +340,10 @@ export const useStyling = () => {
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: `Theme ${editingTheme ? "updated" : "created"
-            } successfully.`,
+          title: t("common.success"),
+          message: t("errors.themeSavedSuccessfully", {
+            action: editingTheme ? "updated" : "created"
+          }),
         });
         setThemeModalOpen(false);
         const allThemes = await getAllThemes();
@@ -351,9 +354,9 @@ export const useStyling = () => {
     } catch (error) {
       showToast({
         type: "error",
-        title: "Save Error",
+        title: t("errors.saveError"),
         message:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+          error instanceof Error ? error.message : t("errors.anUnknownErrorOccurred"),
       });
     } finally {
       setIsSavingThemes(false);

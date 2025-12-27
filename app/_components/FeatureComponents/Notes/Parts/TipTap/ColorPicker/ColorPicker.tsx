@@ -184,21 +184,21 @@ export const ColorPicker = ({
           <div className="flex items-center gap-2">
             <Input
               id="custom-color-picker"
-              label="Custom Color"
+              label={t("editor.customColor")}
               type="color"
               value={customColor}
               onChange={(e) => setCustomColor(e.target.value)}
               className="h-8 w-12 p-1"
-              placeholder="#000000"
+              placeholder={t("editor.colorPlaceholder")}
             />
             <Input
               id="custom-color-input"
-              label="Custom Color"
+              label={t("editor.customColor")}
               type="text"
               value={customColor}
               onChange={(e) => setCustomColor(e.target.value)}
               onKeyDown={handleCustomColorKeyDown}
-              placeholder="#000000"
+              placeholder={t("editor.colorPlaceholder")}
               className="flex-1 text-xs"
             />
             <Button

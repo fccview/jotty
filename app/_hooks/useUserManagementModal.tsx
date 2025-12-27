@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { User as UserType } from "@/app/_types";
+import { useTranslations } from "next-intl";
 import {
   createUser,
   deleteUser,
@@ -30,6 +31,7 @@ export const useUserManagementModal = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useToast();
+  const t = useTranslations();
 
   useEffect(() => {
     if (isOpen) {
@@ -48,13 +50,13 @@ export const useUserManagementModal = ({
   }, [isOpen, mode, user]);
 
   const validate = () => {
-    if (!username.trim()) return "Username is required";
+    if (!username.trim()) return t("errors.usernameRequired");
     const isPasswordRequired = mode === "add" || changePassword;
-    if (isPasswordRequired && !password) return "Password is required";
+    if (isPasswordRequired && !password) return t("errors.passwordRequired");
     if (isPasswordRequired && password.length < 6)
-      return "Password must be at least 6 characters long";
+      return t("errors.passwordMinLength");
     if (isPasswordRequired && password !== confirmPassword)
-      return "Passwords do not match";
+      return t("errors.passwordsDoNotMatch");
     return null;
   };
 
@@ -92,15 +94,17 @@ export const useUserManagementModal = ({
       if (result.success) {
         showToast({
           type: "success",
-          title: `User ${mode === "add" ? "created" : "updated"} successfully!`,
+          title: t("errors.userSavedSuccessfully", {
+            mode: mode === "add" ? "created" : "updated"
+          }),
         });
         onSuccess();
         onClose();
       } else {
-        throw new Error(result.error || `Failed to ${mode} user`);
+        throw new Error(result.error || t("errors.failedToSaveUser", { mode }));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred.");
+      setError(err instanceof Error ? err.message : t("errors.anErrorOccurred"));
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +113,7 @@ export const useUserManagementModal = ({
   const handleDelete = async () => {
     if (
       !user ||
-      !window.confirm(`Delete user "${user.username}"? This cannot be undone.`)
+      !window.confirm(t("errors.deleteUserConfirmation", { username: user.username }))
     )
       return;
 
@@ -121,14 +125,14 @@ export const useUserManagementModal = ({
       const result = await deleteUser(formData);
 
       if (result.success) {
-        showToast({ type: "success", title: "User deleted successfully!" });
+        showToast({ type: "success", title: t("errors.userDeletedSuccessfully") });
         onSuccess();
         onClose();
       } else {
-        throw new Error(result.error || "Failed to delete user");
+        throw new Error(result.error || t("errors.failedToDeleteUser"));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred.");
+      setError(err instanceof Error ? err.message : t("errors.anErrorOccurred"));
     } finally {
       setIsLoading(false);
     }

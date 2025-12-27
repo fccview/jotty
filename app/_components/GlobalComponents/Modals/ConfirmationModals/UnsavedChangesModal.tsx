@@ -18,30 +18,33 @@ export const UnsavedChangesModal = ({
   onClose,
   onSave,
   onDiscard,
-  noteTitle = "this note",
+  noteTitle,
 }: UnsavedChangesModalProps) => {
   const t = useTranslations();
+  const displayTitle = noteTitle || t("common.thisNote");
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Unsaved Changes">
+    <Modal isOpen={isOpen} onClose={onClose} title={t("common.unsavedChanges")}>
       <div className="space-y-4">
         <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-jotty">
           <h3 className="text-sm font-medium text-destructive mb-2">
-            ⚠️ Unsaved Changes Detected
+            {t("common.unsavedChangesDetected")}
           </h3>
           <p className="text-sm text-muted-foreground">
-            You have unsaved changes in {noteTitle}. If you leave now, your
-            changes will be lost.
+            {t("common.unsavedChangesMessage", { noteTitle: displayTitle })}
           </p>
         </div>
 
         <p className="text-sm text-muted-foreground">
-          What would you like to do with your unsaved changes?
+          {t("common.whatToDoWithUnsavedChanges")}
         </p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <Button variant="outline" onClick={onClose} className="flex-1">
-          <MultiplicationSignIcon className="h-4 w-4 mr-2" />{t('common.cancel')}</Button>
+          <MultiplicationSignIcon className="h-4 w-4 mr-2" />
+          {t("common.cancel")}
+        </Button>
         <Button
           variant="outline"
           onClick={() => {
@@ -50,7 +53,7 @@ export const UnsavedChangesModal = ({
           }}
           className="flex-1"
         >
-          Discard
+          {t("common.discard")}
         </Button>
         <Button
           variant="default"
@@ -61,7 +64,7 @@ export const UnsavedChangesModal = ({
           className="flex-1"
         >
           <FloppyDiskIcon className="h-4 w-4 mr-2" />
-          Save & Leave
+          {t("common.saveAndLeave")}
         </Button>
       </div>
     </Modal>

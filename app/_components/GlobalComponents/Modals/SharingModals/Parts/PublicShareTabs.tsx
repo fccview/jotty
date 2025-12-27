@@ -51,12 +51,12 @@ export const PublicShareTab = ({
       }
     } catch (error) {
       console.error("Failed to copy URL:", error);
-      alert("Failed to copy URL to clipboard");
+      alert(t("sharing.failedToCopyUrl"));
     }
   };
   const socialButtons = [
     {
-      name: "X (Twitter)",
+      name: t("sharing.xTwitter"),
       Icon: () => (
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -65,13 +65,13 @@ export const PublicShareTab = ({
       onClick: () =>
         window.open(
           `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-            `Check out this ${itemType}: ${itemTitle}`
+            t("sharing.checkOutThisItem", { itemType, itemTitle })
           )}&url=${encodeURIComponent(publicUrl)}`,
           "_blank"
         ),
     },
     {
-      name: "Reddit",
+      name: t("sharing.reddit"),
       Icon: RedditIcon,
       color: "text-[#FF4500]",
       onClick: () =>
@@ -83,7 +83,7 @@ export const PublicShareTab = ({
         ),
     },
     {
-      name: "Facebook",
+      name: t("sharing.facebook"),
       Icon: Facebook01Icon,
       color: "text-[#1877F2]",
       onClick: () =>
@@ -95,13 +95,13 @@ export const PublicShareTab = ({
         ),
     },
     {
-      name: "Email",
+      name: t("sharing.email"),
       Icon: Mail01Icon,
       onClick: () => {
         window.location.href = `mailto:?subject=${encodeURIComponent(
-          `Check out this ${itemType}: ${itemTitle}`
+          t("sharing.emailSubject", { itemType, itemTitle })
         )}&body=${encodeURIComponent(
-          `I wanted to share this ${itemType} with you:\n\n${itemTitle}\n${publicUrl}`
+          t("sharing.emailBody", { itemType, itemTitle, publicUrl })
         )}`;
       },
     },
@@ -112,7 +112,7 @@ export const PublicShareTab = ({
       <div className="p-4 bg-muted/30 rounded-jotty border border-border">
         <h4 className="font-medium">{t('sharing.publicAccess')}</h4>
         <p className="text-sm text-muted-foreground mb-3">
-          Make this {itemType} accessible to anyone with the link.
+          {t("sharing.makeItemAccessible", { itemType })}
         </p>
         <Button
           onClick={handlePublicToggle}
@@ -123,12 +123,12 @@ export const PublicShareTab = ({
           {isLoading ? (
             <>
               <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" />
-              Updating...
+              {t("checklists.updating")}
             </>
           ) : isPubliclyShared ? (
-            "Make Private"
+            t("sharing.makePrivate")
           ) : (
-            "Make Public"
+            t("sharing.makePublic")
           )}
         </Button>
       </div>
