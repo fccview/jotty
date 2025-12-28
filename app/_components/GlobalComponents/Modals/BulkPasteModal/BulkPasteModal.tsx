@@ -66,12 +66,10 @@ export const BulkPasteModal = ({
               <Alert02Icon className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <h3 className="text-sm font-medium text-destructive mb-1">
-                  Items Not Added Yet
+                  {t('checklists.itemsNotAddedYet')}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  You have {itemCount} item{itemCount !== 1 ? "s" : ""} that{" "}
-                  {itemCount !== 1 ? "haven't" : "hasn't"} been added. Close
-                  without adding or add them now.
+                  {t('checklists.youHaveItemsThatWillNotBeAdded', { count: itemCount })}
                 </p>
               </div>
             </div>
@@ -83,7 +81,7 @@ export const BulkPasteModal = ({
             htmlFor="itemsText"
             className="block text-sm font-medium text-foreground mb-2"
           >
-            Paste your list (one item per line)
+            {t('checklists.pasteYourList')}
           </label>
           <textarea
             id="itemsText"
@@ -100,7 +98,7 @@ Item 3...`}
           />
           {itemCount > 0 && !showUnsavedWarning && (
             <p className="text-xs text-muted-foreground mt-1">
-              {itemCount} item{itemCount !== 1 ? "s" : ""} will be added
+              {t('checklists.itemsWillBeAdded', { count: itemCount })}
             </p>
           )}
         </div>
@@ -114,12 +112,12 @@ Item 3...`}
                 onClick={handleConfirmClose}
                 disabled={isLoading}
               >
-                Close Without Adding
+                {t('common.closeWithoutAdding')}
               </Button>
               <Button type="submit" disabled={isLoading || !itemsText.trim()}>
                 {isLoading
-                  ? "Adding..."
-                  : `Add ${itemCount} Item${itemCount !== 1 ? "s" : ""}`}
+                  ? t('common.adding')
+                  : `${t('checklists.addItems', { count: itemCount })}`}
               </Button>
             </>
           ) : (
@@ -132,8 +130,8 @@ Item 3...`}
               >{t('common.cancel')}</Button>
               <Button type="submit" disabled={isLoading || !itemsText.trim()}>
                 {isLoading
-                  ? "Adding..."
-                  : `Add ${itemCount} Item${itemCount !== 1 ? "s" : ""}`}
+                  ? t('common.adding')
+                  : `${t('checklists.addItems', { count: itemCount })}`}
               </Button>
             </>
           )}

@@ -39,7 +39,7 @@ export const ArchivedItemCard = ({
 
       <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
         <div className="flex items-center gap-1">
-          <span className="capitalize">{item.type}</span>
+          <span className="capitalize">{item.type === ItemTypes.CHECKLIST ? t('auditLogs.checklist') : t('auditLogs.note')}</span>
           {item.isShared && (
             <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-2">{t('common.shared')}</span>
           )}
@@ -59,7 +59,7 @@ export const ArchivedItemCard = ({
         className="w-full mt-auto"
       >
         <Archive02Icon className="h-3 w-3 mr-1.5" />
-        Unarchive
+        {t('common.unarchive')}
       </Button>
     </div>
   );

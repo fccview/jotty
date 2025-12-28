@@ -67,7 +67,7 @@ export const ChecklistHome = ({
     return (
       <div className="h-full flex items-center justify-center">
         <EmptyState
-          title="No Checklists Yet"
+          title={t('checklists.noChecklistsYet')}
           description={t('checklists.createFirstChecklist')}
           buttonText={t('checklists.newChecklist')}
           onButtonClick={() => onCreateModal()}

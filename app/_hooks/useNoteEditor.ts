@@ -314,7 +314,7 @@ export const useNoteEditor = ({
   };
 
   const handleDelete = async () => {
-    if (window.confirm(`Are you sure you want to delete "${note.title}"?`)) {
+    if (window.confirm(t('common.confirmDeleteItem', { itemTitle: note.title }))) {
       const formData = new FormData();
       formData.append("id", note.id);
       formData.append("category", note.category || "");

@@ -104,7 +104,7 @@ export const EmojiManager = () => {
             type="text"
             value={emojiForm.keyword}
             onChange={(e) => handleEmojiFormChange("keyword", e.target.value)}
-            placeholder="meeting"
+            placeholder={t('common.exampleKeyword')}
             disabled={isSavingEmojis}
           />
 
@@ -118,12 +118,12 @@ export const EmojiManager = () => {
                 type="text"
                 value={emojiForm.emoji}
                 onChange={(e) => handleEmojiFormChange("emoji", e.target.value)}
-                placeholder="🤝"
+                placeholder={t('common.exampleEmoji')}
                 disabled={isSavingEmojis}
                 className="flex-1"
               />
               <div className="flex items-center px-3 py-2 border border-border rounded-jotty bg-muted/30 text-lg">
-                {emojiForm.emoji || "🤝"}
+                {emojiForm.emoji || t('common.exampleEmoji')}
               </div>
             </div>
             <p className="text-xs text-muted-foreground">

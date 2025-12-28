@@ -123,13 +123,11 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
     try {
       const username = await getUsername();
       await rebuildLinkIndex(username);
-      alert(
-        "Successfully rebuilt link index! The page will reload to show updated connections."
-      );
+      alert(t('profile.successfullyRebuiltIndexReload'));
       window.location.reload();
     } catch (error) {
       console.error("Failed to rebuild index:", error);
-      alert("Failed to rebuild link index. Please try again.");
+      alert(t('profile.failedToRebuildIndex'));
     } finally {
       setRebuildingIndex(false);
     }
@@ -258,9 +256,9 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Content Links</h2>
+          <h2 className="text-2xl font-bold">{t('profile.contentLinks')}</h2>
           <p className="text-muted-foreground">
-            Visualize relationships between your notes and checklists
+            {t('profile.visualizeRelationships')}
           </p>
         </div>
 
@@ -302,7 +300,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                   }
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Connected Items
+                  {t('profile.connectedItems')}
                 </div>
               </div>
             </div>
@@ -313,18 +311,17 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           <div className="text-center space-y-4">
             <div className="text-6xl">🔗</div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">No Links Found</h3>
+              <h3 className="text-lg font-semibold">{t('profile.noLinksFound')}</h3>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Start creating internal links in your notes and checklists to
-                see the relationship network here. Use the format{" "}
+                {t('profile.startCreatingInternalLinks')}{" "}
                 <code className="bg-muted px-1 py-0.5 rounded text-sm">
                   /note/your-note
                 </code>{" "}
-                or{" "}
+                {t('profile.orFormat')}{" "}
                 <code className="bg-muted px-1 py-0.5 rounded text-sm">
                   /checklist/your-list
                 </code>{" "}
-                in your content.
+                {t('profile.inYourContent')}
               </p>
             </div>
           </div>
@@ -336,9 +333,9 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Content Links</h2>
+        <h2 className="text-2xl font-bold">{t('profile.contentLinks')}</h2>
         <p className="text-muted-foreground">
-          Visualize relationships between your notes and checklists
+          {t('profile.visualizeRelationships')}
         </p>
       </div>
 
@@ -377,7 +374,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 {networkData.nodes.filter((n) => n.connectionCount > 0).length}
               </div>
               <div className="text-xs text-muted-foreground">
-                Connected Items
+                {t('profile.connectedItems')}
               </div>
             </div>
           </div>
@@ -455,13 +452,13 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               </div>
               <div className="text-xs text-muted-foreground capitalize mt-1">
                 {hoveredNode.data.type} • {hoveredNode.data.connectionCount}{" "}
-                connection{hoveredNode.data.connectionCount !== 1 ? "s" : ""}
+                {t('profile.connection', { count: hoveredNode.data.connectionCount })}
                 {hoveredNode.data.connectionCount >= 5
-                  ? " (highly connected)"
+                  ? ` (${t('profile.highlyConnected')})`
                   : hoveredNode.data.connectionCount >= 2
-                    ? " (moderately connected)"
+                    ? ` (${t('profile.moderatelyConnected')})`
                     : hoveredNode.data.connectionCount === 0
-                      ? " (isolated)"
+                      ? ` (${t('profile.isolated')})`
                       : ""}
               </div>
               <div className="text-xs text-muted-foreground mt-1 font-mono line-clamp-1">

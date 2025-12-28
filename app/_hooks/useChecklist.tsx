@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   DragEndEvent,
   KeyboardSensor,
@@ -43,6 +44,7 @@ export const useChecklist = ({
   onUpdate,
   onDelete,
 }: UseChecklistProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -188,7 +190,7 @@ export const useChecklist = ({
   };
 
   const handleDeleteList = async () => {
-    if (confirm("Are you sure you want to delete this checklist?")) {
+    if (confirm(t('common.confirmDeleteItem', { itemTitle: localList.title }))) {
       const formData = new FormData();
       formData.append("id", localList.id);
       formData.append("category", localList.category || "Uncategorized");

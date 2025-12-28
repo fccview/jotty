@@ -144,7 +144,7 @@ export const UsersShareTab = ({
                         className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <ViewIcon className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs font-medium">Read</span>
+                        <span className="text-xs font-medium">{t('common.read')}</span>
                         <Toggle
                           size="sm"
                           checked={permissions.canRead}

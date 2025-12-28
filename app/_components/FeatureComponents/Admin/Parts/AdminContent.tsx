@@ -176,7 +176,7 @@ export const AdminContent = ({
                       handleRebuildIndex(user.username);
                     }}
                     disabled={rebuildingIndex === user.username}
-                    title="Rebuild link indexex"
+                    title={t('admin.rebuildLinkIndexesTitle')}
                   >
                     {rebuildingIndex === user.username
                       ? t('admin.rebuilding')
@@ -184,7 +184,7 @@ export const AdminContent = ({
                   </Button>
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-                      {totalItems} items
+                      {t('common.itemCount', { count: totalItems })}
                     </span>
                   )}
                   {isExpanded ? (
@@ -205,7 +205,7 @@ export const AdminContent = ({
                         items={checklists.map((list) => ({
                           ...list,
                           link: `/admin/checklist/${list.uuid}`,
-                          details: `${list.owner} • ${list.category} • ${list.items.length} items`,
+                          details: `${list.owner} • ${list.category} • ${t('common.itemCount', { count: list.items.length })}`,
                         }))}
                       />
                       <AdminContentColumn
@@ -214,7 +214,7 @@ export const AdminContent = ({
                         items={notes.map((doc) => ({
                           ...doc,
                           link: `/admin/note/${doc.uuid}`,
-                          details: `${doc.owner} • ${doc.category} • ${doc.content.length} characters`,
+                          details: `${doc.owner} • ${doc.category} • ${t('common.characterCount', { count: doc.content.length })}`,
                         }))}
                       />
                     </div>
@@ -224,10 +224,10 @@ export const AdminContent = ({
                         <File02Icon className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
-                        No content yet
+                        {t('admin.noContentYet')}
                       </h3>
                       <p className="text-muted-foreground">
-                        This user hasn&apos;t created any checklists or notes.
+                        {t('admin.userHasNoContent')}
                       </p>
                     </div>
                   )}

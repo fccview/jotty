@@ -194,11 +194,10 @@ export const ChecklistHeading = ({
                   type="submit"
                   size="lg"
                   disabled={isLoading || !newItemText.trim()}
-                  className={`px-4 lg:px-6 shadow-sm ${
-                    user?.enableRecurrence === "enable"
+                  className={`px-4 lg:px-6 shadow-sm ${user?.enableRecurrence === "enable"
                       ? "rounded-tr-none rounded-br-none"
                       : ""
-                  }`}
+                    }`}
                 >
                   <Add01Icon className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">{submitButtonText}</span>

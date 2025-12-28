@@ -296,7 +296,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">{t('encryption.created')}</span>
+                  <span className="text-muted-foreground">{t('encryption.created')}:</span>
                   <span>
                     {new Date(keyMetadata.createdAt).toLocaleDateString()}
                   </span>

@@ -21,13 +21,6 @@ import path from "path";
 import { HOWTO_DIR } from "@/app/_consts/files";
 import { useTranslations } from "next-intl";
 
-interface TabItem {
-  id: string;
-  name: string;
-  icon?: React.ReactNode;
-  filename: string;
-}
-
 const helpFiles = (t: any) => [
   {
     id: "shortcuts",

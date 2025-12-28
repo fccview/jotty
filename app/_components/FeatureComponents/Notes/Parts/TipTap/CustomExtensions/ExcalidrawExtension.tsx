@@ -92,7 +92,7 @@ export const ExcalidrawNodeView = ({
   };
 
   const handleDelete = () => {
-    if (confirm("Delete this diagram?")) {
+    if (confirm(t('common.confirmDeleteItem', { itemTitle: t('editor.excalidrawDiagram') }))) {
       deleteNode();
     }
   };

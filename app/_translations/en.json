@@ -94,6 +94,10 @@
     "openFile": "Open file",
     "downloadFile": "Download file",
     "deleteFile": "Delete file",
+    "fileTooLarge": "File is too large. Maximum size is {maxSizeMB}MB. Your file is {fileSizeMB}MB.",
+    "uploadFailed": "Upload failed",
+    "uploadFailedRetry": "Upload failed. Please try again.",
+    "failedToDeleteFile": "Failed to delete file",
     "previousMonth": "Previous month",
     "nextMonth": "Next month",
     "currentIcon": "Current icon",
@@ -109,6 +113,8 @@
     "uncategorized": "Uncategorized",
     "keyword": "Keyword",
     "emoji": "Emoji",
+    "exampleKeyword": "meeting",
+    "exampleEmoji": "🤝",
     "high": "High",
     "medium": "Medium",
     "low": "Low",
@@ -184,7 +190,21 @@
     "pink": "Pink",
     "gray": "Gray",
     "none": "None",
-    "auto": "Auto"
+    "auto": "Auto",
+    "unarchive": "Unarchive",
+    "itemCount": "{count} items",
+    "characterCount": "{count} characters",
+    "closeWithoutAdding": "Close without adding",
+    "adding": "Adding...",
+    "filterByStatus": "Filter by status",
+    "noArchivedItems": "No archived items",
+    "withThisStatus": "with this status",
+    "archived": "Archived",
+    "restore": "Restore",
+    "checklist": "Checklist",
+    "note": "Note",
+    "read": "Read",
+    "removeAll": "Remove All"
   },
   "auth": {
     "loginTitle": "Login",
@@ -347,7 +367,14 @@
     "timeTrackingWithTimer": "Time tracking with a built-in timer",
     "actionCannotBeUndone": "This action cannot be undone. Are you sure you want to convert?",
     "convertAndLoseData": "Convert & Lose Data",
-    "convert": "Convert"
+    "convert": "Convert",
+    "convertToSimpleChecklist": "Convert to simple checklist",
+    "convertToTaskProject": "Convert to task project",
+    "pasteYourList": "Paste your list (one item per line)",
+    "addItems": "Add {count} Items",
+    "itemsWillBeAdded": "{count} items will be added",
+    "itemsNotAddedYet": "Items Not Added Yet",
+    "youHaveItemsThatWillNotBeAdded": "You have {count} items that have not been added. Close without adding or add them now?"
   },
   "tasks": {
     "title": "Tasks",
@@ -445,7 +472,20 @@
     "rebuildLinkIndexes": "Rebuild link indexes to update connection data",
     "rebuildingLinkIndex": "Rebuilding link index...",
     "successfullyRebuiltIndex": "Successfully rebuilt link index",
+    "successfullyRebuiltIndexReload": "Successfully rebuilt link index! The page will reload to show updated connections.",
     "failedToRebuildIndex": "Failed to rebuild link index. Please try again.",
+    "contentLinks": "Content Links",
+    "visualizeRelationships": "Visualize relationships between your notes and checklists",
+    "connectedItems": "Connected Items",
+    "noLinksFound": "No Links Found",
+    "startCreatingInternalLinks": "Start creating internal links in your notes and checklists to see the relationship network here. Use the format",
+    "orFormat": "or",
+    "inYourContent": "in your content.",
+    "highlyConnected": "highly connected",
+    "moderatelyConnected": "moderately connected",
+    "isolated": "isolated",
+    "connection": "connection",
+    "connection_plural": "connections",
     "terminateSessionConfirm": "Are you sure you want to terminate this session?",
     "terminateAllSessionsConfirm": "Are you sure you want to terminate all other sessions?",
     "validationErrorTitle": "Validation Error"
@@ -744,6 +784,8 @@
     "editEmoji": "Edit Emoji",
     "addEmoji": "Add Emoji",
     "rebuildLinkIndexesTitle": "Rebuild link indexes",
+    "noContentYet": "No content yet",
+    "userHasNoContent": "This user hasn't created any checklists or notes.",
     "selectUserToExport": "Select a user to export",
     "deleteUserConfirmAdmin": "Are you sure you want to delete user \"{username}\"? This action cannot be undone.",
     "failedToUnsharePublicItem": "Failed to unshare public item",
@@ -971,7 +1013,8 @@
     "makePublic": "Make Public",
     "failedToCopyUrl": "Failed to copy URL to clipboard",
     "searchUsers": "Search users...",
-    "toggleAllPermissions": "Toggle all permissions"
+    "toggleAllPermissions": "Toggle all permissions",
+    "shareModalTitle": "Share {type}"
   },
   "encryption": {
     "encrypt": "Encrypt",
@@ -1119,7 +1162,8 @@
     "invalidPublicKeyFormat": "Invalid public key format. Must be ASCII-armored PGP key.",
     "invalidPrivateKeyFormat": "Invalid private key format. Must be ASCII-armored PGP key.",
     "keysImportedSuccessfully": "Keys imported successfully",
-    "failedToImportKeys": "Failed to import keys"
+    "failedToImportKeys": "Failed to import keys",
+    "created": "Encryption created"
   },
   "settingsModal": {
     "sessionOnlyPrefix": "These options only apply to the current browser session. For permanent settings please check your",

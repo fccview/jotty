@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { AdminUsers } from "@/app/_components/FeatureComponents/Admin/Parts/AdminUsers";
 import { UserManagementModal } from "@/app/_components/GlobalComponents/Modals/UserModals/UserManagementModal";
 import { User, Checklist, Note } from "@/app/_types";
@@ -18,6 +19,7 @@ interface AdminUsersClientProps {
 }
 
 export function AdminUsersClient({ initialUsers, initialLists, initialDocs, username }: AdminUsersClientProps) {
+  const t = useTranslations();
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
@@ -52,7 +54,7 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
   const handleDeleteUser = async (user: User) => {
     if (
       !confirm(
-        `Are you sure you want to delete user "${user.username}"? This action cannot be undone.`
+        t('admin.deleteUserConfirmation', { username: user.username })
       )
     ) {
       return;

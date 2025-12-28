@@ -455,7 +455,7 @@ export const SubtaskModal = ({
                 <Button
                   onClick={() => handleAddSubtask()}
                   disabled={!newSubtaskText.trim()}
-                  title="Add subtask"
+                  title={t('checklists.addSubItem')}
                 >
                   <Add01Icon className="h-4 w-4" />
                 </Button>

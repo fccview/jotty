@@ -1,13 +1,15 @@
+import { getTranslations } from "next-intl/server";
 import { SessionsTabClient } from "@/app/_components/FeatureComponents/Profile/Parts/SessionsTabClient";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getSessionsForUser, getSessionId } from "@/app/_server/actions/session";
 
 export default async function SessionsPage() {
+    const t = await getTranslations();
     const currentUser = await getCurrentUser();
     const sessionId = await getSessionId();
 
     if (!currentUser) {
-        return <div>Not authenticated</div>;
+        return <div>{t('errors.unauthorized')}</div>;
     }
 
     const sessionsData = await getSessionsForUser(currentUser.username);

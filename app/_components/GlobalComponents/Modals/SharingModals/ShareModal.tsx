@@ -10,6 +10,7 @@ import { PublicShareTab } from "./Parts/PublicShareTabs";
 import { ItemType } from "@/app/_types";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
 import { useTranslations } from "next-intl";
+import { ItemTypes } from "@/app/_types/enums";
 
 export const ShareModal = ({
   isOpen,
@@ -42,7 +43,7 @@ export const ShareModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={`Share ${metadata.type}`}>
+    <Modal isOpen={true} onClose={onClose} title={t('sharing.shareModalTitle', { type: metadata.type === ItemTypes.CHECKLIST ? t("common.checklist") : t("common.note") })}>
       <div className="space-y-4 py-6">
         <h3 className="font-semibold text-lg">{metadata.title}</h3>
         <FeedbackMessage error={error} success={success} />
@@ -66,7 +67,7 @@ export const ShareModal = ({
               onClick={hookResult.handleRemoveAllSharing}
               disabled={hookResult.isLoading}
             >
-              Remove All
+              {t('common.removeAll')}
             </Button>
           )}
         </div>
