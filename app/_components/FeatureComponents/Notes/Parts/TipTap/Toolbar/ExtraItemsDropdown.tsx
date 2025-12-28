@@ -17,6 +17,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "./ToolbarDropdown";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from 'next-intl';
 
 interface ExtraItemsDropdownProps {
   editor: Editor;
@@ -31,6 +32,7 @@ export const ExtraItemsDropdown = ({
   onTableModalOpen,
   onImageSizeModalOpen,
 }: ExtraItemsDropdownProps) => {
+  const t = useTranslations();
   const [isMac, setIsMac] = useState(false);
 
   useEffect(() => {
@@ -73,25 +75,25 @@ export const ExtraItemsDropdown = ({
     () => [
       {
         icon: <Image02Icon className="h-4 w-4" />,
-        label: "Image",
+        label: t("editor.image"),
         command: addImage,
         shortcut: { code: "KeyI", modKey: true, shiftKey: true },
       },
       {
         icon: <Attachment01Icon className="h-4 w-4" />,
-        label: "File",
+        label: t("editor.file"),
         command: onFileModalOpen,
         shortcut: { code: "KeyF", modKey: true, shiftKey: true },
       },
       {
         icon: <LayoutTable01Icon className="h-4 w-4" />,
-        label: "Table",
+        label: t("editor.table"),
         command: onTableModalOpen,
         shortcut: { code: "KeyT", modKey: true, shiftKey: true },
       },
       {
         icon: <PenTool01Icon className="h-4 w-4" />,
-        label: "Highlight",
+        label: t("editor.highlight"),
         command: () => editor.chain().focus().toggleMark("mark").run(),
         isActive: editor.isActive("mark"),
         shortcut: { code: "KeyH", modKey: true, shiftKey: true },
@@ -119,7 +121,7 @@ export const ExtraItemsDropdown = ({
       },
       {
         icon: <SquareArrowDown02Icon className="h-4 w-4" />,
-        label: "Collapsible",
+        label: t("editor.collapsible"),
         command: toggleDetails,
         isActive: editor.isActive("details"),
         shortcut: { code: "KeyD", modKey: true, shiftKey: true },
