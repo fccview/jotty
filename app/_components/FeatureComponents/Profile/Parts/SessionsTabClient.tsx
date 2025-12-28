@@ -27,7 +27,7 @@ export const SessionsTabClient = ({ initialSessions }: SessionsTabClientProps) =
     }>({ id: null, all: false });
 
     const handleTerminateSession = async (sessionId: string) => {
-        if (!window.confirm("Are you sure you want to terminate this session?")) return;
+        if (!window.confirm(t("profile.terminateSessionConfirm"))) return;
 
         setTerminating({ id: sessionId, all: false });
         setError(null);
@@ -43,10 +43,10 @@ export const SessionsTabClient = ({ initialSessions }: SessionsTabClientProps) =
                 setSuccess("Session terminated!");
                 setTimeout(() => setSuccess(null), 3000);
             } else {
-                throw new Error(result.error || "Failed to terminate session");
+                throw new Error(result.error || t("errors.anErrorOccurred"));
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred.");
+            setError(err instanceof Error ? err.message : t("errors.anErrorOccurred"));
         } finally {
             setTerminating({ id: null, all: false });
         }
@@ -67,10 +67,10 @@ export const SessionsTabClient = ({ initialSessions }: SessionsTabClientProps) =
                 setSuccess("All other sessions terminated!");
                 setTimeout(() => setSuccess(null), 3000);
             } else {
-                throw new Error(result.error || "Failed to terminate sessions");
+                throw new Error(result.error || t("errors.anErrorOccurred"));
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : "An error occurred.");
+            setError(err instanceof Error ? err.message : t("errors.anErrorOccurred"));
         } finally {
             setTerminating({ id: null, all: false });
         }

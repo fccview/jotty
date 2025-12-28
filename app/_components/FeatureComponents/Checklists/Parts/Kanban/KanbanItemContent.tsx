@@ -118,7 +118,7 @@ const KanbanItemContentComponent = ({
                   ? [{ id: "archive", name: "Archive Task" }]
                   : []),
                 ...(permissions?.canDelete
-                  ? [{ id: "delete", name: "Delete Task" }]
+                  ? [{ id: "delete", name: t("tasks.deleteTask") }]
                   : []),
               ]}
               onChange={(action) => {

@@ -91,7 +91,7 @@ export const TiptapToolbar = ({
       setSelectedImageHeight(undefined);
       setShowImageSizeModal(true);
     } else {
-      const finalFileName = fileName || url.split("/").pop() || "file";
+      const finalFileName = fileName || url.split("/").pop() || t("defaultFileName");
       const finalMimeType = mimeType || "application/octet-stream";
       editor
         .chain()

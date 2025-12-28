@@ -21,28 +21,28 @@ interface ColorPickerProps {
   targetElement?: HTMLElement;
 }
 
-const PRESET_COLORS = [
-  { name: "Default", value: "" },
-  { name: "Red", value: "#ef4444" },
-  { name: "Orange", value: "#f97316" },
-  { name: "Yellow", value: "#eab308" },
-  { name: "Green", value: "#22c55e" },
-  { name: "Blue", value: "#3b82f6" },
-  { name: "Purple", value: "#a855f7" },
-  { name: "Pink", value: "#ec4899" },
-  { name: "Gray", value: "#6b7280" },
+const PRESET_COLORS = (t: any): { name: string; value: string }[] => [
+  { name: t("settings.default"), value: "" },
+  { name: t("common.red"), value: "#ef4444" },
+  { name: t("common.orange"), value: "#f97316" },
+  { name: t("common.yellow"), value: "#eab308" },
+  { name: t("common.green"), value: "#22c55e" },
+  { name: t("common.blue"), value: "#3b82f6" },
+  { name: t("common.purple"), value: "#a855f7" },
+  { name: t("common.pink"), value: "#ec4899" },
+  { name: t("common.gray"), value: "#6b7280" },
 ];
 
-const HIGHLIGHT_COLORS = [
-  { name: "None", value: "" },
-  { name: "Yellow", value: "#fef08a" },
-  { name: "Green", value: "#bbf7d0" },
-  { name: "Blue", value: "#bfdbfe" },
-  { name: "Purple", value: "#e9d5ff" },
-  { name: "Pink", value: "#fce7f3" },
-  { name: "Orange", value: "#fed7aa" },
-  { name: "Red", value: "#fecaca" },
-  { name: "Gray", value: "#f3f4f6" },
+const HIGHLIGHT_COLORS = (t: any): { name: string; value: string }[] => [
+  { name: t("common.none"), value: "" },
+  { name: t("common.yellow"), value: "#fef08a" },
+  { name: t("common.green"), value: "#bbf7d0" },
+  { name: t("common.blue"), value: "#bfdbfe" },
+  { name: t("common.purple"), value: "#e9d5ff" },
+  { name: t("common.pink"), value: "#fce7f3" },
+  { name: t("common.orange"), value: "#fed7aa" },
+  { name: t("common.red"), value: "#fecaca" },
+  { name: t("common.gray"), value: "#f3f4f6" },
 ];
 
 export const ColorPicker = ({
@@ -56,10 +56,9 @@ export const ColorPicker = ({
 }: ColorPickerProps) => {
   const t = useTranslations();
   const [customColor, setCustomColor] = useState("");
-  const [isCustomMode, setIsCustomMode] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
-  const colors = type === "text" ? PRESET_COLORS : HIGHLIGHT_COLORS;
+  const colors = type === "text" ? PRESET_COLORS(t) : HIGHLIGHT_COLORS(t);
 
   useEffect(() => {
     if (!isVisible || !targetElement || !pickerRef.current) return;

@@ -26,6 +26,7 @@ import { MarkdownEditor } from "@/app/_components/FeatureComponents/Notes/Parts/
 import { VisualEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/VisualEditor";
 import { BubbleMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/FloatingMenu/BubbleMenu";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
+import { useTranslations } from "next-intl";
 
 type TiptapEditorProps = {
   content: string;
@@ -47,6 +48,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
   ({ content, onChange, tableSyntax, notes, checklists }, ref) => {
     const { user, appSettings } = useAppMode();
     const { compactMode } = useSettings();
+    const t = useTranslations();
 
     const editorSettings = appSettings?.editor || {
       enableSlashCommands: true,
@@ -116,7 +118,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           notes: notes || [],
           checklists: checklists || [],
           username: user?.username || "",
-        }
+        },
+        t
       ),
       content: "",
       onUpdate: ({ editor }) => {

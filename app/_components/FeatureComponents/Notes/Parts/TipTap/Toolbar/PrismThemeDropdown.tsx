@@ -10,15 +10,15 @@ import { useToast } from "@/app/_providers/ToastProvider";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-const themeOptions: { id: MarkdownTheme; name: string }[] = [
-    { id: "prism", name: "Default" },
-    { id: "prism-dark", name: "Dark" },
-    { id: "prism-funky", name: "Funky" },
-    { id: "prism-okaidia", name: "Okaidia" },
-    { id: "prism-tomorrow", name: "Tomorrow" },
-    { id: "prism-twilight", name: "Twilight" },
-    { id: "prism-coy", name: "Coy" },
-    { id: "prism-solarizedlight", name: "Solarized Light" },
+const themeOptions = (t: any): { id: MarkdownTheme; name: string }[] => [
+    { id: "prism", name: t("settings.default") },
+    { id: "prism-dark", name: t("settings.dark") },
+    { id: "prism-funky", name: t("settings.funky") },
+    { id: "prism-okaidia", name: t("settings.okaidia") },
+    { id: "prism-tomorrow", name: t("settings.tomorrow") },
+    { id: "prism-twilight", name: t("settings.twilight") },
+    { id: "prism-coy", name: t("settings.coy") },
+    { id: "prism-solarizedlight", name: t("settings.solarizedLight") },
 ];
 
 interface PrismThemeDropdownProps {
@@ -46,21 +46,21 @@ export const PrismThemeDropdown = ({ isMarkdownMode }: PrismThemeDropdownProps) 
                 setUser({ ...user, ...result.data.user });
                 showToast({
                     type: "success",
-                    title: "Theme Updated",
+                    title: t("editor.themeUpdated"),
                     message: "Theme updated successfully",
                 });
                 router.refresh();
             } else {
                 showToast({
                     type: "error",
-                    title: "Update Failed",
+                    title: t("editor.updateFailed"),
                     message: result.error || "Failed to update theme",
                 });
             }
         } catch (error) {
             showToast({
                 type: "error",
-                title: "Update Failed",
+                title: t("editor.updateFailed"),
                 message: "Failed to update theme",
             });
         }
@@ -82,7 +82,7 @@ export const PrismThemeDropdown = ({ isMarkdownMode }: PrismThemeDropdownProps) 
     return (
         <ToolbarDropdown trigger={trigger} direction="right">
             <div className="flex-1 overflow-y-auto max-h-[300px]">
-                {themeOptions.map((theme) => (
+                {themeOptions(t).map((theme) => (
                     <button
                         key={theme.id}
                         className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent text-sm ${currentTheme === theme.id ? "bg-accent" : ""

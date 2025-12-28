@@ -173,7 +173,7 @@ export const UserPreferencesTab = ({ noteCategories }: SettingsTabProps) => {
       }
       showToast({
         type: "error",
-        title: "Validation Error",
+        title: t("errors.validationError"),
         message: "Please fix the validation errors before saving.",
       });
       return;

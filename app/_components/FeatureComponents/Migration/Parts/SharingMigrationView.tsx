@@ -211,7 +211,7 @@ export const SharingMigrationView = ({
               <p className="text-sm">
                 {migrationResult.migrated
                   ? "Your sharing data has been successfully migrated."
-                  : "No migration was needed - your system is already up to date."}
+                  : t("migration.noMigrationNeeded")}
               </p>
             </InfoCard>
 

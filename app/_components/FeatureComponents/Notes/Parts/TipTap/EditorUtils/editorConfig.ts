@@ -53,7 +53,8 @@ interface EditorData {
 export const createEditorExtensions = (
   callbacks: OverlayCallbacks,
   editorSettings?: EditorSettings,
-  editorData?: EditorData
+  editorData?: EditorData,
+  t?: (key: string) => string
 ) => {
   const settings = editorSettings || {
     enableSlashCommands: true,
@@ -111,6 +112,7 @@ export const createEditorExtensions = (
       username: editorData?.username || "",
       enableBilateralLinks: settings.enableBilateralLinks,
       enableSlashCommands: settings.enableSlashCommands,
+      t: t || ((key: string) => key),
     }),
     InternalLink,
     TextUnderlineIcon,

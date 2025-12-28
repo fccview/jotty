@@ -44,58 +44,58 @@ let atMentionData = {
   username: "",
 };
 
-const slashCommands: SlashCommandItem[] = [
+const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
   {
-    title: "Heading 1",
-    description: "Big section heading",
+    title: t("editor.heading1"),
+    description: t("editor.bigSectionHeading"),
     icon: <Heading01Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).setHeading({ level: 1 }).run();
     },
   },
   {
-    title: "Heading 2",
-    description: "Medium section heading",
+    title: t("editor.heading2"),
+    description: t("editor.mediumSectionHeading"),
     icon: <Heading02Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).setHeading({ level: 2 }).run();
     },
   },
   {
-    title: "Bullet List",
-    description: "Create a bulleted list",
+    title: t("editor.bulletList"),
+    description: t("editor.createBulletedList"),
     icon: <LeftToRightListBulletIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleBulletList().run();
     },
   },
   {
-    title: "Task List",
-    description: "Create a task list",
+    title: t("editor.taskList"),
+    description: t("editor.createTaskList"),
     icon: <CheckmarkSquare04Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleTaskList().run();
     },
   },
   {
-    title: "Code Block",
-    description: "Create a code block",
+    title: t("editor.codeBlock"),
+    description: t("editor.createCodeBlock"),
     icon: <SourceCodeIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
     },
   },
   {
-    title: "Quote",
-    description: "Create a blockquote",
+    title: t("editor.quote"),
+    description: t("editor.createBlockquote"),
     icon: <QuoteUpIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleBlockquote().run();
     },
   },
   {
-    title: "Table",
-    description: "Insert a table",
+    title: t("editor.table"),
+    description: t("editor.insertATable"),
     icon: <LayoutTable01Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor
@@ -107,8 +107,8 @@ const slashCommands: SlashCommandItem[] = [
     },
   },
   {
-    title: "Image",
-    description: "Insert an image",
+    title: t("editor.image"),
+    description: t("editor.insertAnImage"),
     icon: <Image02Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).run();
@@ -119,13 +119,13 @@ const slashCommands: SlashCommandItem[] = [
     },
   },
   {
-    title: "File",
-    description: "Attach a file",
+    title: t("editor.file"),
+    description: t("editor.attachFile"),
     icon: <Attachment01Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).run();
       const url = window.prompt("File URL");
-      const fileName = window.prompt("File name") || "file";
+      const fileName = window.prompt("File name") || t("editor.defaultFileName");
       if (url) {
         editor
           .chain()
@@ -141,8 +141,8 @@ const slashCommands: SlashCommandItem[] = [
     },
   },
   {
-    title: "Collapsible",
-    description: "Create a collapsible section",
+    title: t("editor.collapsible"),
+    description: t("editor.createCollapsibleSection"),
     icon: <SquareArrowDown02Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       const selectedText = editor.state.doc.textBetween(
@@ -159,8 +159,8 @@ const slashCommands: SlashCommandItem[] = [
     },
   },
   {
-    title: "Mermaid Diagram",
-    description: "Create a Mermaid diagram",
+    title: t("editor.mermaidDiagram"),
+    description: t("editor.createMermaidDiagram"),
     icon: <SharedWifiIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       const defaultMermaid = `graph TD
@@ -178,16 +178,16 @@ const slashCommands: SlashCommandItem[] = [
     },
   },
   {
-    title: "Draw.io Diagram",
-    description: "Create a visual diagram",
+    title: t("editor.drawioDiagram"),
+    description: t("editor.createVisualDiagram"),
     icon: <DrawingModeIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).insertDrawIo().run();
     },
   },
   {
-    title: "Excalidraw Diagram",
-    description: "Create an Excalidraw diagram",
+    title: t("editor.excalidrawDiagram"),
+    description: t("editor.createExcalidrawDiagram"),
     icon: <PencilIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).insertExcalidraw().run();
@@ -202,6 +202,7 @@ export const SlashCommands = Extension.create({
     return {
       enableBilateralLinks: true,
       enableSlashCommands: true,
+      t: (key: string) => key,
       suggestion: {
         char: "/",
         command: ({
@@ -215,7 +216,9 @@ export const SlashCommands = Extension.create({
         }) => {
           props.command({ editor, range });
         },
-        items: ({ query }: { query: string }) => {
+        items: ({ query, editor }: { query: string; editor: any }) => {
+          const t = editor?.storage?.slashCommands?.t || ((key: string) => key);
+          const slashCommands = getSlashCommands(t);
           return slashCommands.filter(
             (item) =>
               item.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -428,6 +431,12 @@ export const SlashCommands = Extension.create({
           };
         },
       },
+    };
+  },
+
+  addStorage() {
+    return {
+      t: this.options.t,
     };
   },
 

@@ -215,11 +215,11 @@ const NestedChecklistItemComponent = ({
   const isChild = level > 0;
 
   const dropdownOptions = [
-    ...(onEdit ? [{ id: "edit", name: "Edit", icon: PencilEdit02Icon }] : []),
+    ...(onEdit ? [{ id: "edit", name: t("editor.edit"), icon: PencilEdit02Icon }] : []),
     ...(onAddSubItem
       ? [{ id: "add-sub-item", name: "Add sub-item", icon: Add01Icon }]
       : []),
-    { id: "delete", name: "Delete", icon: Delete03Icon },
+    { id: "delete", name: t("common.delete"), icon: Delete03Icon },
   ];
 
   useEffect(() => {

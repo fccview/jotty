@@ -43,7 +43,7 @@ export const EditNoteModal = ({
     const fetchNote = async () => {
       const note = await getNoteById(
         initialNote.id,
-        initialNote.category || "Uncategorized",
+        initialNote.category || t("notes.uncategorized"),
         user?.username || ""
       );
       const parsedNote = parseNoteContent(
@@ -94,7 +94,7 @@ export const EditNoteModal = ({
       const updatedNote = result.data;
 
       const categoryPath = buildCategoryPath(
-        updatedNote.category || "Uncategorized",
+        updatedNote.category || t("notes.uncategorized"),
         updatedNote.id
       );
 
@@ -136,7 +136,7 @@ export const EditNoteModal = ({
             <CategoryTreeSelector
               categories={categories}
               selectedCategory={
-                category !== ARCHIVED_DIR_NAME ? category : "Uncategorized"
+                category !== ARCHIVED_DIR_NAME ? category : t("notes.uncategorized")
               }
               onCategorySelect={setCategory}
               placeholder={t('common.selectCategory')}

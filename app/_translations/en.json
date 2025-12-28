@@ -175,6 +175,15 @@
     "viewOnGithub": "View on GitHub",
     "newVersion": "New version: {version}",
     "clickToSeeReleaseNotes": "Click to see release notes {appName}",
+    "red": "Red",
+    "orange": "Orange",
+    "yellow": "Yellow",
+    "green": "Green",
+    "blue": "Blue",
+    "purple": "Purple",
+    "pink": "Pink",
+    "gray": "Gray",
+    "none": "None",
     "auto": "Auto"
   },
   "auth": {

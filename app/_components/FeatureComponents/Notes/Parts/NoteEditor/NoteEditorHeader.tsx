@@ -196,7 +196,7 @@ export const NoteEditorHeader = ({
 
     if (result.success && result.data) {
       const categoryPath = buildCategoryPath(
-        result.data.category || "Uncategorized",
+        result.data.category || t("notes.uncategorized"),
         result.data.id
       );
       const newPath = `/note/${categoryPath}`;
@@ -225,7 +225,7 @@ export const NoteEditorHeader = ({
 
     if (result.success && result.data) {
       const categoryPath = buildCategoryPath(
-        result.data.category || "Uncategorized",
+        result.data.category || t("notes.uncategorized"),
         result.data.id
       );
       const newPath = `/note/${categoryPath}`;
@@ -292,7 +292,7 @@ export const NoteEditorHeader = ({
                       title={`Copy ID: ${note?.uuid
                         ? note?.uuid
                         : `${encodeCategoryPath(
-                          note?.category || "Uncategorized"
+                          note?.category || t("notes.uncategorized")
                         )}/${note?.id}`
                         }`}
                     >
@@ -321,7 +321,7 @@ export const NoteEditorHeader = ({
                       </span>
                     )}
                   </div>
-                  {category && category !== "Uncategorized" && (
+                  {category && category !== t("notes.uncategorized") && (
                     <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
                       <Folder02Icon className="h-3 w-3" />
                       <span>{category}</span>
@@ -436,7 +436,7 @@ export const NoteEditorHeader = ({
                         ? [
                           {
                             type: "item" as const,
-                            label: "Share",
+                            label: t("sharing.share"),
                             icon: <Share08Icon className="h-4 w-4" />,
                             onClick: () => setShowShareModal(true),
                           },
@@ -456,7 +456,7 @@ export const NoteEditorHeader = ({
                         ? [
                           {
                             type: "item" as const,
-                            label: !isInViewMode ? "View" : "Hide",
+                            label: !isInViewMode ? t("settings.view") : "Hide",
                             icon: !isInViewMode ? <ViewIcon className="h-4 w-4" /> : <ViewOffSlashIcon className="h-4 w-4" />,
                             onClick: () => {
                               if (!isInViewMode) {
@@ -469,7 +469,7 @@ export const NoteEditorHeader = ({
                           },
                           ...(!isInViewMode && permissions?.canEdit ? [{
                             type: "item" as const,
-                            label: "Decrypt",
+                            label: t("encryption.decrypt"),
                             icon: <LockKeyIcon className="h-4 w-4" />,
                             onClick: () => {
                               setEncryptionModalMode("decrypt");
@@ -480,7 +480,7 @@ export const NoteEditorHeader = ({
                         : [
                           ...(permissions?.canEdit ? [{
                             type: "item" as const,
-                            label: "Encrypt Note",
+                            label: t("encryption.encryptNote"),
                             icon: <LockKeyIcon className="h-4 w-4" />,
                             onClick: () => {
                               setEncryptionModalMode("encrypt");
@@ -509,7 +509,7 @@ export const NoteEditorHeader = ({
                         ? [
                           {
                             type: "item" as const,
-                            label: "Archive",
+                            label: t("profile.archiveTab"),
                             icon: <Archive02Icon className="h-4 w-4" />,
                             onClick: handleArchive,
                           },
@@ -519,7 +519,7 @@ export const NoteEditorHeader = ({
                         ? [
                           {
                             type: "item" as const,
-                            label: "Delete",
+                            label: t("common.delete"),
                             icon: <Delete03Icon className="h-4 w-4" />,
                             onClick: handleDelete,
                             variant: "destructive" as const,

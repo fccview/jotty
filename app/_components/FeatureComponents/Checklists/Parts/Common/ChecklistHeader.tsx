@@ -204,7 +204,7 @@ export const ChecklistHeader = ({
                     ? [
                         {
                           type: "item" as const,
-                          label: "Archive",
+                          label: t("profile.archiveTab"),
                           icon: <Archive02Icon className="h-4 w-4" />,
                           onClick: onArchive,
                         },
@@ -214,7 +214,7 @@ export const ChecklistHeader = ({
                     ? [
                         {
                           type: "item" as const,
-                          label: "Share",
+                          label: t("sharing.share"),
                           icon: <Share08Icon className="h-4 w-4" />,
                           onClick: onShare,
                         },
@@ -224,7 +224,7 @@ export const ChecklistHeader = ({
                     ? [
                         {
                           type: "item" as const,
-                          label: "Edit",
+                          label: t("editor.edit"),
                           icon: <PencilEdit02Icon className="h-4 w-4" />,
                           onClick: onEdit,
                           className: "lg:!hidden",
@@ -235,7 +235,7 @@ export const ChecklistHeader = ({
                     ? [
                         {
                           type: "item" as const,
-                          label: "Delete",
+                          label: t("common.delete"),
                           icon: <Delete03Icon className="h-4 w-4" />,
                           onClick: onDelete,
                           variant: "destructive" as const,

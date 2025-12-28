@@ -9,8 +9,8 @@ type FontFamilyDropdownProps = {
   editor: Editor;
 };
 
-const allFonts = [
-  { name: "Default", value: "" },
+const allFonts = (t: any): { name: string; value: string }[] => [
+  { name: t("settings.default"), value: "" },
   { name: "American Typewriter", value: "'American Typewriter', serif" },
   { name: "Andale Mono", value: "'Andale Mono', monospace" },
   { name: "Arial", value: "Arial, sans-serif" },
@@ -131,11 +131,11 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
 
   const filteredFonts = useMemo(() => {
     if (!searchTerm.trim()) {
-      return allFonts;
+      return allFonts(t);
     }
 
     const searchLower = searchTerm.toLowerCase();
-    return allFonts.filter((font) =>
+    return allFonts(t).filter((font) =>
       font.name.toLowerCase().includes(searchLower)
     );
   }, [searchTerm]);

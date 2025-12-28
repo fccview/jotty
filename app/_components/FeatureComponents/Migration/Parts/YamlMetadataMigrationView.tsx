@@ -364,7 +364,7 @@ checklistType: task|simple
                 <RefreshIcon
                   className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")}
                 />
-                {isMigrating ? "Migrating..." : "Start Migration"}
+                {isMigrating ? t("migration.migrating") : t("migration.startMigration")}
               </Button>
             </div>
           </>
@@ -382,7 +382,7 @@ checklistType: task|simple
               }
               title={
                 migrationResult.migrated
-                  ? "Migration Successful"
+                  ? t("migration.migrationSuccessful")
                   : "Migration Not Needed"
               }
               variant={InfoCardVariant.DEFAULT}
@@ -390,7 +390,7 @@ checklistType: task|simple
               <p className="text-sm">
                 {migrationResult.migrated
                   ? "Your documents have been successfully migrated to use YAML metadata."
-                  : "No migration was needed - your system is already up to date."}
+                  : t("migration.noMigrationNeeded")}
               </p>
             </InfoCard>
 

@@ -214,7 +214,7 @@ export const StylingTab = () => {
                               return num.toString(16).padStart(2, "0");
                             })
                             .join("")}`
-                          : "#000000"
+                          : t("editor.colorPlaceholder")
                       }
                       onChange={(e) => {
                         const hex = e.target.value;

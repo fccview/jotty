@@ -54,11 +54,7 @@ const ICON_MAP: Record<string, any> = {
   LegacyLogo,
 };
 
-export const BUILT_IN_THEMES: Array<{
-  id: string;
-  name: string;
-  icon: any;
-}> = [
+export const BUILT_IN_THEMES = [
   { id: "system" as const, name: "System", icon: LaptopIcon },
   { id: "light" as const, name: "Light", icon: Sun03Icon },
   { id: "dark" as const, name: "Dark", icon: GibbousMoonIcon },
@@ -90,7 +86,7 @@ export const BUILT_IN_THEMES: Array<{
   { id: "solarized-dark" as const, name: "Solarized Dark", icon: Leaf04Icon },
 ];
 
-export const getAllThemes = async () => {
+export const getAllThemes = async (t?: (key: string) => string) => {
   const customConfig = await loadCustomThemes();
   const customThemes = processCustomThemes(customConfig);
 

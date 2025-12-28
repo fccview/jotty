@@ -5,8 +5,7 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
 import { User } from "../_types";
-
-const themeIDs = BUILT_IN_THEMES.map((theme) => theme.id);
+import { useTranslations } from "next-intl";
 
 export const ThemeProvider = ({
   children,
@@ -16,10 +15,13 @@ export const ThemeProvider = ({
   user: Partial<User>;
 }) => {
   const { isRwMarkable } = useAppMode();
+  const t = useTranslations();
   const { theme: localStorageTheme, getResolvedTheme } = useSettings();
   const [resolvedTheme, setResolvedTheme] = useState<string>(() =>
     getResolvedTheme(isRwMarkable, user.preferredTheme)
   );
+
+  const themeIDs = BUILT_IN_THEMES.map((theme) => theme.id);
 
   const [customThemeColors, setCustomThemeColors] = useState<{
     [key: string]: any;
