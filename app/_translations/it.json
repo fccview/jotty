@@ -1383,6 +1383,7 @@
     "customisations": "Personalizzazioni",
     "docker": "Docker",
     "envVariables": "Variabili d'ambiente",
+    "mfa": "MFA",
     "pwa": "PWA",
     "encryption": "Crittografia",
     "sso": "SSO",
