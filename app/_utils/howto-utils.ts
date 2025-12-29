@@ -97,7 +97,6 @@ export const getHowtoFilePath = (filename: string): string => {
   return path.join(HOWTO_DIR, filename);
 };
 
-// Validate guide exists
 export const isValidHowtoGuide = (id: string, t: any): boolean => {
   return getHowtoGuides(t).some((guide) => guide.id === id);
 };
