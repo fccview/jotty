@@ -9,11 +9,13 @@ import {
   AlertCircleIcon,
   SquareLock01Icon,
   Orbit01Icon,
+  FileSecurityIcon,
 } from "hugeicons-react";
 import { useUserManagementModal } from "@/app/_hooks/useUserManagementModal";
 import { User as UserType } from "@/app/_types";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { Logo } from "../../Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
 
@@ -107,6 +109,34 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
                 disabled={state.isLoading}
                 isEditMode
               />
+            )}
+            {user?.mfaEnabled && (
+              <>
+                <div className="flex items-center justify-between">
+                  <label htmlFor="disableMfa" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <FileSecurityIcon className="h-4 w-4" />
+                    {t('mfa.disableMfaForUser')}
+                  </label>
+                  <Toggle
+                    id="disableMfa"
+                    checked={state.disableMfa}
+                    onCheckedChange={setters.setDisableMfa}
+                    disabled={state.isLoading}
+                  />
+                </div>
+                {state.disableMfa && (
+                  <Input
+                    id="recovery-code"
+                    name="recovery-code"
+                    label={t('mfa.recoveryCode')}
+                    type="text"
+                    value={state.recoveryCode}
+                    onChange={(e) => setters.setRecoveryCode(e.target.value)}
+                    placeholder="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                    disabled={state.isLoading}
+                  />
+                )}
+              </>
             )}
           </>
         )}

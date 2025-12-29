@@ -23,6 +23,7 @@ interface InputProps {
   min?: string;
   max?: string;
   hideEye?: boolean;
+  maxLength?: number;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -48,6 +49,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       min,
       max,
       hideEye,
+      maxLength,
       ...props
     },
     ref
@@ -78,6 +80,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             autoFocus={autoFocus}
             min={min}
             max={max}
+            maxLength={maxLength}
             {...props}
             className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none ${isPasswordType ? "pr-11" : ""} ${className}`}
           />

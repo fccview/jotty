@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 interface DynamicLogoProps {
   className?: string;
   size?: "16x16" | "32x32" | "180x180";
+  pathClassName?: string;
 }
 
 export const DynamicLogo = ({

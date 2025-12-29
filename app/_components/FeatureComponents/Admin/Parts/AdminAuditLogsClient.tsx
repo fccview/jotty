@@ -95,7 +95,7 @@ export const AdminAuditLogsClient = ({
             if (result.success) {
                 showToast({
                     type: "success",
-                    title: t("auditLogs.cleanupSuccess"),
+                    title: t("common.success"),
                     message: t("auditLogs.cleanupSuccessMessage", {
                         count: result.deletedFiles
                     })
@@ -121,7 +121,7 @@ export const AdminAuditLogsClient = ({
         }
     };
 
-    const handleCleanup = () => {
+    const handleDeleteAll = () => {
         setShowDeleteModal(true);
     };
 
@@ -133,7 +133,7 @@ export const AdminAuditLogsClient = ({
             if (result.success) {
                 showToast({
                     type: "success",
-                    title: t("auditLogs.cleanupSuccess"),
+                    title: t("common.success"),
                     message: t("auditLogs.cleanupSuccessMessage", {
                         count: result.deletedFiles
                     })
@@ -255,7 +255,7 @@ export const AdminAuditLogsClient = ({
                             variant="destructive"
                             size="sm"
                             className="w-full sm:w-auto"
-                            onClick={handleCleanup}
+                            onClick={handleDeleteAll}
                             disabled={isCleaning}
                         >
                             {isCleaning ? (
@@ -263,7 +263,7 @@ export const AdminAuditLogsClient = ({
                             ) : (
                                 <Delete03Icon className="h-4 w-4 mr-2" />
                             )}
-                            {t("auditLogs.cleanupOldLogs")}
+                            {t("auditLogs.deleteAllLogsButton")}
                         </Button>
                     </div>
                 </div>

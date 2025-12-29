@@ -69,7 +69,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
           <div className="flex-1">
             <div className="font-medium">{t('editor.mermaidDiagram')}</div>
             <div className="text-xs text-muted-foreground">
-              Text-based flowcharts & diagrams
+              {t('editor.mermaidDescription')}
             </div>
           </div>
         </button>
@@ -84,7 +84,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
           <div className="flex-1">
             <div className="font-medium">{t('editor.drawioDiagram')}</div>
             <div className="text-xs text-muted-foreground">
-              Visual diagram editor
+              {t('editor.drawioDescription')}
             </div>
           </div>
         </button>
@@ -99,7 +99,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
           <div className="flex-1">
             <div className="font-medium">{t('editor.excalidrawDiagram')}</div>
             <div className="text-xs text-muted-foreground">
-              Sketch-style diagram editor
+              {t('editor.excalidrawDescription')}
             </div>
           </div>
         </button>

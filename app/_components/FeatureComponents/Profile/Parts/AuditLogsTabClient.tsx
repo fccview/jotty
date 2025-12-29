@@ -95,7 +95,7 @@ export const AuditLogsTabClient = ({
             if (result.success) {
                 showToast({
                     type: "success",
-                    title: t("auditLogs.cleanupSuccess"),
+                    title: t("common.success"),
                     message: t("auditLogs.cleanupSuccessMessage", {
                         count: result.deletedFiles
                     })

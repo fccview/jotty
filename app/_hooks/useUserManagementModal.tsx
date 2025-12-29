@@ -6,6 +6,7 @@ import {
   deleteUser,
   updateUser,
 } from "@/app/_server/actions/users";
+import { adminDisableUserMfa } from "@/app/_server/actions/mfa";
 import { useToast } from "@/app/_providers/ToastProvider";
 
 interface UserManagementModalProps {
@@ -28,9 +29,11 @@ export const useUserManagementModal = ({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
+  const [disableMfa, setDisableMfa] = useState(false);
+  const [recoveryCode, setRecoveryCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { showToast } = useToast();
+  const { showToast} = useToast();
   const t = useTranslations();
 
   useEffect(() => {
@@ -45,6 +48,8 @@ export const useUserManagementModal = ({
       setPassword("");
       setConfirmPassword("");
       setChangePassword(false);
+      setDisableMfa(false);
+      setRecoveryCode("");
       setError(null);
     }
   }, [isOpen, mode, user]);
@@ -68,9 +73,21 @@ export const useUserManagementModal = ({
       return;
     }
 
+    if (disableMfa && !recoveryCode.trim()) {
+      setError(t("mfa.recoveryCodeRequired"));
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
+      if (mode === "edit" && disableMfa && user) {
+        const mfaResult = await adminDisableUserMfa(user.username, recoveryCode);
+        if (!mfaResult.success) {
+          throw new Error(mfaResult.error || t("mfa.failedToDisableMfa"));
+        }
+      }
+
       let result;
       if (mode === "add") {
         const formData = new FormData();
@@ -145,6 +162,8 @@ export const useUserManagementModal = ({
       confirmPassword,
       isAdmin,
       changePassword,
+      disableMfa,
+      recoveryCode,
       isLoading,
       error,
     },
@@ -154,6 +173,8 @@ export const useUserManagementModal = ({
       setConfirmPassword,
       setIsAdmin,
       setChangePassword,
+      setDisableMfa,
+      setRecoveryCode,
     },
     handlers: { handleSubmit, handleDelete },
   };

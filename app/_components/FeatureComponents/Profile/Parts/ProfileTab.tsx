@@ -8,6 +8,7 @@ import {
   ViewIcon,
   ViewOffSlashIcon,
   RefreshIcon,
+  FileSecurityIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { User as UserType, AppSettings } from "@/app/_types";
@@ -25,6 +26,9 @@ import { User as UserData } from "@/app/_types";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
+import { MfaSetupModal } from "@/app/_components/GlobalComponents/Modals/MfaModals/MfaSetupModal";
+import { MfaDisableModal } from "@/app/_components/GlobalComponents/Modals/MfaModals/MfaDisableModal";
+import { MfaRegenerateRecoveryCodeModal } from "@/app/_components/GlobalComponents/Modals/MfaModals/MfaRegenerateRecoveryCodeModal";
 
 interface ProfileTabProps {
   user: UserData | null;
@@ -55,6 +59,10 @@ export const ProfileTab = ({
   const [showApiKey, setShowApiKey] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasFormChanged, setHasFormChanged] = useState(false);
+  const [showMfaSetupModal, setShowMfaSetupModal] = useState(false);
+  const [showMfaDisableModal, setShowMfaDisableModal] = useState(false);
+  const [showMfaRegenerateModal, setShowMfaRegenerateModal] = useState(false);
+  const [mfaEnabled, setMfaEnabled] = useState(user?.mfaEnabled || false);
 
   const { isDemoMode } = useAppMode();
   const { formatDateString } = usePreferredDateTime();
@@ -62,6 +70,7 @@ export const ProfileTab = ({
   useEffect(() => {
     setEditedUsername(user?.username || "");
     setAvatarUrl(user?.avatarUrl);
+    setMfaEnabled(user?.mfaEnabled || false);
     setHasFormChanged(false);
   }, [user]);
 
@@ -127,6 +136,28 @@ export const ProfileTab = ({
         console.error("Failed to copy API key:", error);
       }
     }
+  };
+
+  const handleMfaToggle = () => {
+    if (mfaEnabled) {
+      setShowMfaDisableModal(true);
+    } else {
+      setShowMfaSetupModal(true);
+    }
+  };
+
+  const handleMfaSetupSuccess = () => {
+    setMfaEnabled(true);
+    setShowMfaSetupModal(false);
+    setSuccess(t("mfa.mfaEnabledSuccess"));
+    setTimeout(() => setSuccess(null), 3000);
+  };
+
+  const handleMfaDisableSuccess = () => {
+    setMfaEnabled(false);
+    setShowMfaDisableModal(false);
+    setSuccess(t("mfa.mfaDisabledSuccess"));
+    setTimeout(() => setSuccess(null), 3000);
   };
 
   const handleSaveProfile = async () => {
@@ -352,6 +383,69 @@ export const ProfileTab = ({
             </div>
           </div>
 
+          <div className="space-y-4">
+            <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-jotty">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-primary/10 rounded-jotty">
+                  <FileSecurityIcon className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium">{t("mfa.title")}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {mfaEnabled ? t("mfa.enabled") : t("mfa.disabled")}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 md:mt-0">
+                {isDemoMode ? (
+                  <span className="text-sm text-muted-foreground">
+                    {t("settings.disabledInDemoMode")}
+                  </span>
+                ) : (
+                  <Button
+                    variant={mfaEnabled ? "destructive" : "default"}
+                    onClick={handleMfaToggle}
+                  >
+                    {mfaEnabled ? t("mfa.disable") : t("mfa.enable")}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {mfaEnabled && (
+            <div className="space-y-4">
+              <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-jotty">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-primary/10 rounded-jotty">
+                    <LockKeyIcon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{t("mfa.recoveryCodeTitle")}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {t("mfa.recoveryCodeProfileDescription")}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-2 md:mt-0">
+                  {isDemoMode ? (
+                    <span className="text-sm text-muted-foreground">
+                      {t("settings.disabledInDemoMode")}
+                    </span>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowMfaRegenerateModal(true)}
+                    >
+                      <RefreshIcon className="h-4 w-4 mr-2" />
+                      {t("mfa.regenerateRecoveryCode")}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <FormWrapper
             title={t('common.profile')}
             action={
@@ -433,6 +527,25 @@ export const ProfileTab = ({
           </FormWrapper>
         </div>
       </div>
+
+      <MfaSetupModal
+        isOpen={showMfaSetupModal}
+        onClose={() => setShowMfaSetupModal(false)}
+        onSuccess={handleMfaSetupSuccess}
+        username={user?.username || ""}
+      />
+
+      <MfaDisableModal
+        isOpen={showMfaDisableModal}
+        onClose={() => setShowMfaDisableModal(false)}
+        onSuccess={handleMfaDisableSuccess}
+      />
+
+      <MfaRegenerateRecoveryCodeModal
+        isOpen={showMfaRegenerateModal}
+        onClose={() => setShowMfaRegenerateModal(false)}
+        onSuccess={() => setShowMfaRegenerateModal(false)}
+      />
     </div>
   );
 };

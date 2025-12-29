@@ -140,6 +140,30 @@ export const login = async (formData: FormData) => {
     return { error: "Invalid username or password" };
   }
 
+  if (user.mfaEnabled) {
+    const pendingSessionId = createHash("sha256")
+      .update(`pending-mfa-${Math.random().toString()}`)
+      .digest("hex");
+
+    const cookieName =
+      process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+        ? "__Host-mfa-pending"
+        : "mfa-pending";
+
+    cookies().set(cookieName, pendingSessionId, {
+      httpOnly: true,
+      secure:
+        process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
+      sameSite: "lax",
+      maxAge: 10 * 60,
+      path: "/",
+    });
+
+    await createSession(pendingSessionId, user.username, "pending-mfa");
+
+    redirect("/auth/verify-mfa");
+  }
+
   const userIndex = users.findIndex(
     (u: User) => u.username.toLowerCase() === username.toLowerCase()
   );
@@ -209,4 +233,109 @@ export const logout = async () => {
   } else {
     redirect("/auth/login");
   }
+};
+
+export const verifyMfaLogin = async (formData: FormData) => {
+  const code = formData.get("code") as string;
+  const useBackupCode = formData.get("useBackupCode") === "true";
+
+  if (!code) {
+    return { error: "Code is required" };
+  }
+
+  const pendingCookieName =
+    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      ? "__Host-mfa-pending"
+      : "mfa-pending";
+
+  const pendingSessionId = cookies().get(pendingCookieName)?.value;
+
+  if (!pendingSessionId) {
+    return { error: "No pending MFA session" };
+  }
+
+  const sessions = await readSessions();
+  const username = sessions[pendingSessionId];
+
+  if (!username) {
+    return { error: "Invalid session" };
+  }
+
+  const users = await readJsonFile(USERS_FILE);
+  const user = users.find(
+    (u: User) => u.username.toLowerCase() === username.toLowerCase()
+  );
+
+  if (!user || !user.mfaEnabled) {
+    return { error: "MFA not enabled for this user" };
+  }
+
+  const speakeasy = require("speakeasy");
+  const { createHash } = require("crypto");
+
+  let isValid = false;
+
+  if (useBackupCode) {
+    const hashedCode = createHash("sha256").update(code).digest("hex");
+    const recoveryCode = user.mfaRecoveryCode;
+    isValid = recoveryCode === hashedCode;
+  } else {
+    if (!user.mfaSecret) {
+      return { error: "MFA not properly configured" };
+    }
+
+    const { decryptMfaSecret } = require("@/app/_server/actions/mfa");
+    const decryptedSecret = await decryptMfaSecret(user.mfaSecret, username);
+
+    isValid = speakeasy.totp.verify({
+      secret: decryptedSecret,
+      encoding: "base32",
+      token: code,
+      window: 2,
+    });
+  }
+
+  if (!isValid) {
+    await logAuthEvent("login", username, false, "Invalid MFA code");
+    return { error: "Invalid code" };
+  }
+
+  const userIndex = users.findIndex(
+    (u: User) => u.username.toLowerCase() === username.toLowerCase()
+  );
+  if (userIndex !== -1) {
+    users[userIndex].lastLogin = new Date().toISOString();
+    await writeJsonFile(users, USERS_FILE);
+  }
+
+  const sessionId = createHash("sha256")
+    .update(Math.random().toString())
+    .digest("hex");
+
+  sessions[sessionId] = username;
+  delete sessions[pendingSessionId];
+  await writeSessions(sessions);
+
+  await removeSession(pendingSessionId);
+  await createSession(sessionId, username, "local");
+
+  cookies().delete(pendingCookieName);
+
+  const cookieName =
+    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      ? "__Host-session"
+      : "session";
+
+  cookies().set(cookieName, sessionId, {
+    httpOnly: true,
+    secure:
+      process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
+    sameSite: "lax",
+    maxAge: 30 * 24 * 60 * 60,
+    path: "/",
+  });
+
+  await logAuthEvent("login", username, true);
+
+  redirect("/");
 };

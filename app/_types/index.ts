@@ -184,6 +184,10 @@ export interface User {
   defaultNoteFilter?: DefaultNoteFilter;
   quickCreateNotes?: QuickCreateNotes;
   quickCreateNotesCategory?: string;
+  mfaEnabled?: boolean;
+  mfaSecret?: string;
+  mfaRecoveryCode?: string;
+  mfaEnrolledAt?: string;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -311,7 +315,7 @@ export interface Session {
   ipAddress: string;
   lastActivity: string;
   isCurrent: boolean;
-  loginType?: "local" | "sso";
+  loginType?: "local" | "sso" | "pending-mfa";
 }
 
 export interface ExportProgress {
@@ -392,7 +396,8 @@ export type AuditCategory =
   | "api"
   | "system"
   | "file"
-  | "upload";
+  | "upload"
+  | "security";
 
 export type AuditAction =
   | "login"
@@ -447,7 +452,16 @@ export type AuditAction =
   | "migration_check"
   | "key_load"
   | "file_scan"
-  | "user_item_check";
+  | "user_item_check"
+  | "mfa_secret_generated"
+  | "mfa_enabled"
+  | "mfa_disabled"
+  | "mfa_enable_failed"
+  | "mfa_verification_success"
+  | "mfa_verification_failed"
+  | "mfa_backup_code_used"
+  | "mfa_backup_code_failed"
+  | "mfa_backup_codes_regenerated";
 
 export interface AuditMetadata {
   [key: string]: any;

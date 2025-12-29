@@ -254,7 +254,7 @@ const NestedChecklistItemComponent = ({
         !isChild &&
         "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
         isChild &&
-        "ml-4 pl-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
+        "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
         "first:mt-0 transition-colors duration-150",
         isActive && "bg-muted/20",
         isDragging && "opacity-50 z-50",
@@ -301,21 +301,6 @@ const NestedChecklistItemComponent = ({
             )}
           />
         </div>
-
-        {hasChildren && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="h-6 w-6 p-0"
-          >
-            {isExpanded ? (
-              <ArrowDown01Icon className="h-4 w-4" />
-            ) : (
-              <ArrowRight01Icon className="h-4 w-4" />
-            )}
-          </Button>
-        )}
 
         {isEditing ? (
           <div className="flex-1 flex items-center gap-2 w-full">
@@ -367,9 +352,9 @@ const NestedChecklistItemComponent = ({
                 onMouseLeave={() => setIsActive(false)}
               >
                 {item.completed || completed ? (
-                  <CheckmarkSquare02Icon className="h-6 w-6 min-w-6 text-primary mr-2 !stroke-1" />
+                  <CheckmarkSquare02Icon className="h-8 w-8 min-w-8 sm:h-6 sm:w-6 sm:min-w-6 text-primary mr-2 !stroke-1" />
                 ) : (
-                  <SquareIcon className="h-6 w-6 min-w-6 text-muted-foreground mr-2 !stroke-1" />
+                  <SquareIcon className="h-8 w-8 min-w-8 sm:h-6 sm:w-6 sm:min-w-6 text-muted-foreground mr-2 !stroke-1" />
                 )}
 
                 {item.recurrence && user?.enableRecurrence === "enable" && (
@@ -464,6 +449,21 @@ const NestedChecklistItemComponent = ({
                 )}
               </div>
             )}
+
+            {hasChildren && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="h-6 w-6 p-0"
+              >
+                {isExpanded ? (
+                  <ArrowDown01Icon className="h-4 w-4" />
+                ) : (
+                  <ArrowRight01Icon className="h-4 w-4" />
+                )}
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -473,24 +473,25 @@ const NestedChecklistItemComponent = ({
 
       {showAddSubItem && !isPublicView && (
         <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>
-          <form onSubmit={handleAddSubItem} className="flex gap-2 items-center">
-            <div className="flex-1 flex items-center gap-2">
-              <div className="h-5 w-5 border border-border rounded bg-background"></div>
-              <input
-                type="text"
-                value={newSubItemText}
-                onChange={(e) => setNewSubItemText(e.target.value)}
-                placeholder={t("checklists.addSubItemPlaceholder")}
-                className="flex-1 px-2 py-1 text-sm border border-input bg-background rounded focus:outline-none focus:ring-none focus:ring-ring"
-                autoFocus
-              />
-            </div>
+          <form onSubmit={handleAddSubItem} className="flex gap-2 items-center pr-4">
+            <Input
+              id={`add-subitem-${item.id}`}
+              type="text"
+              value={newSubItemText}
+              onChange={(e) => setNewSubItemText(e.target.value)}
+              placeholder={t("checklists.addSubItemPlaceholder")}
+              autoFocus
+            />
             <Button
               type="submit"
+              variant="ghost"
               size="sm"
               disabled={!newSubItemText.trim()}
-              className="px-3"
-            >{t('common.add')}</Button>
+              className="h-8 w-8 p-0"
+              title={t('common.add')}
+            >
+              <Add01Icon className="h-4 w-4" />
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -499,6 +500,7 @@ const NestedChecklistItemComponent = ({
                 setShowAddSubItem(false);
                 setNewSubItemText("");
               }}
+              className="h-8 w-8 p-0"
             >
               <MultiplicationSignIcon className="h-4 w-4" />
             </Button>

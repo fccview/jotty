@@ -139,6 +139,7 @@ export async function generateViewport(): Promise<Viewport> {
     initialScale: 1,
     maximumScale: 1,
     themeColor,
+    viewportFit: "cover",
   };
 }
 
