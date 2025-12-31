@@ -50,6 +50,8 @@ A self-hosted app for your checklists and notes.
 - [API](#api)
 - [Shortcuts](#shortcuts)
 - [Single Sign-On (SSO) with OIDC](#single-sign-on-sso-with-oidc)
+- [Multi-Factor Authentication (MFA)](#multi-factor-authentication)
+- [Translations](#translations)
 - [Custom Themes and Emojis](#custom-themes-and-emojis)
 
 <p align="center">
@@ -229,6 +231,23 @@ I will always detail these migrations in the release notes. I _highly recommend_
 
 📖 **For the complete SSO documentation, see [howto/SSO.md](howto/SSO.md)**
 
+<a id="multi-factor-authentication"></a>
+
+## Multi-Factor Authentication (MFA)
+
+`jotty·page` supports MFA, this needs to be enabled in settings -> profile
+
+📖 **For the complete MFA documentation, see [howto/MFA.md](howto/MFA.md)**
+
+<a id="translations"></a>
+
+## Translations
+
+`jotty·page` can be translated in multiple languages, all translations are community driven and can be found in the [app/_translations](app/_translations) directory.
+
+📖 **For the complete translations documentation, see [howto/TRANSLATIONS.md](howto/TRANSLATIONS.md)**
+
+
 <a id="custom-themes-and-emojis"></a>
 
 ## Custom Manifest
@@ -331,10 +350,6 @@ I would like to thank the following members for raising issues and help test/deb
     </tr>
   </tbody>
 </table>
-
-## Support
-
-For issues and questions, please open an issue on the GitHub repository.
 
 ## Star History
 
