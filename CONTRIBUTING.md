@@ -5,7 +5,8 @@ Hi, it's amazing having a community willing to push new feature to the app, and 
 That said for the sake of sanity let's all follow the same structure:
 
 - Please if you use AI, make sure to clean up the code and don't leave obvious bloat. You can help yourself with a [little tool I built](https://fccview.github.io/ackchyually-ai/) to make sure code is properly reviewed.
-- Use pre-existing components, keep styling consistent, please don't hardcode html classes/inline styling, especially if a component alraedy exists.
+- Make sure to use translation keys, I don't want to see hardcoded strings anywhere. Please check [howto/TRANSLATIONS.md](howto/TRANSLATIONS.md) for more info.
+- Use pre-existing components, keep styling consistent, please don't hardcode html classes/inline styling, especially if a component alraedy exists. There's global UI components in [app/_components/GlobalComponents/](app/_components/GlobalComponents/) and anything with features should be added in [app/_components/FeatureComponents/](app/_components/FeatureComponents/)
 - When creating a new branch, do off from the `develop` branch, this will always be ahead of `main` and it's what gets released.
 - When creating a pull request, direct it back into `develop`, I' ll then review it and merge it. Your code will end up in the next release that way and we all avoid conflicts!
 
