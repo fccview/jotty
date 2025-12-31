@@ -580,7 +580,7 @@ pre.text-foreground span,
 @supports (-webkit-touch-callout: none) {
     @media (max-width: 992px) {
         nav.fixed.bottom-0 {
-            padding-bottom: max(env(safe-area-inset-bottom), 1em);
+            padding-bottom: max(env(safe-area-inset-bottom), 0.5em);
         }
 
         .jotty-sidebar-content {

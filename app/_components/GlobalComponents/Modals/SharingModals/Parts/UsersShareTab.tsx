@@ -220,7 +220,7 @@ export const UsersShareTab = ({
           })
         ) : (
           <p className="text-center text-sm text-muted-foreground py-4">
-            No users found.
+            {t('common.noUsersFound')}
           </p>
         )}
       </div>

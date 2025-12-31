@@ -363,9 +363,8 @@ export const SubtaskModal = ({
         ) : (
           <div className="space-y-4">
             <div
-              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${
-                permissions?.canEdit ? "cursor-pointer" : ""
-              }`}
+              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""
+                }`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
               <div
@@ -433,7 +432,7 @@ export const SubtaskModal = ({
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground text-sm bg-muted/20 rounded-jotty border border-dashed border-border mb-4">
-                No subtasks yet. Add one below to get started.
+                {t('checklists.noSubtasksYet')}
               </div>
             )}
 

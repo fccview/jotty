@@ -274,7 +274,7 @@ export const CategoryMultiselect = ({
           <div className="p-2">
             {rootCategories.length === 0 && categories.length === 0 && (
               <div className="px-3 py-2 text-sm text-muted-foreground">
-                No categories available
+                {t('common.noCategoriesAvailable')}
               </div>
             )}
             {rootCategories.map((category) => (

@@ -84,7 +84,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
           ))
         ) : (
           <div className="px-3 py-4 text-sm text-muted-foreground text-center">
-            No languages found
+            {t('editor.noLanguagesFound')}
           </div>
         )}
       </div>

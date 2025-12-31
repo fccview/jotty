@@ -206,7 +206,9 @@
     "checklist": "Checklist",
     "note": "Nota",
     "read": "Leggere",
-    "removeAll": "Rimuovi tutto"
+    "removeAll": "Rimuovi tutto",
+    "noUsersFound": "Nessun utente trovato.",
+    "noCategoriesAvailable": "Nessuna categoria disponibile"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -428,7 +430,11 @@
     "addItems": "Aggiungi {count} item",
     "itemsWillBeAdded": "Verranno aggiunti {count} item",
     "itemsNotAddedYet": "Gli item non sono ancora aggiunti",
-    "youHaveItemsThatWillNotBeAdded": "Hai {count} item che non sono stati aggiunti. Vuoi chiudere senza aggiungerli?"
+    "youHaveItemsThatWillNotBeAdded": "Hai {count} item che non sono stati aggiunti. Vuoi chiudere senza aggiungerli?",
+    "noItemsYet": "Ancora nessun item",
+    "addFirstItem": "Aggiungi il tuo primo item per iniziare!",
+    "noTasks": "Nessun task",
+    "noSubtasksYet": "Nessuna attività secondaria. Aggiungine una qui sotto per iniziare."
   },
   "tasks": {
     "title": "Attività",
@@ -1034,7 +1040,8 @@
     "updateFailed": "Aggiornamento Fallito",
     "mermaidDescription": "Diagrammi di flusso basati su testo",
     "drawioDescription": "Editor di diagrammi visivi",
-    "excalidrawDescription": "Editor di diagrammi in stile schizzo"
+    "excalidrawDescription": "Editor di diagrammi in stile schizzo",
+    "noLanguagesFound": "Nessun linguaggio trovato"
   },
   "sharing": {
     "share": "Condividi",

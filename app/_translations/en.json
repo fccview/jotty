@@ -206,7 +206,9 @@
     "checklist": "Checklist",
     "note": "Note",
     "read": "Read",
-    "removeAll": "Remove All"
+    "removeAll": "Remove All",
+    "noUsersFound": "No users found.",
+    "noCategoriesAvailable": "No categories available"
   },
   "auth": {
     "loginTitle": "Login",
@@ -428,7 +430,11 @@
     "addItems": "Add {count} Items",
     "itemsWillBeAdded": "{count} items will be added",
     "itemsNotAddedYet": "Items Not Added Yet",
-    "youHaveItemsThatWillNotBeAdded": "You have {count} items that have not been added. Close without adding or add them now?"
+    "youHaveItemsThatWillNotBeAdded": "You have {count} items that have not been added. Close without adding or add them now?",
+    "noItemsYet": "No items yet",
+    "addFirstItem": "Add your first item to get started!",
+    "noTasks": "No tasks",
+    "noSubtasksYet": "No subtasks yet. Add one below to get started."
   },
   "tasks": {
     "title": "Tasks",
@@ -1034,7 +1040,8 @@
     "updateFailed": "Update Failed",
     "mermaidDescription": "Text-based flowcharts & diagrams",
     "drawioDescription": "Visual diagram editor",
-    "excalidrawDescription": "Sketch-style diagram editor"
+    "excalidrawDescription": "Sketch-style diagram editor",
+    "noLanguagesFound": "No languages found"
   },
   "sharing": {
     "share": "Share",
