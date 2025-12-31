@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Item, Checklist } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
 import {
@@ -25,6 +26,7 @@ export const useKanbanItem = ({
   category,
   onUpdate,
 }: UseKanbanItemProps) => {
+  const t = useTranslations();
   const [isRunning, setIsRunning] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
@@ -203,7 +205,7 @@ export const useKanbanItem = ({
   };
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this task?")) {
+    if (confirm(t('common.confirmDeleteItem', { itemTitle: item.text }))) {
       const formData = new FormData();
       formData.append("listId", checklistId);
       formData.append("itemId", item.id);

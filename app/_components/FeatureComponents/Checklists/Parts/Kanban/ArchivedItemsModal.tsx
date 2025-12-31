@@ -9,6 +9,7 @@ import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown"
 import { TaskStatus } from "@/app/_types/enums";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Undo02Icon } from "@hugeicons/core-free-icons";
+import { useTranslations } from "next-intl";
 
 interface ArchivedItemsModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export const ArchivedItemsModal = ({
   onUnarchive,
   statuses,
 }: ArchivedItemsModalProps) => {
+  const t = useTranslations();
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const statusMap = useMemo(() => {
@@ -66,12 +68,12 @@ export const ArchivedItemsModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Archived Items"
+      title={t("checklists.archivedItems")}
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium">Filter by status:</label>
+          <label className="text-sm font-medium">{t('common.filterByStatus')}:</label>
           <Dropdown
             value={filterStatus}
             options={statusFilterOptions}
@@ -84,8 +86,8 @@ export const ArchivedItemsModal = ({
           <div className="text-center py-8 text-muted-foreground">
             <Archive02Icon className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p>
-              No archived items
-              {filterStatus !== "all" ? " with this status" : ""}
+              {t('common.noArchivedItems')}
+              {filterStatus !== "all" ? ` ${t('common.withThisStatus')}` : ""}
             </p>
           </div>
         ) : (
@@ -105,9 +107,9 @@ export const ArchivedItemsModal = ({
                   <div className="flex items-center gap-2 mt-1">
                     {item.archivedAt && (
                       <p className="text-xs text-muted-foreground">
-                        Archived{" "}
+                        {t('common.archived')}{" "}
                         {new Date(item.archivedAt).toLocaleDateString()}
-                        {item.archivedBy && ` by ${item.archivedBy}`}
+                        {item.archivedBy && ` ${t('common.by')} ${item.archivedBy}`}
                       </p>
                     )}
                   </div>
@@ -133,7 +135,7 @@ export const ArchivedItemsModal = ({
                   className="shrink-0"
                 >
                   <HugeiconsIcon icon={Undo02Icon} className="h-3 w-3 mr-1" />
-                  Restore
+                  {t('common.restore')}
                 </Button>
               </div>
             ))}
@@ -141,9 +143,7 @@ export const ArchivedItemsModal = ({
         )}
 
         <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
+          <Button variant="outline" onClick={onClose}>{t('common.close')}</Button>
         </div>
       </div>
     </Modal>

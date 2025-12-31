@@ -24,6 +24,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TaskStatus } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 const defaultStatusColors: Record<string, string> = {
   [TaskStatus.TODO]: "#6b7280",
@@ -47,6 +48,7 @@ const SortableStatusItem = ({
   onRemove,
   canRemove,
 }: SortableStatusItemProps) => {
+  const t = useTranslations();
   const {
     attributes,
     listeners,
@@ -83,7 +85,7 @@ const SortableStatusItem = ({
           type="text"
           value={status.label}
           onChange={(e) => onUpdateLabel(status.id, e.target.value)}
-          placeholder="Status name"
+          placeholder={t("checklists.statusName")}
           className="!space-y-0 [&>label]:hidden"
         />
       </div>
@@ -93,7 +95,7 @@ const SortableStatusItem = ({
         value={status.color || defaultStatusColors[status.id] || "#6b7280"}
         onChange={(e) => onUpdateColor(status.id, e.target.value)}
         className="w-12 h-10 border border-input rounded-jotty cursor-pointer"
-        title="Status color"
+        title={t("checklists.statusColor")}
       />
 
       <Button
@@ -124,6 +126,7 @@ export const StatusManagementModal = ({
   onSave,
   itemsByStatus = {},
 }: StatusManagementModalProps) => {
+  const t = useTranslations();
   const [statuses, setStatuses] = useState<KanbanStatus[]>(
     currentStatuses.map((s) => ({
       ...s,
@@ -161,21 +164,21 @@ export const StatusManagementModal = ({
 
   const handleRemoveStatus = (id: string) => {
     const itemCount = itemsByStatus[id] || 0;
-    const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
-    const firstStatus = sortedStatuses[0];
+
+    const remainingStatuses = statuses.filter((s) => s.id !== id);
+    const sortedRemainingStatuses = [...remainingStatuses].sort((a, b) => a.order - b.order);
+    const targetStatus = sortedRemainingStatuses[0];
 
     if (itemCount > 0) {
       const confirmed = confirm(
         `This status has ${itemCount} item${itemCount > 1 ? "s" : ""}. ` +
-          `${itemCount > 1 ? "They" : "It"} will be moved to "${
-            firstStatus?.label || "the first status"
-          }". Continue?`
+        `${itemCount > 1 ? "They" : "It"} will be moved to "${targetStatus?.label || "the first remaining status"
+        }". Continue?`
       );
       if (!confirmed) return;
     }
 
-    const newStatuses = statuses.filter((s) => s.id !== id);
-    setStatuses(newStatuses.map((s, index) => ({ ...s, order: index })));
+    setStatuses(remainingStatuses.map((s, index) => ({ ...s, order: index })));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -204,13 +207,12 @@ export const StatusManagementModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Manage Statuses"
+      title={t('tasks.manageStatuses')}
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Customize the statuses for this kanban board. Add, remove, or reorder
-          statuses.
+          {t('tasks.customizeStatuses')}
         </p>
 
         <DndContext
@@ -239,14 +241,12 @@ export const StatusManagementModal = ({
 
         <Button variant="outline" onClick={handleAddStatus} className="w-full">
           <Add01Icon className="h-4 w-4 mr-2" />
-          Add Status
+          {t('tasks.addStatus')}
         </Button>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button type="button" variant="outline" onClick={handleClose}>{t('common.cancel')}</Button>
+          <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
         </div>
       </div>
     </Modal>

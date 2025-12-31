@@ -27,6 +27,7 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useState } from "react";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
+import { useTranslations } from "next-intl";
 
 interface ChecklistHeaderProps {
   checklist: Checklist;
@@ -49,10 +50,11 @@ export const ChecklistHeader = ({
   onArchive,
   onClone,
 }: ChecklistHeaderProps) => {
+  const t = useTranslations();
   const metadata = useMetadata();
   const { handleCopyId, copied } = useChecklist({
     list: checklist,
-    onUpdate: () => {},
+    onUpdate: () => { },
   });
 
   const { globalSharing } = useAppMode();
@@ -98,7 +100,7 @@ export const ChecklistHeader = ({
             </Button>
 
             {isPubliclyShared && (
-              <span title="Publicly shared">
+              <span title={t('checklists.publiclyShared')}>
                 <Globe02Icon className="h-3 w-3 text-primary" />
               </span>
             )}
@@ -126,8 +128,8 @@ export const ChecklistHeader = ({
                 className="h-10 w-10 p-0"
                 title={
                   checklist.type === ChecklistsTypes.TASK
-                    ? "Convert to Simple Checklist"
-                    : "Convert to Task Project"
+                    ? t('checklists.convertToSimpleChecklist')
+                    : t('checklists.convertToTaskProject')
                 }
               >
                 {checklist.type === ChecklistsTypes.TASK ? (
@@ -152,12 +154,11 @@ export const ChecklistHeader = ({
 
           {(permissions?.canEdit || permissions?.canDelete) && (
             <div
-              className={`${
-                permissions?.canEdit &&
+              className={`${permissions?.canEdit &&
                 !permissions?.canDelete &&
                 !permissions?.isOwner &&
                 "lg:hidden"
-              }`}
+                }`}
             >
               <DropdownMenu
                 align="right"
@@ -169,76 +170,76 @@ export const ChecklistHeader = ({
                 items={[
                   ...(onConvertType && permissions?.canEdit
                     ? [
-                        {
-                          type: "item" as const,
-                          label:
-                            checklist.type === ChecklistsTypes.TASK
-                              ? "Convert to Simple Checklist"
-                              : "Convert to Task Project",
-                          icon:
-                            checklist.type === ChecklistsTypes.TASK ? (
-                              <CheckmarkSquare04Icon className="h-4 w-4" />
-                            ) : (
-                              <TaskDaily01Icon className="h-4 w-4" />
-                            ),
-                          onClick: () => {
-                            onConvertType();
-                          },
-                          className: "lg:!hidden",
+                      {
+                        type: "item" as const,
+                        label:
+                          checklist.type === ChecklistsTypes.TASK
+                            ? "Convert to Simple Checklist"
+                            : "Convert to Task Project",
+                        icon:
+                          checklist.type === ChecklistsTypes.TASK ? (
+                            <CheckmarkSquare04Icon className="h-4 w-4" />
+                          ) : (
+                            <TaskDaily01Icon className="h-4 w-4" />
+                          ),
+                        onClick: () => {
+                          onConvertType();
                         },
-                      ]
+                        className: "lg:!hidden",
+                      },
+                    ]
                     : []),
                   ...(onClone
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Clone",
-                          icon: <Copy01Icon className="h-4 w-4" />,
-                          onClick: onClone,
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: "Clone",
+                        icon: <Copy01Icon className="h-4 w-4" />,
+                        onClick: onClone,
+                      },
+                    ]
                     : []),
                   ...(onArchive && permissions?.canDelete
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Archive",
-                          icon: <Archive02Icon className="h-4 w-4" />,
-                          onClick: onArchive,
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: t("profile.archiveTab"),
+                        icon: <Archive02Icon className="h-4 w-4" />,
+                        onClick: onArchive,
+                      },
+                    ]
                     : []),
                   ...(onShare && permissions?.isOwner
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Share",
-                          icon: <Share08Icon className="h-4 w-4" />,
-                          onClick: onShare,
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: t("sharing.share"),
+                        icon: <Share08Icon className="h-4 w-4" />,
+                        onClick: onShare,
+                      },
+                    ]
                     : []),
                   ...(onEdit && permissions?.canEdit
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Edit",
-                          icon: <PencilEdit02Icon className="h-4 w-4" />,
-                          onClick: onEdit,
-                          className: "lg:!hidden",
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: t("editor.edit"),
+                        icon: <PencilEdit02Icon className="h-4 w-4" />,
+                        onClick: onEdit,
+                        className: "lg:!hidden",
+                      },
+                    ]
                     : []),
                   ...(onDelete && permissions?.canDelete
                     ? [
-                        {
-                          type: "item" as const,
-                          label: "Delete",
-                          icon: <Delete03Icon className="h-4 w-4" />,
-                          onClick: onDelete,
-                          variant: "destructive" as const,
-                        },
-                      ]
+                      {
+                        type: "item" as const,
+                        label: t("common.delete"),
+                        icon: <Delete03Icon className="h-4 w-4" />,
+                        onClick: onDelete,
+                        variant: "destructive" as const,
+                      },
+                    ]
                     : []),
                 ]}
               />

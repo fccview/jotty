@@ -16,6 +16,7 @@ import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -28,6 +29,7 @@ export const AdminContent = ({
   allDocs,
   users,
 }: AdminContentProps) => {
+  const t = useTranslations();
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
   const [rebuildingIndex, setRebuildingIndex] = useState<string | null>(null);
 
@@ -100,10 +102,10 @@ export const AdminContent = ({
     setRebuildingIndex(username);
     try {
       await rebuildLinkIndex(username);
-      alert(`Successfully rebuilt link index for ${username}`);
+      alert(t('admin.successfullyRebuiltIndex', { username }));
     } catch (error) {
       console.error("Failed to rebuild index:", error);
-      alert(`Failed to rebuild link index for ${username}`);
+      alert(`${t('admin.failedToRebuildIndex', { username })}`);
     } finally {
       setRebuildingIndex(null);
     }
@@ -111,21 +113,20 @@ export const AdminContent = ({
 
   return (
     <div className="space-y-6">
-      <Accordion title="Data Export" defaultOpen={false} className="mb-6">
+      <Accordion title={t('admin.dataExport')} defaultOpen={false} className="mb-6">
         <ExportContent users={users} />
       </Accordion>
 
       <div className="md:flex items-center justify-between">
         <div className="flex items-center gap-4 mt-4 md:mt-0">
           <span className="text-sm text-muted-foreground">
-            {allLists.length + allDocs.length} total items across {users.length}{" "}
-            users
+            {t('admin.totalItems', { items: allLists.length + allDocs.length, userCount: users.length })}
           </span>
           <button
             onClick={toggleAll}
             className="text-sm text-primary hover:text-primary/80 font-medium"
           >
-            {isAllExpanded ? "Collapse All" : "Expand All"}
+            {isAllExpanded ? t('common.collapseAll') : t('common.expandAll')}
           </button>
         </div>
       </div>
@@ -162,7 +163,7 @@ export const AdminContent = ({
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {checklists.length} checklists • {notes.length} notes
+                      {t('admin.userContent', { checklistsLength: checklists.length, notesLength: notes.length })}
                     </p>
                   </div>
                 </div>
@@ -175,15 +176,15 @@ export const AdminContent = ({
                       handleRebuildIndex(user.username);
                     }}
                     disabled={rebuildingIndex === user.username}
-                    title="Rebuild link indexex"
+                    title={t('admin.rebuildLinkIndexesTitle')}
                   >
                     {rebuildingIndex === user.username
-                      ? "Rebuilding..."
-                      : "Rebuild Indexes"}
+                      ? t('admin.rebuilding')
+                      : t('admin.rebuildIndexes')}
                   </Button>
                   {hasContent && (
                     <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-                      {totalItems} items
+                      {t('common.itemCount', { count: totalItems })}
                     </span>
                   )}
                   {isExpanded ? (
@@ -199,27 +200,21 @@ export const AdminContent = ({
                   {hasContent ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <AdminContentColumn
-                        title="Checklists"
+                        title={t('checklists.title')}
                         icon={<CheckmarkSquare04Icon className="h-4 w-4" />}
                         items={checklists.map((list) => ({
                           ...list,
-                          link: `/checklist/${buildCategoryPath(
-                            list.category || "Uncategorized",
-                            list.id
-                          )}`,
-                          details: `${list.category} • ${list.items.length} items`,
+                          link: `/admin/checklist/${list.uuid}`,
+                          details: `${list.owner} • ${list.category} • ${t('common.itemCount', { count: list.items.length })}`,
                         }))}
                       />
                       <AdminContentColumn
-                        title="Notes"
+                        title={t('notes.title')}
                         icon={<File02Icon className="h-4 w-4" />}
                         items={notes.map((doc) => ({
                           ...doc,
-                          link: `/note/${buildCategoryPath(
-                            doc.category || "Uncategorized",
-                            doc.id
-                          )}`,
-                          details: `${doc.category} • ${doc.content.length} characters`,
+                          link: `/admin/note/${doc.uuid}`,
+                          details: `${doc.owner} • ${doc.category} • ${t('common.characterCount', { count: doc.content.length })}`,
                         }))}
                       />
                     </div>
@@ -229,10 +224,10 @@ export const AdminContent = ({
                         <File02Icon className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
-                        No content yet
+                        {t('admin.noContentYet')}
                       </h3>
                       <p className="text-muted-foreground">
-                        This user hasn&apos;t created any checklists or notes.
+                        {t('admin.userHasNoContent')}
                       </p>
                     </div>
                   )}

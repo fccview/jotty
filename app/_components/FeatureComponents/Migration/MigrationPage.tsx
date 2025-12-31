@@ -11,10 +11,12 @@ import { AdminRequiredView } from "@/app/_components/FeatureComponents/Migration
 import { SharingMigrationView } from "./Parts/SharingMigrationView";
 import { YamlMetadataMigrationView } from "./Parts/YamlMetadataMigrationView";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
+import { useTranslations } from 'next-intl';
 
 const LoadingView = () => <Loading />;
 
 export const MigrationPage = () => {
+  const t = useTranslations();
   const [isMigrating, setIsMigrating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -64,11 +66,11 @@ export const MigrationPage = () => {
           setMigrationType("yaml");
         }
       } else {
-        throw new Error(result.error || "Migration failed");
+        throw new Error(result.error || t("migration.migrationFailed"));
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
+        err instanceof Error ? err.message : t("encryption.unexpectedError")
       );
       setIsMigrating(false);
     }
@@ -83,11 +85,11 @@ export const MigrationPage = () => {
       if (result.success) {
         setYamlMigrationResult(result.data || null);
       } else {
-        throw new Error(result.error || "Migration failed");
+        throw new Error(result.error || t("migration.migrationFailed"));
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
+        err instanceof Error ? err.message : t("encryption.unexpectedError")
       );
       setIsMigrating(false);
     }

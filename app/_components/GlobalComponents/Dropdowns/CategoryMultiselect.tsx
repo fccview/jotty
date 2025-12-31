@@ -11,6 +11,7 @@ import {
 import { cn } from "@/app/_utils/global-utils";
 import { Category } from "@/app/_types";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useTranslations } from "next-intl";
 
 interface CategoryMultiselectProps {
   categories: Category[];
@@ -126,6 +127,7 @@ export const CategoryMultiselect = ({
   recursive = false,
   onRecursiveChange,
 }: CategoryMultiselectProps) => {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -207,7 +209,7 @@ export const CategoryMultiselect = ({
     <div ref={containerRef} className={cn("relative", className)}>
       <div className="jotty-category-multiselect space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-foreground">By Category</h3>
+          <h3 className="text-sm font-medium text-foreground">{t('common.byCategory')}</h3>
           <div className="flex items-center gap-2">
             {onRecursiveChange && (
               <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
@@ -217,7 +219,7 @@ export const CategoryMultiselect = ({
                   onChange={(e) => onRecursiveChange(e.target.checked)}
                   className="h-3 w-3"
                 />
-                Recursive
+                {t('common.recursive')}
               </label>
             )}
             {selectedCategories.length > 0 && onClearAll && (
@@ -226,9 +228,7 @@ export const CategoryMultiselect = ({
                 size="sm"
                 onClick={onClearAll}
                 className="h-6 px-2 text-xs"
-              >
-                Clear
-              </Button>
+              >{t('common.clear')}</Button>
             )}
           </div>
         </div>
@@ -274,7 +274,7 @@ export const CategoryMultiselect = ({
           <div className="p-2">
             {rootCategories.length === 0 && categories.length === 0 && (
               <div className="px-3 py-2 text-sm text-muted-foreground">
-                No categories available
+                {t('common.noCategoriesAvailable')}
               </div>
             )}
             {rootCategories.map((category) => (

@@ -1,5 +1,6 @@
-import { ChangeEvent, forwardRef } from "react";
+import { ChangeEvent, forwardRef, useState } from "react";
 import { Label } from "./label";
+import { ViewIcon, ViewOffSlashIcon } from "hugeicons-react";
 
 interface InputProps {
   id: string;
@@ -21,6 +22,8 @@ interface InputProps {
   autoFocus?: boolean;
   min?: string;
   max?: string;
+  hideEye?: boolean;
+  maxLength?: number;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -45,38 +48,64 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       autoFocus,
       min,
       max,
+      hideEye,
+      maxLength,
       ...props
     },
     ref
-  ) => (
-    <div className="space-y-2 w-full">
-      {label && <Label htmlFor={id}>{label}</Label>}
-      <input
-        ref={ref}
-        id={id}
-        name={name}
-        type={type}
-        value={value}
-        defaultValue={defaultValue}
-        autoComplete={autoComplete}
-        required={required}
-        disabled={disabled}
-        placeholder={placeholder}
-        onChange={onChange}
-        onFocus={onFocus}
-        onBlur={onBlur}
-        onKeyDown={onKeyDown}
-        autoFocus={autoFocus}
-        min={min}
-        max={max}
-        {...props}
-        className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none ${className}`}
-      />
-      {description && (
-        <p className="text-xs text-muted-foreground">{description}</p>
-      )}
-    </div>
-  )
+  ) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const isPasswordType = type === "password";
+    const inputType = isPasswordType && showPassword ? "text" : type;
+
+    return (
+      <div className="space-y-2 w-full">
+        {label && <Label htmlFor={id}>{label}</Label>}
+        <div className="relative">
+          <input
+            ref={ref}
+            id={id}
+            name={name}
+            type={inputType}
+            value={value}
+            defaultValue={defaultValue}
+            autoComplete={autoComplete}
+            required={required}
+            disabled={disabled}
+            placeholder={placeholder}
+            onChange={onChange}
+            onFocus={onFocus}
+            onBlur={onBlur}
+            onKeyDown={onKeyDown}
+            autoFocus={autoFocus}
+            min={min}
+            max={max}
+            maxLength={maxLength}
+            {...props}
+            className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none ${isPasswordType ? "pr-11" : ""} ${className}`}
+          />
+          {isPasswordType && !hideEye && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              tabIndex={-1}
+              disabled={disabled}
+            >
+              {showPassword ? (
+                <ViewOffSlashIcon className="h-4 w-4" />
+              ) : (
+                <ViewIcon className="h-4 w-4" />
+              )}
+            </button>
+          )}
+        </div>
+        {description && (
+          <p className="text-xs text-muted-foreground">{description}</p>
+        )}
+      </div>
+    );
+  }
 );
 
 Input.displayName = "Input";

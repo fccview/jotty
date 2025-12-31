@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 interface UsePaginationProps<T> {
   items: T[];
   itemsPerPage: number;
+  currentPage?: number;
   initialPage?: number;
   onItemsPerPageChange?: (itemsPerPage: number) => void;
 }
@@ -25,40 +26,40 @@ export const usePagination = <T,>({
     return items.slice(startIndex, endIndex);
   }, [items, currentPage, itemsPerPage]);
 
-  const goToPage = (page: number) => {
+  const goToPage = useCallback((page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
-  };
+  }, [totalPages]);
 
-  const goToNextPage = () => {
+  const goToNextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
-  };
+  }, [currentPage, totalPages]);
 
-  const goToPreviousPage = () => {
+  const goToPreviousPage = useCallback(() => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
-  };
+  }, [currentPage]);
 
-  const goToFirstPage = () => {
+  const goToFirstPage = useCallback(() => {
     setCurrentPage(1);
-  };
+  }, []);
 
-  const goToLastPage = () => {
+  const goToLastPage = useCallback(() => {
     setCurrentPage(totalPages);
-  };
+  }, [totalPages]);
 
-  const resetPagination = () => {
+  const resetPagination = useCallback(() => {
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+  const handleItemsPerPageChange = useCallback((newItemsPerPage: number) => {
     setCurrentPage(1);
     onItemsPerPageChange?.(newItemsPerPage);
-  };
+  }, [onItemsPerPageChange]);
 
   return {
     currentPage,

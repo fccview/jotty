@@ -20,6 +20,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { useTranslations } from "next-intl";
 
 interface ChecklistBodyProps {
   localList: Checklist;
@@ -50,6 +51,7 @@ export const ChecklistBody = ({
   isLoading,
   isDeletingItem,
 }: ChecklistBodyProps) => {
+  const t = useTranslations();
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const [overItem, setOverItem] = useState<{
@@ -133,10 +135,10 @@ export const ChecklistBody = ({
       <>
         <div className="bg-card rounded-jotty border border-border m-4 p-8 text-center">
           <h3 className="text-xl font-semibold text-foreground mb-2">
-            No items yet
+            {t('checklists.noItemsYet')}
           </h3>
           <p className="text-muted-foreground">
-            Add your first item to get started!
+            {t('checklists.addFirstItem')}
           </p>
         </div>
 
@@ -165,7 +167,7 @@ export const ChecklistBody = ({
           onDragOver={onDragOver}
         >
           <SortableContext items={items} strategy={verticalListSortingStrategy}>
-            <div className="w-full space-y-4 overflow-hidden">
+            <div className="w-full min-h-[200px] space-y-4 overflow-hidden checklist-todo-container">
               {incompleteItems.length > 0 && (
                 <ChecklistItemsWrapper
                   title={TaskStatusLabels.TODO}
@@ -273,10 +275,10 @@ export const ChecklistBody = ({
                   item={activeItem}
                   index={0}
                   level={0}
-                  onToggle={() => {}}
-                  onDelete={() => {}}
-                  onEdit={() => {}}
-                  onAddSubItem={() => {}}
+                  onToggle={() => { }}
+                  onDelete={() => { }}
+                  onEdit={() => { }}
+                  onAddSubItem={() => { }}
                   isDeletingItem={false}
                   isDragDisabled={true}
                   checklist={localList}

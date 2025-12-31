@@ -30,6 +30,7 @@ import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { useTranslations } from "next-intl";
 
 interface SidebarItemProps {
   item: Checklist | Note;
@@ -50,6 +51,7 @@ export const SidebarItem = ({
   style,
   user,
 }: SidebarItemProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
@@ -97,7 +99,7 @@ export const SidebarItem = ({
     ...(onEditItem
       ? [
           {
-            label: "Edit",
+            label: t("common.edit"),
             onClick: () => onEditItem(item),
             icon: <PencilEdit02Icon className="h-4 w-4" />,
           },
@@ -105,7 +107,7 @@ export const SidebarItem = ({
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: isItemPinned() ? "Unpin from Home" : "Pin to Home",
+      label: isItemPinned() ? t("common.unpinFromHome") : t("common.pinToHome"),
       onClick: handleTogglePin,
       icon: isItemPinned() ? (
         <PinOffIcon className="h-4 w-4" />
@@ -117,7 +119,7 @@ export const SidebarItem = ({
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
           {
-            label: "Archive",
+            label: t("common.archive"),
             onClick: async () => {
               const result = await toggleArchive(item, mode);
               if (result.success) {
@@ -130,10 +132,10 @@ export const SidebarItem = ({
       : []),
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
-      label: "Delete",
+      label: t("common.delete"),
       onClick: async () => {
         const confirmed = window.confirm(
-          `Are you sure you want to delete "${item.title}"?`
+          t("common.confirmDeleteItem", { itemTitle: item.title })
         );
 
         if (!confirmed) return;
@@ -207,7 +209,7 @@ export const SidebarItem = ({
 
         <div className="flex items-center gap-1 flex-shrink-0">
           {mode === Modes.NOTES && "encrypted" in item && item.encrypted && (
-            <span title="Encrypted note">
+            <span title={t('editor.encryptedNote')}>
               <LockKeyIcon className="h-4 w-4 text-primary" />
             </span>
           )}
@@ -217,7 +219,7 @@ export const SidebarItem = ({
             </span>
           )}
           {isPubliclyShared && (
-            <span title="Publicly shared">
+            <span title={t('checklists.publiclyShared')}>
               <Globe02Icon className="h-4 w-4 text-primary" />
             </span>
           )}

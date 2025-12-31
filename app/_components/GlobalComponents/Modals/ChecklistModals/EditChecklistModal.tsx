@@ -11,6 +11,7 @@ import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface EditChecklistModalProps {
   checklist: Checklist;
@@ -27,6 +28,7 @@ export const EditChecklistModal = ({
   onUpdated,
   unarchive,
 }: EditChecklistModalProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { user } = useAppMode();
   const [title, setTitle] = useState(initialChecklist.title);
@@ -57,8 +59,8 @@ export const EditChecklistModal = ({
 
   if (!checklist) {
     return (
-      <Modal isOpen={true} onClose={onClose} title="Checklist not found">
-        <p>Checklist not found</p>
+      <Modal isOpen={true} onClose={onClose} title={t("checklists.checklistNotFound")}>
+        <p>{t("checklists.checklistNotFound")}</p>
       </Modal>
     );
   }
@@ -106,18 +108,18 @@ export const EditChecklistModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={unarchive ? "Unarchive Checklist" : "Edit Checklist"}
+      title={unarchive ? t("checklists.unarchiveChecklist") : t("checklists.editChecklist")}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
           <Input
             id="checklistName"
             name="checklistName"
-            label="Checklist Name *"
+            label={`${t("checklists.checklistName")} *`}
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter checklist name..."
+            placeholder={t("checklists.enterChecklistName")}
             required
             disabled={isLoading || unarchive}
             autoFocus
@@ -130,14 +132,13 @@ export const EditChecklistModal = ({
 
         {isOwner && (
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Category
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
             <CategoryTreeSelector
               categories={categories}
               selectedCategory={category}
               onCategorySelect={setCategory}
               className="w-full"
+              placeholder={t('common.selectCategory')}
               isInModal={true}
             />
           </div>
@@ -150,19 +151,17 @@ export const EditChecklistModal = ({
             onClick={onClose}
             disabled={isLoading}
             className="flex-1"
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={isLoading || !title.trim()}
             className="flex-1"
           >
             {isLoading
-              ? "Updating..."
+              ? t("checklists.updating")
               : unarchive
-              ? "Unarchive Checklist"
-              : "Update Checklist"}
+                ? t("checklists.unarchiveChecklist")
+                : t("checklists.updateChecklist")}
           </Button>
         </div>
       </form>

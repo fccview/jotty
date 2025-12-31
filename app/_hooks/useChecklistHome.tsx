@@ -8,17 +8,17 @@ import {
   KeyboardSensor,
   PointerSensor,
   TouchSensor,
-  closestCenter,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { arrayMove } from "@dnd-kit/sortable";
 import { Checklist, User } from "@/app/_types";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { useHomeFilter } from "@/app/_utils/home-filter-store";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
+import { useTranslations } from 'next-intl';
 
 interface UseChecklistHomeProps {
   lists: Checklist[];
@@ -26,6 +26,7 @@ interface UseChecklistHomeProps {
 }
 
 export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { checklistFilter, setChecklistFilter } = useHomeFilter();
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
@@ -217,9 +218,9 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   const simpleLists = recent.filter((list) => list.type === "simple");
 
   const filterOptions = [
-    { id: "all", name: "All Checklists" },
-    { id: "completed", name: "Completed" },
-    { id: "incomplete", name: "Incomplete" },
+    { id: "all", name: t("checklists.allChecklists") },
+    { id: "completed", name: t("tasks.completed") },
+    { id: "incomplete", name: t("checklists.incomplete") },
   ];
 
   const activeList = activeId

@@ -14,6 +14,7 @@ import rehypeRaw from "rehype-raw";
 import { CodeBlockRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockRenderer";
 import { MermaidRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/MermaidRenderer";
 import { DrawioRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/DrawioRenderer";
+import { ExcalidrawRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/ExcalidrawRenderer";
 import { FileAttachment } from "@/app/_components/GlobalComponents/FormElements/FileAttachment";
 import type { Components } from "react-markdown";
 import { QUOTES } from "@/app/_consts/notes";
@@ -26,6 +27,7 @@ import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { NoteFooterStats } from "@/app/_components/GlobalComponents/Statistics/NoteFooterStats";
+import { useTranslations } from "next-intl";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -50,9 +52,10 @@ export const UnifiedMarkdownRenderer = ({
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
+  const t = useTranslations();
   const { contentWithoutMetadata } = extractYamlMetadata(content);
 
-  const processedContent = contentWithoutMetadata.replace(
+  let processedContent = contentWithoutMetadata.replace(
     /<!--\s*drawio-diagram\s+data:\s*([^\n]+)\s+svg:\s*([^\n]+)(?:\s+theme:\s*([^\n]+))?\s*-->/g,
     (match, dataBase64, svgBase64, theme) => {
       try {
@@ -66,6 +69,26 @@ export const UnifiedMarkdownRenderer = ({
           /"/g,
           "&quot;"
         )}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
+      } catch (e) {
+        return match;
+      }
+    }
+  );
+
+  processedContent = processedContent.replace(
+    /<!--\s*excalidraw-diagram\s+data:\s*([^\n]+)(?:\s+svg:\s*([^\n]+))?(?:\s+theme:\s*([^\n]+))?\s*-->/g,
+    (match, dataBase64, svgBase64, theme) => {
+      try {
+        const diagramData = atob(dataBase64.trim());
+        const svgData = svgBase64 ? atob(svgBase64.trim()) : "";
+        const themeMode = theme ? theme.trim() : "light";
+        return `<div data-excalidraw="" data-excalidraw-data="${diagramData.replace(
+          /"/g,
+          "&quot;"
+        )}" data-excalidraw-svg="${svgData.replace(
+          /"/g,
+          "&quot;"
+        )}" data-excalidraw-theme="${themeMode}">[Excalidraw Diagram]</div>`;
       } catch (e) {
         return match;
       }
@@ -95,7 +118,7 @@ export const UnifiedMarkdownRenderer = ({
             &quot;{displayQuote}&quot;
           </p>
           <p className="text-sm text-muted-foreground mt-4">
-            Start writing your note above!
+            {t("notes.startWritingAbove")}
           </p>
         </div>
       </div>
@@ -195,7 +218,7 @@ export const UnifiedMarkdownRenderer = ({
               },
             }}
             editor={undefined as any}
-            updateAttributes={() => {}}
+            updateAttributes={() => { }}
           />
         );
       }
@@ -207,8 +230,8 @@ export const UnifiedMarkdownRenderer = ({
         const mimeType = isImage
           ? "image/jpeg"
           : isVideo
-          ? "video/mp4"
-          : "application/octet-stream";
+            ? "video/mp4"
+            : "application/octet-stream";
 
         if (isImage) {
           return (
@@ -311,6 +334,28 @@ export const UnifiedMarkdownRenderer = ({
           node?.properties?.["data-drawio-theme"] ||
           "light";
         return <DrawioRenderer svgData={svgData} themeMode={themeMode} />;
+      }
+
+      const isExcalidraw =
+        props["data-excalidraw"] !== undefined ||
+        props.dataExcalidraw !== undefined ||
+        (node &&
+          node.properties &&
+          node.properties["data-excalidraw"] !== undefined);
+
+      if (isExcalidraw) {
+        const svgData =
+          props["data-excalidraw-svg"] ||
+          props.dataExcalidrawSvg ||
+          node?.properties?.["data-excalidraw-svg"] ||
+          "";
+        const themeMode =
+          props["data-excalidraw-theme"] ||
+          props.dataExcalidrawTheme ||
+          node?.properties?.["data-excalidraw-theme"] ||
+          "light";
+
+        return <ExcalidrawRenderer svgData={svgData} themeMode={themeMode} />;
       }
 
       if (

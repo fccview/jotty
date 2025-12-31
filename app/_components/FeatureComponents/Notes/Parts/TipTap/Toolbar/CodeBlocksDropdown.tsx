@@ -6,12 +6,14 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { codeblockLangs } from "@/app/_utils/code-block-utils";
 import { useState, useMemo } from "react";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
+import { useTranslations } from "next-intl";
 
 interface CodeBlockDropdownProps {
   editor: Editor | null;
 }
 
 export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
+  const t = useTranslations();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredLanguages = useMemo(() => {
@@ -42,7 +44,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
       size="sm"
       onMouseDown={(e) => e.preventDefault()}
       className="flex items-center gap-1"
-      title="Code"
+      title={t('editor.code')}
     >
       <SourceCodeIcon className="h-4 w-4" />
       <ArrowDown01Icon className="h-3 w-3" />
@@ -56,7 +58,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
           <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search languages..."
+            placeholder={t("editor.searchLanguages")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
@@ -82,7 +84,7 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
           ))
         ) : (
           <div className="px-3 py-4 text-sm text-muted-foreground text-center">
-            No languages found
+            {t('editor.noLanguagesFound')}
           </div>
         )}
       </div>

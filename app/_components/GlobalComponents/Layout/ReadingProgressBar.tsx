@@ -2,10 +2,12 @@
 
 import { cn } from "@/app/_utils/global-utils";
 import { useEffect, useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
   const [progress, setProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations();
 
   useEffect(() => {
     const calculateProgress = () => {
@@ -107,7 +109,7 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
         aria-valuenow={Math.round(progress)}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="Reading progress"
+        aria-label={t("common.readingProgress")}
       >
         <div
           className="h-full bg-primary transition-all duration-150 ease-out"

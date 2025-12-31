@@ -257,6 +257,19 @@ export const createItem = async (
       }
     }
 
+    const getDefaultStatus = (): TaskStatus => {
+      if (status) return status as TaskStatus;
+
+      if (list.statuses && list.statuses.length > 0) {
+        const sortedStatuses = [...list.statuses].sort((a, b) => a.order - b.order);
+        return sortedStatuses[0].id as TaskStatus;
+      }
+
+      return TaskStatus.TODO;
+    };
+
+    const defaultStatus = list.type === "task" ? getDefaultStatus() : undefined;
+
     const newItem = {
       id: `${listId}-${Date.now()}`,
       text,
@@ -267,12 +280,12 @@ export const createItem = async (
       createdAt: now,
       lastModifiedBy: currentUser,
       lastModifiedAt: now,
-      ...(list.type === "task" && {
-        status: (status as TaskStatus) || TaskStatus.TODO,
+      ...(list.type === "task" && defaultStatus && {
+        status: defaultStatus,
         timeEntries,
         history: [
           {
-            status: (status as TaskStatus) || TaskStatus.TODO,
+            status: defaultStatus,
             timestamp: now,
             user: currentUser,
           },

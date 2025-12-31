@@ -37,6 +37,8 @@ import {
 import { generateWebManifest } from "./_utils/global-utils";
 import path from "path";
 import { writeJsonFile } from "./_server/actions/file";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -137,6 +139,7 @@ export async function generateViewport(): Promise<Viewport> {
     initialScale: 1,
     maximumScale: 1,
     themeColor,
+    viewportFit: "cover",
   };
 }
 
@@ -157,6 +160,7 @@ export default async function RootLayout({
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
   const users = await getUsers();
   const linkIndex = user?.username ? await readLinkIndex(user.username) : null;
+  const messages = await getMessages();
 
   const shouldParseContent = settings?.parseContent === "yes";
 
@@ -218,6 +222,7 @@ export default async function RootLayout({
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
         <link rel="icon" href="/app-icons/favicon.ico" />
+        <link rel="stylesheet" href="/themes/excalidraw/excalidraw.css" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
@@ -231,46 +236,48 @@ export default async function RootLayout({
         />
       </head>
       <body className={`jotty-body`}>
-        <AppModeProvider
-          isDemoMode={settings?.isDemo || false}
-          isRwMarkable={settings?.isRwMarkable || false}
-          user={user}
-          appVersion={appVersion.data || ""}
-          pathname={pathname || ""}
-          initialSettings={settings}
-          usersPublicData={users}
-          linkIndex={linkIndex}
-          notes={notes}
-          checklists={checklists}
-          allSharedItems={allSharedItems}
-          userSharedItems={userSharedItems}
-          globalSharing={globalSharing}
-        >
-          <ThemeProvider user={user || {}}>
-            <EmojiProvider>
-              <NavigationGuardProvider>
-                <ToastProvider>
-                  <ShortcutProvider
-                    user={user}
-                    noteCategories={noteCategories.data || []}
-                    checklistCategories={checklistCategories.data || []}
-                  >
-                    <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                      <DynamicFavicon />
-                      {children}
+        <NextIntlClientProvider messages={messages}>
+          <AppModeProvider
+            isDemoMode={settings?.isDemo || false}
+            isRwMarkable={settings?.isRwMarkable || false}
+            user={user}
+            appVersion={appVersion.data || ""}
+            pathname={pathname || ""}
+            initialSettings={settings}
+            usersPublicData={users}
+            linkIndex={linkIndex}
+            notes={notes}
+            checklists={checklists}
+            allSharedItems={allSharedItems}
+            userSharedItems={userSharedItems}
+            globalSharing={globalSharing}
+          >
+            <ThemeProvider user={user || {}}>
+              <EmojiProvider>
+                <NavigationGuardProvider>
+                  <ToastProvider>
+                    <ShortcutProvider
+                      user={user}
+                      noteCategories={noteCategories.data || []}
+                      checklistCategories={checklistCategories.data || []}
+                    >
+                      <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                        <DynamicFavicon />
+                        {children}
 
-                      {!pathname?.includes("/public") && <InstallPrompt />}
+                        {!pathname?.includes("/public") && <InstallPrompt />}
 
-                      {serveUpdates && !pathname?.includes("/public") && (
-                        <UpdatePrompt />
-                      )}
-                    </div>
-                  </ShortcutProvider>
-                </ToastProvider>
-              </NavigationGuardProvider>
-            </EmojiProvider>
-          </ThemeProvider>
-        </AppModeProvider>
+                        {serveUpdates && !pathname?.includes("/public") && (
+                          <UpdatePrompt />
+                        )}
+                      </div>
+                    </ShortcutProvider>
+                  </ToastProvider>
+                </NavigationGuardProvider>
+              </EmojiProvider>
+            </ThemeProvider>
+          </AppModeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

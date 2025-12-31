@@ -5,6 +5,7 @@ import { ArrowDown01Icon, Folder01Icon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { Category } from "@/app/_types";
 import { CategoryTreeNode } from "./CategoryTreeNode";
+import { useTranslations } from "next-intl";
 
 interface CategoryTreeSelectorProps {
   categories: Category[];
@@ -23,6 +24,7 @@ export const CategoryTreeSelector = ({
   className,
   isInModal = false,
 }: CategoryTreeSelectorProps) => {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
@@ -116,7 +118,7 @@ export const CategoryTreeSelector = ({
               >
                 <div className="w-5" />
                 <Folder01Icon className="h-4 w-4 text-muted-foreground" />
-                <span>Uncategorized</span>
+                <span>{t('notes.uncategorized')}</span>
               </div>
             )}
             {rootCategories.map((category) => (

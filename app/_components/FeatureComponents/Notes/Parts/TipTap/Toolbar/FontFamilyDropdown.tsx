@@ -3,13 +3,14 @@ import { ArrowDown01Icon, TextIcon, Search01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ToolbarDropdown";
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 type FontFamilyDropdownProps = {
   editor: Editor;
 };
 
-const allFonts = [
-  { name: "Default", value: "" },
+const allFonts = (t: any): { name: string; value: string }[] => [
+  { name: t("settings.default"), value: "" },
   { name: "American Typewriter", value: "'American Typewriter', serif" },
   { name: "Andale Mono", value: "'Andale Mono', monospace" },
   { name: "Arial", value: "Arial, sans-serif" },
@@ -122,6 +123,7 @@ const allFonts = [
 
 export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const t = useTranslations();
 
   const currentStyle = editor.getAttributes("fontFamily").style;
   const currentFont =
@@ -129,11 +131,11 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
 
   const filteredFonts = useMemo(() => {
     if (!searchTerm.trim()) {
-      return allFonts;
+      return allFonts(t);
     }
 
     const searchLower = searchTerm.toLowerCase();
-    return allFonts.filter((font) =>
+    return allFonts(t).filter((font) =>
       font.name.toLowerCase().includes(searchLower)
     );
   }, [searchTerm]);
@@ -169,7 +171,7 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
           <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search fonts..."
+            placeholder={t("editor.searchFonts")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
@@ -184,9 +186,8 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
               key={font.value || "default"}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => handleFontSelect(font.value)}
-              className={`w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors text-sm ${
-                currentFont === font.value ? "bg-accent" : ""
-              }`}
+              className={`w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors text-sm ${currentFont === font.value ? "bg-accent" : ""
+                }`}
               style={{ fontFamily: font.value || "inherit" }}
             >
               {font.name}
@@ -194,7 +195,7 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
           ))
         ) : (
           <div className="px-3 py-4 text-sm text-muted-foreground text-center">
-            No fonts found
+            {t("editor.noFontsFound")}
           </div>
         )}
       </div>

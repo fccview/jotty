@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Session } from "@/app/_types";
 import { getCurrentUser } from "@/app/_server/actions/users";
+import { useTranslations } from 'next-intl';
 import {
   getSessionsForUser,
   SessionData,
@@ -10,6 +11,7 @@ import {
 } from "@/app/_server/actions/session";
 
 export const useSessionManager = () => {
+  const t = useTranslations();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [status, setStatus] = useState({
     isLoading: true,
@@ -40,7 +42,7 @@ export const useSessionManager = () => {
     } catch (err) {
       setStatus((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : "An error occurred.",
+        error: err instanceof Error ? err.message : t("errors.anErrorOccurred"),
       }));
     } finally {
       setStatus((prev) => ({ ...prev, isLoading: false }));
@@ -52,7 +54,7 @@ export const useSessionManager = () => {
   }, [loadSessions]);
 
   const handleTerminateSession = async (sessionId: string) => {
-    if (!window.confirm("Are you sure you want to terminate this session?"))
+    if (!window.confirm(t("profile.terminateSessionConfirm")))
       return;
     setTerminating({ id: sessionId, all: false });
     try {
@@ -70,7 +72,7 @@ export const useSessionManager = () => {
     } catch (err) {
       setStatus((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : "An error occurred.",
+        error: err instanceof Error ? err.message : t("errors.anErrorOccurred"),
       }));
     } finally {
       setTerminating({ id: null, all: false });
@@ -79,7 +81,7 @@ export const useSessionManager = () => {
 
   const handleTerminateAllOtherSessions = async () => {
     if (
-      !window.confirm("Are you sure you want to terminate all other sessions?")
+      !window.confirm(t("profile.terminateAllSessionsConfirm"))
     )
       return;
     setTerminating({ id: null, all: true });
@@ -99,7 +101,7 @@ export const useSessionManager = () => {
     } catch (err) {
       setStatus((prev) => ({
         ...prev,
-        error: err instanceof Error ? err.message : "An error occurred.",
+        error: err instanceof Error ? err.message : t("errors.anErrorOccurred"),
       }));
     } finally {
       setTerminating({ id: null, all: false });

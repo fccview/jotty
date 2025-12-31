@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   DragEndEvent,
   KeyboardSensor,
@@ -43,6 +44,7 @@ export const useChecklist = ({
   onUpdate,
   onDelete,
 }: UseChecklistProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -188,7 +190,7 @@ export const useChecklist = ({
   };
 
   const handleDeleteList = async () => {
-    if (confirm("Are you sure you want to delete this checklist?")) {
+    if (confirm(t('common.confirmDeleteItem', { itemTitle: localList.title }))) {
       const formData = new FormData();
       formData.append("id", localList.id);
       formData.append("category", localList.category || "Uncategorized");
@@ -358,15 +360,12 @@ export const useChecklist = ({
 
   const handleEditItem = async (itemId: string, text: string) => {
     const formData = new FormData();
-    const owner = await getUserByChecklist(
-      localList.id,
-      localList.category || "Uncategorized"
-    );
+    const currentUser = await getCurrentUser();
     formData.append("listId", localList.id);
     formData.append("itemId", itemId);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
-    formData.append("user", owner.data?.username || "");
+    formData.append("user", localList.owner || currentUser?.username || "");
 
     const result = await updateItem(localList, formData);
 
@@ -453,8 +452,10 @@ export const useChecklist = ({
 
       let newIndex = targetSiblings.findIndex((item) => item.id === overId);
 
-      if (activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInNew.index) {
-        newIndex = newIndex;
+      const isDraggingDown = activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInfo.index;
+
+      if (isDraggingDown) {
+        newIndex = newIndex + 1;
       }
 
       targetSiblings.splice(newIndex, 0, activeInNew.item);
@@ -577,14 +578,9 @@ export const useChecklist = ({
     }
     const result = await createItem(localList, formData, currentUser?.username);
 
-    const checklistOwner = await getUserByChecklist(
-      localList.id,
-      localList.category || "Uncategorized"
-    );
-
     const updatedList = await getListById(
       localList.id,
-      checklistOwner?.data?.username,
+      localList.owner || currentUser?.username,
       localList.category
     );
 

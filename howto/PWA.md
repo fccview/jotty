@@ -6,11 +6,7 @@ jotty·page is a fully functional Progressive Web App (PWA) that can be installe
 
 ### Automatic Installation Prompt
 
-When you visit jotty·page in a supported browser, you'll automatically see an install prompt that appears as a banner or button. This prompt typically appears:
-
-- On mobile devices when you visit the site
-- On desktop Chrome/Edge when you visit frequently
-- When the site meets PWA installation criteria
+When you visit jotty·page in a supported browser and from https, you'll automatically see an install prompt that appears as a banner or button. 
 
 ### Manual Installation (if no prompt appears)
 
@@ -33,16 +29,6 @@ If the automatic prompt doesn't appear, you can manually install jotty·page:
 
 1. Click the **Menu** (☰) > **More tools** > **Add to desktop**
 2. Confirm the installation
-
-## PWA Features
-
-Once installed, jotty·page provides:
-
-- **Offline functionality** - Access your notes and checklists without internet
-- **Native app experience** - Launch from home screen or dock
-- **Push notifications** - Receive updates (when enabled)
-- **Splash screen** - Custom branded loading screen
-- **App shortcuts** - Quick access to common actions
 
 ## Customizing Your PWA
 
@@ -120,34 +106,3 @@ Similar to themes, PWA icons are cached during installation:
 - **Changing icons after installation will NOT update the installed app**
 - To see new icons, you must uninstall and reinstall the PWA
 - This applies to all icon sizes (16x16, 32x32, 180x180, 192x192, 512x512)
-
-### Managing Installed PWAs
-
-#### Updating an Installed PWA
-
-PWAs update automatically when you visit the website, but you can force an update:
-
-1. Open the installed PWA
-2. If an update is available, you'll see a notification
-3. Click **"Update"** to apply the latest version
-
-#### Uninstalling a PWA
-
-To remove the installed PWA:
-
-**On Mobile:**
-
-- Long-press the app icon on your home screen
-- Select **"Remove"** or **"Delete"**
-
-**On Desktop (Chrome/Edge):**
-
-- Click the **Menu** (⋮) in the app window
-- Select **"Uninstall [App Name]"**
-
-**On Desktop (Firefox):**
-
-- Right-click the desktop shortcut
-- Select **"Delete"**
-
-**Note**: Some features may be limited in Firefox compared to Chrome-based browsers.

@@ -26,10 +26,8 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { Settings01Icon, Archive02Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { updateChecklistStatuses } from "@/app/_server/actions/checklist";
-import {
-  archiveItem,
-  unarchiveItem,
-} from "@/app/_server/actions/checklist-item";
+import { unarchiveItem } from "@/app/_server/actions/checklist-item";
+import { useTranslations } from "next-intl";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -60,6 +58,7 @@ const defaultStatuses: KanbanStatus[] = [
 ];
 
 export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
+  const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
@@ -184,8 +183,8 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           isLoading={isLoading}
           autoFocus={true}
           focusKey={focusKey}
-          placeholder="Add new task..."
-          submitButtonText="Add Task"
+          placeholder={t('checklists.addNewTask')}
+          submitButtonText={t('tasks.addTask')}
         />
       )}
       <div className="flex gap-2 px-4 pt-4 pb-2 w-full justify-end">
@@ -197,7 +196,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             className="text-xs"
           >
             <Settings01Icon className="h-3 w-3 mr-1" />
-            Manage Statuses
+            {t('tasks.manageStatuses')}
           </Button>
         )}
         <Button
@@ -207,7 +206,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           className="text-xs"
         >
           <Archive02Icon className="h-3 w-3 mr-1" />
-          View Archived
+          {t('tasks.viewArchived')}
         </Button>
       </div>
       <div className="flex-1 pb-[8.5em]">
@@ -229,11 +228,10 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 return (
                   <div
                     key={column.id}
-                    className={`${
-                      columns.length > 4
-                        ? "flex-shrink-0 min-w-[20%]"
-                        : "min-w-[24%] "
-                    }`}
+                    className={`${columns.length > 4
+                      ? "flex-shrink-0 min-w-[20%]"
+                      : "min-w-[24%] "
+                      }`}
                   >
                     <KanbanColumn
                       checklist={localChecklist}

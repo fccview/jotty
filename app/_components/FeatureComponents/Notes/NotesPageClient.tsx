@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { File02Icon } from "hugeicons-react";
-import { Note, Category, User } from "@/app/_types";
+import { Note, User } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
-import { Pagination } from "@/app/_components/GlobalComponents/Layout/Pagination";
-import { SiteHeader } from "@/app/_components/GlobalComponents/Layout/SiteHeader";
-import { FilterSidebar } from "@/app/_components/GlobalComponents/Layout/FilterSidebar";
 import { usePagination } from "@/app/_hooks/usePagination";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -16,34 +13,35 @@ import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
 import Masonry from "react-masonry-css";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
+import { useTranslations } from "next-intl";
+import { useSettings } from "@/app/_utils/settings-store";
+import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
+import { NoteGridItem } from "@/app/_components/GlobalComponents/Cards/NoteGridItem";
+import { useNotesFilter } from "@/app/_components/FeatureComponents/Notes/NotesClient";
 
 interface NotesPageClientProps {
   initialNotes: Note[];
-  initialCategories: Category[];
   user: User | null;
 }
 
-type NoteFilter = "all" | "recent" | "pinned";
-
 export const NotesPageClient = ({
   initialNotes,
-  initialCategories,
   user,
 }: NotesPageClientProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { openCreateNoteModal } = useShortcut();
   const { isInitialized } = useAppMode();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [noteFilter, setNoteFilter] = useState<NoteFilter>(user?.defaultNoteFilter || "all");
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const { viewMode } = useSettings();
+  const {
+    noteFilter,
+    selectedCategories,
+    recursive,
+    itemsPerPage,
+    setItemsPerPage,
+    setPaginationInfo,
+  } = useNotesFilter();
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
-  const [recursive, setRecursive] = useState(false);
-
-  const filterOptions = [
-    { id: "all", name: "All Notes" },
-    { id: "recent", name: "Recent" },
-    { id: "pinned", name: "Pinned" },
-  ];
 
   const filteredNotes = useMemo(() => {
     let filtered = [...initialNotes];
@@ -51,8 +49,9 @@ export const NotesPageClient = ({
     if (noteFilter === "pinned") {
       const pinnedPaths = user?.pinnedNotes || [];
       filtered = filtered.filter((note) => {
-        const itemPath = `${note.category || "Uncategorized"}/${note.id}`;
-        return pinnedPaths.includes(itemPath);
+        const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.id}`;
+        const idPath = `${note.category || "Uncategorized"}/${note.id}`;
+        return pinnedPaths.includes(uuidPath) || pinnedPaths.includes(idPath);
       });
     } else if (noteFilter === "recent") {
       filtered = filtered
@@ -86,22 +85,21 @@ export const NotesPageClient = ({
     user?.pinnedNotes,
   ]);
 
-  const {
-    currentPage,
-    totalPages,
-    paginatedItems,
-    goToPage,
-    totalItems,
-    handleItemsPerPageChange,
-  } = usePagination({
+  const { currentPage, totalPages, paginatedItems, goToPage, totalItems, handleItemsPerPageChange } = usePagination({
     items: filteredNotes,
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
   });
 
-  const handleClearAllCategories = () => {
-    setSelectedCategories([]);
-  };
+  useEffect(() => {
+    setPaginationInfo({
+      currentPage,
+      totalPages,
+      totalItems,
+      onPageChange: goToPage,
+      onItemsPerPageChange: handleItemsPerPageChange,
+    });
+  }, [currentPage, totalPages, totalItems, goToPage, handleItemsPerPageChange, setPaginationInfo]);
 
   const handleTogglePin = async (note: Note) => {
     if (!user || isTogglingPin === note.id) return;
@@ -135,94 +133,93 @@ export const NotesPageClient = ({
 
   if (initialNotes.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <SiteHeader
-          title="All Notes"
-          description="Browse and manage all your notes"
-        />
-        <EmptyState
-          icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
-          title="No notes yet"
-          description="Create your first note to get started with your knowledge base."
-          buttonText="Create New Note"
-          onButtonClick={() => openCreateNoteModal()}
-        />
-      </div>
+      <EmptyState
+        icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
+        title={t('notes.noNotesYet')}
+        description={t('notes.createFirstNote')}
+        buttonText={t('notes.createNewNote')}
+        onButtonClick={() => openCreateNoteModal()}
+      />
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <SiteHeader
-        title="All Notes"
-        description="Browse and manage all your notes"
-      />
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1">
-          <FilterSidebar
-            title="By type"
-            filterValue={noteFilter}
-            filterOptions={filterOptions}
-            onFilterChange={(value) => setNoteFilter(value as NoteFilter)}
-            categories={initialCategories}
-            selectedCategories={selectedCategories}
-            onCategorySelectionChange={setSelectedCategories}
-            onClearAllCategories={handleClearAllCategories}
-            recursive={recursive}
-            onRecursiveChange={setRecursive}
-            pagination={
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={goToPage}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={handleItemsPerPageChange}
-                totalItems={totalItems}
-              />
-            }
-          />
+    <div className="w-full">
+      {paginatedItems.length === 0 ? (
+        <div className="text-center py-12">
+          <File02Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">
+            {t('notes.noNotesFound')}
+          </h3>
+          <p className="text-muted-foreground">
+            {t('notes.tryAdjustingFilters')}
+          </p>
         </div>
+      ) : (
+        <div className="mt-6">
+          {viewMode === 'card' && (
+            <Masonry
+              breakpointCols={breakpointColumnsObj}
+              className="flex w-auto -ml-4"
+              columnClassName="pl-4 bg-clip-padding"
+            >
+              {paginatedItems.map((note) => (
+                <div key={note.id} className="mb-4">
+                  <NoteCard
+                    note={note}
+                    onSelect={(note) => {
+                      const categoryPath = `${note.category || "Uncategorized"}/${note.id}`;
+                      router.push(`/note/${categoryPath}`);
+                    }}
+                    isPinned={user?.pinnedNotes?.includes(
+                      `${note.category || "Uncategorized"}/${note.id}`
+                    )}
+                    onTogglePin={() => handleTogglePin(note)}
+                  />
+                </div>
+              ))}
+            </Masonry>
+          )}
 
-        <div className="lg:col-span-3">
-          {paginatedItems.length === 0 ? (
-            <div className="text-center py-12">
-              <File02Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
-                No notes found
-              </h3>
-              <p className="text-muted-foreground">
-                Try adjusting your filters or create a new note.
-              </p>
+          {viewMode === 'list' && (
+            <div className="space-y-3">
+              {paginatedItems.map((note) => (
+                <NoteListItem
+                  key={note.id}
+                  note={note}
+                  onSelect={(note) => {
+                    const categoryPath = `${note.category || "Uncategorized"}/${note.id}`;
+                    router.push(`/note/${categoryPath}`);
+                  }}
+                  isPinned={user?.pinnedNotes?.includes(
+                    `${note.category || "Uncategorized"}/${note.id}`
+                  )}
+                  onTogglePin={() => handleTogglePin(note)}
+                />
+              ))}
             </div>
-          ) : (
-            <>
-              <Masonry
-                breakpointCols={breakpointColumnsObj}
-                className="flex w-auto -ml-4"
-                columnClassName="pl-4 bg-clip-padding"
-              >
-                {paginatedItems.map((note) => (
-                  <div key={note.id} className="mb-4">
-                    <NoteCard
-                      note={note}
-                      onSelect={(note) => {
-                        const categoryPath = `${
-                          note.category || "Uncategorized"
-                        }/${note.id}`;
-                        router.push(`/note/${categoryPath}`);
-                      }}
-                      isPinned={user?.pinnedNotes?.includes(
-                        `${note.category || "Uncategorized"}/${note.id}`
-                      )}
-                      onTogglePin={() => handleTogglePin(note)}
-                    />
-                  </div>
-                ))}
-              </Masonry>
-            </>
+          )}
+
+          {viewMode === 'grid' && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {paginatedItems.map((note) => (
+                <NoteGridItem
+                  key={note.id}
+                  note={note}
+                  onSelect={(note) => {
+                    const categoryPath = `${note.category || "Uncategorized"}/${note.id}`;
+                    router.push(`/note/${categoryPath}`);
+                  }}
+                  isPinned={user?.pinnedNotes?.includes(
+                    `${note.category || "Uncategorized"}/${note.id}`
+                  )}
+                  onTogglePin={() => handleTogglePin(note)}
+                />
+              ))}
+            </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

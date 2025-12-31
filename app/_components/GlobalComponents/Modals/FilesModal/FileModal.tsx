@@ -6,6 +6,7 @@ import { useFileManager } from "@/app/_hooks/useFileManager";
 import { FileUpload } from "../../FormElements/FileUpload";
 import { FileTabs } from "../../Tabs/FileTabs";
 import { FileGrid } from "../../Layout/FileGrid";
+import { useTranslations } from "next-intl";
 
 interface FileModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const FileModal = ({
   onClose,
   onSelectFile,
 }: FileModalProps) => {
+  const t = useTranslations();
   const {
     isLoading,
     isUploading,
@@ -57,7 +59,7 @@ export const FileModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Files & Images"
+      title={t("common.filesAndImages")}
       className="!max-w-6xl !max-h-[90vh] sm:!w-[95vw] !w-[100vw]"
     >
       <div className="flex flex-col h-full max-h-[calc(90vh-5rem)]">

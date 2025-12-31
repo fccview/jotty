@@ -10,6 +10,7 @@ import { Modes } from "@/app/_types/enums";
 import { createCategory } from "@/app/_server/actions/category";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface CreateNoteModalProps {
   onClose: () => void;
@@ -24,6 +25,7 @@ export const CreateNoteModal = ({
   categories,
   initialCategory = "",
 }: CreateNoteModalProps) => {
+  const t = useTranslations();
   const { user } = useAppMode();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(initialCategory);
@@ -75,17 +77,17 @@ export const CreateNoteModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Create New Note">
+    <Modal isOpen={true} onClose={onClose} title={t('notes.createNewNote')}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Input
           ref={titleInputRef}
           id="title"
           name="title"
-          label="Title *"
+          label={t('notes.noteTitle')}
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter note title..."
+          placeholder={t('notes.enterNoteTitle')}
           required
           disabled={isCreating}
           autoFocus
@@ -108,15 +110,13 @@ export const CreateNoteModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isCreating}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={!title.trim() || isCreating}
             className="flex-1"
           >
-            {isCreating ? "Creating..." : "Create Note"}
+            {isCreating ? t('common.creating') : t('common.create')}
           </Button>
         </div>
       </form>

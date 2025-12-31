@@ -4,8 +4,10 @@ import { useState } from "react";
 import { register } from "@/app/_server/actions/auth";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 export default function SetupForm() {
+  const t = useTranslations('auth');
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const { isRwMarkable } = useAppMode();
@@ -28,10 +30,10 @@ export default function SetupForm() {
     <div className="space-y-6">
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Welcome to {isRwMarkable ? "rwMarkable" : "jotty·page"}
+          {t('welcomeTo', { appName: isRwMarkable ? "rwMarkable" : "jotty·page" })}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Create your admin account to get started
+          {t('createAdminAccountDescription')}
         </p>
       </div>
 
@@ -45,9 +47,9 @@ export default function SetupForm() {
         <Input
           id="username"
           name="username"
-          label="Username"
+          label={t('usernameLabel')}
           type="text"
-          placeholder="Choose a username"
+          placeholder={t('chooseUsername')}
           required
           disabled={isLoading}
         />
@@ -55,9 +57,9 @@ export default function SetupForm() {
         <Input
           id="password"
           name="password"
-          label="Password"
+          label={t('passwordLabel')}
           type="password"
-          placeholder="Choose a strong password"
+          placeholder={t('choosePassword')}
           required
           disabled={isLoading}
         />
@@ -65,9 +67,9 @@ export default function SetupForm() {
         <Input
           id="confirmPassword"
           name="confirmPassword"
-          label="Confirm Password"
+          label={t('confirmPasswordLabel')}
           type="password"
-          placeholder="Confirm your password"
+          placeholder={t('confirmYourPassword')}
           required
           disabled={isLoading}
         />
@@ -77,7 +79,7 @@ export default function SetupForm() {
           disabled={isLoading}
           className="inline-flex items-center justify-center rounded-jotty text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
         >
-          {isLoading ? "Creating Account..." : "Create Admin Account"}
+          {isLoading ? t('creatingAccount') : t('createAdminAccount')}
         </button>
       </form>
     </div>

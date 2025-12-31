@@ -5,6 +5,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { ExportProgress, ExportResult, User } from "@/app/_types";
+import { useTranslations } from "next-intl";
 import {
   exportAllChecklistsNotes,
   exportUserChecklistsNotes,
@@ -26,33 +27,33 @@ interface ExportOption {
   requiresUserSelection: boolean;
 }
 
-const exportOptions: ExportOption[] = [
+const exportOptions = (t: any): ExportOption[] => [
   {
     id: "all_checklists_notes",
-    title: "All Checklists and Notes",
+    title: t("admin.allChecklistsAndNotes"),
     description:
-      "Exports all checklists and notes created by all users. This will generate a zip file containing JSON data organized by user and category.",
+      t("admin.allChecklistsAndNotesDescription"),
     requiresUserSelection: false,
   },
   {
     id: "user_checklists_notes",
-    title: "Specific User's Checklists and Notes",
+    title: t("admin.userChecklistsNotes"),
     description:
-      "Select a user from the dropdown to export all checklists and notes belonging to that specific user.",
+      t("admin.userChecklistsNotesDescription"),
     requiresUserSelection: true,
   },
   {
     id: "all_users_data",
-    title: "All User Account Data",
+    title: t("admin.allUsersData"),
     description:
-      "Exports a JSON file with all user account info (usernames, admin status, etc.). This does NOT include their checklist or note content.",
+      t("admin.allUsersDataDescription"),
     requiresUserSelection: false,
   },
   {
     id: "whole_data_folder",
-    title: "Entire Data Folder (Backup)",
+    title: t("admin.wholeDataFolder"),
     description:
-      "Exports the entire 'data' folder, including all user content, metadata, and settings. Use with caution as this can be a large file.",
+      t("admin.wholeDataFolderDescription"),
     requiresUserSelection: false,
   },
 ];
@@ -62,8 +63,9 @@ interface ExportContentProps {
 }
 
 export const ExportContent = ({ users }: ExportContentProps) => {
+  const t = useTranslations();
   const [selectedExportType, setSelectedExportType] = useState<ExportType>(
-    exportOptions[3].id
+    exportOptions(t)[3].id
   );
   const [selectedUser, setSelectedUser] = useState<string | undefined>(
     undefined
@@ -77,7 +79,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
   const [error, setError] = useState<string | undefined>(undefined);
 
   const selectedOption = useMemo(
-    () => exportOptions.find((opt) => opt.id === selectedExportType)!,
+    () => exportOptions(t).find((opt) => opt.id === selectedExportType)!,
     [selectedExportType]
   );
 
@@ -154,9 +156,9 @@ export const ExportContent = ({ users }: ExportContentProps) => {
   return (
     <div className="py-6 bg-card space-y-8">
       <div>
-        <h2 className="text-2xl font-bold">Data Export Options</h2>
+        <h2 className="text-2xl font-bold">{t('admin.dataExportOptions')}</h2>
         <p className="text-muted-foreground">
-          Select an export type and download data from your application.
+          {t('admin.selectExportType')}
         </p>
       </div>
 
@@ -164,7 +166,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
         <Dropdown
           onChange={(value) => setSelectedExportType(value as ExportType)}
           value={selectedExportType}
-          options={exportOptions.map((opt) => ({
+          options={exportOptions(t).map((opt) => ({
             id: opt.id,
             name: opt.title,
           }))}
@@ -186,7 +188,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
                 name: user.username,
               }))}
               disabled={exporting}
-              placeholder="Select a user to export"
+              placeholder={t("admin.selectUserToExport")}
               className="w-full"
             />
           </div>
@@ -196,9 +198,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
           onClick={handleExport}
           disabled={isExportDisabled}
           className="w-full md:w-auto"
-        >
-          Export Data
-        </Button>
+        >{t('settings.exportData')}</Button>
       </div>
 
       {exporting && (

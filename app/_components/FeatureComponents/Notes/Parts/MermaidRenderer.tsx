@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
+import { useTranslations } from "next-intl";
 
 interface MermaidRendererProps {
   code: string;
@@ -54,6 +55,7 @@ if (typeof window !== 'undefined') {
 export const MermaidRenderer = ({ code, className = "" }: MermaidRendererProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations();
 
   useEffect(() => {
     const renderDiagram = async () => {
@@ -83,7 +85,7 @@ export const MermaidRenderer = ({ code, className = "" }: MermaidRendererProps) 
     return (
       <div className={`border border-destructive rounded p-4 my-4 ${className}`}>
         <div className="text-destructive text-sm">
-          <div className="font-semibold mb-1">Mermaid Error:</div>
+          <div className="font-semibold mb-1">{t("notes.mermaidError")}</div>
           <div className="font-mono text-xs">{error}</div>
         </div>
       </div>

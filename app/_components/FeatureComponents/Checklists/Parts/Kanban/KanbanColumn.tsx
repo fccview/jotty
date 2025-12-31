@@ -10,6 +10,7 @@ import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanItem } from "./KanbanItem";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -38,6 +39,7 @@ const KanbanColumnComponent = ({
   statusColor,
   statuses,
 }: KanbanColumnProps) => {
+  const t = useTranslations();
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -59,10 +61,10 @@ const KanbanColumnComponent = ({
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
       return result
         ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16),
-          }
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
         : null;
     };
 
@@ -118,7 +120,7 @@ const KanbanColumnComponent = ({
             ))}
             {items.length === 0 && (
               <div className="text-center text-muted-foreground text-sm py-8">
-                No tasks
+                {t('checklists.noTasks')}
               </div>
             )}
           </div>

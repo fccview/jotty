@@ -5,6 +5,7 @@ import { ReactNodeViewRenderer } from "@tiptap/react";
 import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
+import { useTranslations } from "next-intl";
 
 export const DrawioNodeView = ({
   node,
@@ -13,19 +14,29 @@ export const DrawioNodeView = ({
   editor,
   extension,
 }: any) => {
+  const t = useTranslations();
   const [isEditing, setIsEditing] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const themeMode = node.attrs.themeMode || "light";
 
-  const drawioBaseUrl =
+  const drawioProxyEnabled = extension.storage?.drawioProxyEnabled || false;
+  const configuredDrawioUrl =
     extension.storage?.drawioUrl || "https://embed.diagrams.net";
+
+  const drawioBaseUrl = drawioProxyEnabled
+    ? `/api/diagram-proxy`
+    : configuredDrawioUrl;
+
   const drawioUrl = `${drawioBaseUrl}/?embed=1&ui=kennedy&spin=1&proto=json&saveAndExit=1&noSaveBtn=0`;
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      const drawioOrigin = new URL(drawioBaseUrl).origin;
+      const expectedOrigin = drawioProxyEnabled
+        ? window.location.origin
+        : new URL(drawioBaseUrl, window.location.origin).origin;
+
       if (
-        event.origin !== drawioOrigin &&
+        event.origin !== expectedOrigin &&
         !event.origin.includes("diagrams.net")
       )
         return;
@@ -35,7 +46,9 @@ export const DrawioNodeView = ({
       if (typeof event.data === "string" && event.data.length > 0) {
         try {
           const message = JSON.parse(event.data);
-          const drawioOrigin = new URL(drawioBaseUrl).origin;
+          const drawioOrigin = drawioProxyEnabled
+            ? window.location.origin
+            : new URL(drawioBaseUrl, window.location.origin).origin;
 
           if (message.event === "init") {
             const iframe = iframeRef.current;
@@ -116,7 +129,7 @@ export const DrawioNodeView = ({
   };
 
   const handleDelete = () => {
-    if (confirm("Delete this diagram?")) {
+    if (confirm(t('common.confirmDeleteItem', { itemTitle: t('editor.drawioDiagram') }))) {
       deleteNode();
     }
   };
@@ -133,13 +146,11 @@ export const DrawioNodeView = ({
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
           <div className="bg-background rounded-jotty shadow-xl w-[95vw] h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-3 border-b border-border">
-              <h3 className="font-semibold">Edit Diagram</h3>
+              <h3 className="font-semibold">{t("editor.editDiagram")}</h3>
               <button
                 onClick={() => setIsEditing(false)}
                 className="px-3 py-1 bg-muted hover:bg-muted/80 rounded text-sm"
-              >
-                Close
-              </button>
+              >{t('common.close')}</button>
             </div>
             <iframe
               ref={iframeRef}
@@ -170,17 +181,13 @@ export const DrawioNodeView = ({
               <button
                 onClick={openDrawio}
                 className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
-                title="Edit diagram"
-              >
-                Edit
-              </button>
+                title={t("editor.editDiagram")}
+              >{t('common.edit')}</button>
               <button
                 onClick={handleDelete}
                 className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-xs hover:bg-destructive/90"
-                title="Delete diagram"
-              >
-                Delete
-              </button>
+                title={t("editor.deleteDiagram")}
+              >{t('common.delete')}</button>
             </div>
             <div
               className="drawio-svg-container flex justify-center items-center"
@@ -199,14 +206,12 @@ export const DrawioNodeView = ({
               onClick={openDrawio}
               className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
             >
-              Create Diagram
+              {t("editor.createVisualDiagram")}
             </button>
             <button
               onClick={handleDelete}
               className="ml-2 px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
-            >
-              Delete
-            </button>
+            >{t('common.delete')}</button>
           </div>
         )}
       </div>
@@ -214,7 +219,10 @@ export const DrawioNodeView = ({
   );
 };
 
-export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
+export const DrawioExtension = Node.create<{
+  drawioUrl?: string;
+  drawioProxyEnabled?: boolean;
+}>({
   name: "drawio",
   group: "block",
   atom: true,
@@ -223,6 +231,7 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
   addOptions() {
     return {
       drawioUrl: "https://embed.diagrams.net",
+      drawioProxyEnabled: false,
     };
   },
 
@@ -302,6 +311,7 @@ export const DrawioExtension = Node.create<{ drawioUrl?: string }>({
   addStorage() {
     return {
       drawioUrl: this.options.drawioUrl,
+      drawioProxyEnabled: this.options.drawioProxyEnabled,
     };
   },
 

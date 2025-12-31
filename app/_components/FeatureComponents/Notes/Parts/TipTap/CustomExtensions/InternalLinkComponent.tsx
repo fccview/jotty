@@ -24,6 +24,7 @@ import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/Checklis
 import { Checklist, Note } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { encodeId } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface InternalLinkComponentProps {
   node: {
@@ -81,6 +82,7 @@ export const InternalLinkComponent = ({
   editor,
   updateAttributes,
 }: InternalLinkComponentProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const { href, title, uuid, itemId, type, category, convertToBidirectional } =
     node.attrs;
@@ -269,7 +271,7 @@ export const InternalLinkComponent = ({
       </span>
       {isEditable && (isPathBasedLink || canToggle) && (
         <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-border">
-          <span className="text-xs text-muted-foreground">Link Type:</span>
+          <span className="text-xs text-muted-foreground">{t('editor.linkType')}</span>
           <button
             onClick={handleToggleConversion}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-xs font-medium transition-all ${
@@ -290,12 +292,12 @@ export const InternalLinkComponent = ({
             {isJottyLink || convertToBidirectional ? (
               <>
                 <FileLinkIcon className="h-3.5 w-3.5" />
-                <span>Bidirectional</span>
+                <span>{t('editor.bidirectional')}</span>
               </>
             ) : (
               <>
                 <Attachment01Icon className="h-3.5 w-3.5" />
-                <span>Path-Based</span>
+                <span>{t('editor.pathBased')}</span>
               </>
             )}
           </button>

@@ -7,6 +7,7 @@ import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
 import { Textarea } from "@/app/_components/GlobalComponents/FormElements/Textarea";
 import { importKeys } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTranslations } from "next-intl";
 
 interface PGPKeyImportModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const PGPKeyImportModal = ({
   onClose,
   onSuccess,
 }: PGPKeyImportModalProps) => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [publicKey, setPublicKey] = useState("");
   const [privateKey, setPrivateKey] = useState("");
@@ -37,8 +39,8 @@ export const PGPKeyImportModal = ({
     if (!publicKey.trim() || !privateKey.trim()) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Both public and private keys are required",
+        title: t("common.error"),
+        message: t("encryption.bothKeysRequired"),
       });
       return;
     }
@@ -46,8 +48,8 @@ export const PGPKeyImportModal = ({
     if (!publicKey.includes("-----BEGIN PGP PUBLIC KEY BLOCK-----")) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Invalid public key format. Must be ASCII-armored PGP key.",
+        title: t("common.error"),
+        message: t("encryption.invalidPublicKeyFormat"),
       });
       return;
     }
@@ -55,8 +57,8 @@ export const PGPKeyImportModal = ({
     if (!privateKey.includes("-----BEGIN PGP PRIVATE KEY BLOCK-----")) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Invalid private key format. Must be ASCII-armored PGP key.",
+        title: t("common.error"),
+        message: t("encryption.invalidPrivateKeyFormat"),
       });
       return;
     }
@@ -72,23 +74,23 @@ export const PGPKeyImportModal = ({
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: "Keys imported successfully",
+          title: t("common.success"),
+          message: t("encryption.keysImportedSuccessfully"),
         });
         onSuccess();
         handleClose();
       } else {
         showToast({
           type: "error",
-          title: "Error",
-          message: result.error || "Failed to import keys",
+          title: t("common.error"),
+          message: result.error || t("encryption.failedToImportKeys"),
         });
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "An unexpected error occurred",
+        title: t("common.error"),
+        message: t("errors.anUnknownErrorOccurred"),
       });
     } finally {
       setIsImporting(false);
@@ -105,24 +107,24 @@ export const PGPKeyImportModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Import PGP Keys"
+      title={t("encryption.importPGPKeys")}
       className="max-w-2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <InfoBox
           variant="info"
-          title="Import Existing Keys"
+          title={t('encryption.importExistingKeys')}
           items={[
-            "Paste your ASCII-armored PGP keys below",
-            "Keys must start with -----BEGIN PGP...",
-            "Your keys will be securely stored",
+            t("encryption.pasteAsciiArmoredKeys"),
+            t("encryption.keysMustStartWith"),
+            t("encryption.keysWillBeSecurelyStored"),
           ]}
         />
 
         <Textarea
           ref={publicKeyRef}
           id="publicKey"
-          label="Public Key"
+          label={t("encryption.publicKeyLabel")}
           value={publicKey}
           onChange={(e) => setPublicKey(e.target.value)}
           placeholder={`-----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -137,7 +139,7 @@ mQINBF...
 
         <Textarea
           id="privateKey"
-          label="Private Key"
+          label={t("encryption.privateKeyLabel")}
           value={privateKey}
           onChange={(e) => setPrivateKey(e.target.value)}
           placeholder={`-----BEGIN PGP PRIVATE KEY BLOCK-----
@@ -156,11 +158,9 @@ lQdGBF...
             variant="outline"
             onClick={handleClose}
             disabled={isImporting}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button type="submit" disabled={isImporting}>
-            {isImporting ? "Importing..." : "Import Keys"}
+            {isImporting ? t("encryption.importing") : t("encryption.importKeys")}
           </Button>
         </div>
       </form>

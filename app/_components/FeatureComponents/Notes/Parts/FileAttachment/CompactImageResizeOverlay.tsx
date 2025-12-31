@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Image02Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface CompactImageResizeOverlayProps {
   isVisible: boolean;
@@ -28,6 +29,7 @@ export const CompactImageResizeOverlay = ({
   imageUrl,
   targetElement,
 }: CompactImageResizeOverlayProps) => {
+  const t = useTranslations();
   const [width, setWidth] = useState<string>("");
   const [height, setHeight] = useState<string>("");
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -140,22 +142,22 @@ export const CompactImageResizeOverlay = ({
         <div className="grid grid-cols-2 gap-2">
           <Input
             id="width"
-            label="Width (px)"
+            label={t("editor.widthPx")}
             type="number"
             defaultValue={width}
             value={width}
             onChange={(e) => handleWidthChange(e.target.value)}
-            placeholder="Auto"
+            placeholder={t("common.auto")}
             className="text-xs"
           />
           <Input
             id="height"
-            label="Height (px)"
+            label={t("editor.heightPx")}
             type="number"
             defaultValue={height}
             value={height}
             onChange={(e) => handleHeightChange(e.target.value)}
-            placeholder="Auto"
+            placeholder={t("common.auto")}
             className="text-xs"
           />
         </div>
@@ -166,12 +168,8 @@ export const CompactImageResizeOverlay = ({
             size="sm"
             onClick={onClose}
             className="text-xs"
-          >
-            Cancel
-          </Button>
-          <Button size="sm" onClick={handleApply} className="text-xs">
-            Apply
-          </Button>
+          >{t('common.cancel')}</Button>
+          <Button size="sm" onClick={handleApply} className="text-xs">{t('common.apply')}</Button>
         </div>
       </div>
     </div>

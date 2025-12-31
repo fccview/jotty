@@ -9,8 +9,10 @@ import { readPackageVersion } from "@/app/_server/actions/config";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
+import { useTranslations } from "next-intl";
 
 export const UpdatePrompt = () => {
+  const t = useTranslations();
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releaseUrl, setReleaseUrl] = useState<string | null>(null);
@@ -103,7 +105,7 @@ export const UpdatePrompt = () => {
       <Modal
         isOpen={showReleaseNotesModal}
         onClose={handleCloseModal}
-        title={`Release Notes v${latestVersion}`}
+        title={t("common.releaseNotes", { version: latestVersion || "" })}
         className="lg:max-h-[80vh] lg:!max-w-[80vw] lg:!w-[80vw]"
       >
         <div className="flex flex-col h-full max-h-[calc(80vh-10rem)]">
@@ -118,12 +120,10 @@ export const UpdatePrompt = () => {
           </div>
         </div>
         <div className="py-4 flex justify-end gap-2">
-          <Button onClick={handleCloseModal} variant="ghost">
-            Close
-          </Button>
+          <Button onClick={handleCloseModal} variant="ghost">{t('common.close')}</Button>
           {releaseUrl && (
             <Button onClick={() => window.open(releaseUrl, "_blank")}>
-              View on GitHub
+              {t("common.viewOnGithub")}
             </Button>
           )}
         </div>
@@ -139,11 +139,12 @@ export const UpdatePrompt = () => {
             </div>
             <div>
               <h3 className="font-medium text-foreground hover:underline">
-                New version: {latestVersion}
+                {t("common.newVersion", { version: latestVersion || "" })}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Click to see release notes{" "}
-                {isRwMarkable ? "rwMarkable" : "jotty·page"}
+                {t("common.clickToSeeReleaseNotes", {
+                  appName: isRwMarkable ? "rwMarkable" : "jotty·page"
+                })}
               </p>
             </div>
           </div>

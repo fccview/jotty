@@ -46,21 +46,36 @@ svg {
 
 @media (max-width: 768px) {
     html {
-      scroll-padding-bottom: 20px;
+        scroll-padding-bottom: 20px;
     }
-    
-    input:focus, textarea:focus {
-      scroll-margin-bottom: 20px;
+
+    input:focus,
+    textarea:focus {
+        scroll-margin-bottom: 20px;
     }
 }
 
-body, a, p, span, button, label, input, textarea, select {
+body,
+a,
+p,
+span,
+button,
+label,
+input,
+textarea,
+select {
     font-family: 'Work Sans Variable', sans-serif;
     letter-spacing: -0.5px;
     overflow-wrap: break-word;
 }
 
-h1, h2, h3, h4, h5, h6, .jotty-app-name {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.jotty-app-name {
     font-family: 'IBM Plex Sans Variable', sans-serif;
 }
 
@@ -71,26 +86,28 @@ h1, h2, h3, h4, h5, h6, .jotty-app-name {
 
 @media (max-width: 992px) {
     .jotty-mobile-navigation-icon {
-        background: transparent!important;
+        background: transparent !important;
     }
 
     .jotty-mobile-navigation-icon:hover {
-        color: rgb(var(--foreground))!important;
+        color: rgb(var(--foreground)) !important;
     }
 }
 
-pre, code, 
+pre,
+code,
 code span {
     font-family: "Google Sans Code Variable", monospace;
-    font-size: 14px!important;
+    font-size: 14px !important;
 }
 
 .hide-scrollbar::-webkit-scrollbar {
-    display: none!important;
+    display: none !important;
 }
+
 .hide-scrollbar {
-    -ms-overflow-style: none!important; 
-    scrollbar-width: none!important;  
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
 }
 
 .scroll-fade-right {
@@ -127,14 +144,14 @@ mark {
     padding: 0.125rem 0.25rem;
     color: inherit;
 }
-  
+
 
 .prose {
     @apply text-foreground;
     line-height: 1.7;
 }
 
-.prose img, 
+.prose img,
 .ProseMirror img {
     max-width: 100%;
     height: none;
@@ -203,7 +220,7 @@ mark {
 }
 
 .prose .contains-task-list ul {
-    padding-left: 1.5rem!important;
+    padding-left: 1.5rem !important;
 }
 
 .prose .contains-task-list p,
@@ -211,7 +228,7 @@ mark {
     margin-top: -4px;
 }
 
-.prose ul p + ul .task-list-item {
+.prose ul p+ul .task-list-item {
     display: flex;
     align-items: center;
     padding-bottom: 0;
@@ -224,11 +241,11 @@ mark {
     width: 100%;
 }
 
-.prose .task-list-item p > input {
+.prose .task-list-item p>input {
     margin-right: 0.5em;
 }
 
-.prose p + ul .task-list-item input {
+.prose p+ul .task-list-item input {
     margin-right: 0.5em;
 }
 
@@ -291,11 +308,11 @@ mark {
     @apply bg-muted px-2 py-1 text-xs rounded-jotty border border-border shadow-border shadow-sm;
 }
 
-p > code {
-    background: #292a2b!important;
+p>code {
+    background: #292a2b !important;
     color: #ce9178;
     padding: 0.15rem 0.3rem;
-    border-radius: 0.15rem!important;
+    border-radius: 0.15rem !important;
     font-family: "Google Sans Code Variable", monospace;
 }
 
@@ -305,18 +322,18 @@ p > code {
 .code-block-container code,
 .code-block-container pre *,
 .code-block-container code * {
-  text-shadow: none !important;
-  box-shadow: none !important;
-  filter: none !important;
-  font-family: "Google Sans Code Variable" !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    font-family: "Google Sans Code Variable" !important;
 }
 
 .code-block-container pre {
-  background: #292a2b!important;
+    background: #292a2b !important;
 }
 
 .code-block-container code span {
-    background: transparent!important;
+    background: transparent !important;
 }
 
 .code-block-container .language-header {
@@ -327,6 +344,7 @@ p > code {
     border-top: 3px solid #6a6f74;
     background-color: #292a2b;
 }
+
 .code-block-container .language-header svg {
     stroke-width: 1;
 }
@@ -339,7 +357,7 @@ p > code {
 }
 
 .ProseMirror {
-    height: 100%;    
+    height: 100%;
 }
 
 .ProseMirror ul,
@@ -370,7 +388,7 @@ p > code {
     list-style-type: decimal;
 }
 
-.ProseMirror li + li {
+.ProseMirror li+li {
     margin-top: 0;
 }
 
@@ -427,9 +445,9 @@ p > code {
     margin: 1rem 0;
 }
 
-.ProseMirror li[data-checked=false], 
+.ProseMirror li[data-checked=false],
 .ProseMirror li[data-checked=true],
-.prose li[data-checked=false], 
+.prose li[data-checked=false],
 .prose li[data-checked=true] {
     display: flex;
     padding: 0;
@@ -437,9 +455,9 @@ p > code {
     align-items: flex-start;
 }
 
-.ProseMirror li[data-checked=false] label, 
+.ProseMirror li[data-checked=false] label,
 .ProseMirror li[data-checked=true] label,
-.prose li[data-checked=false] label, 
+.prose li[data-checked=false] label,
 .prose li[data-checked=true] label {
     margin: 0;
     height: 20px;
@@ -507,8 +525,12 @@ pre.text-foreground span,
         max-width: 100% !important;
     }
 
-    .prose h1, .prose h2, .prose h3, .prose h4,
-    .prose pre, .prose blockquote {
+    .prose h1,
+    .prose h2,
+    .prose h3,
+    .prose h4,
+    .prose pre,
+    .prose blockquote {
         page-break-after: avoid;
         page-break-inside: avoid;
     }
@@ -553,4 +575,16 @@ pre.text-foreground span,
     min-height: 20px !important;
     height: 20px !important;
     width: 4px !important;
+}
+
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 992px) {
+        nav.fixed.bottom-0 {
+            padding-bottom: max(env(safe-area-inset-bottom), 0.5em);
+        }
+
+        .jotty-sidebar-content {
+            padding-bottom: 1em;
+        }
+    }
 }

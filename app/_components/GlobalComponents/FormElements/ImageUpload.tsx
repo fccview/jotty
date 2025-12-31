@@ -10,6 +10,7 @@ import {
 import { uploadAppIcon } from "@/app/_server/actions/config";
 import { AppSettings } from "@/app/_types";
 import { Logo } from "../Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 interface ImageUploadProps {
   label: string;
@@ -20,6 +21,7 @@ interface ImageUploadProps {
   customUploadAction?: (
     formData: FormData
   ) => Promise<{ success: boolean; data?: { url: string }; error?: string }>;
+  disabled?: boolean;
 }
 
 type IconSizeKey =
@@ -92,13 +94,15 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   currentUrl,
   onUpload,
   customUploadAction,
+  disabled = false,
 }) => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const handleFileSelect = async (file: File | null) => {
-    if (!file) return;
+    if (!file || disabled) return;
 
     if (!file.type.startsWith("image/")) {
       return showToast({
@@ -168,6 +172,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
+    if (disabled) return;
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
@@ -178,13 +183,16 @@ export const ImageUpload: FC<ImageUploadProps> = ({
       <Label className="text-sm font-medium">{label}</Label>
       <p className="text-xs text-muted-foreground">{description}</p>
       <div
-        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${dragOver
+        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${
+          disabled
+            ? "border-muted-foreground/15 bg-muted/30 cursor-not-allowed"
+            : dragOver
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/25 hover:border-muted-foreground/50"
           }`}
         onDragOver={(e) => {
           e.preventDefault();
-          setDragOver(true);
+          if (!disabled) setDragOver(true);
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
@@ -197,7 +205,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
               className="w-12 h-12 object-contain rounded border"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">Current icon</p>
+              <p className="text-sm font-medium truncate">{t("common.currentIcon")}</p>
               <p className="text-xs text-muted-foreground truncate">
                 {currentUrl.split("/").pop()}
               </p>
@@ -208,6 +216,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
               size="sm"
               onClick={() => onUpload(iconType, "")}
               className="flex-shrink-0 h-8 w-8 p-0"
+              disabled={disabled}
             >
               <MultiplicationSignIcon className="h-4 w-4" />
             </Button>
@@ -216,10 +225,10 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         {!currentUrl && !isUploading && (
           <label
             htmlFor={`upload-${iconType || "avatar"}`}
-            className="text-center cursor-pointer block"
+            className={`text-center block ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           >
             <Image02Icon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm font-medium">Drop image or click to upload</p>
+            <p className="text-sm font-medium">{t("common.dropImageOrClick")}</p>
             <p className="text-xs text-muted-foreground">
               PNG, JPG, WebP up to 5MB
             </p>
@@ -228,7 +237,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         {isUploading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-jotty">
             <Logo className="h-6 w-6 animate-pulse" />
-            <p className="text-sm mt-2">Uploading...</p>
+            <p className="text-sm mt-2">{t('common.uploading')}</p>
           </div>
         )}
       </div>
@@ -240,7 +249,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         }
         className="hidden"
         id={`upload-${iconType || "avatar"}`}
-        disabled={isUploading}
+        disabled={isUploading || disabled}
       />
     </div>
   );

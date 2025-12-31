@@ -2,7 +2,7 @@
 
 This guide explains every configuration value in the `docker-compose.yml` file for jotty·page.
 
-## Complete Docker Compose Example
+## Basic docker-compose.yml Example
 
 ```yaml
 services:

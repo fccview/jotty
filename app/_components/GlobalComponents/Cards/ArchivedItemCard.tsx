@@ -10,6 +10,7 @@ import { ArchivedItem } from "@/app/_server/actions/archived";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ItemTypes } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface ArchivedItemCardProps {
   item: ArchivedItem;
@@ -20,6 +21,7 @@ export const ArchivedItemCard = ({
   item,
   onUnarchive,
 }: ArchivedItemCardProps) => {
+  const t = useTranslations();
   const Icon =
     item.type === ItemTypes.CHECKLIST ? CheckmarkSquare04Icon : File02Icon;
 
@@ -37,17 +39,15 @@ export const ArchivedItemCard = ({
 
       <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
         <div className="flex items-center gap-1">
-          <span className="capitalize">{item.type}</span>
+          <span className="capitalize">{item.type === ItemTypes.CHECKLIST ? t('auditLogs.checklist') : t('auditLogs.note')}</span>
           {item.isShared && (
-            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-2">
-              Shared
-            </span>
+            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-2">{t('common.shared')}</span>
           )}
         </div>
         <div className="flex items-center gap-1">
           <Clock01Icon className="h-3 w-3" />
           <span>
-            {item.updatedAt ? formatRelativeTime(item.updatedAt) : "Unknown"}
+            {item.updatedAt ? formatRelativeTime(item.updatedAt) : t("profile.unknown")}
           </span>
         </div>
       </div>
@@ -59,7 +59,7 @@ export const ArchivedItemCard = ({
         className="w-full mt-auto"
       >
         <Archive02Icon className="h-3 w-3 mr-1.5" />
-        Unarchive
+        {t('common.unarchive')}
       </Button>
     </div>
   );

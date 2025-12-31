@@ -2,6 +2,7 @@
 
 import _sodium from "libsodium-wrappers-sumo";
 import { Result } from "@/app/_types";
+import { logAudit } from "@/app/_server/actions/log";
 
 let sodium: any;
 const getSodium = async () => {
@@ -19,6 +20,7 @@ export const encryptXChaCha = async (
     const sod = await getSodium();
     const content = formData.get("content") as string;
     const passphrase = formData.get("passphrase") as string;
+    const skipAuditLog = formData.get("skipAuditLog") === "true";
 
     if (!content || !passphrase) return { success: false, error: "Missing data" };
 
@@ -50,12 +52,29 @@ export const encryptXChaCha = async (
       data: sod.to_hex(ciphertext)
     };
 
+    if (!skipAuditLog) {
+      await logAudit({
+        level: "INFO",
+        action: "note_encrypted",
+        category: "encryption",
+        success: true,
+        metadata: { method: "xchacha20" },
+      });
+    }
+
     return {
       success: true,
       data: { encryptedContent: JSON.stringify(packageData) }
     };
 
   } catch (error) {
+    await logAudit({
+      level: "ERROR",
+      action: "note_encrypted",
+      category: "encryption",
+      success: false,
+      errorMessage: "XChaCha encryption failed",
+    });
     console.error("XChaCha Encryption Error:", error);
     return { success: false, error: "Encryption failed" };
   }
@@ -109,7 +128,14 @@ export const decryptXChaCha = async (
     };
 
   } catch (error) {
+    await logAudit({
+      level: "WARNING",
+      action: "note_decrypted",
+      category: "encryption",
+      success: false,
+      errorMessage: "Incorrect decryption password",
+    });
     console.error("XChaCha Decryption Error:", error);
-    return { success: false, error: "Decryption failed (Wrong password?)" };
+    return { success: false, error: "Incorrect decryption password" };
   }
 };

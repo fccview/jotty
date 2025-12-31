@@ -16,6 +16,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useTranslations } from "next-intl";
 
 interface NoteCardProps {
   note: Note;
@@ -38,6 +39,7 @@ export const NoteCard = ({
   sharer,
   fixedWidth,
 }: NoteCardProps) => {
+  const t = useTranslations();
   const {
     attributes,
     listeners,
@@ -146,7 +148,7 @@ export const NoteCard = ({
               className={`${
                 isPinned ? "opacity-100" : "opacity-0"
               } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-jotty flex-shrink-0`}
-              title={isPinned ? "Unpin" : "PinIcon"}
+              title={isPinned ? t("common.unpin") : t("common.pin")}
             >
               {isPinned ? (
                 <PinOffIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
@@ -163,7 +165,7 @@ export const NoteCard = ({
           {isEncrypted ? (
             <div className="flex items-center justify-center py-8">
               <p className="text-sm text-muted-foreground italic">
-                This note is encrypted
+                {t("encryption.thisNoteIsEncrypted")}
               </p>
             </div>
           ) : showMarkdownPreview ? (
@@ -193,7 +195,7 @@ export const NoteCard = ({
               <div className="flex items-center gap-1">
                 <UserAvatar username={sharer} size="xs" />
                 <span className="text-xs text-muted-foreground">
-                  Shared by {sharer}
+                  {t("common.sharedBy", { sharer })}
                 </span>
               </div>
             )}

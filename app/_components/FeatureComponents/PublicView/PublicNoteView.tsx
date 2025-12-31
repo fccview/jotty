@@ -11,6 +11,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { PGPEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPEncryptionModal";
 import { XChaChaEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/XChaChaEncryptionModal";
 import { detectEncryptionMethod } from "@/app/_utils/encryption-utils";
+import { useTranslations } from "next-intl";
 
 interface PublicNoteViewProps {
   note: Note;
@@ -18,6 +19,7 @@ interface PublicNoteViewProps {
 }
 
 export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
+  const t = useTranslations();
   const [avatarUrl, setAvatarUrl] = useState("");
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
   const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
                   <LockKeyIcon className="h-8 w-8 text-primary" />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold">This note is encrypted</h3>
+              <h3 className="text-xl font-semibold">{t("encryption.thisNoteIsEncrypted")}</h3>
               <p className="text-sm text-muted-foreground">
                 This note is protected with {detectEncryptionMethod(note.content) === "pgp" ? "PGP" : "XChaCha20-Poly1305"} encryption.
               </p>
@@ -92,9 +94,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
                   onClick={() => setShowEncryptionModal(true)}
                   className="flex items-center gap-2"
                 >
-                  <ViewIcon className="h-4 w-4" />
-                  View
-                </Button>
+                  <ViewIcon className="h-4 w-4" />{t('settings.view')}</Button>
               </div>
             </div>
           ) : (

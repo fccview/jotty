@@ -25,7 +25,9 @@ export const DropdownMenu = ({
   align = "left",
 }: DropdownMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,19 +60,43 @@ export const DropdownMenu = ({
     setIsOpen(false);
   };
 
+  const handleToggle = () => {
+    if (!isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+
+      let scrollParent: HTMLElement | null = triggerRef.current.parentElement;
+      while (scrollParent) {
+        if (scrollParent.classList.contains('jotty-sidebar-categories')) {
+          break;
+        }
+        scrollParent = scrollParent.parentElement;
+      }
+
+      if (scrollParent) {
+        const containerRect = scrollParent.getBoundingClientRect();
+        const actualSpaceBelow = containerRect.bottom - rect.bottom;
+        const threshold = 200;
+
+        setOpenUpward(actualSpaceBelow < threshold);
+      }
+    }
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div
       ref={dropdownRef}
       className="jotty-dropdown-menu relative inline-block"
     >
-      <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
+      <div ref={triggerRef} onClick={handleToggle} className="cursor-pointer">
         {trigger}
       </div>
 
       {isOpen && (
         <div
           className={cn(
-            "absolute top-full mt-1 w-56 bg-background border border-border rounded-jotty shadow-lg z-50 py-1",
+            "absolute w-56 bg-background border border-border rounded-jotty shadow-lg z-50 py-1",
+            openUpward ? "bottom-full mb-1" : "top-full mt-1",
             align === "right" ? "right-0" : "left-0"
           )}
         >
@@ -89,7 +115,7 @@ export const DropdownMenu = ({
                   item.className || "",
                   "w-full flex items-center gap-3 text-sm transition-colors text-left rounded-none",
                   item.variant === "destructive" &&
-                    "text-destructive hover:bg-destructive"
+                  "text-destructive hover:text-destructive-foreground hover:bg-destructive"
                 )}
               >
                 {item.icon && (

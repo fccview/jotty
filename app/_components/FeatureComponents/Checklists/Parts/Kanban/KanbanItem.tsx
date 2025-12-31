@@ -129,10 +129,10 @@ const KanbanItemComponent = ({
           {...listeners}
           onDoubleClick={() => setShowSubtaskModal(true)}
           className={cn(
-            "group relative bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
+            "group relative bg-background border rounded-jotty rotate-[0deg] p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
             getStatusColor(item.status),
             (isDragging || isSortableDragging) &&
-              "opacity-50 scale-95 rotate-1 shadow-lg z-50"
+            "opacity-50 scale-95 rotate-[4deg] shadow-lg z-50 transition-all duration-200"
           )}
         >
           <div className="space-y-2">

@@ -14,6 +14,7 @@ import { useState } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { RefreshIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface SharingMigrationViewProps {
   onMigrate: () => void;
@@ -31,6 +32,7 @@ export const SharingMigrationView = ({
   error,
   migrationResult,
 }: SharingMigrationViewProps) => {
+  const t = useTranslations();
   const [hasBackedUp, setHasBackedUp] = useState(false);
 
   const isMigrationComplete = migrationResult !== null;
@@ -42,8 +44,8 @@ export const SharingMigrationView = ({
           icon={<Database01Icon className="h-12 w-12 text-primary" />}
           title={
             isMigrationComplete
-              ? "Migration Complete"
-              : "Sharing System Update Required"
+              ? t('migration.migrationComplete')
+              : t('migration.sharingUpdateRequired')
           }
           description={
             isMigrationComplete
@@ -56,7 +58,7 @@ export const SharingMigrationView = ({
           <>
             <InfoCard
               icon={<InformationCircleIcon className="h-5 w-5 text-primary" />}
-              title="What's happening?"
+              title={t("migration.whatsHappening")}
             >
               <p className="text-sm">
                 I&apos;m migrating from the old{" "}
@@ -132,7 +134,7 @@ export const SharingMigrationView = ({
 
             <InfoCard
               icon={<Alert02Icon className="h-5 w-5 text-amber-600" />}
-              title="Important: Backup Your Data"
+              title={t("migration.importantBackupData")}
               variant={InfoCardVariant.WARNING}
             >
               <p>
@@ -149,7 +151,7 @@ export const SharingMigrationView = ({
             {error && (
               <InfoCard
                 icon={<Alert02Icon className="h-4 w-4 text-destructive" />}
-                title="Migration failed"
+                title={t('migration.migrationFailed')}
                 variant={InfoCardVariant.DESTRUCTIVE}
               >
                 <p>{error}</p>
@@ -191,7 +193,7 @@ export const SharingMigrationView = ({
                 <RefreshIcon
                   className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")}
                 />
-                {isMigrating ? "Migrating..." : "Start Migration"}
+                {isMigrating ? t('migration.migrating') : t('migration.startMigration')}
               </Button>
             </div>
           </>
@@ -203,13 +205,13 @@ export const SharingMigrationView = ({
               icon={
                 <CheckmarkCircle04Icon className="h-5 w-5 text-green-600" />
               }
-              title="Migration Successful"
+              title={t('migration.migrationSuccessful')}
               variant={InfoCardVariant.DEFAULT}
             >
               <p className="text-sm">
                 {migrationResult.migrated
                   ? "Your sharing data has been successfully migrated."
-                  : "No migration was needed - your system is already up to date."}
+                  : t("migration.noMigrationNeeded")}
               </p>
             </InfoCard>
 
@@ -234,7 +236,7 @@ export const SharingMigrationView = ({
             {migrationResult.migrated && (
               <div className="flex justify-center pt-2">
                 <Button onClick={() => (window.location.href = "/")} size="lg">
-                  Return to App
+                  {t('migration.returnToApp')}
                 </Button>
               </div>
             )}

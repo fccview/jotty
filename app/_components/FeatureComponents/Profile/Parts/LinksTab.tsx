@@ -15,6 +15,7 @@ import { getUsername } from "@/app/_server/actions/users";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 const ResponsiveNetwork = dynamic(
   () => import("@nivo/network").then((mod) => mod.ResponsiveNetwork),
@@ -100,6 +101,7 @@ interface NetworkLink {
 }
 
 export const LinksTab = ({ linkIndex }: LinksTabProps) => {
+  const t = useTranslations();
   const { notes, checklists } = useAppMode();
   const [hoveredNode, setHoveredNode] = useState<any>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -121,13 +123,11 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
     try {
       const username = await getUsername();
       await rebuildLinkIndex(username);
-      alert(
-        "Successfully rebuilt link index! The page will reload to show updated connections."
-      );
+      alert(t('profile.successfullyRebuiltIndexReload'));
       window.location.reload();
     } catch (error) {
       console.error("Failed to rebuild index:", error);
-      alert("Failed to rebuild link index. Please try again.");
+      alert(t('profile.failedToRebuildIndex'));
     } finally {
       setRebuildingIndex(false);
     }
@@ -256,9 +256,9 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Content Links</h2>
+          <h2 className="text-2xl font-bold">{t('profile.contentLinks')}</h2>
           <p className="text-muted-foreground">
-            Visualize relationships between your notes and checklists
+            {t('profile.visualizeRelationships')}
           </p>
         </div>
 
@@ -272,7 +272,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalNodes}
                 </div>
-                <div className="text-xs text-muted-foreground">Total Items</div>
+                <div className="text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
               </div>
             </div>
 
@@ -284,7 +284,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalLinks}
                 </div>
-                <div className="text-xs text-muted-foreground">Connections</div>
+                <div className="text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
               </div>
             </div>
 
@@ -300,7 +300,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                   }
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Connected Items
+                  {t('profile.connectedItems')}
                 </div>
               </div>
             </div>
@@ -311,18 +311,17 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
           <div className="text-center space-y-4">
             <div className="text-6xl">🔗</div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">No Links Found</h3>
+              <h3 className="text-lg font-semibold">{t('profile.noLinksFound')}</h3>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Start creating internal links in your notes and checklists to
-                see the relationship network here. Use the format{" "}
+                {t('profile.startCreatingInternalLinks')}{" "}
                 <code className="bg-muted px-1 py-0.5 rounded text-sm">
                   /note/your-note
                 </code>{" "}
-                or{" "}
+                {t('profile.orFormat')}{" "}
                 <code className="bg-muted px-1 py-0.5 rounded text-sm">
                   /checklist/your-list
                 </code>{" "}
-                in your content.
+                {t('profile.inYourContent')}
               </p>
             </div>
           </div>
@@ -334,9 +333,9 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Content Links</h2>
+        <h2 className="text-2xl font-bold">{t('profile.contentLinks')}</h2>
         <p className="text-muted-foreground">
-          Visualize relationships between your notes and checklists
+          {t('profile.visualizeRelationships')}
         </p>
       </div>
 
@@ -350,7 +349,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalNodes}
               </div>
-              <div className="text-xs text-muted-foreground">Total Items</div>
+              <div className="text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
             </div>
           </div>
 
@@ -362,7 +361,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalLinks}
               </div>
-              <div className="text-xs text-muted-foreground">Connections</div>
+              <div className="text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
             </div>
           </div>
 
@@ -375,7 +374,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 {networkData.nodes.filter((n) => n.connectionCount > 0).length}
               </div>
               <div className="text-xs text-muted-foreground">
-                Connected Items
+                {t('profile.connectedItems')}
               </div>
             </div>
           </div>
@@ -385,16 +384,16 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
       <div className="bg-card border border-border rounded-md p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Link Network</h3>
+            <h3 className="text-lg font-semibold">{t('profile.linkNetwork')}</h3>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>Notes</span>
+                  <span>{t('notes.title')}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>Checklists</span>
+                  <span>{t('checklists.title')}</span>
                 </div>
               </div>
               <Button
@@ -403,12 +402,12 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 onClick={handleRebuildIndex}
                 disabled={rebuildingIndex}
                 className="flex items-center gap-2"
-                title="Rebuild link indexes to update connection data"
+                title={t("profile.rebuildLinkIndexes")}
               >
                 <RefreshIcon
                   className={`h-3 w-3 ${rebuildingIndex ? "animate-spin" : ""}`}
                 />
-                {rebuildingIndex ? "Rebuilding..." : "Rebuild Indexes"}
+                {rebuildingIndex ? t('admin.rebuilding') : t('admin.rebuildIndexes')}
               </Button>
             </div>
           </div>
@@ -453,24 +452,20 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               </div>
               <div className="text-xs text-muted-foreground capitalize mt-1">
                 {hoveredNode.data.type} • {hoveredNode.data.connectionCount}{" "}
-                connection{hoveredNode.data.connectionCount !== 1 ? "s" : ""}
+                {t('profile.connection', { count: hoveredNode.data.connectionCount })}
                 {hoveredNode.data.connectionCount >= 5
-                  ? " (highly connected)"
+                  ? ` (${t('profile.highlyConnected')})`
                   : hoveredNode.data.connectionCount >= 2
-                  ? " (moderately connected)"
-                  : hoveredNode.data.connectionCount === 0
-                  ? " (isolated)"
-                  : ""}
+                    ? ` (${t('profile.moderatelyConnected')})`
+                    : hoveredNode.data.connectionCount === 0
+                      ? ` (${t('profile.isolated')})`
+                      : ""}
               </div>
               <div className="text-xs text-muted-foreground mt-1 font-mono line-clamp-1">
                 {hoveredNode.data.id}
               </div>
             </div>
           )}
-
-          <div className="text-sm text-muted-foreground text-center">
-            Hover nodes for details • Circle size indicates connections
-          </div>
         </div>
       </div>
     </div>

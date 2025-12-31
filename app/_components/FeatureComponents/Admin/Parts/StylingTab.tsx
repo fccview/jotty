@@ -1,3 +1,5 @@
+"use client";
+
 import { CssEditor } from "@/app/_components/GlobalComponents/FormElements/CSSEditor";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
@@ -15,8 +17,10 @@ import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/For
 import { DynamicIcon } from "@/app/_components/GlobalComponents/Icons/DynamicIcon";
 import { useState } from "react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
+import { useTranslations } from "next-intl";
 
 export const StylingTab = () => {
+  const t = useTranslations();
   const {
     css,
     isLoadingCss,
@@ -53,14 +57,14 @@ export const StylingTab = () => {
       <div className="bg-card">
         <div className="space-y-6">
           <FormWrapper
-            title="Custom CSS"
+            title={t("admin.customCSS")}
             action={
               <Button
                 onClick={handleSaveCss}
                 disabled={isSavingCss || !hasCssChanges || isLoadingCss}
                 size="sm"
               >
-                {isSavingCss ? <></> : "Save CSS"}
+                {isSavingCss ? <></> : t("admin.saveCSS")}
               </Button>
             }
           >
@@ -75,13 +79,13 @@ export const StylingTab = () => {
             </div>
             {hasCssChanges && (
               <p className="text-xs text-muted-foreground">
-                You have unsaved CSS changes.
+                {t("admin.unsavedCssChanges")}
               </p>
             )}
           </FormWrapper>
 
           <FormWrapper
-            title="Custom Themes"
+            title={t("admin.customThemes")}
             action={
               <Button
                 onClick={handleCreateTheme}
@@ -89,7 +93,7 @@ export const StylingTab = () => {
                 size="sm"
               >
                 <Add01Icon className="mr-2 h-3 w-3" />
-                Create Theme
+                {t("admin.createTheme")}
               </Button>
             }
           >
@@ -125,8 +129,7 @@ export const StylingTab = () => {
               ))}
               {getCustomThemes().length === 0 && (
                 <p className="text-sm text-muted-foreground col-span-full text-center py-4">
-                  No custom themes created yet. Click &quot;Create Theme&quot;
-                  to get started.
+                  {t("admin.noCustomThemesYet")}
                 </p>
               )}
             </div>
@@ -139,7 +142,7 @@ export const StylingTab = () => {
       <Modal
         isOpen={themeModalOpen}
         onClose={() => setThemeModalOpen(false)}
-        title={editingTheme ? "Edit Theme" : "Create Theme"}
+        title={editingTheme ? t("admin.editTheme") : t("admin.createTheme")}
         className="!w-full lg:!max-w-[90vw] !h-[90vh] overflow-y-auto !max-h-[900px]"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -147,16 +150,16 @@ export const StylingTab = () => {
             <div className="space-y-4">
               <Input
                 id="themeName"
-                label="Theme Name"
+                label={t("admin.themeName")}
                 type="text"
                 defaultValue={themeForm.name}
                 onChange={(e) => handleThemeFormChange("name", e.target.value)}
-                placeholder="My Custom Theme"
+                placeholder={t("admin.myCustomTheme")}
               />
 
               <div className="space-y-2">
                 <label htmlFor="themeIcon" className="text-sm font-medium">
-                  Icon Name
+                  {t("admin.iconName")}
                 </label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
@@ -184,13 +187,13 @@ export const StylingTab = () => {
                   >
                     Hugeicons
                   </a>{" "}
-                  icon name (e.g., PaintBrush04Icon, Sun03Icon, GibbousMoonIcon)
+                  {t("admin.iconNameDescription")}
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-sm font-medium">Color Variables</h4>
+              <h4 className="text-sm font-medium">{t("admin.colorVariables")}</h4>
               <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
                 {Object.entries(themeForm.colors).map(([key, value]) => (
                   <div
@@ -205,13 +208,13 @@ export const StylingTab = () => {
                       value={
                         value
                           ? `#${value
-                              .split(" ")
-                              .map((v) => {
-                                const num = parseInt(v);
-                                return num.toString(16).padStart(2, "0");
-                              })
-                              .join("")}`
-                          : "#000000"
+                            .split(" ")
+                            .map((v) => {
+                              const num = parseInt(v);
+                              return num.toString(16).padStart(2, "0");
+                            })
+                            .join("")}`
+                          : t("editor.colorPlaceholder")
                       }
                       onChange={(e) => {
                         const hex = e.target.value;
@@ -247,26 +250,22 @@ export const StylingTab = () => {
                 variant="outline"
                 onClick={() => setThemeModalOpen(false)}
                 disabled={isSavingThemes}
-              >
-                Cancel
-              </Button>
+              >{t('common.cancel')}</Button>
               <Button onClick={handleSaveTheme} disabled={isSavingThemes}>
                 {isSavingThemes ? (
                   <>
-                    <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
+                    <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />{t('common.saving')}</>
                 ) : editingTheme ? (
-                  "Update Theme"
+                  t("admin.updateTheme")
                 ) : (
-                  "Create Theme"
+                  t("admin.createTheme")
                 )}
               </Button>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-sm font-medium">Live Preview</h4>
+            <h4 className="text-sm font-medium">{t("admin.livePreview")}</h4>
             <div className="border border-border rounded-jotty">
               <ThemePreview
                 colors={themeForm.colors}

@@ -13,6 +13,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { useMemo } from "react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { useTranslations } from "next-intl";
 
 interface ChecklistCardProps {
   list: Checklist;
@@ -33,6 +34,7 @@ export const ChecklistCard = ({
   sharer,
   fixedWidth,
 }: ChecklistCardProps) => {
+  const t = useTranslations();
   const {
     attributes,
     listeners,
@@ -55,8 +57,10 @@ export const ChecklistCard = ({
   const displayTitle = parsedData?.title || list.title;
   const displayItems = parsedData?.items || list.items;
 
-  const totalItems = displayItems?.length || 0;
-  const completedItems = displayItems?.filter((item) =>
+  const activeItems = displayItems?.filter((item) => !item.isArchived);
+
+  const totalItems = activeItems?.length || 0;
+  const completedItems = activeItems?.filter((item) =>
     isItemCompleted(item, list.type)
   ).length;
   const completionRate =
@@ -107,7 +111,7 @@ export const ChecklistCard = ({
               className={`${
                 isPinned ? "opacity-100" : "opacity-0"
               } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
-              title={isPinned ? "Unpin" : "PinIcon"}
+              title={isPinned ? t("common.unpin") : t("common.pin")}
             >
               {isPinned ? (
                 <PinOffIcon className="h-3 w-3 text-muted-foreground hover:text-primary" />
@@ -126,7 +130,7 @@ export const ChecklistCard = ({
 
       <div className="mb-3">
         <div className="flex justify-between text-xs text-muted-foreground mb-1">
-          <span>Progress</span>
+          <span>{t('checklists.progress')}</span>
           <span>{completionRate}%</span>
         </div>
         <div className="w-full bg-muted rounded-full h-2">
@@ -137,7 +141,7 @@ export const ChecklistCard = ({
         </div>
       </div>
 
-      {list.type === "task" && <TaskSpecificDetails items={displayItems} />}
+      {list.type === "task" && <TaskSpecificDetails items={activeItems} />}
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
@@ -145,7 +149,7 @@ export const ChecklistCard = ({
             <div className="flex items-center gap-1">
               <UserAvatar username={sharer} size="xs" />
               <span className="text-xs text-muted-foreground">
-                Shared by {sharer}
+                {t("common.sharedBy", { sharer })}
               </span>
             </div>
           )}
@@ -153,7 +157,7 @@ export const ChecklistCard = ({
             <>
               <CheckmarkCircle04Icon className="h-3 w-3" />
               <span>
-                {completedItems}/{totalItems} completed
+                {t("common.itemsCompleted", { completedItems, totalItems })}
               </span>
             </>
           )}

@@ -3,14 +3,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppSettings } from "@/app/_types";
 import {
   getAppSettings,
   updateAppSettings,
 } from "@/app/_server/actions/config";
+import { useTranslations } from "next-intl";
 
 export const EditorSettingsTab = () => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -39,22 +42,26 @@ export const EditorSettingsTab = () => {
                 ? result.data.editor?.enableBilateralLinks
                 : true,
             drawioUrl: result.data.editor?.drawioUrl || "",
+            drawioProxyEnabled:
+              typeof result.data.editor?.drawioProxyEnabled === "boolean"
+                ? result.data.editor?.drawioProxyEnabled
+                : false,
           };
           setSettings({
             ...result.data,
             editor: editorSettings,
           });
         } else {
-          throw new Error(result.error || "Failed to load settings");
+          throw new Error(result.error || t("admin.failedToLoadSettings"));
         }
       } catch (error) {
         showToast({
           type: "error",
-          title: "Load Error",
+          title: t("admin.loadError"),
           message:
             error instanceof Error
               ? error.message
-              : "Could not fetch settings.",
+              : t("admin.couldNotFetchSettings"),
         });
       }
     };
@@ -70,12 +77,12 @@ export const EditorSettingsTab = () => {
     setSettings((prev) =>
       prev
         ? {
-            ...prev,
-            editor: {
-              ...prev.editor,
-              [field]: value,
-            },
-          }
+          ...prev,
+          editor: {
+            ...prev.editor,
+            [field]: value,
+          },
+        }
         : null
     );
     setHasChanges(true);
@@ -90,12 +97,12 @@ export const EditorSettingsTab = () => {
     setSettings((prev) =>
       prev
         ? {
-            ...prev,
-            editor: {
-              ...prev.editor,
-              [field]: value,
-            },
-          }
+          ...prev,
+          editor: {
+            ...prev.editor,
+            [field]: value,
+          },
+        }
         : null
     );
     setHasChanges(true);
@@ -119,19 +126,19 @@ export const EditorSettingsTab = () => {
       if (result.success) {
         showToast({
           type: "success",
-          title: "Success",
-          message: "Editor settings saved successfully.",
+          title: t("common.success"),
+          message: t("admin.editorSettingsSaved"),
         });
         setHasChanges(false);
       } else {
-        throw new Error(result.error || "Failed to save settings");
+        throw new Error(result.error || t("admin.failedToSaveSettings"));
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Save Error",
+        title: t("admin.saveError"),
         message:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+          error instanceof Error ? error.message : t("admin.unknownErrorOccurred"),
       });
     } finally {
       setIsSaving(false);
@@ -145,191 +152,135 @@ export const EditorSettingsTab = () => {
       <div className="bg-card border border-border rounded-jotty p-6">
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Editor Features</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('editor.editorFeatures')}</h3>
             <p className="text-muted-foreground text-sm">
-              Configure which editor features are enabled for all users.
+              {t("admin.configureEditorFeatures")}
             </p>
           </div>
 
           <div className="space-y-4">
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">Slash Commands</div>
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableSlashCommands" className="space-y-1 cursor-pointer">
+                <div className="text-sm font-medium">{t('editor.slashCommands')}</div>
                 <p className="text-xs text-muted-foreground">
-                  Enable the slash command menu (type &quot;/&quot; to insert
-                  elements)
+                  {t("admin.enableSlashCommandsDescription")}
                 </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={settings.editor.enableSlashCommands}
-                  onChange={(e) =>
-                    handleToggleChange("enableSlashCommands", e.target.checked)
-                  }
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    settings.editor.enableSlashCommands
-                      ? "bg-primary"
-                      : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      settings.editor.enableSlashCommands
-                        ? "translate-x-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
+              </label>
+              <Toggle
+                id="enableSlashCommands"
+                checked={settings.editor.enableSlashCommands}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableSlashCommands", checked)
+                }
+              />
+            </div>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">Bubble Menu</div>
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableBubbleMenu" className="space-y-1 cursor-pointer">
+                <div className="text-sm font-medium">{t('editor.bubbleMenu')}</div>
                 <p className="text-xs text-muted-foreground">
-                  Enable the floating toolbar that appears when text is selected
+                  {t("admin.enableBubbleMenuDescription")}
                 </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={settings.editor.enableBubbleMenu}
-                  onChange={(e) =>
-                    handleToggleChange("enableBubbleMenu", e.target.checked)
-                  }
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    settings.editor.enableBubbleMenu ? "bg-primary" : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      settings.editor.enableBubbleMenu
-                        ? "translate-x-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
+              </label>
+              <Toggle
+                id="enableBubbleMenu"
+                checked={settings.editor.enableBubbleMenu}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableBubbleMenu", checked)
+                }
+              />
+            </div>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">Table Toolbar</div>
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableTableToolbar" className="space-y-1 cursor-pointer">
+                <div className="text-sm font-medium">{t('editor.tableToolbar')}</div>
                 <p className="text-xs text-muted-foreground">
-                  Enable the toolbar that appears when editing tables
+                  {t("admin.enableTableToolbarDescription")}
                 </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={settings.editor.enableTableToolbar}
-                  onChange={(e) =>
-                    handleToggleChange("enableTableToolbar", e.target.checked)
-                  }
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    settings.editor.enableTableToolbar
-                      ? "bg-primary"
-                      : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      settings.editor.enableTableToolbar
-                        ? "translate-x-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
+              </label>
+              <Toggle
+                id="enableTableToolbar"
+                checked={settings.editor.enableTableToolbar}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableTableToolbar", checked)
+                }
+              />
+            </div>
 
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableBilateralLinks" className="space-y-1 cursor-pointer">
                 <div className="text-sm font-medium">
-                  Bilateral Links
+                  {t("admin.bilateralLinks")}
                   <span className="ml-1 text-xs text-muted-foreground">
-                    (Experimental)
+                    {t("admin.experimental")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Enable the ability to link to notes and checklists in the same
-                  document.
+                  {t("admin.bilateralLinksDescription")}
                   <span className="mt-1 block text-xs italic text-muted-foreground">
-                    This feature is experimental and may not work as expected.
-                    It may also end up being removed/deprecated in the future.
+                    {t("admin.bilateralLinksWarning")}
                   </span>
                 </p>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={settings.editor.enableBilateralLinks}
-                  onChange={(e) =>
-                    handleToggleChange("enableBilateralLinks", e.target.checked)
-                  }
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    settings.editor.enableBilateralLinks
-                      ? "bg-primary"
-                      : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      settings.editor.enableBilateralLinks
-                        ? "translate-x-4"
-                        : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
+              </label>
+              <Toggle
+                id="enableBilateralLinks"
+                checked={settings.editor.enableBilateralLinks}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableBilateralLinks", checked)
+                }
+              />
+            </div>
           </div>
 
           <div className="pt-4 border-t border-border">
-            <h3 className="text-lg font-semibold mb-2">External Services</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('editor.externalServices')}</h3>
             <p className="text-muted-foreground text-sm mb-4">
-              Configure external service URLs for editor integrations.
+              {t("admin.configureExternalServices")}
             </p>
 
-            <div className="space-y-2">
-              <label className="block">
-                <div className="text-sm font-medium mb-1">
-                  Draw.io URL
-                  <span className="ml-1 text-xs text-muted-foreground">
-                    (Optional)
-                  </span>
+            <div className="space-y-4">
+              <div className="border border-border rounded-jotty p-4 space-y-4">
+                <label className="block">
+                  <div className="text-sm font-medium mb-1">
+                    {t("admin.drawioUrl")}
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      {t("admin.optional")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {t("admin.drawioUrlDescription")}
+                    <span className="mt-1 block text-xs italic">
+                      {t("admin.drawioUrlExample")}
+                    </span>
+                  </p>
+                  <Input
+                    id="drawioUrl"
+                    type="text"
+                    value={settings.editor.drawioUrl || ""}
+                    onChange={(e) =>
+                      handleInputChange("drawioUrl", e.target.value)
+                    }
+                    placeholder="https://embed.diagrams.net"
+                    className="w-full"
+                  />
+                </label>
+
+                <div className="flex items-center justify-between">
+                  <label htmlFor="drawioProxyEnabled" className="space-y-1 cursor-pointer">
+                    <div className="text-sm font-medium">{t("admin.drawioProxyEnabled")}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {t("admin.drawioProxyEnabledDescription")}
+                    </p>
+                  </label>
+                  <Toggle
+                    id="drawioProxyEnabled"
+                    checked={settings.editor.drawioProxyEnabled || false}
+                    onCheckedChange={(checked) =>
+                      handleToggleChange("drawioProxyEnabled", checked)
+                    }
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Specify a custom Draw.io instance URL. Leave empty to use the
-                  default public instance (https://embed.diagrams.net).
-                  <span className="mt-1 block text-xs italic">
-                    Example for self-hosted: https://your-domain.com/drawio
-                  </span>
-                </p>
-                <Input
-                  id="drawioUrl"
-                  type="text"
-                  value={settings.editor.drawioUrl || ""}
-                  onChange={(e) =>
-                    handleInputChange("drawioUrl", e.target.value)
-                  }
-                  placeholder="https://embed.diagrams.net"
-                  className="w-full"
-                />
-              </label>
+              </div>
             </div>
           </div>
         </div>
@@ -341,7 +292,7 @@ export const EditorSettingsTab = () => {
           disabled={!hasChanges || isSaving}
           className="min-w-24"
         >
-          {isSaving ? "Saving..." : "Save Changes"}
+          {isSaving ? t("admin.saving") : t("admin.saveChanges")}
         </Button>
       </div>
     </div>

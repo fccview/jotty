@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "../FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface ImageSizeModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const ImageSizeModal = ({
   currentHeight,
   imageUrl,
 }: ImageSizeModalProps) => {
+  const t = useTranslations();
   const [width, setWidth] = useState<string>("");
   const [height, setHeight] = useState<string>("");
 
@@ -56,7 +58,7 @@ export const ImageSizeModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Image Size"
+      title={t("editor.imageSize")}
       className="!max-w-md"
     >
       <div className="space-y-4">
@@ -64,7 +66,7 @@ export const ImageSizeModal = ({
           <div className="flex justify-center">
             <img
               src={imageUrl}
-              alt="Preview"
+              alt={t('editor.preview')}
               className="max-w-full max-h-48 object-contain rounded border"
               style={{
                 width: width ? `${width}px` : "auto",
@@ -79,11 +81,11 @@ export const ImageSizeModal = ({
             <div>
               <Input
                 id="width"
-                label="Width (px)"
+                label={t("editor.widthPx")}
                 type="number"
                 value={width}
                 onChange={(e) => handleWidthChange(e.target.value)}
-                placeholder="Auto"
+                placeholder={t("common.auto")}
                 className="w-full px-3 py-2 border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-primary"
               />
             </div>
@@ -91,32 +93,26 @@ export const ImageSizeModal = ({
             <div>
               <Input
                 id="height"
-                label="Height (px)"
+                label={t("editor.heightPx")}
                 type="number"
                 value={height}
                 onChange={(e) => handleHeightChange(e.target.value)}
-                placeholder="Auto"
+                placeholder={t("common.auto")}
                 className="w-full px-3 py-2 border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-primary"
               />
             </div>
           </div>
 
           <div className="text-xs text-muted-foreground">
-            Leave empty for automatic sizing
+            {t("editor.leaveEmptyForAutoSize")}
           </div>
         </div>
 
         <div className="flex justify-between pt-4">
-          <Button variant="outline" onClick={handleReset} className="text-sm">
-            Reset
-          </Button>
+          <Button variant="outline" onClick={handleReset} className="text-sm">{t('common.reset')}</Button>
           <div className="space-x-2">
-            <Button variant="outline" onClick={onClose} className="text-sm">
-              Cancel
-            </Button>
-            <Button onClick={handleConfirm} className="text-sm">
-              Apply
-            </Button>
+            <Button variant="outline" onClick={onClose} className="text-sm">{t('common.cancel')}</Button>
+            <Button onClick={handleConfirm} className="text-sm">{t('common.apply')}</Button>
           </div>
         </div>
       </div>

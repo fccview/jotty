@@ -9,6 +9,7 @@ import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
 import { generateKeyPair } from "@/app/_server/actions/pgp";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTranslations } from "next-intl";
 
 interface PGPKeyGenerationModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const PGPKeyGenerationModal = ({
   onClose,
   onSuccess,
 }: PGPKeyGenerationModalProps) => {
+  const t = useTranslations();
   const { showToast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,8 +48,8 @@ export const PGPKeyGenerationModal = ({
     if (!passphrase.trim()) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Passphrase is required",
+        title: t("common.error"),
+        message: t("encryption.passphraseRequired"),
       });
       return;
     }
@@ -55,8 +57,8 @@ export const PGPKeyGenerationModal = ({
     if (passphrase !== confirmPassphrase) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Passphrases do not match",
+        title: t("common.error"),
+        message: t("errors.passwordsDoNotMatch"),
       });
       return;
     }
@@ -64,8 +66,8 @@ export const PGPKeyGenerationModal = ({
     if (passphrase.length < 8) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "Passphrase must be at least 8 characters",
+        title: t("common.error"),
+        message: t("errors.passwordMinLength"),
       });
       return;
     }
@@ -83,22 +85,22 @@ export const PGPKeyGenerationModal = ({
         setGeneratedKeys(result.data);
         showToast({
           type: "success",
-          title: "Success",
-          message: "PGP key pair generated successfully",
+          title: t("common.success"),
+          message: t("encryption.pgpKeyPairGeneratedSuccessfully"),
         });
         onSuccess();
       } else {
         showToast({
           type: "error",
-          title: "Error",
-          message: result.error || "Failed to generate keys",
+          title: t("common.error"),
+          message: result.error || t("encryption.failedToGenerateKeys"),
         });
       }
     } catch (error) {
       showToast({
         type: "error",
-        title: "Error",
-        message: "An unexpected error occurred",
+        title: t("common.error"),
+        message: t("errors.anUnknownErrorOccurred"),
       });
     } finally {
       setIsGenerating(false);
@@ -134,18 +136,18 @@ export const PGPKeyGenerationModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Generate PGP Key Pair"
+      title={t("encryption.generatePGPKeyPair")}
       className="max-w-2xl"
     >
       {!generatedKeys ? (
         <form onSubmit={handleSubmit} className="space-y-6">
           <InfoBox
             variant="warning"
-            title="Important"
+            title={t("encryption.important")}
             items={[
-              "Remember your passphrase! It cannot be recovered.",
-              "Without the passphrase, you cannot decrypt your notes.",
-              "Backup your private key safely.",
+              t("encryption.rememberPassphraseCannotRecover"),
+              t("encryption.withoutPassphraseCannotDecrypt"),
+              t("encryption.backupPrivateKeySafely"),
             ]}
           />
 
@@ -153,20 +155,20 @@ export const PGPKeyGenerationModal = ({
             ref={nameInputRef}
             id="name"
             type="text"
-            label="Name (optional)"
+            label={t("encryption.nameOptional")}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
+            placeholder={t("encryption.yourName")}
             disabled={isGenerating}
           />
 
           <Input
             id="email"
             type="email"
-            label="Email (optional)"
+            label={t("encryption.emailOptional")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
+            placeholder={t("encryption.yourEmail")}
             disabled={isGenerating}
           />
 
@@ -185,11 +187,9 @@ export const PGPKeyGenerationModal = ({
               variant="outline"
               onClick={handleClose}
               disabled={isGenerating}
-            >
-              Cancel
-            </Button>
+            >{t('common.cancel')}</Button>
             <Button type="submit" disabled={isGenerating}>
-              {isGenerating ? "Generating..." : "Generate Keys"}
+              {isGenerating ? t("encryption.generating") : t("encryption.generateKeys")}
             </Button>
           </div>
         </form>
@@ -197,11 +197,11 @@ export const PGPKeyGenerationModal = ({
         <div className="space-y-6">
           <InfoBox
             variant="info"
-            title="Keys Generated Successfully"
+            title={t("encryption.keysGeneratedSuccessfully")}
             items={[
-              `Fingerprint: ${generatedKeys.fingerprint}`,
-              "Your keys have been saved securely.",
-              "Download your keys for backup (optional).",
+              `${t("encryption.fingerprint")}: ${generatedKeys.fingerprint}`,
+              t("encryption.keysSavedSecurely"),
+              t("encryption.downloadKeysForBackup"),
             ]}
           />
 
@@ -212,7 +212,7 @@ export const PGPKeyGenerationModal = ({
               className="w-full"
             >
               <Download01Icon className="h-4 w-4 mr-2" />
-              Download Public Key
+              {t("encryption.downloadPublicKey")}
             </Button>
             <Button
               onClick={() => handleDownloadKey("private")}
@@ -220,12 +220,12 @@ export const PGPKeyGenerationModal = ({
               className="w-full"
             >
               <Download01Icon className="h-4 w-4 mr-2" />
-              Download Private Key
+              {t("encryption.downloadPrivateKey")}
             </Button>
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={handleClose}>Done</Button>
+            <Button onClick={handleClose}>{t('common.done')}</Button>
           </div>
         </div>
       )}

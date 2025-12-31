@@ -8,8 +8,10 @@ import { readPackageVersion } from "@/app/_server/actions/config";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
+import { useTranslations } from "next-intl";
 
 export const UpdatePrompt = () => {
+  const t = useTranslations();
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
   const [releaseUrl, setReleaseUrl] = useState<string | null>(null);
@@ -116,12 +118,10 @@ export const UpdatePrompt = () => {
           </div>
         </div>
         <div className="py-4 flex justify-end gap-2">
-          <Button onClick={handleCloseModal} variant="ghost">
-            Close
-          </Button>
+          <Button onClick={handleCloseModal} variant="ghost">{t('common.close')}</Button>
           {releaseUrl && (
             <Button onClick={() => window.open(releaseUrl, "_blank")}>
-              View on GitHub
+              {t("common.viewOnGithub")}
             </Button>
           )}
         </div>

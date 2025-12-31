@@ -13,6 +13,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { RefreshIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { migrateToYamlMetadataFormat } from "@/app/_server/actions/migration/index";
+import { useTranslations } from "next-intl";
 
 interface YamlMetadataMigrationViewProps {
   onMigrate: () => void;
@@ -30,6 +31,7 @@ export const YamlMetadataMigrationView = ({
   error,
   migrationResult,
 }: YamlMetadataMigrationViewProps) => {
+  const t = useTranslations();
   const [hasBackedUp, setHasBackedUp] = useState(false);
 
   const isMigrationComplete = migrationResult !== null;
@@ -62,7 +64,7 @@ export const YamlMetadataMigrationView = ({
           <>
             <InfoCard
               icon={<InformationCircleIcon className="h-5 w-5 text-primary" />}
-              title="What's changing?"
+              title={t("migration.whatsChanging")}
             >
               <p className="text-sm">
                 We&apos;re moving from inline title extraction (first{" "}
@@ -134,7 +136,7 @@ checklistType: task|simple
 
             <InfoCard
               icon={<ShieldUserIcon className="h-5 w-5 text-amber-600" />}
-              title="Automatic Backup Included"
+              title={t("migration.automaticBackupIncluded")}
               variant={InfoCardVariant.WARNING}
             >
               <p>
@@ -146,7 +148,7 @@ checklistType: task|simple
 
             <InfoCard
               icon={<File02Icon className="h-5 w-5 text-primary" />}
-              title="YAML Frontmatter is Industry Standard"
+              title={t("migration.yamlFrontmatterIndustryStandard")}
             >
               <p className="text-sm mb-3">
                 YAML metadata at the top of documents is a widely adopted
@@ -321,7 +323,7 @@ checklistType: task|simple
                 icon={
                   <InformationCircleIcon className="h-4 w-4 text-destructive" />
                 }
-                title="Migration failed"
+                title={t('migration.migrationFailed')}
                 variant={InfoCardVariant.DESTRUCTIVE}
               >
                 <p>{error}</p>
@@ -362,7 +364,7 @@ checklistType: task|simple
                 <RefreshIcon
                   className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")}
                 />
-                {isMigrating ? "Migrating..." : "Start Migration"}
+                {isMigrating ? t("migration.migrating") : t("migration.startMigration")}
               </Button>
             </div>
           </>
@@ -380,7 +382,7 @@ checklistType: task|simple
               }
               title={
                 migrationResult.migrated
-                  ? "Migration Successful"
+                  ? t("migration.migrationSuccessful")
                   : "Migration Not Needed"
               }
               variant={InfoCardVariant.DEFAULT}
@@ -388,7 +390,7 @@ checklistType: task|simple
               <p className="text-sm">
                 {migrationResult.migrated
                   ? "Your documents have been successfully migrated to use YAML metadata."
-                  : "No migration was needed - your system is already up to date."}
+                  : t("migration.noMigrationNeeded")}
               </p>
             </InfoCard>
 
@@ -412,9 +414,7 @@ checklistType: task|simple
 
             {migrationResult.migrated && (
               <div className="flex justify-center pt-2">
-                <Button onClick={() => (window.location.href = "/")} size="lg">
-                  Return to App
-                </Button>
+                <Button onClick={() => (window.location.href = "/")} size="lg">{t('migration.returnToApp')}</Button>
               </div>
             )}
           </div>

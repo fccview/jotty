@@ -54,6 +54,7 @@ import {
 } from "@/app/_utils/yaml-metadata-utils";
 import { extractYamlMetadata as stripYaml } from "@/app/_utils/yaml-metadata-utils";
 import { getAppSettings } from "../config";
+import { logContentEvent } from "@/app/_server/actions/log";
 
 interface GetNotesOptions {
   username?: string;
@@ -96,6 +97,7 @@ const _parseMarkdownNote = (
     owner,
     isShared,
     encrypted: metadata.encrypted || false,
+    encryptionMethod: metadata.encryptionMethod,
   };
 };
 
@@ -404,7 +406,15 @@ const _checkDataFilesNeedMigration = async (): Promise<boolean> => {
           }
         }
       } catch (error) {
-        // Continue checking other directories
+        const { logAudit } = await import("@/app/_server/actions/log");
+        await logAudit({
+          level: "DEBUG",
+          action: "migration_check",
+          category: "note",
+          success: false,
+          errorMessage: "Error checking directory for migration",
+          metadata: { error: String(error) }
+        });
       }
 
       return false;
@@ -422,8 +432,15 @@ const _checkForMigrationNeeded = async (): Promise<boolean> => {
     const { SHARED_ITEMS_FILE } = await import("@/app/_consts/files");
     await fs.access(SHARED_ITEMS_FILE);
     return true;
-  } catch {
-    // No sharing migration needed
+  } catch (error) {
+    const { logAudit } = await import("@/app/_server/actions/log");
+    await logAudit({
+      level: "DEBUG",
+      action: "migration_check",
+      category: "sharing",
+      success: false,
+      errorMessage: "Shared items file doesn't exist - no migration needed",
+    });
   }
 
   try {
@@ -495,9 +512,13 @@ export const createNote = async (formData: FormData) => {
       );
     }
 
+    await logContentEvent("note_created", "note", newDoc.uuid!, newDoc.title, true, { category: newDoc.category });
+
     return { success: true, data: newDoc };
   } catch (error) {
+    const { title } = getFormData(formData, ["title"]);
     console.error("Error creating note:", error);
+    await logContentEvent("note_created", "note", "", title || "unknown", false);
     return { error: "Failed to create note" };
   }
 };
@@ -510,7 +531,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       content,
       category,
       originalCategory,
-      unarchive,
       user,
       uuid,
     } = getFormData(formData, [
@@ -519,7 +539,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       "content",
       "category",
       "originalCategory",
-      "unarchive",
       "user",
       "uuid",
     ]);
@@ -685,8 +704,20 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       );
     }
 
+    if (!updatedDoc.encrypted) {
+      await logContentEvent("note_updated", "note", note.uuid!, updatedDoc.title, true, { category: updatedDoc.category });
+    }
+
     return { success: true, data: updatedDoc };
   } catch (error) {
+    const {
+      title,
+      uuid,
+    } = getFormData(formData, [
+      "title",
+      "uuid",
+    ]);
+    await logContentEvent("note_updated", "note", uuid!, title || "unknown", false);
     return { error: "Failed to update note" };
   }
 };
@@ -776,8 +807,17 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       );
     }
 
+    await logContentEvent("note_deleted", "note", note.uuid!, note.title!, true, { category: note.category });
+
     return { success: true };
   } catch (error) {
+    const {
+      uuid,
+    } = getFormData(formData, [
+      "uuid",
+    ]);
+    const note = await getNoteById(uuid!, "");
+    await logContentEvent("note_deleted", "note", uuid!, note?.title || "unknown", false);
     return { error: "Failed to delete note" };
   }
 };
@@ -895,6 +935,7 @@ export const getNoteById = async (
       content: parsedData.content,
       uuid: finalUuid,
       encrypted: parsedData.encrypted || false,
+      encryptionMethod: parsedData.encryptionMethod,
     };
     return result as Note;
   }
@@ -1062,8 +1103,8 @@ export const cloneNote = async (formData: FormData) => {
     const newId = path.basename(filename, ".md");
     const clonedNote = await getNoteById(
       newId,
-      currentUser?.username,
-      targetCategory
+      targetCategory,
+      currentUser?.username
     );
 
     try {

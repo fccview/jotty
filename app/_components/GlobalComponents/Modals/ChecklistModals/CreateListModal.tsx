@@ -11,6 +11,7 @@ import { ChecklistTypeSelector } from "../../../FeatureComponents/Checklists/Par
 import { Modes } from "@/app/_types/enums";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTranslations } from "next-intl";
 
 interface CreateListModalProps {
   onClose: () => void;
@@ -25,6 +26,7 @@ export const CreateListModal = ({
   categories,
   initialCategory = "",
 }: CreateListModalProps) => {
+  const t = useTranslations();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(initialCategory);
   const [newCategory, setNewCategory] = useState("");
@@ -77,17 +79,17 @@ export const CreateListModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title="Create New Checklist">
+    <Modal isOpen={true} onClose={onClose} title={t('checklists.createChecklistHeader')}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Input
           ref={titleInputRef}
           id="checklistName"
           name="checklistName"
-          label="Checklist Name *"
+          label={`${t('checklists.checklistName')} *`}
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter checklist name..."
+          placeholder={t('checklists.checklistNamePlaceholder')}
           required
           disabled={isLoading}
           autoFocus
@@ -116,9 +118,7 @@ export const CreateListModal = ({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-          >
-            Cancel
-          </Button>
+          >{t('common.cancel')}</Button>
           <Button
             type="submit"
             disabled={
@@ -128,7 +128,7 @@ export const CreateListModal = ({
             }
             className="flex-1"
           >
-            {isLoading ? "Creating..." : "Create Checklist"}
+            {isLoading ? t('common.creating') : t('checklists.createChecklist')}
           </Button>
         </div>
       </form>

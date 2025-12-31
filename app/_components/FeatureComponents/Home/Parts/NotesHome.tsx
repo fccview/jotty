@@ -14,6 +14,10 @@ import {
 import { useNotesHome } from "@/app/_hooks/useNotesHome";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
+import { useSettings } from "@/app/_utils/settings-store";
+import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
+import { NoteGridItem } from "@/app/_components/GlobalComponents/Cards/NoteGridItem";
 
 interface NotesHomeProps {
   notes: Note[];
@@ -30,7 +34,9 @@ export const NotesHome = ({
   onCreateModal,
   onSelectNote,
 }: NotesHomeProps) => {
+  const t = useTranslations();
   const { userSharedItems } = useAppMode();
+  const { viewMode } = useSettings();
 
   const {
     sensors,
@@ -61,9 +67,9 @@ export const NotesHome = ({
       <div className="flex-1 overflow-y-auto bg-background h-full">
         <EmptyState
           icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
-          title="No notes yet"
-          description="Create your first note to get started with your knowledge base."
-          buttonText="Create New Note"
+          title={t('notes.noNotesYet')}
+          description={t('notes.createFirstNote')}
+          buttonText={t('notes.createNewNote')}
           onButtonClick={() => onCreateModal()}
         />
       </div>
@@ -75,9 +81,7 @@ export const NotesHome = ({
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
-              Notes
-            </h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">{t('notes.title')}</h1>
           </div>
           <div className="flex gap-2">
             <Button
@@ -86,7 +90,7 @@ export const NotesHome = ({
               size="sm"
               className="flex-1 sm:size-lg"
             >
-              <span className="hidden sm:inline">All Notes</span>
+              <span className="hidden sm:inline">{t('notes.allNotes')}</span>
               <span className="sm:hidden">All</span>
             </Button>
             <Button
@@ -95,8 +99,8 @@ export const NotesHome = ({
               className="flex-1 sm:size-lg"
             >
               <Add01Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">New Note</span>
-              <span className="sm:hidden">New</span>
+              <span className="hidden sm:inline">{t('notes.newNote')}</span>
+              <span className="sm:hidden">{t('common.new')}</span>
             </Button>
           </div>
         </div>
@@ -104,9 +108,7 @@ export const NotesHome = ({
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Pinned
-              </h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('common.pinned')}</h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
             <DndContext
@@ -119,39 +121,93 @@ export const NotesHome = ({
                 items={pinned.map((note) => note.uuid || note.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <Masonry
-                  breakpointCols={breakpointColumnsObj}
-                  className="flex w-auto -ml-6"
-                  columnClassName="pl-6 bg-clip-padding"
-                >
-                  {pinned.map((note) => (
-                    <div
-                      key={`pinned-${note.category}-${note.uuid || note.id}`}
-                      className="mb-6"
-                    >
-                      <NoteCard
+                {viewMode === 'card' && (
+                  <Masonry
+                    breakpointCols={breakpointColumnsObj}
+                    className="flex w-auto -ml-6"
+                    columnClassName="pl-6 bg-clip-padding"
+                  >
+                    {pinned.map((note) => (
+                      <div
+                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        className="mb-6"
+                      >
+                        <NoteCard
+                          note={note}
+                          onSelect={onSelectNote}
+                          isPinned={true}
+                          onTogglePin={handleTogglePin}
+                          isDraggable={true}
+                          sharer={getNoteSharer(note)}
+                        />
+                      </div>
+                    ))}
+                  </Masonry>
+                )}
+
+                {viewMode === 'list' && (
+                  <div className="space-y-3">
+                    {pinned.map((note) => (
+                      <NoteListItem
+                        key={`pinned-${note.category}-${note.uuid || note.id}`}
                         note={note}
                         onSelect={onSelectNote}
                         isPinned={true}
                         onTogglePin={handleTogglePin}
-                        isDraggable={true}
                         sharer={getNoteSharer(note)}
+                        isDraggable={true}
                       />
-                    </div>
-                  ))}
-                </Masonry>
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'grid' && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {pinned.map((note) => (
+                      <NoteGridItem
+                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        note={note}
+                        onSelect={onSelectNote}
+                        isPinned={true}
+                        onTogglePin={handleTogglePin}
+                        sharer={getNoteSharer(note)}
+                        isDraggable={true}
+                      />
+                    ))}
+                  </div>
+                )}
               </SortableContext>
 
               <DragOverlay>
                 {activeNote ? (
-                  <NoteCard
-                    note={activeNote}
-                    onSelect={() => {}}
-                    isPinned={true}
-                    isDraggable={false}
-                    sharer={getNoteSharer(activeNote)}
-                    fixedWidth={draggedItemWidth || undefined}
-                  />
+                  <>
+                    {viewMode === 'card' && (
+                      <NoteCard
+                        note={activeNote}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        isDraggable={false}
+                        sharer={getNoteSharer(activeNote)}
+                        fixedWidth={draggedItemWidth || undefined}
+                      />
+                    )}
+                    {viewMode === 'list' && (
+                      <NoteListItem
+                        note={activeNote}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        sharer={getNoteSharer(activeNote)}
+                      />
+                    )}
+                    {viewMode === 'grid' && (
+                      <NoteGridItem
+                        note={activeNote}
+                        onSelect={() => { }}
+                        isPinned={true}
+                        sharer={getNoteSharer(activeNote)}
+                      />
+                    )}
+                  </>
                 ) : null}
               </DragOverlay>
             </DndContext>
@@ -162,7 +218,7 @@ export const NotesHome = ({
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                Recent Notes
+                {t('notes.recent')}
               </h2>
               <div className="flex-1 h-px bg-border"></div>
               <Button
@@ -171,31 +227,64 @@ export const NotesHome = ({
                 size="sm"
                 className="ml-2"
               >
-                <span className="hidden sm:inline">Show All</span>
-                <span className="sm:hidden">All</span>
+                <span className="hidden sm:inline">{t('common.showAll')}</span>
+                <span className="sm:hidden">{t('common.all')}</span>
                 <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </div>
-            <Masonry
-              breakpointCols={breakpointColumnsObj}
-              className="flex w-auto -ml-6"
-              columnClassName="pl-6 bg-clip-padding"
-            >
-              {recent.map((note) => (
-                <div
-                  key={`recent-${note.category}-${note.id}`}
-                  className="mb-6"
-                >
-                  <NoteCard
+
+            {viewMode === 'card' && (
+              <Masonry
+                breakpointCols={breakpointColumnsObj}
+                className="flex w-auto -ml-6"
+                columnClassName="pl-6 bg-clip-padding"
+              >
+                {recent.map((note) => (
+                  <div
+                    key={`recent-${note.category}-${note.id}`}
+                    className="mb-6"
+                  >
+                    <NoteCard
+                      note={note}
+                      onSelect={onSelectNote}
+                      isPinned={isNotePinned(note)}
+                      onTogglePin={handleTogglePin}
+                      sharer={getNoteSharer(note)}
+                    />
+                  </div>
+                ))}
+              </Masonry>
+            )}
+
+            {viewMode === 'list' && (
+              <div className="space-y-3">
+                {recent.map((note) => (
+                  <NoteListItem
+                    key={`recent-${note.category}-${note.id}`}
                     note={note}
                     onSelect={onSelectNote}
                     isPinned={isNotePinned(note)}
                     onTogglePin={handleTogglePin}
                     sharer={getNoteSharer(note)}
                   />
-                </div>
-              ))}
-            </Masonry>
+                ))}
+              </div>
+            )}
+
+            {viewMode === 'grid' && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {recent.map((note) => (
+                  <NoteGridItem
+                    key={`recent-${note.category}-${note.id}`}
+                    note={note}
+                    onSelect={onSelectNote}
+                    isPinned={isNotePinned(note)}
+                    onTogglePin={handleTogglePin}
+                    sharer={getNoteSharer(note)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

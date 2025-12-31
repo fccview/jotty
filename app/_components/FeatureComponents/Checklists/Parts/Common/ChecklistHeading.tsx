@@ -10,6 +10,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
 import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
 import { TaskStatus } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
 
 interface ChecklistHeadingProps {
   checklist?: Checklist;
@@ -34,6 +35,7 @@ export const ChecklistHeading = ({
   placeholder = "Add new item...",
   submitButtonText = "Add Item",
 }: ChecklistHeadingProps) => {
+  const t = useTranslations();
   const [newItemText, setNewItemText] = useState("");
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -180,11 +182,11 @@ export const ChecklistHeading = ({
                   size="lg"
                   onClick={onBulkSubmit}
                   disabled={isLoading}
-                  title="Bulk add items"
+                  title={t('checklists.bulkAddItems')}
                   className="px-3 lg:px-4 shadow-sm"
                 >
                   <TaskAdd01Icon className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">Bulk</span>
+                  <span className="hidden lg:inline">{t('checklists.bulk')}</span>
                 </Button>
               )}
               <div className="flex items-center">
@@ -192,11 +194,10 @@ export const ChecklistHeading = ({
                   type="submit"
                   size="lg"
                   disabled={isLoading || !newItemText.trim()}
-                  className={`px-4 lg:px-6 shadow-sm ${
-                    user?.enableRecurrence === "enable"
+                  className={`px-4 lg:px-6 shadow-sm ${user?.enableRecurrence === "enable"
                       ? "rounded-tr-none rounded-br-none"
                       : ""
-                  }`}
+                    }`}
                 >
                   <Add01Icon className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">{submitButtonText}</span>
@@ -208,7 +209,7 @@ export const ChecklistHeading = ({
                     size="lg"
                     onClick={() => setShowRecurrenceModal(true)}
                     disabled={isLoading || !newItemText.trim()}
-                    title="Add recurring item"
+                    title={t('checklists.addRecurringItem')}
                     className="px-3 lg:px-4 shadow-sm border-l-2 border-border rounded-tl-none rounded-bl-none"
                   >
                     <RefreshIcon className="h-4 w-4" />
