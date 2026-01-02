@@ -188,6 +188,7 @@ export interface User {
   mfaSecret?: string;
   mfaRecoveryCode?: string;
   mfaEnrolledAt?: string;
+  preferredLocale?: string;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -298,6 +299,7 @@ export interface AppSettings {
   parseContent: "yes" | "no";
   maximumFileSize: number;
   adminContentAccess?: "yes" | "no";
+  hideLanguageSelector?: "yes" | "no";
   maxLogAgeDays?: number;
   editor: {
     enableSlashCommands: boolean;
@@ -381,6 +383,7 @@ export interface AppModeContextType {
   allSharedItems: AllSharedItems | null;
   userSharedItems: UserSharedItems | null;
   globalSharing: any;
+  availableLocales: { code: string; countryCode: string; name: string }[];
 }
 
 export type AuditLogLevel = "DEBUG" | "INFO" | "WARNING" | "ERROR" | "CRITICAL";

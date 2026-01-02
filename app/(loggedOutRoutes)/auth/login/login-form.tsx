@@ -141,7 +141,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
 
       {appVersion && (
         <div className="text-center text-xs text-muted-foreground">
-          {t('version', { version: appVersion })}
+          <a target="_blank" href={`https://github.com/fccview/jotty/releases/tag/${appVersion}`}>{t('version', { version: appVersion })}</a>
         </div>
       )}
     </div>

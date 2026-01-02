@@ -1,0 +1,30 @@
+name: Feature Request
+description: Suggest a feature you'd like to see in Jotty. 
+title: "[FEATURE]: "
+labels: []
+body:
+  - type: textarea
+    id: feature
+    attributes:
+      label: Describe the feature you'd like to see
+      description: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: images
+    attributes:
+      label: Wireframes or mockups (optional)
+      description: Add wireframes or mockups if you have any, this really helps speed up the development process in case the idea gets considered.
+      placeholder: Paste your images here...
+    validations:
+      required: false
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please verify the following before submitting.
+      options:
+        - label: I have searched across other issues to make sure this has not been already suggested.
+          required: true
+        - label: I understand this request may be declined if it is not in line with the project's goals.
+          required: true

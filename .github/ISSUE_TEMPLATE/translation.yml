@@ -1,0 +1,63 @@
+name: Translations
+description: Contribute a new language or fix an existing translation
+title: "[I18N]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for helping translate Jotty!
+        
+        Before you start, please ensure you have read our **[Translation Guide](https://github.com/fccview/jotty/blob/main/howto/TRANSLATIONS.md)**.
+        
+        **Reference Files:**
+        - You need to copy keys from the **[English Source File (en.json)](https://github.com/fccview/jotty/blob/main/app/_translations/en.json)**.
+        - Ensure you keep the structure identical.
+
+  - type: input
+    id: language
+    attributes:
+      label: Language Name
+      placeholder: e.g. French, Spanish, Japanese
+    validations:
+      required: true
+  - type: input
+    id: iso_code
+    attributes:
+      label: ISO Code
+      description: The 2-letter or 4-letter ISO code.
+      placeholder: e.g. fr, es, ja
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: type
+    attributes:
+      label: Contribution Type
+      options:
+        - New Translation
+        - Update to Existing Translation
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: quality_control
+    attributes:
+      label: Quality Control Checklist
+      description: Please verify the following before submitting.
+      options:
+        - label: I have read the [Translation Guide](https://github.com/fccview/jotty/blob/main/howto/TRANSLATIONS.md).
+          required: true
+        - label: I have verified that all variable placeholders (e.g. `{count}`) are intact and not translated.
+          required: true
+        - label: I have tested this translation locally within the app to ensure it loads correctly.
+          required: true
+
+  - type: textarea
+    id: translation_payload
+    attributes:
+      label: Translated Content
+      description: Paste the translated JSON content here.
+      render: json
+    validations:
+      required: true

@@ -78,7 +78,9 @@ A self-hosted app for your checklists and notes.
 
 ## Getting Started
 
-My recommended way to run `jotty·page` is with Docker, or you can use the handy [proxmox community script](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/jotty.sh)
+My recommended way to run `jotty·page` is with Docker. You can also use:
+- The [Proxmox community script](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/jotty.sh) for Proxmox VE
+- The [Unraid template](howto/UNRAID.md) for Unraid Community Applications
 
 <a id="docker-compose"></a>
 

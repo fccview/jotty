@@ -83,6 +83,7 @@ export const Layout = ({
           onSidebarToggle={() => setSidebarOpen(true)}
           onOpenSettings={onOpenSettings}
           user={user}
+          currentLocale={user?.preferredLocale || "en"}
           onModeChange={setMode}
         />
 

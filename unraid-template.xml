@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<Container version="2">
+    <Name>jotty</Name>
+    <Repository>ghcr.io/fccview/jotty:latest</Repository>
+    <Registry>https://ghcr.io/fccview/jotty</Registry>
+    <Branch>
+        <Tag>latest</Tag>
+        <TagDescription>Latest stable release</TagDescription>
+    </Branch>
+    <Branch>
+        <Tag>develop</Tag>
+        <TagDescription>Latest development branch commits. Used for development and testing of the latest features</TagDescription>
+    </Branch>
+    <Network>bridge</Network>
+    <Privileged>false</Privileged>
+    <Support>https://github.com/fccview/jotty/issues</Support>
+    <Project>https://github.com/fccview/jotty</Project>
+    <Overview>jotty·page is a lightweight alternative for managing your personal checklists and notes. It's extremely easy to deploy, keeps all your data on your own server and allows you to encrypt/decrypt your notes for your personal peace of mind.</Overview>
+    <Category>Productivity: Tools: Other:</Category>
+    <WebUI>http://[IP]:[PORT:3000]</WebUI>
+    <TemplateURL>https://raw.githubusercontent.com/fccview/jotty/master/unraid-template.xml</TemplateURL>
+    <Screenshot>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-screenshots/notes-view-dark.png</Screenshot>
+    <Screenshot>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-screenshots/note-markdown.png</Screenshot>
+    <Icon>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-icons/logos/logo.png</Icon>
+    <ExtraParams>--user 99:100</ExtraParams>
+    <PostArgs/>
+    <DonateText/>
+    <DonateLink>https://www.buymeacoffee.com/fccview</DonateLink>
+    <Config Name="PORT" Target="3000" Default="1122" Mode="tcp" Description="You can change 1122 to any available port on your host system." Type="Port" Display="always" Required="true" Mask="false">1122</Config>
+    <Config Name="Appdata: /data" Target="/app/data" Default="" Mode="rw" Description="" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/jotty/data</Config>
+    <Config Name="Appdata: /config" Target="/app/config" Default="" Mode="rw" Description="" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/jotty/config</Config>
+    <Config Name="Appdata: /cache" Target="/app/.next/cache" Default="" Mode="rw" Description="" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/jotty/cache</Config>
+    <Config Name="NODE_ENV" Target="NODE_ENV" Default="production" Mode="" Description="Sets the Node.js environment to production mode for optimal performance and security." Type="Variable" Display="advanced" Required="true" Mask="false">production</Config>
+    <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="Process User ID that the container will run as. Remove the --user 99:100 from Extra Params in Advanced settings to change this setting." Type="Variable" Display="advanced" Required="true" Mask="false">99</Config>
+    <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Process Group ID that the container will run as. Remove the --user 99:100 from Extra Params in Advanced settings to change this setting." Type="Variable" Display="advanced" Required="true" Mask="false">100</Config>
+    <Config Name="UMASK" Target="UMASK" Default="002" Mode="" Description="Sets the default file creation mask." Type="Variable" Display="advanced" Required="false" Mask="false">002</Config>
+    <Config Name="HTTPS" Target="HTTPS" Default="|true" Mode="" Description="Enables HTTPS mode for secure connections." Type="Variable" Display="always" Required="false" Mask="false"></Config>
+    <Config Name="SERVE_PUBLIC_IMAGES" Target="SERVE_PUBLIC_IMAGES" Default="yes|no" Mode="" Description="Allows public access to uploaded images via direct URLs." Type="Variable" Display="always" Required="false" Mask="false">yes</Config>
+    <Config Name="SERVE_PUBLIC_FILES" Target="SERVE_PUBLIC_FILES" Default="yes|no" Mode="" Description="Allows public access to uploaded files via direct URLs." Type="Variable" Display="always" Required="false" Mask="false">yes</Config>
+    <Config Name="SERVE_PUBLIC_VIDEOS" Target="SERVE_PUBLIC_VIDEOS" Default="yes|no" Mode="" Description="Allows public access to uploaded videos via direct URLs." Type="Variable" Display="always" Required="false" Mask="false">yes</Config>
+    <Config Name="STOP_CHECK_UPDATES" Target="STOP_CHECK_UPDATES" Default="yes|no" Mode="" Description="If set to yes stops the github api call and won't give you a toast when a new update is available." Type="Variable" Display="always" Required="false" Mask="false">no</Config>
+    <Config Name="SSO_MODE" Target="SSO_MODE" Default="|oidc" Mode="" Description="Enables OIDC (OpenID Connect) single sign-on authentication." Type="Variable" Display="always" Required="false" Mask="false"></Config>
+    <Config Name="OIDC Issuer" Target="OIDC_ISSUER" Default="" Mode="" Description="URL of your OIDC provider (e.g., Authentik, Auth0, Keycloak)." Type="Variable" Display="always" Required="false" Mask="false"></Config>
+    <Config Name="OIDC Client ID" Target="OIDC_CLIENT_ID" Default="" Mode="" Description="Client ID from your OIDC provider configuration." Type="Variable" Display="always" Required="false" Mask="false"></Config>
+    <Config Name="APP_URL" Target="APP_URL" Default="" Mode="" Description="Base URL of your jotty·page instance. Required for secure session (https) and SSO. Include the https://" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+    <Config Name="OIDC Client Secret" Target="OIDC_CLIENT_SECRET" Default="" Mode="" Description="Client secret for confidential OIDC client authentication." Type="Variable" Display="always" Required="false" Mask="false"></Config>
+    <Config Name="SSO_FALLBACK_LOCAL" Target="SSO_FALLBACK_LOCAL" Default="yes|no" Mode="" Description="Allows both SSO and local authentication methods." Type="Variable" Display="always" Required="false" Mask="false">yes</Config>
+    <Config Name="OIDC Admin Groups" Target="OIDC_ADMIN_GROUPS" Default="admins" Mode="" Description="Comma-separated list of OIDC groups that should have admin privileges." Type="Variable" Display="always" Required="false" Mask="false">admins</Config>
+    <Config Name="OIDC Groups Scope" Target="OIDC_GROUPS_SCOPE" Default="groups" Mode="" Description="Scope to request for groups. Defaults to 'groups'. Set to empty string or 'no' to disable for providers like Entra ID that don't support the groups scope." Type="Variable" Display="advanced" Required="false" Mask="false">groups</Config>
+    <Config Name="OIDC Logout URL" Target="OIDC_LOGOUT_URL" Default="" Mode="" Description="Custom logout URL for global logout. Full URL to redirect to when logging out." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+    <Config Name="INTERNAL_API_URL" Target="INTERNAL_API_URL" Default="" Mode="" Description="Use if getting 403 errors after SSO login: Set to http://localhost:3000" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+    <Config Name="DEBUGGER" Target="DEBUGGER" Default="false|true" Mode="" Description="" Type="Variable" Display="always" Required="false" Mask="false">false</Config>
+</Container>

@@ -11,9 +11,10 @@ import { Button } from "../Buttons/Button";
 interface MobileHeaderProps {
     user: User | null;
     onOpenSettings: () => void;
+    currentLocale: string;
 }
 
-export const MobileHeader = ({ user, onOpenSettings }: MobileHeaderProps) => {
+export const MobileHeader = ({ user, onOpenSettings, currentLocale }: MobileHeaderProps) => {
     const { isRwMarkable } = useAppMode();
     const router = useRouter();
 
@@ -38,8 +39,8 @@ export const MobileHeader = ({ user, onOpenSettings }: MobileHeaderProps) => {
                 <UserDropdown
                     username={user.username}
                     avatarUrl={user.avatarUrl}
-                    isAdmin={user.isAdmin}
                     onOpenSettings={onOpenSettings}
+                    currentLocale={currentLocale}
                 />
             ) : (
                 <Button

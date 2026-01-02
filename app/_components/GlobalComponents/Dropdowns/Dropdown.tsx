@@ -6,7 +6,7 @@ import { cn } from "@/app/_utils/global-utils";
 
 interface DropdownOption {
   id: number | string;
-  name: string;
+  name: React.ReactNode;
   icon?: React.ComponentType<{ className?: string }>;
 }
 

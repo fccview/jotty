@@ -39,6 +39,7 @@ import path from "path";
 import { writeJsonFile } from "./_server/actions/file";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { getAvailableLocalesWithNames } from '@/app/_utils/locale-utils';
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -170,6 +171,7 @@ export default async function RootLayout({
     allSharedItems,
     userSharedItems,
     globalSharing,
+    availableLocales,
   ] = await Promise.all([
     shouldParseContent
       ? getUserNotes()
@@ -194,6 +196,7 @@ export default async function RootLayout({
       ? getAllSharedItemsForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
     readShareFile("all"),
+    getAvailableLocalesWithNames(),
   ]);
 
   const notes = notesResult.success ? notesResult.data || [] : [];
@@ -251,6 +254,7 @@ export default async function RootLayout({
             allSharedItems={allSharedItems}
             userSharedItems={userSharedItems}
             globalSharing={globalSharing}
+            availableLocales={availableLocales}
           >
             <ThemeProvider user={user || {}}>
               <EmojiProvider>

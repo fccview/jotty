@@ -38,6 +38,7 @@ export const AppModeProvider = ({
   allSharedItems,
   userSharedItems,
   globalSharing,
+  availableLocales = [],
 }: {
   children: ReactNode;
   isDemoMode?: boolean;
@@ -53,6 +54,7 @@ export const AppModeProvider = ({
   allSharedItems?: AllSharedItems | null;
   userSharedItems?: UserSharedItems | null;
   globalSharing?: any;
+  availableLocales?: { code: string; countryCode: string; name: string }[];
 }) => {
   const [appSettings, _] = useState<AppSettings | null>(
     initialSettings || null
@@ -113,6 +115,7 @@ export const AppModeProvider = ({
       allSharedItems: allSharedItems || null,
       userSharedItems: userSharedItems || null,
       globalSharing: globalSharing || null,
+      availableLocales: availableLocales || [],
     }),
     [
       mode,
@@ -132,6 +135,7 @@ export const AppModeProvider = ({
       allSharedItems,
       userSharedItems,
       globalSharing,
+      availableLocales,
     ]
   );
 

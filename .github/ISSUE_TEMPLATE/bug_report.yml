@@ -1,0 +1,52 @@
+name: Bug Report
+description: Report a bug you found within Jotty
+title: "[BUG]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to fill a bug report, this really helps us improve Jotty's experience for everyone else!
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Enter your description here...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Please list the steps to reproduce the bug. Please be as detailed as possible.  Feel free to add screenshots or videos if you have any.
+      placeholder: Enter your steps to reproduce here...
+    validations:
+      required: true
+  - type: dropdown
+    id: runner
+    attributes:
+      label: How do you run Jotty?
+      options:
+        - Docker
+        - Proxmox community script
+        - Yarn start
+        - Unraid
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: jotty_version
+    attributes:
+      label: Jotty Version
+      placeholder: latest (ideally type the actual version - e.g. 1.15.0)
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please verify the following before submitting.
+      options:
+        - label: I have searched across other issues to make sure this bug has not been already reported.
+          required: true

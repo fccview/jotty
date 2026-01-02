@@ -564,6 +564,10 @@
     "notifications": "Notifications",
     "privacy": "Confidentialité",
     "advanced": "Avancé",
+    "preferredLanguage": "Langue Préférée",
+    "selectLanguage": "Sélectionner la langue",
+    "choosePreferredLanguage": "Choisissez votre langue préférée",
+    "customTranslationsInfo": "Vous souhaitez ajouter votre propre langue ?",
     "preferredTheme": "Thème préféré",
     "loadingThemes": "Chargement des thèmes...",
     "selectTheme": "Sélectionner un thème",
@@ -733,7 +737,9 @@
     "parseContentEnabledDescription": "Lorsqu’il est activé, ce paramètre affichera les titres analysés dans la barre latérale, les résultats de recherche et globalement dans l’application.",
     "parseContentDisabledDescription": "Lorsqu’il est désactivé, les noms de fichiers originaux seront nettoyés, rendus lisibles et affichés à la place.",
     "parseContentPerformanceWarning": "Mettre ceci sur « non » améliorera les performances sur de grands ensembles de données mais peut réduire la lisibilité – en particulier pour les noms de fichiers avec des caractères non latins.",
-    "applicationIcons": "Icônes de l’application",
+    "hideLanguageSelector": "Masquer le Sélecteur de Langue dans l'En-tête",
+    "hideLanguageSelectorDescription": "Afficher/masquer le menu déroulant de sélection de langue dans l'en-tête",
+    "applicationIcons": "Icônes de l'application",
     "saveChanges": "Enregistrer les modifications",
     "unsavedChanges": "Vous avez des modifications non enregistrées.",
     "loadError": "Erreur de chargement",
@@ -1398,6 +1404,7 @@
     "pwa": "PWA",
     "encryption": "Chiffrement",
     "sso": "SSO",
-    "translations": "Traductions"
+    "translations": "Traductions",
+    "unraid": "Unraid"
   }
 }

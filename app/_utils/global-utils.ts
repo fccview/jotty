@@ -1,14 +1,11 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { AppMode, Checklist, Note, Result } from "../_types";
-import { updateNote } from "../_server/actions/note";
-import { getCurrentUser } from "../_server/actions/users";
-import { Modes } from "../_types/enums";
-import { updateList } from "../_server/actions/checklist";
-import { ARCHIVED_DIR_NAME } from "../_consts/files";
-
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
+};
+
+export const getFlagPath = (countryCode: string): string => {
+  return `/flags/${countryCode}.svg`;
 };
 
 export const isMobileDevice = (): boolean => {

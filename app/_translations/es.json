@@ -564,6 +564,10 @@
     "notifications": "Notificaciones",
     "privacy": "Privacidad",
     "advanced": "Avanzado",
+    "preferredLanguage": "Idioma Preferido",
+    "selectLanguage": "Seleccionar idioma",
+    "choosePreferredLanguage": "Elige tu idioma preferido",
+    "customTranslationsInfo": "¿Quieres agregar tu propio idioma?",
     "preferredTheme": "Tema preferido",
     "loadingThemes": "Cargando temas...",
     "selectTheme": "Seleccionar un tema",
@@ -733,6 +737,8 @@
     "parseContentEnabledDescription": "Cuando está habilitado, esta configuración mostrará los títulos procesados en la barra lateral, resultados de búsqueda y en toda la aplicación.",
     "parseContentDisabledDescription": "Cuando está deshabilitado, los nombres de archivo originales se sanitizan, se hacen legibles y se muestran en su lugar.",
     "parseContentPerformanceWarning": "Configurar esto en 'no' mejorará el rendimiento en grandes conjuntos de datos pero puede afectar la legibilidad, especialmente en nombres de archivo con caracteres no latinos.",
+    "hideLanguageSelector": "Ocultar Selector de Idioma en el Encabezado",
+    "hideLanguageSelectorDescription": "Mostrar/ocultar menú desplegable de idioma en el encabezado",
     "applicationIcons": "Iconos de la aplicación",
     "saveChanges": "Guardar cambios",
     "unsavedChanges": "Tiene cambios no guardados.",
@@ -1398,6 +1404,7 @@
     "pwa": "PWA",
     "encryption": "Encriptación",
     "sso": "SSO",
-    "translations": "Traducciones"
+    "translations": "Traducciones",
+    "unraid": "Unraid"
   }
 }
