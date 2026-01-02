@@ -18,7 +18,7 @@ If not yet available in Community Applications:
 
 1. Go to **Docker** tab → **Add Container**
 2. Click **Template repositories**
-3. Add: [https://raw.githubusercontent.com/fccview/jotty/main/unraid-template.xml](https://raw.githubusercontent.com/fccview/jotty/main/unraid-template.xml)
+3. Add: `https://raw.githubusercontent.com/fccview/jotty/main/third-party/unraid-template.xml`
 4. Click **Save**
 
 ## Configuration
