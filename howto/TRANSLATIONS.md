@@ -6,7 +6,7 @@ Jotty uses [next-intl](https://next-intl-docs.vercel.app/) for internationalizat
 
 ### Translation System
 
-1. **Locale Detection**: The application uses user settings to determine which language to use (defaults to `en` if not set)
+1. **Locale Detection**: The application determines the language in the following order: User's personally selected locale (in their user settings), the `DEFAULT_LOCALE` environment variable, and finally defaulting to `en` if neither are set. This ensures that guest users (e.g., on the login page) see the application in your preferred default language before they log in.
 2. **Translation Loading**: The corresponding JSON file is loaded from `app/_translations/`
 3. **Custom Overrides**: If a custom translation file is added in your `config/` directory and specified using the `CUSTOM_TRANSLATION_FILE` environment variable, it will be used instead of the default translations, allowing you to override specific strings. This should allow users who are not comfortable in making pull requests to still be able to have Jotty in their native language.
 

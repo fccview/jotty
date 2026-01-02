@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/app-icons/logos/logo-variation.svg" alt="Jotty Logo" width="100"> 
+  <img src="public/app-icons/logos/logo.svg" alt="Jotty Logo" width="100"> 
   <br />
   <h1 align="center">jotty·page</h1><br/>
 </p>

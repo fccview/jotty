@@ -18,10 +18,10 @@
     <Overview>jotty·page is a lightweight alternative for managing your personal checklists and notes. It's extremely easy to deploy, keeps all your data on your own server and allows you to encrypt/decrypt your notes for your personal peace of mind.</Overview>
     <Category>Productivity: Tools: Other:</Category>
     <WebUI>http://[IP]:[PORT:3000]</WebUI>
-    <TemplateURL>https://raw.githubusercontent.com/fccview/jotty/main/unraid-template.xml</TemplateURL>
-    <Screenshot>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-screenshots/notes-view-dark.png</Screenshot>
-    <Screenshot>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-screenshots/note-markdown.png</Screenshot>
-    <Icon>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-icons/logos/logo.png</Icon>
+    <TemplateURL>https://raw.githubusercontent.com/fccview/jotty/main/third-party/unraid-template.xml</TemplateURL>
+    <Screenshot>https://raw.githubusercontent.com/fccview/jotty/main/public/app-screenshots/notes-view-dark.png</Screenshot>
+    <Screenshot>https://raw.githubusercontent.com/fccview/jotty/main/public/app-screenshots/note-markdown.png</Screenshot>
+    <Icon>https://raw.githubusercontent.com/fccview/jotty/main/public/app-icons/logos/logo.svg</Icon>
     <ExtraParams>--user 99:100</ExtraParams>
     <PostArgs/>
     <DonateText/>
@@ -39,6 +39,7 @@
     <Config Name="SERVE_PUBLIC_FILES" Target="SERVE_PUBLIC_FILES" Default="yes|no" Mode="" Description="Allows public access to uploaded files via direct URLs." Type="Variable" Display="always" Required="false" Mask="false">yes</Config>
     <Config Name="SERVE_PUBLIC_VIDEOS" Target="SERVE_PUBLIC_VIDEOS" Default="yes|no" Mode="" Description="Allows public access to uploaded videos via direct URLs." Type="Variable" Display="always" Required="false" Mask="false">yes</Config>
     <Config Name="STOP_CHECK_UPDATES" Target="STOP_CHECK_UPDATES" Default="yes|no" Mode="" Description="If set to yes stops the github api call and won't give you a toast when a new update is available." Type="Variable" Display="always" Required="false" Mask="false">no</Config>
+    <Config Name="DEFAULT_LOCALE" Target="DEFAULT_LOCALE" Default="en" Mode="" Description="Sets the default language for the application (e.g., on the login page) when no user is logged in or a user hasn't set a preference. Defaults to en." Type="Variable" Display="always" Required="false" Mask="false">en</Config>
     <Config Name="SSO_MODE" Target="SSO_MODE" Default="|oidc" Mode="" Description="Enables OIDC (OpenID Connect) single sign-on authentication." Type="Variable" Display="always" Required="false" Mask="false"></Config>
     <Config Name="OIDC Issuer" Target="OIDC_ISSUER" Default="" Mode="" Description="URL of your OIDC provider (e.g., Authentik, Auth0, Keycloak)." Type="Variable" Display="always" Required="false" Mask="false"></Config>
     <Config Name="OIDC Client ID" Target="OIDC_CLIENT_ID" Default="" Mode="" Description="Client ID from your OIDC provider configuration." Type="Variable" Display="always" Required="false" Mask="false"></Config>

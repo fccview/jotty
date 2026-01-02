@@ -32,7 +32,8 @@ export type Locale = string;
 
 export default getRequestConfig(async () => {
   const user = await getCurrentUser();
-  const locale = user?.preferredLocale || 'en';
+  const defaultLocale = process.env.DEFAULT_LOCALE || 'en';
+  const locale = user?.preferredLocale || defaultLocale;
 
   const availableLocales = await getAvailableLocales();
   if (!availableLocales.includes(locale)) {

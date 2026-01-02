@@ -89,7 +89,7 @@ export const UserDropdown = ({
     {
       type: "divider" as const,
     },
-    ...(appSettings?.hideLanguageSelector ? [] : [{
+    ...(appSettings?.hideLanguageSelector === "yes" ? [] : [{
       label: t("common.language"),
       icon: <TranslateIcon className="h-4 w-4" />,
       onClick: () => {
