@@ -18,7 +18,7 @@
     <Overview>jotty·page is a lightweight alternative for managing your personal checklists and notes. It's extremely easy to deploy, keeps all your data on your own server and allows you to encrypt/decrypt your notes for your personal peace of mind.</Overview>
     <Category>Productivity: Tools: Other:</Category>
     <WebUI>http://[IP]:[PORT:3000]</WebUI>
-    <TemplateURL>https://raw.githubusercontent.com/fccview/jotty/master/unraid-template.xml</TemplateURL>
+    <TemplateURL>https://raw.githubusercontent.com/fccview/jotty/main/unraid-template.xml</TemplateURL>
     <Screenshot>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-screenshots/notes-view-dark.png</Screenshot>
     <Screenshot>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-screenshots/note-markdown.png</Screenshot>
     <Icon>https://raw.githubusercontent.com/fccview/jotty/refs/heads/main/public/app-icons/logos/logo.png</Icon>
