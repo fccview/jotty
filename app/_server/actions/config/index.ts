@@ -252,6 +252,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
           parseContent: "yes",
           maximumFileSize: MAX_FILE_SIZE,
           adminContentAccess: "yes",
+          hideLanguageSelector: "no",
           editor: {
             enableSlashCommands: true,
             enableBubbleMenu: true,
@@ -327,6 +328,8 @@ export const updateAppSettings = async (
     const adminContentAccess =
       (formData.get("adminContentAccess") as "yes" | "no") || "yes";
     const maxLogAgeDays = Number(formData.get("maxLogAgeDays")) || 0;
+    const hideLanguageSelector =
+      (formData.get("hideLanguageSelector") as "yes" | "no") || "no";
 
     let editorSettings = {
       enableSlashCommands: true,
@@ -357,6 +360,7 @@ export const updateAppSettings = async (
       maximumFileSize: maximumFileSize,
       adminContentAccess: adminContentAccess,
       maxLogAgeDays: maxLogAgeDays,
+      hideLanguageSelector: hideLanguageSelector,
       editor: editorSettings,
     };
 

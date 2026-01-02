@@ -1,6 +1,8 @@
 import { getRequestConfig } from 'next-intl/server';
 import path from 'path';
 import fs from 'fs';
+import { getCurrentUser } from './app/_server/actions/users';
+import { getAvailableLocales } from './app/_utils/locale-utils';
 
 function _fallbackMerger(target: any, source: any): any {
   const output = { ...target };
@@ -26,28 +28,14 @@ function isObject(item: any): boolean {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
-export const getAvailableLocales = (): string[] => {
-  const translationsDir = path.join(process.cwd(), 'app', '_translations');
-
-  if (!fs.existsSync(translationsDir)) {
-    return ['en'];
-  }
-
-  const files = fs.readdirSync(translationsDir);
-  const locales = files
-    .filter(file => file.endsWith('.json'))
-    .map(file => file.replace('.json', ''));
-
-  return locales.length > 0 ? locales : ['en'];
-};
-
-export const locales = getAvailableLocales();
 export type Locale = string;
 
 export default getRequestConfig(async () => {
-  const locale = process.env.LOCALE || 'en';
+  const user = await getCurrentUser();
+  const defaultLocale = process.env.DEFAULT_LOCALE || 'en';
+  const locale = user?.preferredLocale || defaultLocale;
 
-  const availableLocales = getAvailableLocales();
+  const availableLocales = await getAvailableLocales();
   if (!availableLocales.includes(locale)) {
     console.warn(`Locale "${locale}" not found, falling back to "en"`);
     const fallbackLocale = 'en';

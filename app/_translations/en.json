@@ -163,6 +163,7 @@
     "dismiss": "Dismiss",
     "cleaning": "Cleaning...",
     "noResultsFound": "No results found",
+    "noResults": "No results",
     "by": "by {owner}",
     "unsavedChanges": "Unsaved Changes",
     "unsavedChangesDetected": "⚠️ Unsaved Changes Detected",
@@ -442,6 +443,10 @@
     "createTask": "Create Task",
     "editTask": "Edit Task",
     "deleteTask": "Delete Task",
+    "viewTask": "View Task",
+    "addSubtask": "Add Subtask",
+    "renameTask": "Rename Task",
+    "archiveTask": "Archive Task",
     "taskTitle": "Task Title",
     "taskDescription": "Task Description",
     "noTasks": "No tasks found",
@@ -560,6 +565,10 @@
     "notifications": "Notifications",
     "privacy": "Privacy",
     "advanced": "Advanced",
+    "preferredLanguage": "Preferred Language",
+    "selectLanguage": "Select language",
+    "choosePreferredLanguage": "Choose your preferred language",
+    "customTranslationsInfo": "Want to add your own language?",
     "preferredTheme": "Preferred Theme",
     "loadingThemes": "Loading themes...",
     "selectTheme": "Select a theme",
@@ -729,6 +738,8 @@
     "parseContentEnabledDescription": "When enabled this setting will show the parsed titles in the sidebar, search results, and overall across the app.",
     "parseContentDisabledDescription": "When disabled, the original file names will be sanitised, made human readable and shown instead.",
     "parseContentPerformanceWarning": "Setting this to \"no\" will improve performance on large datasets but may impact readability - especially on filenames with non latin characters.",
+    "hideLanguageSelector": "Hide Language Selector in Header",
+    "hideLanguageSelectorDescription": "Show/hide language dropdown in header",
     "applicationIcons": "Application Icons",
     "saveChanges": "Save Changes",
     "unsavedChanges": "You have unsaved changes.",
@@ -1394,6 +1405,7 @@
     "pwa": "PWA",
     "encryption": "Encryption",
     "sso": "SSO",
-    "translations": "Translations"
+    "translations": "Translations",
+    "unraid": "Unraid"
   }
 }

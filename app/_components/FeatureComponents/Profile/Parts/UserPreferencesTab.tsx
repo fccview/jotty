@@ -40,9 +40,11 @@ import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/Us
 
 interface SettingsTabProps {
   noteCategories: Category[];
+  localeOptions: Array<{id: string, name: JSX.Element}>;
 }
 
 const getSettingsFromUser = (user: User | null): Partial<User> => ({
+  preferredLocale: user?.preferredLocale || "en",
   preferredTheme: user?.preferredTheme || "system",
   tableSyntax: user?.tableSyntax || "html",
   landingPage: user?.landingPage || Modes.CHECKLISTS,
@@ -75,7 +77,7 @@ const pick = <T extends object, K extends keyof T>(
   return result;
 };
 
-export const UserPreferencesTab = ({ noteCategories }: SettingsTabProps) => {
+export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTabProps) => {
   const t = useTranslations();
   const { isDemoMode, user, setUser } = useAppMode();
   const router = useRouter();
@@ -125,6 +127,7 @@ export const UserPreferencesTab = ({ noteCategories }: SettingsTabProps) => {
   };
 
   const hasGeneralChanges = hasChanges([
+    "preferredLocale",
     "preferredTheme",
     "landingPage",
     "fileRenameMode",
@@ -310,6 +313,7 @@ export const UserPreferencesTab = ({ noteCategories }: SettingsTabProps) => {
             onClick={() =>
               handleSaveSection(
                 [
+                  "preferredLocale",
                   "preferredTheme",
                   "landingPage",
                   "fileRenameMode",
@@ -328,6 +332,35 @@ export const UserPreferencesTab = ({ noteCategories }: SettingsTabProps) => {
         }
       >
         <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="preferred-locale">{t('settings.preferredLanguage')}</Label>
+            <Dropdown
+              value={currentSettings.preferredLocale || "en"}
+              onChange={(value) => handleSettingChange("preferredLocale", value)}
+              options={localeOptions}
+              placeholder={t('settings.selectLanguage')}
+              className="w-full"
+            />
+            {validationErrors.preferredLocale && (
+              <p className="text-sm text-destructive">
+                {validationErrors.preferredLocale}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              {t('settings.choosePreferredLanguage')}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              <a
+                href="https://github.com/fccview/jotty/blob/main/howto/TRANSLATIONS.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                {t('settings.customTranslationsInfo')}
+              </a>
+            </p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="preferred-theme">{t('settings.preferredTheme')}</Label>
             {loadingThemes ? (

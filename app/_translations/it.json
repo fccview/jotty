@@ -442,6 +442,10 @@
     "createTask": "Crea Attività",
     "editTask": "Modifica Attività",
     "deleteTask": "Elimina Attività",
+    "viewTask": "Visualizza Attività",
+    "addSubtask": "Aggiungi Sottoattività",
+    "renameTask": "Rinomina Attività",
+    "archiveTask": "Archivia Attività",
     "taskTitle": "Titolo Attività",
     "taskDescription": "Descrizione",
     "noTasks": "Nessuna attività trovata",
@@ -560,6 +564,10 @@
     "notifications": "Notifiche",
     "privacy": "Privacy",
     "advanced": "Avanzate",
+    "preferredLanguage": "Lingua Preferita",
+    "selectLanguage": "Seleziona lingua",
+    "choosePreferredLanguage": "Scegli la tua lingua preferita",
+    "customTranslationsInfo": "Vuoi aggiungere la tua lingua?",
     "preferredTheme": "Tema Preferito",
     "loadingThemes": "Caricamento temi...",
     "selectTheme": "Seleziona un tema",
@@ -729,6 +737,8 @@
     "parseContentEnabledDescription": "Se abilitato, mostrerà i titoli formattati nella sidebar, nei risultati di ricerca e ovunque nell'app.",
     "parseContentDisabledDescription": "Se disabilitato, verranno mostrati i nomi dei file originali (sanitizzati e leggibili).",
     "parseContentPerformanceWarning": "Impostare su \"no\" migliora le performance su grandi dataset ma potrebbe ridurre la leggibilità - specialmente con nomi file contenenti caratteri non latini.",
+    "hideLanguageSelector": "Nascondi il selettore della Lingua nell'header",
+    "hideLanguageSelectorDescription": "Mostra/nascondi menu a tendina di selezione lingua nell'header",
     "applicationIcons": "Icone Applicazione",
     "saveChanges": "Salva Modifiche",
     "unsavedChanges": "Hai modifiche non salvate.",
@@ -1394,6 +1404,7 @@
     "pwa": "PWA",
     "encryption": "Crittografia",
     "sso": "SSO",
-    "translations": "Traduzioni"
+    "translations": "Traduzioni",
+    "unraid": "Unraid"
   }
 }

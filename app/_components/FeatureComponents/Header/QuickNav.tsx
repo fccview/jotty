@@ -15,7 +15,6 @@ import { Modes } from "@/app/_types/enums";
 import { cn } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
-import { NavigationHelpIcon } from "../Navigation/Parts/NavigationHelpIcon";
 import { UserDropdown } from "../Navigation/Parts/UserDropdown";
 import { logout } from "@/app/_server/actions/auth";
 
@@ -25,6 +24,7 @@ interface QuickNavProps {
   onOpenSettings?: () => void;
   user: User | null;
   onModeChange?: (mode: AppMode) => void;
+  currentLocale: string;
 }
 
 export const QuickNav = ({
@@ -33,6 +33,7 @@ export const QuickNav = ({
   onOpenSettings,
   user,
   onModeChange,
+  currentLocale,
 }: QuickNavProps) => {
   const router = useRouter();
   const { mode } = useAppMode();
@@ -69,8 +70,8 @@ export const QuickNav = ({
             <UserDropdown
               username={user.username}
               avatarUrl={user.avatarUrl}
-              isAdmin={user.isAdmin}
               onOpenSettings={onOpenSettings}
+              currentLocale={currentLocale}
             />
           ) : (
             <Button

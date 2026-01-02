@@ -171,7 +171,7 @@ export const MfaSetupModal = ({
                                         />
                                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                                             <Image
-                                                src="/app-icons/logos/logo-variation.svg"
+                                                src="/app-icons/logos/logo.svg"
                                                 alt="Logo"
                                                 width={60}
                                                 height={60}

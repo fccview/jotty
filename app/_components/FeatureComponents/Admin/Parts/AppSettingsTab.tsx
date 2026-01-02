@@ -204,6 +204,25 @@ export const AppSettingsTab = () => {
           </span>
         </div>
         <div>
+          <Label htmlFor="hideLanguageSelector" className="block mb-3">
+            {t("admin.hideLanguageSelector")}
+          </Label>
+          <Dropdown
+            value={settings?.hideLanguageSelector || "no"}
+            onChange={(value) =>
+              handleInputChange("hideLanguageSelector", value)
+            }
+            options={[
+              { id: "yes", name: t("common.yes") },
+              { id: "no", name: t("common.no") },
+            ]}
+            disabled={!isSuperAdmin}
+          />
+          <span className="text-xs text-muted-foreground">
+            {t("admin.hideLanguageSelectorDescription")}
+          </span>
+        </div>
+        <div>
           <div className="flex items-center gap-2 mb-3">
             <Label htmlFor="adminContentAccess" className="block">
               {t("admin.adminContentAccess")}

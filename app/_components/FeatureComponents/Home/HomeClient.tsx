@@ -61,7 +61,7 @@ export const HomeClient = ({
       onCategoryDeleted={() => router.refresh()}
       onCategoryRenamed={() => router.refresh()}
     >
-      <MobileHeader user={user} onOpenSettings={openSettings} />
+      <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
 
       {mode === Modes.CHECKLISTS && (
         <ChecklistHome

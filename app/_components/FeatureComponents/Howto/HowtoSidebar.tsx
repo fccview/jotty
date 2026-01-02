@@ -21,6 +21,7 @@ import {
     ZapIcon,
     GridIcon,
     CodeIcon,
+    RainIcon
 } from "hugeicons-react";
 
 interface HowtoSidebarProps {
@@ -40,6 +41,7 @@ const iconMap: Record<string, any> = {
     lock: LockKeyIcon,
     squarelock: SquareLock01Icon,
     translation: TranslationIcon,
+    rain: RainIcon,
 };
 
 export const HowtoSidebar = ({ isOpen, onClose }: HowtoSidebarProps) => {

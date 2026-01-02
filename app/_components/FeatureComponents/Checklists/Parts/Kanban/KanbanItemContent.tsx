@@ -103,46 +103,44 @@ const KanbanItemContentComponent = ({
           className="flex items-center"
           onPointerDown={(e) => e.stopPropagation()}
         >
-          <div className="relative">
-            <Dropdown
-              value=""
-              options={[
-                { id: "view", name: "View Task" },
-                ...(permissions?.canEdit
-                  ? [{ id: "add", name: "Add Subtask" }]
-                  : []),
-                ...(permissions?.canEdit
-                  ? [{ id: "rename", name: "Rename Task" }]
-                  : []),
-                ...(permissions?.canEdit
-                  ? [{ id: "archive", name: "Archive Task" }]
-                  : []),
-                ...(permissions?.canDelete
-                  ? [{ id: "delete", name: t("tasks.deleteTask") }]
-                  : []),
-              ]}
-              onChange={(action) => {
-                switch (action) {
-                  case "view":
-                    onShowSubtaskModal();
-                    break;
-                  case "add":
-                    onShowSubtaskModal();
-                    break;
-                  case "rename":
-                    onEdit();
-                    break;
-                  case "archive":
-                    onArchive();
-                    break;
-                  case "delete":
-                    onDelete();
-                    break;
-                }
-              }}
-              iconDropdown
-            />
-          </div>
+          <Dropdown
+            value=""
+            options={[
+              { id: "view", name: t("tasks.viewTask") },
+              ...(permissions?.canEdit
+                ? [{ id: "add", name: t("tasks.addSubtask") }]
+                : []),
+              ...(permissions?.canEdit
+                ? [{ id: "rename", name: t("tasks.renameTask") }]
+                : []),
+              ...(permissions?.canEdit
+                ? [{ id: "archive", name: t("tasks.archiveTask") }]
+                : []),
+              ...(permissions?.canDelete
+                ? [{ id: "delete", name: t("tasks.deleteTask") }]
+                : []),
+            ]}
+            onChange={(action) => {
+              switch (action) {
+                case "view":
+                  onShowSubtaskModal();
+                  break;
+                case "add":
+                  onShowSubtaskModal();
+                  break;
+                case "rename":
+                  onEdit();
+                  break;
+                case "archive":
+                  onArchive();
+                  break;
+                case "delete":
+                  onDelete();
+                  break;
+              }
+            }}
+            iconDropdown
+          />
         </div>
       </div>
 

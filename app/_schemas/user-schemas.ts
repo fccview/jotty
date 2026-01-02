@@ -58,6 +58,7 @@ export const fileSettingsSchema = z.object({
 });
 
 export const generalSettingsSchema = z.object({
+  preferredLocale: z.string().optional(),
   preferredTheme: z.string().min(1, "Theme is required"),
   landingPage: z.enum([Modes.CHECKLISTS, Modes.NOTES, "last-visited"], {
     message: "Landing page must be 'checklists', 'notes', or 'last-visited'",
