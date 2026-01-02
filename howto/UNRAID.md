@@ -12,15 +12,6 @@ jotty·page can be installed on Unraid through the Community Applications store.
 4. Configure settings (see below)
 5. Click **Apply**
 
-### Manual Template Installation
-
-If not yet available in Community Applications:
-
-1. Go to **Docker** tab → **Add Container**
-2. Click **Template repositories**
-3. Add: `https://raw.githubusercontent.com/fccview/jotty/main/third-party/unraid-template.xml`
-4. Click **Save**
-
 ## Configuration
 
 ### Port Settings
