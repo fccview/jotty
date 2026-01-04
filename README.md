@@ -13,11 +13,18 @@ A self-hosted app for your checklists and notes.
 ---
 
 <p align="center">
-  <a href="http://discord.gg/invite/mMuk2WzVZu">
-    <img width="40" src="public/repo-images/discord_icon.webp">
+  <a href="https://discord.gg/invite/mMuk2WzVZu">
+    <img width="40" src="https://skills.syvixor.com/api/icons?i=discord">
+  </a>
+  <a href="https://www.reddit.com/r/jotty">
+    <img width="40" src="https://skills.syvixor.com/api/icons?i=reddit">
+  </a>
+  <a href="https://t.me/jottypage">
+    <img width="40" src="https://skills.syvixor.com/api/icons?i=telegram">
   </a>
   <br />
-  <i>Join the discord server for more info!</i>
+  <br />
+  <i>Join our communities</i>
   <br />
 </p>
 
