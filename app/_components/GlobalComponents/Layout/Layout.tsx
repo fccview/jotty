@@ -4,7 +4,7 @@ import { useState } from "react";
 import { QuickNav } from "@/app/_components/FeatureComponents/Header/QuickNav";
 import { Sidebar } from "@/app/_components/FeatureComponents/Sidebar/Sidebar";
 import { SettingsSidebar } from "@/app/_components/FeatureComponents/Sidebar/SettingsSidebar";
-import { Category, User } from "@/app/_types";
+import { Category, User, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMobileGestures } from "@/app/_hooks/useMobileGestures";
 import { isMobileDevice } from "@/app/_utils/global-utils";
@@ -19,7 +19,7 @@ interface LayoutProps {
   onCategoryDeleted?: (categoryName: string) => void;
   onCategoryRenamed?: (oldName: string, newName: string) => void;
   children: React.ReactNode;
-  user: User | null;
+  user: SanitisedUser | null;
   customSidebar?: (props: { isOpen: boolean; onClose: () => void }) => React.ReactNode;
 }
 

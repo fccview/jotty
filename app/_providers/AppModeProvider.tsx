@@ -17,6 +17,7 @@ import {
   AppModeContextType,
   AllSharedItems,
   UserSharedItems,
+  SanitisedUser,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { LinkIndex } from "../_server/actions/link";
@@ -44,7 +45,7 @@ export const AppModeProvider = ({
   isDemoMode?: boolean;
   isRwMarkable?: boolean;
   usersPublicData?: Partial<User>[];
-  user?: User | null;
+  user?: SanitisedUser | null;
   pathname?: string;
   appVersion?: string;
   initialSettings?: AppSettings;
@@ -78,7 +79,7 @@ export const AppModeProvider = ({
   const [mode, setMode] = useState<AppMode>(modeToSet);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [user, setUser] = useState<User | null>(initialUser || null);
+  const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 
   useEffect(() => {
     setIsInitialized(true);

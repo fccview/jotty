@@ -2,7 +2,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAppMode } from "../_providers/AppModeProvider";
 import { useNavigationGuard } from "../_providers/NavigationGuardProvider";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Checklist, Category, Note, AppMode, User } from "../_types";
+import { Checklist, Category, Note, AppMode, User, SanitisedUser } from "../_types";
 import { ItemTypes, Modes } from "../_types/enums";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { buildCategoryPath, encodeId } from "../_utils/global-utils";
@@ -13,7 +13,7 @@ export interface SidebarProps {
   onOpenCreateModal: (initialCategory?: string) => void;
   onOpenCategoryModal: (parentCategory?: string) => void;
   categories: Category[];
-  user: User | null;
+  user: SanitisedUser | null;
   onCategoryDeleted?: (categoryName: string) => void;
   onCategoryRenamed?: (oldName: string, newName: string) => void;
   onOpenSettings: () => void;

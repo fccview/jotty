@@ -6,11 +6,12 @@ import {
 import { ChecklistProgress } from "../../Checklists/Parts/Simple/ChecklistProgress";
 import { Checklist, User } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { PublicUser } from "@/app/_utils/user-sanitize-utils";
 
 interface PublicChecklistHeaderProps {
   checklist: Checklist;
   totalCount: number;
-  user: User | null;
+  user: PublicUser | null;
   avatarUrl: string;
 }
 

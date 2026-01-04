@@ -40,6 +40,7 @@ import { writeJsonFile } from "./_server/actions/file";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { getAvailableLocalesWithNames } from '@/app/_utils/locale-utils';
+import { sanitizeUserForClient } from '@/app/_utils/user-sanitize-utils';
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -150,18 +151,20 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = headers().get("x-pathname");
+  const isPublicRoute = pathname?.startsWith("/public");
   const settings = await getSettings();
   const appName =
     settings?.appName || (settings?.isRwMarkable ? "rwMarkable" : "jotty·page");
   const noteCategories = await getCategories(Modes.NOTES);
   const checklistCategories = await getCategories(Modes.CHECKLISTS);
-  const user = await getCurrentUser();
+  const userRecord = await getCurrentUser();
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
-  const users = await getUsers();
-  const linkIndex = user?.username ? await readLinkIndex(user.username) : null;
+  const users = (isPublicRoute || !userRecord) ? [] : await getUsers();
+  const linkIndex = userRecord?.username ? await readLinkIndex(userRecord.username) : null;
   const messages = await getMessages();
+  const user = sanitizeUserForClient(userRecord);
 
   const shouldParseContent = settings?.parseContent === "yes";
 
@@ -173,29 +176,33 @@ export default async function RootLayout({
     globalSharing,
     availableLocales,
   ] = await Promise.all([
-    shouldParseContent
+    shouldParseContent && user && !isPublicRoute
       ? getUserNotes()
-      : getUserNotes({
-        projection: ["id", "title", "category", "owner", "uuid"],
-      }),
-    shouldParseContent
+      : user && !isPublicRoute
+        ? getUserNotes({
+          projection: ["id", "title", "category", "owner", "uuid"],
+        })
+        : Promise.resolve({ success: false, data: [] }),
+    shouldParseContent && user && !isPublicRoute
       ? getUserChecklists()
-      : getUserChecklists({
-        projection: [
-          "id",
-          "title",
-          "category",
-          "owner",
-          "uuid",
-          "type",
-          "items",
-        ],
-      }),
-    getAllSharedItems(),
-    user
+      : user && !isPublicRoute
+        ? getUserChecklists({
+          projection: [
+            "id",
+            "title",
+            "category",
+            "owner",
+            "uuid",
+            "type",
+            "items",
+          ],
+        })
+        : Promise.resolve({ success: false, data: [] }),
+    (user && !isPublicRoute) ? getAllSharedItems() : Promise.resolve({ notes: [], checklists: [], public: { notes: [], checklists: [] } }),
+    (user && !isPublicRoute)
       ? getAllSharedItemsForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
-    readShareFile("all"),
+    (user && !isPublicRoute) ? readShareFile("all") : Promise.resolve(null),
     getAvailableLocalesWithNames(),
   ]);
 

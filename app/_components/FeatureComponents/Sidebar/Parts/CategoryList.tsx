@@ -1,6 +1,6 @@
 "use client";
 
-import { AppMode, Category, Checklist, Note, User } from "@/app/_types";
+import { AppMode, Category, Checklist, Note, User, SanitisedUser } from "@/app/_types";
 import {
   DndContext,
   DragEndEvent,
@@ -32,7 +32,7 @@ interface CategoryListProps {
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
-  user?: User;
+  user?: SanitisedUser;
 }
 
 export const CategoryList = (props: CategoryListProps) => {

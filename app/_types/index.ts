@@ -364,6 +364,8 @@ export interface UserSharedItems {
   checklists: UserSharedItem[];
 }
 
+export type SanitisedUser = Omit<User, 'passwordHash' | 'apiKey' | 'lastLogin'>;
+
 export interface AppModeContextType {
   mode: AppMode;
   setMode: (mode: AppMode) => void;
@@ -372,8 +374,8 @@ export interface AppModeContextType {
   isInitialized: boolean;
   isDemoMode: boolean;
   isRwMarkable: boolean;
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: SanitisedUser | null;
+  setUser: (user: SanitisedUser | null) => void;
   appVersion: string;
   appSettings: AppSettings | null;
   usersPublicData: Partial<User>[];

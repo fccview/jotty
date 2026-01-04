@@ -13,7 +13,7 @@ import { CreateNoteModal } from "@/app/_components/GlobalComponents/Modals/Notes
 import { CreateListModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/CreateListModal";
 import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/CreateCategoryModal";
 import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/SettingsModals/Settings";
-import { Category, User } from "@/app/_types";
+import { Category, SanitisedUser, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
@@ -48,7 +48,7 @@ export const ShortcutProvider = ({
   children: ReactNode;
   noteCategories: Category[];
   checklistCategories: Category[];
-  user: User | null;
+  user: SanitisedUser | null;
 }) => {
   const router = useRouter();
   const { mode, setMode } = useAppMode();
