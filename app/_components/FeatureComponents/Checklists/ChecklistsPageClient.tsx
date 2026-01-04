@@ -9,7 +9,7 @@ import {
   Clock01Icon,
   CheckmarkSquare04Icon,
 } from "hugeicons-react";
-import { Checklist, User } from "@/app/_types";
+import { Checklist, SanitisedUser } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { usePagination } from "@/app/_hooks/usePagination";
@@ -27,7 +27,7 @@ import { useChecklistsFilter } from "@/app/_components/FeatureComponents/Checkli
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
-  user: User | null;
+  user: SanitisedUser | null;
 }
 
 export const ChecklistsPageClient = ({

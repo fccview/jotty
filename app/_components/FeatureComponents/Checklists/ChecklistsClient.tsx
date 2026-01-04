@@ -4,13 +4,13 @@ import { createContext, useContext, useState } from "react";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { FiltersSidebar } from "@/app/_components/FeatureComponents/Sidebar/FiltersSidebar";
 import { Pagination } from "@/app/_components/GlobalComponents/Layout/Pagination";
-import { Category, User } from "@/app/_types";
+import { Category, SanitisedUser } from "@/app/_types";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useTranslations } from "next-intl";
 
 interface ChecklistsClientProps {
   categories: Category[];
-  user: User | null;
+  user: SanitisedUser | null;
   children: React.ReactNode;
 }
 

@@ -1,12 +1,12 @@
 "use client";
 
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
-import { Category, User } from "@/app/_types";
+import { Category, SanitisedUser } from "@/app/_types";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 
 interface SettingsClientProps {
     categories: Category[];
-    user: User | null;
+    user: SanitisedUser | null;
     children: React.ReactNode;
 }
 

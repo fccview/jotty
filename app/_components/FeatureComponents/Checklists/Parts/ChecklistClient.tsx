@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Category, Checklist, User } from "@/app/_types";
+import { Category, Checklist, SanitisedUser } from "@/app/_types";
 import { ChecklistView } from "@/app/_components/FeatureComponents/Checklists/Checklist";
 import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
 import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeader";
@@ -22,7 +22,7 @@ import { buildCategoryPath } from "@/app/_utils/global-utils";
 interface ChecklistClientProps {
   checklist: Checklist;
   categories: Category[];
-  user: User | null;
+  user: SanitisedUser | null;
 }
 
 export const ChecklistClient = ({

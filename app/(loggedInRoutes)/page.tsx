@@ -5,6 +5,7 @@ import { HomeClient } from "@/app/_components/FeatureComponents/Home/HomeClient"
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
 import { Checklist, Note } from "../_types";
+import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export default async function HomePage() {
     notesCategoriesResult.success && notesCategoriesResult.data
       ? notesCategoriesResult.data
       : [];
-  const user = await getCurrentUser();
+  const user = sanitizeUserForClient(await getCurrentUser());
 
   return (
     <HomeClient

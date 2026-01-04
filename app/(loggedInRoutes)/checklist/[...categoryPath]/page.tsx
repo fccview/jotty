@@ -13,6 +13,7 @@ import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 interface ChecklistPageProps {
   params: {
@@ -44,8 +45,8 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
     categoryPath.length === 1
       ? "Uncategorized"
       : decodeCategoryPath(encodedCategoryPath);
-  const user = await getCurrentUser();
-  const username = user?.username || "";
+  const userRecord = await getCurrentUser();
+  const username = userRecord?.username || "";
   const hasContentAccess = await canAccessAllContent();
 
   const [listsResult, categoriesResult] = await Promise.all([
@@ -87,6 +88,8 @@ export default async function ChecklistPage({ params }: ChecklistPageProps) {
     updatedAt: checklist.updatedAt,
     type: "checklist" as const,
   };
+
+  const user = sanitizeUserForClient(userRecord);
 
   return (
     <MetadataProvider metadata={metadata}>

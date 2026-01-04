@@ -11,6 +11,7 @@ import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 interface AdminChecklistPageProps {
   params: {
@@ -29,7 +30,7 @@ export async function generateMetadata({
 
 export default async function AdminChecklistPage({ params }: AdminChecklistPageProps) {
   const { uuid } = params;
-  const user = await getCurrentUser();
+  const userRecord = await getCurrentUser();
   const hasContentAccess = await canAccessAllContent();
 
   if (!hasContentAccess) {
@@ -37,7 +38,7 @@ export default async function AdminChecklistPage({ params }: AdminChecklistPageP
   }
 
   const [listsResult, categoriesResult] = await Promise.all([
-    getUserChecklists({ username: user?.username }),
+    getUserChecklists({ username: userRecord?.username }),
     getCategories(Modes.CHECKLISTS),
   ]);
 
@@ -66,6 +67,8 @@ export default async function AdminChecklistPage({ params }: AdminChecklistPageP
     updatedAt: checklist.updatedAt,
     type: "checklist" as const,
   };
+
+  const user = sanitizeUserForClient(userRecord);
 
   return (
     <MetadataProvider metadata={metadata}>

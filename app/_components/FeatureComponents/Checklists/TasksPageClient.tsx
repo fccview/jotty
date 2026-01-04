@@ -9,7 +9,7 @@ import {
   AlertCircleIcon,
   PlayCircleIcon,
 } from "hugeicons-react";
-import { Checklist, User } from "@/app/_types";
+import { Checklist, SanitisedUser } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
@@ -26,7 +26,7 @@ import { useTasksFilter } from "./TasksClient";
 
 interface TasksPageClientProps {
   initialLists: Checklist[];
-  user: User | null;
+  user: SanitisedUser | null;
 }
 
 export const TasksPageClient = ({

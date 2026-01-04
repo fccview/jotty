@@ -2,14 +2,14 @@ import { UserDropdown } from "../../FeatureComponents/Navigation/Parts/UserDropd
 import { AppName } from "./AppName";
 import { DynamicLogo } from "./Logo/DynamicLogo";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { User } from "@/app/_types";
+import { SanitisedUser } from "@/app/_types";
 import { logout } from "@/app/_server/actions/auth";
 import { useRouter } from "next/navigation";
 import { Logout01Icon } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 
 interface MobileHeaderProps {
-    user: User | null;
+    user: SanitisedUser | null;
     onOpenSettings: () => void;
     currentLocale: string;
 }

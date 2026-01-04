@@ -6,7 +6,7 @@ import {
   ArrowRight04Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Checklist, User } from "@/app/_types";
+import { Checklist, SanitisedUser } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
@@ -24,7 +24,7 @@ import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/Chec
 
 interface ChecklistHomeProps {
   lists: Checklist[];
-  user: User | null;
+  user: SanitisedUser | null;
   onCreateModal: () => void;
   onSelectChecklist?: (list: Checklist) => void;
 }

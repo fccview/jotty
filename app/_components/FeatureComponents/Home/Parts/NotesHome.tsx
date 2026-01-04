@@ -2,7 +2,7 @@
 
 import { Add01Icon, File02Icon, ArrowRight04Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Note, Category, User } from "@/app/_types";
+import { Note, Category, SanitisedUser } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import Masonry from "react-masonry-css";
@@ -22,7 +22,7 @@ import { NoteGridItem } from "@/app/_components/GlobalComponents/Cards/NoteGridI
 interface NotesHomeProps {
   notes: Note[];
   categories: Category[];
-  user: User | null;
+  user: SanitisedUser | null;
   onCreateModal: () => void;
   onSelectNote: (note: Note) => void;
 }

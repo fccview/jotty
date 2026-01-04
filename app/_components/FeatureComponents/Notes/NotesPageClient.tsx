@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { File02Icon } from "hugeicons-react";
-import { Note, User } from "@/app/_types";
+import { Note, SanitisedUser } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { usePagination } from "@/app/_hooks/usePagination";
@@ -21,7 +21,7 @@ import { useNotesFilter } from "@/app/_components/FeatureComponents/Notes/NotesC
 
 interface NotesPageClientProps {
   initialNotes: Note[];
-  user: User | null;
+  user: SanitisedUser | null;
 }
 
 export const NotesPageClient = ({

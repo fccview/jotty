@@ -32,6 +32,9 @@ export function sanitizeUserForClient(user: User | null): SanitisedUser | null {
     encryptionSettings: user.encryptionSettings,
     defaultChecklistFilter: user.defaultChecklistFilter,
     defaultNoteFilter: user.defaultNoteFilter,
+    mfaEnabled: user.mfaEnabled,
+    createdAt: user.createdAt,
+    preferredLocale: user.preferredLocale,
   };
 }
 

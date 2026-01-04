@@ -12,14 +12,14 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Note, Category, User } from "@/app/_types";
+import { Note, Category, SanitisedUser } from "@/app/_types";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
 
 interface UseNotesHomeProps {
   notes: Note[];
   categories: Category[];
-  user: User | null;
+  user: SanitisedUser | null;
 }
 
 export const useNotesHome = ({
