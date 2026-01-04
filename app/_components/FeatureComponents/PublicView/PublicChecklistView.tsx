@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { Checklist, User } from "@/app/_types";
 import { PublicChecklistHeader } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistHeader";
 import { PublicChecklistBody } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistBody";
+import { PublicUser } from "@/app/_utils/user-sanitize-utils";
 
 interface PublicChecklistViewProps {
   checklist: Checklist;
-  user: User | null;
+  user: PublicUser | null;
 }
 
 export const PublicChecklistView = ({

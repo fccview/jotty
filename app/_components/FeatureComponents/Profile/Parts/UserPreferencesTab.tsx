@@ -7,6 +7,7 @@ import { updateUserSettings } from "@/app/_server/actions/users";
 import { useTranslations } from "next-intl";
 import {
   User,
+  SanitisedUser,
   Category,
   EnableRecurrence,
   ShowCompletedSuggestions,
@@ -43,7 +44,7 @@ interface SettingsTabProps {
   localeOptions: Array<{id: string, name: JSX.Element}>;
 }
 
-const getSettingsFromUser = (user: User | null): Partial<User> => ({
+const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser> => ({
   preferredLocale: user?.preferredLocale || "en",
   preferredTheme: user?.preferredTheme || "system",
   tableSyntax: user?.tableSyntax || "html",

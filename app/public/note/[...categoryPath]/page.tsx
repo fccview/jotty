@@ -9,6 +9,7 @@ import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { isItemSharedWith } from "@/app/_server/actions/sharing";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
+import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
 
 interface PublicNotePageProps {
   params: {
@@ -68,12 +69,11 @@ export default async function PublicNotePage({
     redirect("/");
   }
 
-  const user = await getUserByUsername(note.owner!);
-  if (user) {
-    user.avatarUrl = process.env.SERVE_PUBLIC_IMAGES
-      ? user.avatarUrl
-      : undefined;
-  }
+  const userRecord = await getUserByUsername(note.owner!);
+  const user = sanitizeUserForPublic(
+    userRecord,
+    !!process.env.SERVE_PUBLIC_IMAGES
+  );
 
   const isPubliclyShared = await isItemSharedWith(
     id,

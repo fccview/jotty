@@ -12,10 +12,11 @@ import { PGPEncryptionModal } from "@/app/_components/GlobalComponents/Modals/En
 import { XChaChaEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/XChaChaEncryptionModal";
 import { detectEncryptionMethod } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
+import { PublicUser } from "@/app/_utils/user-sanitize-utils";
 
 interface PublicNoteViewProps {
   note: Note;
-  user: User | null;
+  user: PublicUser | null;
 }
 
 export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {

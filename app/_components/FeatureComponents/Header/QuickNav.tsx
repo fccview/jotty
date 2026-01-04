@@ -10,7 +10,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
-import { AppMode, User } from "@/app/_types";
+import { AppMode, User, SanitisedUser } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { cn } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
@@ -22,7 +22,7 @@ interface QuickNavProps {
   showSidebarToggle?: boolean;
   onSidebarToggle?: () => void;
   onOpenSettings?: () => void;
-  user: User | null;
+  user: SanitisedUser | null;
   onModeChange?: (mode: AppMode) => void;
   currentLocale: string;
 }

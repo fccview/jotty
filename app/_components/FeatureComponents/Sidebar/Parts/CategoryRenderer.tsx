@@ -13,7 +13,7 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import { AppMode, Category, Checklist, Note } from "@/app/_types";
+import { AppMode, Category, Checklist, Note, SanitisedUser } from "@/app/_types";
 import { Draggable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Draggable";
 import { SidebarItem } from "@/app/_components/FeatureComponents/Sidebar/Parts/SidebarItem";
 import { Modes } from "@/app/_types/enums";
@@ -35,7 +35,7 @@ interface CategoryRendererProps {
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
-  user?: any;
+  user?: SanitisedUser;
 }
 
 export const CategoryRenderer = (props: CategoryRendererProps) => {

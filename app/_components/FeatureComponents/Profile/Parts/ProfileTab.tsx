@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { generateApiKey, getApiKey } from "@/app/_server/actions/api";
-import { User as UserData } from "@/app/_types";
+import { User as UserData, SanitisedUser } from "@/app/_types";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
@@ -31,9 +31,9 @@ import { MfaDisableModal } from "@/app/_components/GlobalComponents/Modals/MfaMo
 import { MfaRegenerateRecoveryCodeModal } from "@/app/_components/GlobalComponents/Modals/MfaModals/MfaRegenerateRecoveryCodeModal";
 
 interface ProfileTabProps {
-  user: UserData | null;
+  user: SanitisedUser | null;
   isAdmin: boolean;
-  setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
+  setUser: React.Dispatch<React.SetStateAction<SanitisedUser | null>>;
   isSsoUser: boolean;
 }
 
@@ -191,7 +191,7 @@ export const ProfileTab = ({
 
       if (result.success) {
         setSuccess(t('profile.profileUpdated'));
-        setUser((prev: UserType | null) =>
+        setUser((prev: SanitisedUser | null) =>
           prev
             ? { ...prev, username: editedUsername, avatarUrl: avatarUrl }
             : null
@@ -227,7 +227,7 @@ export const ProfileTab = ({
       const result = await updateProfile(formData);
 
       if (result.success) {
-        setUser((prev: UserType | null) =>
+        setUser((prev: SanitisedUser | null) =>
           prev ? { ...prev, avatarUrl: url } : null
         );
         setSuccess(t('profile.avatarUpdated'));
@@ -252,7 +252,7 @@ export const ProfileTab = ({
       const result = await updateProfile(formData);
 
       if (result.success) {
-        setUser((prev: UserType | null) =>
+        setUser((prev: SanitisedUser | null) =>
           prev ? { ...prev, avatarUrl: undefined } : null
         );
         setSuccess(t('profile.avatarRemoved'));
