@@ -19,6 +19,7 @@
     "back": "Retour",
     "next": "Suivant",
     "previous": "Précédent",
+    "continue": "Continuer",
     "submit": "Envoyer",
     "create": "Créer",
     "update": "Mettre à jour",
@@ -434,7 +435,9 @@
     "noItemsYet": "Aucun élément pour le moment",
     "addFirstItem": "Ajoutez votre premier élément pour commencer !",
     "noTasks": "Aucune tâche",
-    "noSubtasksYet": "Aucune sous‑tâche pour le moment. Ajoutez‑en une ci‑dessous pour commencer."
+    "noSubtasksYet": "Aucune sous‑tâche pour le moment. Ajoutez‑en une ci‑dessous pour commencer.",
+    "addTime": "Ajouter du Temps",
+    "enterTimeInMinutes": "Entrez votre temps en minutes"
   },
   "tasks": {
     "title": "Tâches",
@@ -934,7 +937,11 @@
     "blockquote": "Bloc de citation",
     "codeBlock": "Bloc de code",
     "link": "Lien",
+    "addLink": "Ajouter un lien",
+    "enterURL": "Entrez l'URL",
     "image": "Image",
+    "addImage": "Ajouter une image",
+    "enterImageURL": "Entrez l'URL de l'image",
     "table": "Tableau",
     "horizontalRule": "Règle horizontale",
     "undo": "Annuler",

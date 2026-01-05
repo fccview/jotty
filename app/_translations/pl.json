@@ -19,6 +19,7 @@
     "back": "Wstecz",
     "next": "Dalej",
     "previous": "Poprzedni",
+    "continue": "Kontynuuj",
     "submit": "Wyślij",
     "create": "Utwórz",
     "update": "Zaktualizuj",
@@ -435,7 +436,9 @@
     "noItemsYet": "Brak elementów",
     "addFirstItem": "Dodaj swój pierwszy element, aby rozpocząć!",
     "noTasks": "Brak zadań",
-    "noSubtasksYet": "Brak podzadań. Dodaj jedno poniżej, aby zacząć."
+    "noSubtasksYet": "Brak podzadań. Dodaj jedno poniżej, aby zacząć.",
+    "addTime": "Dodaj Czas",
+    "enterTimeInMinutes": "Wprowadź czas w minutach"
   },
   "tasks": {
     "title": "Zadania",
@@ -935,7 +938,11 @@
     "blockquote": "Blok cytatu",
     "codeBlock": "Blok kodu",
     "link": "Link",
+    "addLink": "Dodaj Link",
+    "enterURL": "Wprowadź URL",
     "image": "Obrazek",
+    "addImage": "Dodaj Obrazek",
+    "enterImageURL": "Wprowadź URL obrazka",
     "table": "Tabela",
     "horizontalRule": "Linia pozioma",
     "undo": "Cofnij",

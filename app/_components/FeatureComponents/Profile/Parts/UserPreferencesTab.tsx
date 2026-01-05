@@ -41,7 +41,7 @@ import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/Us
 
 interface SettingsTabProps {
   noteCategories: Category[];
-  localeOptions: Array<{id: string, name: JSX.Element}>;
+  localeOptions: Array<{ id: string, name: JSX.Element }>;
 }
 
 const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser> => ({
@@ -54,7 +54,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
   enableRecurrence: user?.enableRecurrence || "disable",
   showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
-  fileRenameMode: user?.fileRenameMode || "dash-case",
+  fileRenameMode: user?.fileRenameMode || "minimal",
   preferredDateFormat: user?.preferredDateFormat || "dd/mm/yyyy",
   preferredTimeFormat: user?.preferredTimeFormat || "12-hours",
   disableRichEditor: user?.disableRichEditor || "disable",

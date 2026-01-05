@@ -106,6 +106,7 @@ export const ChecklistClient = ({
     getNewType,
     handleConfirmConversion,
     sensors,
+    DeleteModal,
   } = useChecklist({
     list: localChecklist,
     onUpdate: handleUpdate,
@@ -225,6 +226,8 @@ export const ChecklistClient = ({
           }}
         />
       )}
+
+      <DeleteModal />
     </Layout>
   );
 };

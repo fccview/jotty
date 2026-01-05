@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Delete03Icon } from "hugeicons-react";
 import { terminateSession, terminateAllOtherSessions } from "@/app/_server/actions/session";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface SessionsTabClientProps {
     initialSessions: Session[];
@@ -25,21 +26,30 @@ export const SessionsTabClient = ({ initialSessions }: SessionsTabClientProps) =
         id: string | null;
         all: boolean;
     }>({ id: null, all: false });
+    const [showTerminateModal, setShowTerminateModal] = useState(false);
+    const [showTerminateAllModal, setShowTerminateAllModal] = useState(false);
+    const [sessionToTerminate, setSessionToTerminate] = useState<string | null>(null);
 
-    const handleTerminateSession = async (sessionId: string) => {
-        if (!window.confirm(t("profile.terminateSessionConfirm"))) return;
+    const handleTerminateSession = (sessionId: string) => {
+        setSessionToTerminate(sessionId);
+        setShowTerminateModal(true);
+    };
 
-        setTerminating({ id: sessionId, all: false });
+    const confirmTerminateSession = async () => {
+        if (!sessionToTerminate) return;
+
+        setTerminating({ id: sessionToTerminate, all: false });
         setError(null);
         setSuccess(null);
+        setShowTerminateModal(false);
 
         try {
             const formData = new FormData();
-            formData.append("sessionId", sessionId);
+            formData.append("sessionId", sessionToTerminate);
             const result = await terminateSession(formData);
 
             if (result.success) {
-                setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+                setSessions((prev) => prev.filter((s) => s.id !== sessionToTerminate));
                 setSuccess("Session terminated!");
                 setTimeout(() => setSuccess(null), 3000);
             } else {
@@ -49,15 +59,19 @@ export const SessionsTabClient = ({ initialSessions }: SessionsTabClientProps) =
             setError(err instanceof Error ? err.message : t("errors.anErrorOccurred"));
         } finally {
             setTerminating({ id: null, all: false });
+            setSessionToTerminate(null);
         }
     };
 
-    const handleTerminateAllOtherSessions = async () => {
-        if (!window.confirm("Are you sure you want to terminate all other sessions?")) return;
+    const handleTerminateAllOtherSessions = () => {
+        setShowTerminateAllModal(true);
+    };
 
+    const confirmTerminateAllSessions = async () => {
         setTerminating({ id: null, all: true });
         setError(null);
         setSuccess(null);
+        setShowTerminateAllModal(false);
 
         try {
             const result = await terminateAllOtherSessions();
@@ -124,6 +138,29 @@ export const SessionsTabClient = ({ initialSessions }: SessionsTabClientProps) =
                     ))}
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={showTerminateModal}
+                onClose={() => {
+                    setShowTerminateModal(false);
+                    setSessionToTerminate(null);
+                }}
+                onConfirm={confirmTerminateSession}
+                title={t("common.confirm")}
+                message={t("profile.terminateSessionConfirm")}
+                confirmText={t("common.confirm")}
+                variant="destructive"
+            />
+
+            <ConfirmModal
+                isOpen={showTerminateAllModal}
+                onClose={() => setShowTerminateAllModal(false)}
+                onConfirm={confirmTerminateAllSessions}
+                title={t("common.confirm")}
+                message={t("profile.terminateAllSessionsConfirm")}
+                confirmText={t("common.confirm")}
+                variant="destructive"
+            />
         </div>
     );
 };

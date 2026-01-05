@@ -206,6 +206,7 @@ const KanbanItemComponent = ({
           </div>
         </div>
       </div>
+      <kanbanItemHook.DeleteModal />
     </>
   );
 };

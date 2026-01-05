@@ -18,6 +18,8 @@ export const SessionManager = () => {
     terminating,
     handleTerminateSession,
     handleTerminateAllOtherSessions,
+    TerminateSessionModal,
+    TerminateAllSessionsModal,
   } = useSessionManager();
 
   const { isDemoMode } = useAppMode();
@@ -69,6 +71,9 @@ export const SessionManager = () => {
           />
         ))}
       </div>
+
+      <TerminateSessionModal />
+      <TerminateAllSessionsModal />
     </div>
   );
 };

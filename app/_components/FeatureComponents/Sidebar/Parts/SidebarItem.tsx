@@ -31,6 +31,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface SidebarItemProps {
   item: Checklist | Note;
@@ -53,6 +54,7 @@ export const SidebarItem = ({
 }: SidebarItemProps) => {
   const t = useTranslations();
   const router = useRouter();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
   const itemDetails = sharingInfo(globalSharing, item.id, encodedCategory);
@@ -62,6 +64,27 @@ export const SidebarItem = ({
   const sharedWith = itemDetails.sharedWith;
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+
+  const handleDeleteItem = async () => {
+    const formData = new FormData();
+
+    if (mode === Modes.CHECKLISTS) {
+      formData.append("id", item.id);
+      formData.append("category", item.category || "Uncategorized");
+      const result = await deleteList(formData);
+      if (result.success) {
+        router.refresh();
+      }
+    } else {
+      formData.append("id", item.id);
+      formData.append("category", item.category || "Uncategorized");
+      const result = await deleteNote(formData);
+      if (result.success) {
+        router.refresh();
+      }
+    }
+    setShowDeleteModal(false);
+  };
 
   const handleTogglePin = async () => {
     if (!user || isTogglingPin) return;
@@ -133,31 +156,7 @@ export const SidebarItem = ({
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
       label: t("common.delete"),
-      onClick: async () => {
-        const confirmed = window.confirm(
-          t("common.confirmDeleteItem", { itemTitle: item.title })
-        );
-
-        if (!confirmed) return;
-
-        const formData = new FormData();
-
-        if (mode === Modes.CHECKLISTS) {
-          formData.append("id", item.id);
-          formData.append("category", item.category || "Uncategorized");
-          const result = await deleteList(formData);
-          if (result.success) {
-            router.refresh();
-          }
-        } else {
-          formData.append("id", item.id);
-          formData.append("category", item.category || "Uncategorized");
-          const result = await deleteNote(formData);
-          if (result.success) {
-            router.refresh();
-          }
-        }
-      },
+      onClick: () => setShowDeleteModal(true),
       variant: "destructive" as const,
       icon: <Delete03Icon className="h-4 w-4" />,
     },
@@ -238,6 +237,16 @@ export const SidebarItem = ({
             <MoreHorizontalIcon className="h-4 w-4" />
           </Button>
         }
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteItem}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: item.title })}
+        confirmText={t("common.delete")}
+        variant="destructive"
       />
     </div>
   );

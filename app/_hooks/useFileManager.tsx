@@ -8,10 +8,13 @@ import {
 } from "@/app/_server/actions/upload";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useToast } from "@/app/_providers/ToastProvider";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 export const useFileManager = () => {
   const t = useTranslations();
   const { appSettings } = useAppMode();
+  const { showToast } = useToast();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -19,6 +22,8 @@ export const useFileManager = () => {
   const [fileSizeError, setFileSizeError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState<"images" | "videos" | "files">("images");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<{ name: string; type: "image" | "video" | "file" } | null>(null);
 
   const loadFiles = useCallback(async () => {
     setIsLoading(true);
@@ -74,17 +79,33 @@ export const useFileManager = () => {
     }
   };
 
-  const handleDeleteFile = async (
+  const handleDeleteFile = (
     fileName: string,
     fileType: "image" | "video" | "file"
   ) => {
-    if (!window.confirm(t('common.confirmDeleteItem', { itemTitle: fileName }))) return;
+    setFileToDelete({ name: fileName, type: fileType });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!fileToDelete) return;
+
     const formData = new FormData();
-    formData.append("fileName", fileName);
-    formData.append("fileType", fileType);
+    formData.append("fileName", fileToDelete.name);
+    formData.append("fileType", fileToDelete.type);
     const result = await deleteFile(formData);
-    if (result.success) await loadFiles();
-    else alert(result.error || t('common.failedToDeleteFile'));
+
+    if (result.success) {
+      await loadFiles();
+    } else {
+      showToast({
+        type: "error",
+        title: result.error || t('common.failedToDeleteFile'),
+      });
+    }
+
+    setShowDeleteModal(false);
+    setFileToDelete(null);
   };
 
   const filteredFiles = useMemo(
@@ -112,5 +133,19 @@ export const useFileManager = () => {
     handleUpload,
     handleDeleteFile,
     filteredFiles,
+    DeleteModal: () => (
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setFileToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: fileToDelete?.name || "" })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
+    ),
   };
 };

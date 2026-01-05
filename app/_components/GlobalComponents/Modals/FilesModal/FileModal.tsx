@@ -39,6 +39,7 @@ export const FileModal = ({
     handleUpload,
     handleDeleteFile,
     filteredFiles,
+    DeleteModal,
   } = useFileManager();
 
   useEffect(() => {
@@ -56,31 +57,34 @@ export const FileModal = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={t("common.filesAndImages")}
-      className="!max-w-6xl !max-h-[90vh] sm:!w-[95vw] !w-[100vw]"
-    >
-      <div className="flex flex-col h-full max-h-[calc(90vh-5rem)]">
-        <FileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-        <FileUpload
-          activeTab={activeTab}
-          selectedFile={selectedFile}
-          onFileSelect={handleFileSelect}
-          onUpload={handleUpload}
-          isUploading={isUploading}
-          uploadError={uploadError || undefined}
-          fileSizeError={fileSizeError || undefined}
-        />
-        <FileGrid
-          files={filteredFiles}
-          isLoading={isLoading}
-          activeTab={activeTab}
-          onFileClick={handleFileClick}
-          onDeleteFile={handleDeleteFile}
-        />
-      </div>
-    </Modal>
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={t("common.filesAndImages")}
+        className="!max-w-6xl !max-h-[90vh] sm:!w-[95vw] !w-[100vw]"
+      >
+        <div className="flex flex-col h-full max-h-[calc(90vh-5rem)]">
+          <FileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          <FileUpload
+            activeTab={activeTab}
+            selectedFile={selectedFile}
+            onFileSelect={handleFileSelect}
+            onUpload={handleUpload}
+            isUploading={isUploading}
+            uploadError={uploadError || undefined}
+            fileSizeError={fileSizeError || undefined}
+          />
+          <FileGrid
+            files={filteredFiles}
+            isLoading={isLoading}
+            activeTab={activeTab}
+            onFileClick={handleFileClick}
+            onDeleteFile={handleDeleteFile}
+          />
+        </div>
+      </Modal>
+      <DeleteModal />
+    </>
   );
 };

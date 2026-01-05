@@ -16,6 +16,7 @@ import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 const ResponsiveNetwork = dynamic(
   () => import("@nivo/network").then((mod) => mod.ResponsiveNetwork),
@@ -103,6 +104,7 @@ interface NetworkLink {
 export const LinksTab = ({ linkIndex }: LinksTabProps) => {
   const t = useTranslations();
   const { notes, checklists } = useAppMode();
+  const { showToast } = useToast();
   const [hoveredNode, setHoveredNode] = useState<any>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [rebuildingIndex, setRebuildingIndex] = useState(false);
@@ -123,11 +125,19 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
     try {
       const username = await getUsername();
       await rebuildLinkIndex(username);
-      alert(t('profile.successfullyRebuiltIndexReload'));
+      showToast({
+        type: "success",
+        title: t('common.success'),
+        message: t('profile.successfullyRebuiltIndexReload'),
+      });
       window.location.reload();
     } catch (error) {
       console.error("Failed to rebuild index:", error);
-      alert(t('profile.failedToRebuildIndex'));
+      showToast({
+        type: "error",
+        title: t('common.error'),
+        message: t('profile.failedToRebuildIndex'),
+      });
     } finally {
       setRebuildingIndex(false);
     }

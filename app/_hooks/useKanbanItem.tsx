@@ -10,6 +10,7 @@ import {
   updateItemStatus,
   archiveItem,
 } from "@/app/_server/actions/checklist-item";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseKanbanItemProps {
   item: Item;
@@ -33,6 +34,7 @@ export const useKanbanItem = ({
   const [totalTime, setTotalTime] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -204,27 +206,26 @@ export const useKanbanItem = ({
     }
   };
 
-  const handleDelete = async () => {
-    if (confirm(t('common.confirmDeleteItem', { itemTitle: item.text }))) {
-      const formData = new FormData();
-      formData.append("listId", checklistId);
-      formData.append("itemId", item.id);
-      formData.append("category", category || "Uncategorized");
+  const confirmDelete = async () => {
+    const formData = new FormData();
+    formData.append("listId", checklistId);
+    formData.append("itemId", item.id);
+    formData.append("category", category || "Uncategorized");
 
-      const result = await deleteItem(formData);
-      if (result.success) {
-        onUpdate({
-          id: checklistId,
-          title: "",
-          type: "task",
-          items: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          category,
-          isDeleted: true,
-        });
-      }
+    const result = await deleteItem(formData);
+    if (result.success) {
+      onUpdate({
+        id: checklistId,
+        title: "",
+        type: "task",
+        items: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        category,
+        isDeleted: true,
+      });
     }
+    setShowDeleteModal(false);
   };
 
   const handleArchive = async () => {
@@ -256,7 +257,18 @@ export const useKanbanItem = ({
     handleCancel,
     handleKeyDown,
     handleStatusChange,
-    handleDelete,
+    handleDelete: () => setShowDeleteModal(true),
     handleArchive,
+    DeleteModal: () => (
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: item.text })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
+    ),
   };
 };

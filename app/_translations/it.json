@@ -19,6 +19,7 @@
     "back": "Indietro",
     "next": "Avanti",
     "previous": "Precedente",
+    "continue": "Continua",
     "submit": "Invia",
     "create": "Crea",
     "update": "Aggiorna",
@@ -434,7 +435,9 @@
     "noItemsYet": "Ancora nessun item",
     "addFirstItem": "Aggiungi il tuo primo item per iniziare!",
     "noTasks": "Nessun task",
-    "noSubtasksYet": "Nessuna attività secondaria. Aggiungine una qui sotto per iniziare."
+    "noSubtasksYet": "Nessuna attività secondaria. Aggiungine una qui sotto per iniziare.",
+    "addTime": "Aggiungi tempo",
+    "enterTimeInMinutes": "Inserisci il tuo tempo in minuti"
   },
   "tasks": {
     "title": "Attività",
@@ -934,7 +937,11 @@
     "blockquote": "Citazione",
     "codeBlock": "Blocco di Codice",
     "link": "Link",
+    "addLink": "Aggiungi Link",
+    "enterURL": "Inserisci URL",
     "image": "Immagine",
+    "addImage": "Aggiungi Immagine",
+    "enterImageURL": "Inserisci URL immagine",
     "table": "Tabella",
     "horizontalRule": "Linea Orizzontale",
     "undo": "Annulla",

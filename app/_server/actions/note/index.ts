@@ -479,7 +479,8 @@ export const createNote = async (formData: FormData) => {
     const categoryDir = path.join(userDir, category);
     await ensureDir(categoryDir);
 
-    const filename = await generateUniqueFilename(categoryDir, title);
+    const fileRenameMode = currentUser?.fileRenameMode || "minimal";
+    const filename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
     const id = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 
@@ -602,7 +603,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     let newId = id;
 
     if (title !== note.title) {
-      newFilename = await generateUniqueFilename(categoryDir, title);
+      const ownerUser = await getCurrentUser();
+      const fileRenameMode = ownerUser?.fileRenameMode || "minimal";
+      newFilename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
       newId = path.basename(newFilename, ".md");
     } else {
       newFilename = `${id}.md`;
@@ -1087,7 +1090,8 @@ export const cloneNote = async (formData: FormData) => {
     await ensureDir(categoryDir);
 
     const cloneTitle = `${note.title} (Copy)`;
-    const filename = await generateUniqueFilename(categoryDir, cloneTitle);
+    const fileRenameMode = currentUser?.fileRenameMode || "minimal";
+    const filename = await generateUniqueFilename(categoryDir, cloneTitle, ".md", fileRenameMode);
     const filePath = path.join(categoryDir, filename);
 
     const content = note.content || "";

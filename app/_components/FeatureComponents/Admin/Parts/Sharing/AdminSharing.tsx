@@ -19,34 +19,40 @@ import { ItemTypes } from "@/app/_types/enums";
 import { useMemo } from "react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useTranslations } from "next-intl";
-
-const handleUnsharePublicItem = async (
-  item: { id: string; category: string },
-  itemType: ItemType
-) => {
-  try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return;
-
-    await unshareWith(
-      item.id,
-      item.category,
-      currentUser.username,
-      "public",
-      itemType
-    );
-
-    window.location.reload();
-  } catch (error) {
-    console.error("Error unsharing public item:", error);
-    alert("Failed to unshare public item");
-  }
-};
+import { useToast } from "@/app/_providers/ToastProvider";
 
 export const AdminSharing = () => {
   const t = useTranslations();
+  const { showToast } = useToast();
   const { allSharedItems, globalSharing: rawGlobalSharing, user, appSettings } = useAppMode();
   const colors = useThemeColors();
+
+  const handleUnsharePublicItem = async (
+    item: { id: string; category: string },
+    itemType: ItemType
+  ) => {
+    try {
+      const currentUser = await getCurrentUser();
+      if (!currentUser) return;
+
+      await unshareWith(
+        item.id,
+        item.category,
+        currentUser.username,
+        "public",
+        itemType
+      );
+
+      window.location.reload();
+    } catch (error) {
+      console.error("Error unsharing public item:", error);
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: "Failed to unshare public item",
+      });
+    }
+  };
 
   const isSuperAdmin = user?.isSuperAdmin || false;
   const adminContentAccess = appSettings?.adminContentAccess || "yes";

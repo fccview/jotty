@@ -19,6 +19,7 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
+    "continue": "Continue",
     "submit": "Submit",
     "create": "Create",
     "update": "Update",
@@ -435,7 +436,9 @@
     "noItemsYet": "No items yet",
     "addFirstItem": "Add your first item to get started!",
     "noTasks": "No tasks",
-    "noSubtasksYet": "No subtasks yet. Add one below to get started."
+    "noSubtasksYet": "No subtasks yet. Add one below to get started.",
+    "addTime": "Add Time",
+    "enterTimeInMinutes": "Enter your time in minutes"
   },
   "tasks": {
     "title": "Tasks",
@@ -935,7 +938,11 @@
     "blockquote": "Blockquote",
     "codeBlock": "Code Block",
     "link": "Link",
+    "addLink": "Add Link",
+    "enterURL": "Enter URL",
     "image": "Image",
+    "addImage": "Add Image",
+    "enterImageURL": "Enter image URL",
     "table": "Table",
     "horizontalRule": "Horizontal Rule",
     "undo": "Undo",

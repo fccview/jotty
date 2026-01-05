@@ -25,6 +25,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 const defaultStatusColors: Record<string, string> = {
   [TaskStatus.TODO]: "#6b7280",
@@ -133,6 +134,8 @@ export const StatusManagementModal = ({
       color: s.color || defaultStatusColors[s.id],
     }))
   );
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [statusToDelete, setStatusToDelete] = useState<{id: string, itemCount: number, targetLabel: string} | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -170,15 +173,24 @@ export const StatusManagementModal = ({
     const targetStatus = sortedRemainingStatuses[0];
 
     if (itemCount > 0) {
-      const confirmed = confirm(
-        `This status has ${itemCount} item${itemCount > 1 ? "s" : ""}. ` +
-        `${itemCount > 1 ? "They" : "It"} will be moved to "${targetStatus?.label || "the first remaining status"
-        }". Continue?`
-      );
-      if (!confirmed) return;
+      setStatusToDelete({
+        id,
+        itemCount,
+        targetLabel: targetStatus?.label || "the first remaining status"
+      });
+      setShowDeleteModal(true);
+    } else {
+      setStatuses(remainingStatuses.map((s, index) => ({ ...s, order: index })));
     }
+  };
 
+  const confirmRemoveStatus = () => {
+    if (!statusToDelete) return;
+
+    const remainingStatuses = statuses.filter((s) => s.id !== statusToDelete.id);
     setStatuses(remainingStatuses.map((s, index) => ({ ...s, order: index })));
+    setShowDeleteModal(false);
+    setStatusToDelete(null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -249,6 +261,19 @@ export const StatusManagementModal = ({
           <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setStatusToDelete(null);
+        }}
+        onConfirm={confirmRemoveStatus}
+        title={t("common.delete")}
+        message={statusToDelete ? `This status has ${statusToDelete.itemCount} item${statusToDelete.itemCount > 1 ? "s" : ""}. ${statusToDelete.itemCount > 1 ? "They" : "It"} will be moved to "${statusToDelete.targetLabel}". Continue?` : ""}
+        confirmText={t("common.confirm")}
+        variant="destructive"
+      />
     </Modal>
   );
 };

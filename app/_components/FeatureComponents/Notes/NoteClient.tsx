@@ -108,6 +108,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
         onBack={handleBack}
         onClone={handleClone}
       />
+      <viewModel.DeleteModal />
     </Layout>
   );
 };

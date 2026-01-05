@@ -14,6 +14,8 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ColorPicker } from "../ColorPicker/ColorPicker";
 import { useState, useRef, useEffect } from "react";
+import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
+import { useTranslations } from "next-intl";
 
 interface BubbleMenuProps {
   editor: Editor;
@@ -22,8 +24,11 @@ interface BubbleMenuProps {
 }
 
 export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
+  const t = useTranslations();
   const [showTextColorPicker, setShowTextColorPicker] = useState(false);
   const [showHighlightPicker, setShowHighlightPicker] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [previousUrl, setPreviousUrl] = useState("");
   const [colorPickerPosition, setColorPickerPosition] = useState({
     x: 0,
     y: 0,
@@ -85,10 +90,12 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
   }, [isVisible, editor]);
 
   const setLink = () => {
-    const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("URL", previousUrl);
+    const currentUrl = editor.getAttributes("link").href;
+    setPreviousUrl(currentUrl || "");
+    setShowLinkModal(true);
+  };
 
-    if (url === null) return;
+  const confirmSetLink = (url: string) => {
     if (url === "") {
       editor.chain().focus().unsetLink().run();
       return;
@@ -226,6 +233,17 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
         type="highlight"
         position={colorPickerPosition}
         targetElement={targetElement || undefined}
+      />
+
+      <PromptModal
+        isOpen={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        onConfirm={confirmSetLink}
+        title={t("editor.addLink")}
+        message={t("editor.enterURL")}
+        placeholder="https://example.com"
+        defaultValue={previousUrl}
+        confirmText={t("common.confirm")}
       />
     </>
   );

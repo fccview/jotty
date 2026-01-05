@@ -9,6 +9,7 @@ import {
   terminateSession,
   terminateAllOtherSessions,
 } from "@/app/_server/actions/session";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 export const useSessionManager = () => {
   const t = useTranslations();
@@ -22,6 +23,9 @@ export const useSessionManager = () => {
     id: string | null;
     all: boolean;
   }>({ id: null, all: false });
+  const [showTerminateModal, setShowTerminateModal] = useState(false);
+  const [showTerminateAllModal, setShowTerminateAllModal] = useState(false);
+  const [sessionToTerminate, setSessionToTerminate] = useState<string | null>(null);
 
   const loadSessions = useCallback(async () => {
     setStatus({ isLoading: true, error: null, success: null });
@@ -53,16 +57,22 @@ export const useSessionManager = () => {
     loadSessions();
   }, [loadSessions]);
 
-  const handleTerminateSession = async (sessionId: string) => {
-    if (!window.confirm(t("profile.terminateSessionConfirm")))
-      return;
-    setTerminating({ id: sessionId, all: false });
+  const handleTerminateSession = (sessionId: string) => {
+    setSessionToTerminate(sessionId);
+    setShowTerminateModal(true);
+  };
+
+  const confirmTerminateSession = async () => {
+    if (!sessionToTerminate) return;
+
+    setTerminating({ id: sessionToTerminate, all: false });
+    setShowTerminateModal(false);
     try {
       const formData = new FormData();
-      formData.append("sessionId", sessionId);
+      formData.append("sessionId", sessionToTerminate);
       const result = await terminateSession(formData);
       if (result.success) {
-        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+        setSessions((prev) => prev.filter((s) => s.id !== sessionToTerminate));
         setStatus((prev) => ({ ...prev, success: "Session terminated!" }));
         setTimeout(
           () => setStatus((prev) => ({ ...prev, success: null })),
@@ -76,15 +86,17 @@ export const useSessionManager = () => {
       }));
     } finally {
       setTerminating({ id: null, all: false });
+      setSessionToTerminate(null);
     }
   };
 
-  const handleTerminateAllOtherSessions = async () => {
-    if (
-      !window.confirm(t("profile.terminateAllSessionsConfirm"))
-    )
-      return;
+  const handleTerminateAllOtherSessions = () => {
+    setShowTerminateAllModal(true);
+  };
+
+  const confirmTerminateAllSessions = async () => {
     setTerminating({ id: null, all: true });
+    setShowTerminateAllModal(false);
     try {
       const result = await terminateAllOtherSessions();
       if (result.success) {
@@ -114,5 +126,30 @@ export const useSessionManager = () => {
     terminating,
     handleTerminateSession,
     handleTerminateAllOtherSessions,
+    TerminateSessionModal: () => (
+      <ConfirmModal
+        isOpen={showTerminateModal}
+        onClose={() => {
+          setShowTerminateModal(false);
+          setSessionToTerminate(null);
+        }}
+        onConfirm={confirmTerminateSession}
+        title={t("common.confirm")}
+        message={t("profile.terminateSessionConfirm")}
+        confirmText={t("common.confirm")}
+        variant="destructive"
+      />
+    ),
+    TerminateAllSessionsModal: () => (
+      <ConfirmModal
+        isOpen={showTerminateAllModal}
+        onClose={() => setShowTerminateAllModal(false)}
+        onConfirm={confirmTerminateAllSessions}
+        title={t("common.confirm")}
+        message={t("profile.terminateAllSessionsConfirm")}
+        confirmText={t("common.confirm")}
+        variant="destructive"
+      />
+    ),
   };
 };

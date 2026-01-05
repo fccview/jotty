@@ -9,6 +9,7 @@ import {
 import { Copy01Icon } from "hugeicons-react";
 import { Logo } from "../../../Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 interface PublicShareTabProps {
   isLoading: boolean;
@@ -28,6 +29,8 @@ export const PublicShareTab = ({
   itemTitle,
 }: PublicShareTabProps) => {
   const t = useTranslations();
+  const { showToast } = useToast();
+
   const handleCopyUrl = async () => {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -51,7 +54,11 @@ export const PublicShareTab = ({
       }
     } catch (error) {
       console.error("Failed to copy URL:", error);
-      alert(t("sharing.failedToCopyUrl"));
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: t("sharing.failedToCopyUrl"),
+      });
     }
   };
   const socialButtons = [

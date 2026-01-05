@@ -16,6 +16,7 @@ interface ChecklistModalsProps {
   getNewType: (type: "simple" | "task") => "simple" | "task";
   handleBulkPaste: (itemsText: string) => void;
   isLoading: boolean;
+  DeleteModal: () => JSX.Element;
 }
 
 export const ChecklistModals = ({
@@ -30,6 +31,7 @@ export const ChecklistModals = ({
   setShowBulkPasteModal,
   handleBulkPaste,
   isLoading,
+  DeleteModal,
 }: ChecklistModalsProps) => {
   const router = useRouter();
 
@@ -61,6 +63,7 @@ export const ChecklistModals = ({
           isLoading={isLoading}
         />
       )}
+      <DeleteModal />
     </>
   );
 };

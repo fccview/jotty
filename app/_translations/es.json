@@ -19,6 +19,7 @@
     "back": "Atrás",
     "next": "Siguiente",
     "previous": "Anterior",
+    "continue": "Continuar",
     "submit": "Enviar",
     "create": "Crear",
     "update": "Actualizar",
@@ -434,7 +435,9 @@
     "noItemsYet": "Aún no hay elementos",
     "addFirstItem": "¡Agregue su primer elemento para comenzar!",
     "noTasks": "Sin tareas",
-    "noSubtasksYet": "Aún no hay subtareas. Agregue una abajo para comenzar."
+    "noSubtasksYet": "Aún no hay subtareas. Agregue una abajo para comenzar.",
+    "addTime": "Agregar hora",
+    "enterTimeInMinutes": "Ingresa tu tiempo en minutos"
   },
   "tasks": {
     "title": "Tareas",
@@ -934,7 +937,11 @@
     "blockquote": "Cita",
     "codeBlock": "Bloque de código",
     "link": "Enlace",
+    "addLink": "Agregar Enlace",
+    "enterURL": "Ingrese URL",
     "image": "Imagen",
+    "addImage": "Agregar Imagen",
+    "enterImageURL": "Ingrese URL de imagen",
     "table": "Tabla",
     "horizontalRule": "Linea horizontal",
     "undo": "Deshacer",

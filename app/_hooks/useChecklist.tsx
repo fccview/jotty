@@ -32,6 +32,7 @@ import {
 } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
 import { encodeCategoryPath } from "../_utils/global-utils";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseChecklistProps {
   list: Checklist;
@@ -50,6 +51,7 @@ export const useChecklist = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const [showBulkPasteModal, setShowBulkPasteModal] = useState(false);
   const [showConversionModal, setShowConversionModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [localList, setLocalList] = useState(list);
   const [focusKey, setFocusKey] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -189,14 +191,13 @@ export const useChecklist = ({
     });
   };
 
-  const handleDeleteList = async () => {
-    if (confirm(t('common.confirmDeleteItem', { itemTitle: localList.title }))) {
-      const formData = new FormData();
-      formData.append("id", localList.id);
-      formData.append("category", localList.category || "Uncategorized");
-      await deleteList(formData);
-      onDelete?.(localList.id);
-    }
+  const confirmDeleteList = async () => {
+    const formData = new FormData();
+    formData.append("id", localList.id);
+    formData.append("category", localList.category || "Uncategorized");
+    await deleteList(formData);
+    onDelete?.(localList.id);
+    setShowDeleteModal(false);
   };
 
   const findItemById = (items: any[], itemId: string): any | null => {
@@ -706,7 +707,7 @@ export const useChecklist = ({
     focusKey,
     setFocusKey,
     copied,
-    handleDeleteList,
+    handleDeleteList: () => setShowDeleteModal(true),
     handleToggleItem,
     handleEditItem,
     handleDeleteItem,
@@ -725,5 +726,16 @@ export const useChecklist = ({
     deletingItemsCount: itemsToDelete.length,
     pendingTogglesCount: pendingToggles.size,
     sensors,
+    DeleteModal: () => (
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDeleteList}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: localList.title })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
+    ),
   };
 };

@@ -6,6 +6,7 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 const getCSSVariable = (variable: string): string => {
   if (typeof window === "undefined") return "";
@@ -64,6 +65,7 @@ export const MermaidNodeView = ({
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(node.attrs.content || "");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const renderDiagram = async () => {
@@ -100,9 +102,12 @@ export const MermaidNodeView = ({
   };
 
   const handleDelete = () => {
-    if (confirm(t('common.confirmDeleteItem', { itemTitle: t('editor.mermaidDiagram') }))) {
-      deleteNode();
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    deleteNode();
+    setShowDeleteModal(false);
   };
 
   return (
@@ -159,6 +164,15 @@ export const MermaidNodeView = ({
           </>
         )}
       </div>
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: t('editor.mermaidDiagram') })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
     </NodeViewWrapper>
   );
 };

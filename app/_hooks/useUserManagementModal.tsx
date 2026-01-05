@@ -8,6 +8,7 @@ import {
 } from "@/app/_server/actions/users";
 import { adminDisableUserMfa } from "@/app/_server/actions/mfa";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export const useUserManagementModal = ({
   const [recoveryCode, setRecoveryCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { showToast} = useToast();
   const t = useTranslations();
 
@@ -127,13 +129,15 @@ export const useUserManagementModal = ({
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !user ||
-      !window.confirm(t("errors.deleteUserConfirmation", { username: user.username }))
-    )
-      return;
+  const handleDelete = () => {
+    if (!user) return;
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!user) return;
+
+    setShowDeleteModal(false);
     setIsLoading(true);
     setError(null);
     try {
@@ -177,5 +181,16 @@ export const useUserManagementModal = ({
       setRecoveryCode,
     },
     handlers: { handleSubmit, handleDelete },
+    DeleteModal: () => (
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title={t("common.delete")}
+        message={t("errors.deleteUserConfirmation", { username: user?.username || "" })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
+    ),
   };
 };

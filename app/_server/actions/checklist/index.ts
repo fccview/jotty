@@ -499,7 +499,9 @@ export const createList = async (formData: FormData) => {
     const categoryDir = path.join(userDir, category);
     await ensureDir(categoryDir);
 
-    const filename = await generateUniqueFilename(categoryDir, title);
+    const currentUser = await getCurrentUser();
+    const fileRenameMode = currentUser?.fileRenameMode || "minimal";
+    const filename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
     const id = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 
@@ -623,12 +625,13 @@ export const updateList = async (formData: FormData) => {
     let newFilename: string;
     let newId = id;
 
-    const sanitizedTitle = sanitizeFilename(title);
+    const fileRenameMode = actingUser?.fileRenameMode || "minimal";
+    const sanitizedTitle = sanitizeFilename(title, fileRenameMode);
     const currentFilename = `${id}.md`;
     const expectedFilename = `${sanitizedTitle}.md`;
 
     if (title !== currentList.title || currentFilename !== expectedFilename) {
-      newFilename = await generateUniqueFilename(categoryDir, title);
+      newFilename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
       newId = path.basename(newFilename, ".md");
     } else {
       newFilename = `${id}.md`;
@@ -1110,7 +1113,8 @@ export const cloneChecklist = async (formData: FormData) => {
     await ensureDir(categoryDir);
 
     const cloneTitle = `${checklist.title} (Copy)`;
-    const filename = await generateUniqueFilename(categoryDir, cloneTitle);
+    const fileRenameMode = currentUser?.fileRenameMode || "minimal";
+    const filename = await generateUniqueFilename(categoryDir, cloneTitle, ".md", fileRenameMode);
     const filePath = path.join(categoryDir, filename);
 
     const content = listToMarkdown(checklist);

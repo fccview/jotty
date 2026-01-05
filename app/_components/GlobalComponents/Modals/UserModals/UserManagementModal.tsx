@@ -30,7 +30,7 @@ interface UserManagementModalProps {
 export const UserManagementModal = (props: UserManagementModalProps) => {
   const t = useTranslations();
   const { isOpen, onClose, mode, user } = props;
-  const { state, setters, handlers } = useUserManagementModal(props);
+  const { state, setters, handlers, DeleteModal } = useUserManagementModal(props);
 
   if (!isOpen) return null;
 
@@ -176,6 +176,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
           </div>
         </div>
       </form>
+      <DeleteModal />
     </Modal>
   );
 };

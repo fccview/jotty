@@ -27,6 +27,7 @@ import { PGPKeyMetadata, EncryptionMethod } from "@/app/_types";
 import { PGPKeyGenerationModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyGenerationModal";
 import { PGPKeyImportModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyImportModal";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface EncryptionTabClientProps {
   initialKeyData: {
@@ -44,6 +45,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
   const [isLoadingKeys, setIsLoadingKeys] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportWarningModal, setShowExportWarningModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [autoDecrypt, setAutoDecrypt] = useState(
     user?.encryptionSettings?.autoDecrypt ?? true
@@ -76,10 +78,13 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
 
   const handleExportKey = async (keyType: "public" | "private") => {
     if (keyType === "private") {
-      const confirmed = window.confirm(t('encryption.privateKeyWarning'));
-      if (!confirmed) return;
+      setShowExportWarningModal(true);
+      return;
     }
+    await performExport(keyType);
+  };
 
+  const performExport = async (keyType: "public" | "private") => {
     try {
       const result = await exportKeys(keyType);
       if (result.success && result.data) {
@@ -473,6 +478,19 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showExportWarningModal}
+        onClose={() => setShowExportWarningModal(false)}
+        onConfirm={() => {
+          setShowExportWarningModal(false);
+          performExport("private");
+        }}
+        title={t("common.warning")}
+        message={t("encryption.privateKeyWarning")}
+        confirmText={t("common.continue")}
+        variant="destructive"
+      />
     </div>
   );
 };

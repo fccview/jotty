@@ -6,6 +6,7 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 export const DrawioNodeView = ({
   node,
@@ -16,6 +17,7 @@ export const DrawioNodeView = ({
 }: any) => {
   const t = useTranslations();
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const themeMode = node.attrs.themeMode || "light";
 
@@ -129,9 +131,12 @@ export const DrawioNodeView = ({
   };
 
   const handleDelete = () => {
-    if (confirm(t('common.confirmDeleteItem', { itemTitle: t('editor.drawioDiagram') }))) {
-      deleteNode();
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    deleteNode();
+    setShowDeleteModal(false);
   };
 
   const toggleTheme = () => {
@@ -215,6 +220,15 @@ export const DrawioNodeView = ({
           </div>
         )}
       </div>
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: t('editor.drawioDiagram') })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
     </NodeViewWrapper>
   );
 };

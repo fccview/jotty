@@ -17,6 +17,7 @@ import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -30,6 +31,7 @@ export const AdminContent = ({
   users,
 }: AdminContentProps) => {
   const t = useTranslations();
+  const { showToast } = useToast();
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
   const [rebuildingIndex, setRebuildingIndex] = useState<string | null>(null);
 
@@ -102,10 +104,18 @@ export const AdminContent = ({
     setRebuildingIndex(username);
     try {
       await rebuildLinkIndex(username);
-      alert(t('admin.successfullyRebuiltIndex', { username }));
+      showToast({
+        type: "success",
+        title: t('common.success'),
+        message: t('admin.successfullyRebuiltIndex', { username }),
+      });
     } catch (error) {
       console.error("Failed to rebuild index:", error);
-      alert(`${t('admin.failedToRebuildIndex', { username })}`);
+      showToast({
+        type: "error",
+        title: t('common.error'),
+        message: t('admin.failedToRebuildIndex', { username }),
+      });
     } finally {
       setRebuildingIndex(null);
     }
