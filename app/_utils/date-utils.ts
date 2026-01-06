@@ -33,8 +33,7 @@ const getTimeUnit = (dateString: string) => {
 const formatWithTranslation = (unit: TimeUnit, value: number, t: (key: string, options?: any) => string): string => {
   if (unit === TimeUnit.JustNow) return t("common.justNow");
 
-  const isSingular = value === 1;
-  const key = `common.${unit}Ago${isSingular ? '' : '_plural'}`;
+  const key = `common.${unit}Ago`;
   return t(key, { count: value });
 };
 
