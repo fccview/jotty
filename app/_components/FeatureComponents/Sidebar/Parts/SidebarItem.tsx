@@ -13,6 +13,7 @@ import {
   Archive02Icon,
   Delete03Icon,
   LockKeyIcon,
+  Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -32,6 +33,8 @@ import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
+import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
 interface SidebarItemProps {
   item: Checklist | Note;
@@ -55,12 +58,15 @@ export const SidebarItem = ({
   const t = useTranslations();
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
   const itemDetails = sharingInfo(globalSharing, item.id, encodedCategory);
 
   const isPubliclyShared = itemDetails.isPublic;
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
+  const isShareable = user?.username === item.owner;
+
   const sharedWith = itemDetails.sharedWith;
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
@@ -130,7 +136,18 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(onEditItem ? [{ type: "divider" as const }] : []),
+    ...(isShareable
+      ? [
+          {
+            label: t("sharing.share"),
+            onClick: () => setShowShareModal(true),
+            icon: <Share08Icon className="h-4 w-4" />,
+          },
+        ]
+      : []),
+    ...(onEditItem || isShareable
+      ? [{ type: "divider" as const }]
+      : []),
     {
       label: isItemPinned() ? t("common.unpinFromHome") : t("common.pinToHome"),
       onClick: handleTogglePin,
@@ -250,6 +267,24 @@ export const SidebarItem = ({
         confirmText={t("common.delete")}
         variant="destructive"
       />
+
+      {showShareModal && (
+        <MetadataProvider
+          metadata={{
+            id: item.id,
+            uuid: item.uuid,
+            title: item.title,
+            category: item.category || "Uncategorized",
+            owner: item.owner || "",
+            type: mode === Modes.NOTES ? "note" : "checklist",
+          }}
+        >
+          <ShareModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+          />
+        </MetadataProvider>
+      )}
     </div>
   );
 };
