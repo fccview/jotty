@@ -6,6 +6,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Orbit01Icon, Delete03Icon } from "hugeicons-react";
 import { Location05Icon, Clock01Icon } from "hugeicons-react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface SessionCardProps {
   session: Session;
@@ -19,6 +20,7 @@ export const SessionCard = ({
   isTerminating,
 }: SessionCardProps) => {
   const { isDemoMode } = useAppMode();
+  const t = useTranslations();
   return (
     <div
       className={`jotty-session-card flex items-start justify-between p-4 rounded-jotty border ${
@@ -49,7 +51,7 @@ export const SessionCard = ({
             </div>
             <div className="flex items-center gap-1">
               <Clock01Icon className="h-3 w-3" />
-              {formatTimeAgo(session.lastActivity)}
+              {formatTimeAgo(session.lastActivity, t)}
             </div>
           </div>
           <p className="text-xs text-muted-foreground truncate">
