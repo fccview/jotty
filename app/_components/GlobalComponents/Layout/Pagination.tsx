@@ -64,12 +64,12 @@ export const Pagination = ({
   };
 
   const itemsPerPageOptions = [
-    { id: "12", name: "12 per page" },
-    { id: "24", name: "24 per page" },
-    { id: "36", name: "36 per page" },
-    { id: "72", name: "72 per page" },
-    { id: "84", name: "84 per page" },
-    { id: "120", name: "120 per page" },
+    { id: "12", name: `12 ${t('common.perPage')}` },
+    { id: "24", name: `24 ${t('common.perPage')}` },
+    { id: "36", name: `36 ${t('common.perPage')}` },
+    { id: "72", name: `72 ${t('common.perPage')}` },
+    { id: "84", name: `84 ${t('common.perPage')}` },
+    { id: "120", name: `120 ${t('common.perPage')}` },
   ];
 
   const isSidebar = variant === "sidebar";

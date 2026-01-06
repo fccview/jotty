@@ -149,6 +149,7 @@
     "byCategory": "Por categoría",
     "recursive": "Recursivo",
     "itemsPerPage": "Elementos por página",
+    "perPage": "por página",
     "page": "Página",
     "pageOfPages": "{currentPage} de {totalPages}",
     "searchPlaceholder": "Buscar notas y listas de verificación... (⌘K)",

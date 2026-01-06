@@ -149,6 +149,7 @@
     "byCategory": "Według kategorii",
     "recursive": "Rekurencyjny",
     "itemsPerPage": "Elementów na stronę",
+    "perPage": "na stronę",
     "page": "Strona",
     "pageOfPages": "{currentPage} z {totalPages}",
     "searchPlaceholder": "Szukaj notatek i list kontrolnych… (⌘K)",

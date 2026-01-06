@@ -149,6 +149,7 @@
     "byCategory": "Per categoria",
     "recursive": "Ricorsivo",
     "itemsPerPage": "Elementi per pagina",
+    "perPage": "per pagina",
     "page": "Pagina",
     "pageOfPages": "{currentPage} di {totalPages}",
     "searchPlaceholder": "Cerca note e checklist... (⌘K)",
