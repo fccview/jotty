@@ -63,14 +63,10 @@ export const Pagination = ({
     return rangeWithDots;
   };
 
-  const itemsPerPageOptions = [
-    { id: "12", name: `12 ${t('common.perPage')}` },
-    { id: "24", name: `24 ${t('common.perPage')}` },
-    { id: "36", name: `36 ${t('common.perPage')}` },
-    { id: "72", name: `72 ${t('common.perPage')}` },
-    { id: "84", name: `84 ${t('common.perPage')}` },
-    { id: "120", name: `120 ${t('common.perPage')}` },
-  ];
+  const itemsPerPageOptions = [12, 24, 36, 72, 84, 120].map((count) => ({
+    id: count.toString(),
+    name: `${count} ${t('common.perPage')}`,
+  }));
 
   const isSidebar = variant === "sidebar";
 
