@@ -3,6 +3,12 @@ import { WORDS } from "@/app/_consts/wordsArray";
 /**
  * Ok I am aware this is absolutely unhinged but I think it's so much fun I couldn't help myself.
  * After all is only used in the 404 page.
+ * 
+ * p.s. This is how the WORDS array is generated (just to give credits where credits are due)::
+ * 
+ * curl -s https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt 
+ *   | tr -d '\r' | shuf -n 4000 | sort | sed 's/^/"/;s/$/"/' 
+ *   | paste -sd, - | awk '{print "const words = [" $0 "];"}' > words.js
  */
 
 export const generateHaiku = () => {
