@@ -727,7 +727,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
 export const deleteNote = async (formData: FormData, username?: string) => {
   try {
-    const { id, category } = getFormData(formData, ["id", "category"]);
+    const { id, category, uuid } = getFormData(formData, ["id", "category", "uuid"]);
+    const itemIdentifier = uuid || id;
 
     let currentUser: any = null;
     if (username) {
@@ -746,15 +747,8 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       return { error: "Not authenticated" };
     }
 
-    const notes = await getUserNotes(
-      username ? { username: currentUser.username } : {}
-    );
-
-    if (!notes.success || !notes.data) {
-      return { error: "Failed to fetch notes" };
-    }
-
-    const note = notes.data.find((d) => d.id === id && d.category === category);
+    const note = await getNoteById(itemIdentifier, category, username ? currentUser.username : undefined);
+    
     if (!note) {
       return { error: "Document not found" };
     }
@@ -767,10 +761,10 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       }
 
       const ownerDir = USER_NOTES_DIR(note.owner!);
-      filePath = path.join(ownerDir, category || "Uncategorized", `${id}.md`);
+      filePath = path.join(ownerDir, note.category || "Uncategorized", `${note.id}.md`);
     } else {
       const userDir = await getUserModeDir(Modes.NOTES, currentUser.username);
-      filePath = path.join(userDir, category || "Uncategorized", `${id}.md`);
+      filePath = path.join(userDir, note.category || "Uncategorized", `${note.id}.md`);
     }
 
     await serverDeleteFile(filePath);
@@ -778,7 +772,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     try {
       await removeItemFromIndex(note.owner!, "note", note.uuid!);
     } catch (error) {
-      console.warn("Failed to remove note from link index:", id, error);
+      console.warn("Failed to remove note from link index:", note.id, error);
     }
 
     if (note.owner) {
@@ -787,7 +781,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       );
       await updateSharingData(
         {
-          id,
+          id: note.id,
           category: note.category || "Uncategorized",
           itemType: "note",
           sharer: note.owner,
@@ -800,7 +794,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       revalidatePath("/");
       const categoryPath = buildCategoryPath(
         note.category || "Uncategorized",
-        id
+        note.id
       );
       revalidatePath(`/note/${categoryPath}`);
     } catch (error) {
@@ -984,54 +978,20 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     const sharedData = await getAllSharedItemsForUser(currentUser.username);
 
     for (const sharedItem of sharedData.notes) {
-      const decodedCategory = decodeCategoryPath(
-        sharedItem.category || "Uncategorized"
-      );
-
-      const sharedFilePath = path.join(
-        process.cwd(),
-        "data",
-        NOTES_FOLDER,
-        sharedItem.sharer,
-        decodedCategory,
-        `${sharedItem.id}.md`
-      );
-
       try {
-        const content = await fs.readFile(sharedFilePath, "utf-8");
-        const stats = await fs.stat(sharedFilePath);
+        const itemIdentifier = sharedItem.uuid || sharedItem.id;
+        if (!itemIdentifier) continue;
 
-        if (isRaw) {
-          const rawNote: Note & { rawContent: string } = {
-            id: sharedItem.id || sharedItem.uuid || "unknown",
-            title: sharedItem.id || sharedItem.uuid || "Unknown Note",
-            content: "",
-            itemType: ItemTypes.NOTE,
-            category: decodedCategory,
-            createdAt: stats.birthtime.toISOString(),
-            updatedAt: stats.mtime.toISOString(),
-            owner: sharedItem.sharer,
+        const sharedNote = await getNoteById(itemIdentifier, undefined, sharedItem.sharer);
+        
+        if (sharedNote) {
+          notes.push({
+            ...sharedNote,
             isShared: true,
-            rawContent: content,
-          };
-          notes.push(rawNote);
-        } else {
-          const fileName = `${sharedItem.id}.md`;
-          notes.push(
-            _parseMarkdownNote(
-              content,
-              sharedItem.id || sharedItem.uuid || "unknown",
-              decodedCategory,
-              sharedItem.sharer,
-              true,
-              stats,
-              fileName
-            )
-          );
+          });
         }
       } catch (error) {
-        console.error(`Error reading shared note ${sharedItem.id}:`, error);
-        console.error(`File path attempted:`, sharedFilePath);
+        console.error(`Error reading shared note ${sharedItem.uuid || sharedItem.id}:`, error);
         continue;
       }
     }

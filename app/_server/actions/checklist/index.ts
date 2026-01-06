@@ -264,53 +264,19 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
 
     for (const sharedItem of sharedData.checklists) {
       try {
-        const decodedCategory = decodeCategoryPath(
-          sharedItem.category || "Uncategorized"
-        );
+        const itemIdentifier = sharedItem.uuid || sharedItem.id;
+        if (!itemIdentifier) continue;
 
-        const sharedFilePath = path.join(
-          process.cwd(),
-          "data",
-          CHECKLISTS_FOLDER,
-          sharedItem.sharer,
-          decodedCategory,
-          `${sharedItem.id}.md`
-        );
-
-        const content = await fs.readFile(sharedFilePath, "utf-8");
-        const stats = await fs.stat(sharedFilePath);
-
-        if (isRaw) {
-          const { metadata } = extractYamlMetadata(content);
-          const type = getChecklistType(content);
-          const rawList: Checklist = {
-            id: sharedItem.id || sharedItem.uuid || "unknown",
-            title: sharedItem.id || sharedItem.uuid || "Unknown Checklist",
-            uuid: metadata.uuid || sharedItem.uuid || generateUuid(),
-            type,
-            category: decodedCategory,
-            items: [],
-            createdAt: stats.birthtime.toISOString(),
-            updatedAt: stats.mtime.toISOString(),
-            owner: sharedItem.sharer,
+        const sharedChecklist = await getListById(itemIdentifier, sharedItem.sharer);
+        
+        if (sharedChecklist) {
+          lists.push({
+            ...sharedChecklist,
             isShared: true,
-            itemType: ItemTypes.CHECKLIST,
-            rawContent: content,
-          };
-          lists.push(rawList);
-        } else {
-          lists.push(
-            parseMarkdown(
-              content,
-              sharedItem.id || sharedItem.uuid || "unknown",
-              decodedCategory,
-              sharedItem.sharer,
-              true,
-              stats
-            )
-          );
+          });
         }
       } catch (error) {
+        console.error(`Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`, error);
         continue;
       }
     }
@@ -756,7 +722,9 @@ export const deleteList = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
     const category = (formData.get("category") as string) || "Uncategorized";
+    const uuid = formData.get("uuid") as string | null;
     const apiUser = formData.get("apiUser") as string | null;
+    const itemIdentifier = uuid || id;
 
     let currentUser = await getCurrentUser();
     if (!currentUser && apiUser) {
@@ -771,15 +739,8 @@ export const deleteList = async (formData: FormData) => {
       return { error: "Not authenticated" };
     }
 
-    const isAdminUser = apiUser ? currentUser.isAdmin : await isAdmin();
-    const lists = await (isAdminUser
-      ? getAllLists()
-      : getUserChecklists(apiUser ? { username: currentUser.username } : {}));
-    if (!lists.success || !lists.data) {
-      return { error: "Failed to fetch lists" };
-    }
-
-    const list = lists.data.find((l) => l.id === id && l.category === category);
+    const list = await getListById(itemIdentifier, currentUser.username, category);
+    
     if (!list) {
       return { error: "List not found" };
     }
@@ -797,7 +758,7 @@ export const deleteList = async (formData: FormData) => {
         CHECKLISTS_FOLDER,
         list.owner!
       );
-      filePath = path.join(ownerDir, category, `${id}.md`);
+      filePath = path.join(ownerDir, list.category || "Uncategorized", `${list.id}.md`);
     } else {
       const userDir = apiUser
         ? path.join(
@@ -807,7 +768,7 @@ export const deleteList = async (formData: FormData) => {
           currentUser.username
         )
         : await getUserModeDir(Modes.CHECKLISTS);
-      filePath = path.join(userDir, category, `${id}.md`);
+      filePath = path.join(userDir, list.category || "Uncategorized", `${list.id}.md`);
     }
 
     await serverDeleteFile(filePath);
@@ -815,7 +776,7 @@ export const deleteList = async (formData: FormData) => {
     try {
       await removeItemFromIndex(list.owner!, ItemTypes.CHECKLIST, list.uuid!);
     } catch (error) {
-      console.warn("Failed to remove checklist from link index:", id, error);
+      console.warn("Failed to remove checklist from link index:", list.id, error);
     }
 
     if (list.owner) {
@@ -824,7 +785,7 @@ export const deleteList = async (formData: FormData) => {
       );
       await updateSharingData(
         {
-          id,
+          id: list.id,
           category: list.category || "Uncategorized",
           itemType: ItemTypes.CHECKLIST,
           sharer: list.owner,
@@ -837,7 +798,7 @@ export const deleteList = async (formData: FormData) => {
       revalidatePath("/");
       const categoryPath = buildCategoryPath(
         list.category || "Uncategorized",
-        id
+        list.id
       );
       revalidatePath(`/checklist/${categoryPath}`);
     } catch (error) {

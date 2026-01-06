@@ -195,6 +195,7 @@ export const useChecklist = ({
     const formData = new FormData();
     formData.append("id", localList.id);
     formData.append("category", localList.category || "Uncategorized");
+    if (localList.uuid) formData.append("uuid", localList.uuid);
     await deleteList(formData);
     onDelete?.(localList.id);
     setShowDeleteModal(false);

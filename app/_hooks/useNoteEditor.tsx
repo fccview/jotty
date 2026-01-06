@@ -319,6 +319,7 @@ export const useNoteEditor = ({
     const formData = new FormData();
     formData.append("id", note.id);
     formData.append("category", note.category || "");
+    if (note.uuid) formData.append("uuid", note.uuid);
     await deleteNote(formData);
     onDelete?.(note.id);
     router.refresh();

@@ -83,7 +83,7 @@ export const useSharingTools = ({
           };
           const finalPermissions = { ...permissions, canRead: true };
           const result = await shareWith(
-            itemId,
+            itemUuid || itemId,
             itemCategory || "Uncategorized",
             currentUser?.username || "",
             targetUser || "",
@@ -119,7 +119,7 @@ export const useSharingTools = ({
 
         for (const targetUser of targetUsersList) {
           await unshareWith(
-            itemId,
+            itemUuid || itemId,
             itemCategory || "Uncategorized",
             currentUser?.username || "",
             targetUser || "",
@@ -280,7 +280,7 @@ export const useSharingTools = ({
     } else {
       if (currentSharing.includes(user)) {
         const result = await updateItemPermissions(
-          itemId,
+          itemUuid || itemId,
           itemCategory || "Uncategorized",
           itemType,
           user,
@@ -317,7 +317,7 @@ export const useSharingTools = ({
     } else {
       if (currentSharing.includes(user)) {
         const result = await updateItemPermissions(
-          itemId,
+          itemUuid || itemId,
           itemCategory || "Uncategorized",
           itemType,
           user,
@@ -342,7 +342,7 @@ export const useSharingTools = ({
     try {
       if (isPubliclyShared) {
         await unshareWith(
-          itemId,
+          itemUuid || itemId,
           itemCategory || "Uncategorized",
           currentUser.username,
           "public",
@@ -350,7 +350,7 @@ export const useSharingTools = ({
         );
       } else {
         await shareWith(
-          itemId,
+          itemUuid || itemId,
           itemCategory || "Uncategorized",
           currentUser.username,
           "public",
@@ -411,7 +411,7 @@ export const useSharingTools = ({
     try {
       for (const username of currentSharing) {
         await unshareWith(
-          itemId,
+          itemUuid || itemId,
           itemCategory || "Uncategorized",
           currentUser.username,
           username,
@@ -421,7 +421,7 @@ export const useSharingTools = ({
 
       if (isPubliclyShared) {
         await unshareWith(
-          itemId,
+          itemUuid || itemId,
           itemCategory || "Uncategorized",
           currentUser.username,
           "public",

@@ -6,6 +6,8 @@ import { Checklist, Category, Note, AppMode, User, SanitisedUser } from "../_typ
 import { ItemTypes, Modes } from "../_types/enums";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { buildCategoryPath, encodeId } from "../_utils/global-utils";
+import { getListById } from "../_server/actions/checklist";
+import { getNoteById } from "../_server/actions/note";
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -193,12 +195,15 @@ export const useSidebar = (props: SidebarProps) => {
       router.push("/?mode=" + newMode);
     });
 
-  const handleItemClick = (item: Checklist | Note) =>
+  const handleItemClick = async (item: Checklist | Note) => {
+    const itemObject = mode === Modes.CHECKLISTS ? await getListById(item?.uuid || item.id) :  await getNoteById(item?.uuid || item.id);
+
     checkNavigation(() => {
       const categoryPath = buildCategoryPath(
-        item.category || "Uncategorized",
-        item.id
+        itemObject?.category || item.category || "Uncategorized",
+        itemObject?.id || item.id
       );
+
       router.push(
         `/${
           mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
@@ -206,6 +211,7 @@ export const useSidebar = (props: SidebarProps) => {
       );
       onClose();
     });
+  };
 
   const handleEditItem = (item: Checklist | Note) =>
     openModal("editItem", item);

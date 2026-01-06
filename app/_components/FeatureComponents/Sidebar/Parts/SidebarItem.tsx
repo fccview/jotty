@@ -71,6 +71,7 @@ export const SidebarItem = ({
     if (mode === Modes.CHECKLISTS) {
       formData.append("id", item.id);
       formData.append("category", item.category || "Uncategorized");
+      if (item.uuid) formData.append("uuid", item.uuid);
       const result = await deleteList(formData);
       if (result.success) {
         router.refresh();
@@ -78,6 +79,7 @@ export const SidebarItem = ({
     } else {
       formData.append("id", item.id);
       formData.append("category", item.category || "Uncategorized");
+      if (item.uuid) formData.append("uuid", item.uuid);
       const result = await deleteNote(formData);
       if (result.success) {
         router.refresh();
