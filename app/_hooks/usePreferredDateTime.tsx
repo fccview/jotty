@@ -6,7 +6,19 @@ export const usePreferredDateTime = () => {
   const preferredDateFormat = user?.preferredDateFormat || "dd/mm/yyyy";
   const preferredTimeFormat = user?.preferredTimeFormat || "12-hours";
 
-  const locale = preferredDateFormat === "mm/dd/yyyy" ? "en-US" : "en-GB";
+  /**
+   * fccview here... listen.. if you got here and noticed this know that...
+   * YES... I was lazy and I'm using the japanese locle for the ISO 8601 format.
+   * 
+   * This is because the user who implemented this relied on en-US nd en-GB for the other two formats 
+   * and frankly it just work and I don't want to refactor it lol
+   * 
+   * I'm sure I'll regret this decision in a few months @remindme in 6 months
+   */
+  const locale =
+    preferredDateFormat === "mm/dd/yyyy" ? "en-US" :
+    preferredDateFormat === "yyyy/mm/dd" ? "ja-JP" :
+    "en-GB";
   const hour12 = preferredTimeFormat === "12-hours";
 
   const formatDateString = useMemo(() => {

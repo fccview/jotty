@@ -83,7 +83,7 @@ export const useSharingTools = ({
           };
           const finalPermissions = { ...permissions, canRead: true };
           const result = await shareWith(
-            itemUuid || itemId,
+            itemId,
             itemCategory || "Uncategorized",
             currentUser?.username || "",
             targetUser || "",
@@ -350,7 +350,7 @@ export const useSharingTools = ({
         );
       } else {
         await shareWith(
-          itemUuid || itemId,
+          itemId,
           itemCategory || "Uncategorized",
           currentUser.username,
           "public",

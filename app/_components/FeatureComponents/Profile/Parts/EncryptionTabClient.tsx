@@ -28,6 +28,7 @@ import { PGPKeyGenerationModal } from "@/app/_components/GlobalComponents/Modals
 import { PGPKeyImportModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyImportModal";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface EncryptionTabClientProps {
   initialKeyData: {
@@ -40,6 +41,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
   const t = useTranslations();
   const { user, setUser, isDemoMode } = useAppMode();
   const { showToast } = useToast();
+  const { formatDateString } = usePreferredDateTime();
   const [hasKeys, setHasKeys] = useState(initialKeyData.hasKeys);
   const [keyMetadata, setKeyMetadata] = useState<PGPKeyMetadata | null>(initialKeyData.metadata);
   const [isLoadingKeys, setIsLoadingKeys] = useState(false);
@@ -303,7 +305,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
                 <div>
                   <span className="text-muted-foreground">{t('encryption.created')}:</span>
                   <span>
-                    {new Date(keyMetadata.createdAt).toLocaleDateString()}
+                    {formatDateString(keyMetadata.createdAt)}
                   </span>
                 </div>
                 <div>

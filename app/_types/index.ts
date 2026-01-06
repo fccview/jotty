@@ -209,7 +209,7 @@ export type MarkdownTheme =
 export type NotesDefaultMode = "edit" | "view";
 export type NotesAutoSaveInterval = 0 | 1000 | 5000 | 10000 | 15000 | 20000;
 export type FileRenameMode = "dash-case" | "minimal" | "none";
-export type PreferredDateFormat = "dd/mm/yyyy" | "mm/dd/yyyy";
+export type PreferredDateFormat = "dd/mm/yyyy" | "mm/dd/yyyy" | "yyyy/mm/dd";
 export type PreferredTimeFormat = "12-hours" | "24-hours";
 export type DisableRichEditor = "enable" | "disable";
 export type DefaultChecklistFilter =
@@ -364,7 +364,7 @@ export interface UserSharedItems {
   checklists: UserSharedItem[];
 }
 
-export type SanitisedUser = Omit<User, 'passwordHash' | 'apiKey' | 'lastLogin'>;
+export type SanitisedUser = Omit<User, 'passwordHash' | 'apiKey' | 'lastLogin' | 'mfaSecret' | 'mfaRecoveryCode'>;
 
 export interface AppModeContextType {
   mode: AppMode;

@@ -10,6 +10,7 @@ import { TaskStatus } from "@/app/_types/enums";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Undo02Icon } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface ArchivedItemsModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export const ArchivedItemsModal = ({
   statuses,
 }: ArchivedItemsModalProps) => {
   const t = useTranslations();
+  const { formatDateString } = usePreferredDateTime();
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const statusMap = useMemo(() => {
@@ -108,7 +110,7 @@ export const ArchivedItemsModal = ({
                     {item.archivedAt && (
                       <p className="text-xs text-muted-foreground">
                         {t('common.archived')}{" "}
-                        {new Date(item.archivedAt).toLocaleDateString()}
+                        {formatDateString(item.archivedAt)}
                         {item.archivedBy && ` ${t('common.by')} ${item.archivedBy}`}
                       </p>
                     )}

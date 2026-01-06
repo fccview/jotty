@@ -224,6 +224,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
   const dateFormatOptions = [
     { id: "dd/mm/yyyy", name: "DD/MM/YYYY" },
     { id: "mm/dd/yyyy", name: "MM/DD/YYYY" },
+    { id: "yyyy/mm/dd", name: "YYYY/MM/DD" },
   ];
 
   const timeFormatOptions = [
