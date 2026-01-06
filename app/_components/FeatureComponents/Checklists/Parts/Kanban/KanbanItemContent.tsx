@@ -64,7 +64,7 @@ const KanbanItemContentComponent = ({
           {item.createdBy && isShared && (
             <div
               className="flex-shrink-0"
-              title={`Created by ${item.createdBy}`}
+              title={t("common.createdBy", { user: item.createdBy })}
             >
               <UserAvatar
                 username={item.createdBy}
@@ -152,10 +152,13 @@ const KanbanItemContentComponent = ({
         {item.lastModifiedBy && isShared && (
           <div
             className="flex items-center gap-1"
-            title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
-              ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
-              : ""
-              }`}
+            title={item.lastModifiedAt
+              ? t("common.lastModifiedByOn", {
+                  user: item.lastModifiedBy,
+                  date: formatDateTimeString(item.lastModifiedAt)
+                })
+              : t("common.lastModifiedBy", { user: item.lastModifiedBy })
+            }
           >
             <UserAvatar
               username={item.lastModifiedBy}
