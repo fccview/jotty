@@ -164,7 +164,7 @@ export const ChecklistCard = ({
         </div>
         <div className="flex items-center gap-1">
           <Clock01Icon className="h-3 w-3" />
-          <span>{formatRelativeTime(list.updatedAt)}</span>
+          <span>{formatRelativeTime(list.updatedAt, t)}</span>
         </div>
       </div>
     </div>

@@ -212,7 +212,7 @@ export const NoteCard = ({
             </div>
             <div className="flex items-center gap-1">
               <Clock01Icon className="h-3 w-3" />
-              <span>{formatRelativeTime(note.updatedAt)}</span>
+              <span>{formatRelativeTime(note.updatedAt, t)}</span>
             </div>
           </div>
         </div>

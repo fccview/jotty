@@ -192,7 +192,7 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
               )}
               <div className="flex items-center gap-1">
                 <Clock01Icon className="h-3 w-3" />
-                {formatTimeAgo(log.timestamp)}
+                {formatTimeAgo(log.timestamp, t)}
               </div>
               <div className="flex items-center gap-1">
                 <Location05Icon className="h-3 w-3" />

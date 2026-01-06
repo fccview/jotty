@@ -232,22 +232,24 @@ export const SubtaskModal = ({
 
     if (item.createdBy) {
       metadata.push(
-        `Created by ${item.createdBy} on ${formatDateTimeString(
-          item.createdAt!
-        )}`
+        t("common.createdByOn", {
+          user: item.createdBy,
+          date: formatDateTimeString(item.createdAt!)
+        })
       );
     }
 
     if (item.lastModifiedBy) {
       metadata.push(
-        `Last modified by ${item.lastModifiedBy} on ${formatDateTimeString(
-          item.lastModifiedAt!
-        )}`
+        t("common.lastModifiedByOn", {
+          user: item.lastModifiedBy,
+          date: formatDateTimeString(item.lastModifiedAt!)
+        })
       );
     }
 
     if (item.history?.length) {
-      metadata.push(`Status changes: ${item.history.length}`);
+      metadata.push(t("common.statusChanges", { count: item.history.length }));
     }
 
     return metadata.length ? (
@@ -396,7 +398,7 @@ export const SubtaskModal = ({
                     disabled={!item.children?.length}
                     className="text-xs"
                   >
-                    Complete All
+                    {t("common.completeAll")}
                   </Button>
                   <Button
                     variant="ghost"
@@ -405,7 +407,7 @@ export const SubtaskModal = ({
                     disabled={!item.children?.length}
                     className="text-xs"
                   >
-                    Reset All
+                    {t("common.resetAll")}
                   </Button>
                 </div>
               )}

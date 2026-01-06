@@ -47,7 +47,7 @@ export const ArchivedItemCard = ({
         <div className="flex items-center gap-1">
           <Clock01Icon className="h-3 w-3" />
           <span>
-            {item.updatedAt ? formatRelativeTime(item.updatedAt) : t("profile.unknown")}
+            {item.updatedAt ? formatRelativeTime(item.updatedAt, t) : t("profile.unknown")}
           </span>
         </div>
       </div>
