@@ -44,16 +44,25 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
         const { from, to } = editor.state.selection;
         if (from === to) return;
 
-        const coords = editor.view.coordsAtPos(from);
+        const startCoords = editor.view.coordsAtPos(from);
+        const endCoords = editor.view.coordsAtPos(to);
         const menuRect = menuRef.current.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
         const viewportWidth = window.innerWidth;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                         window.innerWidth < 768;
 
-        let top = coords.top - menuRect.height - 8;
-        let left = coords.left;
+        let top: number;
+        let left: number;
 
-        if (top < 0) {
-          top = coords.bottom + 8;
+        if (isMobile) {
+          top = endCoords.bottom + 8;
+          left = endCoords.left;
+        } else {
+          top = startCoords.top - menuRect.height - 8;
+          left = startCoords.left;
+          if (top < 0) {
+            top = startCoords.bottom + 8;
+          }
         }
 
         if (left + menuRect.width > viewportWidth) {
