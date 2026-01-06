@@ -410,6 +410,16 @@
     "enterChecklistName": "Saisir le nom de la liste...",
     "updating": "Mise à jour...",
     "updateChecklist": "Mettre à jour la liste de tâches",
+    "checkAll": "Tout cocher",
+    "uncheckAll": "Tout décocher",
+    "clearAll": "Tout effacer",
+    "checkAllConfirmTitle": "Tout cocher ?",
+    "checkAllConfirmMessage": "Voulez-vous vraiment vérifier tous les {count} éléments et leurs enfants ? \nCela les marquera comme terminés.",
+    "uncheckAllConfirmTitle": "Tout décocher ?",
+    "uncheckAllConfirmMessage": "Voulez-vous vraiment décocher tous les {count} éléments et leurs enfants ? \nCela les marquera comme incomplets.",
+    "clearAllConfirmTitle": "Tout effacer ?",
+    "clearAllCompletedConfirmMessage": "Êtes-vous sûr de vouloir supprimer tous les {count} éléments terminés ? Cette action ne peut pas être annulée.",
+    "clearAllIncompleteConfirmMessage": "Voulez-vous vraiment supprimer tous les {count} éléments incomplets et leurs enfants ? \nCette action ne peut pas être annulée.",
     "convertChecklistType": "Convertir le type de liste",
     "dataLossWarning": "⚠️ Avertissement de perte de données",
     "dataLossWarningItems": "Les données suivantes seront perdues :",
@@ -1419,6 +1429,6 @@
     "newHaiku": "Nouveau Haiku",
     "goHome": "Aller à l'accueil",
     "seenCount": "Vous avez vu {count} {count, plural, one {haiku} other {haikus}}",
-    "imNoPoet": "Je ne suis pas poète, et Jotty non plus. Ce sont des mots aléatoires en séquence. Apprécier."
+    "imNoPoet": "Je ne suis pas poète, et Jotty non plus. Ce sont des mots aléatoires en séquence."
   }
 }

@@ -61,7 +61,7 @@ export const SidebarItem = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
-  const itemDetails = sharingInfo(globalSharing, item.id, encodedCategory);
+  const itemDetails = sharingInfo(globalSharing, item.uuid || item.id, encodedCategory);
 
   const isPubliclyShared = itemDetails.isPublic;
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
@@ -281,7 +281,7 @@ export const SidebarItem = ({
         >
           <ShareModal
             isOpen={showShareModal}
-            onClose={() => setShowShareModal(false)}
+            onClose={() => { setShowShareModal(false); router.refresh() }}
           />
         </MetadataProvider>
       )}

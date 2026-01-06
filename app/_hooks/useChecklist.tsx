@@ -563,6 +563,30 @@ export const useChecklist = ({
     }
   };
 
+  const handleClearAll = async (type: "completed" | "incomplete") => {
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append("id", localList.id);
+    formData.append("category", localList.category || "Uncategorized");
+    formData.append("type", type);
+    if (localList.owner) {
+      formData.append("user", localList.owner);
+    }
+
+    const { clearAllChecklistItems } = await import(
+      "@/app/_server/actions/checklist"
+    );
+
+    const result = await clearAllChecklistItems(formData);
+    setIsLoading(false);
+
+    if (result.success && result.data) {
+      setLocalList(result.data as Checklist);
+      setFocusKey((prev) => prev + 1);
+      router.refresh();
+    }
+  };
+
   const handleCreateItem = async (
     text: string,
     recurrence?: RecurrenceRule
@@ -718,6 +742,7 @@ export const useChecklist = ({
     getNewType,
     handleConfirmConversion,
     handleBulkToggle,
+    handleClearAll,
     handleCreateItem,
     handleAddSubItem,
     handleCopyId,

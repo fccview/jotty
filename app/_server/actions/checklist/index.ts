@@ -1110,3 +1110,113 @@ export const cloneChecklist = async (formData: FormData) => {
     return { error: "Failed to clone checklist" };
   }
 };
+
+export const clearAllChecklistItems = async (formData: FormData) => {
+  try {
+    const id = formData.get("id") as string;
+    const category = formData.get("category") as string;
+    const ownerUsername = formData.get("user") as string | null;
+    const type = formData.get("type") as "completed" | "incomplete";
+    const apiUser = formData.get("apiUser") as string | null;
+
+    let actingUser = await getCurrentUser();
+    if (!actingUser && apiUser) {
+      try {
+        actingUser = JSON.parse(apiUser);
+      } catch {
+        return { error: "Invalid user data" };
+      }
+    }
+
+    if (!actingUser || !actingUser.username) {
+      return { error: "Not authenticated" };
+    }
+
+    const checklist = await getListById(
+      id,
+      ownerUsername || undefined,
+      category
+    );
+
+    if (!checklist) {
+      return { error: "Checklist not found" };
+    }
+
+    const canEdit = await checkUserPermission(
+      id,
+      category,
+      ItemTypes.CHECKLIST,
+      actingUser.username,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      return { error: "Permission denied" };
+    }
+
+    // Filter items based on type
+    const filteredItems = checklist.items.filter((item) => {
+      if (type === "completed") {
+        return !item.completed;
+      } else {
+        return item.completed;
+      }
+    });
+
+    const updatedChecklist: Checklist = {
+      ...checklist,
+      items: filteredItems,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const ownerDir = path.join(
+      process.cwd(),
+      "data",
+      CHECKLISTS_FOLDER,
+      checklist.owner!
+    );
+    const categoryDir = path.join(
+      ownerDir,
+      checklist.category || "Uncategorized"
+    );
+    const filePath = path.join(categoryDir, `${checklist.id}.md`);
+
+    await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
+
+    try {
+      const content = updatedChecklist.items.map((i) => i.text).join("\n");
+      const links = await parseInternalLinks(content);
+      await updateIndexForItem(
+        checklist.owner!,
+        ItemTypes.CHECKLIST,
+        updatedChecklist.uuid!,
+        links
+      );
+    } catch (error) {
+      console.warn(
+        "Failed to update link index for checklist:",
+        updatedChecklist.id,
+        error
+      );
+    }
+
+    try {
+      revalidatePath("/");
+      const categoryPath = buildCategoryPath(
+        checklist.category || "Uncategorized",
+        checklist.id
+      );
+      revalidatePath(`/checklist/${categoryPath}`);
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but data was saved successfully:",
+        error
+      );
+    }
+
+    return { success: true, data: updatedChecklist };
+  } catch (error) {
+    console.error("Error clearing checklist items:", error);
+    return { error: "Failed to clear checklist items" };
+  }
+};

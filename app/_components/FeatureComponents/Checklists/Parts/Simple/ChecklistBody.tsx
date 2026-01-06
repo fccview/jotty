@@ -31,6 +31,7 @@ interface ChecklistBodyProps {
   handleEditItem: (itemId: string, text: string) => void;
   handleAddSubItem: (parentId: string, text: string) => void;
   handleBulkToggle: (completed: boolean) => void;
+  handleClearAll: (type: "completed" | "incomplete") => void;
   handleDragEnd: (event: DragEndEvent) => void;
   sensors: any;
   isLoading: boolean;
@@ -46,6 +47,7 @@ export const ChecklistBody = ({
   handleEditItem,
   handleAddSubItem,
   handleBulkToggle,
+  handleClearAll,
   handleDragEnd,
   sensors,
   isLoading,
@@ -173,6 +175,7 @@ export const ChecklistBody = ({
                   title={TaskStatusLabels.TODO}
                   count={incompleteItems.length}
                   onBulkToggle={() => handleBulkToggle(true)}
+                  onClearAll={() => handleClearAll("incomplete")}
                   isLoading={isLoading}
                 >
                   {incompleteItems.length >= 50 ? (
@@ -221,6 +224,7 @@ export const ChecklistBody = ({
                   title={TaskStatusLabels.COMPLETED}
                   count={completedItems.length}
                   onBulkToggle={() => handleBulkToggle(false)}
+                  onClearAll={() => handleClearAll("completed")}
                   isLoading={isLoading}
                   isCompleted
                 >
