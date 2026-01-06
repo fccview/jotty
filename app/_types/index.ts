@@ -189,6 +189,8 @@ export interface User {
   mfaRecoveryCode?: string;
   mfaEnrolledAt?: string;
   preferredLocale?: string;
+  failedLoginAttempts?: number;
+  nextAllowedLoginAttempt?: string;
 }
 
 export type EnableRecurrence = "enable" | "disable";

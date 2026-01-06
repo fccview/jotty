@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { login } from "@/app/_server/actions/auth";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
@@ -14,7 +14,35 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
+  const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
+  const [lockedUntil, setLockedUntil] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<number>(0);
   const { isDemoMode, appVersion, isRwMarkable } = useAppMode();
+
+  useEffect(() => {
+    if (!lockedUntil) {
+      setCountdown(0);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const now = Date.now();
+      const lockTime = new Date(lockedUntil).getTime();
+      const remaining = Math.max(0, Math.ceil((lockTime - now) / 1000));
+
+      setCountdown(remaining);
+
+      if (remaining === 0) {
+        setLockedUntil(null);
+        setError("");
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [lockedUntil]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,6 +55,14 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
       const result = await login(formData);
       if (result?.error) {
         setError(result.error);
+
+        if (result.lockedUntil) {
+          setLockedUntil(result.lockedUntil);
+          setAttemptsRemaining(0);
+        } else if (result.attemptsRemaining !== undefined) {
+          setAttemptsRemaining(result.attemptsRemaining);
+        }
+
         setIsLoading(false);
       }
     } catch (error: unknown) {
@@ -94,6 +130,22 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
           </div>
         )}
 
+        {countdown > 0 && (
+          <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
+            <span className="text-sm text-warning">
+              {t('accountLocked', { seconds: countdown })}
+            </span>
+          </div>
+        )}
+
+        {!countdown && attemptsRemaining !== null && attemptsRemaining > 0 && attemptsRemaining < 4 && (
+          <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
+            <span className="text-sm text-warning">
+              {t('attemptsRemaining', { count: attemptsRemaining })}
+            </span>
+          </div>
+        )}
+
         <div className="space-y-2">
           <Input
             id="username"
@@ -101,7 +153,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             name="username"
             type="text"
             required
-            disabled={isLoading || isSsoLoading}
+            disabled={isLoading || isSsoLoading || countdown > 0}
             className="mt-1"
             placeholder={t('enterUsername')}
             defaultValue=""
@@ -116,7 +168,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             name="password"
             type="password"
             required
-            disabled={isLoading || isSsoLoading}
+            disabled={isLoading || isSsoLoading || countdown > 0}
             className="mt-1"
             placeholder={t('enterPassword')}
             autoComplete="current-password"
@@ -127,7 +179,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
         <Button
           type="submit"
           className="w-full !mt-8"
-          disabled={isLoading || isSsoLoading}
+          disabled={isLoading || isSsoLoading || countdown > 0}
         >
           {isLoading ? (
             <>

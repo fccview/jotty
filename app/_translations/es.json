@@ -256,7 +256,9 @@
     "welcomeTo": "Bienvenido a {appName}",
     "createAdminAccountDescription": "Cree su cuenta de administrador para comenzar",
     "version": "Versión {version}",
-    "createUser": "Crear usuario"
+    "createUser": "Crear usuario",
+    "attemptsRemaining": "Advertencia: {count, plural, one {# intento} other {# intentos}} restantes antes del bloqueo de cuenta",
+    "accountLocked": "Demasiados intentos fallidos. Por favor, inténtelo de nuevo en {seconds} {seconds, plural, one {segundo} other {segundos}}"
   },
   "mfa": {
     "title": "Autenticación de dos factores",

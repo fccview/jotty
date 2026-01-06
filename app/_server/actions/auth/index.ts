@@ -37,6 +37,15 @@ const hashPassword = (password: string): string => {
   return createHash("sha256").update(password).digest("hex");
 };
 
+/**
+ * 🧙‍♂️
+ */
+const _youShallNotPass = (attempts: number): number => {
+  if (attempts <= 3) return 0;
+
+  return Math.pow(2, attempts - 4) * 10 * 1000;
+};
+
 export const register = async (formData: FormData) => {
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
@@ -135,7 +144,71 @@ export const login = async (formData: FormData) => {
     (u: User) => u.username.toLowerCase() === username.toLowerCase()
   );
 
+  const bruteforceProtectionDisabled = process.env.DISABLE_BRUTEFORCE_PROTECTION === "true";
+
+  if (!bruteforceProtectionDisabled && user) {
+    const now = Date.now();
+    const nextAllowedTime = user.nextAllowedLoginAttempt
+      ? new Date(user.nextAllowedLoginAttempt).getTime()
+      : 0;
+
+    if (nextAllowedTime > now) {
+      const waitSeconds = Math.ceil((nextAllowedTime - now) / 1000);
+      await logAuthEvent(
+        "login",
+        username,
+        false,
+        `Rate limited - attempt ${(user.failedLoginAttempts || 0) + 1}`
+      );
+      return {
+        error: "Too many failed attempts",
+        lockedUntil: user.nextAllowedLoginAttempt,
+        attemptsRemaining: 0,
+        waitSeconds
+      };
+    }
+  }
+
   if (!user || user.passwordHash !== hashPassword(password)) {
+    if (user && !bruteforceProtectionDisabled) {
+      const userIndex = users.findIndex(
+        (u: User) => u.username.toLowerCase() === username.toLowerCase()
+      );
+
+      if (userIndex !== -1) {
+        const failedAttempts = (users[userIndex].failedLoginAttempts || 0) + 1;
+        users[userIndex].failedLoginAttempts = failedAttempts;
+
+        const delayMs = _youShallNotPass(failedAttempts);
+        let lockedUntil: string | undefined;
+        if (delayMs > 0) {
+          lockedUntil = new Date(Date.now() + delayMs).toISOString();
+          users[userIndex].nextAllowedLoginAttempt = lockedUntil;
+        } else {
+          users[userIndex].nextAllowedLoginAttempt = undefined;
+        }
+
+        await writeJsonFile(users, USERS_FILE);
+
+        await logAuthEvent(
+          "login",
+          username,
+          false,
+          `Invalid credentials - attempt ${failedAttempts}`
+        );
+
+        const attemptsRemaining = Math.max(0, 4 - failedAttempts);
+        const waitSeconds = delayMs > 0 ? Math.ceil(delayMs / 1000) : 0;
+
+        return {
+          error: delayMs > 0 ? "Too many failed attempts" : "Invalid username or password",
+          attemptsRemaining,
+          failedAttempts,
+          ...(lockedUntil && { lockedUntil, waitSeconds })
+        };
+      }
+    }
+
     await logAuthEvent("login", username, false, "Invalid username or password");
     return { error: "Invalid username or password" };
   }
@@ -169,6 +242,8 @@ export const login = async (formData: FormData) => {
   );
   if (userIndex !== -1) {
     users[userIndex].lastLogin = new Date().toISOString();
+    users[userIndex].failedLoginAttempts = 0;
+    users[userIndex].nextAllowedLoginAttempt = undefined;
     await writeJsonFile(users, USERS_FILE);
   }
 
@@ -305,6 +380,8 @@ export const verifyMfaLogin = async (formData: FormData) => {
   );
   if (userIndex !== -1) {
     users[userIndex].lastLogin = new Date().toISOString();
+    users[userIndex].failedLoginAttempts = 0;
+    users[userIndex].nextAllowedLoginAttempt = undefined;
     await writeJsonFile(users, USERS_FILE);
   }
 

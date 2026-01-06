@@ -256,7 +256,9 @@
     "welcomeTo": "Bienvenue sur {appName}",
     "createAdminAccountDescription": "Créez votre compte administrateur pour commencer",
     "version": "Version {version}",
-    "createUser": "Créer un utilisateur"
+    "createUser": "Créer un utilisateur",
+    "attemptsRemaining": "Attention : {count, plural, one {# tentative} other {# tentatives}} restantes avant le verrouillage du compte",
+    "accountLocked": "Trop de tentatives échouées. Veuillez réessayer dans {seconds} {seconds, plural, one {seconde} other {secondes}}"
   },
   "mfa": {
     "title": "Authentification à deux facteurs",

@@ -268,7 +268,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         if (!itemIdentifier) continue;
 
         const sharedChecklist = await getListById(itemIdentifier, sharedItem.sharer);
-        
+
         if (sharedChecklist) {
           lists.push({
             ...sharedChecklist,
@@ -740,7 +740,7 @@ export const deleteList = async (formData: FormData) => {
     }
 
     const list = await getListById(itemIdentifier, currentUser.username, category);
-    
+
     if (!list) {
       return { error: "List not found" };
     }
@@ -1154,7 +1154,6 @@ export const clearAllChecklistItems = async (formData: FormData) => {
       return { error: "Permission denied" };
     }
 
-    // Filter items based on type
     const filteredItems = checklist.items.filter((item) => {
       if (type === "completed") {
         return !item.completed;

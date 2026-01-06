@@ -257,7 +257,9 @@
     "welcomeTo": "Witaj w {appName}",
     "createAdminAccountDescription": "Utwórz konto administratora, aby rozpocząć",
     "version": "Wersja {version}",
-    "createUser": "Utwórz użytkownika"
+    "createUser": "Utwórz użytkownika",
+    "attemptsRemaining": "Uwaga: {count, plural, one {# próba} few {# próby} other {# prób}} pozostało przed zablokowaniem konta",
+    "accountLocked": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {seconds} {seconds, plural, one {sekundę} few {sekundy} other {sekund}}"
   },
   "mfa": {
     "title": "Autoryzacja dwuskładnikowa",
