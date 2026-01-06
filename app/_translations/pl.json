@@ -1420,6 +1420,6 @@
     "newHaiku": "Nowy Haiku",
     "goHome": "Strona główna",
     "seenCount": "Widziałeś {count} {count, plural, one {haiku} other {haiku}}",
-    "imNoPoet": "Nie jestem poetą i Jotty też nie. \nSą to losowe słowa w kolejności. \nCieszyć się."
+    "imNoPoet": "Nie jestem poetą i Jotty też nie. Są to losowe słowa w kolejności."
   }
 }
