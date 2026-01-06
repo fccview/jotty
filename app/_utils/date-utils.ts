@@ -1,11 +1,11 @@
 enum TimeUnit {
-  JustNow = 'justNow',
-  Minutes = 'minutes',
-  Hours = 'hours',
-  Days = 'days',
-  Weeks = 'weeks',
-  Months = 'months',
-  Years = 'years'
+  JustNow = "justNow",
+  Minutes = "minutes",
+  Hours = "hours",
+  Days = "days",
+  Weeks = "weeks",
+  Months = "months",
+  Years = "years"
 }
 
 const getTimeUnit = (dateString: string) => {
@@ -42,17 +42,17 @@ const formatEnglishFallback = (unit: TimeUnit, value: number): string => {
   if (unit === TimeUnit.JustNow) return "Just now";
 
   const unitNames = {
-    [TimeUnit.Minutes]: 'minute',
-    [TimeUnit.Hours]: 'hour',
-    [TimeUnit.Days]: 'day',
-    [TimeUnit.Weeks]: 'week',
-    [TimeUnit.Months]: 'month',
-    [TimeUnit.Years]: 'year'
+    [TimeUnit.Minutes]: "minute",
+    [TimeUnit.Hours]: "hour",
+    [TimeUnit.Days]: "day",
+    [TimeUnit.Weeks]: "week",
+    [TimeUnit.Months]: "month",
+    [TimeUnit.Years]: "year"
   };
 
   const unitName = unitNames[unit];
   const isSingular = value === 1;
-  return `${value} ${unitName}${isSingular ? '' : 's'} ago`;
+  return `${value} ${unitName}${isSingular ? "" : "s"} ago`;
 };
 
 export const formatRelativeTime = (dateString: string, t?: (key: string, options?: any) => string): string => {
