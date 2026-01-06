@@ -19,7 +19,7 @@ You can create a custom translation file to override or extend the default trans
 1. **Create a custom translation file** in the `config/` directory (e.g., `config/custom-translations.json`)
 
 2. **Copy the structure** from the base translation file you want to customize:
-   - View the [English translation file](../app/_translations/en.json) for the complete structure
+   - View the [English translation file](https://github.com/fccview/jotty/blob/main/app/_translations/en.json) for the complete structure
    - You only need to include the keys you want to override, not the entire file
 
 3. **Enable your custom translations** by setting the environment variable:
