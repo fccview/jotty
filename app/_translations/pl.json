@@ -1414,5 +1414,12 @@
     "sso": "SSO",
     "translations": "Tłumaczenia",
     "unraid": "Unraid"
+  },
+  "notFound": {
+    "title": "Strona nie znaleziona",
+    "newHaiku": "Nowy Haiku",
+    "goHome": "Strona główna",
+    "seenCount": "Widziałeś {count} {count, plural, one {haiku} other {haiku}}",
+    "imNoPoet": "Nie jestem poetą i Jotty też nie. \nSą to losowe słowa w kolejności. \nCieszyć się."
   }
 }

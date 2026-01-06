@@ -1413,5 +1413,12 @@
     "sso": "SSO",
     "translations": "Traduzioni",
     "unraid": "Unraid"
+  },
+  "notFound": {
+    "title": "Pagina non trovata",
+    "newHaiku": "Nuovo Haiku",
+    "goHome": "Torna alla Home",
+    "seenCount": "Hai visto {count} {count, plural, one {haiku} other {haiku}}",
+    "imNoPoet": "Non sono un poeta, e nemmeno Jotty. Queste sono parole casuali in sequenza."
   }
 }

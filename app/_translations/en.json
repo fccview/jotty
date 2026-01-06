@@ -1414,5 +1414,12 @@
     "sso": "SSO",
     "translations": "Translations",
     "unraid": "Unraid"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "newHaiku": "New Haiku",
+    "goHome": "Go Home",
+    "seenCount": "You've seen {count} {count, plural, one {haiku} other {haikus}}",
+    "imNoPoet": "I am no poet, and nor is Jotty. These are random words in sequence."
   }
 }
