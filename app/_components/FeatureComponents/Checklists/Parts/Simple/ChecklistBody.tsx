@@ -3,14 +3,15 @@ import {
   DragEndEvent,
   DragStartEvent,
   DragOverlay,
-  closestCorners,
   DragOverEvent,
+  pointerWithin,
 } from "@dnd-kit/core";
 import { ChecklistProgress } from "./ChecklistProgress";
 import { ChecklistItemsWrapper } from "./ChecklistItemsWrapper";
 import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
 import VirtualizedChecklistItems from "./VirtualizedChecklistItems";
 import { Checklist, Item } from "@/app/_types";
+import { DropIndicator } from "./DropIndicator";
 import { ItemTypes, TaskStatusLabels } from "@/app/_types/enums";
 import { useMemo, useState } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
@@ -162,7 +163,7 @@ export const ChecklistBody = ({
       <div className="flex-1 overflow-y-auto jotty-scrollable-content p-4">
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={pointerWithin}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           onDragCancel={onDragCancel}
@@ -191,31 +192,48 @@ export const ChecklistBody = ({
                       overItem={overItem}
                     />
                   ) : (
-                    incompleteItems.map((item, index) => (
-                      <div key={item.id}>
-                        <NestedChecklistItem
-                          key={item.id}
-                          item={item}
-                          index={index.toString()}
-                          level={0}
-                          onToggle={handleToggleItem}
-                          onDelete={handleDeleteItem}
-                          onEdit={handleEditItem}
-                          onAddSubItem={handleAddSubItem}
-                          isDeletingItem={isDeletingItem}
-                          isDragDisabled={false}
-                          checklist={localList}
-                          isOver={overItem?.id === item.id}
-                          overPosition={
-                            overItem?.id === item.id
-                              ? overItem.position
-                              : undefined
-                          }
-                          isAnyItemDragging={isDragging}
-                          overItem={overItem}
-                        />
-                      </div>
-                    ))
+                    <>
+                      <DropIndicator
+                        id={`drop-before::${incompleteItems[0]?.id || "start"}`}
+                        data={{
+                          type: "drop-indicator",
+                          position: "before",
+                          targetId: incompleteItems[0]?.id,
+                        }}
+                      />
+                      {incompleteItems.map((item, index) => (
+                        <div key={item.id}>
+                          <NestedChecklistItem
+                            item={item}
+                            index={index.toString()}
+                            level={0}
+                            onToggle={handleToggleItem}
+                            onDelete={handleDeleteItem}
+                            onEdit={handleEditItem}
+                            onAddSubItem={handleAddSubItem}
+                            isDeletingItem={isDeletingItem}
+                            isDragDisabled={false}
+                            checklist={localList}
+                            isOver={overItem?.id === item.id}
+                            overPosition={
+                              overItem?.id === item.id
+                                ? overItem.position
+                                : undefined
+                            }
+                            isAnyItemDragging={isDragging}
+                            overItem={overItem}
+                          />
+                          <DropIndicator
+                            id={`drop-after::${item.id}`}
+                            data={{
+                              type: "drop-indicator",
+                              position: "after",
+                              targetId: item.id,
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </>
                   )}
                 </ChecklistItemsWrapper>
               )}
@@ -241,32 +259,49 @@ export const ChecklistBody = ({
                       overItem={overItem}
                     />
                   ) : (
-                    completedItems.map((item, index) => (
-                      <div key={item.id}>
-                        <NestedChecklistItem
-                          key={item.id}
-                          item={item}
-                          index={(incompleteItems.length + index).toString()}
-                          level={0}
-                          onToggle={handleToggleItem}
-                          onDelete={handleDeleteItem}
-                          onEdit={handleEditItem}
-                          onAddSubItem={handleAddSubItem}
-                          completed
-                          isDeletingItem={isDeletingItem}
-                          isDragDisabled={false}
-                          checklist={localList}
-                          isOver={overItem?.id === item.id}
-                          overPosition={
-                            overItem?.id === item.id
-                              ? overItem.position
-                              : undefined
-                          }
-                          isAnyItemDragging={isDragging}
-                          overItem={overItem}
-                        />
-                      </div>
-                    ))
+                    <>
+                      <DropIndicator
+                        id={`drop-before::${completedItems[0]?.id || "start-completed"}`}
+                        data={{
+                          type: "drop-indicator",
+                          position: "before",
+                          targetId: completedItems[0]?.id,
+                        }}
+                      />
+                      {completedItems.map((item, index) => (
+                        <div key={item.id}>
+                          <NestedChecklistItem
+                            item={item}
+                            index={(incompleteItems.length + index).toString()}
+                            level={0}
+                            onToggle={handleToggleItem}
+                            onDelete={handleDeleteItem}
+                            onEdit={handleEditItem}
+                            onAddSubItem={handleAddSubItem}
+                            completed
+                            isDeletingItem={isDeletingItem}
+                            isDragDisabled={false}
+                            checklist={localList}
+                            isOver={overItem?.id === item.id}
+                            overPosition={
+                              overItem?.id === item.id
+                                ? overItem.position
+                                : undefined
+                            }
+                            isAnyItemDragging={isDragging}
+                            overItem={overItem}
+                          />
+                          <DropIndicator
+                            id={`drop-after::${item.id}`}
+                            data={{
+                              type: "drop-indicator",
+                              position: "after",
+                              targetId: item.id,
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </>
                   )}
                 </ChecklistItemsWrapper>
               )}

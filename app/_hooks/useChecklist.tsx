@@ -409,6 +409,21 @@ export const useChecklist = ({
     const activeId = active.id.toString();
     const overId = over.id.toString();
 
+    const isDropInto = overId.startsWith("drop-into-item::");
+    const isDropIndicator = overId.startsWith("drop-before") || overId.startsWith("drop-after");
+
+    let targetItemId: string;
+    if (isDropInto) {
+      targetItemId = overId.replace("drop-into-item::", "");
+    } else if (isDropIndicator) {
+      const data = over.data.current as any;
+      targetItemId = data?.targetId;
+    } else {
+      targetItemId = overId;
+    }
+
+    if (!targetItemId) return;
+
     const findItemWithParent = (
       items: Item[],
       targetId: string,
@@ -428,7 +443,7 @@ export const useChecklist = ({
     };
 
     const activeInfo = findItemWithParent(localList.items, activeId);
-    const overInfo = findItemWithParent(localList.items, overId);
+    const overInfo = findItemWithParent(localList.items, targetItemId);
 
     if (!activeInfo || !overInfo) return;
 
@@ -443,24 +458,33 @@ export const useChecklist = ({
       const newItems = cloneItems(list.items);
 
       const activeInNew = findItemWithParent(newItems, activeId);
-      const overInNew = findItemWithParent(newItems, overId);
+      const overInNew = findItemWithParent(newItems, targetItemId);
 
       if (!activeInNew || !overInNew) return list;
 
       activeInNew.siblings.splice(activeInNew.index, 1);
 
-      const targetSiblings = overInNew.siblings;
-      const targetParent = overInNew.parent;
+      if (isDropInto) {
+        if (!overInNew.item.children) {
+          overInNew.item.children = [];
+        }
+        overInNew.item.children.push(activeInNew.item);
+      } else {
+        const targetSiblings = overInNew.siblings;
+        const targetParent = overInNew.parent;
 
-      let newIndex = targetSiblings.findIndex((item) => item.id === overId);
+        let newIndex = targetSiblings.findIndex((item) => item.id === targetItemId);
 
-      const isDraggingDown = activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInfo.index;
+        const isDraggingDown = activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInfo.index;
 
-      if (isDraggingDown) {
-        newIndex = newIndex + 1;
+        const position = isDropIndicator ? (overId.startsWith("drop-after::") ? "after" : "before") : (isDraggingDown ? "after" : "before");
+
+        if (position === "after") {
+          newIndex = newIndex + 1;
+        }
+
+        targetSiblings.splice(newIndex, 0, activeInNew.item);
       }
-
-      targetSiblings.splice(newIndex, 0, activeInNew.item);
 
       const updateOrder = (items: Item[]) => {
         items.forEach((item, idx) => {
@@ -476,7 +500,8 @@ export const useChecklist = ({
     const formData = new FormData();
     formData.append("listId", localList.id);
     formData.append("activeItemId", activeId);
-    formData.append("overItemId", overId);
+    formData.append("overItemId", targetItemId);
+    formData.append("isDropInto", String(isDropInto));
     formData.append("category", localList.category || "Uncategorized");
 
     const result = await reorderItems(formData);

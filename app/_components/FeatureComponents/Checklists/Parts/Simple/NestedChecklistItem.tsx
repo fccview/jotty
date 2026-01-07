@@ -27,6 +27,8 @@ import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
 import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useTranslations } from "next-intl";
+import { Droppable } from "./Droppable";
+import { DropIndicator } from "./DropIndicator";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -90,7 +92,11 @@ const NestedChecklistItemComponent = ({
   } = useSortable({
     id: item.id,
     disabled: isDragDisabled,
+    data: {
+      itemId: item.id,
+    },
   });
+
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
@@ -236,35 +242,44 @@ const NestedChecklistItemComponent = ({
   }, [item.children, hasChildren]);
 
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform:
-          isAnyItemDragging && !isDragging
-            ? CSS.Transform.toString({ x: 0, y: 0, scaleX: 1, scaleY: 1 })
-            : CSS.Transform.toString(transform),
-        transition: isAnyItemDragging && !isDragging ? "none" : transition,
+    <Droppable
+      id={`drop-into-item::${item.id}`}
+      data={{
+        type: "item",
+        itemId: item.id,
       }}
-      className={cn(
-        "relative my-1",
-        hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
-        !hasChildren &&
-        !isChild &&
-        "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
-        isChild &&
-        "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
-        "first:mt-0 transition-colors duration-150",
-        isActive && "bg-muted/20",
-        isDragging && "opacity-50 z-50",
-        isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0",
-        isDropdownOpen && "z-50"
-      )}
     >
-      {isOver && overPosition === "before" && (
-        <div className="absolute -top-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
-      )}
+      {({ isOver: isOverDroppable }) => (
+        <div
+          ref={setNodeRef}
+          style={{
+            transform:
+              isAnyItemDragging && !isDragging
+                ? CSS.Transform.toString({ x: 0, y: 0, scaleX: 1, scaleY: 1 })
+                : CSS.Transform.toString(transform),
+            transition: isAnyItemDragging && !isDragging ? "none" : transition,
+          }}
+          className={cn(
+            "relative my-1",
+            hasChildren &&
+            !isChild &&
+            "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+            !hasChildren &&
+            !isChild &&
+            "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+            isChild &&
+            "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
+            "first:mt-0 transition-colors duration-150",
+            isActive && "bg-muted/20",
+            isDragging && "opacity-50 z-50",
+            isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0",
+            isDropdownOpen && "z-50",
+            isOverDroppable && "ring-2 ring-primary/30 ring-inset"
+          )}
+        >
+          {isOver && overPosition === "before" && (
+            <div className="absolute -top-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
+          )}
       <div
         className={cn(
           "group/item flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
@@ -510,31 +525,52 @@ const NestedChecklistItemComponent = ({
 
       {hasChildren && isExpanded && (
         <div className={cn("pt-1")}>
+          <DropIndicator
+            id={`drop-before-child::${item.children![0]?.id || `${item.id}-start`}`}
+            data={{
+              type: "drop-indicator",
+              position: "before",
+              targetId: item.children![0]?.id,
+              parentId: item.id,
+            }}
+          />
           {item.children!.map((child, childIndex) => (
-            <NestedChecklistItem
-              key={child.id}
-              item={child}
-              index={`${index}.${childIndex}`}
-              level={level + 1}
-              onToggle={onToggle}
-              onDelete={onDelete}
-              onEdit={onEdit}
-              onAddSubItem={onAddSubItem}
-              isDeletingItem={isDeletingItem}
-              isDragDisabled={isDragDisabled}
-              isPublicView={isPublicView}
-              checklist={checklist}
-              isOver={overItem?.id === child.id}
-              overPosition={
-                overItem?.id === child.id ? overItem.position : undefined
-              }
-              isAnyItemDragging={isAnyItemDragging}
-              overItem={overItem}
-            />
+            <div key={child.id}>
+              <NestedChecklistItem
+                item={child}
+                index={`${index}.${childIndex}`}
+                level={level + 1}
+                onToggle={onToggle}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                onAddSubItem={onAddSubItem}
+                isDeletingItem={isDeletingItem}
+                isDragDisabled={isDragDisabled}
+                isPublicView={isPublicView}
+                checklist={checklist}
+                isOver={overItem?.id === child.id}
+                overPosition={
+                  overItem?.id === child.id ? overItem.position : undefined
+                }
+                isAnyItemDragging={isAnyItemDragging}
+                overItem={overItem}
+              />
+              <DropIndicator
+                id={`drop-after-child::${child.id}`}
+                data={{
+                  type: "drop-indicator",
+                  position: "after",
+                  targetId: child.id,
+                  parentId: item.id,
+                }}
+              />
+            </div>
           ))}
         </div>
       )}
-    </div>
+        </div>
+      )}
+    </Droppable>
   );
 };
 
