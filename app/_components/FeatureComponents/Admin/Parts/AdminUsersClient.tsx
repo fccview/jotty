@@ -10,6 +10,8 @@ import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllNotes } from "@/app/_server/actions/note";
+import { useToast } from "@/app/_providers/ToastProvider";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface AdminUsersClientProps {
   initialUsers: User[];
@@ -20,12 +22,15 @@ interface AdminUsersClientProps {
 
 export function AdminUsersClient({ initialUsers, initialLists, initialDocs, username }: AdminUsersClientProps) {
   const t = useTranslations();
+  const { showToast } = useToast();
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
   const [userModalMode, setUserModalMode] = useState<"add" | "edit">("add");
   const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const loadData = async () => {
     try {
@@ -51,32 +56,41 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
     setShowUserModal(true);
   };
 
-  const handleDeleteUser = async (user: User) => {
-    if (
-      !confirm(
-        t('admin.deleteUserConfirmation', { username: user.username })
-      )
-    ) {
-      return;
-    }
+  const handleDeleteUser = (user: User) => {
+    setUserToDelete(user);
+    setShowDeleteModal(true);
+  };
 
-    setDeletingUser(user.username);
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setShowDeleteModal(false);
+    setDeletingUser(userToDelete.username);
     try {
       const formData = new FormData();
-      formData.append("username", user.username);
+      formData.append("username", userToDelete.username);
 
       const result = await deleteUser(formData);
 
       if (result.success) {
-        setUsers((prev) => prev.filter((u) => u.username !== user.username));
+        setUsers((prev) => prev.filter((u) => u.username !== userToDelete.username));
       } else {
-        alert(result.error || "Failed to delete user");
+        showToast({
+          type: "error",
+          title: t('common.error'),
+          message: result.error || "Failed to delete user",
+        });
       }
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("Failed to delete user");
+      showToast({
+        type: "error",
+        title: t('common.error'),
+        message: "Failed to delete user",
+      });
     } finally {
       setDeletingUser(null);
+      setUserToDelete(null);
     }
   };
 
@@ -100,6 +114,19 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
         mode={userModalMode}
         user={selectedUser}
         onSuccess={loadData}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={confirmDeleteUser}
+        title={t("common.delete")}
+        message={t('admin.deleteUserConfirmation', { username: userToDelete?.username || "" })}
+        confirmText={t("common.delete")}
+        variant="destructive"
       />
     </>
   );

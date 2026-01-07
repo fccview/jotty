@@ -82,7 +82,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             max={max}
             maxLength={maxLength}
             {...props}
-            className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-sm focus:outline-none focus:ring-none ${isPasswordType ? "pr-11" : ""} ${className}`}
+            className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-md lg:text-sm focus:outline-none focus:ring-none ${isPasswordType ? "pr-11" : ""} ${className}`}
           />
           {isPasswordType && !hideEye && (
             <button
@@ -101,7 +101,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">{description}</p>
         )}
       </div>
     );

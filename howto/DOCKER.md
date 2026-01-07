@@ -120,6 +120,7 @@ environment:
 - `- SERVE_PUBLIC_IMAGES=yes` Optional. Allows public access to uploaded images via direct URLs.
 - `- SERVE_PUBLIC_FILES=yes` Optional. Allows public access to uploaded files via direct URLs.
 - `- STOP_CHECK_UPDATES=no` Optional. If set to yes stops the github api call and won't give you a toast when a new update is available.
+- `- DISABLE_BRUTEFORCE_PROTECTION=true` Optional. Disables brute force protection for local login authentication. By default, accounts are temporarily locked after 3 failed login attempts with exponential delays (10s, 30s, 60s, etc.). Set to `true` to completely disable this security feature.
 
 ### SSO Configuration (Optional)
 

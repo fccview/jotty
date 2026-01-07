@@ -79,7 +79,7 @@ export const EmojiManager = () => {
             </div>
           ))}
           {getCustomEmojis().length === 0 && !isLoadingEmojis && (
-            <p className="text-sm text-muted-foreground col-span-full text-center py-4">
+            <p className="text-md lg:text-sm text-muted-foreground col-span-full text-center py-4">
               {t('admin.noEmojisYet')}
             </p>
           )}
@@ -109,7 +109,7 @@ export const EmojiManager = () => {
           />
 
           <div className="space-y-2">
-            <label htmlFor="emojiEmoji" className="text-sm font-medium">
+            <label htmlFor="emojiEmoji" className="text-md lg:text-sm font-medium">
               {t('common.emoji')}
             </label>
             <div className="flex space-x-2">
@@ -126,7 +126,7 @@ export const EmojiManager = () => {
                 {emojiForm.emoji || t('common.exampleEmoji')}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
               {t('admin.enterAnyEmoji')}
             </p>
           </div>

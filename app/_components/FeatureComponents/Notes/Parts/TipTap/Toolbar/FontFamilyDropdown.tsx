@@ -175,7 +175,7 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
-            className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
+            className="w-full pl-7 pr-2 py-1 text-sm lg:text-xs bg-input border border-border rounded-jotty focus:outline-none focus:ring-none focus:ring-ring"
           />
         </div>
       </div>
@@ -186,7 +186,7 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
               key={font.value || "default"}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => handleFontSelect(font.value)}
-              className={`w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors text-sm ${currentFont === font.value ? "bg-accent" : ""
+              className={`w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors text-md lg:text-sm ${currentFont === font.value ? "bg-accent" : ""
                 }`}
               style={{ fontFamily: font.value || "inherit" }}
             >
@@ -194,7 +194,7 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
             </button>
           ))
         ) : (
-          <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+          <div className="px-3 py-4 text-md lg:text-sm text-muted-foreground text-center">
             {t("editor.noFontsFound")}
           </div>
         )}

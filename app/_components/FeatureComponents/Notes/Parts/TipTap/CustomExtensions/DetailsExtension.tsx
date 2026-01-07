@@ -67,4 +67,25 @@ export const DetailsExtension = Node.create({
   addNodeView() {
     return ReactNodeViewRenderer(DetailsNodeView);
   },
+
+  addKeyboardShortcuts() {
+    return {
+      Backspace: ({ editor }) => {
+        const { selection, doc } = editor.state;
+        const { $from } = selection;
+
+        if ($from.parentOffset === 0 && $from.depth >= 1) {
+          const beforePos = $from.before();
+          if (beforePos > 0) {
+            const nodeBefore = doc.resolve(beforePos - 1).nodeBefore;
+            if (nodeBefore?.type.name === "details") {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      },
+    };
+  },
 });

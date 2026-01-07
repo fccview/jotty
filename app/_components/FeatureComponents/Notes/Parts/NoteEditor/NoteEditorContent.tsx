@@ -14,7 +14,7 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalModeEditor";
 import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { detectEncryptionMethod, isEncrypted, isValidXChaChaJSON } from "@/app/_utils/encryption-utils";
+import { detectEncryptionMethod, isEncrypted } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
 
 interface NoteEditorContentProps {
@@ -96,7 +96,7 @@ export const NoteEditorContent = ({
   if (isContentEncrypted) {
     const encryptionType = detectEncryptionMethod(editorContent || "");
     return (
-      <div className="flex-1 h-full pb-14 lg:pb-0 flex items-center justify-center">
+      <div className="flex-1 h-full flex items-center justify-center">
         <div className="text-center space-y-4 max-w-md mx-auto px-6">
           <div className="flex justify-center">
             <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
@@ -104,7 +104,7 @@ export const NoteEditorContent = ({
             </div>
           </div>
           <h3 className="text-xl font-semibold">{t("encryption.thisNoteIsEncrypted")}</h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t("encryption.noteProtectedWith", {
               type: encryptionType === "pgp" ? t("encryption.pgp") : t("encryption.xchacha")
             })}
@@ -145,7 +145,7 @@ export const NoteEditorContent = ({
   }
 
   return (
-    <div className="flex-1 h-full pb-14 lg:pb-0">
+    <div className="flex-1 h-full">
       {isEditMode ? (
         <TiptapEditor
           ref={editorRef}

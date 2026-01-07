@@ -60,7 +60,7 @@ export const SharingMigrationView = ({
               icon={<InformationCircleIcon className="h-5 w-5 text-primary" />}
               title={t("migration.whatsHappening")}
             >
-              <p className="text-sm">
+              <p className="text-md lg:text-sm">
                 I&apos;m migrating from the old{" "}
                 <code className="bg-muted px-1 rounded text-xs">
                   shared-items.json
@@ -82,8 +82,8 @@ export const SharingMigrationView = ({
                 <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <UserMultipleIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">User-focused sharing</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-md lg:text-sm font-medium">User-focused sharing</p>
+                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                       Each user now has an array of items they shared{" "}
                       <strong>WITH</strong> them rather than items having an
                       array of users they shared with.
@@ -93,10 +93,10 @@ export const SharingMigrationView = ({
                 <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <Database01Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">
+                    <p className="text-md lg:text-sm font-medium">
                       Separate sharing files
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                       Notes and checklists now have their own{" "}
                       <code className="bg-muted px-1 rounded text-xs">
                         .sharing.json
@@ -108,10 +108,10 @@ export const SharingMigrationView = ({
                 <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <Globe02Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">
+                    <p className="text-md lg:text-sm font-medium">
                       Public sharing support
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                       Publicly shared items are now properly organized in a
                       &quot;public&quot; array.
                     </p>
@@ -120,10 +120,10 @@ export const SharingMigrationView = ({
                 <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <ShieldUserIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">
+                    <p className="text-md lg:text-sm font-medium">
                       Granular sharing permissions
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                       Each item will have read, edit and delete permissions for
                       each user it is shared with.
                     </p>
@@ -170,11 +170,11 @@ export const SharingMigrationView = ({
                 <div>
                   <label
                     htmlFor="backup-confirmation"
-                    className="text-sm font-medium text-foreground cursor-pointer"
+                    className="text-md lg:text-sm font-medium text-foreground cursor-pointer"
                   >
                     I have backed up my sharing data and understand the
                     migration process.
-                    <span className="text-xs text-muted-foreground block">
+                    <span className="text-md lg:text-sm lg:text-xs text-muted-foreground block">
                       Please confirm you&apos;ve created a backup before
                       proceeding.
                     </span>
@@ -208,7 +208,7 @@ export const SharingMigrationView = ({
               title={t('migration.migrationSuccessful')}
               variant={InfoCardVariant.DEFAULT}
             >
-              <p className="text-sm">
+              <p className="text-md lg:text-sm">
                 {migrationResult.migrated
                   ? "Your sharing data has been successfully migrated."
                   : t("migration.noMigrationNeeded")}
@@ -224,7 +224,7 @@ export const SharingMigrationView = ({
                   {migrationResult.changes.map((change, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <CheckmarkCircle04Icon className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-md lg:text-sm text-muted-foreground">
                         {change}
                       </span>
                     </li>

@@ -32,7 +32,7 @@ export const PublicChecklistHeader = ({
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           {checklist.title}
         </h1>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-md lg:text-sm text-muted-foreground mt-2">
           <div className="flex items-center gap-1">
             <UserAvatar
               size="sm"

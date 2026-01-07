@@ -194,6 +194,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
+  if (process.env.DEBUGGER) {
+    console.log("ID_TOKEN_DEBUG:", {
+      tokenLength: idToken.length,
+      tokenStart: idToken.substring(0, 50),
+      tokenParts: idToken.split('.').length,
+      isValidJWT: /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(idToken)
+    });
+  }
+
   let claims: { [key: string]: any };
   try {
     const { payload } = await jwtVerify(idToken, JWKS, {
@@ -204,6 +213,13 @@ export async function GET(request: NextRequest) {
     claims = payload;
   } catch (error) {
     console.error("ID Token validation failed:", error);
+    if (process.env.DEBUGGER) {
+      console.error("ID_TOKEN_ERROR_DEBUG:", {
+        tokenLength: idToken?.length,
+        tokenStructure: idToken?.split('.').length,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 

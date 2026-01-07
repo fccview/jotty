@@ -18,6 +18,7 @@ import { ToolbarDropdown } from "./ToolbarDropdown";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from 'next-intl';
+import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
 
 interface ExtraItemsDropdownProps {
   editor: Editor;
@@ -34,13 +35,18 @@ export const ExtraItemsDropdown = ({
 }: ExtraItemsDropdownProps) => {
   const t = useTranslations();
   const [isMac, setIsMac] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [showAbbreviationModal, setShowAbbreviationModal] = useState(false);
 
   useEffect(() => {
     setIsMac(/(Mac|iPhone|iPod|iPad)/i.test(navigator.platform));
   }, []);
 
   const addImage = () => {
-    const url = window.prompt("Image URL");
+    setShowImageModal(true);
+  };
+
+  const confirmAddImage = (url: string) => {
     if (url) onImageSizeModalOpen(url);
   };
 
@@ -52,11 +58,12 @@ export const ExtraItemsDropdown = ({
       return;
     }
 
-    const title = window.prompt(
-      "Enter abbreviation title (e.g., HyperText Markup Language)"
-    );
+    setShowAbbreviationModal(true);
+  };
+
+  const confirmAbbreviation = (title: string) => {
     if (title) {
-      chain.setMark("abbreviation", { title }).run();
+      editor.chain().focus().setMark("abbreviation", { title }).run();
     }
   };
 
@@ -168,28 +175,50 @@ export const ExtraItemsDropdown = ({
   );
 
   return (
-    <ToolbarDropdown trigger={trigger} direction="right">
-      <div className="flex flex-col py-1">
-        {items.map((item, index) => (
-          <button
-            key={index}
-            className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-sm ${
-              item.isActive ? "bg-accent" : ""
-            }`}
-            onClick={item.command}
-          >
-            <div className="flex items-center gap-2">
-              {item.icon}
-              <span>{item.label}</span>
-            </div>
-            {item.shortcut && (
-              <span className="text-xs text-muted-foreground">
-                {getShortcutDisplay(item.shortcut)}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-    </ToolbarDropdown>
+    <>
+      <ToolbarDropdown trigger={trigger} direction="right">
+        <div className="flex flex-col py-1 overflow-y-auto">
+          {items.map((item, index) => (
+            <button
+              key={index}
+              className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm ${
+                item.isActive ? "bg-accent" : ""
+              }`}
+              onClick={item.command}
+            >
+              <div className="flex items-center gap-2">
+                {item.icon}
+                <span>{item.label}</span>
+              </div>
+              {item.shortcut && (
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                  {getShortcutDisplay(item.shortcut)}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </ToolbarDropdown>
+
+      <PromptModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        onConfirm={confirmAddImage}
+        title={t("editor.addImage")}
+        message={t("editor.enterImageURL")}
+        placeholder="https://example.com/image.jpg"
+        confirmText={t("common.confirm")}
+      />
+
+      <PromptModal
+        isOpen={showAbbreviationModal}
+        onClose={() => setShowAbbreviationModal(false)}
+        onConfirm={confirmAbbreviation}
+        title="Abbreviation"
+        message="Enter abbreviation title (e.g., HyperText Markup Language)"
+        placeholder="HyperText Markup Language"
+        confirmText={t("common.confirm")}
+      />
+    </>
   );
 };

@@ -20,7 +20,7 @@ export const AdminContentColumn = ({
   const t = useTranslations();
   return (
     <div>
-      <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+      <h4 className="text-md lg:text-sm font-medium text-foreground mb-3 flex items-center gap-2">
         {icon}
         {title} ({items.length})
       </h4>
@@ -35,17 +35,17 @@ export const AdminContentColumn = ({
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-foreground text-sm truncate">
+                    <p className="font-medium text-foreground text-md lg:text-sm truncate">
                       {item.title}
                     </p>
                     <LinkForwardIcon className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
                     {item.details}
                   </p>
                 </div>
                 {item.isShared && (
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full ml-2 flex-shrink-0">{t('common.shared')}</span>
+                  <span className="text-md lg:text-sm lg:text-xs bg-primary/10 text-primary px-2 py-1 rounded-full ml-2 flex-shrink-0">{t('common.shared')}</span>
                 )}
               </div>
             </Link>

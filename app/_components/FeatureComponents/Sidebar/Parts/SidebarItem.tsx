@@ -13,6 +13,7 @@ import {
   Archive02Icon,
   Delete03Icon,
   LockKeyIcon,
+  Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -31,6 +32,9 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
+import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
 interface SidebarItemProps {
   item: Checklist | Note;
@@ -53,15 +57,42 @@ export const SidebarItem = ({
 }: SidebarItemProps) => {
   const t = useTranslations();
   const router = useRouter();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
-  const itemDetails = sharingInfo(globalSharing, item.id, encodedCategory);
+  const itemDetails = sharingInfo(globalSharing, item.uuid || item.id, encodedCategory);
 
   const isPubliclyShared = itemDetails.isPublic;
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
+  const isShareable = user?.username === item.owner;
+
   const sharedWith = itemDetails.sharedWith;
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+
+  const handleDeleteItem = async () => {
+    const formData = new FormData();
+
+    if (mode === Modes.CHECKLISTS) {
+      formData.append("id", item.id);
+      formData.append("category", item.category || "Uncategorized");
+      if (item.uuid) formData.append("uuid", item.uuid);
+      const result = await deleteList(formData);
+      if (result.success) {
+        router.refresh();
+      }
+    } else {
+      formData.append("id", item.id);
+      formData.append("category", item.category || "Uncategorized");
+      if (item.uuid) formData.append("uuid", item.uuid);
+      const result = await deleteNote(formData);
+      if (result.success) {
+        router.refresh();
+      }
+    }
+    setShowDeleteModal(false);
+  };
 
   const handleTogglePin = async () => {
     if (!user || isTogglingPin) return;
@@ -105,7 +136,18 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(onEditItem ? [{ type: "divider" as const }] : []),
+    ...(isShareable
+      ? [
+          {
+            label: t("sharing.share"),
+            onClick: () => setShowShareModal(true),
+            icon: <Share08Icon className="h-4 w-4" />,
+          },
+        ]
+      : []),
+    ...(onEditItem || isShareable
+      ? [{ type: "divider" as const }]
+      : []),
     {
       label: isItemPinned() ? t("common.unpinFromHome") : t("common.pinToHome"),
       onClick: handleTogglePin,
@@ -133,31 +175,7 @@ export const SidebarItem = ({
     ...(onEditItem ? [{ type: "divider" as const }] : []),
     {
       label: t("common.delete"),
-      onClick: async () => {
-        const confirmed = window.confirm(
-          t("common.confirmDeleteItem", { itemTitle: item.title })
-        );
-
-        if (!confirmed) return;
-
-        const formData = new FormData();
-
-        if (mode === Modes.CHECKLISTS) {
-          formData.append("id", item.id);
-          formData.append("category", item.category || "Uncategorized");
-          const result = await deleteList(formData);
-          if (result.success) {
-            router.refresh();
-          }
-        } else {
-          formData.append("id", item.id);
-          formData.append("category", item.category || "Uncategorized");
-          const result = await deleteNote(formData);
-          if (result.success) {
-            router.refresh();
-          }
-        }
-      },
+      onClick: () => setShowDeleteModal(true),
       variant: "destructive" as const,
       icon: <Delete03Icon className="h-4 w-4" />,
     },
@@ -169,7 +187,7 @@ export const SidebarItem = ({
         onClick={() => onItemClick(item)}
         data-sidebar-item-selected={isSelected}
         className={cn(
-          "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty transition-colors flex-1 text-left truncate",
+          "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors flex-1 text-left truncate",
           isSelected
             ? "bg-primary/60 text-primary-foreground"
             : "hover:bg-muted/50 text-foreground"
@@ -178,7 +196,7 @@ export const SidebarItem = ({
         {mode === Modes.NOTES ? (
           <File02Icon
             className={cn(
-              "h-4 w-4 text-foreground flex-shrink-0",
+              "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
               isSelected ? "text-primary-foreground" : "text-foreground"
             )}
           />
@@ -187,14 +205,14 @@ export const SidebarItem = ({
             {"type" in item && item.type === "task" ? (
               <TaskDaily01Icon
                 className={cn(
-                  "h-4 w-4 text-foreground flex-shrink-0",
+                  "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
                   isSelected ? "text-primary-foreground" : "text-foreground"
                 )}
               />
             ) : (
               <CheckmarkSquare04Icon
                 className={cn(
-                  "h-4 w-4 text-foreground flex-shrink-0",
+                  "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
                   isSelected ? "text-primary-foreground" : "text-foreground"
                 )}
               />
@@ -239,6 +257,34 @@ export const SidebarItem = ({
           </Button>
         }
       />
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteItem}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: item.title })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
+
+      {showShareModal && (
+        <MetadataProvider
+          metadata={{
+            id: item.id,
+            uuid: item.uuid,
+            title: item.title,
+            category: item.category || "Uncategorized",
+            owner: item.owner || "",
+            type: mode === Modes.NOTES ? "note" : "checklist",
+          }}
+        >
+          <ShareModal
+            isOpen={showShareModal}
+            onClose={() => { setShowShareModal(false); router.refresh() }}
+          />
+        </MetadataProvider>
+      )}
     </div>
   );
 };

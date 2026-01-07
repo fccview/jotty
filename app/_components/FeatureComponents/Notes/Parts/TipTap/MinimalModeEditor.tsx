@@ -14,6 +14,7 @@ import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/Re
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface MinimalModeEditorProps {
   isEditing: boolean;
@@ -29,6 +30,7 @@ export const MinimalModeEditor = ({
   compactMode,
 }: MinimalModeEditorProps) => {
   const t = useTranslations();
+  const { user } = useAppMode();
   const { contentWithoutMetadata } = extractYamlMetadata(noteContent);
   const [markdownContent, setMarkdownContent] = useState(
     contentWithoutMetadata
@@ -59,9 +61,8 @@ export const MinimalModeEditor = ({
       <>
         <ReadingProgressBar />
         <div
-          className={`px-6 pt-6 pb-12 ${
-            compactMode ? "max-w-[900px] mx-auto" : ""
-          }`}
+          className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
         >
           <UnifiedMarkdownRenderer content={noteContent} />
         </div>
@@ -73,10 +74,10 @@ export const MinimalModeEditor = ({
     <div className="flex flex-col h-full">
       <div className="bg-background border-b border-border px-4 py-2 items-center justify-between sticky top-0 z-10 hidden lg:flex">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-md lg:text-sm font-medium text-foreground">
             {t("editor.minimalMode")}
           </span>
-          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
             {showPreview ? t("editor.preview") : t("editor.rawMarkdown")}
           </span>
         </div>
@@ -113,39 +114,34 @@ export const MinimalModeEditor = ({
         </div>
       </div>
 
-      <div className="fixed bottom-[62px] w-full left-0 lg:hidden z-40 bg-background">
-        <div className="flex gap-1 p-2 border-b border-border w-full justify-center items-center">
-          <Button
-            variant={!showPreview ? "default" : "ghost"}
-            className="w-1/2"
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setShowPreview(false)}
-            title={t("editor.markdownEditor")}
-          >
-            <File02Icon className="h-4 w-4 mr-2" />
-            <span>{t('editor.markdown')}</span>
-          </Button>
+      <div className={`fixed bottom-[130px] ${user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"} lg:hidden z-40 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}>
+        <Button
+          variant={showPreview ? "default" : "ghost"}
+          size="icon"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setShowPreview(true)}
+          title={t("editor.previewMode")}
+          className="h-10 w-10"
+        >
+          <ViewIcon className="h-5 w-5" />
+        </Button>
 
-          <Button
-            variant={showPreview ? "default" : "ghost"}
-            className="w-1/2"
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setShowPreview(true)}
-            title={t("editor.previewMode")}
-          >
-            <ViewIcon className="h-4 w-4 mr-2" />
-            <span>{t('editor.preview')}</span>
-          </Button>
-        </div>
+        <Button
+          variant={!showPreview ? "default" : "ghost"}
+          size="icon"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setShowPreview(false)}
+          title={t("editor.markdownEditor")}
+          className="h-10 w-10"
+        >
+          <File02Icon className="h-5 w-5" />
+        </Button>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto jotty-scrollable-content max-h-[95vh]">
         {showPreview ? (
           <div
-            className={`px-6 pt-6 pb-12 ${
-              compactMode ? "max-w-[900px] mx-auto" : ""
-            }`}
+            className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
+              }`}
           >
             <UnifiedMarkdownRenderer content={markdownContent} />
           </div>

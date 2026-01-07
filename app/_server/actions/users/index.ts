@@ -366,6 +366,7 @@ export const createUser = async (
       lastLogin: new Date().toISOString(),
       preferredDateFormat: "dd/mm/yyyy",
       preferredTimeFormat: "12-hours",
+      handedness: "right-handed",
     };
 
     const updatedUsers = [...existingUsers, newUser];

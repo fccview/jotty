@@ -9,7 +9,7 @@ import {
   AlertCircleIcon,
   PlayCircleIcon,
 } from "hugeicons-react";
-import { Checklist, User } from "@/app/_types";
+import { Checklist, SanitisedUser } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
@@ -26,7 +26,7 @@ import { useTasksFilter } from "./TasksClient";
 
 interface TasksPageClientProps {
   initialLists: Checklist[];
-  user: User | null;
+  user: SanitisedUser | null;
 }
 
 export const TasksPageClient = ({
@@ -208,7 +208,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.totalTasks}
               </div>
-              <div className="text-xs text-muted-foreground">{t("tasks.taskLists")}</div>
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t("tasks.taskLists")}</div>
             </div>
           </div>
 
@@ -220,7 +220,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.completedTasks}
               </div>
-              <div className="text-xs text-muted-foreground">{t("tasks.completed")}</div>
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t("tasks.completed")}</div>
             </div>
           </div>
 
@@ -232,7 +232,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.completionRate}%
               </div>
-              <div className="text-xs text-muted-foreground">{t("checklists.progress")}</div>
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t("checklists.progress")}</div>
             </div>
           </div>
 
@@ -244,7 +244,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.todoTasks}
               </div>
-              <div className="text-xs text-muted-foreground">{t("tasks.todo")}</div>
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t("tasks.todo")}</div>
             </div>
           </div>
 
@@ -256,7 +256,7 @@ export const TasksPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.inProgressTasks}
               </div>
-              <div className="text-xs text-muted-foreground">{t("tasks.inProgress")}</div>
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t("tasks.inProgress")}</div>
             </div>
           </div>
         </div>

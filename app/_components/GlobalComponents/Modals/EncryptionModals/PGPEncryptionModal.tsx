@@ -372,7 +372,7 @@ export const PGPEncryptionModal = ({
                 onClick={() => setSignNote(!signNote)}
               >
                 <div className="font-medium">{t("encryption.signWithPrivateKey")}</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-md lg:text-sm text-muted-foreground">
                   {t("encryption.proveAuthenticityOfNote")}
                 </div>
               </label>

@@ -181,7 +181,7 @@ const KanbanItemComponent = ({
             )}
 
             {item.recurrence && (
-              <div className="text-xs flex items-center gap-1 capitalize !mt-2 border bg-muted-foreground/5 border-muted-foreground/20 rounded-jotty p-2">
+              <div className="text-md lg:text-sm lg:text-xs flex items-center gap-1 capitalize !mt-2 border bg-muted-foreground/5 border-muted-foreground/20 rounded-jotty p-2">
                 <span className="text-muted-foreground/80">
                   Repeats {getRecurrenceDescription(item.recurrence)}
                 </span>
@@ -206,6 +206,7 @@ const KanbanItemComponent = ({
           </div>
         </div>
       </div>
+      <kanbanItemHook.DeleteModal />
     </>
   );
 };

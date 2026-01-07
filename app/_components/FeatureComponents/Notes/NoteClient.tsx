@@ -100,6 +100,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       onOpenCreateModal={openCreateNoteModal}
       onOpenCategoryModal={openCreateCategoryModal}
       user={user}
+      isEditorInEditMode={viewModel.isEditing}
     >
       <NoteEditor
         note={localNote}
@@ -108,6 +109,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
         onBack={handleBack}
         onClone={handleClone}
       />
+      <viewModel.DeleteModal />
     </Layout>
   );
 };

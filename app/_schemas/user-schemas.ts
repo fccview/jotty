@@ -66,8 +66,11 @@ export const generalSettingsSchema = z.object({
   fileRenameMode: z.enum(["dash-case", "minimal", "none"], {
     message: "File rename mode must be 'dash-case', 'minimal', or 'none'",
   }),
-  preferredDateFormat: z.enum(["dd/mm/yyyy", "mm/dd/yyyy"]),
+  preferredDateFormat: z.enum(["dd/mm/yyyy", "mm/dd/yyyy", "yyyy/mm/dd"]),
   preferredTimeFormat: z.enum(["12-hours", "24-hours"]),
+  handedness: z.enum(["right-handed", "left-handed"], {
+    message: "Handedness must be either 'right-handed' or 'left-handed'",
+  }).optional(),
 });
 
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;

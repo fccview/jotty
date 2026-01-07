@@ -60,7 +60,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
     <ToolbarDropdown trigger={trigger} direction="right">
       <div className="min-w-[200px]">
         <button
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent text-sm border-b border-border"
+          className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent text-md lg:text-sm border-b border-border"
           onClick={insertMermaid}
         >
           <div className="flex items-center justify-center w-8 h-8 rounded">
@@ -68,14 +68,14 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
           </div>
           <div className="flex-1">
             <div className="font-medium">{t('editor.mermaidDiagram')}</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
               {t('editor.mermaidDescription')}
             </div>
           </div>
         </button>
 
         <button
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent text-sm border-b border-border"
+          className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent text-md lg:text-sm border-b border-border"
           onClick={insertDrawio}
         >
           <div className="flex items-center justify-center w-8 h-8 rounded">
@@ -83,7 +83,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
           </div>
           <div className="flex-1">
             <div className="font-medium">{t('editor.drawioDiagram')}</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
               {t('editor.drawioDescription')}
             </div>
           </div>
@@ -98,7 +98,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
           </div>
           <div className="flex-1">
             <div className="font-medium">{t('editor.excalidrawDiagram')}</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
               {t('editor.excalidrawDescription')}
             </div>
           </div>

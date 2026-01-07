@@ -172,7 +172,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   ]);
 
   return (
-    <div className="h-full flex flex-col bg-background overflow-y-auto">
+    <div className="h-full flex flex-col bg-background overflow-y-auto jotty-scrollable-content">
       {permissions?.canEdit && (
         <ChecklistHeading
           key={focusKey}
@@ -193,7 +193,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             variant="outline"
             size="sm"
             onClick={() => setShowStatusModal(true)}
-            className="text-xs"
+            className="text-md lg:text-sm lg:text-xs"
           >
             <Settings01Icon className="h-3 w-3 mr-1" />
             {t('tasks.manageStatuses')}
@@ -203,7 +203,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           variant="outline"
           size="sm"
           onClick={() => setShowArchivedModal(true)}
-          className="text-xs"
+          className="text-md lg:text-sm lg:text-xs"
         >
           <Archive02Icon className="h-3 w-3 mr-1" />
           {t('tasks.viewArchived')}

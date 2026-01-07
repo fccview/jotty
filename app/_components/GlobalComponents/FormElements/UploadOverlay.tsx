@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Orbit01Icon,
   CheckmarkCircle04Icon,
   AlertCircleIcon,
 } from "hugeicons-react";
@@ -50,7 +49,7 @@ export const UploadOverlay = ({
                     : "Upload Complete"}
               </h3>
               {fileName && (
-                <p className="text-sm text-muted-foreground truncate max-w-xs">
+                <p className="text-md lg:text-sm text-muted-foreground truncate max-w-xs">
                   {fileName}
                 </p>
               )}
@@ -59,14 +58,14 @@ export const UploadOverlay = ({
 
           {isUploading && (
             <div className="w-full text-center">
-              <div className="text-sm text-muted-foreground">
+              <div className="text-md lg:text-sm text-muted-foreground">
                 Uploading file...
               </div>
             </div>
           )}
 
           {uploadError && (
-            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-jotty w-full text-center">
+            <div className="text-md lg:text-sm text-destructive bg-destructive/10 p-3 rounded-jotty w-full text-center">
               {uploadError}
             </div>
           )}

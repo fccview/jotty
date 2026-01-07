@@ -16,6 +16,7 @@ import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 const ResponsiveNetwork = dynamic(
   () => import("@nivo/network").then((mod) => mod.ResponsiveNetwork),
@@ -103,6 +104,7 @@ interface NetworkLink {
 export const LinksTab = ({ linkIndex }: LinksTabProps) => {
   const t = useTranslations();
   const { notes, checklists } = useAppMode();
+  const { showToast } = useToast();
   const [hoveredNode, setHoveredNode] = useState<any>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [rebuildingIndex, setRebuildingIndex] = useState(false);
@@ -123,11 +125,19 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
     try {
       const username = await getUsername();
       await rebuildLinkIndex(username);
-      alert(t('profile.successfullyRebuiltIndexReload'));
+      showToast({
+        type: "success",
+        title: t('common.success'),
+        message: t('profile.successfullyRebuiltIndexReload'),
+      });
       window.location.reload();
     } catch (error) {
       console.error("Failed to rebuild index:", error);
-      alert(t('profile.failedToRebuildIndex'));
+      showToast({
+        type: "error",
+        title: t('common.error'),
+        message: t('profile.failedToRebuildIndex'),
+      });
     } finally {
       setRebuildingIndex(false);
     }
@@ -272,7 +282,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalNodes}
                 </div>
-                <div className="text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
+                <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
               </div>
             </div>
 
@@ -284,7 +294,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalLinks}
                 </div>
-                <div className="text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
+                <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
               </div>
             </div>
 
@@ -299,7 +309,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                       .length
                   }
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                   {t('profile.connectedItems')}
                 </div>
               </div>
@@ -349,7 +359,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalNodes}
               </div>
-              <div className="text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
             </div>
           </div>
 
@@ -361,7 +371,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalLinks}
               </div>
-              <div className="text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
             </div>
           </div>
 
@@ -373,7 +383,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {networkData.nodes.filter((n) => n.connectionCount > 0).length}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                 {t('profile.connectedItems')}
               </div>
             </div>
@@ -450,7 +460,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
               <div className="font-semibold text-sm">
                 {hoveredNode.data.label}
               </div>
-              <div className="text-xs text-muted-foreground capitalize mt-1">
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground capitalize mt-1">
                 {hoveredNode.data.type} • {hoveredNode.data.connectionCount}{" "}
                 {t('profile.connection', { count: hoveredNode.data.connectionCount })}
                 {hoveredNode.data.connectionCount >= 5
@@ -461,7 +471,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                       ? ` (${t('profile.isolated')})`
                       : ""}
               </div>
-              <div className="text-xs text-muted-foreground mt-1 font-mono line-clamp-1">
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1 font-mono line-clamp-1">
                 {hoveredNode.data.id}
               </div>
             </div>

@@ -175,10 +175,10 @@ export const VideoAttachment = ({
 
           <span className="block p-3 bg-muted/30">
             <span className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground truncate">
+              <span className="text-md lg:text-sm font-medium text-foreground truncate">
                 {displayName}
               </span>
-              <span className="text-xs text-muted-foreground">Video</span>
+              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">Video</span>
             </span>
           </span>
         </span>

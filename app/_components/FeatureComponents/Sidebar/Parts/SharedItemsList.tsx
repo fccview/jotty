@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ArrowDown01Icon,
   ArrowRight01Icon,
@@ -23,8 +23,9 @@ interface SharedItemsListProps {
 }
 
 interface SharedItemEntry {
+  uuid?: string;
   id: string;
-  category: string;
+  category?: string;
   sharer: string;
 }
 
@@ -36,7 +37,7 @@ export const SharedItemsList = ({
   mode,
 }: SharedItemsListProps) => {
   const [collapsedUsers, setCollapsedUsers] = useState<Set<string>>(new Set());
-  const { userSharedItems, appSettings } = useAppMode();
+  const { userSharedItems, appSettings, checklists, notes } = useAppMode();
 
   if (!userSharedItems) {
     return null;
@@ -48,6 +49,8 @@ export const SharedItemsList = ({
   if (modeItems.length === 0) {
     return null;
   }
+
+  const fullItems = mode === "checklists" ? checklists : notes;
 
   const groupedBySharer = modeItems.reduce((acc, item) => {
     const sharer = item.sharer || "Unknown";
@@ -78,7 +81,7 @@ export const SharedItemsList = ({
         <button
           onClick={onToggleCollapsed}
           className={cn(
-            "flex items-center gap-2 py-2 pr-2 text-sm rounded-jotty transition-colors w-full text-left",
+            "flex items-center gap-2 py-2 pr-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
             "hover:bg-muted/50 cursor-pointer"
           )}
         >
@@ -91,7 +94,7 @@ export const SharedItemsList = ({
           <span className="truncate font-medium text-primary">
             Shared with you
           </span>
-          <span className="text-xs text-muted-foreground ml-auto">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
             {modeItems.length}
           </span>
         </button>
@@ -107,7 +110,7 @@ export const SharedItemsList = ({
                 <button
                   onClick={() => toggleUserCollapsed(sharer)}
                   className={cn(
-                    "flex items-center gap-2 py-2 pr-2 text-sm rounded-jotty transition-colors w-full text-left",
+                    "flex items-center gap-2 py-2 pr-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
                     "hover:bg-muted/50 cursor-pointer"
                   )}
                 >
@@ -120,29 +123,31 @@ export const SharedItemsList = ({
                   <span className="truncate font-medium text-foreground">
                     {sharer}
                   </span>
-                  <span className="text-xs text-muted-foreground ml-auto">
+                  <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
                     {sharerItems.length}
                   </span>
                 </button>
 
                 {!isUserCollapsed && (
                   <div className="ml-6 space-y-1">
-                    {sharerItems.map((item) => {
-                      const minimalItem = {
-                        id: item.id,
-                        category: item.category,
-                        title: item.id,
-                      } as any;
+                    {sharerItems.map((sharedItem) => {
+                      const fullItem = fullItems.find(
+                        (item) =>
+                          (item.uuid === sharedItem.uuid || item.id === sharedItem.id) &&
+                          item.isShared
+                      ) as (Checklist | Note) | undefined;
 
-                      const isSelected = isItemSelected(minimalItem);
+                      if (!fullItem || !fullItem.id || !fullItem.title) return null;
+
+                      const isSelected = isItemSelected(fullItem);
 
                       return (
                         <button
-                          key={`${item.id}-${item.category}`}
-                          onClick={() => onItemClick(minimalItem)}
+                          key={`${sharedItem.id}-${sharedItem.category}`}
+                          onClick={() => onItemClick(fullItem)}
                           data-sidebar-item-selected={isSelected}
                           className={cn(
-                            "flex items-center gap-2 py-2 px-3 text-sm rounded-jotty transition-colors w-full text-left",
+                            "flex items-center gap-2 py-2 px-3 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
                             isSelected
                               ? "bg-primary/60 text-primary-foreground"
                               : "hover:bg-muted/50 text-foreground"
@@ -155,8 +160,8 @@ export const SharedItemsList = ({
                           )}
                           <span className="truncate flex-1">
                             {appSettings?.parseContent === "yes"
-                              ? item.id
-                              : capitalize(item.id.replace(/-/g, " "))}
+                              ? fullItem.title
+                              : capitalize(fullItem.title.replace(/-/g, " "))}
                           </span>
                         </button>
                       );

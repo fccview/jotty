@@ -27,7 +27,7 @@ export const SidebarActions = ({
             onOpenCreateModal();
           }}
           size="sm"
-          className="flex-1"
+          className="flex-1 h-14 rounded-jotty text-md lg:text-sm px-8 lg:h-9 lg:rounded-jotty lg:px-3"
         >
           <Add01Icon className="h-4 w-4 mr-2" />
           {mode === Modes.CHECKLISTS ? t("checklists.newChecklist") : t("notes.newNote")}
@@ -39,6 +39,7 @@ export const SidebarActions = ({
           }}
           variant="outline"
           size="sm"
+          className="h-14 rounded-jotty px-8 lg:h-9 lg:rounded-jotty lg:px-3 text-md lg:text-sm"
         >
           <FolderAddIcon className="h-4 w-4" />
         </Button>

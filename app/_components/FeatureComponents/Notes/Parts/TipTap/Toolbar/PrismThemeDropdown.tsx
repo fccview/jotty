@@ -85,13 +85,13 @@ export const PrismThemeDropdown = ({ isMarkdownMode }: PrismThemeDropdownProps) 
                 {themeOptions(t).map((theme) => (
                     <button
                         key={theme.id}
-                        className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent text-sm ${currentTheme === theme.id ? "bg-accent" : ""
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm ${currentTheme === theme.id ? "bg-accent" : ""
                             }`}
                         onClick={() => handleThemeChange(theme.id)}
                     >
                         <span>{theme.name}</span>
                         {currentTheme === theme.id && (
-                            <span className="ml-auto text-xs text-muted-foreground">✓</span>
+                            <span className="ml-auto text-sm lg:text-xs text-muted-foreground">✓</span>
                         )}
                     </button>
                 ))}

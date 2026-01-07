@@ -1,14 +1,13 @@
 "use client";
 
 import { cn } from "@/app/_utils/global-utils";
-import { DynamicLogo } from "@/app/_components/GlobalComponents/Layout/Logo/DynamicLogo";
-import { AppName } from "@/app/_components/GlobalComponents/Layout/AppName";
+import { SidebarWrapper } from "@/app/_components/GlobalComponents/Sidebar/SidebarWrapper";
+import { SidebarItem } from "@/app/_components/GlobalComponents/Sidebar/SidebarItem";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useSettingsSidebar } from "@/app/_hooks/useSettingsSidebar";
 import {
     UserIcon,
     Tv02Icon,
@@ -22,7 +21,6 @@ import {
     Globe02Icon,
     BookEditIcon,
     PaintBrush04Icon,
-    FileScriptIcon,
     ArrowDown01Icon,
     ArrowRight01Icon,
     AppleReminderIcon,
@@ -53,8 +51,7 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
     const pathname = usePathname();
     const router = useRouter();
     const { checkNavigation } = useNavigationGuard();
-    const { isDemoMode, isRwMarkable, appSettings, user } = useAppMode();
-    const { sidebarWidth, isResizing, startResizing } = useSettingsSidebar();
+    const { appSettings, user } = useAppMode();
 
     const [profileCollapsed, setProfileCollapsed] = useState(false);
     const [adminCollapsed, setAdminCollapsed] = useState(false);
@@ -206,108 +203,41 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
     };
 
     return (
-        <>
-            <div
-                className={cn(
-                    "jotty-sidebar-overlay fixed inset-0 z-40 bg-black/50 lg:hidden",
-                    isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-                )}
-                onClick={onClose}
-            />
-            <aside
-                style={
-                    {
-                        "--sidebar-desktop-width": `${sidebarWidth}px`,
-                        transition: isResizing ? "none" : undefined,
-                    } as React.CSSProperties
-                }
-                className={cn(
-                    "jotty-sidebar fixed left-0 top-0 z-50 h-full bg-background border-r border-border flex flex-col lg:static",
-                    "transition-transform duration-300 ease-in-out",
-                    "w-[80vw]",
-                    "lg:w-[var(--sidebar-desktop-width)] lg:min-w-[var(--sidebar-desktop-width)] lg:max-w-[var(--sidebar-desktop-width)]",
-                    isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-                    "flex-none"
-                )}
-            >
-                <div
-                    className="jotty-sidebar-resize-handle absolute top-0 right-0 w-2 h-full cursor-ew-resize hidden lg:block hover:bg-primary/10"
-                    onMouseDown={startResizing}
-                />
+        <SidebarWrapper
+            isOpen={isOpen}
+            onClose={onClose}
+            title={t("common.settings")}
+        >
+            {sections.map((section) => {
+                const isCollapsed = section.id === "profile" ? profileCollapsed : adminCollapsed;
+                const ChevronIcon = isCollapsed ? ArrowRight01Icon : ArrowDown01Icon;
 
-                <div className="jotty-sidebar-content flex flex-col h-full">
-                    <div className="jotty-sidebar-header p-6 border-b border-border">
-                        <div className="flex items-center justify-between">
-                            <a href="/" className="flex items-center gap-3">
-                                <DynamicLogo className="h-8 w-8" size="32x32" />
-                                <div className="flex items-center gap-2">
-                                    <AppName
-                                        className="text-xl font-bold text-foreground jotty-app-name"
-                                        fallback={isRwMarkable ? "rwMarkable" : "jotty·page"}
+                return (
+                    <div key={section.id} className="space-y-1">
+                        <button
+                            onClick={() => toggleSection(section.id)}
+                            className="w-full flex items-center justify-between px-3 py-2 text-md lg:text-sm font-semibold text-foreground hover:bg-accent rounded-jotty transition-colors"
+                        >
+                            <span>{section.label}</span>
+                            <ChevronIcon className="h-4 w-4 text-muted-foreground" />
+                        </button>
+
+                        {!isCollapsed && (
+                            <div className="space-y-0.5 pl-2">
+                                {section.items.map((item) => (
+                                    <SidebarItem
+                                        key={item.id}
+                                        icon={item.icon}
+                                        label={item.label}
+                                        isActive={isItemActive(item.path)}
+                                        onClick={() => handleNavigate(item.path)}
                                     />
-                                    {isDemoMode && (
-                                        <span className="text-sm text-muted-foreground font-medium">
-                                            (demo)
-                                        </span>
-                                    )}
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-4">
-                        <div className="px-2 pt-2">
-                            <div className="flex items-center justify-between">
-                                <h3 className="jotty-sidebar-categories-title text-xs font-bold uppercase text-muted-foreground tracking-wider">
-                                    {t("common.settings")}
-                                </h3>
+                                ))}
                             </div>
-                        </div>
-
-                        {sections.map((section) => {
-                            const isCollapsed = section.id === "profile" ? profileCollapsed : adminCollapsed;
-                            const ChevronIcon = isCollapsed ? ArrowRight01Icon : ArrowDown01Icon;
-
-                            return (
-                                <div key={section.id} className="space-y-1">
-                                    <button
-                                        onClick={() => toggleSection(section.id)}
-                                        className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent rounded-jotty transition-colors"
-                                    >
-                                        <span>{section.label}</span>
-                                        <ChevronIcon className="h-4 w-4 text-muted-foreground" />
-                                    </button>
-
-                                    {!isCollapsed && (
-                                        <div className="space-y-0.5 pl-2">
-                                            {section.items.map((item) => {
-                                                const Icon = item.icon;
-                                                const isActive = isItemActive(item.path);
-
-                                                return (
-                                                    <button
-                                                        key={item.id}
-                                                        onClick={() => handleNavigate(item.path)}
-                                                        className={cn(
-                                                            "w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-jotty transition-colors",
-                                                            isActive
-                                                                ? "bg-primary text-primary-foreground font-medium"
-                                                                : "text-foreground hover:bg-accent"
-                                                        )}
-                                                    >
-                                                        <Icon className="h-4 w-4 flex-shrink-0" />
-                                                        <span className="truncate text-left">{item.label}</span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
+                        )}
                     </div>
-                </div>
-            </aside>
-        </>
+                );
+            })}
+        </SidebarWrapper>
     );
 };

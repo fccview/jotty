@@ -90,7 +90,7 @@ export const SearchResults = ({
                 </p>
               )}
 
-              <div className="mt-2 flex items-center gap-2 text-sm md:mt-1 md:text-xs">
+              <div className="mt-2 flex items-center gap-2 text-md lg:text-sm md:mt-1 md:text-xs">
                 <span className="capitalize">{result.type}</span>
                 {result.category && (
                   <>

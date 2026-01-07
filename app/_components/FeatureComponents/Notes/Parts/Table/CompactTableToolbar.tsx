@@ -126,7 +126,7 @@ export const CompactTableToolbar = ({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center gap-1">
-        <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 px-2 py-1 bg-muted/50 rounded text-sm lg:text-xs text-muted-foreground">
           <span>{t('editor.table')}</span>
         </div>
 

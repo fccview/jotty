@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { QuickNav } from "@/app/_components/FeatureComponents/Header/QuickNav";
 import { Sidebar } from "@/app/_components/FeatureComponents/Sidebar/Sidebar";
 import { SettingsSidebar } from "@/app/_components/FeatureComponents/Sidebar/SettingsSidebar";
-import { Category, User, SanitisedUser } from "@/app/_types";
+import { Category, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMobileGestures } from "@/app/_hooks/useMobileGestures";
 import { isMobileDevice } from "@/app/_utils/global-utils";
@@ -21,6 +21,7 @@ interface LayoutProps {
   children: React.ReactNode;
   user: SanitisedUser | null;
   customSidebar?: (props: { isOpen: boolean; onClose: () => void }) => React.ReactNode;
+  isEditorInEditMode?: boolean;
 }
 
 export const Layout = ({
@@ -33,8 +34,11 @@ export const Layout = ({
   user,
   children,
   customSidebar,
+  isEditorInEditMode = false,
 }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(true);
+  const lastScrollY = useRef(0);
   const { setMode, isInitialized } = useAppMode();
   const pathname = usePathname();
 
@@ -54,7 +58,7 @@ export const Layout = ({
   }
 
   return (
-    <div className="jotty-layout flex h-screen bg-background w-full overflow-hidden relative pb-16 lg:pb-0">
+    <div className="jotty-layout flex h-screen lg:bg-background w-full overflow-hidden transition-[margin-top] duration-300 ease-in-out relative">
       {customSidebar ? (
         customSidebar({ isOpen: sidebarOpen, onClose: () => setSidebarOpen(false) })
       ) : isSettingsPage ? (
@@ -85,6 +89,7 @@ export const Layout = ({
           user={user}
           currentLocale={user?.preferredLocale || "en"}
           onModeChange={setMode}
+          isEditorInEditMode={isEditorInEditMode}
         />
 
         <div className="jotty-layout-content flex-1 overflow-hidden">

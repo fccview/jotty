@@ -34,7 +34,7 @@ export const ReferencedBySection = ({
     <div className="mt-8 space-y-4">
       <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
         <span>{t("notes.referencedBy")}</span>
-        <span className="text-sm text-muted-foreground font-normal">
+        <span className="text-md lg:text-sm text-muted-foreground font-normal">
           ({referencingItems.length})
         </span>
       </h3>
@@ -55,18 +55,18 @@ export const ReferencedBySection = ({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                <span className="text-md lg:text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                   {item.title}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground capitalize">
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground capitalize">
                   {item.type}
                 </span>
                 {item.category && item.category !== "Uncategorized" && (
                   <>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                    <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">•</span>
+                    <span className="text-md lg:text-sm lg:text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
                       {item.category.split("/").pop()}
                     </span>
                   </>

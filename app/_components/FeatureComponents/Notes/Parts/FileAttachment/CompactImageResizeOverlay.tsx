@@ -148,7 +148,7 @@ export const CompactImageResizeOverlay = ({
             value={width}
             onChange={(e) => handleWidthChange(e.target.value)}
             placeholder={t("common.auto")}
-            className="text-xs"
+            className="text-md lg:text-sm lg:text-xs"
           />
           <Input
             id="height"
@@ -158,7 +158,7 @@ export const CompactImageResizeOverlay = ({
             value={height}
             onChange={(e) => handleHeightChange(e.target.value)}
             placeholder={t("common.auto")}
-            className="text-xs"
+            className="text-md lg:text-sm lg:text-xs"
           />
         </div>
 
@@ -167,9 +167,9 @@ export const CompactImageResizeOverlay = ({
             variant="outline"
             size="sm"
             onClick={onClose}
-            className="text-xs"
+            className="text-md lg:text-sm lg:text-xs"
           >{t('common.cancel')}</Button>
-          <Button size="sm" onClick={handleApply} className="text-xs">{t('common.apply')}</Button>
+          <Button size="sm" onClick={handleApply} className="text-md lg:text-sm lg:text-xs">{t('common.apply')}</Button>
         </div>
       </div>
     </div>

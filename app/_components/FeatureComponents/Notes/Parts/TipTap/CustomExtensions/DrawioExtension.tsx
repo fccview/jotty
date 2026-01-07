@@ -6,6 +6,7 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 export const DrawioNodeView = ({
   node,
@@ -16,6 +17,7 @@ export const DrawioNodeView = ({
 }: any) => {
   const t = useTranslations();
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const themeMode = node.attrs.themeMode || "light";
 
@@ -129,9 +131,12 @@ export const DrawioNodeView = ({
   };
 
   const handleDelete = () => {
-    if (confirm(t('common.confirmDeleteItem', { itemTitle: t('editor.drawioDiagram') }))) {
-      deleteNode();
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    deleteNode();
+    setShowDeleteModal(false);
   };
 
   const toggleTheme = () => {
@@ -167,7 +172,7 @@ export const DrawioNodeView = ({
             <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 flex gap-1 z-10">
               <button
                 onClick={toggleTheme}
-                className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
+                className="px-2 py-1 bg-muted text-foreground rounded text-sm lg:text-xs hover:bg-muted/80"
                 title={`Switch to ${
                   themeMode === "light" ? "dark" : "light"
                 } mode`}
@@ -180,12 +185,12 @@ export const DrawioNodeView = ({
               </button>
               <button
                 onClick={openDrawio}
-                className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
+                className="px-2 py-1 bg-muted text-foreground rounded text-sm lg:text-xs hover:bg-muted/80"
                 title={t("editor.editDiagram")}
               >{t('common.edit')}</button>
               <button
                 onClick={handleDelete}
-                className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-xs hover:bg-destructive/90"
+                className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-sm lg:text-xs hover:bg-destructive/90"
                 title={t("editor.deleteDiagram")}
               >{t('common.delete')}</button>
             </div>
@@ -215,6 +220,15 @@ export const DrawioNodeView = ({
           </div>
         )}
       </div>
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: t('editor.drawioDiagram') })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
     </NodeViewWrapper>
   );
 };

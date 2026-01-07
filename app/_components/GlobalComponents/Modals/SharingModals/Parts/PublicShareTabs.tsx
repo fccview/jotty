@@ -9,6 +9,7 @@ import {
 import { Copy01Icon } from "hugeicons-react";
 import { Logo } from "../../../Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 interface PublicShareTabProps {
   isLoading: boolean;
@@ -28,6 +29,8 @@ export const PublicShareTab = ({
   itemTitle,
 }: PublicShareTabProps) => {
   const t = useTranslations();
+  const { showToast } = useToast();
+
   const handleCopyUrl = async () => {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -51,7 +54,11 @@ export const PublicShareTab = ({
       }
     } catch (error) {
       console.error("Failed to copy URL:", error);
-      alert(t("sharing.failedToCopyUrl"));
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: t("sharing.failedToCopyUrl"),
+      });
     }
   };
   const socialButtons = [
@@ -111,7 +118,7 @@ export const PublicShareTab = ({
     <div className="space-y-4">
       <div className="p-4 bg-muted/30 rounded-jotty border border-border">
         <h4 className="font-medium">{t('sharing.publicAccess')}</h4>
-        <p className="text-sm text-muted-foreground mb-3">
+        <p className="text-md lg:text-sm text-muted-foreground mb-3">
           {t("sharing.makeItemAccessible", { itemType })}
         </p>
         <Button
@@ -139,7 +146,7 @@ export const PublicShareTab = ({
               type="text"
               value={publicUrl}
               readOnly
-              className="flex-1 px-3 py-2 bg-background border rounded-jotty text-sm font-mono"
+              className="flex-1 px-3 py-2 bg-background border rounded-jotty text-md lg:text-sm font-mono"
             />
             <Button
               onClick={handleCopyUrl}

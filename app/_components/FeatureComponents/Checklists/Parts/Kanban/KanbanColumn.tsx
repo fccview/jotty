@@ -83,9 +83,9 @@ const KanbanColumnComponent = ({
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: color }}
           />
-          <h3 className="font-medium text-sm text-foreground">{title}</h3>
+          <h3 className="font-medium text-md lg:text-sm text-foreground">{title}</h3>
         </div>
-        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+        <span className="text-md lg:text-sm lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
           {items.length}
         </span>
       </div>
@@ -119,7 +119,7 @@ const KanbanColumnComponent = ({
               />
             ))}
             {items.length === 0 && (
-              <div className="text-center text-muted-foreground text-sm py-8">
+              <div className="text-center text-muted-foreground text-md lg:text-sm py-8">
                 {t('checklists.noTasks')}
               </div>
             )}

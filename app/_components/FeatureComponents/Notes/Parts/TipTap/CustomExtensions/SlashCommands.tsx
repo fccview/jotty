@@ -119,42 +119,17 @@ const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
     },
   },
   {
-    title: t("editor.file"),
-    description: t("editor.attachFile"),
-    icon: <Attachment01Icon className="h-4 w-4" />,
-    command: ({ editor, range }) => {
-      editor.chain().focus().deleteRange(range).run();
-      const url = window.prompt("File URL");
-      const fileName = window.prompt("File name") || t("editor.defaultFileName");
-      if (url) {
-        editor
-          .chain()
-          .focus()
-          .setFileAttachment({
-            url,
-            fileName,
-            mimeType: "application/octet-stream",
-            type: "file",
-          })
-          .run();
-      }
-    },
-  },
-  {
     title: t("editor.collapsible"),
     description: t("editor.createCollapsibleSection"),
     icon: <SquareArrowDown02Icon className="h-4 w-4" />,
     command: ({ editor, range }) => {
-      const selectedText = editor.state.doc.textBetween(
-        range.from,
-        range.to,
-        " "
-      );
+      const { from, to, empty } = editor.state.selection;
+      const selectedText = editor.state.doc.textBetween(from, to, " ");
       editor
         .chain()
         .focus()
         .deleteRange(range)
-        .toggleWrap("details", { summary: selectedText || "Summary" })
+        .toggleWrap("details", { summary: !empty ? selectedText : undefined })
         .run();
     },
   },

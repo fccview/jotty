@@ -204,7 +204,7 @@ export const ExportContent = ({ users }: ExportContentProps) => {
       {exporting && (
         <div className="space-y-2">
           <ProgressBar progress={progress.progress} />
-          <p className="text-sm text-muted-foreground font-medium text-center">
+          <p className="text-md lg:text-sm text-muted-foreground font-medium text-center">
             {progress.message}
           </p>
         </div>

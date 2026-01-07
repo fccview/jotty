@@ -61,7 +61,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 {note.title}
               </h1>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-md lg:text-sm text-muted-foreground mt-2">
                 <div className="flex items-center gap-1">
                   <span>by {user?.username}</span>
                 </div>
@@ -86,7 +86,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
                 </div>
               </div>
               <h3 className="text-xl font-semibold">{t("encryption.thisNoteIsEncrypted")}</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 This note is protected with {detectEncryptionMethod(note.content) === "pgp" ? "PGP" : "XChaCha20-Poly1305"} encryption.
               </p>
               <div className="flex items-center justify-center gap-3 pt-4">
@@ -133,7 +133,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
         })()}
 
         <div className="mt-12 pt-8 border-t border-border text-center no-print">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             This note is shared publicly by {note.owner}
           </p>
         </div>

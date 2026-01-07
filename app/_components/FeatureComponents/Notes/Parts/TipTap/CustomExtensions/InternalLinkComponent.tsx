@@ -258,23 +258,23 @@ export const InternalLinkComponent = ({
           <File02Icon className="h-5 w-5" />
         )}
       </span>
-      <span className="text-sm font-medium text-foreground">
+      <span className="text-md lg:text-sm font-medium text-foreground">
         {appSettings?.parseContent === "yes"
           ? title
           : capitalize(title.replace(/-/g, " "))}
       </span>
       ·
-      <span className="text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-jotty">
+      <span className="text-md lg:text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-jotty">
         {fullItem?.category ||
           decodeCategoryPath(potentialCategory) ||
           "not-found"}
       </span>
       {isEditable && (isPathBasedLink || canToggle) && (
         <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-border">
-          <span className="text-xs text-muted-foreground">{t('editor.linkType')}</span>
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('editor.linkType')}</span>
           <button
             onClick={handleToggleConversion}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-sm lg:text-xs font-medium transition-all ${
               isJottyLink
                 ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
                 : convertToBidirectional

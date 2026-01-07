@@ -17,6 +17,7 @@ import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -30,6 +31,7 @@ export const AdminContent = ({
   users,
 }: AdminContentProps) => {
   const t = useTranslations();
+  const { showToast } = useToast();
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
   const [rebuildingIndex, setRebuildingIndex] = useState<string | null>(null);
 
@@ -102,10 +104,18 @@ export const AdminContent = ({
     setRebuildingIndex(username);
     try {
       await rebuildLinkIndex(username);
-      alert(t('admin.successfullyRebuiltIndex', { username }));
+      showToast({
+        type: "success",
+        title: t('common.success'),
+        message: t('admin.successfullyRebuiltIndex', { username }),
+      });
     } catch (error) {
       console.error("Failed to rebuild index:", error);
-      alert(`${t('admin.failedToRebuildIndex', { username })}`);
+      showToast({
+        type: "error",
+        title: t('common.error'),
+        message: t('admin.failedToRebuildIndex', { username }),
+      });
     } finally {
       setRebuildingIndex(null);
     }
@@ -119,12 +129,12 @@ export const AdminContent = ({
 
       <div className="md:flex items-center justify-between">
         <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-md lg:text-sm text-muted-foreground">
             {t('admin.totalItems', { items: allLists.length + allDocs.length, userCount: users.length })}
           </span>
           <button
             onClick={toggleAll}
-            className="text-sm text-primary hover:text-primary/80 font-medium"
+            className="text-md lg:text-sm text-primary hover:text-primary/80 font-medium"
           >
             {isAllExpanded ? t('common.collapseAll') : t('common.expandAll')}
           </button>
@@ -162,7 +172,7 @@ export const AdminContent = ({
                         <ShieldUserIcon className="h-4 w-4 text-primary" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-md lg:text-sm text-muted-foreground">
                       {t('admin.userContent', { checklistsLength: checklists.length, notesLength: notes.length })}
                     </p>
                   </div>
@@ -183,7 +193,7 @@ export const AdminContent = ({
                       : t('admin.rebuildIndexes')}
                   </Button>
                   {hasContent && (
-                    <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+                    <span className="text-md lg:text-sm lg:text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                       {t('common.itemCount', { count: totalItems })}
                     </span>
                   )}

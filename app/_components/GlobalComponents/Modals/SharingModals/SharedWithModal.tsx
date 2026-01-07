@@ -28,7 +28,7 @@ export const SharedWithModal = ({
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <UserAvatar size="sm" username={username} />
                 <div className="min-w-0 flex items-center gap-2">
-                  <div className="text-sm font-medium truncate">{username}</div>
+                  <div className="text-md lg:text-sm font-medium truncate">{username}</div>
                 </div>
               </div>
             </div>

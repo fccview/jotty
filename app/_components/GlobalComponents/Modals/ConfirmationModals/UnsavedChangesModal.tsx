@@ -27,15 +27,15 @@ export const UnsavedChangesModal = ({
     <Modal isOpen={isOpen} onClose={onClose} title={t("common.unsavedChanges")}>
       <div className="space-y-4">
         <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-jotty">
-          <h3 className="text-sm font-medium text-destructive mb-2">
+          <h3 className="text-md lg:text-sm font-medium text-destructive mb-2">
             {t("common.unsavedChangesDetected")}
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t("common.unsavedChangesMessage", { noteTitle: displayTitle })}
           </p>
         </div>
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-md lg:text-sm text-muted-foreground">
           {t("common.whatToDoWithUnsavedChanges")}
         </p>
       </div>

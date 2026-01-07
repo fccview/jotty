@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Add01Icon, TaskAdd01Icon, RefreshIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { RecurrenceRule, Checklist, Item } from "@/app/_types";
-import { isMobileDevice } from "@/app/_utils/global-utils";
+import { handleScroll, isMobileDevice } from "@/app/_utils/global-utils";
 import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
@@ -39,6 +39,8 @@ export const ChecklistHeading = ({
   const [newItemText, setNewItemText] = useState("");
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(true);
+  const lastScrollY = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const { user } = useAppMode();
@@ -141,10 +143,22 @@ export const ChecklistHeading = ({
     }
   }, [showSuggestions]);
 
+  useEffect(() => {
+    const handleGlobalScroll = (e: Event) => {
+      handleScroll(e, 'jotty-scrollable-content', setIsScrolled, lastScrollY);
+    };
+
+    window.addEventListener('scroll', handleGlobalScroll, true);
+
+    return () => {
+      window.removeEventListener('scroll', handleGlobalScroll, true);
+    };
+  }, []);
+
   return (
     <>
       <div className="lg:p-6 lg:border-b border-border bg-gradient-to-r from-background to-muted/20">
-        <div className="fixed bottom-[64px] left-0 right-0 lg:relative lg:bottom-auto lg:left-auto lg:right-auto bg-background border-t lg:border-t-0 border-border p-4 lg:p-0 z-20 lg:z-auto items-center">
+        <div className={`fixed ${isScrolled ? "bottom-[120px]" : "bottom-10"} transition-all duration-200 ease-in-out left-0 right-0 lg:relative lg:bottom-auto lg:left-auto lg:right-auto bg-background w-full max-w-[95%] border rounded-jotty lg:border-0 lg:max-w-full left-[2.5%] lg:left-auto border-border p-2 lg:p-0 z-20 lg:z-auto items-center`}>
           <form
             onSubmit={handleSubmit}
             className="flex gap-3 lg:flex-row lg:items-center"
@@ -195,8 +209,8 @@ export const ChecklistHeading = ({
                   size="lg"
                   disabled={isLoading || !newItemText.trim()}
                   className={`px-4 lg:px-6 shadow-sm ${user?.enableRecurrence === "enable"
-                      ? "rounded-tr-none rounded-br-none"
-                      : ""
+                    ? "rounded-tr-none rounded-br-none"
+                    : ""
                     }`}
                 >
                   <Add01Icon className="h-4 w-4 lg:mr-2" />

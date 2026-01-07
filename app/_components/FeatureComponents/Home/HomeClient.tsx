@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ChecklistHome } from "@/app/_components/FeatureComponents/Home/Parts/ChecklistHome";
 import { NotesHome } from "@/app/_components/FeatureComponents/Home/Parts/NotesHome";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
-import { Checklist, Category, Note, User } from "@/app/_types";
+import { Checklist, Category, Note, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { Modes } from "@/app/_types/enums";
@@ -22,7 +22,7 @@ interface HomeClientProps {
   initialCategories: Category[];
   initialDocs: Note[];
   initialDocsCategories: Category[];
-  user: User | null;
+  user: SanitisedUser | null;
 }
 
 export const HomeClient = ({

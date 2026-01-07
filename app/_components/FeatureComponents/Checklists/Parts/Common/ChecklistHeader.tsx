@@ -62,7 +62,7 @@ export const ChecklistHeader = ({
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
 
   const encodedCategory = encodeCategoryPath(metadata.category);
-  const itemDetails = sharingInfo(globalSharing, metadata.id, encodedCategory);
+  const itemDetails = sharingInfo(globalSharing, metadata.uuid || metadata.id, encodedCategory);
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
 
   const sharedWith = itemDetails.sharedWith;

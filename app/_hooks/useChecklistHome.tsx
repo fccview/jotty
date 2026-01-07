@@ -12,7 +12,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Checklist, User } from "@/app/_types";
+import { Checklist, SanitisedUser } from "@/app/_types";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { useHomeFilter } from "@/app/_utils/home-filter-store";
@@ -22,7 +22,7 @@ import { useTranslations } from 'next-intl';
 
 interface UseChecklistHomeProps {
   lists: Checklist[];
-  user: User | null;
+  user: SanitisedUser | null;
 }
 
 export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {

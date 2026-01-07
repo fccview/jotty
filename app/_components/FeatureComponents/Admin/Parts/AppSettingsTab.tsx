@@ -141,10 +141,10 @@ export const AppSettingsTab = () => {
         <div className="bg-muted border border-border rounded-jotty p-4 flex items-start gap-3">
           <AlertCircleIcon className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">
+            <p className="text-md lg:text-sm font-medium text-foreground">
               {t("admin.superAdminOnly")}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
               {t("admin.viewOnlySettingsNotice")}
             </p>
           </div>
@@ -177,7 +177,7 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
             {t("admin.thisUsesGithubAPI")}
           </span>
         </div>
@@ -194,7 +194,7 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
             {t("admin.parseContentEnabledDescription")} <br />
             {t("admin.parseContentDisabledDescription")}
             <br />
@@ -218,7 +218,7 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
             {t("admin.hideLanguageSelectorDescription")}
           </span>
         </div>
@@ -228,7 +228,7 @@ export const AppSettingsTab = () => {
               {t("admin.adminContentAccess")}
             </Label>
             {!isSuperAdmin && (
-              <span className="text-xs text-muted-foreground italic">
+              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground italic">
                 ({t("admin.superAdminOnly")})
               </span>
             )}
@@ -242,7 +242,7 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
             {t("admin.adminContentAccessDescription")}
           </span>
         </div>
@@ -313,7 +313,7 @@ export const AppSettingsTab = () => {
             disabled={isSaving || !hasChanges || !isSuperAdmin}
           >{t('common.reset')}</Button>
           {hasChanges && isSuperAdmin && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t("admin.unsavedChanges")}
             </p>
           )}

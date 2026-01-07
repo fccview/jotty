@@ -160,7 +160,7 @@ export const ColorPicker = ({
             <button
               key={color.value}
               className={cn(
-                "flex items-center justify-center h-8 rounded border text-xs font-medium transition-colors",
+                "flex items-center justify-center h-8 rounded border text-sm lg:text-xs font-medium transition-colors",
                 color.value === ""
                   ? "border-border bg-background text-foreground"
                   : "border-transparent text-white",
@@ -204,7 +204,7 @@ export const ColorPicker = ({
               size="sm"
               onClick={handleCustomColorSubmit}
               disabled={!customColor}
-              className="text-xs"
+              className="text-md lg:text-sm lg:text-xs"
             >{t('common.apply')}</Button>
           </div>
         </div>

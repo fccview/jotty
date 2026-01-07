@@ -38,7 +38,7 @@ export const PublicChecklistView = ({
         </main>
 
         <footer className="mt-12 pt-8 border-t border-border text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             This checklist is shared publicly by {checklist.owner}
           </p>
         </footer>

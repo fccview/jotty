@@ -29,7 +29,7 @@ export const Tabs = ({ tabs, activeTab, onTabClick }: TabsProps) => {
           <button
             key={tab.id}
             onClick={() => onTabClick(tab.id)}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-2 px-4 py-3 text-md lg:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? "border-primary text-primary bg-primary/5"
                 : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"

@@ -63,14 +63,10 @@ export const Pagination = ({
     return rangeWithDots;
   };
 
-  const itemsPerPageOptions = [
-    { id: "12", name: "12 per page" },
-    { id: "24", name: "24 per page" },
-    { id: "36", name: "36 per page" },
-    { id: "72", name: "72 per page" },
-    { id: "84", name: "84 per page" },
-    { id: "120", name: "120 per page" },
-  ];
+  const itemsPerPageOptions = [12, 24, 36, 72, 84, 120].map((count) => ({
+    id: count.toString(),
+    name: `${count} ${t('common.perPage')}`,
+  }));
 
   const isSidebar = variant === "sidebar";
 
@@ -78,17 +74,17 @@ export const Pagination = ({
     <div className={className}>
       <div className={isSidebar ? "space-y-3" : "space-y-3 bg-card border border-border rounded-jotty p-4"}>
         <div className="flex items-center justify-between">
-          <span className={isSidebar ? "text-xs font-bold uppercase text-muted-foreground tracking-wider" : "text-sm font-medium text-foreground"}>
+          <span className={isSidebar ? "text-md lg:text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider" : "text-md lg:text-sm font-medium text-foreground"}>
             {t('common.page')}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
             {t('common.pageOfPages', { currentPage, totalPages })}
           </span>
         </div>
 
         {itemsPerPage && onItemsPerPageChange && (
           <div>
-            <label className="text-xs text-muted-foreground mb-2 block">
+            <label className="text-md lg:text-sm lg:text-xs text-muted-foreground mb-2 block">
               {t('common.itemsPerPage')}
             </label>
             <Dropdown

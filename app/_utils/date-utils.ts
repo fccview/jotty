@@ -1,4 +1,14 @@
-export const formatRelativeTime = (dateString: string): string => {
+enum TimeUnit {
+  JustNow = "justNow",
+  Minutes = "minutes",
+  Hours = "hours",
+  Days = "days",
+  Weeks = "weeks",
+  Months = "months",
+  Years = "years"
+}
+
+const getTimeUnit = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
   const diffInMs = now.getTime() - date.getTime();
@@ -11,36 +21,70 @@ export const formatRelativeTime = (dateString: string): string => {
   const months = Math.floor(days / 30);
   const years = Math.floor(days / 365);
 
-  if (seconds < 60) {
-    return "Just now";
-  } else if (minutes < 60) {
-    return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-  } else if (hours < 24) {
-    return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-  } else if (days < 7) {
-    return `${days} day${days === 1 ? "" : "s"} ago`;
-  } else if (weeks < 4) {
-    return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
-  } else if (months < 12) {
-    return `${months} month${months === 1 ? "" : "s"} ago`;
-  } else {
-    return `${years} year${years === 1 ? "" : "s"} ago`;
-  }
+  if (seconds < 60) return { unit: TimeUnit.JustNow, value: 0 };
+  if (minutes < 60) return { unit: TimeUnit.Minutes, value: minutes };
+  if (hours < 24) return { unit: TimeUnit.Hours, value: hours };
+  if (days < 7) return { unit: TimeUnit.Days, value: days };
+  if (weeks < 4) return { unit: TimeUnit.Weeks, value: weeks };
+  if (months < 12) return { unit: TimeUnit.Months, value: months };
+  return { unit: TimeUnit.Years, value: years };
+};
+
+const formatWithTranslation = (unit: TimeUnit, value: number, t: (key: string, options?: any) => string): string => {
+  if (unit === TimeUnit.JustNow) return t("common.justNow");
+
+  const key = `common.${unit}Ago`;
+  return t(key, { count: value });
+};
+
+const formatEnglishFallback = (unit: TimeUnit, value: number): string => {
+  if (unit === TimeUnit.JustNow) return "Just now";
+
+  const unitNames = {
+    [TimeUnit.Minutes]: "minute",
+    [TimeUnit.Hours]: "hour",
+    [TimeUnit.Days]: "day",
+    [TimeUnit.Weeks]: "week",
+    [TimeUnit.Months]: "month",
+    [TimeUnit.Years]: "year"
+  };
+
+  const unitName = unitNames[unit];
+  const isSingular = value === 1;
+  return `${value} ${unitName}${isSingular ? "" : "s"} ago`;
+};
+
+export const formatRelativeTime = (dateString: string, t?: (key: string, options?: any) => string): string => {
+  const { unit, value } = getTimeUnit(dateString);
+  return t ? formatWithTranslation(unit, value, t) : formatEnglishFallback(unit, value);
 };
 
 export const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString();
 };
 
-export const formatTimeAgo = (dateString: string): string => {
+const getTimeUnitSimple = (dateString: string) => {
   const diffMs = new Date().getTime() - new Date(dateString).getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins} min ago`;
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} hr ago`;
   const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+
+  if (diffMins < 1) return { unit: TimeUnit.JustNow, value: 0 };
+  if (diffMins < 60) return { unit: TimeUnit.Minutes, value: diffMins };
+  if (diffHours < 24) return { unit: TimeUnit.Hours, value: diffHours };
+  return { unit: TimeUnit.Days, value: diffDays };
+};
+
+const formatTimeAgoEnglish = (unit: TimeUnit, value: number): string => {
+  if (unit === TimeUnit.JustNow) return "Just now";
+  if (unit === TimeUnit.Minutes) return `${value} min ago`;
+  if (unit === TimeUnit.Hours) return `${value} hr ago`;
+  return `${value} day${value > 1 ? "s" : ""} ago`;
+};
+
+export const formatTimeAgo = (dateString: string, t?: (key: string, options?: any) => string): string => {
+  const { unit, value } = getTimeUnitSimple(dateString);
+  return t ? formatWithTranslation(unit, value, t) : formatTimeAgoEnglish(unit, value);
 };
 
 export const generateDateTimeTitle = (): string => {

@@ -177,6 +177,7 @@ export interface User {
   fileRenameMode?: FileRenameMode;
   preferredDateFormat: PreferredDateFormat;
   preferredTimeFormat: PreferredTimeFormat;
+  handedness?: Handedness;
   disableRichEditor?: DisableRichEditor;
   markdownTheme?: MarkdownTheme;
   encryptionSettings?: EncryptionSettings;
@@ -189,6 +190,8 @@ export interface User {
   mfaRecoveryCode?: string;
   mfaEnrolledAt?: string;
   preferredLocale?: string;
+  failedLoginAttempts?: number;
+  nextAllowedLoginAttempt?: string;
 }
 
 export type EnableRecurrence = "enable" | "disable";
@@ -209,8 +212,9 @@ export type MarkdownTheme =
 export type NotesDefaultMode = "edit" | "view";
 export type NotesAutoSaveInterval = 0 | 1000 | 5000 | 10000 | 15000 | 20000;
 export type FileRenameMode = "dash-case" | "minimal" | "none";
-export type PreferredDateFormat = "dd/mm/yyyy" | "mm/dd/yyyy";
+export type PreferredDateFormat = "dd/mm/yyyy" | "mm/dd/yyyy" | "yyyy/mm/dd";
 export type PreferredTimeFormat = "12-hours" | "24-hours";
+export type Handedness = "right-handed" | "left-handed";
 export type DisableRichEditor = "enable" | "disable";
 export type DefaultChecklistFilter =
   | "all"
@@ -364,7 +368,7 @@ export interface UserSharedItems {
   checklists: UserSharedItem[];
 }
 
-export type SanitisedUser = Omit<User, 'passwordHash' | 'apiKey' | 'lastLogin'>;
+export type SanitisedUser = Omit<User, 'passwordHash' | 'apiKey' | 'lastLogin' | 'mfaSecret' | 'mfaRecoveryCode'>;
 
 export interface AppModeContextType {
   mode: AppMode;

@@ -32,6 +32,7 @@ import {
 } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
 import { encodeCategoryPath } from "../_utils/global-utils";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseChecklistProps {
   list: Checklist;
@@ -50,6 +51,7 @@ export const useChecklist = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const [showBulkPasteModal, setShowBulkPasteModal] = useState(false);
   const [showConversionModal, setShowConversionModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [localList, setLocalList] = useState(list);
   const [focusKey, setFocusKey] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -189,14 +191,14 @@ export const useChecklist = ({
     });
   };
 
-  const handleDeleteList = async () => {
-    if (confirm(t('common.confirmDeleteItem', { itemTitle: localList.title }))) {
-      const formData = new FormData();
-      formData.append("id", localList.id);
-      formData.append("category", localList.category || "Uncategorized");
-      await deleteList(formData);
-      onDelete?.(localList.id);
-    }
+  const confirmDeleteList = async () => {
+    const formData = new FormData();
+    formData.append("id", localList.id);
+    formData.append("category", localList.category || "Uncategorized");
+    if (localList.uuid) formData.append("uuid", localList.uuid);
+    await deleteList(formData);
+    onDelete?.(localList.id);
+    setShowDeleteModal(false);
   };
 
   const findItemById = (items: any[], itemId: string): any | null => {
@@ -407,6 +409,21 @@ export const useChecklist = ({
     const activeId = active.id.toString();
     const overId = over.id.toString();
 
+    const isDropInto = overId.startsWith("drop-into-item::");
+    const isDropIndicator = overId.startsWith("drop-before") || overId.startsWith("drop-after");
+
+    let targetItemId: string;
+    if (isDropInto) {
+      targetItemId = overId.replace("drop-into-item::", "");
+    } else if (isDropIndicator) {
+      const data = over.data.current as any;
+      targetItemId = data?.targetId;
+    } else {
+      targetItemId = overId;
+    }
+
+    if (!targetItemId) return;
+
     const findItemWithParent = (
       items: Item[],
       targetId: string,
@@ -426,7 +443,7 @@ export const useChecklist = ({
     };
 
     const activeInfo = findItemWithParent(localList.items, activeId);
-    const overInfo = findItemWithParent(localList.items, overId);
+    const overInfo = findItemWithParent(localList.items, targetItemId);
 
     if (!activeInfo || !overInfo) return;
 
@@ -441,24 +458,33 @@ export const useChecklist = ({
       const newItems = cloneItems(list.items);
 
       const activeInNew = findItemWithParent(newItems, activeId);
-      const overInNew = findItemWithParent(newItems, overId);
+      const overInNew = findItemWithParent(newItems, targetItemId);
 
       if (!activeInNew || !overInNew) return list;
 
       activeInNew.siblings.splice(activeInNew.index, 1);
 
-      const targetSiblings = overInNew.siblings;
-      const targetParent = overInNew.parent;
+      if (isDropInto) {
+        if (!overInNew.item.children) {
+          overInNew.item.children = [];
+        }
+        overInNew.item.children.push(activeInNew.item);
+      } else {
+        const targetSiblings = overInNew.siblings;
+        const targetParent = overInNew.parent;
 
-      let newIndex = targetSiblings.findIndex((item) => item.id === overId);
+        let newIndex = targetSiblings.findIndex((item) => item.id === targetItemId);
 
-      const isDraggingDown = activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInfo.index;
+        const isDraggingDown = activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInfo.index;
 
-      if (isDraggingDown) {
-        newIndex = newIndex + 1;
+        const position = isDropIndicator ? (overId.startsWith("drop-after::") ? "after" : "before") : (isDraggingDown ? "after" : "before");
+
+        if (position === "after") {
+          newIndex = newIndex + 1;
+        }
+
+        targetSiblings.splice(newIndex, 0, activeInNew.item);
       }
-
-      targetSiblings.splice(newIndex, 0, activeInNew.item);
 
       const updateOrder = (items: Item[]) => {
         items.forEach((item, idx) => {
@@ -474,7 +500,8 @@ export const useChecklist = ({
     const formData = new FormData();
     formData.append("listId", localList.id);
     formData.append("activeItemId", activeId);
-    formData.append("overItemId", overId);
+    formData.append("overItemId", targetItemId);
+    formData.append("isDropInto", String(isDropInto));
     formData.append("category", localList.category || "Uncategorized");
 
     const result = await reorderItems(formData);
@@ -558,6 +585,30 @@ export const useChecklist = ({
     if (result.success && result.data) {
       setLocalList(result.data as Checklist);
       setFocusKey((prev) => prev + 1);
+    }
+  };
+
+  const handleClearAll = async (type: "completed" | "incomplete") => {
+    setIsLoading(true);
+    const formData = new FormData();
+    formData.append("id", localList.id);
+    formData.append("category", localList.category || "Uncategorized");
+    formData.append("type", type);
+    if (localList.owner) {
+      formData.append("user", localList.owner);
+    }
+
+    const { clearAllChecklistItems } = await import(
+      "@/app/_server/actions/checklist"
+    );
+
+    const result = await clearAllChecklistItems(formData);
+    setIsLoading(false);
+
+    if (result.success && result.data) {
+      setLocalList(result.data as Checklist);
+      setFocusKey((prev) => prev + 1);
+      router.refresh();
     }
   };
 
@@ -706,7 +757,7 @@ export const useChecklist = ({
     focusKey,
     setFocusKey,
     copied,
-    handleDeleteList,
+    handleDeleteList: () => setShowDeleteModal(true),
     handleToggleItem,
     handleEditItem,
     handleDeleteItem,
@@ -716,6 +767,7 @@ export const useChecklist = ({
     getNewType,
     handleConfirmConversion,
     handleBulkToggle,
+    handleClearAll,
     handleCreateItem,
     handleAddSubItem,
     handleCopyId,
@@ -725,5 +777,16 @@ export const useChecklist = ({
     deletingItemsCount: itemsToDelete.length,
     pendingTogglesCount: pendingToggles.size,
     sensors,
+    DeleteModal: () => (
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDeleteList}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: localList.title })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
+    ),
   };
 };

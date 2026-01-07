@@ -110,7 +110,7 @@ export const SyntaxHighlightedEditor = ({
 
   return (
     <div
-      className="flex-1 overflow-y-auto h-full"
+      className="flex-1 overflow-y-auto jotty-scrollable-content h-full max-h-[95vh]"
       onDragOver={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -156,7 +156,7 @@ export const SyntaxHighlightedEditor = ({
           padding={16}
           tabSize={4}
           insertSpaces={true}
-          className="markdown-code-editor flex-1"
+          className="markdown-code-editor flex-1 jotty-scrollable-content"
           style={{
             ...editorFontStyle,
             minHeight: "400px",

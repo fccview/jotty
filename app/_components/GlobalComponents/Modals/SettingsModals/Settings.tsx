@@ -66,21 +66,21 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('profile.quickSettingsHeader')}>
-      <p className="text-sm text-muted-foreground mb-6">
+      <p className="text-md lg:text-sm text-muted-foreground mb-6">
         {t('settingsModal.sessionOnlyPrefix')}{' '}
         <Link href="/settings/user-preferences" className="text-primary hover:underline">{t('settingsModal.accountSettings')}</Link>.
       </p>
       <div className="mb-6">
-        <h3 className="text-sm font-medium mb-3">{t('common.theme')}</h3>
+        <h3 className="text-md lg:text-sm font-medium mb-3">{t('common.theme')}</h3>
         {loading ? (
-          <div className="text-sm text-muted-foreground">{t('settings.loadingThemes')}</div>
+          <div className="text-md lg:text-sm text-muted-foreground">{t('settings.loadingThemes')}</div>
         ) : (
           <Dropdown value={theme} options={themes} onChange={setTheme} />
         )}
       </div>
 
       <div className="mb-6">
-        <h3 className="text-sm font-medium mb-3">{t('settingsModal.viewMode')}</h3>
+        <h3 className="text-md lg:text-sm font-medium mb-3">{t('settingsModal.viewMode')}</h3>
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => setViewMode('card')}
@@ -88,7 +88,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               }`}
           >
             <SchoolReportCardIcon className="h-5 w-5" />
-            <span className="text-xs font-medium">{t('settingsModal.viewModeCard')}</span>
+            <span className="text-md lg:text-sm lg:text-xs font-medium">{t('settingsModal.viewModeCard')}</span>
           </button>
           <button
             onClick={() => setViewMode('list')}
@@ -96,7 +96,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               }`}
           >
             <ListViewIcon className="h-5 w-5" />
-            <span className="text-xs font-medium">{t('settingsModal.viewModeList')}</span>
+            <span className="text-md lg:text-sm lg:text-xs font-medium">{t('settingsModal.viewModeList')}</span>
           </button>
           <button
             onClick={() => setViewMode('grid')}
@@ -104,19 +104,19 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               }`}
           >
             <GridViewIcon className="h-5 w-5" />
-            <span className="text-xs font-medium">{t('settingsModal.viewModeGrid')}</span>
+            <span className="text-md lg:text-sm lg:text-xs font-medium">{t('settingsModal.viewModeGrid')}</span>
           </button>
         </div>
       </div>
 
       <div className="mb-6">
-        <h3 className="text-sm font-medium mb-3">{t('notes.title')}</h3>
+        <h3 className="text-md lg:text-sm font-medium mb-3">{t('notes.title')}</h3>
         <div className="space-y-3">
           {user?.notesAutoSaveInterval !== 0 && (
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-2">
                 <FloppyDiskIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{t('settingsModal.autosaveNotes')}</span>
+                <span className="text-md lg:text-sm">{t('settingsModal.autosaveNotes')}</span>
               </div>
               <div className="relative">
                 <input
@@ -141,7 +141,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
               <File02Icon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">{t('settingsModal.showNotePreview')}</span>
+              <span className="text-md lg:text-sm">{t('settingsModal.showNotePreview')}</span>
             </div>
             <div className="relative">
               <input
@@ -165,7 +165,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
               <ArrowHorizontalIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">{t('settingsModal.notesCompactMode')}</span>
+              <span className="text-md lg:text-sm">{t('settingsModal.notesCompactMode')}</span>
             </div>
             <div className="relative">
               <input
@@ -187,12 +187,12 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           </label>
         </div>
 
-        <h3 className="text-sm font-medium mb-3 mt-6">{t('checklists.title')}</h3>
+        <h3 className="text-md lg:text-sm font-medium mb-3 mt-6">{t('checklists.title')}</h3>
         <div className="space-y-3">
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
               <SmileIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">{t('settingsModal.showEmojis')}</span>
+              <span className="text-md lg:text-sm">{t('settingsModal.showEmojis')}</span>
             </div>
             <div className="relative">
               <input
@@ -216,7 +216,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <label className="flex items-center justify-between cursor-pointer">
             <div className="flex items-center gap-2">
               <CheckmarkSquare04Icon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">
+              <span className="text-md lg:text-sm">
                 {t('settings.showCompletedSuggestions')}
               </span>
             </div>

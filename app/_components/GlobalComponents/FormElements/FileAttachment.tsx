@@ -30,12 +30,12 @@ export const FileAttachment = ({
           </span>
           <span className="flex-1 min-w-0">
             <span
-              className="jotty-file-attachment-title font-medium text-sm text-foreground truncate block"
+              className="jotty-file-attachment-title font-medium text-md lg:text-sm text-foreground truncate block"
               title={displayName}
             >
               {displayName}
             </span>
-            <span className="jotty-file-attachment-type text-xs text-muted-foreground mt-1 !mb-0 block">
+            <span className="jotty-file-attachment-type text-sm lg:text-xs text-muted-foreground mt-1 !mb-0 block">
               {getFileTypeDisplay(mimeType, fileName)}
             </span>
           </span>

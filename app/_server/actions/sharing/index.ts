@@ -107,8 +107,6 @@ export const shareWith = async (
   try {
     const sharingData = await readShareFile(itemType);
 
-    const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
-
     const itemUuid = await getItemUuid(
       sharerUsername,
       itemType === ItemTypes.CHECKLIST ? "checklist" : "note",
@@ -127,7 +125,6 @@ export const shareWith = async (
     const newEntry: SharedItemEntry = {
       uuid: itemUuid,
       id: item,
-      category: encodedCategory,
       sharer: sharerUsername,
       permissions,
     };

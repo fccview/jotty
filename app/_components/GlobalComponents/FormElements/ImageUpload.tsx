@@ -180,8 +180,8 @@ export const ImageUpload: FC<ImageUploadProps> = ({
 
   return (
     <div className="jotty-image-upload space-y-2 w-full">
-      <Label className="text-sm font-medium">{label}</Label>
-      <p className="text-xs text-muted-foreground">{description}</p>
+      <Label className="text-md lg:text-sm font-medium">{label}</Label>
+      <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">{description}</p>
       <div
         className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${
           disabled
@@ -205,8 +205,8 @@ export const ImageUpload: FC<ImageUploadProps> = ({
               className="w-12 h-12 object-contain rounded border"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{t("common.currentIcon")}</p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-md lg:text-sm font-medium truncate">{t("common.currentIcon")}</p>
+              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground truncate">
                 {currentUrl.split("/").pop()}
               </p>
             </div>
@@ -228,8 +228,8 @@ export const ImageUpload: FC<ImageUploadProps> = ({
             className={`text-center block ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
           >
             <Image02Icon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm font-medium">{t("common.dropImageOrClick")}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-md lg:text-sm font-medium">{t("common.dropImageOrClick")}</p>
+            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
               PNG, JPG, WebP up to 5MB
             </p>
           </label>
@@ -237,7 +237,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
         {isUploading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-jotty">
             <Logo className="h-6 w-6 animate-pulse" />
-            <p className="text-sm mt-2">{t('common.uploading')}</p>
+            <p className="text-md lg:text-sm mt-2">{t('common.uploading')}</p>
           </div>
         )}
       </div>

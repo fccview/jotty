@@ -4,6 +4,7 @@ import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
+import { useTranslations } from "next-intl";
 
 const LastModifiedCreatedInfo = ({
   item,
@@ -16,6 +17,7 @@ const LastModifiedCreatedInfo = ({
 }) => {
   const { allSharedItems } = useAppMode();
   const { formatDateTimeString } = usePreferredDateTime();
+  const t = useTranslations();
   const encodedCategory = encodeCategoryPath(
     checklist.category || "Uncategorized"
   );
@@ -34,11 +36,13 @@ const LastModifiedCreatedInfo = ({
           {item.createdBy && (
             <span
               className="flex items-center gap-1 bg-muted rounded-jotty py-1 px-2"
-              title={`Created by ${item.createdBy}${
-                item.createdAt
-                  ? ` on ${formatDateTimeString(item.createdAt)}`
-                  : ""
-              }`}
+              title={item.createdAt
+                ? t("common.createdByOn", {
+                    user: item.createdBy,
+                    date: formatDateTimeString(item.createdAt)
+                  })
+                : t("common.createdBy", { user: item.createdBy })
+              }
             >
               <UserAvatar
                 username={item.createdBy}
@@ -55,11 +59,13 @@ const LastModifiedCreatedInfo = ({
           {item.lastModifiedBy && (
             <span
               className="flex items-center gap-1 bg-muted rounded-jotty py-1 px-2"
-              title={`Last modified by ${item.lastModifiedBy}${
-                item.lastModifiedAt
-                  ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
-                  : ""
-              }`}
+              title={item.lastModifiedAt
+                ? t("common.lastModifiedByOn", {
+                    user: item.lastModifiedBy,
+                    date: formatDateTimeString(item.lastModifiedAt)
+                  })
+                : t("common.lastModifiedBy", { user: item.lastModifiedBy })
+              }
             >
               <UserAvatar
                 username={item.lastModifiedBy}

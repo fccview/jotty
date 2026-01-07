@@ -94,7 +94,7 @@ export const Dropdown = ({
             {selectedOption?.icon && (
               <selectedOption.icon className="h-4 w-4" />
             )}
-            <span className="text-sm font-medium">
+            <span className="text-md lg:text-sm font-medium">
               {selectedOption?.name || placeholder}
             </span>
           </div>
@@ -120,7 +120,7 @@ export const Dropdown = ({
                 type="button"
                 onClick={(e) => handleSelect(e, option.id.toString())}
                 className={cn(
-                  "w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground",
+                  "w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm hover:bg-accent hover:text-accent-foreground",
                   option.id === value && "bg-accent text-accent-foreground"
                 )}
               >

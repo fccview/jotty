@@ -79,14 +79,14 @@ export const DeleteAccountModal = ({
         {error && (
           <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
             <AlertCircleIcon className="h-4 w-4 text-destructive" />
-            <span className="text-sm text-destructive">{error}</span>
+            <span className="text-md lg:text-sm text-destructive">{error}</span>
           </div>
         )}
 
         {success && (
           <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-jotty">
             <Tick02Icon className="h-4 w-4 text-primary" />
-            <span className="text-sm text-primary">{success}</span>
+            <span className="text-md lg:text-sm text-primary">{success}</span>
           </div>
         )}
 
@@ -103,7 +103,7 @@ export const DeleteAccountModal = ({
           ></InfoBox>
 
           <div>
-            <label className="block text-sm font-medium mb-2">{t('settings.confirmPassword')}</label>
+            <label className="block text-md lg:text-sm font-medium mb-2">{t('settings.confirmPassword')}</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -126,7 +126,7 @@ export const DeleteAccountModal = ({
                 )}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
               Enter your password to confirm account deletion
             </p>
           </div>

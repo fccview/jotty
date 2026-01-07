@@ -99,7 +99,7 @@ export const AdminUsers = ({
                                                 {user.username}
                                             </h3>
                                             {user.username === username && (
-                                                <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
+                                                <span className="px-2 py-1 text-sm lg:text-xs bg-primary/10 text-primary rounded-full">
                                                     {t("admin.you")}
                                                 </span>
                                             )}
@@ -107,12 +107,12 @@ export const AdminUsers = ({
                                                 <ShieldUserIcon className="h-4 w-4 text-primary" />
                                             )}
                                             {user.isSuperAdmin && (
-                                                <span className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium">
+                                                <span className="px-2 py-0.5 text-sm lg:text-xs bg-primary/10 text-primary rounded-full font-medium">
                                                     {t("admin.systemOwner")}
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-md lg:text-sm text-muted-foreground">
                                             {t("admin.userRole", {
                                                 role: user.isAdmin ? t("common.admin") : t("common.user"),
                                                 checklists: userChecklists,

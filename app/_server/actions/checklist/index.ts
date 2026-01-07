@@ -264,53 +264,19 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
 
     for (const sharedItem of sharedData.checklists) {
       try {
-        const decodedCategory = decodeCategoryPath(
-          sharedItem.category || "Uncategorized"
-        );
+        const itemIdentifier = sharedItem.uuid || sharedItem.id;
+        if (!itemIdentifier) continue;
 
-        const sharedFilePath = path.join(
-          process.cwd(),
-          "data",
-          CHECKLISTS_FOLDER,
-          sharedItem.sharer,
-          decodedCategory,
-          `${sharedItem.id}.md`
-        );
+        const sharedChecklist = await getListById(itemIdentifier, sharedItem.sharer);
 
-        const content = await fs.readFile(sharedFilePath, "utf-8");
-        const stats = await fs.stat(sharedFilePath);
-
-        if (isRaw) {
-          const { metadata } = extractYamlMetadata(content);
-          const type = getChecklistType(content);
-          const rawList: Checklist = {
-            id: sharedItem.id || sharedItem.uuid || "unknown",
-            title: sharedItem.id || sharedItem.uuid || "Unknown Checklist",
-            uuid: metadata.uuid || sharedItem.uuid || generateUuid(),
-            type,
-            category: decodedCategory,
-            items: [],
-            createdAt: stats.birthtime.toISOString(),
-            updatedAt: stats.mtime.toISOString(),
-            owner: sharedItem.sharer,
+        if (sharedChecklist) {
+          lists.push({
+            ...sharedChecklist,
             isShared: true,
-            itemType: ItemTypes.CHECKLIST,
-            rawContent: content,
-          };
-          lists.push(rawList);
-        } else {
-          lists.push(
-            parseMarkdown(
-              content,
-              sharedItem.id || sharedItem.uuid || "unknown",
-              decodedCategory,
-              sharedItem.sharer,
-              true,
-              stats
-            )
-          );
+          });
         }
       } catch (error) {
+        console.error(`Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`, error);
         continue;
       }
     }
@@ -499,7 +465,9 @@ export const createList = async (formData: FormData) => {
     const categoryDir = path.join(userDir, category);
     await ensureDir(categoryDir);
 
-    const filename = await generateUniqueFilename(categoryDir, title);
+    const currentUser = await getCurrentUser();
+    const fileRenameMode = currentUser?.fileRenameMode || "minimal";
+    const filename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
     const id = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 
@@ -623,12 +591,13 @@ export const updateList = async (formData: FormData) => {
     let newFilename: string;
     let newId = id;
 
-    const sanitizedTitle = sanitizeFilename(title);
+    const fileRenameMode = actingUser?.fileRenameMode || "minimal";
+    const sanitizedTitle = sanitizeFilename(title, fileRenameMode);
     const currentFilename = `${id}.md`;
     const expectedFilename = `${sanitizedTitle}.md`;
 
     if (title !== currentList.title || currentFilename !== expectedFilename) {
-      newFilename = await generateUniqueFilename(categoryDir, title);
+      newFilename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
       newId = path.basename(newFilename, ".md");
     } else {
       newFilename = `${id}.md`;
@@ -753,7 +722,9 @@ export const deleteList = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
     const category = (formData.get("category") as string) || "Uncategorized";
+    const uuid = formData.get("uuid") as string | null;
     const apiUser = formData.get("apiUser") as string | null;
+    const itemIdentifier = uuid || id;
 
     let currentUser = await getCurrentUser();
     if (!currentUser && apiUser) {
@@ -768,15 +739,8 @@ export const deleteList = async (formData: FormData) => {
       return { error: "Not authenticated" };
     }
 
-    const isAdminUser = apiUser ? currentUser.isAdmin : await isAdmin();
-    const lists = await (isAdminUser
-      ? getAllLists()
-      : getUserChecklists(apiUser ? { username: currentUser.username } : {}));
-    if (!lists.success || !lists.data) {
-      return { error: "Failed to fetch lists" };
-    }
+    const list = await getListById(itemIdentifier, currentUser.username, category);
 
-    const list = lists.data.find((l) => l.id === id && l.category === category);
     if (!list) {
       return { error: "List not found" };
     }
@@ -794,7 +758,7 @@ export const deleteList = async (formData: FormData) => {
         CHECKLISTS_FOLDER,
         list.owner!
       );
-      filePath = path.join(ownerDir, category, `${id}.md`);
+      filePath = path.join(ownerDir, list.category || "Uncategorized", `${list.id}.md`);
     } else {
       const userDir = apiUser
         ? path.join(
@@ -804,7 +768,7 @@ export const deleteList = async (formData: FormData) => {
           currentUser.username
         )
         : await getUserModeDir(Modes.CHECKLISTS);
-      filePath = path.join(userDir, category, `${id}.md`);
+      filePath = path.join(userDir, list.category || "Uncategorized", `${list.id}.md`);
     }
 
     await serverDeleteFile(filePath);
@@ -812,7 +776,7 @@ export const deleteList = async (formData: FormData) => {
     try {
       await removeItemFromIndex(list.owner!, ItemTypes.CHECKLIST, list.uuid!);
     } catch (error) {
-      console.warn("Failed to remove checklist from link index:", id, error);
+      console.warn("Failed to remove checklist from link index:", list.id, error);
     }
 
     if (list.owner) {
@@ -821,7 +785,7 @@ export const deleteList = async (formData: FormData) => {
       );
       await updateSharingData(
         {
-          id,
+          id: list.id,
           category: list.category || "Uncategorized",
           itemType: ItemTypes.CHECKLIST,
           sharer: list.owner,
@@ -834,7 +798,7 @@ export const deleteList = async (formData: FormData) => {
       revalidatePath("/");
       const categoryPath = buildCategoryPath(
         list.category || "Uncategorized",
-        id
+        list.id
       );
       revalidatePath(`/checklist/${categoryPath}`);
     } catch (error) {
@@ -1110,7 +1074,8 @@ export const cloneChecklist = async (formData: FormData) => {
     await ensureDir(categoryDir);
 
     const cloneTitle = `${checklist.title} (Copy)`;
-    const filename = await generateUniqueFilename(categoryDir, cloneTitle);
+    const fileRenameMode = currentUser?.fileRenameMode || "minimal";
+    const filename = await generateUniqueFilename(categoryDir, cloneTitle, ".md", fileRenameMode);
     const filePath = path.join(categoryDir, filename);
 
     const content = listToMarkdown(checklist);
@@ -1143,5 +1108,114 @@ export const cloneChecklist = async (formData: FormData) => {
   } catch (error) {
     console.error("Error cloning checklist:", error);
     return { error: "Failed to clone checklist" };
+  }
+};
+
+export const clearAllChecklistItems = async (formData: FormData) => {
+  try {
+    const id = formData.get("id") as string;
+    const category = formData.get("category") as string;
+    const ownerUsername = formData.get("user") as string | null;
+    const type = formData.get("type") as "completed" | "incomplete";
+    const apiUser = formData.get("apiUser") as string | null;
+
+    let actingUser = await getCurrentUser();
+    if (!actingUser && apiUser) {
+      try {
+        actingUser = JSON.parse(apiUser);
+      } catch {
+        return { error: "Invalid user data" };
+      }
+    }
+
+    if (!actingUser || !actingUser.username) {
+      return { error: "Not authenticated" };
+    }
+
+    const checklist = await getListById(
+      id,
+      ownerUsername || undefined,
+      category
+    );
+
+    if (!checklist) {
+      return { error: "Checklist not found" };
+    }
+
+    const canEdit = await checkUserPermission(
+      id,
+      category,
+      ItemTypes.CHECKLIST,
+      actingUser.username,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      return { error: "Permission denied" };
+    }
+
+    const filteredItems = checklist.items.filter((item) => {
+      if (type === "completed") {
+        return !item.completed;
+      } else {
+        return item.completed;
+      }
+    });
+
+    const updatedChecklist: Checklist = {
+      ...checklist,
+      items: filteredItems,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const ownerDir = path.join(
+      process.cwd(),
+      "data",
+      CHECKLISTS_FOLDER,
+      checklist.owner!
+    );
+    const categoryDir = path.join(
+      ownerDir,
+      checklist.category || "Uncategorized"
+    );
+    const filePath = path.join(categoryDir, `${checklist.id}.md`);
+
+    await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
+
+    try {
+      const content = updatedChecklist.items.map((i) => i.text).join("\n");
+      const links = await parseInternalLinks(content);
+      await updateIndexForItem(
+        checklist.owner!,
+        ItemTypes.CHECKLIST,
+        updatedChecklist.uuid!,
+        links
+      );
+    } catch (error) {
+      console.warn(
+        "Failed to update link index for checklist:",
+        updatedChecklist.id,
+        error
+      );
+    }
+
+    try {
+      revalidatePath("/");
+      const categoryPath = buildCategoryPath(
+        checklist.category || "Uncategorized",
+        checklist.id
+      );
+      revalidatePath(`/checklist/${categoryPath}`);
+    } catch (error) {
+      console.warn(
+        "Cache revalidation failed, but data was saved successfully:",
+        error
+      );
+    }
+
+    return { success: true, data: updatedChecklist };
+  } catch (error) {
+    console.error("Error clearing checklist items:", error);
+    return { error: "Failed to clear checklist items" };
   }
 };

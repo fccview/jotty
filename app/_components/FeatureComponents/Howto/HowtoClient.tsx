@@ -1,13 +1,14 @@
 "use client";
 
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
-import { Category, User } from "@/app/_types";
+import { Category, SanitisedUser } from "@/app/_types";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { HowtoSidebar } from "./HowtoSidebar";
+import { MobileHeader } from "../../GlobalComponents/Layout/MobileHeader";
 
 interface HowtoClientProps {
     categories: Category[];
-    user: User | null;
+    user: SanitisedUser | null;
     children: React.ReactNode;
 }
 
@@ -27,7 +28,9 @@ export const HowtoClient = ({
             user={user}
             customSidebar={(props) => <HowtoSidebar {...props} />}
         >
-            <div className="w-full px-4 py-6 h-full overflow-y-auto">
+            <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
+            
+            <div className="w-full px-4 py-6 h-full overflow-y-auto jotty-scrollable-content">
                 {children}
             </div>
         </Layout>

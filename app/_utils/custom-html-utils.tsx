@@ -19,7 +19,7 @@ export const customHtmlMarks: CustomHtmlMarkDefinition[] = [
     name: "kbd",
     tag: "kbd",
     classes:
-      "bg-muted px-2 py-1 text-xs rounded-jotty border border-border shadow-border shadow-sm",
+      "bg-muted px-2 py-1 text-sm lg:text-xs rounded-jotty border border-border shadow-border shadow-sm",
   },
   {
     name: "subscript",

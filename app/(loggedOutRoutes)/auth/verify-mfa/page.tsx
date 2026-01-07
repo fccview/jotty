@@ -45,13 +45,13 @@ export default function VerifyMfaPage() {
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">
                         {t("mfa.verifyTitle")}
                     </h1>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-md lg:text-sm text-muted-foreground">
                         {t("mfa.verifyDescription")}
                     </p>
                 </div>
 
                 {error && (
-                    <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-jotty">
+                    <div className="p-3 text-md lg:text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-jotty">
                         {error}
                     </div>
                 )}
@@ -65,7 +65,7 @@ export default function VerifyMfaPage() {
                     />
 
                     {isLoading && (
-                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center justify-center gap-2 text-md lg:text-sm text-muted-foreground">
                             <Logo className="h-4 w-4 animate-pulse" />
                             {t("mfa.verifying")}
                         </div>

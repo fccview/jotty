@@ -10,6 +10,7 @@ import { TaskStatus } from "@/app/_types/enums";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Undo02Icon } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface ArchivedItemsModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export const ArchivedItemsModal = ({
   statuses,
 }: ArchivedItemsModalProps) => {
   const t = useTranslations();
+  const { formatDateString } = usePreferredDateTime();
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   const statusMap = useMemo(() => {
@@ -73,7 +75,7 @@ export const ArchivedItemsModal = ({
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <label className="text-sm font-medium">{t('common.filterByStatus')}:</label>
+          <label className="text-md lg:text-sm font-medium">{t('common.filterByStatus')}:</label>
           <Dropdown
             value={filterStatus}
             options={statusFilterOptions}
@@ -103,12 +105,12 @@ export const ArchivedItemsModal = ({
                 }}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{item.text}</p>
+                  <p className="text-md lg:text-sm font-medium truncate">{item.text}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {item.archivedAt && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                         {t('common.archived')}{" "}
-                        {new Date(item.archivedAt).toLocaleDateString()}
+                        {formatDateString(item.archivedAt)}
                         {item.archivedBy && ` ${t('common.by')} ${item.archivedBy}`}
                       </p>
                     )}
@@ -121,7 +123,7 @@ export const ArchivedItemsModal = ({
                           backgroundColor: getStatusColor(item.previousStatus),
                         }}
                       />
-                      <p className="text-xs font-medium">
+                      <p className="text-md lg:text-sm lg:text-xs font-medium">
                         {getStatusLabel(item.previousStatus)}
                       </p>
                     </div>

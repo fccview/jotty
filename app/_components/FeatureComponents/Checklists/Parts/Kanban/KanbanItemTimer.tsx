@@ -1,11 +1,13 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Clock01Icon, TimeQuarterIcon, Add01Icon } from "hugeicons-react";
 import { PauseCircleIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
+import { useTranslations } from "next-intl";
 
 interface KanbanItemTimerProps {
   totalTime: number;
@@ -25,17 +27,22 @@ const KanbanItemTimerComponent = ({
   onAddManualTime,
 }: KanbanItemTimerProps) => {
   const { permissions } = usePermissions();
+  const t = useTranslations();
+  const [showTimeModal, setShowTimeModal] = useState(false);
 
   const handleAddTime = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const minutes = prompt("Enter time in minutes:");
+    setShowTimeModal(true);
+  };
+
+  const confirmAddTime = (minutes: string) => {
     if (minutes && !isNaN(Number(minutes))) {
       onAddManualTime(Number(minutes));
     }
   };
 
   return (
-    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+    <div className="flex items-center justify-between text-sm lg:text-xs text-muted-foreground pt-1">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
           <Clock01Icon className="h-3 w-3" />
@@ -69,6 +76,16 @@ const KanbanItemTimerComponent = ({
           </Button>
         </div>
       </div>
+
+      <PromptModal
+        isOpen={showTimeModal}
+        onClose={() => setShowTimeModal(false)}
+        onConfirm={confirmAddTime}
+        title={t("checklists.addTime")}
+        message={t("checklists.enterTimeInMinutes")}
+        placeholder="15"
+        confirmText={t("common.confirm")}
+      />
     </div>
   );
 };

@@ -79,7 +79,7 @@ export const UserDropdown = ({
     {
       label: t("profile.settingsDashboard"),
       icon: <Settings01Icon className="h-4 w-4" />,
-      onClick: () => checkNavigation(() => router.push("/settings")),
+      onClick: () => checkNavigation(() => router.push("/settings/user-info")),
     },
     {
       label: t("profile.deviceSettings"),
@@ -124,7 +124,7 @@ export const UserDropdown = ({
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className="cursor-pointer"
         >
-          <div className="flex items-center gap-1.5 transition-opacity px-2 py-1.5 rounded-jotty hover:bg-accent group">
+          <div className="flex items-center gap-1.5 transition-opacity px-2 py-1.5 rounded-jotty lg:hover:bg-accent group">
             <div className="hidden sm:block">
               <UserAvatar
                 username={username}
@@ -136,10 +136,10 @@ export const UserDropdown = ({
               <UserAvatar
                 username={username}
                 avatarUrl={avatarUrl}
-                size="md"
+                size="lg"
               />
             </div>
-            <span className="text-sm font-medium text-foreground hidden sm:inline-block group-hover:text-accent-foreground">
+            <span className="text-md lg:text-sm font-medium text-foreground hidden sm:inline-block group-hover:text-accent-foreground">
               {username}
             </span>
             <ArrowDown01Icon className="h-4 w-4 text-muted-foreground hidden sm:block group-hover:text-accent-foreground" />
@@ -164,7 +164,7 @@ export const UserDropdown = ({
                       setIsDropdownOpen(false);
                     }
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm transition-colors text-left hover:bg-accent ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-md lg:text-sm transition-colors text-left hover:bg-accent ${
                     item.variant === "destructive" ? "text-destructive hover:text-destructive-foreground hover:bg-destructive" : ""
                   } ${item.className || ""}`}
                 >

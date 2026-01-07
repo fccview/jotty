@@ -25,7 +25,7 @@ export const AdminSharedItemsList = ({
             >
               <div>
                 <div className="font-medium text-foreground">{item.id}</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-md lg:text-sm text-muted-foreground">
                   {item.category}
                 </div>
               </div>
@@ -41,7 +41,7 @@ export const AdminSharedItemsList = ({
             </div>
           ))
         ) : (
-          <p className="text-sm text-muted-foreground">{t('admin.noSharedItems')}</p>
+          <p className="text-md lg:text-sm text-muted-foreground">{t('admin.noSharedItems')}</p>
         )}
       </div>
     </div>

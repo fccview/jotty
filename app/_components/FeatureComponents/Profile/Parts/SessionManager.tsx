@@ -18,6 +18,8 @@ export const SessionManager = () => {
     terminating,
     handleTerminateSession,
     handleTerminateAllOtherSessions,
+    TerminateSessionModal,
+    TerminateAllSessionsModal,
   } = useSessionManager();
 
   const { isDemoMode } = useAppMode();
@@ -34,7 +36,7 @@ export const SessionManager = () => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">{t("profile.activeSessions")}</h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t(sessions.length === 1 ? "profile.activeSession" : "profile.activeSession_plural", { count: sessions.length })}
           </p>
         </div>
@@ -69,6 +71,9 @@ export const SessionManager = () => {
           />
         ))}
       </div>
+
+      <TerminateSessionModal />
+      <TerminateAllSessionsModal />
     </div>
   );
 };

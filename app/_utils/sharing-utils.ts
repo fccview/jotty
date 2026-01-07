@@ -15,8 +15,8 @@ export const sharingInfo = (
     sharedWith: [] as string[],
   };
 
-  const isMatch = (item: { id: string; category: string }) =>
-    item.id === targetId && item.category === targetCategory;
+  const isMatch = (item: { id?: string; uuid?: string; category?: string }) =>
+    item.uuid === targetId || (item.id === targetId && item.category?.toLowerCase() === targetCategory?.toLowerCase());
 
   for (const categoryKey in data) {
     const categoryObject = data[categoryKey];
@@ -49,9 +49,8 @@ export const getPermissions = (
   targetId: string,
   targetCategory: string
 ) => {
-  const isMatch = (item: { id: string; category: string }) =>
-    item.id === targetId &&
-    item.category.toLowerCase() === targetCategory.toLowerCase();
+  const isMatch = (item: { id?: string; uuid?: string; category?: string }) =>
+    item.uuid === targetId || (item.id === targetId && item.category?.toLowerCase() === targetCategory?.toLowerCase());
 
   for (const categoryKey in data) {
     const categoryObject = data[categoryKey];

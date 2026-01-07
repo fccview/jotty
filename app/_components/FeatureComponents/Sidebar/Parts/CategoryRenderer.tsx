@@ -145,7 +145,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
               <button
                 onClick={() => onToggleCategory(category.path)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty transition-colors w-full text-left",
+                  "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
                   hasContent
                     ? "hover:bg-muted/50 cursor-pointer"
                     : "text-muted-foreground cursor-default"
@@ -155,23 +155,23 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                 {hasContent ? (
                   isCollapsed ? (
                     <>
-                      <ArrowRight01Icon className="h-4 w-4" />
-                      <Folder01Icon className="h-4 w-4" />
+                      <ArrowRight01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
+                      <Folder01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
                     </>
                   ) : (
                     <>
-                      <ArrowDown01Icon className="h-4 w-4" />
-                      <Folder02Icon className="h-4 w-4" />
+                      <ArrowDown01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
+                      <Folder02Icon className="h-5 w-5 lg:h-4 lg:w-4" />
                     </>
                   )
                 ) : (
                   <>
-                    <ArrowRight01Icon className="h-4 w-4 opacity-20" />
-                    <Folder01Icon className="h-4 w-4" />
+                    <ArrowRight01Icon className="h-5 w-5 lg:h-4 lg:w-4 opacity-20" />
+                    <Folder01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
                   </>
                 )}
                 <span className="truncate font-[500]">{category.name}</span>
-                <span className="text-xs text-muted-foreground ml-auto">
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
                   {getTotalItemsInCategory(category.path)}
                 </span>
               </button>

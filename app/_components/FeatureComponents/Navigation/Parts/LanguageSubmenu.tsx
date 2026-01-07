@@ -51,7 +51,7 @@ export const LanguageSubmenu = ({ currentLocale, onClose, onBack }: LanguageSubm
         >
           <ArrowLeft01Icon className="h-4 w-4" />
         </button>
-        <span className="text-sm font-medium flex-1">{t("common.language")}</span>
+        <span className="text-md lg:text-sm font-medium flex-1">{t("common.language")}</span>
       </div>
       
       <div className="p-2 border-b border-border">
@@ -63,7 +63,7 @@ export const LanguageSubmenu = ({ currentLocale, onClose, onBack }: LanguageSubm
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
-            className="w-full pl-7 pr-2 py-1 text-xs bg-input border border-border rounded-jotty focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full pl-7 pr-2 py-1 text-sm lg:text-xs bg-input border border-border rounded-jotty focus:outline-none focus:ring-1 focus:ring-ring"
           />
         </div>
       </div>
@@ -74,7 +74,7 @@ export const LanguageSubmenu = ({ currentLocale, onClose, onBack }: LanguageSubm
             <button
               key={locale.code}
               onClick={() => handleLanguageChange(locale.code)}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent text-sm transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm transition-colors ${
                 locale.code === currentLocale ? "bg-accent/50" : ""
               }`}
             >
@@ -85,12 +85,12 @@ export const LanguageSubmenu = ({ currentLocale, onClose, onBack }: LanguageSubm
               />
               <span className="flex-1">{locale.name}</span>
               {locale.code === currentLocale && (
-                <span className="text-xs text-muted-foreground">✓</span>
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">✓</span>
               )}
             </button>
           ))
         ) : (
-          <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+          <div className="px-3 py-4 text-md lg:text-sm text-muted-foreground text-center">
             {t("common.noResults")}
           </div>
         )}

@@ -112,7 +112,7 @@ export const NoteGridItem = ({
           )}
         </div>
 
-        <h3 className="font-medium text-sm text-center text-foreground line-clamp-2 w-full px-1">
+        <h3 className="font-medium text-md lg:text-sm text-center text-foreground line-clamp-2 w-full px-1">
           {displayTitle}
         </h3>
 

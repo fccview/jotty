@@ -44,7 +44,7 @@ export const InfoCard = ({
       iconBg: "bg-amber-100",
       iconText: "text-amber-600",
       titleText: "font-semibold text-amber-800",
-      bodyText: "text-sm text-amber-700",
+      bodyText: "text-md lg:text-sm text-amber-700",
     },
     [InfoCardVariant.DESTRUCTIVE]: {
       bg: "bg-destructive/10",
@@ -52,7 +52,7 @@ export const InfoCard = ({
       iconBg: "bg-destructive/10",
       iconText: "text-destructive",
       titleText: "font-medium text-destructive",
-      bodyText: "text-xs text-destructive/80",
+      bodyText: "text-md lg:text-sm lg:text-xs text-destructive/80",
     },
   };
 

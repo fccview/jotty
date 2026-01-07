@@ -27,6 +27,8 @@ import { PGPKeyMetadata, EncryptionMethod } from "@/app/_types";
 import { PGPKeyGenerationModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyGenerationModal";
 import { PGPKeyImportModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPKeyImportModal";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 
 interface EncryptionTabClientProps {
   initialKeyData: {
@@ -39,11 +41,13 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
   const t = useTranslations();
   const { user, setUser, isDemoMode } = useAppMode();
   const { showToast } = useToast();
+  const { formatDateString } = usePreferredDateTime();
   const [hasKeys, setHasKeys] = useState(initialKeyData.hasKeys);
   const [keyMetadata, setKeyMetadata] = useState<PGPKeyMetadata | null>(initialKeyData.metadata);
   const [isLoadingKeys, setIsLoadingKeys] = useState(false);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportWarningModal, setShowExportWarningModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [autoDecrypt, setAutoDecrypt] = useState(
     user?.encryptionSettings?.autoDecrypt ?? true
@@ -76,10 +80,13 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
 
   const handleExportKey = async (keyType: "public" | "private") => {
     if (keyType === "private") {
-      const confirmed = window.confirm(t('encryption.privateKeyWarning'));
-      if (!confirmed) return;
+      setShowExportWarningModal(true);
+      return;
     }
+    await performExport(keyType);
+  };
 
+  const performExport = async (keyType: "public" | "private") => {
     try {
       const result = await exportKeys(keyType);
       if (result.success && result.data) {
@@ -281,7 +288,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
       {method === "pgp" && (
         <FormWrapper title={t('encryption.encryptionKeys')}>
           {isLoadingKeys ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <div className="text-md lg:text-sm text-muted-foreground">{t('common.loading')}</div>
           ) : hasKeys && keyMetadata ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-primary">
@@ -298,7 +305,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
                 <div>
                   <span className="text-muted-foreground">{t('encryption.created')}:</span>
                   <span>
-                    {new Date(keyMetadata.createdAt).toLocaleDateString()}
+                    {formatDateString(keyMetadata.createdAt)}
                   </span>
                 </div>
                 <div>
@@ -313,7 +320,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
                 <LockKeyIcon className="h-5 w-5" />
                 <span>{t('encryption.noKeysConfigured')}</span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t('encryption.generateOrImportKeys')}
               </p>
             </div>
@@ -374,7 +381,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
               )}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-md lg:text-sm text-muted-foreground">
               {t('encryption.keysDisabledInDemo')}
             </div>
           )}
@@ -392,7 +399,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
               <div className="font-medium">
                 {t('encryption.promptForPassphrase')}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t('encryption.promptForPassphraseDescription')}
               </p>
             </label>
@@ -409,7 +416,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
         <FormWrapper title={t('encryption.customKeyPath')}>
           {!isDemoMode ? (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t('encryption.customKeyPathDescription')}
               </p>
               <Input
@@ -430,7 +437,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
               </Button>
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-md lg:text-sm text-muted-foreground">
               {t('encryption.customPathDisabledInDemo')}
             </div>
           )}
@@ -456,7 +463,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
               <Alert02Icon className="h-6 w-6" />
               <h3 className="text-lg font-semibold">{t('encryption.deleteKeysConfirmTitle')}</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-6">
+            <p className="text-md lg:text-sm text-muted-foreground mb-6">
               {t('encryption.deleteKeysConfirmMessage')}
             </p>
             <div className="flex justify-end gap-3">
@@ -473,6 +480,19 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showExportWarningModal}
+        onClose={() => setShowExportWarningModal(false)}
+        onConfirm={() => {
+          setShowExportWarningModal(false);
+          performExport("private");
+        }}
+        title={t("common.warning")}
+        message={t("encryption.privateKeyWarning")}
+        confirmText={t("common.continue")}
+        variant="destructive"
+      />
     </div>
   );
 };

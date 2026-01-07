@@ -64,7 +64,7 @@ const KanbanItemContentComponent = ({
           {item.createdBy && isShared && (
             <div
               className="flex-shrink-0"
-              title={`Created by ${item.createdBy}`}
+              title={t("common.createdBy", { user: item.createdBy })}
             >
               <UserAvatar
                 username={item.createdBy}
@@ -84,11 +84,11 @@ const KanbanItemContentComponent = ({
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
-              className="w-full text-sm font-medium text-foreground leading-tight bg-transparent border-none outline-none resize-none"
+              className="w-full text-md lg:text-sm font-medium text-foreground leading-tight bg-transparent border-none outline-none resize-none"
             />
           ) : (
             <p
-              className="text-sm font-medium text-foreground leading-tight truncate cursor-pointer"
+              className="text-md lg:text-sm font-medium text-foreground leading-tight truncate cursor-pointer"
               title={item.text}
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => onShowSubtaskModal()}
@@ -152,10 +152,13 @@ const KanbanItemContentComponent = ({
         {item.lastModifiedBy && isShared && (
           <div
             className="flex items-center gap-1"
-            title={`Last modified by ${item.lastModifiedBy}${item.lastModifiedAt
-              ? ` on ${formatDateTimeString(item.lastModifiedAt)}`
-              : ""
-              }`}
+            title={item.lastModifiedAt
+              ? t("common.lastModifiedByOn", {
+                  user: item.lastModifiedBy,
+                  date: formatDateTimeString(item.lastModifiedAt)
+                })
+              : t("common.lastModifiedBy", { user: item.lastModifiedBy })
+            }
           >
             <UserAvatar
               username={item.lastModifiedBy}
@@ -171,7 +174,7 @@ const KanbanItemContentComponent = ({
 
       {item.children && item.children.length > 0 && (
         <>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center justify-between text-sm lg:text-xs text-muted-foreground">
             <span>{t("checklists.subtasks")}</span>
             <span>
               {item.children.filter((c) => c.completed).length}/

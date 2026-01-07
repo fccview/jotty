@@ -21,6 +21,7 @@ import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { getUserByNote } from "../_server/actions/users";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseNoteEditorProps {
   note: Note;
@@ -73,6 +74,7 @@ export const useNoteEditor = ({
   });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditingEncrypted, setIsEditingEncrypted] = useState(false);
 
   const { autosaveNotes } = useSettings();
@@ -313,16 +315,16 @@ export const useNoteEditor = ({
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm(t('common.confirmDeleteItem', { itemTitle: note.title }))) {
-      const formData = new FormData();
-      formData.append("id", note.id);
-      formData.append("category", note.category || "");
-      await deleteNote(formData);
-      onDelete?.(note.id);
-      router.refresh();
-      onBack();
-    }
+  const confirmDelete = async () => {
+    const formData = new FormData();
+    formData.append("id", note.id);
+    formData.append("category", note.category || "");
+    if (note.uuid) formData.append("uuid", note.uuid);
+    await deleteNote(formData);
+    onDelete?.(note.id);
+    router.refresh();
+    onBack();
+    setShowDeleteModal(false);
   };
 
   const handleUnsavedChangesSave = () =>
@@ -405,7 +407,7 @@ export const useNoteEditor = ({
     handleEdit,
     handleCancel,
     handleSave,
-    handleDelete,
+    handleDelete: () => setShowDeleteModal(true),
     handleEditorContentChange,
     derivedMarkdownContent,
     showUnsavedChangesModal,
@@ -419,5 +421,16 @@ export const useNoteEditor = ({
     setIsPrinting,
     isEditingEncrypted,
     handleEditEncrypted,
+    DeleteModal: () => (
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: note.title })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
+    ),
   };
 };

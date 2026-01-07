@@ -6,6 +6,7 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
 import { useTranslations } from "next-intl";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 const getCSSVariable = (variable: string): string => {
   if (typeof window === "undefined") return "";
@@ -64,6 +65,7 @@ export const MermaidNodeView = ({
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(node.attrs.content || "");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const renderDiagram = async () => {
@@ -100,9 +102,12 @@ export const MermaidNodeView = ({
   };
 
   const handleDelete = () => {
-    if (confirm(t('common.confirmDeleteItem', { itemTitle: t('editor.mermaidDiagram') }))) {
-      deleteNode();
-    }
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    deleteNode();
+    setShowDeleteModal(false);
   };
 
   return (
@@ -113,21 +118,21 @@ export const MermaidNodeView = ({
             <textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
-              className="w-full min-h-[200px] p-3 border border-border rounded font-mono text-sm bg-muted"
+              className="w-full min-h-[200px] p-3 border border-border rounded font-mono text-md lg:text-sm bg-muted"
               placeholder={t("editor.enterMermaidCode")}
             />
             <div className="flex gap-2 mt-2">
               <button
                 onClick={handleSave}
-                className="px-3 py-1 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90"
+                className="px-3 py-1 bg-primary text-primary-foreground rounded text-md lg:text-sm hover:bg-primary/90"
               >{t('common.save')}</button>
               <button
                 onClick={handleCancel}
-                className="px-3 py-1 bg-muted text-foreground rounded text-sm hover:bg-muted/80"
+                className="px-3 py-1 bg-muted text-foreground rounded text-md lg:text-sm hover:bg-muted/80"
               >{t('common.cancel')}</button>
               <button
                 onClick={handleDelete}
-                className="px-3 py-1 bg-destructive text-destructive-foreground rounded text-sm hover:bg-destructive/90 ml-auto"
+                className="px-3 py-1 bg-destructive text-destructive-foreground rounded text-md lg:text-sm hover:bg-destructive/90 ml-auto"
               >{t('common.delete')}</button>
             </div>
           </div>
@@ -136,17 +141,17 @@ export const MermaidNodeView = ({
             <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 flex gap-1">
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-2 py-1 bg-muted text-foreground rounded text-xs hover:bg-muted/80"
+                className="px-2 py-1 bg-muted text-foreground rounded text-sm lg:text-xs hover:bg-muted/80"
                 title={t("editor.editDiagram")}
               >{t('common.edit')}</button>
               <button
                 onClick={handleDelete}
-                className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-xs hover:bg-destructive/90"
+                className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-sm lg:text-xs hover:bg-destructive/90"
                 title={t("editor.deleteDiagram")}
               >{t('common.delete')}</button>
             </div>
             {error ? (
-              <div className="text-destructive text-sm p-3 bg-destructive/10 rounded border border-destructive">
+              <div className="text-destructive text-md lg:text-sm p-3 bg-destructive/10 rounded border border-destructive">
                 <div className="font-semibold mb-1">{t("notes.mermaidError")}</div>
                 <div className="font-mono text-xs">{error}</div>
               </div>
@@ -159,6 +164,15 @@ export const MermaidNodeView = ({
           </>
         )}
       </div>
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title={t("common.delete")}
+        message={t("common.confirmDeleteItem", { itemTitle: t('editor.mermaidDiagram') })}
+        confirmText={t("common.delete")}
+        variant="destructive"
+      />
     </NodeViewWrapper>
   );
 };

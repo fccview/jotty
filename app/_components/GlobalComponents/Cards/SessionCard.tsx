@@ -6,6 +6,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Orbit01Icon, Delete03Icon } from "hugeicons-react";
 import { Location05Icon, Clock01Icon } from "hugeicons-react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 interface SessionCardProps {
   session: Session;
@@ -19,6 +20,7 @@ export const SessionCard = ({
   isTerminating,
 }: SessionCardProps) => {
   const { isDemoMode } = useAppMode();
+  const t = useTranslations();
   return (
     <div
       className={`jotty-session-card flex items-start justify-between p-4 rounded-jotty border ${
@@ -37,28 +39,28 @@ export const SessionCard = ({
               {getDeviceInfo(session.userAgent)}
             </span>
             {session.isCurrent && (
-              <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
+              <span className="px-2 py-1 text-sm lg:text-xs bg-primary/10 text-primary rounded-full">
                 Current
               </span>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-4 text-md lg:text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Location05Icon className="h-3 w-3" />
               <span>{isDemoMode ? "Hidden in demo" : session.ipAddress}</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock01Icon className="h-3 w-3" />
-              {formatTimeAgo(session.lastActivity)}
+              {formatTimeAgo(session.lastActivity, t)}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground truncate">
+          <p className="text-md lg:text-sm lg:text-xs text-muted-foreground truncate">
             {isDemoMode
               ? "Browser info hidden in demo mode"
               : session.userAgent}
           </p>
           {isDemoMode && (
-            <p className="text-xs text-amber-600 mt-1">
+            <p className="text-md lg:text-sm lg:text-xs text-amber-600 mt-1">
               Sensitive information is hidden in demo mode
             </p>
           )}

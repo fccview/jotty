@@ -438,6 +438,7 @@ export const reorderItems = async (formData: FormData) => {
     const activeItemId = formData.get("activeItemId") as string;
     const overItemId = formData.get("overItemId") as string;
     const category = formData.get("category") as string;
+    const isDropInto = formData.get("isDropInto") === "true";
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
@@ -488,9 +489,16 @@ export const reorderItems = async (formData: FormData) => {
 
     activeInfo.siblings.splice(activeInfo.index, 1);
 
-    const targetSiblings = overInfo.siblings;
-    let newIndex = targetSiblings.findIndex((item) => item.id === overItemId);
-    targetSiblings.splice(newIndex, 0, activeInfo.item);
+    if (isDropInto) {
+      if (!overInfo.item.children) {
+        overInfo.item.children = [];
+      }
+      overInfo.item.children.push(activeInfo.item);
+    } else {
+      const targetSiblings = overInfo.siblings;
+      let newIndex = targetSiblings.findIndex((item) => item.id === overItemId);
+      targetSiblings.splice(newIndex, 0, activeInfo.item);
+    }
 
     const updateOrder = (items: any[]) => {
       items.forEach((item, idx) => {

@@ -121,7 +121,7 @@ export const ChecklistCard = ({
             </button>
           )}
           {list.category && (
-            <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+            <span className="text-md lg:text-sm lg:text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
               {list.category.split("/").pop()}
             </span>
           )}
@@ -129,7 +129,7 @@ export const ChecklistCard = ({
       </div>
 
       <div className="mb-3">
-        <div className="flex justify-between text-xs text-muted-foreground mb-1">
+        <div className="flex justify-between text-sm lg:text-xs text-muted-foreground mb-1">
           <span>{t('checklists.progress')}</span>
           <span>{completionRate}%</span>
         </div>
@@ -143,12 +143,12 @@ export const ChecklistCard = ({
 
       {list.type === "task" && <TaskSpecificDetails items={activeItems} />}
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-sm lg:text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           {sharer && (
             <div className="flex items-center gap-1">
               <UserAvatar username={sharer} size="xs" />
-              <span className="text-xs text-muted-foreground">
+              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                 {t("common.sharedBy", { sharer })}
               </span>
             </div>
@@ -164,7 +164,7 @@ export const ChecklistCard = ({
         </div>
         <div className="flex items-center gap-1">
           <Clock01Icon className="h-3 w-3" />
-          <span>{formatRelativeTime(list.updatedAt)}</span>
+          <span>{formatRelativeTime(list.updatedAt, t)}</span>
         </div>
       </div>
     </div>
