@@ -67,9 +67,9 @@ export const NotesHome = ({
       <div className="flex-1 overflow-y-auto jotty-scrollable-content bg-background h-full">
         <EmptyState
           icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
-          title={t('notes.noNotesYet')}
-          description={t('notes.createFirstNote')}
-          buttonText={t('notes.createNewNote')}
+          title={t("notes.noNotesYet")}
+          description={t("notes.createFirstNote")}
+          buttonText={t("notes.createNewNote")}
           onButtonClick={() => onCreateModal()}
         />
       </div>
@@ -81,26 +81,28 @@ export const NotesHome = ({
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">{t('notes.title')}</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
+              {t("notes.title")}
+            </h1>
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={() => (window.location.href = "/notes")}
               size="sm"
-              className="flex-1 sm:size-lg"
+              className="flex-1 sm:size-lg h-14 lg:h-9"
             >
-              <span className="hidden sm:inline">{t('notes.allNotes')}</span>
+              <span className="hidden sm:inline">{t("notes.allNotes")}</span>
               <span className="sm:hidden">All</span>
             </Button>
             <Button
               onClick={() => onCreateModal()}
               size="sm"
-              className="flex-1 sm:size-lg"
+              className="flex-1 sm:size-lg h-14 lg:h-9"
             >
               <Add01Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{t('notes.newNote')}</span>
-              <span className="sm:hidden">{t('common.new')}</span>
+              <span className="hidden sm:inline">{t("notes.newNote")}</span>
+              <span className="sm:hidden">{t("common.new")}</span>
             </Button>
           </div>
         </div>
@@ -108,7 +110,9 @@ export const NotesHome = ({
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('common.pinned')}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                {t("common.pinned")}
+              </h2>
               <div className="flex-1 h-px bg-border"></div>
             </div>
             <DndContext
@@ -121,7 +125,7 @@ export const NotesHome = ({
                 items={pinned.map((note) => note.uuid || note.id)}
                 strategy={verticalListSortingStrategy}
               >
-                {viewMode === 'card' && (
+                {viewMode === "card" && (
                   <Masonry
                     breakpointCols={breakpointColumnsObj}
                     className="flex w-auto -ml-6"
@@ -145,7 +149,7 @@ export const NotesHome = ({
                   </Masonry>
                 )}
 
-                {viewMode === 'list' && (
+                {viewMode === "list" && (
                   <div className="space-y-3">
                     {pinned.map((note) => (
                       <NoteListItem
@@ -161,7 +165,7 @@ export const NotesHome = ({
                   </div>
                 )}
 
-                {viewMode === 'grid' && (
+                {viewMode === "grid" && (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {pinned.map((note) => (
                       <NoteGridItem
@@ -181,28 +185,28 @@ export const NotesHome = ({
               <DragOverlay>
                 {activeNote ? (
                   <>
-                    {viewMode === 'card' && (
+                    {viewMode === "card" && (
                       <NoteCard
                         note={activeNote}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         isDraggable={false}
                         sharer={getNoteSharer(activeNote)}
                         fixedWidth={draggedItemWidth || undefined}
                       />
                     )}
-                    {viewMode === 'list' && (
+                    {viewMode === "list" && (
                       <NoteListItem
                         note={activeNote}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         sharer={getNoteSharer(activeNote)}
                       />
                     )}
-                    {viewMode === 'grid' && (
+                    {viewMode === "grid" && (
                       <NoteGridItem
                         note={activeNote}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         sharer={getNoteSharer(activeNote)}
                       />
@@ -218,7 +222,7 @@ export const NotesHome = ({
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4 sm:mb-6">
               <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                {t('notes.recent')}
+                {t("notes.recent")}
               </h2>
               <div className="flex-1 h-px bg-border"></div>
               <Button
@@ -227,13 +231,13 @@ export const NotesHome = ({
                 size="sm"
                 className="ml-2"
               >
-                <span className="hidden sm:inline">{t('common.showAll')}</span>
-                <span className="sm:hidden">{t('common.all')}</span>
+                <span className="hidden sm:inline">{t("common.showAll")}</span>
+                <span className="sm:hidden">{t("common.all")}</span>
                 <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </div>
 
-            {viewMode === 'card' && (
+            {viewMode === "card" && (
               <Masonry
                 breakpointCols={breakpointColumnsObj}
                 className="flex w-auto -ml-6"
@@ -256,7 +260,7 @@ export const NotesHome = ({
               </Masonry>
             )}
 
-            {viewMode === 'list' && (
+            {viewMode === "list" && (
               <div className="space-y-3">
                 {recent.map((note) => (
                   <NoteListItem
@@ -271,7 +275,7 @@ export const NotesHome = ({
               </div>
             )}
 
-            {viewMode === 'grid' && (
+            {viewMode === "grid" && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {recent.map((note) => (
                   <NoteGridItem
