@@ -305,7 +305,7 @@ mark {
 }
 
 .prose kbd {
-    @apply bg-muted px-2 py-1 text-xs rounded-jotty border border-border shadow-border shadow-sm;
+    @apply bg-muted px-2 py-1 text-sm lg:text-xs rounded-jotty border border-border shadow-border shadow-sm;
 }
 
 p>code {

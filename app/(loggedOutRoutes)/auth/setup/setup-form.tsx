@@ -32,7 +32,7 @@ export default function SetupForm() {
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {t('welcomeTo', { appName: isRwMarkable ? "rwMarkable" : "jotty·page" })}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-md lg:text-sm text-muted-foreground">
           {t('createAdminAccountDescription')}
         </p>
       </div>
@@ -40,7 +40,7 @@ export default function SetupForm() {
       <form action={handleSubmit} className="space-y-4">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
-            <span className="text-sm text-destructive">{error}</span>
+            <span className="text-md lg:text-sm text-destructive">{error}</span>
           </div>
         )}
 
@@ -77,7 +77,7 @@ export default function SetupForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="inline-flex items-center justify-center rounded-jotty text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+          className="inline-flex items-center justify-center rounded-jotty text-md lg:text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
         >
           {isLoading ? t('creatingAccount') : t('createAdminAccount')}
         </button>

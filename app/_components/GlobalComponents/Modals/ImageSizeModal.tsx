@@ -103,16 +103,16 @@ export const ImageSizeModal = ({
             </div>
           </div>
 
-          <div className="text-xs text-muted-foreground">
+          <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
             {t("editor.leaveEmptyForAutoSize")}
           </div>
         </div>
 
         <div className="flex justify-between pt-4">
-          <Button variant="outline" onClick={handleReset} className="text-sm">{t('common.reset')}</Button>
+          <Button variant="outline" onClick={handleReset} className="text-md lg:text-sm">{t('common.reset')}</Button>
           <div className="space-x-2">
-            <Button variant="outline" onClick={onClose} className="text-sm">{t('common.cancel')}</Button>
-            <Button onClick={handleConfirm} className="text-sm">{t('common.apply')}</Button>
+            <Button variant="outline" onClick={onClose} className="text-md lg:text-sm">{t('common.cancel')}</Button>
+            <Button onClick={handleConfirm} className="text-md lg:text-sm">{t('common.apply')}</Button>
           </div>
         </div>
       </div>

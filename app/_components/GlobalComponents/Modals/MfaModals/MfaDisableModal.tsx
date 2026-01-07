@@ -69,7 +69,7 @@ export const MfaDisableModal = ({
                 />
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">
+                    <label className="text-md lg:text-sm font-medium text-foreground">
                         {t("mfa.enterCode")}
                     </label>
                     <CodeInput

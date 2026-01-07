@@ -127,7 +127,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
             />
           </div>
           <div
-            className={`flex items-center justify-between text-xs text-muted-foreground ${getHighlightClass(
+            className={`flex items-center justify-between text-sm lg:text-xs text-muted-foreground ${getHighlightClass(
               "--muted-foreground"
             )}`}
           >
@@ -188,7 +188,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           >
             <div className="flex items-center gap-2">
               <CheckmarkCircle04Icon className="h-4 w-4 text-primary" />
-              <span className="text-sm text-primary font-medium">
+              <span className="text-md lg:text-sm text-primary font-medium">
                 {t('settings.customTheme.successMessage')}
               </span>
             </div>
@@ -201,7 +201,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           >
             <div className="flex items-center gap-2">
               <CheckmarkCircle04Icon className="h-4 w-4 text-destructive" />
-              <span className="text-sm text-destructive font-medium">
+              <span className="text-md lg:text-sm text-destructive font-medium">
                 {t('settings.customTheme.errorMessage')}
               </span>
             </div>
@@ -209,14 +209,14 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
 
           <div className="flex border-b border-border">
             <button
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-primary bg-primary/5 text-primary transition-colors ${getHighlightClass(
+              className={`flex items-center gap-2 px-4 py-3 text-md lg:text-sm font-medium border-b-2 border-primary bg-primary/5 text-primary transition-colors ${getHighlightClass(
                 "--primary"
               )} ${getHighlightClass("--border")}`}
             >
               {t('settings.customTheme.activeTab')}
             </button>
             <button
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50 ${getHighlightClass(
+              className={`flex items-center gap-2 px-4 py-3 text-md lg:text-sm font-medium border-b-2 border-transparent text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50 ${getHighlightClass(
                 "--muted-foreground"
               )} ${getHighlightClass("--foreground")} ${getHighlightClass(
                 "--muted"
@@ -233,13 +233,13 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           >
             <div className="flex items-center justify-between">
               <span
-                className={`text-popover-foreground text-sm ${getHighlightClass(
+                className={`text-popover-foreground text-md lg:text-sm ${getHighlightClass(
                   "--popover-foreground"
                 )}`}
               >
                 {t('settings.customTheme.calendarDay')}
               </span>
-              <span className="text-xs text-muted-foreground">15</span>
+              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">15</span>
             </div>
           </div>
 
@@ -255,7 +255,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
             >
               {t('settings.customTheme.cardTitle')}
             </h4>
-            <p className="text-muted-foreground text-sm mt-1">
+            <p className="text-muted-foreground text-md lg:text-sm mt-1">
               {t('settings.customTheme.cardForegroundColor')}
             </p>
           </div>
@@ -286,7 +286,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
             </label>
             <input
               type="text"
-              className={`w-full px-3 py-2 text-sm border border-input bg-background rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 ${getHighlightClass(
+              className={`w-full px-3 py-2 text-md lg:text-sm border border-input bg-background rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 ${getHighlightClass(
                 "--input"
               )} ${getHighlightClass("--border")} ${getHighlightClass(
                 "--ring"

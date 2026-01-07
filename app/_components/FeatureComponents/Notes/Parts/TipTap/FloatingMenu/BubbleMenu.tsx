@@ -55,7 +55,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
         let left: number;
 
         if (isMobile) {
-          top = endCoords.bottom + 8;
+          top = endCoords.bottom + 20;
           left = endCoords.left;
         } else {
           top = startCoords.top - menuRect.height - 8;

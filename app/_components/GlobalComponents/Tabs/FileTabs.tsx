@@ -11,7 +11,7 @@ export const FileTabs = ({ activeTab, setActiveTab }: FileTabsProps) => (
       <button
         key={tab}
         onClick={() => setActiveTab(tab)}
-        className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
+        className={`flex-1 px-6 py-3 text-md lg:text-sm font-medium transition-colors ${
           activeTab === tab
             ? "text-primary-foreground border-b-2 border-primary bg-primary"
             : "text-muted-foreground hover:text-foreground"

@@ -20,7 +20,7 @@ export const ChecklistTypeSelector = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-foreground mb-2">
+      <label className="block text-md lg:text-sm font-medium text-foreground mb-2">
         {t("checklists.checklistType")}
       </label>
 
@@ -48,7 +48,7 @@ export const ChecklistTypeSelector = ({
                   ? t("checklists.simpleChecklist")
                   : t("checklists.taskProject")}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                 {type === ChecklistsTypes.SIMPLE
                   ? t("checklists.basicTodoItems")
                   : t("checklists.withTimeTracking")}

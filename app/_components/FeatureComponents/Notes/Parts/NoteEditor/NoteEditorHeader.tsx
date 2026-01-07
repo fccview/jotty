@@ -323,7 +323,7 @@ export const NoteEditorHeader = ({
                     )}
                   </div>
                   {category && category !== t("notes.uncategorized") && (
-                    <div className="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5 mt-1 text-md lg:text-sm text-muted-foreground">
                       <Folder02Icon className="h-3 w-3" />
                       <span>{category}</span>
                     </div>

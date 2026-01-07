@@ -91,7 +91,7 @@ export const CategoryTreeSelector = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="jotty-category-tree-selector-button w-full px-3 py-2 text-left text-sm bg-background border border-input rounded-jotty hover:border-ring focus:outline-none focus:ring-none focus:ring-ring flex items-center gap-2"
+        className="jotty-category-tree-selector-button w-full px-3 py-2 text-left text-md lg:text-sm bg-background border border-input rounded-jotty hover:border-ring focus:outline-none focus:ring-none focus:ring-ring flex items-center gap-2"
       >
         <Folder01Icon className="h-4 w-4 text-muted-foreground" />
         <span className="truncate flex-1">{selectedCategoryName}</span>
@@ -111,7 +111,7 @@ export const CategoryTreeSelector = ({
             {rootCategories.length === 0 && (
               <div
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty cursor-pointer hover:bg-muted/50",
+                  "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty cursor-pointer hover:bg-muted/50",
                   !selectedCategory && "bg-primary/10 text-primary"
                 )}
                 onClick={() => handleCategoryClick("")}

@@ -69,7 +69,7 @@ export const CreateCategoryModal = ({
     <Modal isOpen={true} onClose={onClose} title={t('common.createCategoryHeader')}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-2">
+          <label className="block text-md lg:text-sm font-medium text-foreground mb-2">
             {t('common.parentCategory')}
           </label>
           <CategoryTreeSelector
@@ -96,7 +96,7 @@ export const CreateCategoryModal = ({
         />
 
         {notAllowedNames.includes(categoryName.trim().toLowerCase()) && (
-          <div className="text-xs text-destructive">
+          <div className="text-md lg:text-sm lg:text-xs text-destructive">
             {t('common.notAllowedName', { name: categoryName })}
           </div>
         )}

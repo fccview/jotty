@@ -164,12 +164,12 @@ export const NoteCard = ({
         <div className="jotty-note-card-content relative max-h-72 overflow-y-auto">
           {isEncrypted ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-sm text-muted-foreground italic">
+              <p className="text-md lg:text-sm text-muted-foreground italic">
                 {t("encryption.thisNoteIsEncrypted")}
               </p>
             </div>
           ) : showMarkdownPreview ? (
-            <div className="text-sm text-muted-foreground prose prose-sm max-w-none">
+            <div className="text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none">
               <div
                 className={`${
                   fullScrollableContent
@@ -181,7 +181,7 @@ export const NoteCard = ({
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground line-clamp-4 leading-relaxed">
+            <p className="text-md lg:text-sm text-muted-foreground line-clamp-4 leading-relaxed">
               {previewText}
             </p>
           )}
@@ -189,12 +189,12 @@ export const NoteCard = ({
       </div>
 
       <div className="px-4 py-3 bg-muted/30 border-t border-border/50">
-        <div className="jotty-note-card-footer flex items-center justify-between text-xs text-muted-foreground">
+        <div className="jotty-note-card-footer flex items-center justify-between text-sm lg:text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             {sharer && (
               <div className="flex items-center gap-1">
                 <UserAvatar username={sharer} size="xs" />
-                <span className="text-xs text-muted-foreground">
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                   {t("common.sharedBy", { sharer })}
                 </span>
               </div>

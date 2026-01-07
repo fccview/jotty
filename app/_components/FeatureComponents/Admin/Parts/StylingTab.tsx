@@ -78,7 +78,7 @@ export const StylingTab = () => {
               )}
             </div>
             {hasCssChanges && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                 {t("admin.unsavedCssChanges")}
               </p>
             )}
@@ -105,7 +105,7 @@ export const StylingTab = () => {
                 >
                   <div className="flex items-center space-x-2">
                     <theme.icon className="h-4 w-4" />
-                    <span className="text-sm font-medium">{theme.name}</span>
+                    <span className="text-md lg:text-sm font-medium">{theme.name}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Button
@@ -128,7 +128,7 @@ export const StylingTab = () => {
                 </div>
               ))}
               {getCustomThemes().length === 0 && (
-                <p className="text-sm text-muted-foreground col-span-full text-center py-4">
+                <p className="text-md lg:text-sm text-muted-foreground col-span-full text-center py-4">
                   {t("admin.noCustomThemesYet")}
                 </p>
               )}
@@ -158,7 +158,7 @@ export const StylingTab = () => {
               />
 
               <div className="space-y-2">
-                <label htmlFor="themeIcon" className="text-sm font-medium">
+                <label htmlFor="themeIcon" className="text-md lg:text-sm font-medium">
                   {t("admin.iconName")}
                 </label>
                 <div className="relative">
@@ -179,7 +179,7 @@ export const StylingTab = () => {
                     className="pl-10"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                   <a
                     className="text-primary hover:text-primary/80 underline"
                     href="https://hugeicons.com/icons?style=Stroke&type=Rounded"
@@ -193,14 +193,14 @@ export const StylingTab = () => {
             </div>
 
             <div className="space-y-4">
-              <h4 className="text-sm font-medium">{t("admin.colorVariables")}</h4>
+              <h4 className="text-md lg:text-sm font-medium">{t("admin.colorVariables")}</h4>
               <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
                 {Object.entries(themeForm.colors).map(([key, value]) => (
                   <div
                     key={key}
                     className="flex items-center space-x-2 flex-wrap"
                   >
-                    <label className="text-xs font-mono text-muted-foreground min-w-0 flex-1">
+                    <label className="text-md lg:text-sm lg:text-xs font-mono text-muted-foreground min-w-0 flex-1">
                       {key}
                     </label>
                     <input
@@ -238,7 +238,7 @@ export const StylingTab = () => {
                       onFocus={() => handleColorFocus(key)}
                       onBlur={handleColorBlur}
                       placeholder="255 255 255"
-                      className="flex-1 text-xs font-mono"
+                      className="flex-1 text-sm lg:text-xs font-mono"
                     />
                   </div>
                 ))}
@@ -265,7 +265,7 @@ export const StylingTab = () => {
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-sm font-medium">{t("admin.livePreview")}</h4>
+            <h4 className="text-md lg:text-sm font-medium">{t("admin.livePreview")}</h4>
             <div className="border border-border rounded-jotty">
               <ThemePreview
                 colors={themeForm.colors}

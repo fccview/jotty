@@ -134,7 +134,7 @@ export const InstallPrompt = () => {
             <h3 className="font-medium text-foreground hover:underline">
               Install {isRwMarkable ? "rwMarkable" : "jotty·page"}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               Add to your home screen for quick access
             </p>
           </div>

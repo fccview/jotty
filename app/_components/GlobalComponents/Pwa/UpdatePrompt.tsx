@@ -151,7 +151,7 @@ export const UpdatePrompt = () => {
               <h3 className="font-medium text-foreground hover:underline">
                 New version: {latestVersion}
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 Click to see release notes
               </p>
             </div>

@@ -65,10 +65,10 @@ export const BulkPasteModal = ({
             <div className="flex items-start gap-2">
               <Alert02Icon className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="text-sm font-medium text-destructive mb-1">
+                <h3 className="text-md lg:text-sm font-medium text-destructive mb-1">
                   {t('checklists.itemsNotAddedYet')}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-md lg:text-sm text-muted-foreground">
                   {t('checklists.youHaveItemsThatWillNotBeAdded', { count: itemCount })}
                 </p>
               </div>
@@ -79,7 +79,7 @@ export const BulkPasteModal = ({
         <div>
           <label
             htmlFor="itemsText"
-            className="block text-sm font-medium text-foreground mb-2"
+            className="block text-md lg:text-sm font-medium text-foreground mb-2"
           >
             {t('checklists.pasteYourList')}
           </label>
@@ -93,11 +93,11 @@ export const BulkPasteModal = ({
             placeholder={`Item 1
 Item 2
 Item 3...`}
-            className="w-full h-32 px-3 py-2 border border-input bg-background rounded-jotty text-sm focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 resize-none"
+            className="w-full h-32 px-3 py-2 border border-input bg-background rounded-jotty text-md lg:text-sm focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 resize-none"
             disabled={isLoading}
           />
           {itemCount > 0 && !showUnsavedWarning && (
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
               {t('checklists.itemsWillBeAdded', { count: itemCount })}
             </p>
           )}

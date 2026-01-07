@@ -42,7 +42,7 @@ const TimeEntriesAccordionComponent = ({
     <div className="border border-border/30 rounded-jotty bg-muted/20">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        className="w-full flex items-center justify-between py-2 text-sm lg:text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
         <span className="flex items-center gap-1.5">
           <Clock01Icon className="h-3 w-3" />
@@ -77,16 +77,16 @@ const TimeEntriesAccordionComponent = ({
                   />
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-foreground">
+                  <span className="text-md lg:text-sm lg:text-xs font-semibold text-foreground">
                     {formatTimerTime(entry.duration || 0)}
                   </span>
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                   {formatTimeString(entry.startTime)}
                 </span>
               </div>
               {entry.endTime && (
-                <div className="text-xs text-muted-foreground/70 mt-0.5">
+                <div className="text-md lg:text-sm lg:text-xs text-muted-foreground/70 mt-0.5">
                   {formatDateString(entry.startTime)} •{" "}
                   {formatTimeString(entry.endTime)}
                 </div>

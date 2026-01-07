@@ -87,7 +87,7 @@ export const AdminSharing = () => {
         <div className="rounded-md border bg-card p-6 shadow-sm">
           <div className="space-y-2 mb-6">
             <h3 className="text-lg font-semibold">{t('admin.sharingOverview')}</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('admin.detailedSharingBreakdown')}
             </p>
           </div>
@@ -97,7 +97,7 @@ export const AdminSharing = () => {
                 <div className="text-2xl font-bold text-primary">
                   {Object.keys(rawGlobalSharing?.checklists || {}).length}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-md lg:text-sm text-muted-foreground">
                   {t('admin.activeChecklistSharers')}
                 </div>
               </div>
@@ -105,7 +105,7 @@ export const AdminSharing = () => {
                 <div className="text-2xl font-bold text-primary">
                   {Object.keys(rawGlobalSharing?.notes || {}).length}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-md lg:text-sm text-muted-foreground">
                   {t('admin.activeNotesSharers')}
                 </div>
               </div>
@@ -113,7 +113,7 @@ export const AdminSharing = () => {
                 <div className="text-2xl font-bold text-primary">
                   {totalSharingRelationships}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-md lg:text-sm text-muted-foreground">
                   {t('admin.totalSharing')}
                 </div>
               </div>
@@ -125,11 +125,11 @@ export const AdminSharing = () => {
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium">{t('common.user')}</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium">
+                      <th className="px-4 py-3 text-left text-md lg:text-sm font-medium">{t('common.user')}</th>
+                      <th className="px-4 py-3 text-left text-md lg:text-sm font-medium">
                         {t('admin.itemsShared')}
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-medium">
+                      <th className="px-4 py-3 text-left text-md lg:text-sm font-medium">
                         {t('admin.activityLevel')}
                       </th>
                     </tr>
@@ -165,7 +165,7 @@ export const AdminSharing = () => {
                                 }}
                               />
                             </div>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                               {sharer.sharedCount >
                                 mostActiveSharers[0].sharedCount * 0.8
                                 ? t('common.high')
@@ -192,10 +192,10 @@ export const AdminSharing = () => {
           <div className="bg-muted border border-border rounded-jotty p-4 flex items-start gap-3">
             <Globe02Icon className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-md lg:text-sm font-medium text-foreground">
                 {t('admin.contentHidden')}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
                 {t('admin.noSharingPermissionsLabel')}
               </p>
             </div>
@@ -211,7 +211,7 @@ export const AdminSharing = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">{t('checklists.sharedChecklists')}</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-md lg:text-sm text-muted-foreground">
                       {totalSharedChecklists} {t('checklists.title')}
                     </p>
                   </div>
@@ -228,7 +228,7 @@ export const AdminSharing = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">{t('notes.sharedNotes')}</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-md lg:text-sm text-muted-foreground">
                       {totalSharedNotes} {t('notes.title')}
                     </p>
                   </div>
@@ -245,7 +245,7 @@ export const AdminSharing = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">{t('sharing.publicShares')}</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-md lg:text-sm text-muted-foreground">
                       {t('admin.totalPublicItems', { count: totalPublicShares })}
                     </p>
                   </div>

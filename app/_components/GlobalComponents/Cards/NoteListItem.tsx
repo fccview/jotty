@@ -92,7 +92,7 @@ export const NoteListItem = ({
           onClick={() => onSelect(note)}
         >
           <div className="flex items-center gap-2">
-            <h3 className="font-medium text-sm text-foreground truncate">
+            <h3 className="font-medium text-md lg:text-sm text-foreground truncate">
               {displayTitle}
             </h3>
             {isEncrypted && (
@@ -100,7 +100,7 @@ export const NoteListItem = ({
             )}
           </div>
           {categoryName && (
-            <div className="text-xs text-muted-foreground mt-1 truncate">
+            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1 truncate">
               {categoryName}
             </div>
           )}

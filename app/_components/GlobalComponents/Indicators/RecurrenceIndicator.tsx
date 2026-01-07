@@ -22,7 +22,7 @@ export const RecurrenceIndicator = ({
     >
       <RefreshIcon className="h-4 w-4 text-primary" />
 
-      <span className="hidden group-hover/recurrence-indicator:block whitespace-nowrap text-xs font-medium text-muted-foreground absolute -top-6 left-1/2 -translate-x-1/2 bg-muted capitalize rounded-jotty p-1 shadow-sm">
+      <span className="hidden group-hover/recurrence-indicator:block whitespace-nowrap text-sm lg:text-xs font-medium text-muted-foreground absolute -top-6 left-1/2 -translate-x-1/2 bg-muted capitalize rounded-jotty p-1 shadow-sm">
         {description}
       </span>
     </div>

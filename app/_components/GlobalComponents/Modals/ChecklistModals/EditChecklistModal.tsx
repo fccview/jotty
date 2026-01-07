@@ -132,7 +132,7 @@ export const EditChecklistModal = ({
 
         {isOwner && (
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
+            <label className="block text-md lg:text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
             <CategoryTreeSelector
               categories={categories}
               selectedCategory={category}

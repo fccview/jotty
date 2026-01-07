@@ -69,7 +69,7 @@ export const NoteFooterStats = ({ content }: NoteFooterStatsProps) => {
 
   return (
     <div className="mt-8 pt-4 border-t border-border">
-      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap gap-4 text-md lg:text-sm text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <span className="font-medium">
             {stats.wordCount.toLocaleString()}

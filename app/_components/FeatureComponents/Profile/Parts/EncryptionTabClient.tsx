@@ -288,7 +288,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
       {method === "pgp" && (
         <FormWrapper title={t('encryption.encryptionKeys')}>
           {isLoadingKeys ? (
-            <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+            <div className="text-md lg:text-sm text-muted-foreground">{t('common.loading')}</div>
           ) : hasKeys && keyMetadata ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-primary">
@@ -320,7 +320,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
                 <LockKeyIcon className="h-5 w-5" />
                 <span>{t('encryption.noKeysConfigured')}</span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t('encryption.generateOrImportKeys')}
               </p>
             </div>
@@ -381,7 +381,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
               )}
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-md lg:text-sm text-muted-foreground">
               {t('encryption.keysDisabledInDemo')}
             </div>
           )}
@@ -399,7 +399,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
               <div className="font-medium">
                 {t('encryption.promptForPassphrase')}
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t('encryption.promptForPassphraseDescription')}
               </p>
             </label>
@@ -416,7 +416,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
         <FormWrapper title={t('encryption.customKeyPath')}>
           {!isDemoMode ? (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t('encryption.customKeyPathDescription')}
               </p>
               <Input
@@ -437,7 +437,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
               </Button>
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-md lg:text-sm text-muted-foreground">
               {t('encryption.customPathDisabledInDemo')}
             </div>
           )}
@@ -463,7 +463,7 @@ export const EncryptionTabClient = ({ initialKeyData }: EncryptionTabClientProps
               <Alert02Icon className="h-6 w-6" />
               <h3 className="text-lg font-semibold">{t('encryption.deleteKeysConfirmTitle')}</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-6">
+            <p className="text-md lg:text-sm text-muted-foreground mb-6">
               {t('encryption.deleteKeysConfirmMessage')}
             </p>
             <div className="flex justify-end gap-3">

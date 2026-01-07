@@ -341,7 +341,7 @@ const NestedChecklistItemComponent = ({
               <label
                 htmlFor={item.id}
                 className={cn(
-                  "text-sm transition-all duration-200 cursor-pointer items-center flex",
+                  "text-md lg:text-sm transition-all duration-200 cursor-pointer items-center flex",
                   isActive && "scale-95",
                   item.completed || completed
                     ? "line-through text-muted-foreground"
@@ -375,7 +375,7 @@ const NestedChecklistItemComponent = ({
 
         {!isEditing && permissions?.canEdit && (
           <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
-            <span className="text-xs text-muted-foreground mr-1">#{index}</span>
+            <span className="text-md lg:text-sm lg:text-xs text-muted-foreground mr-1">#{index}</span>
 
             <div className="hidden lg:flex items-center gap-1">
               {!isPublicView && (
@@ -438,7 +438,7 @@ const NestedChecklistItemComponent = ({
                           key={option.id}
                           type="button"
                           onClick={() => handleDropdownAction(option.id)}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                          className="w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm hover:bg-accent hover:text-accent-foreground"
                         >
                           {option.icon && <option.icon className="h-4 w-4" />}
                           <span>{option.name}</span>

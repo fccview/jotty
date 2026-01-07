@@ -81,7 +81,7 @@ export const SharedItemsList = ({
         <button
           onClick={onToggleCollapsed}
           className={cn(
-            "flex items-center gap-2 py-2 pr-2 text-sm rounded-jotty transition-colors w-full text-left",
+            "flex items-center gap-2 py-2 pr-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
             "hover:bg-muted/50 cursor-pointer"
           )}
         >
@@ -94,7 +94,7 @@ export const SharedItemsList = ({
           <span className="truncate font-medium text-primary">
             Shared with you
           </span>
-          <span className="text-xs text-muted-foreground ml-auto">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
             {modeItems.length}
           </span>
         </button>
@@ -110,7 +110,7 @@ export const SharedItemsList = ({
                 <button
                   onClick={() => toggleUserCollapsed(sharer)}
                   className={cn(
-                    "flex items-center gap-2 py-2 pr-2 text-sm rounded-jotty transition-colors w-full text-left",
+                    "flex items-center gap-2 py-2 pr-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
                     "hover:bg-muted/50 cursor-pointer"
                   )}
                 >
@@ -123,7 +123,7 @@ export const SharedItemsList = ({
                   <span className="truncate font-medium text-foreground">
                     {sharer}
                   </span>
-                  <span className="text-xs text-muted-foreground ml-auto">
+                  <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
                     {sharerItems.length}
                   </span>
                 </button>
@@ -147,7 +147,7 @@ export const SharedItemsList = ({
                           onClick={() => onItemClick(fullItem)}
                           data-sidebar-item-selected={isSelected}
                           className={cn(
-                            "flex items-center gap-2 py-2 px-3 text-sm rounded-jotty transition-colors w-full text-left",
+                            "flex items-center gap-2 py-2 px-3 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
                             isSelected
                               ? "bg-primary/60 text-primary-foreground"
                               : "hover:bg-muted/50 text-foreground"

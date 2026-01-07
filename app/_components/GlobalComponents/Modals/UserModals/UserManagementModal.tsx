@@ -44,7 +44,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
         {state.error && (
           <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
             <AlertCircleIcon className="h-4 w-4 text-destructive" />
-            <span className="text-sm text-destructive">{state.error}</span>
+            <span className="text-md lg:text-sm text-destructive">{state.error}</span>
           </div>
         )}
         <Input
@@ -78,7 +78,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
           />
           <label
             htmlFor="isAdmin"
-            className="flex items-center gap-2 text-sm cursor-pointer"
+            className="flex items-center gap-2 text-md lg:text-sm cursor-pointer"
           >
             <ShieldUserIcon className="h-4 w-4" /> {t('admin.privileges')}
           </label>
@@ -96,7 +96,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
               />
               <label
                 htmlFor="changePassword"
-                className="flex items-center gap-2 text-sm cursor-pointer"
+                className="flex items-center gap-2 text-md lg:text-sm cursor-pointer"
               >
                 <SquareLock01Icon className="h-4 w-4" />{t('settings.changePassword')}</label>
             </div>
@@ -113,7 +113,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
             {user?.mfaEnabled && (
               <>
                 <div className="flex items-center justify-between">
-                  <label htmlFor="disableMfa" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <label htmlFor="disableMfa" className="flex items-center gap-2 text-md lg:text-sm font-medium text-foreground">
                     <FileSecurityIcon className="h-4 w-4" />
                     {t('mfa.disableMfaForUser')}
                   </label>

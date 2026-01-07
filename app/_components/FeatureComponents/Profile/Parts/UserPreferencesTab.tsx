@@ -353,14 +353,14 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               className="w-full"
             />
             {validationErrors.preferredLocale && (
-              <p className="text-sm text-destructive">
+              <p className="text-md lg:text-sm text-destructive">
                 {validationErrors.preferredLocale}
               </p>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.choosePreferredLanguage')}
             </p>
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-2">
               <a
                 href="https://github.com/fccview/jotty/blob/main/howto/TRANSLATIONS.md"
                 target="_blank"
@@ -375,7 +375,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           <div className="space-y-2">
             <Label htmlFor="preferred-theme">{t('settings.preferredTheme')}</Label>
             {loadingThemes ? (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-md lg:text-sm text-muted-foreground">
                 {t('settings.loadingThemes')}
               </div>
             ) : (
@@ -394,11 +394,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               />
             )}
             {validationErrors.preferredTheme && (
-              <p className="text-sm text-destructive">
+              <p className="text-md lg:text-sm text-destructive">
                 {validationErrors.preferredTheme}
               </p>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.choosePreferredTheme')}
             </p>
           </div>
@@ -415,11 +415,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               className="w-full"
             />
             {validationErrors.landingPage && (
-              <p className="text-sm text-destructive">
+              <p className="text-md lg:text-sm text-destructive">
                 {validationErrors.landingPage}
               </p>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.selectDefaultPageAfterLogin')}
             </p>
           </div>
@@ -436,11 +436,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               className="w-full"
             />
             {validationErrors.fileRenameMode && (
-              <p className="text-sm text-destructive">
+              <p className="text-md lg:text-sm text-destructive">
                 {validationErrors.fileRenameMode}
               </p>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.chooseFileRenameMode')}
             </p>
           </div>
@@ -460,11 +460,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               className="w-full"
             />
             {validationErrors.preferredDateFormat && (
-              <p className="text-sm text-destructive">
+              <p className="text-md lg:text-sm text-destructive">
                 {validationErrors.preferredDateFormat}
               </p>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.choosePreferredDateFormat')}
             </p>
           </div>
@@ -484,11 +484,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               className="w-full"
             />
             {validationErrors.preferredTimeFormat && (
-              <p className="text-sm text-destructive">
+              <p className="text-md lg:text-sm text-destructive">
                 {validationErrors.preferredTimeFormat}
               </p>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.choosePreferredTimeFormat')}
             </p>
           </div>
@@ -508,11 +508,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               className="w-full"
             />
             {validationErrors.handedness && (
-              <p className="text-sm text-destructive">
+              <p className="text-md lg:text-sm text-destructive">
                 {validationErrors.handedness}
               </p>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.chooseHandedness')}
             </p>
           </div>
@@ -562,11 +562,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.notesAutoSaveInterval && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.notesAutoSaveInterval}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseAutoSaveInterval')}
           </p>
         </div>
@@ -583,11 +583,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.notesDefaultMode && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.notesDefaultMode}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseNotesDefaultMode', {
               mode: notesDefaultModeOptions.find(
                 (option) => option.id !== currentSettings.notesDefaultMode
@@ -611,11 +611,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.notesDefaultEditor && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.notesDefaultEditor}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseDefaultEditor', {
               editor: notesDefaultEditorOptions.find(
                 (option) => option.id !== currentSettings.notesDefaultEditor
@@ -636,11 +636,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.tableSyntax && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.tableSyntax}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseTableSyntax')}
           </p>
         </div>
@@ -657,11 +657,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.markdownTheme && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.markdownTheme}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseSyntaxTheme')}
           </p>
         </div>
@@ -686,11 +686,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.disableRichEditor && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.disableRichEditor}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.minimalModeDescription')}
           </p>
         </div>
@@ -710,11 +710,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.defaultNoteFilter && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.defaultNoteFilter}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseDefaultNoteFilter')}
           </p>
         </div>
@@ -733,11 +733,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.quickCreateNotes && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.quickCreateNotes}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.quickCreateNotesDescription')}
           </p>
         </div>
@@ -756,7 +756,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               placeholder={t('settings.selectDefaultCategory')}
               className="w-full"
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.defaultCategoryDescription')}
             </p>
           </div>
@@ -789,7 +789,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
         <div className="space-y-2">
           <Label htmlFor="enable-recurrence">
             {t('settings.recurringChecklists')}{" "}
-            <span className="text-sm text-muted-foreground">{t('settings.beta')}</span>
+            <span className="text-md lg:text-sm text-muted-foreground">{t('settings.beta')}</span>
           </Label>
           <Dropdown
             value={currentSettings.enableRecurrence || "disable"}
@@ -818,7 +818,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             placeholder={t('settings.selectShowCompletedSuggestions')}
             className="w-full"
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.completedSuggestionsDescription')}
           </p>
         </div>
@@ -840,11 +840,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             className="w-full"
           />
           {validationErrors.defaultChecklistFilter && (
-            <p className="text-sm text-destructive">
+            <p className="text-md lg:text-sm text-destructive">
               {validationErrors.defaultChecklistFilter}
             </p>
           )}
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseDefaultChecklistFilter')}
           </p>
         </div>
@@ -855,12 +855,12 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-jotty">
             <div>
               <h4 className="font-medium">{t('settings.deleteAccount')}</h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t('settings.deleteAccountDescription')}
               </p>
             </div>
             {isDemoMode ? (
-              <span className="text-sm text-muted-foreground">
+              <span className="text-md lg:text-sm text-muted-foreground">
                 {t('settings.disabledInDemoMode')}
               </span>
             ) : (

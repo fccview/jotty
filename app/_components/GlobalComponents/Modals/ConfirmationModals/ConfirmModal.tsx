@@ -35,7 +35,7 @@ export const ConfirmModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">{message}</p>
+        <p className="text-md lg:text-sm text-muted-foreground">{message}</p>
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>

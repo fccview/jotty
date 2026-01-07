@@ -64,11 +64,11 @@ export const FileUpload = ({
                 ) : (
                   <CheckmarkCircle04Icon className="h-4 w-4 text-green-500 flex-shrink-0" />
                 )}
-                <span className="text-sm text-foreground truncate">
+                <span className="text-md lg:text-sm text-foreground truncate">
                   {selectedFile.name}
                 </span>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                 {formatFileSize(selectedFile.size)}
               </span>
               {!isUploading && !uploadError && (
@@ -78,20 +78,20 @@ export const FileUpload = ({
 
             {isUploading && (
               <div className="w-full text-center">
-                <div className="text-sm text-muted-foreground">
+                <div className="text-md lg:text-sm text-muted-foreground">
                   Uploading file...
                 </div>
               </div>
             )}
 
             {uploadError && (
-              <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-jotty">
+              <div className="text-md lg:text-sm text-destructive bg-destructive/10 p-2 rounded-jotty">
                 {uploadError}
               </div>
             )}
 
             {fileSizeError && (
-              <div className="text-sm text-destructive bg-destructive/10 p-2 rounded-jotty">
+              <div className="text-md lg:text-sm text-destructive bg-destructive/10 p-2 rounded-jotty">
                 {fileSizeError}
               </div>
             )}

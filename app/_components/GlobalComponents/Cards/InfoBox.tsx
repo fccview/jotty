@@ -16,8 +16,8 @@ export const InfoBox = ({ title, items, variant }: InfoBoxProps) => {
 
   return (
     <div className={`jotty-info-box ${baseClasses} ${variantClasses}`}>
-      <h3 className="text-sm font-medium mb-2">{title}</h3>
-      <ul className="text-sm text-muted-foreground space-y-1">
+      <h3 className="text-md lg:text-sm font-medium mb-2">{title}</h3>
+      <ul className="text-md lg:text-sm text-muted-foreground space-y-1">
         {items.map((item) => (
           <li key={item}>• {item}</li>
         ))}

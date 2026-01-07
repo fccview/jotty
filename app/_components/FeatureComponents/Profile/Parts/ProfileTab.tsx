@@ -280,14 +280,14 @@ export const ProfileTab = ({
       {error && (
         <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
           <AlertCircleIcon className="h-4 w-4 text-destructive" />
-          <span className="text-sm text-destructive">{error}</span>
+          <span className="text-md lg:text-sm text-destructive">{error}</span>
         </div>
       )}
 
       {success && (
         <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-jotty">
           <Tick02Icon className="h-4 w-4 text-primary" />
-          <span className="text-sm text-primary">{success}</span>
+          <span className="text-md lg:text-sm text-primary">{success}</span>
         </div>
       )}
 
@@ -326,14 +326,14 @@ export const ProfileTab = ({
             <div className="md:flex md:items-center md:justify-between p-4 bg-muted/50 rounded-jotty">
               <div>
                 <h3 className="font-medium">{t('profile.apiKey')}</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-md lg:text-sm text-muted-foreground">
                   {t('profile.apiKeyDescription')}
                 </p>
               </div>
               <div className="flex items-center justify-between gap-2 mt-2 md:mt-0">
                 {apiKey && (
                   <div className="flex items-center gap-2">
-                    <div className="font-mono text-sm bg-muted px-2 py-1 rounded">
+                    <div className="font-mono text-md lg:text-sm bg-muted px-2 py-1 rounded">
                       {showApiKey ? apiKey : "••••••••••••••••"}
                     </div>
                     <Button
@@ -361,7 +361,7 @@ export const ProfileTab = ({
                   </div>
                 )}
                 {isDemoMode ? (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-md lg:text-sm text-muted-foreground">
                     {t('settings.disabledInDemoMode')}
                   </span>
                 ) : (
@@ -391,14 +391,14 @@ export const ProfileTab = ({
                 </div>
                 <div>
                   <h3 className="font-medium">{t("mfa.title")}</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-md lg:text-sm text-muted-foreground">
                     {mfaEnabled ? t("mfa.enabled") : t("mfa.disabled")}
                   </p>
                 </div>
               </div>
               <div className="mt-2 md:mt-0">
                 {isDemoMode ? (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-md lg:text-sm text-muted-foreground">
                     {t("settings.disabledInDemoMode")}
                   </span>
                 ) : (
@@ -422,14 +422,14 @@ export const ProfileTab = ({
                   </div>
                   <div>
                     <h3 className="font-medium">{t("mfa.recoveryCodeTitle")}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-md lg:text-sm text-muted-foreground">
                       {t("mfa.recoveryCodeProfileDescription")}
                     </p>
                   </div>
                 </div>
                 <div className="mt-2 md:mt-0">
                   {isDemoMode ? (
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-md lg:text-sm text-muted-foreground">
                       {t("settings.disabledInDemoMode")}
                     </span>
                   ) : (
@@ -461,18 +461,18 @@ export const ProfileTab = ({
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-foreground">
+                <p className="text-md lg:text-sm font-medium text-foreground">
                   {t('profile.memberSince')}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-md lg:text-sm text-muted-foreground">
                   {user?.createdAt
                     ? formatDateString(user.createdAt)
                     : t('profile.unknown')}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">{t('profile.userType')}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-md lg:text-sm font-medium text-foreground">{t('profile.userType')}</p>
+                <p className="text-md lg:text-sm text-muted-foreground">
                   {isAdmin ? t('common.admin') : t('common.user')}
                 </p>
               </div>
@@ -488,7 +488,7 @@ export const ProfileTab = ({
                 disabled={isUsernameDisabled}
                 className="mt-1"
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t('profile.usernameUpdateWarning')}
               </p>
             </div>

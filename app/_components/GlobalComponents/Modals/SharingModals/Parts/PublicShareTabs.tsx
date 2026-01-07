@@ -118,7 +118,7 @@ export const PublicShareTab = ({
     <div className="space-y-4">
       <div className="p-4 bg-muted/30 rounded-jotty border border-border">
         <h4 className="font-medium">{t('sharing.publicAccess')}</h4>
-        <p className="text-sm text-muted-foreground mb-3">
+        <p className="text-md lg:text-sm text-muted-foreground mb-3">
           {t("sharing.makeItemAccessible", { itemType })}
         </p>
         <Button
@@ -146,7 +146,7 @@ export const PublicShareTab = ({
               type="text"
               value={publicUrl}
               readOnly
-              className="flex-1 px-3 py-2 bg-background border rounded-jotty text-sm font-mono"
+              className="flex-1 px-3 py-2 bg-background border rounded-jotty text-md lg:text-sm font-mono"
             />
             <Button
               onClick={handleCopyUrl}

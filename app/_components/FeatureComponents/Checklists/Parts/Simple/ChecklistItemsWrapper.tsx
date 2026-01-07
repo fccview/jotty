@@ -62,7 +62,7 @@ export const ChecklistItemsWrapper = ({
             ></div>
             {title} ({count})
             {isLoading && (
-              <span className="ml-2 text-sm text-muted-foreground">{t('common.saving')}</span>
+              <span className="ml-2 text-md lg:text-sm text-muted-foreground">{t('common.saving')}</span>
             )}
           </h3>
           {permissions?.canEdit && count > 0 && (
@@ -71,7 +71,7 @@ export const ChecklistItemsWrapper = ({
                 <button
                   onClick={handleClearAllClick}
                   disabled={isLoading}
-                  className="text-sm text-destructive hover:text-destructive/80 transition-colors disabled:opacity-50"
+                  className="text-md lg:text-sm text-destructive hover:text-destructive/80 transition-colors disabled:opacity-50"
                 >
                   {t('checklists.clearAll')}
                 </button>
@@ -79,7 +79,7 @@ export const ChecklistItemsWrapper = ({
               <button
                 onClick={handleBulkToggleClick}
                 disabled={isLoading}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                className="text-md lg:text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
               >
                 {isCompleted ? t('checklists.uncheckAll') : t('checklists.checkAll')}
               </button>

@@ -25,7 +25,7 @@ export const CssEditor = ({ value, onChange }: CssEditorProps) => {
       onValueChange={onChange}
       highlight={highlight}
       padding={16}
-      className="w-full bg-muted rounded-jotty border font-mono text-sm leading-relaxed"
+      className="w-full bg-muted rounded-jotty border font-mono text-md lg:text-sm leading-relaxed"
       style={{
         fontFamily:
           '"JetBrainsMono", "Fira Code", "Monaco", "Consolas", monospace',

@@ -177,11 +177,11 @@ export const ExtraItemsDropdown = ({
   return (
     <>
       <ToolbarDropdown trigger={trigger} direction="right">
-        <div className="flex flex-col py-1">
+        <div className="flex flex-col py-1 overflow-y-auto">
           {items.map((item, index) => (
             <button
               key={index}
-              className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-sm ${
+              className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm ${
                 item.isActive ? "bg-accent" : ""
               }`}
               onClick={item.command}
@@ -191,7 +191,7 @@ export const ExtraItemsDropdown = ({
                 <span>{item.label}</span>
               </div>
               {item.shortcut && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                   {getShortcutDisplay(item.shortcut)}
                 </span>
               )}

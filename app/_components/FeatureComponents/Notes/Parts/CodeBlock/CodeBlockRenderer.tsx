@@ -67,7 +67,7 @@ export const CodeBlockRenderer = ({
               }`}
           >
             <span
-              className={`${languageObj?.value} language-icon text-xs rounded inline-block`}
+              className={`${languageObj?.value} language-icon text-sm lg:text-xs rounded inline-block`}
             >
               {languageIcon}
             </span>
@@ -93,7 +93,7 @@ export const CodeBlockRenderer = ({
       </div>
 
       <div className="flex min-h-full">
-        <div className="py-4 pl-2 pr-3 text-right select-none bg-[#292a2b] text-sm font-mono">
+        <div className="py-4 pl-2 pr-3 text-right select-none bg-[#292a2b] text-md lg:text-sm font-mono">
           {lineNumbers.map((num) => (
             <div key={num} className="leading-[21px] text-[#5c6370] opacity-50">
               {num}
@@ -101,7 +101,7 @@ export const CodeBlockRenderer = ({
           ))}
         </div>
         <pre
-          className={`!bg-transparent !p-4 !m-0 overflow-x-auto text-sm flex-1 language-${language}`}
+          className={`!bg-transparent !p-4 !m-0 overflow-x-auto text-md lg:text-sm flex-1 language-${language}`}
         >
           {children}
         </pre>

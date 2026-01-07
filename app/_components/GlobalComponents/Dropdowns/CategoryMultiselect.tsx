@@ -52,7 +52,7 @@ const CategoryTreeNode = ({
     <div key={category.path} className="jotty-category-tree-node select-none">
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty cursor-pointer hover:bg-muted/50",
+          "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty cursor-pointer hover:bg-muted/50",
           isSelected && "bg-primary/10 text-primary border border-primary/20"
         )}
         style={{ paddingLeft: `${12 + level * 20}px` }}
@@ -91,7 +91,7 @@ const CategoryTreeNode = ({
         )}
         <span className="truncate flex-1">{category.name}</span>
         {category.count > 0 && (
-          <span className="text-xs text-muted-foreground ml-auto">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
             {category.count}
           </span>
         )}
@@ -209,10 +209,10 @@ export const CategoryMultiselect = ({
     <div ref={containerRef} className={cn("relative", className)}>
       <div className="jotty-category-multiselect space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-foreground">{t('common.byCategory')}</h3>
+          <h3 className="text-md lg:text-sm font-medium text-foreground">{t('common.byCategory')}</h3>
           <div className="flex items-center gap-2">
             {onRecursiveChange && (
-              <label className="flex items-center gap-1 text-xs text-muted-foreground cursor-pointer">
+              <label className="flex items-center gap-1 text-sm lg:text-xs text-muted-foreground cursor-pointer">
                 <input
                   type="checkbox"
                   checked={recursive}
@@ -236,7 +236,7 @@ export const CategoryMultiselect = ({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="jotty-category-multiselect-button w-full px-3 py-2 text-left text-sm bg-background border border-input rounded-jotty hover:border-ring focus:outline-none focus:ring-none focus:ring-ring flex items-center gap-2 min-h-[40px]"
+          className="jotty-category-multiselect-button w-full px-3 py-2 text-left text-md lg:text-sm bg-background border border-input rounded-jotty hover:border-ring focus:outline-none focus:ring-none focus:ring-ring flex items-center gap-2 min-h-[40px]"
         >
           <Folder01Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           <span className="truncate flex-1">{displayText}</span>
@@ -253,7 +253,7 @@ export const CategoryMultiselect = ({
             {selectedCategoryObjects.map((category) => (
               <div
                 key={category.path}
-                className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-primary/10 text-primary rounded-jotty"
+                className="inline-flex items-center gap-1 px-2 py-1 text-sm lg:text-xs bg-primary/10 text-primary rounded-jotty"
               >
                 <span>{category.name}</span>
                 <button
@@ -273,7 +273,7 @@ export const CategoryMultiselect = ({
         <div className="jotty-category-multiselect-dropdown absolute w-full z-40 mt-1 bg-background border border-input rounded-jotty shadow-lg max-h-80 overflow-y-auto">
           <div className="p-2">
             {rootCategories.length === 0 && categories.length === 0 && (
-              <div className="px-3 py-2 text-sm text-muted-foreground">
+              <div className="px-3 py-2 text-md lg:text-sm text-muted-foreground">
                 {t('common.noCategoriesAvailable')}
               </div>
             )}

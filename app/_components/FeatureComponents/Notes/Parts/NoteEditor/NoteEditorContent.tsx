@@ -104,7 +104,7 @@ export const NoteEditorContent = ({
             </div>
           </div>
           <h3 className="text-xl font-semibold">{t("encryption.thisNoteIsEncrypted")}</h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-md lg:text-sm text-muted-foreground">
             {t("encryption.noteProtectedWith", {
               type: encryptionType === "pgp" ? t("encryption.pgp") : t("encryption.xchacha")
             })}

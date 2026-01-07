@@ -66,7 +66,7 @@ export const RenameCategoryModal = ({
 
   return (
     <Modal isOpen={true} onClose={onClose} title={t("common.renameCategory")}>
-      <p className="text-sm text-muted-foreground mb-4">
+      <p className="text-md lg:text-sm text-muted-foreground mb-4">
         {t("common.enterNewCategoryName", { categoryName })}
       </p>
 

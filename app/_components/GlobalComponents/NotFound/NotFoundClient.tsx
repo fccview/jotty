@@ -88,7 +88,7 @@ export const NotFoundClient = () => {
           <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
             {t("title")}
           </h2>
-          <span className="text-sm italic">
+          <span className="text-md lg:text-sm italic">
             {t('imNoPoet')}
           </span>
           <div className="relative w-full overflow-y-auto max-h-[40vh] py-4">
@@ -116,21 +116,21 @@ export const NotFoundClient = () => {
                 }`}
             />
             {t("newHaiku")}
-            <span className="ml-2 text-xs opacity-60 hidden sm:inline">
+            <span className="ml-2 text-sm lg:text-xs opacity-60 hidden sm:inline">
               (Space)
             </span>
           </Button>
           <Button onClick={() => router.push("/")} size="lg" className="group">
             <Home05Icon className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
             {t("goHome")}
-            <span className="ml-2 text-xs opacity-60 hidden sm:inline">
+            <span className="ml-2 text-sm lg:text-xs opacity-60 hidden sm:inline">
               (Enter)
             </span>
           </Button>
         </div>
 
         <div className="space-y-2">
-          <div className="text-xs text-muted-foreground/70">
+          <div className="text-md lg:text-sm lg:text-xs text-muted-foreground/70">
             {t("seenCount", { count: quoteCount })}
           </div>
         </div>

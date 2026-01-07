@@ -25,7 +25,7 @@ const TypeDisplay = ({ type, label }: { type: ChecklistType; label: string }) =>
   return (
     <div className="flex items-center gap-2">
       <Icon className="h-4 w-4 text-primary" />
-      <span className="text-sm font-medium text-foreground">{label}</span>
+      <span className="text-md lg:text-sm font-medium text-foreground">{label}</span>
     </div>
   );
 };
@@ -84,7 +84,7 @@ export const ConversionConfirmModal = ({
           />
         )}
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-md lg:text-sm text-muted-foreground">
           {isDestructive
             ? t("checklists.actionCannotBeUndone")
             : t("checklists.actionCannotBeUndone")}

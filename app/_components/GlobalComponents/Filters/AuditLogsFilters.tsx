@@ -68,7 +68,7 @@ export const AuditLogsFilters = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {showUserFilter && (
           <div>
-            <label className="text-sm font-medium mb-2 block">
+            <label className="text-md lg:text-sm font-medium mb-2 block">
               {t("common.user")}
             </label>
             <Dropdown
@@ -81,7 +81,7 @@ export const AuditLogsFilters = ({
         )}
 
         <div>
-          <label className="text-sm font-medium mb-2 block">
+          <label className="text-md lg:text-sm font-medium mb-2 block">
             {t("auditLogs.level")}
           </label>
           <Dropdown
@@ -93,7 +93,7 @@ export const AuditLogsFilters = ({
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">
+          <label className="text-md lg:text-sm font-medium mb-2 block">
             {t("notes.category")}
           </label>
           <Dropdown

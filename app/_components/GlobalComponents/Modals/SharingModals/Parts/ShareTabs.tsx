@@ -17,7 +17,7 @@ export const ShareTabs = ({ activeTab, setActiveTab }: ShareTabsProps) => {
           key={tab}
           onClick={() => setActiveTab(tab)}
           className={cn(
-            "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+            "flex items-center gap-2 px-4 py-2 text-md lg:text-sm font-medium border-b-2 transition-colors",
             activeTab === tab
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"

@@ -107,7 +107,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
-            <div className="relative flex justify-center text-xs text-muted-foreground">
+            <div className="relative flex justify-center text-sm lg:text-xs text-muted-foreground">
               <span className="bg-background px-2">
                 {t('orContinueWith')}
               </span>
@@ -126,13 +126,13 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
-            <span className="text-sm text-destructive">{error}</span>
+            <span className="text-md lg:text-sm text-destructive">{error}</span>
           </div>
         )}
 
         {countdown > 0 && (
           <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
-            <span className="text-sm text-warning">
+            <span className="text-md lg:text-sm text-warning">
               {t('accountLocked', { seconds: countdown })}
             </span>
           </div>
@@ -140,7 +140,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
 
         {!countdown && attemptsRemaining !== null && attemptsRemaining > 0 && attemptsRemaining < 4 && (
           <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
-            <span className="text-sm text-warning">
+            <span className="text-md lg:text-sm text-warning">
               {t('attemptsRemaining', { count: attemptsRemaining })}
             </span>
           </div>
@@ -192,7 +192,7 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
       </form>
 
       {appVersion && (
-        <div className="text-center text-xs text-muted-foreground">
+        <div className="text-center text-sm lg:text-xs text-muted-foreground">
           <a target="_blank" href={`https://github.com/fccview/jotty/releases/tag/${appVersion}`}>{t('version', { version: appVersion })}</a>
         </div>
       )}

@@ -99,10 +99,10 @@ export const ChecklistListItem = ({
           className="flex-1 min-w-0 cursor-pointer"
           onClick={() => onSelect(list)}
         >
-          <h3 className="font-medium text-sm text-foreground truncate mb-1">
+          <h3 className="font-medium text-md lg:text-sm text-foreground truncate mb-1">
             {displayTitle}
           </h3>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm lg:text-xs text-muted-foreground">
             {categoryName && (
               <span className="truncate">{categoryName}</span>
             )}
@@ -113,7 +113,7 @@ export const ChecklistListItem = ({
 
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <div className="bg-primary/10 text-primary px-2 py-1 rounded-jotty text-xs font-medium">
+            <div className="bg-primary/10 text-primary px-2 py-1 rounded-jotty text-sm lg:text-xs font-medium">
               {completionRate}%
             </div>
           </div>

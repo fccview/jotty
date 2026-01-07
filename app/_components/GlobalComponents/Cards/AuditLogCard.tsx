@@ -150,20 +150,20 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
               <span className="font-medium text-base">
                 {actionDescription}
               </span>
-              <span className={`px-2 py-1 text-xs rounded-full ${getLevelBadgeColor(log.level)}`}>
+              <span className={`px-2 py-1 text-sm lg:text-xs rounded-full ${getLevelBadgeColor(log.level)}`}>
                 {log.level}
               </span>
-              <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
+              <span className="px-2 py-1 text-sm lg:text-xs bg-primary/10 text-primary rounded-full">
                 {t(`auditLogs.${categoryKey}` as any) || t(`common.${log.category}` as any) || log.category}
               </span>
             </div>
 
             {log.resourceType && log.resourceTitle && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-md lg:text-sm text-muted-foreground">
                 <span className="font-medium capitalize">{log.resourceType}:</span>{" "}
                 <span className="font-mono text-xs">{displayResourceTitle}</span>
                 {log.resourceId && (
-                  <span className="text-xs text-muted-foreground ml-2">
+                  <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-2">
                     (ID: {log.resourceId})
                   </span>
                 )}
@@ -171,19 +171,19 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
             )}
 
             {log.metadata && Object.keys(log.metadata).length > 0 && !showDetails && (
-              <div className="text-xs text-muted-foreground">
+              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                 {log.metadata.receiver && (
                   <span className="mr-3">→ {log.metadata.receiver as string}</span>
                 )}
                 {log.metadata.method && (
-                  <span className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">
+                  <span className="px-1.5 py-0.5 bg-muted rounded text-sm lg:text-xs font-mono">
                     {(log.metadata.method as string).toUpperCase()}
                   </span>
                 )}
               </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-4 text-md lg:text-sm text-muted-foreground">
               {showUsername && (
                 <div className="flex items-center gap-2">
                   <UserAvatar username={log.username} size="xs" />
@@ -201,13 +201,13 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
             </div>
 
             {!log.success && log.errorMessage && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
                 Error: {log.errorMessage}
               </p>
             )}
 
             {isDemoMode && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
                 Sensitive information is hidden in demo mode
               </p>
             )}

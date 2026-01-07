@@ -74,10 +74,10 @@ export const MinimalModeEditor = ({
     <div className="flex flex-col h-full">
       <div className="bg-background border-b border-border px-4 py-2 items-center justify-between sticky top-0 z-10 hidden lg:flex">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-md lg:text-sm font-medium text-foreground">
             {t("editor.minimalMode")}
           </span>
-          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
             {showPreview ? t("editor.preview") : t("editor.rawMarkdown")}
           </span>
         </div>

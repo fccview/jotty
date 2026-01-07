@@ -110,7 +110,7 @@ export const AtMentionsList = forwardRef<
     startIndex: number
   ) => (
     <div className="mb-3 last:mb-0">
-      <div className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+      <div className="flex items-center gap-2 px-2 py-1 text-sm lg:text-xs font-medium text-muted-foreground uppercase tracking-wide">
         {icon}
         {title}
       </div>
@@ -121,7 +121,7 @@ export const AtMentionsList = forwardRef<
             <button
               key={`${item.type}-${item.id}`}
               className={cn(
-                "flex items-center gap-3 w-full px-3 py-2 text-left rounded-jotty text-sm transition-colors",
+                "flex items-center gap-3 w-full px-3 py-2 text-left rounded-jotty text-md lg:text-sm transition-colors",
                 globalIndex === selectedIndex
                   ? "bg-accent text-accent-foreground"
                   : "hover:bg-accent/50"
@@ -137,7 +137,7 @@ export const AtMentionsList = forwardRef<
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{item.title}</div>
-                <div className="text-xs text-muted-foreground truncate">
+                <div className="text-md lg:text-sm lg:text-xs text-muted-foreground truncate">
                   {item.category || "Uncategorized"}
                 </div>
               </div>
@@ -158,7 +158,7 @@ export const AtMentionsList = forwardRef<
           placeholder={t("notes.searchNotesAndChecklists")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
+          className="w-full pl-10 pr-3 py-2 text-md lg:text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-transparent"
         />
       </div>
 
@@ -181,7 +181,7 @@ export const AtMentionsList = forwardRef<
               )}
           </>
         ) : (
-          <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+          <div className="px-3 py-6 text-center text-md lg:text-sm text-muted-foreground">
             {t("notes.noResultsFound")}
           </div>
         )}

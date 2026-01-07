@@ -66,7 +66,7 @@ export const YamlMetadataMigrationView = ({
               icon={<InformationCircleIcon className="h-5 w-5 text-primary" />}
               title={t("migration.whatsChanging")}
             >
-              <p className="text-sm">
+              <p className="text-md lg:text-sm">
                 We&apos;re moving from inline title extraction (first{" "}
                 <code className="bg-muted px-1 rounded text-xs"># heading</code>{" "}
                 and{" "}
@@ -86,11 +86,11 @@ export const YamlMetadataMigrationView = ({
                 <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
                   <File02Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">YAML Metadata Format</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-md lg:text-sm font-medium">YAML Metadata Format</p>
+                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                       Documents will now use YAML frontmatter for metadata:
                     </p>
-                    <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-x-auto">
+                    <pre className="mt-2 text-sm lg:text-xs bg-muted p-2 rounded overflow-x-auto">
                       {`---
 uuid: unique-immutable-identifier
 title: Document Title
@@ -102,10 +102,10 @@ checklistType: task|simple
                 <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
                   <Database01Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">
+                    <p className="text-md lg:text-sm font-medium">
                       UUID-based Identification
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                       Each document gets a unique, immutable UUID for better
                       identification and linking across the system.
                     </p>
@@ -114,10 +114,10 @@ checklistType: task|simple
                 <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
                   <ShieldUserIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">
+                    <p className="text-md lg:text-sm font-medium">
                       Preserves Existing Metadata
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                       If your documents already have YAML metadata (from other
                       tools), we only add missing fields like{" "}
                       <code className="bg-muted px-1 rounded text-xs">
@@ -150,7 +150,7 @@ checklistType: task|simple
               icon={<File02Icon className="h-5 w-5 text-primary" />}
               title={t("migration.yamlFrontmatterIndustryStandard")}
             >
-              <p className="text-sm mb-3">
+              <p className="text-md lg:text-sm mb-3">
                 YAML metadata at the top of documents is a widely adopted
                 standard used by many popular tools:
               </p>
@@ -342,11 +342,11 @@ checklistType: task|simple
                 <div>
                   <label
                     htmlFor="backup-confirmation"
-                    className="text-sm font-medium text-foreground cursor-pointer"
+                    className="text-md lg:text-sm font-medium text-foreground cursor-pointer"
                   >
                     I understand this migration will automatically backup my
                     data and update document formats.
-                    <span className="text-xs text-muted-foreground block">
+                    <span className="text-md lg:text-sm lg:text-xs text-muted-foreground block">
                       The migration is designed to be safe and reversible.
                     </span>
                   </label>
@@ -387,7 +387,7 @@ checklistType: task|simple
               }
               variant={InfoCardVariant.DEFAULT}
             >
-              <p className="text-sm">
+              <p className="text-md lg:text-sm">
                 {migrationResult.migrated
                   ? "Your documents have been successfully migrated to use YAML metadata."
                   : t("migration.noMigrationNeeded")}
@@ -403,7 +403,7 @@ checklistType: task|simple
                   {migrationResult.changes.map((change, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <SourceCodeIcon className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-md lg:text-sm text-muted-foreground">
                         {change}
                       </span>
                     </li>

@@ -68,7 +68,7 @@ export const SubtaskModal = ({
   }, [initialItem]);
 
   const descriptionHtml = useMemo(() => {
-    const noDescText = `<p class="text-muted-foreground text-sm opacity-50">${t("checklists.noDescription")}</p>`;
+    const noDescText = `<p class="text-muted-foreground text-md lg:text-sm opacity-50">${t("checklists.noDescription")}</p>`;
     if (!item.description) return noDescText;
     const unsanitized = unsanitizeDescription(item.description);
     const withLineBreaks = unsanitized.replace(/\n/g, "  \n");
@@ -255,14 +255,14 @@ export const SubtaskModal = ({
     return metadata.length ? (
       <div className="border-t border-border pt-4">
         <div className="bg-muted/30 rounded-jotty p-3 border border-border/50">
-          <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+          <h5 className="text-md lg:text-sm lg:text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
             {t("auditLogs.metadata")}
           </h5>
           <div className="space-y-1.5">
             {metadata.map((text, i) => (
               <p
                 key={i}
-                className="text-xs text-muted-foreground flex items-start gap-2"
+                className="text-md lg:text-sm lg:text-xs text-muted-foreground flex items-start gap-2"
               >
                 <span className="text-muted-foreground/40">•</span>
                 <span>{text}</span>
@@ -285,7 +285,7 @@ export const SubtaskModal = ({
         {isEditing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">{t('tasks.taskTitle')}</label>
+              <label className="block text-md lg:text-sm font-medium text-foreground mb-2">{t('tasks.taskTitle')}</label>
               <input
                 type="text"
                 value={editText}
@@ -308,7 +308,7 @@ export const SubtaskModal = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">{t('common.description')}</label>
+              <label className="block text-md lg:text-sm font-medium text-foreground mb-2">{t('common.description')}</label>
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
@@ -328,7 +328,7 @@ export const SubtaskModal = ({
                   }
                 }}
               />
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-2">
                 Press{" "}
                 <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] border border-border">
                   Enter
@@ -383,7 +383,7 @@ export const SubtaskModal = ({
               <h4 className="text-base font-semibold text-foreground flex items-center gap-2">
                 <span>{t("checklists.subtasks")}</span>
                 {item.children?.length ? (
-                  <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                  <span className="text-md lg:text-sm lg:text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                     {item.children.filter((s) => s.completed).length} /{" "}
                     {item.children.length}
                   </span>
@@ -396,7 +396,7 @@ export const SubtaskModal = ({
                     size="sm"
                     onClick={() => handleToggleAll(true)}
                     disabled={!item.children?.length}
-                    className="text-xs"
+                    className="text-md lg:text-sm lg:text-xs"
                   >
                     {t("common.completeAll")}
                   </Button>
@@ -405,7 +405,7 @@ export const SubtaskModal = ({
                     size="sm"
                     onClick={() => handleToggleAll(false)}
                     disabled={!item.children?.length}
-                    className="text-xs"
+                    className="text-md lg:text-sm lg:text-xs"
                   >
                     {t("common.resetAll")}
                   </Button>
@@ -433,7 +433,7 @@ export const SubtaskModal = ({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground text-sm bg-muted/20 rounded-jotty border border-dashed border-border mb-4">
+              <div className="text-center py-8 text-muted-foreground text-md lg:text-sm bg-muted/20 rounded-jotty border border-dashed border-border mb-4">
                 {t('checklists.noSubtasksYet')}
               </div>
             )}
@@ -445,7 +445,7 @@ export const SubtaskModal = ({
                   value={newSubtaskText}
                   onChange={(e) => setNewSubtaskText(e.target.value)}
                   placeholder={t("checklists.addSubtask")}
-                  className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all"
+                  className="flex-1 px-3 py-2 text-md lg:text-sm bg-background border border-input rounded-jotty focus:outline-none focus:ring-none focus:ring-ring focus:border-ring transition-all"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();

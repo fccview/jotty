@@ -121,7 +121,7 @@ export const TableOfContents = ({
 
   const renderContent = () => {
     if (headings.length === 0) {
-      return <p className="text-sm text-muted-foreground">{t("notes.noHeadingsFound")}</p>;
+      return <p className="text-md lg:text-sm text-muted-foreground">{t("notes.noHeadingsFound")}</p>;
     }
     return (
       <nav className="flex-1">
@@ -130,7 +130,7 @@ export const TableOfContents = ({
             key={heading.id}
             onClick={() => scrollToHeading(heading.id)}
             className={cn(
-              "block w-full text-left text-sm py-1 hover:text-foreground transition-colors focus:outline-none",
+              "block w-full text-left text-md lg:text-sm py-1 hover:text-foreground transition-colors focus:outline-none",
               activeHeading === heading.id
                 ? "text-primary font-medium"
                 : "text-muted-foreground"
@@ -152,7 +152,7 @@ export const TableOfContents = ({
       )}
     >
       <div className="p-3 border-b border-border">
-        <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+        <h3 className="text-md lg:text-sm font-medium text-foreground flex items-center gap-2">
           <LeftToRightListBulletIcon className="h-4 w-4" />
           {t("notes.contents")}
         </h3>

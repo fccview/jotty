@@ -39,7 +39,7 @@ export const CategoryInput = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
+      <label className="block text-md lg:text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
       {showNewCategory ? (
         <div className="space-y-2">
           <div className="flex gap-2 items-center">
@@ -59,12 +59,12 @@ export const CategoryInput = ({
             >{t('common.cancel')}</Button>
           </div>
           {isNotAllowedName && (
-            <div className="text-xs text-destructive">
+            <div className="text-md lg:text-sm lg:text-xs text-destructive">
               {t('common.notAllowedName', { name: newCategory })}
             </div>
           )}
           {!isNotAllowedName && (
-            <div className="text-xs text-muted-foreground">
+            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
               {t('common.categoryWillBeCreatedIn')}{" "}
               <strong>{selectedCategoryName}</strong>
             </div>

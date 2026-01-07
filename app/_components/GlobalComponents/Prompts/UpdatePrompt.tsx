@@ -141,7 +141,7 @@ export const UpdatePrompt = () => {
               <h3 className="font-medium text-foreground hover:underline">
                 {t("common.newVersion", { version: latestVersion || "" })}
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-md lg:text-sm text-muted-foreground">
                 {t("common.clickToSeeReleaseNotes", {
                   appName: isRwMarkable ? "rwMarkable" : "jotty·page"
                 })}

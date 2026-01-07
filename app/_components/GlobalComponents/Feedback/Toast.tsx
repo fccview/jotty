@@ -75,9 +75,9 @@ export const Toast = ({ toast, onRemove }: ToastProps) => {
     >
       <div className="flex-shrink-0 mt-0.5">{getIcon()}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{toast.title}</p>
+        <p className="text-md lg:text-sm font-medium">{toast.title}</p>
         {toast.message && (
-          <p className="text-sm opacity-90 mt-1">{toast.message}</p>
+          <p className="text-md lg:text-sm opacity-90 mt-1">{toast.message}</p>
         )}
       </div>
       <button

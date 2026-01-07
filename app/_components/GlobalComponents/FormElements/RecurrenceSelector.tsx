@@ -118,12 +118,12 @@ export const RecurrenceSelector = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-foreground flex items-center gap-2">
+        <label className="text-md lg:text-sm font-medium text-foreground flex items-center gap-2">
           <RefreshIcon className="h-4 w-4" />
           Repeat
         </label>
         {value && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
             ({getRecurrenceDescription(value)})
           </span>
         )}
@@ -155,7 +155,7 @@ export const RecurrenceSelector = ({
                 <Calendar01Icon className="h-4 w-4" />
                 {startDate ? formatDate(startDate) : "Set Start Date"}
               </Button>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
                 (optional - defaults to today)
               </span>
             </div>
@@ -184,13 +184,13 @@ export const RecurrenceSelector = ({
                   </button>
                 )}
               </div>
-              <span className="text-xs text-muted-foreground">(optional)</span>
+              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">(optional)</span>
             </div>
           </div>
 
           <div className="flex items-start gap-2 p-3 bg-muted/50 border border-border rounded-jotty">
             <InformationCircleIcon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
               When you complete this item, it will automatically reappear as
               uncompleted based on the recurrence pattern you selected.
               {endDate && " The recurrence will stop after the end date."}

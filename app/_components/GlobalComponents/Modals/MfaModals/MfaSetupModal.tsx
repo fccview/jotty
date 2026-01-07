@@ -184,7 +184,7 @@ export const MfaSetupModal = ({
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">
+                                <label className="text-md lg:text-sm font-medium text-foreground">
                                     {t("mfa.manualEntry")}
                                 </label>
                                 <div className="flex gap-2">
@@ -275,7 +275,7 @@ export const MfaSetupModal = ({
                     />
 
                     {isVerifying && (
-                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center justify-center gap-2 text-md lg:text-sm text-muted-foreground">
                             <DynamicLogo className="h-4 w-4 animate-pulse" size="32x32" />
                             {t("mfa.verifying")}
                         </div>
@@ -303,10 +303,10 @@ export const MfaSetupModal = ({
                     />
 
                     <div className="space-y-3">
-                        <label className="text-sm font-medium text-foreground">
+                        <label className="text-md lg:text-sm font-medium text-foreground">
                             {t("mfa.recoveryCodeTitle")}
                         </label>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-md lg:text-sm text-muted-foreground">
                             {t("mfa.recoveryCodeInfo")}
                         </p>
                         <div className="flex gap-2">

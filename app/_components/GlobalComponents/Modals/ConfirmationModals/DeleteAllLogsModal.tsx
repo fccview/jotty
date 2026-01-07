@@ -42,10 +42,10 @@ export const DeleteAllLogsModal = ({
                     <div className="flex items-start gap-3">
                         <AlertCircleIcon className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                         <div className="flex-1">
-                            <p className="text-sm font-medium text-destructive">
+                            <p className="text-md lg:text-sm font-medium text-destructive">
                                 {t("auditLogs.deleteAllLogsWarning")}
                             </p>
-                            <p className="text-xs text-destructive/80 mt-1">
+                            <p className="text-md lg:text-sm lg:text-xs text-destructive/80 mt-1">
                                 {t("auditLogs.deleteAllLogsWarningDescription")}
                             </p>
                         </div>

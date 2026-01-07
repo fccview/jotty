@@ -111,7 +111,7 @@ export const MfaRegenerateRecoveryCodeModal = ({
                     />
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground">
+                        <label className="text-md lg:text-sm font-medium text-foreground">
                             {t("mfa.enterCode")}
                         </label>
                         <CodeInput
@@ -144,10 +144,10 @@ export const MfaRegenerateRecoveryCodeModal = ({
                     />
 
                     <div className="space-y-3">
-                        <label className="text-sm font-medium text-foreground">
+                        <label className="text-md lg:text-sm font-medium text-foreground">
                             {t("mfa.recoveryCodeTitle")}
                         </label>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-md lg:text-sm text-muted-foreground">
                             {t("mfa.recoveryCodeInfo")}
                         </p>
                         <div className="flex gap-2">

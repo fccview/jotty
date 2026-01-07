@@ -34,7 +34,7 @@ export const CategoryTreeNode = ({
     <div key={category.path} className="jotty-category-tree-node select-none">
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 text-sm rounded-jotty cursor-pointer hover:bg-muted/50",
+          "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty cursor-pointer hover:bg-muted/50",
           selectedCategory === category.path && "bg-primary/10 text-primary"
         )}
         style={{ paddingLeft: `${12 + level * 20}px` }}
@@ -72,7 +72,7 @@ export const CategoryTreeNode = ({
         )}
         <span className="truncate">{category.name}</span>
         {category.count > 0 && (
-          <span className="text-xs text-muted-foreground ml-auto">
+          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
             {category.count}
           </span>
         )}

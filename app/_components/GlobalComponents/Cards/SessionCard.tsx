@@ -39,12 +39,12 @@ export const SessionCard = ({
               {getDeviceInfo(session.userAgent)}
             </span>
             {session.isCurrent && (
-              <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
+              <span className="px-2 py-1 text-sm lg:text-xs bg-primary/10 text-primary rounded-full">
                 Current
               </span>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-4 text-md lg:text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Location05Icon className="h-3 w-3" />
               <span>{isDemoMode ? "Hidden in demo" : session.ipAddress}</span>
@@ -54,13 +54,13 @@ export const SessionCard = ({
               {formatTimeAgo(session.lastActivity, t)}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground truncate">
+          <p className="text-md lg:text-sm lg:text-xs text-muted-foreground truncate">
             {isDemoMode
               ? "Browser info hidden in demo mode"
               : session.userAgent}
           </p>
           {isDemoMode && (
-            <p className="text-xs text-amber-600 mt-1">
+            <p className="text-md lg:text-sm lg:text-xs text-amber-600 mt-1">
               Sensitive information is hidden in demo mode
             </p>
           )}

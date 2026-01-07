@@ -183,13 +183,13 @@ export const AdminAuditLogsClient = ({
                         <div className="flex items-start gap-3">
                             <AlertCircleIcon className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
                             <div className="flex-1">
-                                <p className="text-sm font-medium text-foreground">
+                                <p className="text-md lg:text-sm font-medium text-foreground">
                                     {t("auditLogs.oldLogsFound", {
                                         count: oldLogsCount,
                                         days: maxLogAge
                                     })}
                                 </p>
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
                                     {t("auditLogs.oldLogsFoundDescription")}
                                 </p>
                             </div>
@@ -286,7 +286,7 @@ export const AdminAuditLogsClient = ({
 
                         {totalPages > 1 && (
                             <div className="flex items-center justify-between">
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-md lg:text-sm text-muted-foreground">
                                     {t("common.showingResults", {
                                         start: (page - 1) * limit + 1,
                                         end: Math.min(page * limit, total),

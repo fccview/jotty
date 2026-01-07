@@ -39,12 +39,12 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
           )}
         </div>
         <h3
-          className="font-medium text-xs sm:text-sm text-foreground truncate"
+          className="font-medium text-sm lg:text-xs sm:text-sm text-foreground truncate"
           title={file.name}
         >
           {file.name}
         </h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
           {formatFileSize(file.size)}
         </p>
       </div>

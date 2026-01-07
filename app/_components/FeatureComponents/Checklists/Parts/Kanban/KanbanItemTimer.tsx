@@ -42,7 +42,7 @@ const KanbanItemTimerComponent = ({
   };
 
   return (
-    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+    <div className="flex items-center justify-between text-sm lg:text-xs text-muted-foreground pt-1">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
           <Clock01Icon className="h-3 w-3" />

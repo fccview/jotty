@@ -57,7 +57,7 @@ export default function Calendar(props: CalendarProps) {
               <select
                 value={MONTHS.indexOf(monthName)}
                 onChange={(e) => handleMonthSelect(parseInt(e.target.value))}
-                className="bg-transparent text-sm font-semibold border-none outline-none cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5"
+                className="bg-transparent text-md lg:text-sm font-semibold border-none outline-none cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5"
               >
                 {MONTH_OPTIONS.map((month) => (
                   <option key={month.id} value={month.id}>
@@ -68,7 +68,7 @@ export default function Calendar(props: CalendarProps) {
               <select
                 value={year}
                 onChange={(e) => handleYearSelect(parseInt(e.target.value))}
-                className="bg-transparent text-sm font-semibold border-none outline-none cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5"
+                className="bg-transparent text-md lg:text-sm font-semibold border-none outline-none cursor-pointer hover:bg-muted/50 rounded px-1 py-0.5"
               >
                 {YEAR_OPTIONS.map((yearOption) => (
                   <option key={yearOption} value={yearOption}>
@@ -93,7 +93,7 @@ export default function Calendar(props: CalendarProps) {
             ))}
           </div>
 
-          <div className="isolate mt-2 grid grid-cols-7 gap-px rounded-jotty bg-border text-sm shadow-sm ring-1 ring-border dark:shadow-none">
+          <div className="isolate mt-2 grid grid-cols-7 gap-px rounded-jotty bg-border text-md lg:text-sm shadow-sm ring-1 ring-border dark:shadow-none">
             {days.map((day, index) => {
               const isFirstInRow = index % 7 === 0;
               const isLastInRow = index % 7 === 6;

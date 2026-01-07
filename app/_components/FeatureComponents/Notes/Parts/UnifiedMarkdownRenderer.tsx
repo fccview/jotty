@@ -117,7 +117,7 @@ export const UnifiedMarkdownRenderer = ({
           <p className="text-lg italic text-muted-foreground">
             &quot;{displayQuote}&quot;
           </p>
-          <p className="text-sm text-muted-foreground mt-4">
+          <p className="text-md lg:text-sm text-muted-foreground mt-4">
             {t("notes.startWritingAbove")}
           </p>
         </div>

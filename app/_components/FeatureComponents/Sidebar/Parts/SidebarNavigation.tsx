@@ -58,13 +58,14 @@ export const SidebarNavigation = ({
             size="sm"
             onClick={() => onModeChange(modeOption.id)}
             className={cn(
-              "flex-1 justify-start gap-2 py-6",
+              "flex-1 justify-start gap-2 h-14 lg:h-9 py-6 text-md lg:text-sm",
+
               mode === modeOption.id
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-accent-foreground"
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-5 w-5 lg:h-4 lg:w-4" />
             {modeOption.label}
           </Button>
         );

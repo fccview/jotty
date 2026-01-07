@@ -30,12 +30,12 @@ export default async function LoginPage() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               {t('welcomeBack')}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md lg:text-sm text-muted-foreground">
               {t('signInWithOIDC')}
             </p>
           </div>
           <a
-            className="inline-flex items-center justify-center rounded-jotty text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
+            className="inline-flex items-center justify-center rounded-jotty text-md lg:text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
             href="/api/oidc/login"
           >
             {t('signInButton')}

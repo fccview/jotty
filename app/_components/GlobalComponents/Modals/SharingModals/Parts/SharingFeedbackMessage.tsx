@@ -25,7 +25,7 @@ export const FeedbackMessage = ({ error, success }: FeedbackMessageProps) => {
         <Tick02Icon className="h-4 w-4 text-primary" />
       )}
       <span
-        className={cn("text-sm", isError ? "text-destructive" : "text-primary")}
+        className={cn("text-md lg:text-sm", isError ? "text-destructive" : "text-primary")}
       >
         {error || success}
       </span>

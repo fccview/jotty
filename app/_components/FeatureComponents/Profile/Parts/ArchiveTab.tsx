@@ -89,7 +89,7 @@ export const ArchiveTab = ({
           <h2 className="text-2xl font-bold text-foreground">
             {t('profile.archivedContent')}
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-md lg:text-sm text-muted-foreground mt-1">
             {t('profile.archivedItemsCount', { archivedItemsCount: archivedItems.length })}
           </p>
         </div>
@@ -129,7 +129,7 @@ export const ArchiveTab = ({
                 <div className="flex items-center gap-2">
                   <CheckmarkSquare04Icon className="h-5 w-5 text-primary" />
                   <h3 className="text-lg font-medium text-foreground">{t('checklists.title')}</h3>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-md lg:text-sm text-muted-foreground">
                     ({archivedChecklists.length})
                   </span>
                 </div>
@@ -163,7 +163,7 @@ export const ArchiveTab = ({
                 <div className="flex items-center gap-2">
                   <File02Icon className="h-5 w-5 text-primary" />
                   <h3 className="text-lg font-medium text-foreground">{t('notes.title')}</h3>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-md lg:text-sm text-muted-foreground">
                     ({archivedNotes.length})
                   </span>
                 </div>

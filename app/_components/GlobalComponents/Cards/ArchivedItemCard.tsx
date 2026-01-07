@@ -37,11 +37,11 @@ export const ArchivedItemCard = ({
         </h3>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
+      <div className="flex items-center justify-between text-sm lg:text-xs text-muted-foreground mb-3">
         <div className="flex items-center gap-1">
           <span className="capitalize">{item.type === ItemTypes.CHECKLIST ? t('auditLogs.checklist') : t('auditLogs.note')}</span>
           {item.isShared && (
-            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-2">{t('common.shared')}</span>
+            <span className="text-md lg:text-sm lg:text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full ml-2">{t('common.shared')}</span>
           )}
         </div>
         <div className="flex items-center gap-1">

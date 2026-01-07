@@ -223,7 +223,7 @@ export const StatusManagementModal = ({
       className="lg:max-w-2xl"
     >
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-md lg:text-sm text-muted-foreground">
           {t('tasks.customizeStatuses')}
         </p>
 
