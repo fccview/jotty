@@ -12,10 +12,10 @@ export const DropIndicator = ({ id, data }: DropIndicatorProps) => {
   const { setNodeRef, isOver } = useDroppable({ id, data });
 
   return (
-    <div className="relative h-0 w-full">
+    <div className="relative h-1 w-full">
       <div
         ref={setNodeRef}
-        className="absolute -top-2 left-0 right-0 h-[16px] flex items-center pointer-events-auto"
+        className="absolute -top-1 left-0 right-0 h-[16px] flex items-center pointer-events-auto"
       >
         <div
           className={cn(
