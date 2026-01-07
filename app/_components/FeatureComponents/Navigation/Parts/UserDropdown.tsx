@@ -79,7 +79,7 @@ export const UserDropdown = ({
     {
       label: t("profile.settingsDashboard"),
       icon: <Settings01Icon className="h-4 w-4" />,
-      onClick: () => checkNavigation(() => router.push("/settings")),
+      onClick: () => checkNavigation(() => router.push("/settings/user-info")),
     },
     {
       label: t("profile.deviceSettings"),

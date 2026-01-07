@@ -1,7 +1,7 @@
-import '@fontsource-variable/work-sans';
-import '@fontsource-variable/google-sans-code';
-import '@fontsource-variable/ibm-plex-sans';
-import '@fontsource-variable/inter';
+import "@fontsource-variable/work-sans";
+import "@fontsource-variable/google-sans-code";
+import "@fontsource-variable/ibm-plex-sans";
+import "@fontsource-variable/inter";
 import type { Metadata, Viewport } from "next";
 import "@/app/_styles/globals.css";
 import { ThemeProvider } from "@/app/_providers/ThemeProvider";
@@ -37,10 +37,11 @@ import {
 import { generateWebManifest } from "./_utils/global-utils";
 import path from "path";
 import { writeJsonFile } from "./_server/actions/file";
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
-import { getAvailableLocalesWithNames } from '@/app/_utils/locale-utils';
-import { sanitizeUserForClient } from '@/app/_utils/user-sanitize-utils';
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
+import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
+import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
+import { KonamiProvider } from "./_providers/KonamiProvider";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -161,8 +162,10 @@ export default async function RootLayout({
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
-  const users = (isPublicRoute || !userRecord) ? [] : await getUsers();
-  const linkIndex = userRecord?.username ? await readLinkIndex(userRecord.username) : null;
+  const users = isPublicRoute || !userRecord ? [] : await getUsers();
+  const linkIndex = userRecord?.username
+    ? await readLinkIndex(userRecord.username)
+    : null;
   const messages = await getMessages();
   const user = sanitizeUserForClient(userRecord);
 
@@ -179,14 +182,14 @@ export default async function RootLayout({
     shouldParseContent && user && !isPublicRoute
       ? getUserNotes()
       : user && !isPublicRoute
-        ? getUserNotes({
+      ? getUserNotes({
           projection: ["id", "title", "category", "owner", "uuid"],
         })
-        : Promise.resolve({ success: false, data: [] }),
+      : Promise.resolve({ success: false, data: [] }),
     shouldParseContent && user && !isPublicRoute
       ? getUserChecklists()
       : user && !isPublicRoute
-        ? getUserChecklists({
+      ? getUserChecklists({
           projection: [
             "id",
             "title",
@@ -197,12 +200,18 @@ export default async function RootLayout({
             "items",
           ],
         })
-        : Promise.resolve({ success: false, data: [] }),
-    (user && !isPublicRoute) ? getAllSharedItems() : Promise.resolve({ notes: [], checklists: [], public: { notes: [], checklists: [] } }),
-    (user && !isPublicRoute)
+      : Promise.resolve({ success: false, data: [] }),
+    user && !isPublicRoute
+      ? getAllSharedItems()
+      : Promise.resolve({
+          notes: [],
+          checklists: [],
+          public: { notes: [], checklists: [] },
+        }),
+    user && !isPublicRoute
       ? getAllSharedItemsForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
-    (user && !isPublicRoute) ? readShareFile("all") : Promise.resolve(null),
+    user && !isPublicRoute ? readShareFile("all") : Promise.resolve(null),
     getAvailableLocalesWithNames(),
   ]);
 
@@ -247,47 +256,49 @@ export default async function RootLayout({
       </head>
       <body className={`jotty-body`}>
         <NextIntlClientProvider messages={messages}>
-          <AppModeProvider
-            isDemoMode={settings?.isDemo || false}
-            isRwMarkable={settings?.isRwMarkable || false}
-            user={user}
-            appVersion={appVersion.data || ""}
-            pathname={pathname || ""}
-            initialSettings={settings}
-            usersPublicData={users}
-            linkIndex={linkIndex}
-            notes={notes}
-            checklists={checklists}
-            allSharedItems={allSharedItems}
-            userSharedItems={userSharedItems}
-            globalSharing={globalSharing}
-            availableLocales={availableLocales}
-          >
-            <ThemeProvider user={user || {}}>
-              <EmojiProvider>
-                <NavigationGuardProvider>
-                  <ToastProvider>
-                    <ShortcutProvider
-                      user={user}
-                      noteCategories={noteCategories.data || []}
-                      checklistCategories={checklistCategories.data || []}
-                    >
-                      <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                        <DynamicFavicon />
-                        {children}
+          <KonamiProvider>
+            <AppModeProvider
+              isDemoMode={settings?.isDemo || false}
+              isRwMarkable={settings?.isRwMarkable || false}
+              user={user}
+              appVersion={appVersion.data || ""}
+              pathname={pathname || ""}
+              initialSettings={settings}
+              usersPublicData={users}
+              linkIndex={linkIndex}
+              notes={notes}
+              checklists={checklists}
+              allSharedItems={allSharedItems}
+              userSharedItems={userSharedItems}
+              globalSharing={globalSharing}
+              availableLocales={availableLocales}
+            >
+              <ThemeProvider user={user || {}}>
+                <EmojiProvider>
+                  <NavigationGuardProvider>
+                    <ToastProvider>
+                      <ShortcutProvider
+                        user={user}
+                        noteCategories={noteCategories.data || []}
+                        checklistCategories={checklistCategories.data || []}
+                      >
+                        <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                          <DynamicFavicon />
+                          {children}
 
-                        {!pathname?.includes("/public") && <InstallPrompt />}
+                          {!pathname?.includes("/public") && <InstallPrompt />}
 
-                        {serveUpdates && !pathname?.includes("/public") && (
-                          <UpdatePrompt />
-                        )}
-                      </div>
-                    </ShortcutProvider>
-                  </ToastProvider>
-                </NavigationGuardProvider>
-              </EmojiProvider>
-            </ThemeProvider>
-          </AppModeProvider>
+                          {serveUpdates && !pathname?.includes("/public") && (
+                            <UpdatePrompt />
+                          )}
+                        </div>
+                      </ShortcutProvider>
+                    </ToastProvider>
+                  </NavigationGuardProvider>
+                </EmojiProvider>
+              </ThemeProvider>
+            </AppModeProvider>
+          </KonamiProvider>
         </NextIntlClientProvider>
       </body>
     </html>

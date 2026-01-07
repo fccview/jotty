@@ -39,20 +39,8 @@ export const useSidebar = (props: SidebarProps) => {
   const [sharedItemsCollapsed, setSharedItemsCollapsed] = useState(false);
   const [isLocalStorageInitialized, setIsLocalStorageInitialized] =
     useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(320);
-  const isResizing = useRef(false);
-  const sidebarWidthRef = useRef(sidebarWidth);
 
   useEffect(() => {
-    sidebarWidthRef.current = sidebarWidth;
-  }, [sidebarWidth]);
-
-  useEffect(() => {
-    const savedWidth = localStorage.getItem("sidebar-width");
-    if (savedWidth) {
-      const width = parseInt(savedWidth);
-      if (width >= 320 && width <= 800) setSidebarWidth(width);
-    }
     try {
       setCollapsedCategories({
         [Modes.CHECKLISTS]: new Set(
@@ -82,12 +70,6 @@ export const useSidebar = (props: SidebarProps) => {
   }, []);
 
   useEffect(() => {
-    if (isLocalStorageInitialized && !isResizing.current) {
-      localStorage.setItem("sidebar-width", sidebarWidth.toString());
-    }
-  }, [sidebarWidth, isLocalStorageInitialized]);
-
-  useEffect(() => {
     if (isLocalStorageInitialized)
       localStorage.setItem(
         `sidebar-collapsed-categories-${mode}`,
@@ -102,29 +84,6 @@ export const useSidebar = (props: SidebarProps) => {
         JSON.stringify(sharedItemsCollapsed)
       );
   }, [sharedItemsCollapsed, isLocalStorageInitialized]);
-
-  const startResizing = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    isResizing.current = true;
-    const startX = e.clientX;
-    const startWidth = sidebarWidthRef.current;
-    const doDrag = (e: MouseEvent) => {
-      const newWidth = Math.max(
-        320,
-        Math.min(800, startWidth + e.clientX - startX)
-      );
-      setSidebarWidth(newWidth);
-    };
-    const stopDrag = () => {
-      isResizing.current = false;
-      document.removeEventListener("mousemove", doDrag);
-      document.removeEventListener("mouseup", stopDrag);
-      localStorage.setItem("sidebar-width", sidebarWidthRef.current.toString());
-    };
-    document.addEventListener("mousemove", doDrag);
-    document.addEventListener("mouseup", stopDrag);
-  }, []);
 
   const openModal = (type: string, data: any = null) =>
     setModalState({ type, data });
@@ -285,9 +244,6 @@ export const useSidebar = (props: SidebarProps) => {
   }, [pathname, mode, checklists, notes, isInitialized, expandCategoryPath]);
 
   return {
-    isResizing: isResizing.current,
-    startResizing,
-    sidebarWidth,
     mode,
     isInitialized,
     handleModeSwitch,
