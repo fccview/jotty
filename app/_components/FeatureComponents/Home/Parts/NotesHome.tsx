@@ -64,7 +64,7 @@ export const NotesHome = ({
 
   if (notes.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto bg-background h-full">
+      <div className="flex-1 overflow-y-auto jotty-scrollable-content bg-background h-full">
         <EmptyState
           icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
           title={t('notes.noNotesYet')}
@@ -77,7 +77,7 @@ export const NotesHome = ({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background h-full hide-scrollbar">
+    <div className="flex-1 overflow-y-auto jotty-scrollable-content bg-background h-full hide-scrollbar">
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
           <div>

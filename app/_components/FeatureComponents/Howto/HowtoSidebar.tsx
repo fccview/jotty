@@ -84,9 +84,9 @@ export const HowtoSidebar = ({ isOpen, onClose }: HowtoSidebarProps) => {
                     } as React.CSSProperties
                 }
                 className={cn(
-                    "jotty-sidebar fixed left-0 top-0 z-50 h-full bg-background border-r border-border flex flex-col lg:static",
+                    "jotty-sidebar rounded-tr-[0.25em] rounded-br-[0.25em] fixed left-0 top-0 z-50 h-full bg-background border-r border-border flex flex-col lg:static",
                     "transition-transform duration-300 ease-in-out",
-                    "w-[80vw]",
+                    "w-[88vw]",
                     "lg:w-[var(--sidebar-desktop-width)] lg:min-w-[var(--sidebar-desktop-width)] lg:max-w-[var(--sidebar-desktop-width)]",
                     isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
                     "flex-none"

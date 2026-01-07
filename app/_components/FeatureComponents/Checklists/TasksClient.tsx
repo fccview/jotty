@@ -6,6 +6,7 @@ import { FiltersSidebar } from "@/app/_components/FeatureComponents/Sidebar/Filt
 import { Category, SanitisedUser } from "@/app/_types";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useTranslations } from "next-intl";
+import { MobileHeader } from "../../GlobalComponents/Layout/MobileHeader";
 
 interface TasksClientProps {
     categories: Category[];
@@ -117,7 +118,9 @@ export const TasksClient = ({
                     />
                 )}
             >
-                <div className="w-full px-4 py-6 h-full overflow-y-auto">
+                <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
+                
+                <div className="w-full px-4 py-6 h-full overflow-y-auto jotty-scrollable-content">
                     {children}
                 </div>
             </Layout>

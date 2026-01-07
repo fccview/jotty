@@ -21,7 +21,7 @@ export const MarkdownEditor = ({
   };
 
   return (
-    <div className="flex-1 p-4 overflow-y-auto h-full">
+    <div className="flex-1 lg:p-4 overflow-y-auto jotty-scrollable-content h-full">
       <SyntaxHighlightedEditor
         content={content}
         onChange={handleValueChange}

@@ -47,7 +47,7 @@ export const NoteEditor = ({
       />
 
       <div className="flex h-full w-full relative">
-        <div className="flex-1 overflow-y-auto mb-[70px]">
+        <div className="flex-1 overflow-y-auto jotty-scrollable-content max-h-[95vh]">
           <NoteEditorContent
             isEditing={viewModel.isEditing}
             noteContent={note.content}

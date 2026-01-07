@@ -7,6 +7,7 @@ import { Pagination } from "@/app/_components/GlobalComponents/Layout/Pagination
 import { Category, SanitisedUser } from "@/app/_types";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useTranslations } from "next-intl";
+import { MobileHeader } from "../../GlobalComponents/Layout/MobileHeader";
 
 interface ChecklistsClientProps {
   categories: Category[];
@@ -118,7 +119,9 @@ export const ChecklistsClient = ({
           />
         )}
       >
-        <div className="w-full px-4 py-6 h-full overflow-y-auto">
+        <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
+        
+        <div className="w-full px-4 py-6 h-full overflow-y-auto jotty-scrollable-content">
           {children}
         </div>
       </Layout>

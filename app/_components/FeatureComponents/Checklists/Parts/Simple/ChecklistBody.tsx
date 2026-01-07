@@ -159,7 +159,7 @@ export const ChecklistBody = ({
       {localList.items.length > 0 && (
         <ChecklistProgress checklist={localList} />
       )}
-      <div className="flex-1 overflow-y-auto p-4 pb-24 lg:pb-4">
+      <div className="flex-1 overflow-y-auto jotty-scrollable-content p-4">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}

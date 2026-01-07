@@ -12,11 +12,12 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { AppMode, User, SanitisedUser } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { cn } from "@/app/_utils/global-utils";
+import { cn, handleScroll } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
 import { UserDropdown } from "../Navigation/Parts/UserDropdown";
 import { logout } from "@/app/_server/actions/auth";
+import { useState, useEffect, useRef } from "react";
 
 interface QuickNavProps {
   showSidebarToggle?: boolean;
@@ -25,6 +26,7 @@ interface QuickNavProps {
   user: SanitisedUser | null;
   onModeChange?: (mode: AppMode) => void;
   currentLocale: string;
+  isEditorInEditMode?: boolean;
 }
 
 export const QuickNav = ({
@@ -34,22 +36,44 @@ export const QuickNav = ({
   user,
   onModeChange,
   currentLocale,
+  isEditorInEditMode = false,
 }: QuickNavProps) => {
   const router = useRouter();
   const { mode } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
+  const [isScrolled, setIsScrolled] = useState(true);
+  const lastScrollY = useRef(0);
 
   const handleLogout = async () => {
     await logout();
     router.push("/auth/login");
   };
 
+  useEffect(() => {
+    const handleGlobalScroll = (e: Event) => {
+      handleScroll(e, 'jotty-scrollable-content', setIsScrolled, lastScrollY);
+    };
+
+    window.addEventListener('scroll', handleGlobalScroll, true);
+
+    return () => {
+      window.removeEventListener('scroll', handleGlobalScroll, true);
+    };
+  }, []);
+
+  const mobileClasses = "max-w-[80%] w-full rounded-jotty left-[10%] border bg-muted text-muted-foreground";
+  const desktopClasses = "lg:max-w-full lg:left-auto lg:rounded-none lg:border-none lg:bg-background"
+
   return (
     <header className="lg:border-b lg:border-border no-print">
       <nav
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t bg-background",
-          "lg:relative lg:h-auto lg:justify-end lg:border-t-0 lg:px-6 lg:py-5"
+          "fixed z-30 flex items-center justify-between p-2 lg:justify-around transition-[bottom] duration-300 ease-in-out",
+          "lg:relative lg:bottom-auto lg:h-auto lg:justify-end lg:px-6 lg:py-5",
+          mobileClasses,
+          desktopClasses,
+          isScrolled && !isEditorInEditMode ? "bottom-10" : "-bottom-20",
+          isEditorInEditMode && "lg:relative lg:bottom-auto"
         )}
       >
         {showSidebarToggle && onSidebarToggle && (
@@ -59,7 +83,7 @@ export const QuickNav = ({
             onClick={onSidebarToggle}
             className="lg:hidden jotty-mobile-navigation-icon"
           >
-            <SidebarLeftIcon className="h-5 w-5" />
+            <SidebarLeftIcon className="h-6 w-6" />
           </Button>
         )}
 
@@ -90,8 +114,8 @@ export const QuickNav = ({
             icon={
               <CheckmarkSquare04Icon
                 className={cn(
-                  "h-5 w-5",
-                  mode === Modes.CHECKLISTS ? "text-primary" : ""
+                  "h-10 w-10 p-2 rounded-jotty",
+                  mode === Modes.CHECKLISTS ? "bg-primary text-primary-foreground" : ""
                 )}
               />
             }
@@ -107,8 +131,8 @@ export const QuickNav = ({
             icon={
               <File02Icon
                 className={cn(
-                  "h-5 w-5",
-                  mode === Modes.NOTES ? "text-primary" : ""
+                  "h-10 w-10 p-2 rounded-jotty",
+                  mode === Modes.NOTES ? "bg-primary text-primary-foreground" : ""
                 )}
               />
             }
@@ -126,3 +150,4 @@ export const QuickNav = ({
     </header>
   );
 };
+

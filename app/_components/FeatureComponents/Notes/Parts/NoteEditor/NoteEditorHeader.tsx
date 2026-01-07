@@ -24,6 +24,7 @@ import {
   LockKeyIcon,
   ViewOffSlashIcon,
   MessageLock02Icon,
+  Cancel01Icon,
 } from "hugeicons-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -258,7 +259,7 @@ export const NoteEditorHeader = ({
           } sticky top-0 z-20 no-print`}
       >
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0 focus-within:min-w-[90%] lg:focus-within:min-w-[20%] transition-all duration-100">
+          <div className="flex items-center gap-3 flex-1 min-w-0 transition-all duration-100">
             <Button
               variant="ghost"
               size="icon"
@@ -341,11 +342,12 @@ export const NoteEditorHeader = ({
                       selectedCategory={category}
                       onCategorySelect={viewModel.setCategory}
                       placeholder={t('common.selectCategory')}
+                      className="note-mobile-category-tree"
                     />
                   </div>
                 )}
 
-                <Button variant="outline" size="sm" onClick={handleCancel}>{t('common.cancel')}</Button>
+                <Button variant="outline" className="hidden lg:flex" size="sm" onClick={handleCancel}>{t('common.cancel')}</Button>
                 <Button
                   size="sm"
                   onClick={() => {
@@ -356,7 +358,7 @@ export const NoteEditorHeader = ({
                       handleSave();
                     }
                   }}
-                  className="fixed bottom-[150px] right-4 rounded-full py-6 lg:py-0 lg:rounded-jotty lg:relative lg:bottom-auto lg:right-auto z-10"
+                  className="hidden lg:flex"
                   disabled={status.isSaving || status.isAutoSaving}
                 >
                   {status.isSaving ? (
@@ -365,15 +367,45 @@ export const NoteEditorHeader = ({
                         className="h-4 w-4 bg-background mr-2 animate-pulse"
                         pathClassName="fill-primary"
                       />
-                      <span className="hidden lg:inline">{t('common.saving')}</span>
+                      <span>{t('common.saving')}</span>
                     </>
                   ) : (
                     <>
-                      <FloppyDiskIcon className="h-6 w-6 lg:h-4 lg:w-4 mr-0 lg:mr-2" />
-                      <span className="hidden lg:inline">{t('common.save')}</span>
+                      <FloppyDiskIcon className="h-4 w-4 mr-2" />
+                      <span>{t('common.save')}</span>
                     </>
                   )}
                 </Button>
+
+                <div className={`fixed bottom-[20px] ${user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"} lg:hidden z-50 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}>
+                  <Button variant="outline" size="icon" onClick={handleCancel}>
+                    <Cancel01Icon className="h-5 w-5" />
+                  </Button>
+                  
+                  <Button
+                    size="icon"
+                    onClick={() => {
+                      if (isEditingEncrypted) {
+                        setEncryptionModalMode("save");
+                        setShowEncryptionModal(true);
+                      } else {
+                        handleSave();
+                      }
+                    }}
+                    className="h-10 w-10"
+                    disabled={status.isSaving || status.isAutoSaving}
+                    title={status.isSaving ? t('common.saving') : t('common.save')}
+                  >
+                    {status.isSaving ? (
+                      <Logo
+                        className="h-5 w-5 bg-background animate-pulse"
+                        pathClassName="fill-primary-foreground"
+                      />
+                    ) : (
+                      <FloppyDiskIcon className="h-5 w-5" />
+                    )}
+                  </Button>
+                </div>
               </>
             ) : (
               <>

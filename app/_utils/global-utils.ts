@@ -169,3 +169,27 @@ export const getFormData = (formData: FormData, keys: string[]) => {
 
   return data;
 };
+
+export const handleScroll = (e: Event, targetClass: string, setIsVisible: (isVisible: boolean) => void, lastScrollY: React.MutableRefObject<number>) => {
+  const target = e.target as HTMLElement;
+
+  if (!target.classList?.contains(targetClass)) return;
+
+  if (window.innerWidth >= 1024) {
+    setIsVisible(true);
+    return;
+  }
+
+  const currentScrollY = target.scrollTop;
+  const threshold = 10;
+
+  if (Math.abs(currentScrollY - lastScrollY.current) < threshold) return;
+
+  if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+    setIsVisible(false);
+  } else {
+    setIsVisible(true);
+  }
+
+  lastScrollY.current = currentScrollY;
+};

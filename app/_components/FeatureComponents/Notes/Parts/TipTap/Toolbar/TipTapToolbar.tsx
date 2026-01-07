@@ -30,6 +30,7 @@ import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Pa
 import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/PrismThemeDropdown";
 import { useTranslations } from "next-intl";
 import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 type ToolbarProps = {
   editor: Editor | null;
@@ -53,6 +54,7 @@ export const TiptapToolbar = ({
   markdownContent = "",
 }: ToolbarProps) => {
   const t = useTranslations();
+  const { user } = useAppMode();
   const [showFileModal, setShowFileModal] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
   const [showImageSizeModal, setShowImageSizeModal] = useState(false);
@@ -217,49 +219,44 @@ export const TiptapToolbar = ({
           </Button>
         </div>
 
-        <div className="fixed bottom-[62px] w-full left-0 lg:hidden z-40 bg-background">
-          <div className="flex gap-1 p-2 border-b border-border w-full justify-center items-center">
-            {isMarkdownMode && onTogglePreview && (
-              <Button
-                variant={showPreview ? "default" : "ghost"}
-                className="w-1/3"
-                size="sm"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={onTogglePreview}
-                title={showPreview ? t('editor.hidePreview') : t('editor.showPreview')}
-              >
-                {showPreview ? (
-                  <ViewOffSlashIcon className="h-4 w-4 mr-2" />
-                ) : (
-                  <ViewIcon className="h-4 w-4 mr-2" />
-                )}
-                <span>{t('editor.preview')}</span>
-              </Button>
-            )}
+        <div className={`fixed bottom-[130px] ${user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"} lg:hidden z-40 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}>
+          {isMarkdownMode && onTogglePreview && (
             <Button
-              variant={!isMarkdownMode ? "default" : "ghost"}
-              className={isMarkdownMode && onTogglePreview ? "w-1/3" : "w-1/2"}
-              size="sm"
+              variant={showPreview ? "default" : "ghost"}
+              size="icon"
               onMouseDown={(e) => e.preventDefault()}
-              onClick={toggleMode}
-              title={t('editor.toggleRichEditorMode')}
+              onClick={onTogglePreview}
+              title={showPreview ? t('editor.hidePreview') : t('editor.showPreview')}
+              className="h-10 w-10"
             >
-              <Tv02Icon className="h-4 w-4 mr-2" />
-              <span>{t('editor.richEditor')}</span>
+              {showPreview ? (
+                <ViewOffSlashIcon className="h-5 w-5" />
+              ) : (
+                <ViewIcon className="h-5 w-5" />
+              )}
             </Button>
+          )}
+          <Button
+            variant={!isMarkdownMode ? "default" : "ghost"}
+            size="icon"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggleMode}
+            title={t('editor.toggleRichEditorMode')}
+            className="h-10 w-10"
+          >
+            <Tv02Icon className="h-5 w-5" />
+          </Button>
 
-            <Button
-              variant={isMarkdownMode ? "default" : "ghost"}
-              className={isMarkdownMode && onTogglePreview ? "w-1/3" : "w-1/2"}
-              size="sm"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={toggleMode}
-              title={t('editor.toggleMarkdownMode')}
-            >
-              <File02Icon className="h-4 w-4 mr-2" />
-              <span>{t('editor.markdown')}</span>
-            </Button>
-          </div>
+          <Button
+            variant={isMarkdownMode ? "default" : "ghost"}
+            size="icon"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggleMode}
+            title={t('editor.toggleMarkdownMode')}
+            className="h-10 w-10"
+          >
+            <File02Icon className="h-5 w-5" />
+          </Button>
         </div>
 
         <div

@@ -172,7 +172,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   ]);
 
   return (
-    <div className="h-full flex flex-col bg-background overflow-y-auto">
+    <div className="h-full flex flex-col bg-background overflow-y-auto jotty-scrollable-content">
       {permissions?.canEdit && (
         <ChecklistHeading
           key={focusKey}

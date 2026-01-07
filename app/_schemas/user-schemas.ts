@@ -68,6 +68,9 @@ export const generalSettingsSchema = z.object({
   }),
   preferredDateFormat: z.enum(["dd/mm/yyyy", "mm/dd/yyyy", "yyyy/mm/dd"]),
   preferredTimeFormat: z.enum(["12-hours", "24-hours"]),
+  handedness: z.enum(["right-handed", "left-handed"], {
+    message: "Handedness must be either 'right-handed' or 'left-handed'",
+  }).optional(),
 });
 
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;

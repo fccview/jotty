@@ -124,7 +124,7 @@ export const UserDropdown = ({
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className="cursor-pointer"
         >
-          <div className="flex items-center gap-1.5 transition-opacity px-2 py-1.5 rounded-jotty hover:bg-accent group">
+          <div className="flex items-center gap-1.5 transition-opacity px-2 py-1.5 rounded-jotty lg:hover:bg-accent group">
             <div className="hidden sm:block">
               <UserAvatar
                 username={username}

@@ -577,6 +577,23 @@ pre.text-foreground span,
     width: 4px !important;
 }
 
+@media (max-width: 992px) {
+    .note-mobile-category-tree .jotty-category-tree-selector-dropdown {
+        right: 0;
+        left: auto;
+        width: 500px;
+        max-width: 80vw;
+    }
+
+    .note-mobile-category-tree .jotty-category-tree-selector-button {
+        height: 42px;
+    }
+
+    .note-mobile-category-tree .jotty-category-tree-selector-button>span {
+        display: none;
+    }
+}
+
 @supports (-webkit-touch-callout: none) {
     @media (max-width: 992px) {
         nav.fixed.bottom-0 {

@@ -19,6 +19,7 @@ import {
   FileRenameMode,
   PreferredTimeFormat,
   PreferredDateFormat,
+  Handedness,
   DisableRichEditor,
   MarkdownTheme,
   DefaultChecklistFilter,
@@ -57,6 +58,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   fileRenameMode: user?.fileRenameMode || "minimal",
   preferredDateFormat: user?.preferredDateFormat || "dd/mm/yyyy",
   preferredTimeFormat: user?.preferredTimeFormat || "12-hours",
+  handedness: user?.handedness || "right-handed",
   disableRichEditor: user?.disableRichEditor || "disable",
   markdownTheme: user?.markdownTheme || "prism",
   defaultChecklistFilter: user?.defaultChecklistFilter || "all",
@@ -134,6 +136,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     "fileRenameMode",
     "preferredDateFormat",
     "preferredTimeFormat",
+    "handedness",
   ]);
   const hasEditorChanges = hasChanges([
     "notesDefaultEditor",
@@ -232,6 +235,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     { id: "24-hours", name: t('settings.hours24') },
   ];
 
+  const handednessOptions = [
+    { id: "right-handed", name: t('settings.rightHanded') },
+    { id: "left-handed", name: t('settings.leftHanded') },
+  ];
+
   const tableSyntaxOptions = [
     { id: "markdown", name: t('settings.markdownTableSyntax') },
     { id: "html", name: t('settings.htmlTableSyntax') },
@@ -321,6 +329,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                   "fileRenameMode",
                   "preferredDateFormat",
                   "preferredTimeFormat",
+                  "handedness",
                 ],
                 generalSettingsSchema,
                 "General"
@@ -481,6 +490,30 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             )}
             <p className="text-sm text-muted-foreground">
               {t('settings.choosePreferredTimeFormat')}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="handedness">{t('settings.handedness')}</Label>
+            <Dropdown
+              value={currentSettings.handedness || "right-handed"}
+              onChange={(value) =>
+                handleSettingChange(
+                  "handedness",
+                  value as Handedness
+                )
+              }
+              options={handednessOptions}
+              placeholder={t('settings.selectHandedness')}
+              className="w-full"
+            />
+            {validationErrors.handedness && (
+              <p className="text-sm text-destructive">
+                {validationErrors.handedness}
+              </p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              {t('settings.chooseHandedness')}
             </p>
           </div>
         </div>
