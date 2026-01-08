@@ -3,7 +3,10 @@
 import path from "path";
 import { Note, User } from "@/app/_types";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
-import { detectEncryptionMethod, isEncrypted } from "@/app/_utils/encryption-utils";
+import {
+  detectEncryptionMethod,
+  isEncrypted,
+} from "@/app/_utils/encryption-utils";
 import {
   getCurrentUser,
   getUserByNote,
@@ -272,11 +275,11 @@ const _readNotesRecursively = async (
     .map((e) => e.name);
   const orderedDirNames: string[] = order?.categories
     ? [
-      ...order.categories.filter((n) => dirNames.includes(n)),
-      ...dirNames
-        .filter((n) => !order.categories!.includes(n))
-        .sort((a, b) => a.localeCompare(b)),
-    ]
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -290,11 +293,11 @@ const _readNotesRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -342,9 +345,9 @@ const _readNotesRecursively = async (
               )
             );
           }
-        } catch { }
+        } catch {}
       }
-    } catch { }
+    } catch {}
 
     const subDocs = await _readNotesRecursively(
       categoryDir,
@@ -413,7 +416,7 @@ const _checkDataFilesNeedMigration = async (): Promise<boolean> => {
           category: "note",
           success: false,
           errorMessage: "Error checking directory for migration",
-          metadata: { error: String(error) }
+          metadata: { error: String(error) },
         });
       }
 
@@ -480,7 +483,12 @@ export const createNote = async (formData: FormData) => {
     await ensureDir(categoryDir);
 
     const fileRenameMode = currentUser?.fileRenameMode || "minimal";
-    const filename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
+    const filename = await generateUniqueFilename(
+      categoryDir,
+      title,
+      ".md",
+      fileRenameMode
+    );
     const id = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 
@@ -513,36 +521,42 @@ export const createNote = async (formData: FormData) => {
       );
     }
 
-    await logContentEvent("note_created", "note", newDoc.uuid!, newDoc.title, true, { category: newDoc.category });
+    await logContentEvent(
+      "note_created",
+      "note",
+      newDoc.uuid!,
+      newDoc.title,
+      true,
+      { category: newDoc.category }
+    );
 
     return { success: true, data: newDoc };
   } catch (error) {
     const { title } = getFormData(formData, ["title"]);
     console.error("Error creating note:", error);
-    await logContentEvent("note_created", "note", "", title || "unknown", false);
+    await logContentEvent(
+      "note_created",
+      "note",
+      "",
+      title || "unknown",
+      false
+    );
     return { error: "Failed to create note" };
   }
 };
 
 export const updateNote = async (formData: FormData, autosaveNotes = false) => {
   try {
-    const {
-      id,
-      title,
-      content,
-      category,
-      originalCategory,
-      user,
-      uuid,
-    } = getFormData(formData, [
-      "id",
-      "title",
-      "content",
-      "category",
-      "originalCategory",
-      "user",
-      "uuid",
-    ]);
+    const { id, title, content, category, originalCategory, user, uuid } =
+      getFormData(formData, [
+        "id",
+        "title",
+        "content",
+        "category",
+        "originalCategory",
+        "user",
+        "uuid",
+      ]);
     const settings = await getAppSettings();
 
     let currentUser = user;
@@ -555,10 +569,10 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
     const processedContent = settings?.data?.editor?.enableBilateralLinks
       ? await convertInternalLinksToNewFormat(
-        contentWithoutMetadata,
-        currentUser,
-        originalCategory
-      )
+          contentWithoutMetadata,
+          currentUser,
+          originalCategory
+        )
       : contentWithoutMetadata;
 
     const convertedContent = processedContent;
@@ -581,7 +595,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       return { error: "Permission denied" };
     }
 
-    const encryptionMethod = detectEncryptionMethod(convertedContent) || undefined;
+    const encryptionMethod =
+      detectEncryptionMethod(convertedContent) || undefined;
     const updatedDoc = {
       ...note,
       title,
@@ -605,7 +620,12 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     if (title !== note.title) {
       const ownerUser = await getCurrentUser();
       const fileRenameMode = ownerUser?.fileRenameMode || "minimal";
-      newFilename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
+      newFilename = await generateUniqueFilename(
+        categoryDir,
+        title,
+        ".md",
+        fileRenameMode
+      );
       newId = path.basename(newFilename, ".md");
     } else {
       newFilename = `${id}.md`;
@@ -637,8 +657,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     if (settings?.data?.editor?.enableBilateralLinks) {
       try {
         const links = (await parseInternalLinks(updatedDoc.content)) || [];
-        const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
-          }`;
+        const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
+          updatedDoc.id
+        }`;
 
         const oldItemKey = `${note.category || "Uncategorized"}/${id}`;
 
@@ -708,26 +729,37 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     }
 
     if (!updatedDoc.encrypted) {
-      await logContentEvent("note_updated", "note", note.uuid!, updatedDoc.title, true, { category: updatedDoc.category });
+      await logContentEvent(
+        "note_updated",
+        "note",
+        note.uuid!,
+        updatedDoc.title,
+        true,
+        { category: updatedDoc.category }
+      );
     }
 
     return { success: true, data: updatedDoc };
   } catch (error) {
-    const {
-      title,
-      uuid,
-    } = getFormData(formData, [
-      "title",
-      "uuid",
-    ]);
-    await logContentEvent("note_updated", "note", uuid!, title || "unknown", false);
+    const { title, uuid } = getFormData(formData, ["title", "uuid"]);
+    await logContentEvent(
+      "note_updated",
+      "note",
+      uuid!,
+      title || "unknown",
+      false
+    );
     return { error: "Failed to update note" };
   }
 };
 
 export const deleteNote = async (formData: FormData, username?: string) => {
   try {
-    const { id, category, uuid } = getFormData(formData, ["id", "category", "uuid"]);
+    const { id, category, uuid } = getFormData(formData, [
+      "id",
+      "category",
+      "uuid",
+    ]);
     const itemIdentifier = uuid || id;
 
     let currentUser: any = null;
@@ -747,25 +779,35 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       return { error: "Not authenticated" };
     }
 
-    const note = await getNoteById(itemIdentifier, category, username ? currentUser.username : undefined);
-    
+    const note = await getNoteById(
+      itemIdentifier,
+      category,
+      username ? currentUser.username : undefined
+    );
+
     if (!note) {
       return { error: "Document not found" };
     }
 
-    let filePath: string;
+    const canDelete = await checkUserPermission(
+      itemIdentifier,
+      category,
+      "note",
+      currentUser.username,
+      PermissionTypes.DELETE
+    );
 
-    if (note.isShared) {
-      if (!currentUser.isAdmin && currentUser.username !== note.owner) {
-        return { error: "Unauthorized to delete this shared note" };
-      }
-
-      const ownerDir = USER_NOTES_DIR(note.owner!);
-      filePath = path.join(ownerDir, note.category || "Uncategorized", `${note.id}.md`);
-    } else {
-      const userDir = await getUserModeDir(Modes.NOTES, currentUser.username);
-      filePath = path.join(userDir, note.category || "Uncategorized", `${note.id}.md`);
+    if (!canDelete) {
+      return { error: "Permission denied" };
     }
+
+    const ownerUsername = note.owner || currentUser.username;
+    const ownerDir = USER_NOTES_DIR(ownerUsername);
+    const filePath = path.join(
+      ownerDir,
+      note.category || "Uncategorized",
+      `${note.id}.md`
+    );
 
     await serverDeleteFile(filePath);
 
@@ -804,17 +846,26 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       );
     }
 
-    await logContentEvent("note_deleted", "note", note.uuid!, note.title!, true, { category: note.category });
+    await logContentEvent(
+      "note_deleted",
+      "note",
+      note.uuid!,
+      note.title!,
+      true,
+      { category: note.category }
+    );
 
     return { success: true };
   } catch (error) {
-    const {
-      uuid,
-    } = getFormData(formData, [
-      "uuid",
-    ]);
+    const { uuid } = getFormData(formData, ["uuid"]);
     const note = await getNoteById(uuid!, "");
-    await logContentEvent("note_deleted", "note", uuid!, note?.title || "unknown", false);
+    await logContentEvent(
+      "note_deleted",
+      "note",
+      uuid!,
+      note?.title || "unknown",
+      false
+    );
     return { error: "Failed to delete note" };
   }
 };
@@ -886,7 +937,7 @@ export const getNoteById = async (
       (d.id === id || d.uuid === id) &&
       (!category ||
         encodeCategoryPath(d.category || "Uncategorized")?.toLowerCase() ===
-        encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
+          encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
   );
 
   if (note && "rawContent" in note) {
@@ -982,8 +1033,12 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
         const itemIdentifier = sharedItem.uuid || sharedItem.id;
         if (!itemIdentifier) continue;
 
-        const sharedNote = await getNoteById(itemIdentifier, undefined, sharedItem.sharer);
-        
+        const sharedNote = await getNoteById(
+          itemIdentifier,
+          undefined,
+          sharedItem.sharer
+        );
+
         if (sharedNote) {
           notes.push({
             ...sharedNote,
@@ -991,7 +1046,10 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
           });
         }
       } catch (error) {
-        console.error(`Error reading shared note ${sharedItem.uuid || sharedItem.id}:`, error);
+        console.error(
+          `Error reading shared note ${sharedItem.uuid || sharedItem.id}:`,
+          error
+        );
         continue;
       }
     }
@@ -1051,7 +1109,12 @@ export const cloneNote = async (formData: FormData) => {
 
     const cloneTitle = `${note.title} (Copy)`;
     const fileRenameMode = currentUser?.fileRenameMode || "minimal";
-    const filename = await generateUniqueFilename(categoryDir, cloneTitle, ".md", fileRenameMode);
+    const filename = await generateUniqueFilename(
+      categoryDir,
+      cloneTitle,
+      ".md",
+      fileRenameMode
+    );
     const filePath = path.join(categoryDir, filename);
 
     const content = note.content || "";

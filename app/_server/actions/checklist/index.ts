@@ -88,11 +88,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-      ...order.categories.filter((n) => dirNames.includes(n)),
-      ...dirNames
-        .filter((n) => !order.categories!.includes(n))
-        .sort((a, b) => a.localeCompare(b)),
-    ]
+        ...order.categories.filter((n) => dirNames.includes(n)),
+        ...dirNames
+          .filter((n) => !order.categories!.includes(n))
+          .sort((a, b) => a.localeCompare(b)),
+      ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -111,11 +111,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
+            ...categoryOrder.items.filter((id) => ids.includes(id)),
+            ...ids
+              .filter((id) => !categoryOrder.items!.includes(id))
+              .sort((a, b) => a.localeCompare(b)),
+          ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -164,9 +164,9 @@ const readListsRecursively = async (
             );
             lists.push(parsedList);
           }
-        } catch { }
+        } catch {}
       }
-    } catch { }
+    } catch {}
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -267,7 +267,10 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         const itemIdentifier = sharedItem.uuid || sharedItem.id;
         if (!itemIdentifier) continue;
 
-        const sharedChecklist = await getListById(itemIdentifier, sharedItem.sharer);
+        const sharedChecklist = await getListById(
+          itemIdentifier,
+          sharedItem.sharer
+        );
 
         if (sharedChecklist) {
           lists.push({
@@ -276,7 +279,10 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
           });
         }
       } catch (error) {
-        console.error(`Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`, error);
+        console.error(
+          `Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`,
+          error
+        );
         continue;
       }
     }
@@ -346,7 +352,7 @@ export const getListById = async (
       (list.id === id || list.uuid === id) &&
       (!category ||
         list.category?.toLowerCase() ===
-        decodeCategoryPath(category).toLowerCase())
+          decodeCategoryPath(category).toLowerCase())
   );
 
   if (list && "rawContent" in list) {
@@ -467,7 +473,12 @@ export const createList = async (formData: FormData) => {
 
     const currentUser = await getCurrentUser();
     const fileRenameMode = currentUser?.fileRenameMode || "minimal";
-    const filename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
+    const filename = await generateUniqueFilename(
+      categoryDir,
+      title,
+      ".md",
+      fileRenameMode
+    );
     const id = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 
@@ -505,18 +516,25 @@ export const createList = async (formData: FormData) => {
       );
     }
 
-    await logContentEvent("checklist_created", "checklist", newList.uuid!, newList.title, true, { category: newList.category });
+    await logContentEvent(
+      "checklist_created",
+      "checklist",
+      newList.uuid!,
+      newList.title,
+      true,
+      { category: newList.category }
+    );
 
     return { success: true, data: newList };
   } catch (error) {
-    const {
-      title,
-      uuid,
-    } = getFormData(formData, [
-      "title",
-      "uuid",
-    ]);
-    await logContentEvent("checklist_created", "checklist", uuid!, title || "unknown", false);
+    const { title, uuid } = getFormData(formData, ["title", "uuid"]);
+    await logContentEvent(
+      "checklist_created",
+      "checklist",
+      uuid!,
+      title || "unknown",
+      false
+    );
     console.error("Error creating list:", error);
     return { error: "Failed to create list" };
   }
@@ -597,7 +615,12 @@ export const updateList = async (formData: FormData) => {
     const expectedFilename = `${sanitizedTitle}.md`;
 
     if (title !== currentList.title || currentFilename !== expectedFilename) {
-      newFilename = await generateUniqueFilename(categoryDir, title, ".md", fileRenameMode);
+      newFilename = await generateUniqueFilename(
+        categoryDir,
+        title,
+        ".md",
+        fileRenameMode
+      );
       newId = path.basename(newFilename, ".md");
     } else {
       newFilename = `${id}.md`;
@@ -629,8 +652,9 @@ export const updateList = async (formData: FormData) => {
     try {
       const content = updatedList.items.map((i) => i.text).join("\n");
       const links = await parseInternalLinks(content);
-      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
-        }`;
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${
+        updatedList.id
+      }`;
 
       const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
       if (oldItemKey !== newItemKey) {
@@ -700,20 +724,27 @@ export const updateList = async (formData: FormData) => {
       );
     }
 
-    await logContentEvent("checklist_updated", "checklist", updatedList.uuid!, updatedList.title, true, { category: updatedList.category });
+    await logContentEvent(
+      "checklist_updated",
+      "checklist",
+      updatedList.uuid!,
+      updatedList.title,
+      true,
+      { category: updatedList.category }
+    );
 
     return { success: true, data: updatedList };
   } catch (error) {
     try {
-      const {
-        title,
-        uuid,
-      } = getFormData(formData, [
-        "title",
-        "uuid",
-      ]);
-      await logContentEvent("checklist_updated", "checklist", uuid!, title || "unknown", false);
-    } catch { }
+      const { title, uuid } = getFormData(formData, ["title", "uuid"]);
+      await logContentEvent(
+        "checklist_updated",
+        "checklist",
+        uuid!,
+        title || "unknown",
+        false
+      );
+    } catch {}
     return { error: "Failed to update list" };
   }
 };
@@ -739,44 +770,51 @@ export const deleteList = async (formData: FormData) => {
       return { error: "Not authenticated" };
     }
 
-    const list = await getListById(itemIdentifier, currentUser.username, category);
+    const list = await getListById(
+      itemIdentifier,
+      currentUser.username,
+      category
+    );
 
     if (!list) {
       return { error: "List not found" };
     }
 
-    let filePath: string;
+    const canDelete = await checkUserPermission(
+      itemIdentifier,
+      category,
+      ItemTypes.CHECKLIST,
+      currentUser.username,
+      PermissionTypes.DELETE
+    );
 
-    if (list.isShared) {
-      if (!currentUser.isAdmin && currentUser.username !== list.owner) {
-        return { error: "Unauthorized to delete this shared item" };
-      }
-
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!
-      );
-      filePath = path.join(ownerDir, list.category || "Uncategorized", `${list.id}.md`);
-    } else {
-      const userDir = apiUser
-        ? path.join(
-          process.cwd(),
-          "data",
-          CHECKLISTS_FOLDER,
-          currentUser.username
-        )
-        : await getUserModeDir(Modes.CHECKLISTS);
-      filePath = path.join(userDir, list.category || "Uncategorized", `${list.id}.md`);
+    if (!canDelete) {
+      return { error: "Permission denied" };
     }
+
+    const ownerUsername = list.owner || currentUser.username;
+    const ownerDir = path.join(
+      process.cwd(),
+      "data",
+      CHECKLISTS_FOLDER,
+      ownerUsername
+    );
+    const filePath = path.join(
+      ownerDir,
+      list.category || "Uncategorized",
+      `${list.id}.md`
+    );
 
     await serverDeleteFile(filePath);
 
     try {
       await removeItemFromIndex(list.owner!, ItemTypes.CHECKLIST, list.uuid!);
     } catch (error) {
-      console.warn("Failed to remove checklist from link index:", list.id, error);
+      console.warn(
+        "Failed to remove checklist from link index:",
+        list.id,
+        error
+      );
     }
 
     if (list.owner) {
@@ -807,19 +845,26 @@ export const deleteList = async (formData: FormData) => {
         error
       );
     }
-    await logContentEvent("checklist_deleted", "checklist", list.uuid || "unknown", list.title || "unknown", true, { category: list.category });
+    await logContentEvent(
+      "checklist_deleted",
+      "checklist",
+      list.uuid || "unknown",
+      list.title || "unknown",
+      true,
+      { category: list.category }
+    );
     return { success: true };
   } catch (error) {
     try {
-      const {
-        title,
-        uuid,
-      } = getFormData(formData, [
-        "title",
-        "uuid",
-      ]);
-      await logContentEvent("checklist_deleted", "checklist", uuid || "unknown", title || "unknown", false);
-    } catch { }
+      const { title, uuid } = getFormData(formData, ["title", "uuid"]);
+      await logContentEvent(
+        "checklist_deleted",
+        "checklist",
+        uuid || "unknown",
+        title || "unknown",
+        false
+      );
+    } catch {}
     return { error: "Failed to delete list" };
   }
 };
@@ -1075,7 +1120,12 @@ export const cloneChecklist = async (formData: FormData) => {
 
     const cloneTitle = `${checklist.title} (Copy)`;
     const fileRenameMode = currentUser?.fileRenameMode || "minimal";
-    const filename = await generateUniqueFilename(categoryDir, cloneTitle, ".md", fileRenameMode);
+    const filename = await generateUniqueFilename(
+      categoryDir,
+      cloneTitle,
+      ".md",
+      fileRenameMode
+    );
     const filePath = path.join(categoryDir, filename);
 
     const content = listToMarkdown(checklist);
