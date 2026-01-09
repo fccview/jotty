@@ -427,7 +427,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           <div className="space-y-2">
             <Label htmlFor="file-rename-mode">{t('settings.fileRenameMode')}</Label>
             <Dropdown
-              value={currentSettings.fileRenameMode || "dash-case"}
+              value={currentSettings.fileRenameMode || "minimal"}
               onChange={(value) =>
                 handleSettingChange("fileRenameMode", value as FileRenameMode)
               }
