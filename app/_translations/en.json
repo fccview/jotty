@@ -259,7 +259,8 @@
     "version": "Version {version}",
     "createUser": "Create User",
     "attemptsRemaining": "Warning: {count, plural, one {# attempt} other {# attempts}} remaining before account lockout",
-    "accountLocked": "Too many failed attempts. Please try again in {seconds} {seconds, plural, one {second} other {seconds}}"
+    "accountLocked": "Too many failed attempts. Please try again in {seconds} {seconds, plural, one {second} other {seconds}}",
+    "notAuthorized": "You are not authorized to access this application. Please contact your administrator."
   },
   "mfa": {
     "title": "Two-Factor Authentication",

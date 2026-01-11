@@ -128,8 +128,13 @@ environment:
 - `- OIDC_ISSUER=<YOUR_SSO_ISSUER>` URL of your OIDC provider (e.g., Authentik, Auth0, Keycloak).
 - `- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>` Client ID from your OIDC provider configuration.
 - `- OIDC_CLIENT_SECRET=your_client_secret` Optional. Client secret for confidential OIDC client authentication.
+- `- OIDC_CLIENT_ID_FILE=/run/secrets/oidc_client_id` Optional. Path to file containing the OIDC client ID. If set, takes priority over `OIDC_CLIENT_ID`. Useful for Docker Secrets.
+- `- OIDC_CLIENT_SECRET_FILE=/run/secrets/oidc_client_secret` Optional. Path to file containing the OIDC client secret. If set, takes priority over `OIDC_CLIENT_SECRET`. Useful for Docker Secrets.
 - `- SSO_FALLBACK_LOCAL=yes` Optional. Allows both SSO and local authentication methods.
 - `- OIDC_ADMIN_GROUPS=admins` Optional. Comma-separated list of OIDC groups that should have admin privileges.
+- `- OIDC_ADMIN_ROLES=admin` Optional. Comma-separated list of OIDC roles that should have admin privileges.
+- `- OIDC_USER_GROUPS=jotty_users,app_users` Optional. Comma-separated list of OIDC groups allowed to access the application. If set, only users in these groups (or admins) can log in.
+- `- OIDC_USER_ROLES=user,member` Optional. Comma-separated list of OIDC roles allowed to access the application. If set, only users with these roles (or admins) can log in.
 
 ## API Documentation Service
 

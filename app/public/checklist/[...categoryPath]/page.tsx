@@ -81,7 +81,7 @@ export default async function PublicChecklistPage({
   );
 
   const isPubliclyShared = await isItemSharedWith(
-    id,
+    checklist.uuid || id,
     category,
     "checklist",
     "public"

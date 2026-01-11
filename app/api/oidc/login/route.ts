@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { getEnvOrFile } from "@/app/_server/actions/file";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
   if (issuer && !issuer.endsWith("/")) {
     issuer = `${issuer}/`;
   }
-  const clientId = process.env.OIDC_CLIENT_ID || "";
+  const clientId = await getEnvOrFile("OIDC_CLIENT_ID", "OIDC_CLIENT_ID_FILE");
 
   if (!issuer || !clientId) {
     if (process.env.DEBUGGER) {
