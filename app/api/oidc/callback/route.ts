@@ -5,7 +5,7 @@ import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { lock, unlock } from "proper-lockfile";
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import { jwtVerify, createRemoteJWKSet, decodeJwt } from "jose";
 import { createSession } from "@/app/_server/actions/session";
 import { ensureCorDirsAndFiles, readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
@@ -259,13 +259,28 @@ export async function GET(request: NextRequest) {
       });
 
       if (userinfoResponse.ok) {
-        const userinfoClaims = await userinfoResponse.json();
+        const contentType = userinfoResponse.headers.get("content-type") || "";
+        let userinfoClaims: any;
 
-        if (process.env.DEBUGGER) {
-          console.log(
-            "OIDC USERINFO FALLBACK - Successfully fetched claims from userinfo endpoint:",
-            userinfoClaims
-          );
+        if (contentType.includes("jwt")) {
+          const jwtString = await userinfoResponse.text();
+          userinfoClaims = decodeJwt(jwtString);
+
+          if (process.env.DEBUGGER) {
+            console.log(
+              "OIDC USERINFO FALLBACK - Received JWT response from userinfo endpoint, decoded claims:",
+              userinfoClaims
+            );
+          }
+        } else {
+          userinfoClaims = await userinfoResponse.json();
+
+          if (process.env.DEBUGGER) {
+            console.log(
+              "OIDC USERINFO FALLBACK - Successfully fetched claims from userinfo endpoint:",
+              userinfoClaims
+            );
+          }
         }
 
         claims = { ...userinfoClaims, ...claims };
