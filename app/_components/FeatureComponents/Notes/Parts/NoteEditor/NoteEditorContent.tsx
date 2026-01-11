@@ -21,7 +21,7 @@ interface NoteEditorContentProps {
   isEditing: boolean;
   noteContent?: string;
   editorContent: string;
-  onEditorContentChange: (content: string, isMarkdown: boolean) => void;
+  onEditorContentChange: (content: string, isMarkdown: boolean, isDirty: boolean) => void;
   noteId?: string;
   noteCategory?: string;
   encrypted?: boolean;

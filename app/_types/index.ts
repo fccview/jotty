@@ -127,7 +127,7 @@ export interface NoteEditorViewModel {
   handleCancel: () => void;
   handleSave: (autosaveNotes?: boolean, passphrase?: string) => void;
   handleDelete: () => void;
-  handleEditorContentChange: (content: string, isMarkdown: boolean) => void;
+  handleEditorContentChange: (content: string, isMarkdown: boolean, isDirty: boolean) => void;
   showUnsavedChangesModal: boolean;
   setShowUnsavedChangesModal: (show: boolean) => void;
   handleUnsavedChangesSave: () => void;

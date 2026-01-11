@@ -163,7 +163,7 @@ export const NoteEditorHeader = ({
   };
 
   const handleViewDecryption = (decryptedContent: string) => {
-    viewModel.handleEditorContentChange(decryptedContent, true);
+    viewModel.handleEditorContentChange(decryptedContent, true, false);
     setShowEncryptionModal(false);
   };
 
