@@ -16,7 +16,7 @@ import {
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
-import { useSortable } from "@dnd-kit/sortable";
+import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
@@ -87,9 +87,8 @@ const NestedChecklistItemComponent = ({
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging,
-  } = useSortable({
+  } = useDraggable({
     id: item.id,
     disabled: isDragDisabled,
     data: {
@@ -253,11 +252,9 @@ const NestedChecklistItemComponent = ({
         <div
           ref={setNodeRef}
           style={{
-            transform:
-              isAnyItemDragging && !isDragging
-                ? CSS.Transform.toString({ x: 0, y: 0, scaleX: 1, scaleY: 1 })
-                : CSS.Transform.toString(transform),
-            transition: isAnyItemDragging && !isDragging ? "none" : transition,
+            transform: CSS.Translate.toString(transform),
+            opacity: isDragging ? 0.6 : undefined,
+            zIndex: isDragging ? 100 : undefined,
           }}
           className={cn(
             "relative my-1",
@@ -280,294 +277,294 @@ const NestedChecklistItemComponent = ({
           {isOver && overPosition === "before" && (
             <div className="absolute -top-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
           )}
-      <div
-        className={cn(
-          "group/item flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
-          "rounded-jotty",
-          isChild ? "px-2.5 py-2" : "p-3",
-          completed && "opacity-80",
-          !permissions?.canEdit &&
-          "opacity-50 cursor-not-allowed pointer-events-none"
-        )}
-      >
-        {!isPublicView && !isDragDisabled && permissions?.canEdit && (
-          <button
-            type="button"
-            {...attributes}
-            {...listeners}
-            className="text-muted-foreground lg:block hover:text-foreground cursor-move touch-none"
-          >
-            <DragDropVerticalIcon className="h-4 w-4" />
-          </button>
-        )}
-
-        <div className="relative flex items-center">
-          <input
-            type="checkbox"
-            checked={item.completed || completed}
-            id={item.id}
-            onChange={(e) => {
-              onToggle(item.id, e.target.checked);
-            }}
+          <div
             className={cn(
-              "h-5 w-5 rounded border-input focus:ring-none focus:ring-offset-2 focus:ring-ring",
-              "transition-all duration-150",
-              (item.completed || completed) && "bg-primary border-primary"
+              "group/item flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
+              "rounded-jotty",
+              isChild ? "px-2.5 py-2" : "p-3",
+              completed && "opacity-80",
+              !permissions?.canEdit &&
+              "opacity-50 cursor-not-allowed pointer-events-none"
             )}
-          />
-        </div>
-
-        {isEditing ? (
-          <div className="flex-1 flex items-center gap-2 w-full">
-            {permissions?.canEdit && (
-              <>
-                <Input
-                  id={item.id}
-                  ref={inputRef}
-                  type="text"
-                  defaultValue={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSave}
-                  className="h-6 w-6 p-0"
-                >
-                  <Tick02Icon className="h-3 w-3" />
-                </Button>
-              </>
-            )}
-            {!isDeletingItem && permissions?.canDelete && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCancel}
-                className="h-6 w-6 p-0 text-destructive"
+          >
+            {!isPublicView && !isDragDisabled && permissions?.canEdit && (
+              <button
+                type="button"
+                {...attributes}
+                {...listeners}
+                className="text-muted-foreground lg:block hover:text-foreground cursor-move touch-none"
               >
-                <MultiplicationSignIcon className="h-3 w-3" />
-              </Button>
+                <DragDropVerticalIcon className="h-4 w-4" />
+              </button>
             )}
-          </div>
-        ) : (
-          <div className="flex-1 flex items-center justify-between gap-2">
-            <div className="flex-1 flex gap-1.5">
-              <label
-                htmlFor={item.id}
+
+            <div className="relative flex items-center">
+              <input
+                type="checkbox"
+                checked={item.completed || completed}
+                id={item.id}
+                onChange={(e) => {
+                  onToggle(item.id, e.target.checked);
+                }}
                 className={cn(
-                  "text-md lg:text-sm transition-all duration-200 cursor-pointer items-center flex",
-                  isActive && "scale-95",
-                  item.completed || completed
-                    ? "line-through text-muted-foreground"
-                    : "text-foreground"
+                  "h-5 w-5 rounded border-input focus:ring-none focus:ring-offset-2 focus:ring-ring",
+                  "transition-all duration-150",
+                  (item.completed || completed) && "bg-primary border-primary"
                 )}
-                onMouseDown={() => setIsActive(true)}
-                onMouseUp={() => setIsActive(false)}
-                onMouseLeave={() => setIsActive(false)}
-              >
-                {item.completed || completed ? (
-                  <CheckmarkSquare02Icon className="h-8 w-8 min-w-8 sm:h-6 sm:w-6 sm:min-w-6 text-primary mr-2 !stroke-1" />
-                ) : (
-                  <SquareIcon className="h-8 w-8 min-w-8 sm:h-6 sm:w-6 sm:min-w-6 text-muted-foreground mr-2 !stroke-1" />
-                )}
-
-                {item.recurrence && user?.enableRecurrence === "enable" && (
-                  <RecurrenceIndicator recurrence={item.recurrence} />
-                )}
-
-                <span>{displayText}</span>
-              </label>
+              />
             </div>
 
-            <LastModifiedCreatedInfo
-              item={item}
-              checklist={checklist}
-              getUserAvatarUrl={getUserAvatarUrl}
-            />
-          </div>
-        )}
-
-        {!isEditing && permissions?.canEdit && (
-          <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
-            <span className="text-md lg:text-sm lg:text-xs text-muted-foreground mr-1">#{index}</span>
-
-            <div className="hidden lg:flex items-center gap-1">
-              {!isPublicView && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAddSubItem(!showAddSubItem)}
-                  className="h-8 w-8 p-0"
-                  title={t("checklists.addSubItem")}
-                >
-                  <Add01Icon className="h-4 w-4" />
-                </Button>
-              )}
-
-              {onEdit && !isPublicView && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleEdit}
-                  className="h-8 w-8 p-0"
-                >
-                  <PencilEdit02Icon className="h-4 w-4" />
-                </Button>
-              )}
-
-              {!isPublicView && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => onDelete(item.id)}
-                  className="h-8 w-8 p-0"
-                >
-                  <Delete03Icon className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-
-            {!isPublicView && (
-              <div className="lg:hidden relative" ref={dropdownRef}>
-                <Button
-                  ref={dropdownButtonRef}
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleDropdownToggle}
-                  className="h-8 w-8 p-0"
-                >
-                  <MoreHorizontalIcon className="h-4 w-4" />
-                </Button>
-
-
-
-                {isDropdownOpen && (
-                  <div className={cn(
-                    "absolute right-0 z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
-                    dropdownOpenUpward ? "bottom-full mb-1 top-auto" : "top-full mt-1"
-                  )}>
-                    <div className="py-1">
-                      {dropdownOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => handleDropdownAction(option.id)}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm hover:bg-accent hover:text-accent-foreground"
-                        >
-                          {option.icon && <option.icon className="h-4 w-4" />}
-                          <span>{option.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+            {isEditing ? (
+              <div className="flex-1 flex items-center gap-2 w-full">
+                {permissions?.canEdit && (
+                  <>
+                    <Input
+                      id={item.id}
+                      ref={inputRef}
+                      type="text"
+                      defaultValue={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSave}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Tick02Icon className="h-3 w-3" />
+                    </Button>
+                  </>
                 )}
+                {!isDeletingItem && permissions?.canDelete && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCancel}
+                    className="h-6 w-6 p-0 text-destructive"
+                  >
+                    <MultiplicationSignIcon className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-between gap-2">
+                <div className="flex-1 flex gap-1.5">
+                  <label
+                    htmlFor={item.id}
+                    className={cn(
+                      "text-md lg:text-sm transition-all duration-200 cursor-pointer items-center flex",
+                      isActive && "scale-95",
+                      item.completed || completed
+                        ? "line-through text-muted-foreground"
+                        : "text-foreground"
+                    )}
+                    onMouseDown={() => setIsActive(true)}
+                    onMouseUp={() => setIsActive(false)}
+                    onMouseLeave={() => setIsActive(false)}
+                  >
+                    {item.completed || completed ? (
+                      <CheckmarkSquare02Icon className="h-8 w-8 min-w-8 sm:h-6 sm:w-6 sm:min-w-6 text-primary mr-2 !stroke-1" />
+                    ) : (
+                      <SquareIcon className="h-8 w-8 min-w-8 sm:h-6 sm:w-6 sm:min-w-6 text-muted-foreground mr-2 !stroke-1" />
+                    )}
+
+                    {item.recurrence && user?.enableRecurrence === "enable" && (
+                      <RecurrenceIndicator recurrence={item.recurrence} />
+                    )}
+
+                    <span>{displayText}</span>
+                  </label>
+                </div>
+
+                <LastModifiedCreatedInfo
+                  item={item}
+                  checklist={checklist}
+                  getUserAvatarUrl={getUserAvatarUrl}
+                />
               </div>
             )}
 
-            {hasChildren && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="h-6 w-6 p-0"
-              >
-                {isExpanded ? (
-                  <ArrowDown01Icon className="h-4 w-4" />
-                ) : (
-                  <ArrowRight01Icon className="h-4 w-4" />
+            {!isEditing && permissions?.canEdit && (
+              <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground mr-1">#{index}</span>
+
+                <div className="hidden lg:flex items-center gap-1">
+                  {!isPublicView && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAddSubItem(!showAddSubItem)}
+                      className="h-8 w-8 p-0"
+                      title={t("checklists.addSubItem")}
+                    >
+                      <Add01Icon className="h-4 w-4" />
+                    </Button>
+                  )}
+
+                  {onEdit && !isPublicView && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleEdit}
+                      className="h-8 w-8 p-0"
+                    >
+                      <PencilEdit02Icon className="h-4 w-4" />
+                    </Button>
+                  )}
+
+                  {!isPublicView && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => onDelete(item.id)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Delete03Icon className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {!isPublicView && (
+                  <div className="lg:hidden relative" ref={dropdownRef}>
+                    <Button
+                      ref={dropdownButtonRef}
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDropdownToggle}
+                      className="h-8 w-8 p-0"
+                    >
+                      <MoreHorizontalIcon className="h-4 w-4" />
+                    </Button>
+
+
+
+                    {isDropdownOpen && (
+                      <div className={cn(
+                        "absolute right-0 z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
+                        dropdownOpenUpward ? "bottom-full mb-1 top-auto" : "top-full mt-1"
+                      )}>
+                        <div className="py-1">
+                          {dropdownOptions.map((option) => (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => handleDropdownAction(option.id)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm hover:bg-accent hover:text-accent-foreground"
+                            >
+                              {option.icon && <option.icon className="h-4 w-4" />}
+                              <span>{option.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
-              </Button>
+
+                {hasChildren && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="h-6 w-6 p-0"
+                  >
+                    {isExpanded ? (
+                      <ArrowDown01Icon className="h-4 w-4" />
+                    ) : (
+                      <ArrowRight01Icon className="h-4 w-4" />
+                    )}
+                  </Button>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
-      {isOver && overPosition === "after" && (
-        <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
-      )}
+          {isOver && overPosition === "after" && (
+            <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary rounded-full z-10" />
+          )}
 
-      {showAddSubItem && !isPublicView && (
-        <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>
-          <form onSubmit={handleAddSubItem} className="flex gap-2 items-center pr-4">
-            <Input
-              id={`add-subitem-${item.id}`}
-              type="text"
-              value={newSubItemText}
-              onChange={(e) => setNewSubItemText(e.target.value)}
-              placeholder={t("checklists.addSubItemPlaceholder")}
-              autoFocus
-            />
-            <Button
-              type="submit"
-              variant="ghost"
-              size="sm"
-              disabled={!newSubItemText.trim()}
-              className="h-8 w-8 p-0"
-              title={t('common.add')}
-            >
-              <Add01Icon className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setShowAddSubItem(false);
-                setNewSubItemText("");
-              }}
-              className="h-8 w-8 p-0"
-            >
-              <MultiplicationSignIcon className="h-4 w-4" />
-            </Button>
-          </form>
-        </div>
-      )}
+          {showAddSubItem && !isPublicView && (
+            <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>
+              <form onSubmit={handleAddSubItem} className="flex gap-2 items-center pr-4">
+                <Input
+                  id={`add-subitem-${item.id}`}
+                  type="text"
+                  value={newSubItemText}
+                  onChange={(e) => setNewSubItemText(e.target.value)}
+                  placeholder={t("checklists.addSubItemPlaceholder")}
+                  autoFocus
+                />
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="sm"
+                  disabled={!newSubItemText.trim()}
+                  className="h-8 w-8 p-0"
+                  title={t('common.add')}
+                >
+                  <Add01Icon className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowAddSubItem(false);
+                    setNewSubItemText("");
+                  }}
+                  className="h-8 w-8 p-0"
+                >
+                  <MultiplicationSignIcon className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          )}
 
-      {hasChildren && isExpanded && (
-        <div className={cn("pt-1")}>
-          <DropIndicator
-            id={`drop-before-child::${item.children![0]?.id || `${item.id}-start`}`}
-            data={{
-              type: "drop-indicator",
-              position: "before",
-              targetId: item.children![0]?.id,
-              parentId: item.id,
-            }}
-          />
-          {item.children!.map((child, childIndex) => (
-            <div key={child.id}>
-              <NestedChecklistItem
-                item={child}
-                index={`${index}.${childIndex}`}
-                level={level + 1}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-                onAddSubItem={onAddSubItem}
-                isDeletingItem={isDeletingItem}
-                isDragDisabled={isDragDisabled}
-                isPublicView={isPublicView}
-                checklist={checklist}
-                isOver={overItem?.id === child.id}
-                overPosition={
-                  overItem?.id === child.id ? overItem.position : undefined
-                }
-                isAnyItemDragging={isAnyItemDragging}
-                overItem={overItem}
-              />
+          {hasChildren && isExpanded && (
+            <div className={cn("pt-1")}>
               <DropIndicator
-                id={`drop-after-child::${child.id}`}
+                id={`drop-before-child::${item.children![0]?.id || `${item.id}-start`}`}
                 data={{
                   type: "drop-indicator",
-                  position: "after",
-                  targetId: child.id,
+                  position: "before",
+                  targetId: item.children![0]?.id,
                   parentId: item.id,
                 }}
               />
+              {item.children!.map((child, childIndex) => (
+                <div key={child.id}>
+                  <NestedChecklistItem
+                    item={child}
+                    index={`${index}.${childIndex}`}
+                    level={level + 1}
+                    onToggle={onToggle}
+                    onDelete={onDelete}
+                    onEdit={onEdit}
+                    onAddSubItem={onAddSubItem}
+                    isDeletingItem={isDeletingItem}
+                    isDragDisabled={isDragDisabled}
+                    isPublicView={isPublicView}
+                    checklist={checklist}
+                    isOver={overItem?.id === child.id}
+                    overPosition={
+                      overItem?.id === child.id ? overItem.position : undefined
+                    }
+                    isAnyItemDragging={isAnyItemDragging}
+                    overItem={overItem}
+                  />
+                  <DropIndicator
+                    id={`drop-after-child::${child.id}`}
+                    data={{
+                      type: "drop-indicator",
+                      position: "after",
+                      targetId: child.id,
+                      parentId: item.id,
+                    }}
+                  />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          )}
         </div>
       )}
     </Droppable>

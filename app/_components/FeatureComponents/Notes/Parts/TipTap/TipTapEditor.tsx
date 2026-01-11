@@ -30,7 +30,7 @@ import { useTranslations } from "next-intl";
 
 type TiptapEditorProps = {
   content: string;
-  onChange: (content: string, isMarkdownMode: boolean) => void;
+  onChange: (content: string, isMarkdownMode: boolean, isDirty: boolean) => void;
   tableSyntax?: TableSyntax;
   notes?: any[];
   checklists?: any[];
@@ -84,17 +84,18 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const debounceTimeoutRef = useRef<NodeJS.Timeout>();
     const originalMarkdownRef = useRef<string>(getOriginalMarkdown());
     const richEditorWasEditedRef = useRef<boolean>(false);
+    const isDirtyRef = useRef<boolean>(false);
 
     const uploadHook = useFileUpload(appSettings?.maximumFileSize);
     const tableToolbar = useTableToolbar();
 
     const debouncedOnChange = useCallback(
-      (newContent: string, isMarkdown: boolean) => {
+      (newContent: string, isMarkdown: boolean, isDirty: boolean) => {
         if (debounceTimeoutRef.current) {
           clearTimeout(debounceTimeoutRef.current);
         }
         debounceTimeoutRef.current = setTimeout(() => {
-          onChange(newContent, isMarkdown);
+          onChange(newContent, isMarkdown, isDirty);
         }, 0);
       },
       [onChange]
@@ -125,7 +126,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       onUpdate: ({ editor }) => {
         if (!isMarkdownMode) {
           richEditorWasEditedRef.current = true;
-          debouncedOnChange(editor.getHTML(), false);
+          isDirtyRef.current = true;
+          debouncedOnChange(editor.getHTML(), false, true);
         }
       },
       editorProps: {
@@ -168,7 +170,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             const htmlContent = convertMarkdownToHtml(markdownContent);
             editor.commands.setContent(htmlContent, { emitUpdate: false });
             setIsMarkdownMode(false);
-            debouncedOnChange(htmlContent, false);
+            debouncedOnChange(htmlContent, false, isDirtyRef.current);
           }
         }, 0);
       } else {
@@ -186,7 +188,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             }
             setMarkdownContent(finalMarkdown);
             setIsMarkdownMode(true);
-            debouncedOnChange(finalMarkdown, true);
+            debouncedOnChange(finalMarkdown, true, isDirtyRef.current);
             richEditorWasEditedRef.current = false;
           }
         }, 0);
@@ -228,6 +230,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         : convertHtmlToMarkdownUnified(content, tableSyntax);
 
       originalMarkdownRef.current = markdownContent;
+      isDirtyRef.current = false;
 
       if (isMarkdownMode) {
         setMarkdownContent(markdownContent);
@@ -264,7 +267,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     ) => {
       const newContent = e.target.value;
       setMarkdownContent(newContent);
-      debouncedOnChange(newContent, true);
+      isDirtyRef.current = true;
+      debouncedOnChange(newContent, true, true);
     };
 
     const handleVisualFileDrop = useCallback(
@@ -306,13 +310,15 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
                 const markdownImage = `![${file.name}](${url})`;
                 const newContent = markdownContent + "\n" + markdownImage;
                 setMarkdownContent(newContent);
-                debouncedOnChange(newContent, true);
+                isDirtyRef.current = true;
+                debouncedOnChange(newContent, true, true);
               },
               onFileUpload: (data) => {
                 const markdownLink = `[📎 ${data.fileName}](${data.url})`;
                 const newContent = markdownContent + "\n" + markdownLink;
                 setMarkdownContent(newContent);
-                debouncedOnChange(newContent, true);
+                isDirtyRef.current = true;
+                debouncedOnChange(newContent, true, true);
               },
             },
             true
