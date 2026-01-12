@@ -44,6 +44,7 @@ export interface KanbanStatus {
   label: string;
   color?: string;
   order: number;
+  autoComplete?: boolean;
 }
 
 export interface Item {
@@ -127,7 +128,11 @@ export interface NoteEditorViewModel {
   handleCancel: () => void;
   handleSave: (autosaveNotes?: boolean, passphrase?: string) => void;
   handleDelete: () => void;
-  handleEditorContentChange: (content: string, isMarkdown: boolean, isDirty: boolean) => void;
+  handleEditorContentChange: (
+    content: string,
+    isMarkdown: boolean,
+    isDirty: boolean
+  ) => void;
   showUnsavedChangesModal: boolean;
   setShowUnsavedChangesModal: (show: boolean) => void;
   handleUnsavedChangesSave: () => void;
@@ -137,7 +142,11 @@ export interface NoteEditorViewModel {
   isPrinting: boolean;
   setIsPrinting: (isPrinting: boolean) => void;
   isEditingEncrypted: boolean;
-  handleEditEncrypted: (passphrase: string, method: string, decryptedContent: string) => void;
+  handleEditEncrypted: (
+    passphrase: string,
+    method: string,
+    decryptedContent: string
+  ) => void;
 }
 
 export interface Category {
@@ -368,7 +377,10 @@ export interface UserSharedItems {
   checklists: UserSharedItem[];
 }
 
-export type SanitisedUser = Omit<User, 'passwordHash' | 'apiKey' | 'lastLogin' | 'mfaSecret' | 'mfaRecoveryCode'>;
+export type SanitisedUser = Omit<
+  User,
+  "passwordHash" | "apiKey" | "lastLogin" | "mfaSecret" | "mfaRecoveryCode"
+>;
 
 export interface AppModeContextType {
   mode: AppMode;

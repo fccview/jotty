@@ -441,6 +441,7 @@
     "clearAllCompletedConfirmMessage": "¿Está seguro de que desea eliminar todos los {count} elementos completados? Esta acción no se puede deshacer.",
     "clearAllIncompleteConfirmMessage": "¿Está seguro de que desea eliminar todos los {count} elementos incompletos y sus elementos secundarios? \nEsta acción no se puede deshacer.",
     "convertChecklistType": "Convertir tipo de lista de verificación",
+    "convertTypeConfirmation": "Está a punto de convertir de {currentType} a {newType}. ¿Está seguro de que desea continuar?",
     "dataLossWarning": "⚠️ Advertencia de pérdida de datos",
     "dataLossWarningItems": "Se perderán los siguientes datos:",
     "allTaskStatusesReset": "Todos los estados de tareas se restablecerán",
@@ -507,7 +508,8 @@
     "manageStatuses": "Gestionar estados",
     "viewArchived": "Ver archivados",
     "customizeStatuses": "Personalice los estados para este tablero Kanban. Agregue, elimine o reordene estados.",
-    "addStatus": "Agregar estado"
+    "addStatus": "Agregar estado",
+    "autoComplete": "Autocompletar"
   },
   "profile": {
     "userProfile": "Usuario",

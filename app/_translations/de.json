@@ -442,6 +442,7 @@
     "taskStatusTracking": "Aufgabenstatus-Tracking (Todo, In Bearbeitung, etc.)",
     "timeTrackingWithTimer": "Zeiterfassung mit integriertem Timer",
     "actionCannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden. Bist du sicher, dass du umwandeln möchtest?",
+    "convertTypeConfirmation": "Sie sind dabei, von {currentType} zu {newType} zu konvertieren. Möchten Sie fortfahren?",
     "convertAndLoseData": "Umwandeln & Daten verlieren",
     "convert": "Umwandeln",
     "convertToSimpleChecklist": "Zu einfacher Aufgabenliste umwandeln",
@@ -494,7 +495,8 @@
     "manageStatuses": "Status verwalten",
     "viewArchived": "Archivierte anzeigen",
     "customizeStatuses": "Passe die Status für dieses Kanban-Board an. Füge Status hinzu, entferne oder ordne sie neu.",
-    "addStatus": "Status hinzufügen"
+    "addStatus": "Status hinzufügen",
+    "autoComplete": "Automatische Vervollständigung"
   },
   "profile": {
     "userProfile": "Benutzer",

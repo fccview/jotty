@@ -930,15 +930,14 @@ export const convertChecklistType = async (formData: FormData) => {
     if (newType === "task") {
       convertedItems = (list.items || []).map((item) => ({
         ...item,
-        status: item.completed ? TaskStatus.COMPLETED : TaskStatus.TODO,
-        timeEntries: [],
+        status:
+          item.status ||
+          (item.completed ? TaskStatus.COMPLETED : TaskStatus.TODO),
+        timeEntries: item.timeEntries || [],
       }));
     } else {
       convertedItems = (list.items || []).map((item) => ({
-        id: item.id,
-        text: item.text,
-        completed: item.completed,
-        order: item.order,
+        ...item,
       }));
     }
 

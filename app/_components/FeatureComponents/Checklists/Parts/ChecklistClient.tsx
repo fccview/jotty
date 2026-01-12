@@ -7,7 +7,7 @@ import { ChecklistView } from "@/app/_components/FeatureComponents/Checklists/Ch
 import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
 import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeader";
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
-import { ConversionConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConversionConfirmModal";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { EditChecklistModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/EditChecklistModal";
 import { CreateListModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/CreateListModal";
 import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/CreateCategoryModal";
@@ -18,6 +18,7 @@ import { Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface ChecklistClientProps {
   checklist: Checklist;
@@ -31,6 +32,7 @@ export const ChecklistClient = ({
   user,
 }: ChecklistClientProps) => {
   const router = useRouter();
+  const t = useTranslations();
   const { checkNavigation } = useNavigationGuard();
   const [localChecklist, setLocalChecklist] = useState<Checklist>(checklist);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -175,12 +177,16 @@ export const ChecklistClient = ({
       )}
 
       {showConversionModal && (
-        <ConversionConfirmModal
+        <ConfirmModal
           isOpen={showConversionModal}
           onClose={() => setShowConversionModal(false)}
           onConfirm={handleConfirmConversion}
-          currentType={localChecklist.type}
-          newType={getNewType(localChecklist.type)}
+          title={t("checklists.convertChecklistType")}
+          message={t("checklists.convertTypeConfirmation", {
+            currentType: localChecklist.type === "simple" ? t("checklists.simpleChecklist") : t("checklists.taskProject"),
+            newType: getNewType(localChecklist.type) === "simple" ? t("checklists.simpleChecklist") : t("checklists.taskProject")
+          })}
+          confirmText={t("checklists.convert")}
         />
       )}
 

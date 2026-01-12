@@ -442,6 +442,7 @@
     "clearAllCompletedConfirmMessage": "Czy na pewno chcesz usunąć wszystkie {count} ukończone elementy? Ta akcja nie może zostać cofnięta.",
     "clearAllIncompleteConfirmMessage": "Czy na pewno chcesz usunąć wszystkie niekompletne elementy ({count}) i ich elementy podrzędne? \nTej akcji nie można cofnąć.",
     "convertChecklistType": "Konwertuj typ listy kontrolnej",
+    "convertTypeConfirmation": "Zamierzasz przekonwertować z {currentType} na {newType}. Czy na pewno chcesz kontynuować?",
     "dataLossWarning": "⚠️ Ostrzeżenie o utracie danych",
     "dataLossWarningItems": "Poniższe dane zostaną utracone:",
     "allTaskStatusesReset": "Wszystkie statusy zadań zostaną zresetowane",
@@ -508,7 +509,8 @@
     "manageStatuses": "Zarządzaj statusami",
     "viewArchived": "Zobacz zarchiwizowane",
     "customizeStatuses": "Dostosuj statusy dla tej tablicy Kanban. Dodawaj, usuń lub zmieniaj kolejność statusów.",
-    "addStatus": "Dodaj status"
+    "addStatus": "Dodaj status",
+    "autoComplete": "Automatyczne uzupełnienie"
   },
   "profile": {
     "userProfile": "Użytkownik",

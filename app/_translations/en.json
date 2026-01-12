@@ -443,6 +443,7 @@
     "clearAllCompletedConfirmMessage": "Are you sure you want to delete all {count} completed items and their children? This action cannot be undone.",
     "clearAllIncompleteConfirmMessage": "Are you sure you want to delete all {count} incomplete items and their children? This action cannot be undone.",
     "convertChecklistType": "Convert Checklist Type",
+    "convertTypeConfirmation": "You are about to convert from {currentType} to {newType}. Are you sure you want to proceed?",
     "dataLossWarning": "⚠️ Data Loss Warning",
     "dataLossWarningItems": "The following data will be lost:",
     "allTaskStatusesReset": "All task statuses will be reset",
@@ -509,7 +510,8 @@
     "manageStatuses": "Manage Statuses",
     "viewArchived": "View Archived",
     "customizeStatuses": "Customize the statuses for this kanban board. Add, remove, or reorder statuses.",
-    "addStatus": "Add status"
+    "addStatus": "Add status",
+    "autoComplete": "Auto complete"
   },
   "profile": {
     "userProfile": "User",

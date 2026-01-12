@@ -39,21 +39,25 @@ const defaultStatuses: KanbanStatus[] = [
     id: TaskStatus.TODO,
     label: TaskStatusLabels.TODO,
     order: 0,
+    autoComplete: false,
   },
   {
     id: TaskStatus.IN_PROGRESS,
     label: TaskStatusLabels.IN_PROGRESS,
     order: 1,
+    autoComplete: false,
   },
   {
     id: TaskStatus.COMPLETED,
     label: TaskStatusLabels.COMPLETED,
     order: 2,
+    autoComplete: true,
   },
   {
     id: TaskStatus.PAUSED,
     label: TaskStatusLabels.PAUSED,
     order: 3,
+    autoComplete: false,
   },
 ];
 
@@ -90,7 +94,15 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
     activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
-  const statuses = localChecklist.statuses || defaultStatuses;
+  const statuses = useMemo(() => {
+    const currentStatuses = localChecklist.statuses || defaultStatuses;
+    return currentStatuses.map(status => {
+      if (status.id === TaskStatus.COMPLETED && status.autoComplete === undefined) {
+        return { ...status, autoComplete: true };
+      }
+      return status;
+    });
+  }, [localChecklist.statuses]);
 
   const columns = statuses
     .sort((a, b) => a.order - b.order)
@@ -183,8 +195,8 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           isLoading={isLoading}
           autoFocus={true}
           focusKey={focusKey}
-          placeholder={t('checklists.addNewTask')}
-          submitButtonText={t('tasks.addTask')}
+          placeholder={t("checklists.addNewTask")}
+          submitButtonText={t("tasks.addTask")}
         />
       )}
       <div className="flex gap-2 px-4 pt-4 pb-2 w-full justify-end">
@@ -196,7 +208,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             className="text-md lg:text-sm lg:text-xs"
           >
             <Settings01Icon className="h-3 w-3 mr-1" />
-            {t('tasks.manageStatuses')}
+            {t("tasks.manageStatuses")}
           </Button>
         )}
         <Button
@@ -206,7 +218,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           className="text-md lg:text-sm lg:text-xs"
         >
           <Archive02Icon className="h-3 w-3 mr-1" />
-          {t('tasks.viewArchived')}
+          {t("tasks.viewArchived")}
         </Button>
       </div>
       <div className="flex-1 pb-[8.5em]">
@@ -228,10 +240,11 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 return (
                   <div
                     key={column.id}
-                    className={`${columns.length > 4
-                      ? "flex-shrink-0 min-w-[20%]"
-                      : "min-w-[24%] "
-                      }`}
+                    className={`${
+                      columns.length > 4
+                        ? "flex-shrink-0 min-w-[20%]"
+                        : "min-w-[24%] "
+                    }`}
                   >
                     <KanbanColumn
                       checklist={localChecklist}

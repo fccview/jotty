@@ -441,6 +441,7 @@
     "clearAllCompletedConfirmMessage": "Sei sicuro di voler eliminare tutti i {count} elementi completati? Questa azione non può essere annullata.",
     "clearAllIncompleteConfirmMessage": "Vuoi eliminare tutti i {count} elementi incompleti e i relativi elementi secondari? \nQuesta azione non può essere annullata.",
     "convertChecklistType": "Converti Tipo Checklist",
+    "convertTypeConfirmation": "Stai per convertire da {currentType} a {newType}. Sei sicuro di voler procedere?",
     "dataLossWarning": "⚠️ Avviso Perdita Dati",
     "dataLossWarningItems": "I seguenti dati andranno persi:",
     "allTaskStatusesReset": "Tutti gli stati delle attività verranno reimpostati",
@@ -507,7 +508,8 @@
     "manageStatuses": "Gestisci stati",
     "viewArchived": "Vedi archiviati",
     "customizeStatuses": "Personalizza gli stati per questa kanban board. Aggiungi, rimuovi o riordina gli stati.",
-    "addStatus": "Aggiungi stato"
+    "addStatus": "Aggiungi stato",
+    "autoComplete": "Complete automaticamente"
   },
   "profile": {
     "userProfile": "Utente",
