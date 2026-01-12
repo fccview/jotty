@@ -578,6 +578,30 @@ pre.text-foreground span,
 }
 
 @media (max-width: 992px) {
+    .jotty-checklist-page .jotty-quick-nav {
+        display: none;
+    }
+
+    .jotty-add-checklist-button {
+        max-width: calc(95% - calc(50px + 2.5%));
+    }
+
+    .jotty-add-checklist-button.right-handed {
+        left: 100vw;
+    }
+
+    .jotty-add-checklist-button.left-handed {
+        right: 100vw;
+    }
+
+    .jotty-add-checklist-button.right-handed.active {
+        left: 2.5%;
+    }
+
+    .jotty-add-checklist-button.left-handed.active {
+        right: 2.5%;
+    }
+
     .note-mobile-category-tree .jotty-category-tree-selector-dropdown {
         right: 0;
         left: auto;

@@ -49,7 +49,12 @@ OIDC_ADMIN_GROUPS=admins
 ### Optional
 
 - `OIDC_CLIENT_SECRET=your_client_secret` Optional. Client secret for confidential OIDC client authentication.
+- `OIDC_CLIENT_ID_FILE=/run/secrets/oidc_client_id` Optional. Path to file containing the OIDC client ID. If set, takes priority over `OIDC_CLIENT_ID`. Useful for Docker Secrets.
+- `OIDC_CLIENT_SECRET_FILE=/run/secrets/oidc_client_secret` Optional. Path to file containing the OIDC client secret. If set, takes priority over `OIDC_CLIENT_SECRET`. Useful for Docker Secrets.
 - `SSO_FALLBACK_LOCAL=yes` Optional. Allows both SSO and local authentication methods.
 - `OIDC_ADMIN_GROUPS=admins` Optional. Comma-separated list of OIDC groups that should have admin privileges.
+- `OIDC_ADMIN_ROLES=admin` Optional. Comma-separated list of OIDC roles that should have admin privileges.
+- `OIDC_USER_GROUPS=jotty_users,app_users` Optional. Comma-separated list of OIDC groups allowed to access the application. If set, only users in these groups (or admins) can log in.
+- `OIDC_USER_ROLES=user,member` Optional. Comma-separated list of OIDC roles allowed to access the application. If set, only users with these roles (or admins) can log in.
 - `OIDC_GROUPS_SCOPE=groups` Optional. Scope to request for groups. Defaults to "groups". Set to empty string or "no" to disable for providers like Entra ID that don't support the groups scope.
 - `OIDC_LOGOUT_URL=https://authprovider.local/realms/master/logout` Optional. Custom logout URL for global logout. Full URL to redirect to when logging out.

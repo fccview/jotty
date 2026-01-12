@@ -162,7 +162,8 @@ export const shareWith = async (
       resourceType: itemType,
       resourceId: item,
       resourceTitle: item,
-      errorMessage: error instanceof Error ? error.message : "Failed to share item",
+      errorMessage:
+        error instanceof Error ? error.message : "Failed to share item",
     });
     console.error("Error in shareWith:", error);
     return { success: false, error: "Failed to share item" };
@@ -279,8 +280,7 @@ export const checkUserPermission = async (
     try {
       await fs.access(filePath);
       return true;
-    } catch {
-    }
+    } catch {}
 
     let owner = null;
     if (itemType === ItemTypes.CHECKLIST) {
@@ -450,19 +450,37 @@ export const getAllSharedItems = async (): Promise<{
   });
 
   if (notesSharing.public) {
-    notesSharing.public.forEach((entry) => {
-      if (entry.uuid && entry.id && entry.category) {
+    for (const entry of notesSharing.public) {
+      if (entry.id && entry.category) {
         publicNotes.push({ id: entry.id, category: entry.category });
+      } else if (entry.uuid && entry.id) {
+        const { getNoteById } = await import("@/app/_server/actions/note");
+        const note = await getNoteById(entry.uuid);
+        if (note) {
+          publicNotes.push({
+            id: note.id,
+            category: note.category || "Uncategorized",
+          });
+        }
       }
-    });
+    }
   }
 
   if (checklistsSharing.public) {
-    checklistsSharing.public.forEach((entry) => {
-      if (entry.uuid && entry.id && entry.category) {
+    for (const entry of checklistsSharing.public) {
+      if (entry.id && entry.category) {
         publicChecklists.push({ id: entry.id, category: entry.category });
+      } else if (entry.uuid && entry.id) {
+        const { getListById } = await import("@/app/_server/actions/checklist");
+        const checklist = await getListById(entry.uuid);
+        if (checklist) {
+          publicChecklists.push({
+            id: checklist.id,
+            category: checklist.category || "Uncategorized",
+          });
+        }
       }
-    });
+    }
   }
 
   const deduplicate = (items: Array<{ id: string; category: string }>) =>
@@ -498,7 +516,7 @@ export const updateSharingData = async (
           !(
             entry.id === previousItem.id &&
             entry.category ===
-            encodeCategoryPath(previousItem.category || "Uncategorized")
+              encodeCategoryPath(previousItem.category || "Uncategorized")
           )
       );
       if (sharingData[username].length !== originalLength) {
@@ -531,7 +549,7 @@ export const updateSharingData = async (
           if (
             entry.id === previousItem.id &&
             entry.category ===
-            (prevCategory || encodeCategoryPath("Uncategorized")) &&
+              (prevCategory || encodeCategoryPath("Uncategorized")) &&
             newItem.id !== previousItem.id
           ) {
             entry.id = newItem.id;
@@ -541,10 +559,10 @@ export const updateSharingData = async (
           if (
             entry.id === (newItem.id || previousItem.id) &&
             entry.category ===
-            (prevCategory || encodeCategoryPath("Uncategorized")) &&
+              (prevCategory || encodeCategoryPath("Uncategorized")) &&
             newCategory &&
             newCategory !==
-            (prevCategory || encodeCategoryPath("Uncategorized"))
+              (prevCategory || encodeCategoryPath("Uncategorized"))
           ) {
             entry.category = newCategory;
             updated = true;
@@ -555,9 +573,9 @@ export const updateSharingData = async (
             entry.sharer === previousItem.sharer &&
             entry.id === (newItem.id || previousItem.id) &&
             entry.category ===
-            (newCategory ||
-              prevCategory ||
-              encodeCategoryPath("Uncategorized")) &&
+              (newCategory ||
+                prevCategory ||
+                encodeCategoryPath("Uncategorized")) &&
             newItem.sharer !== previousItem.sharer
           ) {
             entry.sharer = newItem.sharer;
@@ -640,7 +658,7 @@ export const updateItemPermissions = async (
       metadata: {
         targetUser: username,
         oldPermissions,
-        newPermissions: permissions
+        newPermissions: permissions,
       },
     });
     return { success: true, data: null };

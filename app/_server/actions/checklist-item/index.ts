@@ -261,7 +261,9 @@ export const createItem = async (
       if (status) return status as TaskStatus;
 
       if (list.statuses && list.statuses.length > 0) {
-        const sortedStatuses = [...list.statuses].sort((a, b) => a.order - b.order);
+        const sortedStatuses = [...list.statuses].sort(
+          (a, b) => a.order - b.order
+        );
         return sortedStatuses[0].id as TaskStatus;
       }
 
@@ -280,17 +282,18 @@ export const createItem = async (
       createdAt: now,
       lastModifiedBy: currentUser,
       lastModifiedAt: now,
-      ...(list.type === "task" && defaultStatus && {
-        status: defaultStatus,
-        timeEntries,
-        history: [
-          {
-            status: defaultStatus,
-            timestamp: now,
-            user: currentUser,
-          },
-        ],
-      }),
+      ...(list.type === "task" &&
+        defaultStatus && {
+          status: defaultStatus,
+          timeEntries,
+          history: [
+            {
+              status: defaultStatus,
+              timestamp: now,
+              user: currentUser,
+            },
+          ],
+        }),
       ...(recurrence && { recurrence }),
     };
 
@@ -592,6 +595,23 @@ export const updateItemStatus = async (
 
     const now = new Date().toISOString();
 
+    const updateAllChildren = (
+      items: any[],
+      completed: boolean,
+      username: string,
+      now: string
+    ): any[] => {
+      return items.map((item) => ({
+        ...item,
+        completed,
+        lastModifiedBy: username,
+        lastModifiedAt: now,
+        children: item.children
+          ? updateAllChildren(item.children, completed, username, now)
+          : undefined,
+      }));
+    };
+
     const findAndUpdateItemStatus = (items: any[], itemId: string): any[] => {
       return items.map((item) => {
         if (item.id === itemId) {
@@ -600,6 +620,34 @@ export const updateItemStatus = async (
             updates.status = status;
             updates.lastModifiedBy = username;
             updates.lastModifiedAt = now;
+
+            // Auto-complete logic: check if target status has autoComplete flag
+            const targetStatus = list.statuses?.find((s) => s.id === status);
+            if (targetStatus?.autoComplete) {
+              // Moving to auto-complete status - mark as completed
+              updates.completed = true;
+              // Recursively mark all children as completed
+              if (item.children && item.children.length > 0) {
+                updates.children = updateAllChildren(
+                  item.children,
+                  true,
+                  username,
+                  now
+                );
+              }
+            } else if (item.completed && status !== item.status) {
+              // Moving away from completed status - mark as incomplete
+              updates.completed = false;
+              // Recursively mark all children as incomplete
+              if (item.children && item.children.length > 0) {
+                updates.children = updateAllChildren(
+                  item.children,
+                  false,
+                  username,
+                  now
+                );
+              }
+            }
 
             if (status !== item.status) {
               const history = item.history || [];

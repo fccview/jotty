@@ -224,7 +224,10 @@
     "read": "Lire",
     "removeAll": "Tout retirer",
     "noUsersFound": "Aucun utilisateur trouvé.",
-    "noCategoriesAvailable": "Aucune catégorie disponible"
+    "noCategoriesAvailable": "Aucune catégorie disponible",
+    "links": "Liens",
+    "documentation": "Documentation",
+    "githubRepository": "Dépôt GitHub"
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -438,6 +441,7 @@
     "clearAllCompletedConfirmMessage": "Êtes-vous sûr de vouloir supprimer tous les {count} éléments terminés ? Cette action ne peut pas être annulée.",
     "clearAllIncompleteConfirmMessage": "Voulez-vous vraiment supprimer tous les {count} éléments incomplets et leurs enfants ? \nCette action ne peut pas être annulée.",
     "convertChecklistType": "Convertir le type de liste",
+    "convertTypeConfirmation": "Vous êtes sur le point de convertir de {currentType} à {newType}. Voulez-vous continuer?",
     "dataLossWarning": "⚠️ Avertissement de perte de données",
     "dataLossWarningItems": "Les données suivantes seront perdues :",
     "allTaskStatusesReset": "Tous les statuts des tâches seront réinitialisés",
@@ -504,7 +508,8 @@
     "manageStatuses": "Gérer les statuts",
     "viewArchived": "Voir les éléments archivés",
     "customizeStatuses": "Personnalisez les statuts pour ce tableau Kanban. Ajoutez, supprimez ou réorganisez les statuts.",
-    "addStatus": "Ajouter un statut"
+    "addStatus": "Ajouter un statut",
+    "autoComplete": "Complétion automatique"
   },
   "profile": {
     "userProfile": "Utilisateur",
@@ -843,7 +848,12 @@
     "noEmojisYet": "Aucun émoji personnalisé pour le moment. Cliquez sur &quot;Ajouter un émoji&quot; pour commencer.",
     "enterAnyEmoji": "Saisissez un émoji ou utilisez le sélecteur (Windows : Win+. ; Mac : Ctrl+Cmd+Espace",
     "sharingOverview": "Vue d’ensemble de l’activité de partage",
-    "detailedSharingBreakdown": "Détail des habitudes de partage et de l’engagement des utilisateurs",
+    "detailedSharingBreakdown": "Détail des habitudes de partage et de l'engagement des utilisateurs",
+    "checkForUpdates": "Vérifier les mises à jour",
+    "checkingForUpdates": "Vérification des mises à jour...",
+    "updateAvailable": "Mise à jour disponible !",
+    "upToDate": "Vous êtes à jour !",
+    "issuesAndBugs": "Problèmes et rapports de bugs",
     "activeChecklistSharers": "Utilisateurs partageant activement des listes",
     "activeNotesSharers": "Utilisateurs partageant activement des notes",
     "totalSharing": "Nombre total d’actions de partage",

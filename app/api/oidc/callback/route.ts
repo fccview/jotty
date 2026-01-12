@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import fs from "fs/promises";
 import path from "path";
+import { getEnvOrFile } from "@/app/_server/actions/file";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { lock, unlock } from "proper-lockfile";
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import { jwtVerify, createRemoteJWKSet, decodeJwt } from "jose";
 import { createSession } from "@/app/_server/actions/session";
-import { ensureCorDirsAndFiles, readJsonFile } from "@/app/_server/actions/file";
+import {
+  ensureCorDirsAndFiles,
+  readJsonFile,
+} from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
 
@@ -19,7 +23,10 @@ function base64UrlEncode(buffer: Buffer) {
     .replace(/=+$/g, "");
 }
 
-function checkClaims(allowedClaimValues: string | undefined, availableClaimValues: string[] | string) {
+function checkClaims(
+  allowedClaimValues: string | undefined,
+  availableClaimValues: string[] | string
+) {
   let available: string[] = [];
   if (Array.isArray(availableClaimValues)) {
     available = availableClaimValues;
@@ -33,7 +40,8 @@ function checkClaims(allowedClaimValues: string | undefined, availableClaimValue
     .filter(Boolean);
 
   const isAllowed =
-    filteredAllowedClaimValues.length > 0 && filteredAllowedClaimValues.some((g) => available.includes(g));
+    filteredAllowedClaimValues.length > 0 &&
+    filteredAllowedClaimValues.some((g) => available.includes(g));
 
   return isAllowed;
 }
@@ -50,7 +58,7 @@ async function ensureUser(username: string, isAdmin: boolean) {
       if (content) {
         users = JSON.parse(content);
       }
-    } catch { }
+    } catch {}
 
     if (users.length === 0) {
       users.push({
@@ -128,7 +136,7 @@ export async function GET(request: NextRequest) {
   if (issuer && !issuer.endsWith("/")) {
     issuer = `${issuer}/`;
   }
-  const clientId = process.env.OIDC_CLIENT_ID || "";
+  const clientId = await getEnvOrFile("OIDC_CLIENT_ID", "OIDC_CLIENT_ID_FILE");
   if (!issuer || !clientId) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
@@ -162,7 +170,10 @@ export async function GET(request: NextRequest) {
   const JWKS = createRemoteJWKSet(new URL(jwksUri));
 
   const redirectUri = `${appUrl}/api/oidc/callback`;
-  const clientSecret = process.env.OIDC_CLIENT_SECRET;
+  const clientSecret = await getEnvOrFile(
+    "OIDC_CLIENT_SECRET",
+    "OIDC_CLIENT_SECRET_FILE"
+  );
   const body = new URLSearchParams();
 
   body.set("grant_type", "authorization_code");
@@ -198,8 +209,10 @@ export async function GET(request: NextRequest) {
     console.log("ID_TOKEN_DEBUG:", {
       tokenLength: idToken.length,
       tokenStart: idToken.substring(0, 50),
-      tokenParts: idToken.split('.').length,
-      isValidJWT: /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(idToken)
+      tokenParts: idToken.split(".").length,
+      isValidJWT: /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(
+        idToken
+      ),
     });
   }
 
@@ -216,8 +229,8 @@ export async function GET(request: NextRequest) {
     if (process.env.DEBUGGER) {
       console.error("ID_TOKEN_ERROR_DEBUG:", {
         tokenLength: idToken?.length,
-        tokenStructure: idToken?.split('.').length,
-        error: error instanceof Error ? error.message : String(error)
+        tokenStructure: idToken?.split(".").length,
+        error: error instanceof Error ? error.message : String(error),
       });
     }
     return NextResponse.redirect(`${appUrl}/auth/login`);
@@ -259,13 +272,28 @@ export async function GET(request: NextRequest) {
       });
 
       if (userinfoResponse.ok) {
-        const userinfoClaims = await userinfoResponse.json();
+        const contentType = userinfoResponse.headers.get("content-type") || "";
+        let userinfoClaims: any;
 
-        if (process.env.DEBUGGER) {
-          console.log(
-            "OIDC USERINFO FALLBACK - Successfully fetched claims from userinfo endpoint:",
-            userinfoClaims
-          );
+        if (contentType.includes("jwt")) {
+          const jwtString = await userinfoResponse.text();
+          userinfoClaims = decodeJwt(jwtString);
+
+          if (process.env.DEBUGGER) {
+            console.log(
+              "OIDC USERINFO FALLBACK - Received JWT response from userinfo endpoint, decoded claims:",
+              userinfoClaims
+            );
+          }
+        } else {
+          userinfoClaims = await userinfoResponse.json();
+
+          if (process.env.DEBUGGER) {
+            console.log(
+              "OIDC USERINFO FALLBACK - Successfully fetched claims from userinfo endpoint:",
+              userinfoClaims
+            );
+          }
         }
 
         claims = { ...userinfoClaims, ...claims };
@@ -317,7 +345,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
-  const isInAdminGroup = checkClaims(process.env.OIDC_ADMIN_GROUPS, claims.groups);
+  const isInAdminGroup = checkClaims(
+    process.env.OIDC_ADMIN_GROUPS,
+    claims.groups
+  );
   const isInAdminRole = checkClaims(process.env.OIDC_ADMIN_ROLES, claims.roles);
 
   const isAdmin = isInAdminGroup || isInAdminRole;
@@ -331,6 +362,58 @@ export async function GET(request: NextRequest) {
       isInAdminGroup,
       isInAdminRole,
     });
+  }
+
+  if (process.env.OIDC_USER_GROUPS || process.env.OIDC_USER_ROLES) {
+    const isInAllowedGroup = checkClaims(
+      process.env.OIDC_USER_GROUPS,
+      claims.groups
+    );
+    const isInAllowedRole = checkClaims(
+      process.env.OIDC_USER_ROLES,
+      claims.roles
+    );
+
+    if (process.env.DEBUGGER) {
+      console.log("SSO CALLBACK - user authorization check:", {
+        envOidcUserGroups: process.env.OIDC_USER_GROUPS,
+        envOidcUserRoles: process.env.OIDC_USER_ROLES,
+        claimsGroups: claims.groups,
+        claimsRoles: claims.roles,
+        isInAllowedGroup,
+        isInAllowedRole,
+        isAdmin,
+      });
+    }
+
+    if (!isInAllowedGroup && !isInAllowedRole && !isAdmin) {
+      if (process.env.DEBUGGER) {
+        console.log("SSO CALLBACK - user not authorized:", {
+          username,
+          requiredGroups: process.env.OIDC_USER_GROUPS,
+          requiredRoles: process.env.OIDC_USER_ROLES,
+          userGroups: claims.groups,
+          userRoles: claims.roles,
+        });
+      }
+
+      await logAudit({
+        level: "WARNING",
+        action: "login",
+        category: "auth",
+        success: false,
+        username,
+        metadata: {
+          reason: "user_not_in_allowed_groups",
+          requiredGroups: process.env.OIDC_USER_GROUPS,
+          requiredRoles: process.env.OIDC_USER_ROLES,
+          userGroups: claims.groups,
+          userRoles: claims.roles,
+        },
+      });
+
+      return NextResponse.redirect(`${appUrl}/auth/login?error=unauthorized`);
+    }
   }
 
   const users = (await readJsonFile(USERS_FILE)) || [];
@@ -371,7 +454,7 @@ export async function GET(request: NextRequest) {
       if (content) {
         sessions = JSON.parse(content);
       }
-    } catch { }
+    } catch {}
     sessions[sessionId] = username;
     await fs.writeFile(sessionsFile, JSON.stringify(sessions, null, 2));
   } finally {

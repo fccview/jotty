@@ -51,24 +51,26 @@ export const QuickNav = ({
 
   useEffect(() => {
     const handleGlobalScroll = (e: Event) => {
-      handleScroll(e, 'jotty-scrollable-content', setIsScrolled, lastScrollY);
+      handleScroll(e, "jotty-scrollable-content", setIsScrolled, lastScrollY);
     };
 
-    window.addEventListener('scroll', handleGlobalScroll, true);
+    window.addEventListener("scroll", handleGlobalScroll, true);
 
     return () => {
-      window.removeEventListener('scroll', handleGlobalScroll, true);
+      window.removeEventListener("scroll", handleGlobalScroll, true);
     };
   }, []);
 
-  const mobileClasses = "max-w-[80%] w-full rounded-jotty left-[10%] border bg-muted text-muted-foreground";
-  const desktopClasses = "lg:max-w-full lg:left-auto lg:rounded-none lg:border-none lg:bg-background"
+  const mobileClasses =
+    "max-w-[80%] w-full rounded-jotty left-[10%] border bg-muted text-muted-foreground";
+  const desktopClasses =
+    "lg:max-w-full lg:left-auto lg:rounded-none lg:border-none lg:bg-background";
 
   return (
     <header className="lg:border-b lg:border-border no-print">
       <nav
         className={cn(
-          "fixed z-30 flex items-center justify-between p-2 lg:justify-around transition-[bottom] duration-300 ease-in-out",
+          "jotty-quick-nav fixed z-30 flex items-center justify-between p-2 lg:justify-around transition-[bottom] duration-300 ease-in-out",
           "lg:relative lg:bottom-auto lg:h-auto lg:justify-end lg:px-6 lg:py-5",
           mobileClasses,
           desktopClasses,
@@ -115,7 +117,9 @@ export const QuickNav = ({
               <CheckmarkSquare04Icon
                 className={cn(
                   "h-10 w-10 p-2 rounded-jotty",
-                  mode === Modes.CHECKLISTS ? "bg-primary text-primary-foreground" : ""
+                  mode === Modes.CHECKLISTS
+                    ? "bg-primary text-primary-foreground"
+                    : ""
                 )}
               />
             }
@@ -132,7 +136,9 @@ export const QuickNav = ({
               <File02Icon
                 className={cn(
                   "h-10 w-10 p-2 rounded-jotty",
-                  mode === Modes.NOTES ? "bg-primary text-primary-foreground" : ""
+                  mode === Modes.NOTES
+                    ? "bg-primary text-primary-foreground"
+                    : ""
                 )}
               />
             }
@@ -150,4 +156,3 @@ export const QuickNav = ({
     </header>
   );
 };
-

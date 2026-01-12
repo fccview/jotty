@@ -57,18 +57,18 @@ export const Toast = ({ toast, onRemove }: ToastProps) => {
   const getStyles = () => {
     switch (toast.type) {
       case "success":
-        return "bg-primary/10 border-primary/20 text-primary";
+        return "bg-muted border-primary text-muted-foreground";
       case "error":
-        return "bg-destructive/10 border-destructive/20 text-destructive";
+        return "bg-muted border-destructive text-muted-foreground";
       default:
-        return "bg-primary/10 border-primary/20 text-primary";
+        return "bg-muted border-primary text-muted-foreground";
     }
   };
 
   return (
     <div
       className={cn(
-        "jotty-toast flex items-start gap-3 p-4 rounded-jotty border shadow-lg transition-all duration-300 transform",
+        "jotty-toast flex items-start gap-3 p-4 rounded-jotty border-b-2 shadow-lg transition-all duration-300 transform",
         getStyles(),
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       )}

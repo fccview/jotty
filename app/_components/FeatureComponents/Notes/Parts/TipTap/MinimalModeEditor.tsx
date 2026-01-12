@@ -19,7 +19,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 interface MinimalModeEditorProps {
   isEditing: boolean;
   noteContent: string;
-  onEditorContentChange: (content: string, isMarkdown: boolean) => void;
+  onEditorContentChange: (content: string, isMarkdown: boolean, isDirty: boolean) => void;
   compactMode: boolean;
 }
 
@@ -47,7 +47,7 @@ export const MinimalModeEditor = ({
   const handleChange = useCallback(
     (newContent: string) => {
       setMarkdownContent(newContent);
-      onEditorContentChange(newContent, true);
+      onEditorContentChange(newContent, true, true);
     },
     [onEditorContentChange]
   );

@@ -19,9 +19,12 @@ import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from 'next-intl';
 import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
+import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
 
 interface ExtraItemsDropdownProps {
   editor: Editor;
+  isMarkdownMode?: boolean;
+  onMarkdownChange?: (content: string) => void;
   onFileModalOpen: () => void;
   onTableModalOpen: () => void;
   onImageSizeModalOpen: (url: string) => void;
@@ -29,6 +32,8 @@ interface ExtraItemsDropdownProps {
 
 export const ExtraItemsDropdown = ({
   editor,
+  isMarkdownMode = false,
+  onMarkdownChange,
   onFileModalOpen,
   onTableModalOpen,
   onImageSizeModalOpen,
@@ -42,6 +47,18 @@ export const ExtraItemsDropdown = ({
     setIsMac(/(Mac|iPhone|iPod|iPad)/i.test(navigator.platform));
   }, []);
 
+  const getMarkdownTextarea = (): HTMLTextAreaElement | null => {
+    return document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+  };
+
+  const handleMarkdownInsert = (fn: (textarea: HTMLTextAreaElement) => string) => {
+    const textarea = getMarkdownTextarea();
+    if (textarea && onMarkdownChange) {
+      const newContent = fn(textarea);
+      onMarkdownChange(newContent);
+    }
+  };
+
   const addImage = () => {
     setShowImageModal(true);
   };
@@ -51,31 +68,43 @@ export const ExtraItemsDropdown = ({
   };
 
   const toggleAbbreviation = () => {
-    const chain = editor.chain().focus();
+    if (isMarkdownMode) {
+      setShowAbbreviationModal(true);
+    } else {
+      const chain = editor.chain().focus();
 
-    if (editor.isActive("abbreviation")) {
-      chain.unsetMark("abbreviation").run();
-      return;
+      if (editor.isActive("abbreviation")) {
+        chain.unsetMark("abbreviation").run();
+        return;
+      }
+
+      setShowAbbreviationModal(true);
     }
-
-    setShowAbbreviationModal(true);
   };
 
   const confirmAbbreviation = (title: string) => {
     if (title) {
-      editor.chain().focus().setMark("abbreviation", { title }).run();
+      if (isMarkdownMode) {
+        handleMarkdownInsert((textarea) => MarkdownUtils.insertAbbreviation(textarea, title));
+      } else {
+        editor.chain().focus().setMark("abbreviation", { title }).run();
+      }
     }
   };
 
   const toggleDetails = () => {
-    const { from, to, empty } = editor.state.selection;
-    const selectedText = editor.state.doc.textBetween(from, to, " ");
+    if (isMarkdownMode) {
+      handleMarkdownInsert((textarea) => MarkdownUtils.insertDetails(textarea, "Details"));
+    } else {
+      const { from, to, empty } = editor.state.selection;
+      const selectedText = editor.state.doc.textBetween(from, to, " ");
 
-    editor
-      .chain()
-      .focus()
-      .toggleWrap("details", { summary: !empty ? selectedText : undefined })
-      .run();
+      editor
+        .chain()
+        .focus()
+        .toggleWrap("details", { summary: !empty ? selectedText : undefined })
+        .run();
+    }
   };
 
   const items = useMemo(
@@ -101,40 +130,58 @@ export const ExtraItemsDropdown = ({
       {
         icon: <PenTool01Icon className="h-4 w-4" />,
         label: t("editor.highlight"),
-        command: () => editor.chain().focus().toggleMark("mark").run(),
-        isActive: editor.isActive("mark"),
+        command: () => {
+          if (isMarkdownMode) {
+            handleMarkdownInsert(MarkdownUtils.insertHighlight);
+          } else {
+            editor.chain().focus().toggleMark("mark").run();
+          }
+        },
+        isActive: editor && editor.isActive("mark"),
         shortcut: { code: "KeyH", modKey: true, shiftKey: true },
       },
       {
         icon: <TextSubscriptIcon className="h-4 w-4" />,
         label: "Subscript",
-        command: () => editor.chain().focus().toggleMark("subscript").run(),
-        isActive: editor.isActive("subscript"),
+        command: () => {
+          if (isMarkdownMode) {
+            handleMarkdownInsert(MarkdownUtils.insertSubscript);
+          } else {
+            editor.chain().focus().toggleMark("subscript").run();
+          }
+        },
+        isActive: editor && editor.isActive("subscript"),
         shortcut: { code: "Comma", modKey: true },
       },
       {
         icon: <TextSuperscriptIcon className="h-4 w-4" />,
         label: "Superscript",
-        command: () => editor.chain().focus().toggleMark("superscript").run(),
-        isActive: editor.isActive("superscript"),
+        command: () => {
+          if (isMarkdownMode) {
+            handleMarkdownInsert(MarkdownUtils.insertSuperscript);
+          } else {
+            editor.chain().focus().toggleMark("superscript").run();
+          }
+        },
+        isActive: editor && editor.isActive("superscript"),
         shortcut: { code: "Period", modKey: true },
       },
       {
         icon: <LetterSpacingIcon className="h-4 w-4" />,
         label: "Abbreviation",
         command: toggleAbbreviation,
-        isActive: editor.isActive("abbreviation"),
+        isActive: editor && editor.isActive("abbreviation"),
         shortcut: { code: "KeyA", modKey: true, shiftKey: true },
       },
       {
         icon: <SquareArrowDown02Icon className="h-4 w-4" />,
         label: t("editor.collapsible"),
         command: toggleDetails,
-        isActive: editor.isActive("details"),
+        isActive: editor && editor.isActive("details"),
         shortcut: { code: "KeyD", modKey: true, shiftKey: true },
       },
     ],
-    [editor, onFileModalOpen, onTableModalOpen]
+    [editor, isMarkdownMode, onMarkdownChange, onFileModalOpen, onTableModalOpen, t, toggleAbbreviation, toggleDetails]
   );
 
   const shortcuts = useMemo(

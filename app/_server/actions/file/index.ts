@@ -17,6 +17,22 @@ export interface OrderData {
   items?: string[];
 }
 
+export const getEnvOrFile = async (
+  envVar: string,
+  fileVar: string
+): Promise<string> => {
+  const filePath = process.env[fileVar];
+  if (filePath) {
+    try {
+      return (await fs.readFile(filePath, "utf-8")).trim();
+    } catch (error) {
+      console.error(`Failed to read ${fileVar} from ${filePath}:`, error);
+      return "";
+    }
+  }
+  return process.env[envVar] || "";
+};
+
 export const ensureCorDirsAndFiles = async (): Promise<{
   success: boolean;
   error?: string;

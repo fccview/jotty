@@ -20,8 +20,12 @@ interface LayoutProps {
   onCategoryRenamed?: (oldName: string, newName: string) => void;
   children: React.ReactNode;
   user: SanitisedUser | null;
-  customSidebar?: (props: { isOpen: boolean; onClose: () => void }) => React.ReactNode;
+  customSidebar?: (props: {
+    isOpen: boolean;
+    onClose: () => void;
+  }) => React.ReactNode;
   isEditorInEditMode?: boolean;
+  extraClasses?: string;
 }
 
 export const Layout = ({
@@ -35,10 +39,9 @@ export const Layout = ({
   children,
   customSidebar,
   isEditorInEditMode = false,
+  extraClasses = "",
 }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(true);
-  const lastScrollY = useRef(0);
   const { setMode, isInitialized } = useAppMode();
   const pathname = usePathname();
 
@@ -58,9 +61,14 @@ export const Layout = ({
   }
 
   return (
-    <div className="jotty-layout flex h-screen lg:bg-background w-full overflow-hidden transition-[margin-top] duration-300 ease-in-out relative">
+    <div
+      className={`jotty-layout flex h-screen lg:bg-background w-full overflow-hidden transition-[margin-top] duration-300 ease-in-out relative ${extraClasses}`}
+    >
       {customSidebar ? (
-        customSidebar({ isOpen: sidebarOpen, onClose: () => setSidebarOpen(false) })
+        customSidebar({
+          isOpen: sidebarOpen,
+          onClose: () => setSidebarOpen(false),
+        })
       ) : isSettingsPage ? (
         <SettingsSidebar
           isOpen={sidebarOpen}
@@ -99,4 +107,3 @@ export const Layout = ({
     </div>
   );
 };
-

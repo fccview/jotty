@@ -224,7 +224,10 @@
     "read": "Leer",
     "removeAll": "Eliminar todo",
     "noUsersFound": "No se encontraron usuarios.",
-    "noCategoriesAvailable": "No hay categorías disponibles"
+    "noCategoriesAvailable": "No hay categorías disponibles",
+    "links": "Enlaces",
+    "documentation": "Documentación",
+    "githubRepository": "Repositorio de GitHub"
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -438,6 +441,7 @@
     "clearAllCompletedConfirmMessage": "¿Está seguro de que desea eliminar todos los {count} elementos completados? Esta acción no se puede deshacer.",
     "clearAllIncompleteConfirmMessage": "¿Está seguro de que desea eliminar todos los {count} elementos incompletos y sus elementos secundarios? \nEsta acción no se puede deshacer.",
     "convertChecklistType": "Convertir tipo de lista de verificación",
+    "convertTypeConfirmation": "Está a punto de convertir de {currentType} a {newType}. ¿Está seguro de que desea continuar?",
     "dataLossWarning": "⚠️ Advertencia de pérdida de datos",
     "dataLossWarningItems": "Se perderán los siguientes datos:",
     "allTaskStatusesReset": "Todos los estados de tareas se restablecerán",
@@ -504,7 +508,8 @@
     "manageStatuses": "Gestionar estados",
     "viewArchived": "Ver archivados",
     "customizeStatuses": "Personalice los estados para este tablero Kanban. Agregue, elimine o reordene estados.",
-    "addStatus": "Agregar estado"
+    "addStatus": "Agregar estado",
+    "autoComplete": "Autocompletar"
   },
   "profile": {
     "userProfile": "Usuario",
@@ -842,6 +847,11 @@
     "customEmojis": "Emojis personalizados",
     "noEmojisYet": "Aún no se han creado emojis personalizados. Haga clic en 'Agregar emoji' para comenzar.",
     "enterAnyEmoji": "Ingresa cualquier emoji o use el selector de emojis (Win: Win+.; Mac: Ctrl+Cmd+Espacio",
+    "checkForUpdates": "Buscar actualizaciones",
+    "checkingForUpdates": "Buscando actualizaciones...",
+    "updateAvailable": "¡Actualización disponible!",
+    "upToDate": "¡Estás actualizado!",
+    "issuesAndBugs": "Problemas e informes de errores",
     "sharingOverview": "Resumen de actividad de compartición",
     "detailedSharingBreakdown": "Desglose detallado de patrones de compartición y participación de usuarios",
     "activeChecklistSharers": "Usuarios activos compartiendo listas",

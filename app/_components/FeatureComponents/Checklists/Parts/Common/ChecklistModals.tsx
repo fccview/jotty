@@ -1,8 +1,9 @@
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
-import { ConversionConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConversionConfirmModal";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
 import { Checklist } from "@/app/_types";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface ChecklistModalsProps {
   localList: Checklist;
@@ -34,6 +35,10 @@ export const ChecklistModals = ({
   DeleteModal,
 }: ChecklistModalsProps) => {
   const router = useRouter();
+  const t = useTranslations();
+
+  const currentType = localList.type === "simple" ? t("checklists.simpleChecklist") : t("checklists.taskProject");
+  const newType = getNewType(localList.type) === "simple" ? t("checklists.simpleChecklist") : t("checklists.taskProject");
 
   return (
     <>
@@ -47,12 +52,13 @@ export const ChecklistModals = ({
         />
       )}
       {showConversionModal && (
-        <ConversionConfirmModal
+        <ConfirmModal
           isOpen={showConversionModal}
           onClose={() => setShowConversionModal(false)}
           onConfirm={handleConfirmConversion}
-          currentType={localList.type}
-          newType={getNewType(localList.type)}
+          title={t("checklists.convertChecklistType")}
+          message={t("checklists.convertTypeConfirmation", { currentType, newType })}
+          confirmText={t("checklists.convert")}
         />
       )}
       {showBulkPasteModal && (

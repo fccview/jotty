@@ -76,6 +76,7 @@ export const useNoteEditor = ({
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditingEncrypted, setIsEditingEncrypted] = useState(false);
+  const [contentIsDirty, setContentIsDirty] = useState(false);
 
   const { autosaveNotes } = useSettings();
   const {
@@ -96,6 +97,7 @@ export const useNoteEditor = ({
   useEffect(() => {
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
+    setContentIsDirty(false);
 
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
 
@@ -121,14 +123,10 @@ export const useNoteEditor = ({
 
   useEffect(() => {
     if (notesDefaultMode !== "edit" && !isEditing) return;
-    const { contentWithoutMetadata: noteContentWithoutYaml } =
-      extractYamlMetadata(note.content || "");
-    const contentChanged =
-      derivedMarkdownContent.trim() !== noteContentWithoutYaml.trim();
     const titleChanged = title !== note.title;
     const categoryChanged = category !== (note.category || "Uncategorized");
-    setHasUnsavedChanges(contentChanged || titleChanged || categoryChanged);
-  }, [derivedMarkdownContent, title, category, note, isEditing]);
+    setHasUnsavedChanges(contentIsDirty || titleChanged || categoryChanged);
+  }, [contentIsDirty, title, category, note, isEditing]);
 
   const handleSave = useCallback(
     async (autosaveNotes = false, passphrase?: string) => {
@@ -228,6 +226,7 @@ export const useNoteEditor = ({
         onUpdate(result.data);
         setIsEditing(false);
         setIsEditingEncrypted(false);
+        setContentIsDirty(false);
 
         const categoryPath = buildCategoryPath(
           category || "Uncategorized",
@@ -265,6 +264,7 @@ export const useNoteEditor = ({
         handleSave(isAutosave).finally(() => {
           setStatus((prev) => ({ ...prev, isAutoSaving: false }));
           setHasUnsavedChanges(false);
+          setContentIsDirty(false);
         });
       }, user?.notesAutoSaveInterval || 5000);
     }
@@ -292,9 +292,10 @@ export const useNoteEditor = ({
     return () => unregisterNavigationGuard();
   }, [hasUnsavedChanges, registerNavigationGuard, unregisterNavigationGuard]);
 
-  const handleEditorContentChange = (content: string, isMarkdown: boolean) => {
+  const handleEditorContentChange = (content: string, isMarkdown: boolean, isDirty: boolean) => {
     setEditorContent(content);
     setIsMarkdownMode(isMarkdown);
+    setContentIsDirty(isDirty);
   };
 
   const handleEdit = () => setIsEditing(true);
@@ -302,6 +303,7 @@ export const useNoteEditor = ({
     setIsEditing(false);
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
+    setContentIsDirty(false);
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
     if (isMinimalMode) {
       setEditorContent(contentWithoutMetadata);

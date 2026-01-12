@@ -225,7 +225,10 @@
     "read": "Read",
     "removeAll": "Remove All",
     "noUsersFound": "No users found.",
-    "noCategoriesAvailable": "No categories available"
+    "noCategoriesAvailable": "No categories available",
+    "links": "Links",
+    "documentation": "Documentation",
+    "githubRepository": "GitHub Repository"
   },
   "auth": {
     "loginTitle": "Login",
@@ -259,7 +262,8 @@
     "version": "Version {version}",
     "createUser": "Create User",
     "attemptsRemaining": "Warning: {count, plural, one {# attempt} other {# attempts}} remaining before account lockout",
-    "accountLocked": "Too many failed attempts. Please try again in {seconds} {seconds, plural, one {second} other {seconds}}"
+    "accountLocked": "Too many failed attempts. Please try again in {seconds} {seconds, plural, one {second} other {seconds}}",
+    "notAuthorized": "You are not authorized to access this application. Please contact your administrator."
   },
   "mfa": {
     "title": "Two-Factor Authentication",
@@ -439,6 +443,7 @@
     "clearAllCompletedConfirmMessage": "Are you sure you want to delete all {count} completed items and their children? This action cannot be undone.",
     "clearAllIncompleteConfirmMessage": "Are you sure you want to delete all {count} incomplete items and their children? This action cannot be undone.",
     "convertChecklistType": "Convert Checklist Type",
+    "convertTypeConfirmation": "You are about to convert from {currentType} to {newType}. Are you sure you want to proceed?",
     "dataLossWarning": "⚠️ Data Loss Warning",
     "dataLossWarningItems": "The following data will be lost:",
     "allTaskStatusesReset": "All task statuses will be reset",
@@ -505,7 +510,8 @@
     "manageStatuses": "Manage Statuses",
     "viewArchived": "View Archived",
     "customizeStatuses": "Customize the statuses for this kanban board. Add, remove, or reorder statuses.",
-    "addStatus": "Add status"
+    "addStatus": "Add status",
+    "autoComplete": "Auto complete"
   },
   "profile": {
     "userProfile": "User",
@@ -845,6 +851,11 @@
     "enterAnyEmoji": "Enter any emoji or use emoji picker (Win: Win+.; Mac: Ctrl+Cmd+Space",
     "sharingOverview": "Sharing Activity Overview",
     "detailedSharingBreakdown": "Detailed breakdown of sharing patterns and user engagement",
+    "checkForUpdates": "Check for Updates",
+    "checkingForUpdates": "Checking for updates...",
+    "updateAvailable": "Update Available!",
+    "upToDate": "You're up to date!",
+    "issuesAndBugs": "Issues & Bug Reports",
     "activeChecklistSharers": "Active Checklist Sharers",
     "activeNotesSharers": "Active Note Sharers",
     "totalSharing": "Total Sharing Actions",

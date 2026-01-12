@@ -16,7 +16,7 @@ import {
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (checklistType === ChecklistsTypes.TASK) {
-    return item.status === TaskStatus.COMPLETED;
+    return item.status === TaskStatus.COMPLETED || !!item.completed;
   }
   return !!item.completed;
 };
@@ -364,6 +364,18 @@ const generateItemMarkdown = (
       itemMetadata.archivedAt = item.archivedAt;
       itemMetadata.archivedBy = item.archivedBy;
       itemMetadata.previousStatus = item.previousStatus;
+    }
+    if (item.status) {
+      itemMetadata.status = item.status;
+    }
+    if (item.timeEntries && item.timeEntries.length > 0) {
+      itemMetadata.timeEntries = item.timeEntries;
+    }
+    if (item.estimatedTime) {
+      itemMetadata.estimatedTime = item.estimatedTime;
+    }
+    if (item.targetDate) {
+      itemMetadata.targetDate = item.targetDate;
     }
 
     const metadata: string[] = [];

@@ -6,6 +6,15 @@ import { AuthShell } from "@/app/_components/GlobalComponents/Auth/AuthShell";
 export const dynamic = "force-dynamic";
 
 export default async function SetupPage() {
+  const allowLocal =
+    process.env.SSO_FALLBACK_LOCAL &&
+    process.env.SSO_FALLBACK_LOCAL !== "no" &&
+    process.env.SSO_FALLBACK_LOCAL !== "false";
+
+  if (!allowLocal) {
+    redirect("/auth/login");
+  }
+
   const hasExistingUsers = await hasUsers();
   if (hasExistingUsers) {
     redirect("/auth/login");

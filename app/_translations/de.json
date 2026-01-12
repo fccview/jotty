@@ -224,7 +224,10 @@
     "read": "Lesen",
     "removeAll": "Alle entfernen",
     "noUsersFound": "Keine Benutzer gefunden.",
-    "noCategoriesAvailable": "Keine Kategorien verfügbar"
+    "noCategoriesAvailable": "Keine Kategorien verfügbar",
+    "links": "Links",
+    "documentation": "Dokumentation",
+    "githubRepository": "GitHub Repository"
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -256,7 +259,8 @@
     "welcomeTo": "Willkommen zu {appName}",
     "createAdminAccountDescription": "Erstelle dein Admin-Konto um zu beginnen",
     "version": "Version {version}",
-    "createUser": "Benutzer erstellen"
+    "createUser": "Benutzer erstellen",
+    "notAuthorized": "Du bist nicht berechtigt, auf diese Anwendung zuzugreifen. Kontaktiere deinen Administrator."
   },
   "mfa": {
     "title": "Zwei-Faktor-Authentifizierung",
@@ -438,6 +442,7 @@
     "taskStatusTracking": "Aufgabenstatus-Tracking (Todo, In Bearbeitung, etc.)",
     "timeTrackingWithTimer": "Zeiterfassung mit integriertem Timer",
     "actionCannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden. Bist du sicher, dass du umwandeln möchtest?",
+    "convertTypeConfirmation": "Sie sind dabei, von {currentType} zu {newType} zu konvertieren. Möchten Sie fortfahren?",
     "convertAndLoseData": "Umwandeln & Daten verlieren",
     "convert": "Umwandeln",
     "convertToSimpleChecklist": "Zu einfacher Aufgabenliste umwandeln",
@@ -490,7 +495,8 @@
     "manageStatuses": "Status verwalten",
     "viewArchived": "Archivierte anzeigen",
     "customizeStatuses": "Passe die Status für dieses Kanban-Board an. Füge Status hinzu, entferne oder ordne sie neu.",
-    "addStatus": "Status hinzufügen"
+    "addStatus": "Status hinzufügen",
+    "autoComplete": "Automatische Vervollständigung"
   },
   "profile": {
     "userProfile": "Benutzer",
@@ -830,6 +836,11 @@
     "enterAnyEmoji": "Gib irgendein Emoji ein oder verwende einen Emoji-Wähler (Windows: Win+.; Mac: Ctrl+Cmd+Space",
     "sharingOverview": "Übersicht der Freigabeaktivitäten",
     "detailedSharingBreakdown": "Detaillierter Bericht über das Freigabeverhalten und deren Nutzung",
+    "checkForUpdates": "Nach Updates suchen",
+    "checkingForUpdates": "Suche nach Updates...",
+    "updateAvailable": "Update verfügbar!",
+    "upToDate": "Du bist auf dem neuesten Stand!",
+    "issuesAndBugs": "Probleme & Fehlerberichte",
     "activeChecklistSharers": "Aktive Aufgabenlisten-Freigeber",
     "activeNotesSharers": "Aktive Notizen-Freigeber",
     "totalSharing": "Freigabeaktionen insgesamt",
