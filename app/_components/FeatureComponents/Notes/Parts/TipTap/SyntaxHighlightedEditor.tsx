@@ -6,6 +6,7 @@ import Prism from "prismjs";
 import "prismjs/components/prism-markup";
 import "prismjs/components/prism-markdown";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
 
 interface SyntaxHighlightedEditorProps {
   content: string;
@@ -35,6 +36,41 @@ export const SyntaxHighlightedEditor = ({
     const lines = content.split("\n").length;
     setLineCount(lines);
   }, [content]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLDivElement>) => {
+    const isMod = e.metaKey || e.ctrlKey;
+    const textarea = e.currentTarget as HTMLTextAreaElement;
+
+    if (isMod && e.key === "b") {
+      e.preventDefault();
+      const newContent = MarkdownUtils.insertBold(textarea);
+      onChange(newContent);
+    } else if (isMod && e.key === "i") {
+      e.preventDefault();
+      const newContent = MarkdownUtils.insertItalic(textarea);
+      onChange(newContent);
+    } else if (isMod && e.key === "u") {
+      e.preventDefault();
+      const newContent = MarkdownUtils.insertUnderline(textarea);
+      onChange(newContent);
+    } else if (isMod && e.shiftKey && e.key === "X") {
+      e.preventDefault();
+      const newContent = MarkdownUtils.insertStrikethrough(textarea);
+      onChange(newContent);
+    } else if (isMod && e.key === "e") {
+      e.preventDefault();
+      const newContent = MarkdownUtils.insertInlineCode(textarea);
+      onChange(newContent);
+    } else if (isMod && e.shiftKey && e.key === "B") {
+      e.preventDefault();
+      const newContent = MarkdownUtils.insertBlockquote(textarea);
+      onChange(newContent);
+    } else if (isMod && e.shiftKey && e.key === "*") {
+      e.preventDefault();
+      const newContent = MarkdownUtils.insertBulletList(textarea);
+      onChange(newContent);
+    }
+  };
 
   useEffect(() => {
     const linkId = "prism-theme-stylesheet";
@@ -161,7 +197,9 @@ export const SyntaxHighlightedEditor = ({
             ...editorFontStyle,
             minHeight: "400px",
           }}
+          textareaId="markdown-editor-textarea"
           textareaClassName="focus:outline-none bg-transparent"
+          onKeyDown={handleKeyDown}
         />
       </div>
     </div>

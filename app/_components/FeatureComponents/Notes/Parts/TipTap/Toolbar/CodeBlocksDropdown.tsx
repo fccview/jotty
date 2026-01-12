@@ -7,12 +7,15 @@ import { codeblockLangs } from "@/app/_utils/code-block-utils";
 import { useState, useMemo } from "react";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
 import { useTranslations } from "next-intl";
+import { insertCodeBlock } from "@/app/_utils/markdown-editor-utils";
 
 interface CodeBlockDropdownProps {
   editor: Editor | null;
+  isMarkdownMode?: boolean;
+  onMarkdownChange?: (content: string) => void;
 }
 
-export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
+export const CodeBlockDropdown = ({ editor, isMarkdownMode = false, onMarkdownChange }: CodeBlockDropdownProps) => {
   const t = useTranslations();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -32,11 +35,19 @@ export const CodeBlockDropdown = ({ editor }: CodeBlockDropdownProps) => {
   if (!editor) return null;
 
   const setCodeBlock = (language: string) => {
-    editor.chain().focus().toggleCodeBlock({ language }).run();
+    if (isMarkdownMode && onMarkdownChange) {
+      const textarea = document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+      if (textarea) {
+        const newContent = insertCodeBlock(textarea, language);
+        onMarkdownChange(newContent);
+      }
+    } else {
+      editor.chain().focus().toggleCodeBlock({ language }).run();
+    }
     setSearchTerm("");
   };
 
-  const isCodeBlockActive = editor.isActive("codeBlock");
+  const isCodeBlockActive = editor && editor.isActive("codeBlock");
 
   const trigger = (
     <Button

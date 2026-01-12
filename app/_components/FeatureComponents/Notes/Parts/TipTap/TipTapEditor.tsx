@@ -230,9 +230,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         : convertHtmlToMarkdownUnified(content, tableSyntax);
 
       originalMarkdownRef.current = markdownContent;
-      isDirtyRef.current = false;
 
-      if (isMarkdownMode) {
+      if (isMarkdownMode && !isDirtyRef.current) {
         setMarkdownContent(markdownContent);
       }
     }, [content, isMarkdownMode, tableSyntax]);
@@ -330,7 +329,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
     return (
       <div className="flex flex-col h-full pb-[4em]">
-        <div className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 ${isMarkdownMode ? "py-0 lg:py-2" : "py-2"}`}>
+        <div className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 py-2`}>
           <TiptapToolbar
             editor={editor}
             isMarkdownMode={isMarkdownMode}
@@ -340,6 +339,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             showPreview={showPreview}
             onTogglePreview={() => setShowPreview(!showPreview)}
             markdownContent={markdownContent}
+            onMarkdownChange={setMarkdownContent}
           />
         </div>
 
