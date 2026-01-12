@@ -15,7 +15,13 @@ interface ChecklistsClientProps {
   children: React.ReactNode;
 }
 
-type ChecklistFilter = "all" | "completed" | "incomplete" | "pinned" | "task" | "simple";
+type ChecklistFilter =
+  | "all"
+  | "completed"
+  | "incomplete"
+  | "pinned"
+  | "task"
+  | "simple";
 
 interface ChecklistsFilterContextType {
   checklistFilter: ChecklistFilter;
@@ -33,10 +39,13 @@ interface ChecklistsFilterContextType {
     onPageChange: (page: number) => void;
     onItemsPerPageChange: (items: number) => void;
   } | null;
-  setPaginationInfo: (info: ChecklistsFilterContextType['paginationInfo']) => void;
+  setPaginationInfo: (
+    info: ChecklistsFilterContextType["paginationInfo"]
+  ) => void;
 }
 
-const ChecklistsFilterContext = createContext<ChecklistsFilterContextType | null>(null);
+const ChecklistsFilterContext =
+  createContext<ChecklistsFilterContextType | null>(null);
 
 export const useChecklistsFilter = () => {
   const context = useContext(ChecklistsFilterContext);
@@ -51,22 +60,26 @@ export const ChecklistsClient = ({
   user,
   children,
 }: ChecklistsClientProps) => {
-  const t = useTranslations('checklists');
-  const { openSettings, openCreateChecklistModal, openCreateCategoryModal } = useShortcut();
+  const t = useTranslations("checklists");
+  const { openSettings, openCreateChecklistModal, openCreateCategoryModal } =
+    useShortcut();
 
-  const [checklistFilter, setChecklistFilter] = useState<ChecklistFilter>(user?.defaultChecklistFilter || "all");
+  const [checklistFilter, setChecklistFilter] = useState<ChecklistFilter>(
+    user?.defaultChecklistFilter || "all"
+  );
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [recursive, setRecursive] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(12);
-  const [paginationInfo, setPaginationInfo] = useState<ChecklistsFilterContextType['paginationInfo']>(null);
+  const [paginationInfo, setPaginationInfo] =
+    useState<ChecklistsFilterContextType["paginationInfo"]>(null);
 
   const filterOptions = [
-    { id: "all", name: t('allChecklists') },
-    { id: "completed", name: t('completed') },
-    { id: "incomplete", name: t('incomplete') },
-    { id: "pinned", name: t('pinned') },
-    { id: "task", name: t('taskLists') },
-    { id: "simple", name: t('simpleLists') },
+    { id: "all", name: t("allChecklists") },
+    { id: "completed", name: t("completed") },
+    { id: "incomplete", name: t("incomplete") },
+    { id: "pinned", name: t("pinned") },
+    { id: "task", name: t("taskLists") },
+    { id: "simple", name: t("simpleLists") },
   ];
 
   const handleClearAllCategories = () => {
@@ -98,7 +111,7 @@ export const ChecklistsClient = ({
           <FiltersSidebar
             isOpen={isOpen}
             onClose={onClose}
-            title={t('byStatus')}
+            title={t("byStatus")}
             filterValue={checklistFilter}
             filterOptions={filterOptions}
             onFilterChange={(value) => {
@@ -113,14 +126,22 @@ export const ChecklistsClient = ({
             currentPage={paginationInfo?.currentPage}
             totalPages={paginationInfo?.totalPages}
             onPageChange={paginationInfo?.onPageChange}
-            itemsPerPage={paginationInfo?.totalItems !== undefined ? itemsPerPage : undefined}
+            itemsPerPage={
+              paginationInfo?.totalItems !== undefined
+                ? itemsPerPage
+                : undefined
+            }
             onItemsPerPageChange={paginationInfo?.onItemsPerPageChange}
             totalItems={paginationInfo?.totalItems}
           />
         )}
       >
-        <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
-        
+        <MobileHeader
+          user={user}
+          onOpenSettings={openSettings}
+          currentLocale={user?.preferredLocale || "en"}
+        />
+
         <div className="w-full px-4 py-6 h-full overflow-y-auto jotty-scrollable-content">
           {children}
         </div>

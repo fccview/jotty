@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Add01Icon, TaskAdd01Icon, RefreshIcon } from "hugeicons-react";
+import {
+  Add01Icon,
+  TaskAdd01Icon,
+  RefreshIcon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  PlusSignIcon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { RecurrenceRule, Checklist, Item } from "@/app/_types";
 import { handleScroll, isMobileDevice } from "@/app/_utils/global-utils";
@@ -11,6 +18,10 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
+import {
+  ArrowLeftIcon,
+  ArrowRight01FreeIcons,
+} from "@hugeicons/core-free-icons";
 
 interface ChecklistHeadingProps {
   checklist?: Checklist;
@@ -39,8 +50,7 @@ export const ChecklistHeading = ({
   const [newItemText, setNewItemText] = useState("");
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(true);
-  const lastScrollY = useRef(0);
+  const [inputToggled, setInputToggled] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const { user } = useAppMode();
@@ -143,22 +153,40 @@ export const ChecklistHeading = ({
     }
   }, [showSuggestions]);
 
-  useEffect(() => {
-    const handleGlobalScroll = (e: Event) => {
-      handleScroll(e, 'jotty-scrollable-content', setIsScrolled, lastScrollY);
-    };
-
-    window.addEventListener('scroll', handleGlobalScroll, true);
-
-    return () => {
-      window.removeEventListener('scroll', handleGlobalScroll, true);
-    };
-  }, []);
-
   return (
     <>
       <div className="lg:p-6 lg:border-b border-border bg-gradient-to-r from-background to-muted/20">
-        <div className={`fixed ${isScrolled ? "bottom-[120px]" : "bottom-10"} transition-all duration-200 ease-in-out left-0 right-0 lg:relative lg:bottom-auto lg:left-auto lg:right-auto bg-background w-full max-w-[95%] border rounded-jotty lg:border-0 lg:max-w-full left-[2.5%] lg:left-auto border-border p-2 lg:p-0 z-20 lg:z-auto items-center`}>
+        <div
+          className={`fixed transition-all duration-200 ease-in-out jotty-add-checklist-button-trigger bottom-12 z-20 toggle-mobile-input justify-center border border-border bg-background border border-border rounded-jotty p-1 lg:hidden ${
+            user?.handedness === "right-handed" ? "right-[2.5%]" : "left-[2.5%]"
+          }`}
+        >
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setInputToggled(!inputToggled)}
+          >
+            {!inputToggled ? (
+              <PlusSignIcon className="h-5 w-5" />
+            ) : (
+              <>
+                {user?.handedness === "right-handed" ? (
+                  <ArrowRight01Icon className="h-5 w-5" />
+                ) : (
+                  <ArrowLeft01Icon className="h-5 w-5" />
+                )}
+              </>
+            )}
+          </Button>
+        </div>
+
+        <div
+          className={`fixed jotty-add-checklist-button ${
+            inputToggled ? "active" : ""
+          } ${
+            user?.handedness === "right-handed" ? "right-handed" : "left-handed"
+          } bottom-10 transition-all duration-200 ease-in-out lg:relative lg:bottom-auto lg:left-auto lg:right-auto bg-background w-full border rounded-jotty lg:border-0 lg:max-w-full lg:left-auto border-border p-2 lg:p-0 z-20 lg:z-auto items-center`}
+        >
           <form
             onSubmit={handleSubmit}
             className="flex gap-3 lg:flex-row lg:items-center"
@@ -196,11 +224,13 @@ export const ChecklistHeading = ({
                   size="lg"
                   onClick={onBulkSubmit}
                   disabled={isLoading}
-                  title={t('checklists.bulkAddItems')}
+                  title={t("checklists.bulkAddItems")}
                   className="px-3 lg:px-4 shadow-sm"
                 >
                   <TaskAdd01Icon className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">{t('checklists.bulk')}</span>
+                  <span className="hidden lg:inline">
+                    {t("checklists.bulk")}
+                  </span>
                 </Button>
               )}
               <div className="flex items-center">
@@ -208,10 +238,11 @@ export const ChecklistHeading = ({
                   type="submit"
                   size="lg"
                   disabled={isLoading || !newItemText.trim()}
-                  className={`px-4 lg:px-6 shadow-sm ${user?.enableRecurrence === "enable"
-                    ? "rounded-tr-none rounded-br-none"
-                    : ""
-                    }`}
+                  className={`px-4 lg:px-6 shadow-sm ${
+                    user?.enableRecurrence === "enable"
+                      ? "rounded-tr-none rounded-br-none"
+                      : ""
+                  }`}
                 >
                   <Add01Icon className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">{submitButtonText}</span>
@@ -223,7 +254,7 @@ export const ChecklistHeading = ({
                     size="lg"
                     onClick={() => setShowRecurrenceModal(true)}
                     disabled={isLoading || !newItemText.trim()}
-                    title={t('checklists.addRecurringItem')}
+                    title={t("checklists.addRecurringItem")}
                     className="px-3 lg:px-4 shadow-sm border-l-2 border-border rounded-tl-none rounded-bl-none"
                   >
                     <RefreshIcon className="h-4 w-4" />

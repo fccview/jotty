@@ -2,9 +2,8 @@ import {
   DndContext,
   DragEndEvent,
   DragStartEvent,
-  DragOverlay,
   DragOverEvent,
-  closestCorners,
+  closestCenter,
 } from "@dnd-kit/core";
 import { ChecklistProgress } from "./ChecklistProgress";
 import { ChecklistItemsWrapper } from "./ChecklistItemsWrapper";
@@ -70,8 +69,6 @@ export const ChecklistBody = ({
     );
   }, [linkIndex, localList.uuid, localList.category, notes, checklists]);
 
-
-
   const onDragStart = (event: DragStartEvent) => {
     const findItem = (items: Item[], id: string): Item | undefined => {
       for (const item of items) {
@@ -123,10 +120,10 @@ export const ChecklistBody = ({
       <>
         <div className="bg-card rounded-jotty border border-border m-4 p-8 text-center">
           <h3 className="text-xl font-semibold text-foreground mb-2">
-            {t('checklists.noItemsYet')}
+            {t("checklists.noItemsYet")}
           </h3>
           <p className="text-muted-foreground">
-            {t('checklists.addFirstItem')}
+            {t("checklists.addFirstItem")}
           </p>
         </div>
 
@@ -148,7 +145,7 @@ export const ChecklistBody = ({
       <div className="flex-1 overflow-y-auto jotty-scrollable-content p-4">
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={closestCenter}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
           onDragCancel={onDragCancel}
@@ -245,7 +242,9 @@ export const ChecklistBody = ({
                 ) : (
                   <>
                     <DropIndicator
-                      id={`drop-before::${completedItems[0]?.id || "start-completed"}`}
+                      id={`drop-before::${
+                        completedItems[0]?.id || "start-completed"
+                      }`}
                       data={{
                         type: "drop-indicator",
                         position: "before",
@@ -290,25 +289,6 @@ export const ChecklistBody = ({
               </ChecklistItemsWrapper>
             )}
           </div>
-          <DragOverlay>
-            {activeItem ? (
-              <div className="pointer-events-none w-full opacity-50">
-                <NestedChecklistItem
-                  item={activeItem}
-                  index={0}
-                  level={0}
-                  onToggle={() => { }}
-                  onDelete={() => { }}
-                  onEdit={() => { }}
-                  onAddSubItem={() => { }}
-                  isDeletingItem={false}
-                  isDragDisabled={true}
-                  checklist={localList}
-                  completed={activeItem.completed}
-                />
-              </div>
-            ) : null}
-          </DragOverlay>
         </DndContext>
 
         {referencingItems.length > 0 &&

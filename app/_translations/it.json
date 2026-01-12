@@ -224,7 +224,10 @@
     "read": "Leggere",
     "removeAll": "Rimuovi tutto",
     "noUsersFound": "Nessun utente trovato.",
-    "noCategoriesAvailable": "Nessuna categoria disponibile"
+    "noCategoriesAvailable": "Nessuna categoria disponibile",
+    "links": "Collegamenti",
+    "documentation": "Documentazione",
+    "githubRepository": "Repository GitHub"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -844,6 +847,11 @@
     "enterAnyEmoji": "Inserisci un'emoji o usa il selettore (Win: Win+.; Mac: Ctrl+Cmd+Space",
     "sharingOverview": "Panoramica Condivisioni",
     "detailedSharingBreakdown": "Dettagli sui pattern di condivisione e coinvolgimento utenti",
+    "checkForUpdates": "Verifica aggiornamenti",
+    "checkingForUpdates": "Verifica aggiornamenti in corso...",
+    "updateAvailable": "Aggiornamento disponibile!",
+    "upToDate": "Sei aggiornato!",
+    "issuesAndBugs": "Problemi e segnalazioni di bug",
     "activeChecklistSharers": "Utenti attivi (Checklist)",
     "activeNotesSharers": "Utenti attivi (Note)",
     "totalSharing": "Azioni di condivisione totali",

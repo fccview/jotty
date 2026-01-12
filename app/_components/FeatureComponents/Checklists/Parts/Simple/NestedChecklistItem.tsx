@@ -82,19 +82,14 @@ const NestedChecklistItemComponent = ({
     );
   };
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    isDragging,
-  } = useDraggable({
-    id: item.id,
-    disabled: isDragDisabled,
-    data: {
-      itemId: item.id,
-    },
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: item.id,
+      disabled: isDragDisabled,
+      data: {
+        itemId: item.id,
+      },
+    });
 
   const { showEmojis } = useSettings();
   const emoji = useEmojiCache(item.text, showEmojis);
@@ -173,9 +168,10 @@ const NestedChecklistItemComponent = ({
     if (!isDropdownOpen && dropdownButtonRef.current) {
       const rect = dropdownButtonRef.current.getBoundingClientRect();
 
-      let scrollParent: HTMLElement | null = dropdownButtonRef.current.parentElement;
+      let scrollParent: HTMLElement | null =
+        dropdownButtonRef.current.parentElement;
       while (scrollParent) {
-        if (scrollParent.classList.contains('checklist-todo-container')) {
+        if (scrollParent.classList.contains("checklist-todo-container")) {
           break;
         }
         scrollParent = scrollParent.parentElement;
@@ -188,7 +184,8 @@ const NestedChecklistItemComponent = ({
         const containerStyle = window.getComputedStyle(scrollParent);
         const paddingBottom = parseInt(containerStyle.paddingBottom) || 0;
 
-        const actualSpaceBelow = containerRect.bottom - rect.bottom - paddingBottom;
+        const actualSpaceBelow =
+          containerRect.bottom - rect.bottom - paddingBottom;
         const threshold = 200;
 
         shouldOpenUpward = actualSpaceBelow < threshold;
@@ -220,7 +217,9 @@ const NestedChecklistItemComponent = ({
   const isChild = level > 0;
 
   const dropdownOptions = [
-    ...(onEdit ? [{ id: "edit", name: t("editor.edit"), icon: PencilEdit02Icon }] : []),
+    ...(onEdit
+      ? [{ id: "edit", name: t("editor.edit"), icon: PencilEdit02Icon }]
+      : []),
     ...(onAddSubItem
       ? [{ id: "add-sub-item", name: "Add sub-item", icon: Add01Icon }]
       : []),
@@ -259,13 +258,13 @@ const NestedChecklistItemComponent = ({
           className={cn(
             "relative my-1",
             hasChildren &&
-            !isChild &&
-            "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+              !isChild &&
+              "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
             !hasChildren &&
-            !isChild &&
-            "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+              !isChild &&
+              "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
             isChild &&
-            "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
+              "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
             "first:mt-0 transition-colors duration-150",
             isActive && "bg-muted/20",
             isDragging && "opacity-50 z-50",
@@ -284,7 +283,7 @@ const NestedChecklistItemComponent = ({
               isChild ? "px-2.5 py-2" : "p-3",
               completed && "opacity-80",
               !permissions?.canEdit &&
-              "opacity-50 cursor-not-allowed pointer-events-none"
+                "opacity-50 cursor-not-allowed pointer-events-none"
             )}
           >
             {!isPublicView && !isDragDisabled && permissions?.canEdit && (
@@ -387,7 +386,9 @@ const NestedChecklistItemComponent = ({
 
             {!isEditing && permissions?.canEdit && (
               <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
-                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground mr-1">#{index}</span>
+                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground mr-1">
+                  #{index}
+                </span>
 
                 <div className="hidden lg:flex items-center gap-1">
                   {!isPublicView && (
@@ -437,13 +438,15 @@ const NestedChecklistItemComponent = ({
                       <MoreHorizontalIcon className="h-4 w-4" />
                     </Button>
 
-
-
                     {isDropdownOpen && (
-                      <div className={cn(
-                        "absolute right-0 z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
-                        dropdownOpenUpward ? "bottom-full mb-1 top-auto" : "top-full mt-1"
-                      )}>
+                      <div
+                        className={cn(
+                          "absolute right-0 z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
+                          dropdownOpenUpward
+                            ? "bottom-full mb-1 top-auto"
+                            : "top-full mt-1"
+                        )}
+                      >
                         <div className="py-1">
                           {dropdownOptions.map((option) => (
                             <button
@@ -452,7 +455,9 @@ const NestedChecklistItemComponent = ({
                               onClick={() => handleDropdownAction(option.id)}
                               className="w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm hover:bg-accent hover:text-accent-foreground"
                             >
-                              {option.icon && <option.icon className="h-4 w-4" />}
+                              {option.icon && (
+                                <option.icon className="h-4 w-4" />
+                              )}
                               <span>{option.name}</span>
                             </button>
                           ))}
@@ -485,7 +490,10 @@ const NestedChecklistItemComponent = ({
 
           {showAddSubItem && !isPublicView && (
             <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>
-              <form onSubmit={handleAddSubItem} className="flex gap-2 items-center pr-4">
+              <form
+                onSubmit={handleAddSubItem}
+                className="flex gap-2 items-center pr-4"
+              >
                 <Input
                   id={`add-subitem-${item.id}`}
                   type="text"
@@ -500,7 +508,7 @@ const NestedChecklistItemComponent = ({
                   size="sm"
                   disabled={!newSubItemText.trim()}
                   className="h-8 w-8 p-0"
-                  title={t('common.add')}
+                  title={t("common.add")}
                 >
                   <Add01Icon className="h-4 w-4" />
                 </Button>
@@ -523,7 +531,9 @@ const NestedChecklistItemComponent = ({
           {hasChildren && isExpanded && (
             <div className={cn("pt-1")}>
               <DropIndicator
-                id={`drop-before-child::${item.children![0]?.id || `${item.id}-start`}`}
+                id={`drop-before-child::${
+                  item.children![0]?.id || `${item.id}-start`
+                }`}
                 data={{
                   type: "drop-indicator",
                   position: "before",

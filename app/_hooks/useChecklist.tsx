@@ -65,7 +65,7 @@ export const useChecklist = ({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
-        delay: 50,
+        delay: 20,
         tolerance: 5,
       },
     }),
@@ -410,7 +410,8 @@ export const useChecklist = ({
     const overId = over.id.toString();
 
     const isDropInto = overId.startsWith("drop-into-item::");
-    const isDropIndicator = overId.startsWith("drop-before") || overId.startsWith("drop-after");
+    const isDropIndicator =
+      overId.startsWith("drop-before") || overId.startsWith("drop-after");
 
     let targetItemId: string;
     if (isDropInto) {
@@ -428,7 +429,12 @@ export const useChecklist = ({
       items: Item[],
       targetId: string,
       parent: Item | null = null
-    ): { item: Item; parent: Item | null; siblings: Item[]; index: number } | null => {
+    ): {
+      item: Item;
+      parent: Item | null;
+      siblings: Item[];
+      index: number;
+    } | null => {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (item.id === targetId) {
@@ -473,11 +479,21 @@ export const useChecklist = ({
         const targetSiblings = overInNew.siblings;
         const targetParent = overInNew.parent;
 
-        let newIndex = targetSiblings.findIndex((item) => item.id === targetItemId);
+        let newIndex = targetSiblings.findIndex(
+          (item) => item.id === targetItemId
+        );
 
-        const isDraggingDown = activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInfo.index;
+        const isDraggingDown =
+          activeInfo.parent?.id === targetParent?.id &&
+          activeInfo.index < overInfo.index;
 
-        const position = isDropIndicator ? (overId.startsWith("drop-after::") ? "after" : "before") : (isDraggingDown ? "after" : "before");
+        const position = isDropIndicator
+          ? overId.startsWith("drop-after::")
+            ? "after"
+            : "before"
+          : isDraggingDown
+          ? "after"
+          : "before";
 
         if (position === "after") {
           newIndex = newIndex + 1;
@@ -706,10 +722,12 @@ export const useChecklist = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${localList.uuid
-        ? localList.uuid
-        : `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id
-        }`
+      `${
+        localList.uuid
+          ? localList.uuid
+          : `${encodeCategoryPath(localList.category || "Uncategorized")}/${
+              localList.id
+            }`
       }`
     );
     if (success) {

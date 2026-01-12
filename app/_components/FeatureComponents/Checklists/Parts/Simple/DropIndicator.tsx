@@ -15,9 +15,11 @@ export const DropIndicator = ({ id, data }: DropIndicatorProps) => {
     <div
       ref={setNodeRef}
       className={cn(
-        "h-[2px] w-full transition-all",
-        isOver ? "h-[4px] bg-primary" : "bg-transparent"
+        "w-full transition-all flex items-center justify-center",
+        isOver ? "h-[12px]" : "h-0"
       )}
-    />
+    >
+      {isOver && <div className="h-[4px] w-full bg-primary rounded-full" />}
+    </div>
   );
 };

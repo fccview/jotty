@@ -224,7 +224,10 @@
     "read": "Leer",
     "removeAll": "Eliminar todo",
     "noUsersFound": "No se encontraron usuarios.",
-    "noCategoriesAvailable": "No hay categorías disponibles"
+    "noCategoriesAvailable": "No hay categorías disponibles",
+    "links": "Enlaces",
+    "documentation": "Documentación",
+    "githubRepository": "Repositorio de GitHub"
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -842,6 +845,11 @@
     "customEmojis": "Emojis personalizados",
     "noEmojisYet": "Aún no se han creado emojis personalizados. Haga clic en 'Agregar emoji' para comenzar.",
     "enterAnyEmoji": "Ingresa cualquier emoji o use el selector de emojis (Win: Win+.; Mac: Ctrl+Cmd+Espacio",
+    "checkForUpdates": "Buscar actualizaciones",
+    "checkingForUpdates": "Buscando actualizaciones...",
+    "updateAvailable": "¡Actualización disponible!",
+    "upToDate": "¡Estás actualizado!",
+    "issuesAndBugs": "Problemas e informes de errores",
     "sharingOverview": "Resumen de actividad de compartición",
     "detailedSharingBreakdown": "Desglose detallado de patrones de compartición y participación de usuarios",
     "activeChecklistSharers": "Usuarios activos compartiendo listas",

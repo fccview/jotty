@@ -1,7 +1,7 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 interface DroppableProps {
   id: string;
@@ -20,37 +20,28 @@ export const Droppable = ({
     id,
     data,
   });
-  const elementRef = useRef<HTMLDivElement>(null);
-  const [isValidDropZone, setIsValidDropZone] = useState(false);
+  const [showDropIntoIndicator, setShowDropIntoIndicator] = useState(false);
 
   useEffect(() => {
-    if (!isOver || !active || !elementRef.current) {
-      setIsValidDropZone(false);
+    if (!isOver || !active) {
+      setShowDropIntoIndicator(false);
       return;
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!elementRef.current) return;
+    const hoverTimeout = setTimeout(() => {
+      setShowDropIntoIndicator(true);
+    }, 600);
 
-      const rect = elementRef.current.getBoundingClientRect();
-      const relativeX = e.clientX - rect.left;
-      const widthThreshold = rect.width * 0.07;
-
-      setIsValidDropZone(relativeX > widthThreshold);
+    return () => {
+      clearTimeout(hoverTimeout);
     };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
   }, [isOver, active]);
 
-  const combinedRef = (node: HTMLDivElement | null) => {
-    (elementRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
-    setNodeRef(node);
-  };
-
   return (
-    <div ref={combinedRef} className={className}>
-      {typeof children === "function" ? children({ isOver: isOver && isValidDropZone }) : children}
+    <div ref={setNodeRef} className={className}>
+      {typeof children === "function"
+        ? children({ isOver: isOver && showDropIntoIndicator })
+        : children}
     </div>
   );
 };

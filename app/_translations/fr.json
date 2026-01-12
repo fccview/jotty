@@ -224,7 +224,10 @@
     "read": "Lire",
     "removeAll": "Tout retirer",
     "noUsersFound": "Aucun utilisateur trouvé.",
-    "noCategoriesAvailable": "Aucune catégorie disponible"
+    "noCategoriesAvailable": "Aucune catégorie disponible",
+    "links": "Liens",
+    "documentation": "Documentation",
+    "githubRepository": "Dépôt GitHub"
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -843,7 +846,12 @@
     "noEmojisYet": "Aucun émoji personnalisé pour le moment. Cliquez sur &quot;Ajouter un émoji&quot; pour commencer.",
     "enterAnyEmoji": "Saisissez un émoji ou utilisez le sélecteur (Windows : Win+. ; Mac : Ctrl+Cmd+Espace",
     "sharingOverview": "Vue d’ensemble de l’activité de partage",
-    "detailedSharingBreakdown": "Détail des habitudes de partage et de l’engagement des utilisateurs",
+    "detailedSharingBreakdown": "Détail des habitudes de partage et de l'engagement des utilisateurs",
+    "checkForUpdates": "Vérifier les mises à jour",
+    "checkingForUpdates": "Vérification des mises à jour...",
+    "updateAvailable": "Mise à jour disponible !",
+    "upToDate": "Vous êtes à jour !",
+    "issuesAndBugs": "Problèmes et rapports de bugs",
     "activeChecklistSharers": "Utilisateurs partageant activement des listes",
     "activeNotesSharers": "Utilisateurs partageant activement des notes",
     "totalSharing": "Nombre total d’actions de partage",

@@ -225,7 +225,10 @@
     "read": "Read",
     "removeAll": "Remove All",
     "noUsersFound": "No users found.",
-    "noCategoriesAvailable": "No categories available"
+    "noCategoriesAvailable": "No categories available",
+    "links": "Links",
+    "documentation": "Documentation",
+    "githubRepository": "GitHub Repository"
   },
   "auth": {
     "loginTitle": "Login",
@@ -846,6 +849,11 @@
     "enterAnyEmoji": "Enter any emoji or use emoji picker (Win: Win+.; Mac: Ctrl+Cmd+Space",
     "sharingOverview": "Sharing Activity Overview",
     "detailedSharingBreakdown": "Detailed breakdown of sharing patterns and user engagement",
+    "checkForUpdates": "Check for Updates",
+    "checkingForUpdates": "Checking for updates...",
+    "updateAvailable": "Update Available!",
+    "upToDate": "You're up to date!",
+    "issuesAndBugs": "Issues & Bug Reports",
     "activeChecklistSharers": "Active Checklist Sharers",
     "activeNotesSharers": "Active Note Sharers",
     "totalSharing": "Total Sharing Actions",

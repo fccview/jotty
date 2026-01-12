@@ -160,6 +160,7 @@ export const ChecklistClient = ({
       onOpenCreateModal={openCreateChecklistModal}
       onOpenCategoryModal={openCreateCategoryModal}
       user={user}
+      extraClasses="jotty-checklist-page"
     >
       {renderContent()}
 
