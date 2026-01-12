@@ -16,10 +16,7 @@ export default async function LoginPage() {
     process.env.SSO_FALLBACK_LOCAL !== "false";
 
   const hasExistingUsers = await hasUsers();
-  if (
-    (!hasExistingUsers && ssoEnabled && allowLocal) ||
-    (!hasExistingUsers && !ssoEnabled)
-  ) {
+  if (!hasExistingUsers && !ssoEnabled || !hasExistingUsers && allowLocal) {
     redirect("/auth/setup");
   }
 
