@@ -15,7 +15,11 @@ interface CodeBlockDropdownProps {
   onMarkdownChange?: (content: string) => void;
 }
 
-export const CodeBlockDropdown = ({ editor, isMarkdownMode = false, onMarkdownChange }: CodeBlockDropdownProps) => {
+export const CodeBlockDropdown = ({
+  editor,
+  isMarkdownMode = false,
+  onMarkdownChange,
+}: CodeBlockDropdownProps) => {
   const t = useTranslations();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -36,7 +40,9 @@ export const CodeBlockDropdown = ({ editor, isMarkdownMode = false, onMarkdownCh
 
   const setCodeBlock = (language: string) => {
     if (isMarkdownMode && onMarkdownChange) {
-      const textarea = document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+      const textarea = document.getElementById(
+        "markdown-editor-textarea"
+      ) as HTMLTextAreaElement;
       if (textarea) {
         const newContent = insertCodeBlock(textarea, language);
         onMarkdownChange(newContent);
@@ -55,7 +61,7 @@ export const CodeBlockDropdown = ({ editor, isMarkdownMode = false, onMarkdownCh
       size="sm"
       onMouseDown={(e) => e.preventDefault()}
       className="flex items-center gap-1"
-      title={t('editor.code')}
+      title={t("editor.code")}
     >
       <SourceCodeIcon className="h-4 w-4" />
       <ArrowDown01Icon className="h-3 w-3" />
@@ -95,7 +101,7 @@ export const CodeBlockDropdown = ({ editor, isMarkdownMode = false, onMarkdownCh
           ))
         ) : (
           <div className="px-3 py-4 text-md lg:text-sm text-muted-foreground text-center">
-            {t('editor.noLanguagesFound')}
+            {t("editor.noLanguagesFound")}
           </div>
         )}
       </div>

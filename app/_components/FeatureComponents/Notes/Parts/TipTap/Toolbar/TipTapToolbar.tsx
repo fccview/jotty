@@ -34,6 +34,10 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
 import { insertTextAtCursor } from "@/app/_utils/markdown-editor-utils";
 
+const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+const mod = isMac ? "⌘" : "Ctrl";
+const alt = isMac ? "⌥" : "Alt";
+
 type ToolbarProps = {
   editor: Editor | null;
   isMarkdownMode: boolean;
@@ -411,7 +415,7 @@ export const TiptapToolbar = ({
                 MarkdownUtils.insertBold
               )
             }
-            title={t('editor.toggleBold')}
+            title={`${t('editor.toggleBold')} (${mod}+B)`}
           >
             <TextBoldIcon className="h-4 w-4" />
           </Button>
@@ -425,7 +429,7 @@ export const TiptapToolbar = ({
                 MarkdownUtils.insertItalic
               )
             }
-            title={t('editor.toggleItalic')}
+            title={`${t('editor.toggleItalic')} (${mod}+I)`}
           >
             <TextItalicIcon className="h-4 w-4" />
           </Button>
@@ -439,7 +443,7 @@ export const TiptapToolbar = ({
                 MarkdownUtils.insertUnderline
               )
             }
-            title={t('editor.toggleUnderline')}
+            title={`${t('editor.toggleUnderline')} (${mod}+U)`}
           >
             <TextUnderlineIcon className="h-4 w-4" />
           </Button>
@@ -453,7 +457,7 @@ export const TiptapToolbar = ({
                 MarkdownUtils.insertStrikethrough
               )
             }
-            title={t('editor.toggleStrikethrough')}
+            title={`${t('editor.toggleStrikethrough')} (${mod}+Shift+X)`}
           >
             <TextStrikethroughIcon className="h-4 w-4" />
           </Button>
@@ -467,7 +471,7 @@ export const TiptapToolbar = ({
                 MarkdownUtils.insertInlineCode
               )
             }
-            title={t('editor.toggleInlineCode')}
+            title={`${t('editor.toggleInlineCode')} (${mod}+E)`}
           >
             <SourceCodeIcon className="h-4 w-4" />
           </Button>
@@ -490,7 +494,7 @@ export const TiptapToolbar = ({
                 (textarea) => MarkdownUtils.insertHeading(textarea, 2)
               )
             }
-            title={t('editor.toggleHeading2')}
+            title={`${t('editor.toggleHeading2')} (${mod}+${alt}+2)`}
           >
             <Heading02Icon className="h-4 w-4" />
           </Button>
@@ -504,7 +508,7 @@ export const TiptapToolbar = ({
                 MarkdownUtils.insertBulletList
               )
             }
-            title={t('editor.toggleBulletList')}
+            title={`${t('editor.toggleBulletList')} (${mod}+Shift+8)`}
           >
             <LeftToRightListBulletIcon className="h-4 w-4" />
           </Button>
@@ -518,7 +522,7 @@ export const TiptapToolbar = ({
                 MarkdownUtils.insertBlockquote
               )
             }
-            title={t('editor.toggleBlockquote')}
+            title={`${t('editor.toggleBlockquote')} (${mod}+Shift+B)`}
           >
             <QuoteUpIcon className="h-4 w-4" />
           </Button>
@@ -527,7 +531,7 @@ export const TiptapToolbar = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleButtonClick(setLink)}
-            title={t('editor.toggleLink')}
+            title={`${t('editor.toggleLink')} (${mod}+Shift+K)`}
           >
             <Attachment01Icon className="h-4 w-4" />
           </Button>
