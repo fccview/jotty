@@ -9,6 +9,7 @@ import { Logout01Icon } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { useEffect, useRef, useState } from "react";
 import { cn, handleScroll } from "@/app/_utils/global-utils";
+import { useTranslations } from "next-intl";
 
 interface MobileHeaderProps {
     user: SanitisedUser | null;
@@ -22,6 +23,7 @@ export const MobileHeader = ({ user, onOpenSettings, currentLocale }: MobileHead
     const [scrollPos, setScrollPos] = useState(0);
     const lastScrollY = useRef(0);
     const router = useRouter();
+    const t = useTranslations();
 
     useEffect(() => {
         const handleGlobalScroll = (e: Event) => {
@@ -73,6 +75,7 @@ export const MobileHeader = ({ user, onOpenSettings, currentLocale }: MobileHead
                     size="icon"
                     onClick={handleLogout}
                     className="lg:hidden jotty-mobile-navigation-icon"
+                    aria-label={t("common.logout")}
                 >
                     <Logout01Icon className="h-5 w-5" />
                 </Button>

@@ -48,6 +48,7 @@ interface NestedChecklistItemProps {
   overPosition?: "before" | "after";
   isAnyItemDragging?: boolean;
   overItem?: { id: string; position: "before" | "after" } | null;
+  draggedItemId?: string;
 }
 
 const NestedChecklistItemComponent = ({
@@ -68,6 +69,7 @@ const NestedChecklistItemComponent = ({
   overPosition,
   isAnyItemDragging = false,
   overItem = null,
+  draggedItemId,
 }: NestedChecklistItemProps) => {
   const t = useTranslations();
   const { usersPublicData, user } = useAppMode();
@@ -239,6 +241,8 @@ const NestedChecklistItemComponent = ({
     }
   }, [item.children, hasChildren]);
 
+  const isBeingDragged = draggedItemId === item.id;
+
   return (
     <Droppable
       id={`drop-into-item::${item.id}`}
@@ -246,6 +250,7 @@ const NestedChecklistItemComponent = ({
         type: "item",
         itemId: item.id,
       }}
+      disabled={isBeingDragged}
     >
       {({ isOver: isOverDroppable }) => (
         <div
@@ -397,7 +402,7 @@ const NestedChecklistItemComponent = ({
                       size="sm"
                       onClick={() => setShowAddSubItem(!showAddSubItem)}
                       className="h-8 w-8 p-0"
-                      title={t("checklists.addSubItem")}
+                      aria-label={t("checklists.addSubItem")}
                     >
                       <Add01Icon className="h-4 w-4" />
                     </Button>
@@ -409,6 +414,7 @@ const NestedChecklistItemComponent = ({
                       size="sm"
                       onClick={handleEdit}
                       className="h-8 w-8 p-0"
+                      aria-label={t("common.edit")}
                     >
                       <PencilEdit02Icon className="h-4 w-4" />
                     </Button>
@@ -420,6 +426,7 @@ const NestedChecklistItemComponent = ({
                       size="sm"
                       onClick={() => onDelete(item.id)}
                       className="h-8 w-8 p-0"
+                      aria-label={t("common.delete")}
                     >
                       <Delete03Icon className="h-4 w-4" />
                     </Button>
@@ -434,6 +441,7 @@ const NestedChecklistItemComponent = ({
                       size="sm"
                       onClick={handleDropdownToggle}
                       className="h-8 w-8 p-0"
+                      aria-label={t("common.moreOptions")}
                     >
                       <MoreHorizontalIcon className="h-4 w-4" />
                     </Button>
@@ -473,6 +481,7 @@ const NestedChecklistItemComponent = ({
                     size="sm"
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="h-6 w-6 p-0"
+                    aria-label={isExpanded ? t("common.collapseAll") : t("common.expandAll")}
                   >
                     {isExpanded ? (
                       <ArrowDown01Icon className="h-4 w-4" />
@@ -508,7 +517,7 @@ const NestedChecklistItemComponent = ({
                   size="sm"
                   disabled={!newSubItemText.trim()}
                   className="h-8 w-8 p-0"
-                  title={t("common.add")}
+                  aria-label={t("common.add")}
                 >
                   <Add01Icon className="h-4 w-4" />
                 </Button>
@@ -521,6 +530,7 @@ const NestedChecklistItemComponent = ({
                     setNewSubItemText("");
                   }}
                   className="h-8 w-8 p-0"
+                  aria-label={t("common.close")}
                 >
                   <MultiplicationSignIcon className="h-4 w-4" />
                 </Button>
@@ -530,17 +540,19 @@ const NestedChecklistItemComponent = ({
 
           {hasChildren && isExpanded && (
             <div className={cn("pt-1")}>
-              <DropIndicator
-                id={`drop-before-child::${
-                  item.children![0]?.id || `${item.id}-start`
-                }`}
-                data={{
-                  type: "drop-indicator",
-                  position: "before",
-                  targetId: item.children![0]?.id,
-                  parentId: item.id,
-                }}
-              />
+              {draggedItemId !== item.id && (
+                <DropIndicator
+                  id={`drop-before-child::${
+                    item.children![0]?.id || `${item.id}-start`
+                  }`}
+                  data={{
+                    type: "drop-indicator",
+                    position: "before",
+                    targetId: item.children![0]?.id,
+                    parentId: item.id,
+                  }}
+                />
+              )}
               {item.children!.map((child, childIndex) => (
                 <div key={child.id}>
                   <NestedChecklistItem
@@ -552,7 +564,7 @@ const NestedChecklistItemComponent = ({
                     onEdit={onEdit}
                     onAddSubItem={onAddSubItem}
                     isDeletingItem={isDeletingItem}
-                    isDragDisabled={isDragDisabled}
+                    isDragDisabled={isDragDisabled || draggedItemId === item.id}
                     isPublicView={isPublicView}
                     checklist={checklist}
                     isOver={overItem?.id === child.id}
@@ -561,16 +573,19 @@ const NestedChecklistItemComponent = ({
                     }
                     isAnyItemDragging={isAnyItemDragging}
                     overItem={overItem}
+                    draggedItemId={draggedItemId}
                   />
-                  <DropIndicator
-                    id={`drop-after-child::${child.id}`}
-                    data={{
-                      type: "drop-indicator",
-                      position: "after",
-                      targetId: child.id,
-                      parentId: item.id,
-                    }}
-                  />
+                  {draggedItemId !== item.id && (
+                    <DropIndicator
+                      id={`drop-after-child::${child.id}`}
+                      data={{
+                        type: "drop-indicator",
+                        position: "after",
+                        targetId: child.id,
+                        parentId: item.id,
+                      }}
+                    />
+                  )}
                 </div>
               ))}
             </div>

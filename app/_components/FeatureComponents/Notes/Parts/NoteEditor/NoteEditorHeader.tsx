@@ -265,6 +265,7 @@ export const NoteEditorHeader = ({
               size="icon"
               onClick={onBack}
               className="h-8 w-8 flex-shrink-0"
+              aria-label={t("common.back")}
             >
               <ArrowLeft01Icon className="h-5 w-5" />
             </Button>
@@ -378,7 +379,7 @@ export const NoteEditorHeader = ({
                 </Button>
 
                 <div className={`fixed bottom-[20px] ${user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"} lg:hidden z-50 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}>
-                  <Button variant="outline" size="icon" onClick={handleCancel}>
+                  <Button variant="outline" size="icon" onClick={handleCancel} aria-label={t("common.cancel")}>
                     <Cancel01Icon className="h-5 w-5" />
                   </Button>
                   
@@ -394,7 +395,7 @@ export const NoteEditorHeader = ({
                     }}
                     className="h-10 w-10"
                     disabled={status.isSaving || status.isAutoSaving}
-                    title={status.isSaving ? t('common.saving') : t('common.save')}
+                    aria-label={status.isSaving ? t('common.saving') : t('common.save')}
                   >
                     {status.isSaving ? (
                       <Logo
@@ -417,7 +418,7 @@ export const NoteEditorHeader = ({
                         variant="outline"
                         size="icon"
                         onClick={() => handleSave()}
-                        title={t("notes.quickSave")}
+                        aria-label={t("notes.quickSave")}
                         className="text-primary hover:text-primary/80"
                       >
                         {status.isSaving ? (
@@ -447,7 +448,7 @@ export const NoteEditorHeader = ({
                           handleEdit();
                         }
                       }}
-                      title={note?.encrypted ? t('encryption.editEncrypted') : t('common.edit')}
+                      aria-label={note?.encrypted ? t('encryption.editEncrypted') : t('common.edit')}
                     >
                       {note?.encrypted ? (
                         <MessageLock02Icon className="h-5 w-5" />
@@ -459,7 +460,7 @@ export const NoteEditorHeader = ({
                   <DropdownMenu
                     align="right"
                     trigger={
-                      <Button variant="outline" size="icon">
+                      <Button variant="outline" size="icon" aria-label={t("common.moreOptions")}>
                         <MoreHorizontalIcon className="h-5 w-5" />
                       </Button>
                     }

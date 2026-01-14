@@ -18,6 +18,7 @@ import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
 import { UserDropdown } from "../Navigation/Parts/UserDropdown";
 import { logout } from "@/app/_server/actions/auth";
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 interface QuickNavProps {
   showSidebarToggle?: boolean;
@@ -41,6 +42,7 @@ export const QuickNav = ({
   const router = useRouter();
   const { mode } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
+  const t = useTranslations();
   const [isScrolled, setIsScrolled] = useState(true);
   const lastScrollY = useRef(0);
 
@@ -84,6 +86,7 @@ export const QuickNav = ({
             size="icon"
             onClick={onSidebarToggle}
             className="lg:hidden jotty-mobile-navigation-icon"
+            aria-label={t("common.toggleSidebar")}
           >
             <SidebarLeftIcon className="h-6 w-6" />
           </Button>
@@ -105,6 +108,7 @@ export const QuickNav = ({
               size="icon"
               onClick={handleLogout}
               className="jotty-mobile-navigation-icon"
+              aria-label={t("common.logout")}
             >
               <Logout01Icon className="h-5 w-5" />
             </Button>

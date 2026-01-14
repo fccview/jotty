@@ -165,6 +165,7 @@ export const ChecklistHeading = ({
             variant="outline"
             size="icon"
             onClick={() => setInputToggled(!inputToggled)}
+            aria-label={inputToggled ? t("common.close") : t("common.add")}
           >
             {!inputToggled ? (
               <PlusSignIcon className="h-5 w-5" />

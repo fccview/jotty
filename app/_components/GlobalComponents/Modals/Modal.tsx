@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 
 interface ModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export const Modal = ({
   children,
   className = "",
 }: ModalProps) => {
+  const t = useTranslations();
   const modalRef = useRef<HTMLDivElement>(null);
   const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
 
@@ -99,6 +101,7 @@ export const Modal = ({
             size="sm"
             onClick={onClose}
             className="h-8 w-8 p-0"
+            aria-label={t("common.close")}
           >
             <MultiplicationSignIcon className="h-4 w-4" />
           </Button>

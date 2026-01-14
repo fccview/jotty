@@ -127,7 +127,7 @@ export const AdminUsers = ({
                                         size="sm"
                                         onClick={() => onEditUser(user)}
                                         className="h-8 w-8 p-0"
-                                        title={user.isSuperAdmin && !isSuperAdmin ? t("admin.systemOwner") : t('admin.editUser')}
+                                        aria-label={user.isSuperAdmin && !isSuperAdmin ? t("admin.systemOwner") : t('admin.editUser')}
                                         disabled={user.isSuperAdmin && !isSuperAdmin}
                                     >
                                         <UserEdit01Icon className="h-4 w-4" />
@@ -139,7 +139,7 @@ export const AdminUsers = ({
                                             onClick={() => onDeleteUser(user)}
                                             disabled={deletingUser === user.username || (user.isSuperAdmin && !isSuperAdmin)}
                                             className="h-8 w-8 p-0"
-                                            title={user.isSuperAdmin && !isSuperAdmin ? t("admin.cannotDeleteSuperAdmin") : t('admin.deleteUser')}
+                                            aria-label={user.isSuperAdmin && !isSuperAdmin ? t("admin.cannotDeleteSuperAdmin") : t('admin.deleteUser')}
                                         >
                                             {deletingUser === user.username ? (
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-destructive mx-auto"></div>

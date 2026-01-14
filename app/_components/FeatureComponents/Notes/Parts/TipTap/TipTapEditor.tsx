@@ -80,6 +80,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const [showBubbleMenu, setShowBubbleMenu] = useState(false);
     const [showLineNumbers, setShowLineNumbers] = useState(true);
     const [showPreview, setShowPreview] = useState(false);
+    const [linkRequestPending, setLinkRequestPending] = useState(false);
+    const [linkRequestHasSelection, setLinkRequestHasSelection] = useState(false);
     const isInitialized = useRef(false);
     const debounceTimeoutRef = useRef<NodeJS.Timeout>();
     const originalMarkdownRef = useRef<string>(getOriginalMarkdown());
@@ -103,6 +105,11 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
     const imageClickRef = useRef<((pos: any) => void) | null>(null);
 
+    const handleRichEditorLinkRequest = useCallback((hasSelection: boolean) => {
+      setLinkRequestHasSelection(hasSelection);
+      setLinkRequestPending(true);
+    }, []);
+
     const editor: Editor | null = useEditor({
       immediatelyRender: false,
       extensions: createEditorExtensions(
@@ -113,6 +120,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             }
           },
           onTableSelect: tableToolbar.handleTableSelect,
+          onLinkRequest: handleRichEditorLinkRequest,
         },
         editorSettings,
         {
@@ -340,6 +348,9 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             onTogglePreview={() => setShowPreview(!showPreview)}
             markdownContent={markdownContent}
             onMarkdownChange={setMarkdownContent}
+            linkRequestPending={linkRequestPending}
+            linkRequestHasSelection={linkRequestHasSelection}
+            onLinkRequestHandled={() => setLinkRequestPending(false)}
           />
         </div>
 
@@ -370,6 +381,10 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             onChange={handleMarkdownChange}
             onFileDrop={handleMarkdownFileDrop}
             showLineNumbers={showLineNumbers}
+            onLinkRequest={(hasSelection) => {
+              setLinkRequestHasSelection(hasSelection);
+              setLinkRequestPending(true);
+            }}
           />
         ) : (
           <>

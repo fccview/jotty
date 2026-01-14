@@ -7,12 +7,16 @@ import "prismjs/components/prism-markup";
 import "prismjs/components/prism-markdown";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
+import { usePrismTheme } from "@/app/_hooks/usePrismThemes";
+import { FORMAT_SHORTCUTS } from "@/app/_consts/markdown-editor-config";
 
 interface SyntaxHighlightedEditorProps {
   content: string;
   onChange: (value: string) => void;
   onFileDrop: (files: File[]) => void;
   showLineNumbers?: boolean;
+  onLinkRequest?: (hasSelection: boolean) => void;
+  onCodeBlockRequest?: (language?: string) => void;
 }
 
 const editorFontStyle = {
@@ -26,123 +30,133 @@ export const SyntaxHighlightedEditor = ({
   onChange,
   onFileDrop,
   showLineNumbers = true,
+  onLinkRequest,
+  onCodeBlockRequest,
 }: SyntaxHighlightedEditorProps) => {
   const { user } = useAppMode();
   const [lineCount, setLineCount] = useState(1);
   const editorRef = useRef<HTMLDivElement>(null);
-  const theme = user?.markdownTheme || "prism";
+  const pendingSelectionRef = useRef<{ start: number; end: number } | null>(
+    null
+  );
+
+  usePrismTheme(user?.markdownTheme || "prism");
 
   useEffect(() => {
-    const lines = content.split("\n").length;
-    setLineCount(lines);
+    setLineCount(content.split("\n").length);
   }, [content]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLDivElement>) => {
-    const isMod = e.metaKey || e.ctrlKey;
-    const textarea = e.currentTarget as HTMLTextAreaElement;
-
-    if (isMod && e.key === "b") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertBold(textarea);
-      onChange(newContent);
-    } else if (isMod && e.key === "i") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertItalic(textarea);
-      onChange(newContent);
-    } else if (isMod && e.key === "u") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertUnderline(textarea);
-      onChange(newContent);
-    } else if (isMod && e.shiftKey && e.key === "X") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertStrikethrough(textarea);
-      onChange(newContent);
-    } else if (isMod && e.key === "e") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertInlineCode(textarea);
-      onChange(newContent);
-    } else if (isMod && e.shiftKey && e.key === "B") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertBlockquote(textarea);
-      onChange(newContent);
-    } else if (isMod && e.shiftKey && e.key === "*") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertBulletList(textarea);
-      onChange(newContent);
-    }
-  };
-
   useEffect(() => {
-    const linkId = "prism-theme-stylesheet";
-    const themeNames = [
-      "prism",
-      "prism-dark",
-      "prism-funky",
-      "prism-okaidia",
-      "prism-tomorrow",
-      "prism-twilight",
-      "prism-coy",
-      "prism-solarizedlight",
-    ];
+    if (pendingSelectionRef.current) {
+      const textarea = document.getElementById(
+        "markdown-editor-textarea"
+      ) as HTMLTextAreaElement;
+      if (textarea) {
+        const { start, end } = pendingSelectionRef.current;
+        const { scrollTop, scrollLeft } = textarea;
 
-    const removeAllThemeStyles = () => {
-      const existingLink = document.getElementById(linkId) as HTMLLinkElement;
-      if (existingLink) {
-        existingLink.remove();
+        requestAnimationFrame(() => {
+          textarea.focus({ preventScroll: true });
+          textarea.setSelectionRange(start, end);
+          textarea.scrollTop = scrollTop;
+          textarea.scrollLeft = scrollLeft;
+        });
       }
-
-      const allLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
-      allLinks.forEach((link) => {
-        const href = link.getAttribute("href") || "";
-        if (
-          (href.includes("prismjs/themes/") || href.includes("/api/prism-theme")) &&
-          themeNames.some((name) => href.includes(name) || href.includes(`theme=${name}`))
-        ) {
-          link.remove();
-        }
-      });
-
-      const allStyles = Array.from(document.querySelectorAll('style'));
-      allStyles.forEach((style) => {
-        const textContent = style.textContent || "";
-        if (
-          themeNames.some((name) => textContent.includes(`prismjs/themes/${name}`))
-        ) {
-          style.remove();
-        }
-      });
-    };
-
-    removeAllThemeStyles();
-
-    const link = document.createElement("link");
-    link.id = linkId;
-    link.rel = "stylesheet";
-    link.type = "text/css";
-    link.setAttribute("data-prism-theme", theme);
-    link.href = `/api/prism-theme?theme=${theme}`;
-
-    document.head.appendChild(link);
-
-    return () => {
-      removeAllThemeStyles();
-    };
-  }, [theme]);
-
-  const handleHighlight = (code: string): string => {
-    if (!code) return "";
-    try {
-      const grammar = Prism.languages.markdown;
-      if (grammar && typeof grammar === "object") {
-        return Prism.highlight(code, grammar, "markdown");
-      }
-    } catch (error) {
-      console.warn("Syntax highlighting failed:", error);
+      pendingSelectionRef.current = null;
     }
-    return code;
+  }, [content]);
+
+  const executeFormat = (
+    textarea: HTMLTextAreaElement,
+    fn: (ta: HTMLTextAreaElement) => string
+  ) => {
+    const newContent = fn(textarea);
+    pendingSelectionRef.current = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    };
+    onChange(newContent);
   };
 
-  const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLDivElement>
+  ) => {
+    const isMod = e.metaKey || e.ctrlKey;
+    const textarea = document.getElementById(
+      "markdown-editor-textarea"
+    ) as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    if (isMod && e.altKey && (e.key === "c" || e.key === "C")) {
+      e.preventDefault();
+      if (onCodeBlockRequest) {
+        onCodeBlockRequest();
+      } else {
+        executeFormat(textarea, (ta) => MarkdownUtils.insertCodeBlock(ta, ""));
+      }
+      return;
+    }
+
+    const match = FORMAT_SHORTCUTS.find(
+      (s) =>
+        isMod &&
+        s.key === e.key &&
+        !!s.shift === e.shiftKey &&
+        !!s.alt === e.altKey
+    );
+
+    if (match) {
+      e.preventDefault();
+      executeFormat(textarea, match.action);
+      return;
+    }
+
+    if (isMod && e.shiftKey && !e.altKey && (e.key === "K" || e.key === "k")) {
+      e.preventDefault();
+      onLinkRequest?.(textarea.selectionStart !== textarea.selectionEnd);
+    } else if (e.key === "Enter" && !isMod && !e.shiftKey && !e.altKey) {
+      const newContent = MarkdownUtils.handleBulletListEnter(textarea);
+      if (newContent !== null) {
+        e.preventDefault();
+        const { scrollTop, scrollLeft, selectionStart, selectionEnd } =
+          textarea;
+        onChange(newContent);
+
+        requestAnimationFrame(() => {
+          const ta = document.getElementById(
+            "markdown-editor-textarea"
+          ) as HTMLTextAreaElement;
+          if (ta) {
+            ta.focus({ preventScroll: true });
+            ta.setSelectionRange(selectionStart, selectionEnd);
+            ta.scrollTop = scrollTop;
+            ta.scrollLeft = scrollLeft;
+          }
+        });
+      }
+    }
+  };
+
+  const handleHighlight = (code: string) =>
+    code && Prism.languages.markdown
+      ? Prism.highlight(code, Prism.languages.markdown, "markdown")
+      : code;
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const textarea = document.getElementById(
+      "markdown-editor-textarea"
+    ) as HTMLTextAreaElement;
+    if (!textarea) return;
+    const pastedText = e.clipboardData.getData("text/plain");
+    const newContent = MarkdownUtils.autolinkPastedContent(
+      textarea,
+      pastedText
+    );
+    if (newContent !== null) {
+      e.preventDefault();
+      onChange(newContent);
+    }
+  };
 
   return (
     <div
@@ -154,36 +168,28 @@ export const SyntaxHighlightedEditor = ({
       onDrop={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) {
-          onFileDrop(files);
-        }
+        if (e.dataTransfer.files.length > 0)
+          onFileDrop(Array.from(e.dataTransfer.files));
       }}
     >
       <div className="flex min-h-full" ref={editorRef}>
         {showLineNumbers && (
           <div
             className="py-4 h-full px-1 text-foreground text-right select-none hidden lg:block opacity-50"
-            style={{ ...editorFontStyle }}
+            style={editorFontStyle}
           >
-            {lineNumbers.map((num) => (
+            {Array.from({ length: lineCount }, (_, i) => i + 1).map((num) => (
               <div key={num}>{num}</div>
             ))}
           </div>
         )}
         <style>{`
-          .markdown-code-editor,
-          .markdown-code-editor textarea,
-          .markdown-code-editor pre,
-          .markdown-code-editor pre *,
-          .markdown-code-editor code {
+          .markdown-code-editor, .markdown-code-editor * {
             font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace !important;
             font-size: 14px !important;
             line-height: 21px !important;
           }
-          .markdown-code-editor pre {
-            background: transparent !important;
-          }
+          .markdown-code-editor pre { background: transparent !important; }
         `}</style>
         <Editor
           value={content}
@@ -193,13 +199,11 @@ export const SyntaxHighlightedEditor = ({
           tabSize={4}
           insertSpaces={true}
           className="markdown-code-editor flex-1 jotty-scrollable-content"
-          style={{
-            ...editorFontStyle,
-            minHeight: "400px",
-          }}
+          style={{ ...editorFontStyle, minHeight: "400px" }}
           textareaId="markdown-editor-textarea"
           textareaClassName="focus:outline-none bg-transparent"
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
         />
       </div>
     </div>

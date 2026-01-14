@@ -217,6 +217,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
               onClick={() => onUpload(iconType, "")}
               className="flex-shrink-0 h-8 w-8 p-0"
               disabled={disabled}
+              aria-label={t("common.remove")}
             >
               <MultiplicationSignIcon className="h-4 w-4" />
             </Button>

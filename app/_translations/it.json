@@ -227,7 +227,11 @@
     "noCategoriesAvailable": "Nessuna categoria disponibile",
     "links": "Collegamenti",
     "documentation": "Documentazione",
-    "githubRepository": "Repository GitHub"
+    "githubRepository": "Repository GitHub",
+    "toggleSidebar": "Mostra/nascondi barra laterale",
+    "openSearch": "Apri ricerca",
+    "closeSearch": "Chiudi ricerca",
+    "moreOptions": "Altre opzioni"
   },
   "auth": {
     "loginTitle": "Accedi",
