@@ -24,7 +24,7 @@ import { CodeBlockDropdown } from "@/app/_components/FeatureComponents/Notes/Par
 import { DiagramsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/DiagramsDropdown";
 import { TableInsertModal } from "@/app/_components/FeatureComponents/Notes/Parts/Table/TableInsertModal";
 import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ExtraItemsDropdown";
 import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/PrismThemeDropdown";
@@ -44,6 +44,9 @@ type ToolbarProps = {
   onTogglePreview?: () => void;
   markdownContent?: string;
   onMarkdownChange?: (content: string) => void;
+  linkRequestPending?: boolean;
+  linkRequestHasSelection?: boolean;
+  onLinkRequestHandled?: () => void;
 };
 
 export const TiptapToolbar = ({
@@ -56,6 +59,9 @@ export const TiptapToolbar = ({
   onTogglePreview,
   markdownContent = "",
   onMarkdownChange,
+  linkRequestPending = false,
+  linkRequestHasSelection = false,
+  onLinkRequestHandled,
 }: ToolbarProps) => {
   const t = useTranslations();
   const { user } = useAppMode();
@@ -73,6 +79,30 @@ export const TiptapToolbar = ({
   const [selectedImageHeight, setSelectedImageHeight] = useState<
     number | undefined
   >();
+
+  const getMarkdownTextarea = (): HTMLTextAreaElement | null => {
+    return document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+  };
+
+  useEffect(() => {
+    if (linkRequestPending) {
+      if (linkRequestHasSelection) {
+        if (!isMarkdownMode && editor) {
+          const currentUrl = editor.getAttributes("link").href;
+          setPreviousUrl(currentUrl || "");
+        } else {
+          setPreviousUrl("");
+        }
+        setShowLinkModal(true);
+      } else {
+        setShowLinkTextModal(true);
+      }
+
+      if (onLinkRequestHandled) {
+        onLinkRequestHandled();
+      }
+    }
+  }, [linkRequestPending, linkRequestHasSelection, isMarkdownMode, editor, onLinkRequestHandled]);
 
   if (!editor) {
     return null;
@@ -210,10 +240,6 @@ export const TiptapToolbar = ({
   const isImageSelected = editor && editor.isActive("image");
   const selectedImageAttrs = editor ? editor.getAttributes("image") : {};
 
-  const getMarkdownTextarea = (): HTMLTextAreaElement | null => {
-    return document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
-  };
-
   const handleButtonClick = (command: () => void) => {
     if (!editor) return;
     const { from, to } = editor.state.selection;
@@ -224,8 +250,21 @@ export const TiptapToolbar = ({
   const handleMarkdownButtonClick = (markdownFn: (textarea: HTMLTextAreaElement) => string) => {
     const textarea = getMarkdownTextarea();
     if (textarea && onMarkdownChange) {
+      const scrollTop = textarea.scrollTop;
+      const scrollLeft = textarea.scrollLeft;
       const newContent = markdownFn(textarea);
+      const selectionStart = textarea.selectionStart;
+      const selectionEnd = textarea.selectionEnd;
       onMarkdownChange(newContent);
+      requestAnimationFrame(() => {
+        const ta = getMarkdownTextarea();
+        if (ta) {
+          ta.focus({ preventScroll: true });
+          ta.setSelectionRange(selectionStart, selectionEnd);
+          ta.scrollTop = scrollTop;
+          ta.scrollLeft = scrollLeft;
+        }
+      });
     }
   };
 

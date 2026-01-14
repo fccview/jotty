@@ -33,6 +33,7 @@ import { getContrastColor } from "@/app/_utils/color-utils";
 interface OverlayCallbacks {
   onImageClick: (position: any) => void;
   onTableSelect: (position: any) => void;
+  onLinkRequest?: (hasSelection: boolean) => void;
 }
 
 interface EditorSettings {
@@ -74,7 +75,9 @@ export const createEditorExtensions = (
     }),
     ...generateCustomHtmlExtensions(),
     DetailsExtension,
-    KeyboardShortcuts,
+    KeyboardShortcuts.configure({
+      onLinkRequest: callbacks.onLinkRequest,
+    }),
     OverlayExtension.configure({
       onImageClick: callbacks.onImageClick,
       onTableSelect: callbacks.onTableSelect,

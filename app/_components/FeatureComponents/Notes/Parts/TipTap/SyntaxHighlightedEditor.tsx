@@ -13,6 +13,8 @@ interface SyntaxHighlightedEditorProps {
   onChange: (value: string) => void;
   onFileDrop: (files: File[]) => void;
   showLineNumbers?: boolean;
+  onLinkRequest?: (hasSelection: boolean) => void;
+  onCodeBlockRequest?: (language?: string) => void;
 }
 
 const editorFontStyle = {
@@ -26,49 +28,96 @@ export const SyntaxHighlightedEditor = ({
   onChange,
   onFileDrop,
   showLineNumbers = true,
+  onLinkRequest,
+  onCodeBlockRequest,
 }: SyntaxHighlightedEditorProps) => {
   const { user } = useAppMode();
   const [lineCount, setLineCount] = useState(1);
   const editorRef = useRef<HTMLDivElement>(null);
   const theme = user?.markdownTheme || "prism";
+  const pendingSelectionRef = useRef<{ start: number; end: number } | null>(null);
 
   useEffect(() => {
     const lines = content.split("\n").length;
     setLineCount(lines);
   }, [content]);
 
+  useEffect(() => {
+    if (pendingSelectionRef.current) {
+      const textarea = document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+      if (textarea) {
+        const { start, end } = pendingSelectionRef.current;
+        const scrollTop = textarea.scrollTop;
+        const scrollLeft = textarea.scrollLeft;
+        requestAnimationFrame(() => {
+          textarea.focus({ preventScroll: true });
+          textarea.setSelectionRange(start, end);
+          textarea.scrollTop = scrollTop;
+          textarea.scrollLeft = scrollLeft;
+        });
+      }
+      pendingSelectionRef.current = null;
+    }
+  }, [content]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLDivElement>) => {
     const isMod = e.metaKey || e.ctrlKey;
-    const textarea = e.currentTarget as HTMLTextAreaElement;
+    const textarea = document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+    if (!textarea) return;
 
-    if (isMod && e.key === "b") {
+    const applyFormat = (fn: (ta: HTMLTextAreaElement) => string) => {
       e.preventDefault();
-      const newContent = MarkdownUtils.insertBold(textarea);
+      const selection = { start: textarea.selectionStart, end: textarea.selectionEnd };
+      const newContent = fn(textarea);
+      pendingSelectionRef.current = { start: textarea.selectionStart, end: textarea.selectionEnd };
       onChange(newContent);
-    } else if (isMod && e.key === "i") {
+    };
+
+    if (isMod && !e.shiftKey && !e.altKey && e.key === "b") {
+      applyFormat(MarkdownUtils.insertBold);
+    } else if (isMod && !e.shiftKey && !e.altKey && e.key === "i") {
+      applyFormat(MarkdownUtils.insertItalic);
+    } else if (isMod && !e.shiftKey && !e.altKey && e.key === "u") {
+      applyFormat(MarkdownUtils.insertUnderline);
+    } else if (isMod && e.shiftKey && !e.altKey && (e.key === "X" || e.key === "x")) {
+      applyFormat(MarkdownUtils.insertStrikethrough);
+    } else if (isMod && !e.shiftKey && !e.altKey && e.key === "e") {
+      applyFormat(MarkdownUtils.insertInlineCode);
+    } else if (isMod && e.shiftKey && !e.altKey && (e.key === "B" || e.key === "b")) {
+      applyFormat(MarkdownUtils.insertBlockquote);
+    } else if (isMod && e.shiftKey && !e.altKey && (e.key === "&" || e.key === "7")) {
+      applyFormat(MarkdownUtils.insertOrderedList);
+    } else if (isMod && e.shiftKey && !e.altKey && (e.key === "*" || e.key === "8")) {
+      applyFormat(MarkdownUtils.insertBulletList);
+    } else if (isMod && e.shiftKey && !e.altKey && (e.key === "(" || e.key === "9")) {
+      applyFormat(MarkdownUtils.insertTaskList);
+    } else if (isMod && e.shiftKey && !e.altKey && (e.key === "K" || e.key === "k")) {
       e.preventDefault();
-      const newContent = MarkdownUtils.insertItalic(textarea);
-      onChange(newContent);
-    } else if (isMod && e.key === "u") {
+      if (onLinkRequest) {
+        const hasSelection = textarea.selectionStart !== textarea.selectionEnd;
+        onLinkRequest(hasSelection);
+      }
+    } else if (isMod && e.altKey && !e.shiftKey && e.key === "1") {
+      applyFormat((ta) => MarkdownUtils.insertHeading(ta, 1));
+    } else if (isMod && e.altKey && !e.shiftKey && e.key === "2") {
+      applyFormat((ta) => MarkdownUtils.insertHeading(ta, 2));
+    } else if (isMod && e.altKey && !e.shiftKey && e.key === "3") {
+      applyFormat((ta) => MarkdownUtils.insertHeading(ta, 3));
+    } else if (isMod && e.altKey && !e.shiftKey && e.key === "4") {
+      applyFormat((ta) => MarkdownUtils.insertHeading(ta, 4));
+    } else if (isMod && e.altKey && !e.shiftKey && e.key === "5") {
+      applyFormat((ta) => MarkdownUtils.insertHeading(ta, 5));
+    } else if (isMod && e.altKey && !e.shiftKey && e.key === "6") {
+      applyFormat((ta) => MarkdownUtils.insertHeading(ta, 6));
+    } else if (isMod && e.altKey && !e.shiftKey && (e.key === "c" || e.key === "C")) {
       e.preventDefault();
-      const newContent = MarkdownUtils.insertUnderline(textarea);
-      onChange(newContent);
-    } else if (isMod && e.shiftKey && e.key === "X") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertStrikethrough(textarea);
-      onChange(newContent);
-    } else if (isMod && e.key === "e") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertInlineCode(textarea);
-      onChange(newContent);
-    } else if (isMod && e.shiftKey && e.key === "B") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertBlockquote(textarea);
-      onChange(newContent);
-    } else if (isMod && e.shiftKey && e.key === "*") {
-      e.preventDefault();
-      const newContent = MarkdownUtils.insertBulletList(textarea);
-      onChange(newContent);
+      if (onCodeBlockRequest) {
+        onCodeBlockRequest();
+      } else {
+        applyFormat((ta) => MarkdownUtils.insertCodeBlock(ta, ""));
+      }
+    } else if (isMod && e.shiftKey && !e.altKey && (e.key === "H" || e.key === "h")) {
+      applyFormat(MarkdownUtils.insertHighlight);
     }
   };
 

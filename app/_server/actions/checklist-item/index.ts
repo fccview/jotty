@@ -511,7 +511,7 @@ export const reorderItems = async (formData: FormData) => {
     };
 
     if (isDescendantOf(activeItemId, overItemId, list.items || [])) {
-      return { success: true }; // Silently succeed but do nothing
+      return { success: true };
     }
 
     const newItems = cloneItems(list.items || []);

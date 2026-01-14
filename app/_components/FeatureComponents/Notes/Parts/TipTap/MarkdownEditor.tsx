@@ -5,6 +5,8 @@ interface MarkdownEditorProps {
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onFileDrop: (files: File[]) => void;
   showLineNumbers?: boolean;
+  onLinkRequest?: (hasSelection: boolean) => void;
+  onCodeBlockRequest?: (language?: string) => void;
 }
 
 export const MarkdownEditor = ({
@@ -12,6 +14,8 @@ export const MarkdownEditor = ({
   onChange,
   onFileDrop,
   showLineNumbers = true,
+  onLinkRequest,
+  onCodeBlockRequest,
 }: MarkdownEditorProps) => {
   const handleValueChange = (newValue: string) => {
     const syntheticEvent = {
@@ -27,6 +31,8 @@ export const MarkdownEditor = ({
         onChange={handleValueChange}
         onFileDrop={onFileDrop}
         showLineNumbers={showLineNumbers}
+        onLinkRequest={onLinkRequest}
+        onCodeBlockRequest={onCodeBlockRequest}
       />
     </div>
   );
