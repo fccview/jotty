@@ -33,7 +33,6 @@ export const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
         const latestVersion = result.data.tag_name;
         const currentVersion = appVersion || "unknown";
 
-        // Compare versions properly (remove 'v' prefix if present)
         const cleanLatest = latestVersion.replace(/^v/, "");
         const cleanCurrent = currentVersion.replace(/^v/, "");
         const hasUpdate =

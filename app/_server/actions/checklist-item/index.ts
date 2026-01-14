@@ -481,6 +481,39 @@ export const reorderItems = async (formData: FormData) => {
       }));
     };
 
+    const isDescendantOf = (
+      ancestorId: string,
+      descendantId: string,
+      items: any[]
+    ): boolean => {
+      const findItem = (items: any[], id: string): any | null => {
+        for (const item of items) {
+          if (item.id === id) return item;
+          if (item.children) {
+            const found = findItem(item.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const checkDescendant = (item: any, targetId: string): boolean => {
+        if (!item.children) return false;
+        for (const child of item.children) {
+          if (child.id === targetId) return true;
+          if (checkDescendant(child, targetId)) return true;
+        }
+        return false;
+      };
+
+      const ancestor = findItem(items, ancestorId);
+      return ancestor ? checkDescendant(ancestor, descendantId) : false;
+    };
+
+    if (isDescendantOf(activeItemId, overItemId, list.items || [])) {
+      return { success: true }; // Silently succeed but do nothing
+    }
+
     const newItems = cloneItems(list.items || []);
 
     const activeInfo = findItemWithParent(newItems, activeItemId);
@@ -621,12 +654,9 @@ export const updateItemStatus = async (
             updates.lastModifiedBy = username;
             updates.lastModifiedAt = now;
 
-            // Auto-complete logic: check if target status has autoComplete flag
             const targetStatus = list.statuses?.find((s) => s.id === status);
             if (targetStatus?.autoComplete) {
-              // Moving to auto-complete status - mark as completed
               updates.completed = true;
-              // Recursively mark all children as completed
               if (item.children && item.children.length > 0) {
                 updates.children = updateAllChildren(
                   item.children,
@@ -636,9 +666,7 @@ export const updateItemStatus = async (
                 );
               }
             } else if (item.completed && status !== item.status) {
-              // Moving away from completed status - mark as incomplete
               updates.completed = false;
-              // Recursively mark all children as incomplete
               if (item.children && item.children.length > 0) {
                 updates.children = updateAllChildren(
                   item.children,

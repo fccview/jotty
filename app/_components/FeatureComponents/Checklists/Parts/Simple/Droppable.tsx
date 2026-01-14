@@ -16,11 +16,15 @@ export const Droppable = ({
   children,
   className,
 }: DroppableProps) => {
+  const [showDropIntoIndicator, setShowDropIntoIndicator] = useState(false);
+
   const { setNodeRef, isOver, active } = useDroppable({
     id,
-    data,
+    data: {
+      ...data,
+      allowDropInto: showDropIntoIndicator,
+    },
   });
-  const [showDropIntoIndicator, setShowDropIntoIndicator] = useState(false);
 
   useEffect(() => {
     if (!isOver || !active) {

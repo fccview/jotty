@@ -409,12 +409,20 @@ export const useChecklist = ({
     const activeId = active.id.toString();
     const overId = over.id.toString();
 
-    const isDropInto = overId.startsWith("drop-into-item::");
+    const isDropIntoZone = overId.startsWith("drop-into-item::");
     const isDropIndicator =
       overId.startsWith("drop-before") || overId.startsWith("drop-after");
 
+    const allowDropInto =
+      isDropIntoZone && over.data.current?.allowDropInto === true;
+    const isDropInto = allowDropInto;
+
+    if (isDropIntoZone && !allowDropInto) {
+      return;
+    }
+
     let targetItemId: string;
-    if (isDropInto) {
+    if (isDropIntoZone) {
       targetItemId = overId.replace("drop-into-item::", "");
     } else if (isDropIndicator) {
       const data = over.data.current as any;
@@ -424,6 +432,41 @@ export const useChecklist = ({
     }
 
     if (!targetItemId) return;
+
+    if (targetItemId === activeId) return;
+
+    const isDescendantOf = (
+      ancestorId: string,
+      descendantId: string,
+      items: Item[]
+    ): boolean => {
+      const findItem = (items: Item[], id: string): Item | null => {
+        for (const item of items) {
+          if (item.id === id) return item;
+          if (item.children) {
+            const found = findItem(item.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const checkDescendant = (item: Item, targetId: string): boolean => {
+        if (!item.children) return false;
+        for (const child of item.children) {
+          if (child.id === targetId) return true;
+          if (checkDescendant(child, targetId)) return true;
+        }
+        return false;
+      };
+
+      const ancestor = findItem(items, ancestorId);
+      return ancestor ? checkDescendant(ancestor, descendantId) : false;
+    };
+
+    if (isDropInto && isDescendantOf(activeId, targetItemId, localList.items)) {
+      return;
+    }
 
     const findItemWithParent = (
       items: Item[],
