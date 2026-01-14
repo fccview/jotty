@@ -227,7 +227,11 @@
     "noCategoriesAvailable": "Aucune catégorie disponible",
     "links": "Liens",
     "documentation": "Documentation",
-    "githubRepository": "Dépôt GitHub"
+    "githubRepository": "Dépôt GitHub",
+    "toggleSidebar": "Basculer la barre latérale",
+    "openSearch": "Ouvrir la recherche",
+    "closeSearch": "Fermer la recherche",
+    "moreOptions": "Plus d'options"
   },
   "auth": {
     "loginTitle": "Connexion",

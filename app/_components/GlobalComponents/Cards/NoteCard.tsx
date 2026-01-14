@@ -148,7 +148,7 @@ export const NoteCard = ({
               className={`${
                 isPinned ? "opacity-100" : "opacity-0"
               } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-jotty flex-shrink-0`}
-              title={isPinned ? t("common.unpin") : t("common.pin")}
+              aria-label={isPinned ? t("common.unpin") : t("common.pin")}
             >
               {isPinned ? (
                 <PinOffIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />

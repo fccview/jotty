@@ -128,7 +128,6 @@ export const generateMetadata = async (): Promise<Metadata> => {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   themeColor: rgbToHex("12 20 53"),
 };
 
@@ -140,7 +139,6 @@ export async function generateViewport(): Promise<Viewport> {
   return {
     width: "device-width",
     initialScale: 1,
-    maximumScale: 1,
     themeColor,
     viewportFit: "cover",
   };

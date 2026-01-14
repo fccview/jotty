@@ -228,7 +228,11 @@
     "noCategoriesAvailable": "Brak dostępnych kategorii",
     "links": "Linki",
     "documentation": "Dokumentacja",
-    "githubRepository": "Repozytorium GitHub"
+    "githubRepository": "Repozytorium GitHub",
+    "toggleSidebar": "Przełącz pasek boczny",
+    "openSearch": "Otwórz wyszukiwanie",
+    "closeSearch": "Zamknij wyszukiwanie",
+    "moreOptions": "Więcej opcji"
   },
   "auth": {
     "loginTitle": "Logowanie",

@@ -4,8 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { Download01Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useTranslations } from "next-intl";
 
 export const InstallPrompt = () => {
+  const t = useTranslations();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -145,6 +147,7 @@ export const InstallPrompt = () => {
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
+            aria-label={t("common.dismiss")}
           >
             <MultiplicationSignIcon className="h-4 w-4" />
           </Button>

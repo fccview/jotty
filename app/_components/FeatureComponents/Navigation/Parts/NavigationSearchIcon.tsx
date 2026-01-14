@@ -6,6 +6,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { AppMode } from "@/app/_types";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
+import { useTranslations } from "next-intl";
 
 interface NavigationSearchIconProps {
   onModeChange?: (mode: AppMode) => void;
@@ -17,6 +18,7 @@ export const NavigationSearchIcon = ({
   const { checkNavigation } = useNavigationGuard();
   const { mode } = useAppMode();
   const { isSearchOpen, toggleSearch, closeSearch } = useShortcut();
+  const t = useTranslations();
 
   return (
     <>
@@ -64,6 +66,7 @@ export const NavigationSearchIcon = ({
         className="jotty-mobile-navigation-icon"
         size="icon"
         onClick={toggleSearch}
+        aria-label={isSearchOpen ? t("common.closeSearch") : t("common.openSearch")}
       >
         {isSearchOpen ? (
           <MultiplicationSignIcon className="h-5 w-5" />

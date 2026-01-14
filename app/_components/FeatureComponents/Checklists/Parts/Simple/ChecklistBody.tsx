@@ -203,6 +203,7 @@ export const ChecklistBody = ({
                           }
                           isAnyItemDragging={isDragging}
                           overItem={overItem}
+                          draggedItemId={activeItem?.id}
                         />
                         <DropIndicator
                           id={`drop-after::${item.id}`}
@@ -273,6 +274,7 @@ export const ChecklistBody = ({
                           }
                           isAnyItemDragging={isDragging}
                           overItem={overItem}
+                          draggedItemId={activeItem?.id}
                         />
                         <DropIndicator
                           id={`drop-after::${item.id}`}

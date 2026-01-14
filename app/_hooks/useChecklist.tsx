@@ -464,7 +464,7 @@ export const useChecklist = ({
       return ancestor ? checkDescendant(ancestor, descendantId) : false;
     };
 
-    if (isDropInto && isDescendantOf(activeId, targetItemId, localList.items)) {
+    if (isDescendantOf(activeId, targetItemId, localList.items)) {
       return;
     }
 

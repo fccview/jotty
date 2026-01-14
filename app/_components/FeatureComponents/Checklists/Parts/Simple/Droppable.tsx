@@ -8,6 +8,7 @@ interface DroppableProps {
   data: Record<string, unknown>;
   children: ReactNode | ((props: { isOver: boolean }) => ReactNode);
   className?: string;
+  disabled?: boolean;
 }
 
 export const Droppable = ({
@@ -15,6 +16,7 @@ export const Droppable = ({
   data,
   children,
   className,
+  disabled = false,
 }: DroppableProps) => {
   const [showDropIntoIndicator, setShowDropIntoIndicator] = useState(false);
 
@@ -22,8 +24,9 @@ export const Droppable = ({
     id,
     data: {
       ...data,
-      allowDropInto: showDropIntoIndicator,
+      allowDropInto: showDropIntoIndicator && !disabled,
     },
+    disabled,
   });
 
   useEffect(() => {

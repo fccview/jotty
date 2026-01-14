@@ -227,7 +227,11 @@
     "noCategoriesAvailable": "Keine Kategorien verfügbar",
     "links": "Links",
     "documentation": "Dokumentation",
-    "githubRepository": "GitHub Repository"
+    "githubRepository": "GitHub Repository",
+    "toggleSidebar": "Seitenleiste umschalten",
+    "openSearch": "Suche öffnen",
+    "closeSearch": "Suche schließen",
+    "moreOptions": "Mehr Optionen"
   },
   "auth": {
     "loginTitle": "Anmelden",
