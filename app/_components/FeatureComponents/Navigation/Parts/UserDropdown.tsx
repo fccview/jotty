@@ -175,7 +175,7 @@ export const UserDropdown = ({
                       setIsDropdownOpen(false);
                     }
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-md lg:text-sm transition-colors text-left hover:bg-accent ${
+                  className={`group jotty-user-menu-dropdown-item w-full flex items-center gap-3 px-3 py-2 text-md lg:text-sm transition-colors text-left hover:bg-accent hover:text-accent-foreground ${
                     item.variant === "destructive"
                       ? "text-destructive hover:text-destructive-foreground hover:bg-destructive"
                       : ""

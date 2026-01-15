@@ -102,9 +102,9 @@ export const HistoryPreview = ({
                 key={idx}
                 className={`${
                   line.type === "added"
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-primary/20 text-primary"
                     : line.type === "removed"
-                    ? "bg-destructive/10 text-destructive"
+                    ? "bg-destructive/20 text-destructive"
                     : "text-muted-foreground"
                 }`}
               >

@@ -507,9 +507,11 @@ export const createNote = async (formData: FormData) => {
     await serverWriteFile(filePath, _noteToMarkdown(newDoc));
 
     const relativePath = path.join(category, `${id}.md`);
-    commitNote(currentUser.username, relativePath, "create", title).catch(
-      () => {}
-    );
+    if (!isEncrypted(content)) {
+      commitNote(currentUser.username, relativePath, "create", title).catch(
+        () => {}
+      );
+    }
 
     try {
       const links = (await parseInternalLinks(newDoc.content)) || [];
@@ -660,7 +662,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     await serverWriteFile(filePath, _noteToMarkdown(updatedDoc));
 
-    if (!autosaveNotes) {
+    if (!autosaveNotes && !updatedDoc.encrypted) {
       const historyRelativePath = path.join(
         updatedDoc.category || "Uncategorized",
         `${newId}.md`
@@ -827,16 +829,18 @@ export const deleteNote = async (formData: FormData, username?: string) => {
 
     await serverDeleteFile(filePath);
 
-    const deleteRelativePath = path.join(
-      note.category || "Uncategorized",
-      `${note.id}.md`
-    );
-    commitNote(
-      ownerUsername,
-      deleteRelativePath,
-      "delete",
-      note.title || note.id
-    ).catch(() => {});
+    if (!note.encrypted) {
+      const deleteRelativePath = path.join(
+        note.category || "Uncategorized",
+        `${note.id}.md`
+      );
+      commitNote(
+        ownerUsername,
+        deleteRelativePath,
+        "delete",
+        note.title || note.id
+      ).catch(() => {});
+    }
 
     try {
       await removeItemFromIndex(note.owner!, "note", note.uuid!);

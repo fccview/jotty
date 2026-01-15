@@ -602,12 +602,16 @@ export const NoteEditorHeader = ({
                         ),
                         onClick: viewModel.handlePrint,
                       },
-                      {
-                        type: "item" as const,
-                        label: t("common.history"),
-                        icon: <GitCompareIcon className="h-4 w-4" />,
-                        onClick: handleHistoryClick,
-                      },
+                      ...(!note?.encrypted
+                        ? [
+                            {
+                              type: "item" as const,
+                              label: t("common.history"),
+                              icon: <GitCompareIcon className="h-4 w-4" />,
+                              onClick: handleHistoryClick,
+                            },
+                          ]
+                        : []),
                       {
                         type: "item" as const,
                         label: "Table of Contents",
