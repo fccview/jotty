@@ -1,0 +1,62 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 884 884" width="884" height="884">
+	<style>
+		@keyframes draw-stroke {
+			0% {
+				stroke-dashoffset: 1;
+			}
+			100% {
+				stroke-dashoffset: 0;
+			}
+		}
+		
+		.background-stroke {
+			fill: none;
+			stroke: rgb(158 93 248);
+			stroke-width: 16;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+			stroke-dasharray: 1;
+			stroke-dashoffset: 1;
+			animation: draw-stroke 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+		}
+		
+		.letter-stroke {
+			fill: none;
+			stroke: #ffffff;
+			stroke-width: 16;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+			stroke-dasharray: 1;
+			stroke-dashoffset: 1;
+			animation: draw-stroke 3s cubic-bezier(0.4, 0, 0.2, 1) 1.5s forwards;
+		}
+		
+		.background-fill {
+			fill: rgb(158 93 248);
+			opacity: 0;
+			animation: fade-in 0.5s ease-in 2.5s forwards;
+		}
+		
+		.letter-fill {
+			fill: #ffffff;
+			opacity: 0;
+			animation: fade-in 0.5s ease-in 4s forwards;
+		}
+		
+		@keyframes fade-in {
+			to { opacity: 1; }
+		}
+	</style>
+	
+	<!-- Background fill (appears after stroke) -->
+	<path class="background-fill" d="m32 151.86c0-64.46 52.34-116.86 116.71-116.86h583.58c64.37 0 116.71 52.4 116.71 116.86v584.28c0 64.46-52.34 116.86-116.71 116.86h-583.58c-64.37 0-116.71-52.4-116.71-116.86z"/>
+	
+	<!-- Background stroke (draws first) -->
+	<path class="background-stroke" d="m32 151.86c0-64.46 52.34-116.86 116.71-116.86h583.58c64.37 0 116.71 52.4 116.71 116.86v584.28c0 64.46-52.34 116.86-116.71 116.86h-583.58c-64.37 0-116.71-52.4-116.71-116.86z" pathLength="1"/>
+	
+	<!-- Letter fill (appears after stroke) -->
+	<path class="letter-fill" d="m601.62 120.7v417.41q0 94.1-66.78 160.89-66.79 66.78-160.89 66.78l-37.95-151.78h37.95q31.11 0 53.12-22.01 22.77-22.77 22.77-53.88v-265.62h-166.96v-151.79z"/>
+	
+	<!-- Letter stroke (draws second) -->
+	<path class="letter-stroke" d="m601.62 120.7v417.41q0 94.1-66.78 160.89-66.79 66.78-160.89 66.78l-37.95-151.78h37.95q31.11 0 53.12-22.01 22.77-22.77 22.77-53.88v-265.62h-166.96v-151.79z" pathLength="1"/>
+</svg>

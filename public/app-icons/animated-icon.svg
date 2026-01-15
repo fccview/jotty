@@ -27,7 +27,7 @@
             fill: rgb(157 95 254);
             stroke-width: 10;
             fill-opacity: 0;
-            animation: jotty-draw 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation: jotty-draw 5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
     </style>
     <path
