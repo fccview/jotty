@@ -27,6 +27,7 @@ const _getCountryCode = (locale: string): string => {
     sv: 'SE',
     nb: 'NO',
     nn: 'NO',
+    nl: 'NL',
     hi: 'IN',
     vi: 'VN',
     fa: 'IR',
