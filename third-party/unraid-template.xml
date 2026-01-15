@@ -21,7 +21,7 @@
     <TemplateURL>https://raw.githubusercontent.com/fccview/jotty/main/third-party/unraid-template.xml</TemplateURL>
     <Screenshot>https://raw.githubusercontent.com/fccview/jotty/main/public/app-screenshots/notes-view-dark.png</Screenshot>
     <Screenshot>https://raw.githubusercontent.com/fccview/jotty/main/public/app-screenshots/note-markdown.png</Screenshot>
-    <Icon>https://raw.githubusercontent.com/fccview/jotty/main/public/app-icons/logos/logo.svg</Icon>
+    <Icon>https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQL1qc4lmhf3ZH0iUlSPhwBxd5_-2ixHFBn6g&amp;amp;s</Icon>
     <ExtraParams>--user 99:100</ExtraParams>
     <PostArgs/>
     <DonateText/>
