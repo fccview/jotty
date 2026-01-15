@@ -231,7 +231,9 @@
     "toggleSidebar": "Seitenleiste umschalten",
     "openSearch": "Suche öffnen",
     "closeSearch": "Suche schließen",
-    "moreOptions": "Mehr Optionen"
+    "moreOptions": "Mehr Optionen",
+    "retry": "Wiederholen",
+    "restoring": "Wiederherstellung..."
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -1442,5 +1444,19 @@
     "sso": "SSO",
     "translations": "Übersetzungen",
     "unraid": "Unraid"
+  },
+  "history": {
+    "fetchError": "Der Verlauf konnte nicht geladen werden",
+    "restoreError": "Die Version konnte nicht wiederhergestellt werden",
+    "manualSavesOnly": "Der Verlauf wird nur beim manuellen Speichern erstellt, nicht beim automatischen Speichern.",
+    "noHistory": "Keine Historie verfügbar",
+    "noHistoryDescription": "Speichern Sie Ihre Notiz, um einen Verlaufspunkt zu erstellen.",
+    "restore": "Wiederherstellen",
+    "loadMore": "Mehr laden",
+    "viewContent": "Inhalt anzeigen",
+    "viewDiff": "Änderungen anzeigen",
+    "noteHistory": "Notizverlauf",
+    "restoreVersion": "Version wiederherstellen",
+    "restoreConfirm": "Diese Version wiederherstellen? \nAktuelle Inhalte werden ersetzt."
   }
 }

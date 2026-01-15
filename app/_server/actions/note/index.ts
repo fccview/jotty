@@ -58,6 +58,7 @@ import {
 import { extractYamlMetadata as stripYaml } from "@/app/_utils/yaml-metadata-utils";
 import { getAppSettings } from "../config";
 import { logContentEvent } from "@/app/_server/actions/log";
+import { commitNote } from "@/app/_server/actions/history";
 
 interface GetNotesOptions {
   username?: string;
@@ -505,6 +506,11 @@ export const createNote = async (formData: FormData) => {
 
     await serverWriteFile(filePath, _noteToMarkdown(newDoc));
 
+    const relativePath = path.join(category, `${id}.md`);
+    commitNote(currentUser.username, relativePath, "create", title).catch(
+      () => {}
+    );
+
     try {
       const links = (await parseInternalLinks(newDoc.content)) || [];
       await updateIndexForItem(
@@ -653,6 +659,16 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     }
 
     await serverWriteFile(filePath, _noteToMarkdown(updatedDoc));
+
+    if (!autosaveNotes) {
+      const historyRelativePath = path.join(
+        updatedDoc.category || "Uncategorized",
+        `${newId}.md`
+      );
+      commitNote(note.owner!, historyRelativePath, "update", title).catch(
+        () => {}
+      );
+    }
 
     if (settings?.data?.editor?.enableBilateralLinks) {
       try {
@@ -810,6 +826,17 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     );
 
     await serverDeleteFile(filePath);
+
+    const deleteRelativePath = path.join(
+      note.category || "Uncategorized",
+      `${note.id}.md`
+    );
+    commitNote(
+      ownerUsername,
+      deleteRelativePath,
+      "delete",
+      note.title || note.id
+    ).catch(() => {});
 
     try {
       await removeItemFromIndex(note.owner!, "note", note.uuid!);

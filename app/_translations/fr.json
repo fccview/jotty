@@ -231,7 +231,9 @@
     "toggleSidebar": "Basculer la barre latérale",
     "openSearch": "Ouvrir la recherche",
     "closeSearch": "Fermer la recherche",
-    "moreOptions": "Plus d'options"
+    "moreOptions": "Plus d'options",
+    "retry": "Réessayer",
+    "restoring": "Restauration..."
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -1466,5 +1468,19 @@
     "goHome": "Aller à l'accueil",
     "seenCount": "Vous avez vu {count} {count, plural, one {haiku} other {haikus}}",
     "imNoPoet": "Je ne suis pas poète, et Jotty non plus. Ce sont des mots aléatoires en séquence."
+  },
+  "history": {
+    "fetchError": "Échec du chargement de l'historique",
+    "restoreError": "Échec de la restauration de la version",
+    "manualSavesOnly": "L'historique est créé uniquement lors des sauvegardes manuelles, et non lors des sauvegardes automatiques.",
+    "noHistory": "Aucun historique disponible",
+    "noHistoryDescription": "Enregistrez votre note pour créer un point d'historique.",
+    "restore": "Restaurer",
+    "loadMore": "Charger plus",
+    "viewContent": "Afficher le contenu",
+    "viewDiff": "Afficher les modifications",
+    "noteHistory": "Historique des notes",
+    "restoreVersion": "Restaurer la version",
+    "restoreConfirm": "Restaurer cette version ? \nLe contenu actuel sera remplacé."
   }
 }
