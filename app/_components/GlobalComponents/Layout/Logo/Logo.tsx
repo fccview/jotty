@@ -2,7 +2,13 @@
 
 import { cn } from "@/app/_utils/global-utils";
 
-export const Logo = ({ className = "h-8 w-8", pathClassName = "fill-alternate" }: { className?: string, pathClassName?: string }) => {
+export const Logo = ({
+  className = "h-8 w-8",
+  pathClassName = "fill-alternate",
+}: {
+  className?: string;
+  pathClassName?: string;
+}) => {
   return (
     <div className={cn("jotty-logo bg-primary rounded-jotty p-0.5", className)}>
       <svg

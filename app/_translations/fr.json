@@ -231,7 +231,9 @@
     "toggleSidebar": "Basculer la barre latérale",
     "openSearch": "Ouvrir la recherche",
     "closeSearch": "Fermer la recherche",
-    "moreOptions": "Plus d'options"
+    "moreOptions": "Plus d'options",
+    "retry": "Réessayer",
+    "restoring": "Restauration..."
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -1466,5 +1468,30 @@
     "goHome": "Aller à l'accueil",
     "seenCount": "Vous avez vu {count} {count, plural, one {haiku} other {haikus}}",
     "imNoPoet": "Je ne suis pas poète, et Jotty non plus. Ce sont des mots aléatoires en séquence."
+  },
+  "history": {
+    "fetchError": "Erreur lors du chargement de l'historique",
+    "restoreError": "Échec de la restauration de la version",
+    "manualSavesOnly": "L'historique est créé uniquement lors des sauvegardes manuelles, et non lors des sauvegardes automatiques.",
+    "noHistory": "Aucun historique disponible",
+    "noHistoryDescription": "Enregistrez votre note pour créer un point dans l'historique.",
+    "restore": "Restaurer",
+    "loadMore": "Charger plus",
+    "viewContent": "Afficher le contenu",
+    "viewDiff": "Afficher les modifications",
+    "noteHistory": "Historique de la note",
+    "restoreVersion": "Restaurer la version",
+    "restoreConfirm": "Restaurer cette version ? \nLe contenu actuel sera remplacé.",
+    "featureDisabled": "Historique désactivé",
+    "disabledAdmin": "L'historique des notes est actuellement désactivé. Vous pouvez l'activer dans les Paramètres d'administration > Éditeur.",
+    "disabledUser": "L'historique des notes est actuellement désactivé. Veuillez contacter votre administrateur pour activer cette fonctionnalité.",
+    "goToSettings": "Aller aux paramètres",
+    "actionCreate": "Créé",
+    "actionUpdate": "Mis à jour",
+    "actionRename": "Renommé",
+    "actionMove": "Déplacé",
+    "actionDelete": "Supprimé",
+    "actionInit": "Initialisé",
+    "actionUnknown": "Modifié"
   }
 }
