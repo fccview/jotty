@@ -1457,6 +1457,17 @@
     "viewDiff": "Änderungen anzeigen",
     "noteHistory": "Notizverlauf",
     "restoreVersion": "Version wiederherstellen",
-    "restoreConfirm": "Diese Version wiederherstellen? \nAktuelle Inhalte werden ersetzt."
+    "restoreConfirm": "Diese Version wiederherstellen? \nAktuelle Inhalte werden ersetzt.",
+    "featureDisabled": "Verlauf deaktiviert",
+    "disabledAdmin": "Der Notizverlauf ist derzeit deaktiviert. Sie können ihn in den Administrator-Einstellungen > Editor aktivieren.",
+    "disabledUser": "Der Notizverlauf ist derzeit deaktiviert. Bitte wenden Sie sich an Ihren Administrator, um diese Funktion zu aktivieren.",
+    "goToSettings": "Zu den Einstellungen",
+    "actionCreate": "Erstellt",
+    "actionUpdate": "Aktualisiert",
+    "actionRename": "Umbenannt",
+    "actionMove": "Verschoben",
+    "actionDelete": "Gelöscht",
+    "actionInit": "Initialisiert",
+    "actionUnknown": "Geändert"
   }
 }

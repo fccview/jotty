@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Clock01Icon } from "hugeicons-react";
+import { GitCompareIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Modal } from "../Modal";
 import { useTranslations } from "next-intl";
@@ -12,13 +12,16 @@ import {
   HistoryEntry,
   HistoryVersion,
 } from "@/app/_server/actions/history";
+import { Settings01Icon, InformationCircleIcon } from "hugeicons-react";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import Link from "next/link";
 import { ConfirmModal } from "../ConfirmationModals/ConfirmModal";
 import { HistoryList } from "@/app/_components/FeatureComponents/History/HistoryList";
 import {
   HistoryPreview,
-  DiffLine,
   ViewMode,
 } from "@/app/_components/FeatureComponents/History/HistoryPreview";
+import { computeDiff } from "@/app/_utils/history-utils";
 
 interface NoteHistoryModalProps {
   isOpen: boolean;
@@ -33,35 +36,6 @@ interface NoteHistoryModalProps {
 }
 
 type ModalViewMode = "list" | ViewMode;
-
-const computeSimpleDiff = (
-  oldContent: string,
-  newContent: string
-): DiffLine[] => {
-  const oldLines = oldContent.split("\n");
-  const newLines = newContent.split("\n");
-  const result: DiffLine[] = [];
-
-  const maxLen = Math.max(oldLines.length, newLines.length);
-
-  for (let i = 0; i < maxLen; i++) {
-    const oldLine = oldLines[i];
-    const newLine = newLines[i];
-
-    if (oldLine === undefined) {
-      result.push({ type: "added", content: newLine, lineNumber: i + 1 });
-    } else if (newLine === undefined) {
-      result.push({ type: "removed", content: oldLine, lineNumber: i + 1 });
-    } else if (oldLine !== newLine) {
-      result.push({ type: "removed", content: oldLine, lineNumber: i + 1 });
-      result.push({ type: "added", content: newLine, lineNumber: i + 1 });
-    } else {
-      result.push({ type: "unchanged", content: oldLine, lineNumber: i + 1 });
-    }
-  }
-
-  return result;
-};
 
 export const NoteHistoryModal = ({
   isOpen,
@@ -91,6 +65,8 @@ export const NoteHistoryModal = ({
     null
   );
 
+  const { appSettings, user: currentUser } = useAppMode();
+
   const fetchHistory = useCallback(
     async (pageNum: number, append = false) => {
       if (pageNum === 1) {
@@ -98,9 +74,21 @@ export const NoteHistoryModal = ({
       } else {
         setIsLoadingMore(true);
       }
+      setEntries([]);
       setError(null);
 
       try {
+        if (appSettings?.editor?.historyEnabled === false) {
+          setError(
+            currentUser?.isAdmin
+              ? "HISTORY_DISABLED_ADMIN"
+              : "HISTORY_DISABLED_USER"
+          );
+          setIsLoading(false);
+          setIsLoadingMore(false);
+          return;
+        }
+
         const result = await getHistory(
           noteUuid,
           noteId,
@@ -128,7 +116,7 @@ export const NoteHistoryModal = ({
         setIsLoadingMore(false);
       }
     },
-    [noteUuid, noteId, noteCategory, noteOwner, t]
+    [noteUuid, noteId, noteCategory, noteOwner, t, appSettings, currentUser]
   );
 
   const fetchVersion = useCallback(
@@ -216,7 +204,7 @@ export const NoteHistoryModal = ({
 
   const diffLines =
     viewMode === "diff" && selectedVersion
-      ? computeSimpleDiff(selectedVersion.content, currentContent)
+      ? computeDiff(selectedVersion.content, currentContent)
       : [];
 
   return (
@@ -226,14 +214,39 @@ export const NoteHistoryModal = ({
         onClose={onClose}
         title={
           <div className="flex items-center gap-2">
-            <Clock01Icon className="h-5 w-5" />
+            <GitCompareIcon className="h-5 w-5" />
             <span>{t("history.noteHistory")}</span>
           </div>
         }
         className="lg:!max-w-3xl"
       >
         <div className="space-y-4">
-          {viewMode === "list" ? (
+          {error === "HISTORY_DISABLED_ADMIN" ||
+          error === "HISTORY_DISABLED_USER" ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <GitCompareIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="font-medium">{t("history.featureDisabled")}</p>
+              <p className="text-sm mt-1 max-w-[340px] mx-auto">
+                {error === "HISTORY_DISABLED_ADMIN"
+                  ? t("history.disabledAdmin")
+                  : t("history.disabledUser")}
+              </p>
+              <div className="flex justify-center w-full mt-4">
+                {error === "HISTORY_DISABLED_ADMIN" && (
+                  <Link href="/settings/admin/editor">
+                    <Button
+                      onClick={onClose}
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Settings01Icon className="h-4 w-4" />
+                      {t("history.goToSettings")}
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          ) : viewMode === "list" ? (
             <HistoryList
               entries={entries}
               isLoading={isLoading}

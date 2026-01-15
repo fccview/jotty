@@ -247,12 +247,21 @@
     "noHistoryDescription": "Save your note to create a history point.",
     "loadMore": "Load More",
     "featureDisabled": "History Disabled",
-    "enableInSettings": "Enable note history in Settings > Editor.",
+    "disabledAdmin": "Note history is currently disabled. You can enable it in Admin Settings > Editor.",
+    "disabledUser": "Note history is currently disabled. Please contact your administrator to enable this feature.",
+    "goToSettings": "Go to Settings",
     "manualSavesOnly": "History is created on manual saves only, not autosave.",
     "fetchError": "Failed to load history",
     "restoreError": "Failed to restore version",
     "viewContent": "View Content",
-    "viewDiff": "View Changes"
+    "viewDiff": "View Changes",
+    "actionCreate": "Created",
+    "actionUpdate": "Updated",
+    "actionRename": "Renamed",
+    "actionMove": "Moved",
+    "actionDelete": "Deleted",
+    "actionInit": "Initialized",
+    "actionUnknown": "Changed"
   },
   "auth": {
     "loginTitle": "Login",

@@ -1,20 +1,17 @@
 "use client";
 
 import {
-  Clock01Icon,
   RotateLeft01Icon,
   InformationCircleIcon,
   ViewIcon,
+  GitCompareIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { HistoryEntry } from "@/app/_server/actions/history";
-import {
-  formatHistoryDate,
-  getActionLabel,
-  getActionColor,
-} from "@/app/_utils/history-utils";
+import { getActionLabel, getActionColor } from "@/app/_utils/history-utils";
+import { formatRelativeTime } from "@/app/_utils/date-utils";
 
 interface HistoryListProps {
   entries: HistoryEntry[];
@@ -84,7 +81,7 @@ export const HistoryList = ({
         </div>
       ) : entries.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          <Clock01Icon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <GitCompareIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p className="font-medium">{t("history.noHistory")}</p>
           <p className="text-sm mt-1">{t("history.noHistoryDescription")}</p>
         </div>
@@ -98,10 +95,10 @@ export const HistoryList = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={getActionBadgeClasses(entry.action)}>
-                    {getActionLabel(entry.action)}
+                    {getActionLabel(entry.action, t)}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {formatHistoryDate(entry.date)}
+                    {formatRelativeTime(entry.date, t)}
                   </span>
                 </div>
                 <p className="text-sm truncate" title={entry.title}>

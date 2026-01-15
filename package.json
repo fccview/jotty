@@ -45,6 +45,7 @@
         "@types/speakeasy": "^2.0.10",
         "archiver": "^7.0.1",
         "clsx": "^2.0.0",
+        "diff": "5.2.0",
         "dompurify": "^3.3.0",
         "hast-util-to-html": "^9.0.5",
         "hugeicons-react": "^0.3.0",
@@ -91,6 +92,7 @@
     },
     "devDependencies": {
         "@types/archiver": "^6.0.3",
+        "@types/diff": "^5.2.0",
         "@types/js-beautify": "^1.14.3",
         "@types/js-yaml": "^4.0.9",
         "@types/jsonwebtoken": "^9.0.10",

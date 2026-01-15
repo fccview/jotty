@@ -26,6 +26,7 @@ import {
   MessageLock02Icon,
   Cancel01Icon,
   Clock01Icon,
+  GitCompareIcon,
 } from "hugeicons-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -55,7 +56,6 @@ import {
 } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
 import { NoteHistoryModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/NoteHistoryModal";
-import { isHistoryEnabled } from "@/app/_server/actions/history";
 import { useToast } from "@/app/_providers/ToastProvider";
 
 interface NoteEditorHeaderProps {
@@ -157,18 +157,8 @@ export const NoteEditorHeader = ({
     }
   };
 
-  const handleHistoryClick = async () => {
-    const enabled = appSettings?.editor?.historyEnabled || false;
-
-    if (enabled) {
-      setShowHistoryModal(true);
-    } else {
-      showToast({
-        type: "info",
-        title: t("history.featureDisabled"),
-        message: t("history.enableInSettings"),
-      });
-    }
+  const handleHistoryClick = () => {
+    setShowHistoryModal(true);
   };
 
   const handleCopyId = async () => {
@@ -615,7 +605,7 @@ export const NoteEditorHeader = ({
                       {
                         type: "item" as const,
                         label: t("common.history"),
-                        icon: <Clock01Icon className="h-4 w-4" />,
+                        icon: <GitCompareIcon className="h-4 w-4" />,
                         onClick: handleHistoryClick,
                       },
                       {

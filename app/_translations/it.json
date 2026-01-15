@@ -1474,13 +1474,24 @@
     "restoreError": "Impossibile ripristinare la versione",
     "manualSavesOnly": "La cronologia viene creata solo con i salvataggi manuali, non con quelli automatici.",
     "noHistory": "Nessuna cronologia disponibile",
-    "noHistoryDescription": "Salva la tua nota per creare un punto della cronologia.",
-    "restore": "Ripristinare",
+    "noHistoryDescription": "Salva la nota per creare un punto nella cronologia.",
+    "restore": "Ripristina",
     "loadMore": "Carica altro",
     "viewContent": "Visualizza contenuto",
     "viewDiff": "Visualizza modifiche",
-    "noteHistory": "Nota Storia",
+    "noteHistory": "Cronologia della nota",
     "restoreVersion": "Ripristina versione",
-    "restoreConfirm": "Ripristinare questa versione? \nIl contenuto attuale verrà sostituito."
+    "restoreConfirm": "Ripristinare questa versione? \nIl contenuto attuale verrà sostituito.",
+    "featureDisabled": "Cronologia disattivata",
+    "disabledAdmin": "La cronologia delle note è attualmente disattivata. Puoi abilitarla nelle Impostazioni amministratore > Editor.",
+    "disabledUser": "La cronologia delle note è attualmente disattivata. Contatta il tuo amministratore per abilitare questa funzione.",
+    "goToSettings": "Vai alle impostazioni",
+    "actionCreate": "Creato",
+    "actionUpdate": "Aggiornato",
+    "actionRename": "Rinominato",
+    "actionMove": "Spostato",
+    "actionDelete": "Eliminato",
+    "actionInit": "Inizializzato",
+    "actionUnknown": "Modificato"
   }
 }

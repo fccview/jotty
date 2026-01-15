@@ -49,7 +49,7 @@ videos/
 *.swp
 *~`;
 
-const getGitInstance = (userDir: string): SimpleGit => {
+const _getGitInstance = (userDir: string): SimpleGit => {
   return simpleGit(userDir, {
     binary: "git",
     maxConcurrentProcesses: 1,
@@ -57,7 +57,7 @@ const getGitInstance = (userDir: string): SimpleGit => {
   });
 };
 
-const formatCommitMessage = (
+const _formatCommitMessage = (
   action: HistoryAction,
   noteTitle: string,
   metadata?: { oldTitle?: string; oldCategory?: string; newCategory?: string }
@@ -78,7 +78,7 @@ const formatCommitMessage = (
   }
 };
 
-const parseCommitMessage = (
+const _parseCommitMessage = (
   message: string
 ): { action: string; title: string } => {
   const match = message.match(/^\[(\w+)\]\s*(.*)$/);
@@ -88,7 +88,7 @@ const parseCommitMessage = (
   return { action: "update", title: message };
 };
 
-export const isHistoryEnabled = async (): Promise<boolean> => {
+const _isHistoryEnabled = async (): Promise<boolean> => {
   try {
     const settings = await getAppSettings();
     return settings?.data?.editor?.historyEnabled === true;
@@ -104,7 +104,7 @@ export const ensureRepo = async (username: string): Promise<void> => {
   try {
     await fs.access(gitDir);
   } catch {
-    const git = getGitInstance(userDir);
+    const git = _getGitInstance(userDir);
     await git.init();
 
     await git.addConfig("user.email", "history@local");
@@ -125,7 +125,7 @@ export const commitNote = async (
   noteTitle: string,
   metadata?: { oldTitle?: string; oldCategory?: string; newCategory?: string }
 ): Promise<HistoryResult<string>> => {
-  const enabled = await isHistoryEnabled();
+  const enabled = await _isHistoryEnabled();
   if (!enabled) {
     return { success: true };
   }
@@ -158,8 +158,8 @@ export const commitNote = async (
       },
     });
 
-    const git = getGitInstance(userDir);
-    const message = formatCommitMessage(action, noteTitle, metadata);
+    const git = _getGitInstance(userDir);
+    const message = _formatCommitMessage(action, noteTitle, metadata);
 
     const status = await git.status();
     const normalizedPath = relativePath.replace(/\\/g, "/");
@@ -207,7 +207,7 @@ export const getHistory = async (
   page: number = 1,
   pageSize: number = 20
 ): Promise<HistoryResult<{ entries: HistoryEntry[]; hasMore: boolean }>> => {
-  const enabled = await isHistoryEnabled();
+  const enabled = await _isHistoryEnabled();
   if (!enabled) {
     return { success: false, error: "History is not enabled" };
   }
@@ -235,7 +235,7 @@ export const getHistory = async (
 
   try {
     await ensureRepo(username);
-    const git = getGitInstance(userDir);
+    const git = _getGitInstance(userDir);
 
     const skip = (page - 1) * pageSize;
     const rawOutput = await git.raw([
@@ -266,7 +266,7 @@ export const getHistory = async (
     const entries: HistoryEntry[] = parsedEntries
       .slice(0, pageSize)
       .map((entry) => {
-        const parsed = parseCommitMessage(entry.message);
+        const parsed = _parseCommitMessage(entry.message);
         return {
           commitHash: entry.hash,
           date: entry.date,
@@ -289,7 +289,7 @@ export const getVersion = async (
   noteOwner: string,
   commitHash: string
 ): Promise<HistoryResult<HistoryVersion>> => {
-  const enabled = await isHistoryEnabled();
+  const enabled = await _isHistoryEnabled();
   if (!enabled) {
     return { success: false, error: "History is not enabled" };
   }
@@ -320,7 +320,7 @@ export const getVersion = async (
   const filePath = path.join(noteCategory || "Uncategorized", `${noteId}.md`);
 
   try {
-    const git = getGitInstance(userDir);
+    const git = _getGitInstance(userDir);
 
     const commitInfo = await git.raw([
       "show",
@@ -381,7 +381,7 @@ export const restoreNoteVersion = async (
   noteOwner: string,
   commitHash: string
 ): Promise<HistoryResult<void>> => {
-  const enabled = await isHistoryEnabled();
+  const enabled = await _isHistoryEnabled();
   if (!enabled) {
     return { success: false, error: "History is not enabled" };
   }

@@ -1475,13 +1475,24 @@
     "restoreError": "Nie udało się przywrócić wersji",
     "manualSavesOnly": "Historia jest tworzona wyłącznie podczas zapisywania ręcznego, a nie automatycznego.",
     "noHistory": "Brak dostępnej historii",
-    "noHistoryDescription": "Zapisz swoją notatkę, aby utworzyć punkt historii.",
-    "restore": "Przywrócić",
+    "noHistoryDescription": "Zapisz notatkę, aby utworzyć punkt w historii.",
+    "restore": "Przywróć",
     "loadMore": "Załaduj więcej",
     "viewContent": "Wyświetl zawartość",
     "viewDiff": "Zobacz zmiany",
-    "noteHistory": "Uwaga Historia",
+    "noteHistory": "Historia notatki",
     "restoreVersion": "Przywróć wersję",
-    "restoreConfirm": "Przywrócić tę wersję? \nBieżąca treść zostanie zastąpiona."
+    "restoreConfirm": "Przywrócić tę wersję? \nBieżąca treść zostanie zastąpiona.",
+    "featureDisabled": "Historia wyłączona",
+    "disabledAdmin": "Historia notatek jest obecnie wyłączona. Możesz ją włączyć w Ustawieniach administratora > Edytor.",
+    "disabledUser": "Historia notatek jest obecnie wyłączona. Skontaktuj się z administratorem, aby włączyć tę funkcję.",
+    "goToSettings": "Idź do ustawień",
+    "actionCreate": "Utworzono",
+    "actionUpdate": "Zaktualizowano",
+    "actionRename": "Zmieniono nazwę",
+    "actionMove": "Przeniesiono",
+    "actionDelete": "Usunięto",
+    "actionInit": "Zainicjowano",
+    "actionUnknown": "Zmieniono"
   }
 }

@@ -30,6 +30,10 @@ svg {
     stroke: rgb(var(--background));
 }
 
+.fill-muted-foreground {
+    fill: rgb(var(--muted-foreground));
+}
+
 @layer base {
     * {
         @apply border-border;

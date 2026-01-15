@@ -8,7 +8,6 @@ import {
   ArrowDown01Icon,
   LaptopPhoneSyncIcon,
   TranslateIcon,
-  InformationCircleIcon,
 } from "hugeicons-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useRouter } from "next/navigation";
@@ -19,6 +18,7 @@ import { NavigationHelpIcon } from "./NavigationHelpIcon";
 import { LanguageSubmenu } from "./LanguageSubmenu";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { AboutModal } from "@/app/_components/GlobalComponents/Modals/AboutModal";
+import { JottyIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/JottyIcon";
 
 interface UserDropdownProps {
   username: string;
@@ -118,7 +118,7 @@ export const UserDropdown = ({
     },
     {
       label: t("common.about"),
-      icon: <InformationCircleIcon className="h-4 w-4" />,
+      icon: <JottyIcon className="h-4 w-4" />,
       onClick: () => setShowAboutModal(true),
     },
     {

@@ -1,23 +1,23 @@
 "use client";
 
-import { RotateLeft01Icon, ArrowLeft01Icon } from "hugeicons-react";
+import {
+  RotateLeft01Icon,
+  ArrowLeft01Icon,
+  GitCompareIcon,
+  File02Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
 import { HistoryEntry, HistoryVersion } from "@/app/_server/actions/history";
 import {
-  formatHistoryDate,
   getActionLabel,
   getActionColor,
+  DiffLine,
 } from "@/app/_utils/history-utils";
+import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 
 type ViewMode = "preview" | "diff";
-
-interface DiffLine {
-  type: "added" | "removed" | "unchanged";
-  content: string;
-  lineNumber?: number;
-}
 
 interface HistoryPreviewProps {
   selectedEntry: HistoryEntry | null;
@@ -56,38 +56,42 @@ export const HistoryPreview = ({
 
   return (
     <>
-      <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
+      <div className="flex items-center justify-between gap-3 mb-4 pb-4">
         <Button variant="ghost" size="sm" onClick={onBackToList}>
           <ArrowLeft01Icon className="h-4 w-4 mr-1" />
           {t("common.back")}
         </Button>
-        <div className="flex-1">
-          <span
-            className={getActionBadgeClasses(selectedEntry?.action || "update")}
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant={viewMode === "diff" ? "default" : "outline"}
+            size="sm"
+            onClick={onToggleViewMode}
+            aria-label={
+              viewMode === "diff"
+                ? t("history.viewContent")
+                : t("history.viewDiff")
+            }
           >
-            {getActionLabel(selectedEntry?.action || "update")}
-          </span>
-          <span className="text-sm text-muted-foreground ml-2">
-            {formatHistoryDate(selectedEntry?.date || "")}
-          </span>
+            <span className="hidden lg:inline">
+              {viewMode === "diff"
+                ? t("history.viewContent")
+                : t("history.viewDiff")}
+            </span>
+
+            <span className="lg:hidden">
+              {viewMode === "diff" ? <File02Icon /> : <GitCompareIcon />}
+            </span>
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => selectedEntry && onRestore(selectedEntry)}
+          >
+            <RotateLeft01Icon className="h-4 w-4 mr-1" />
+            <span className="hidden lg:inline">{t("history.restore")}</span>
+          </Button>
         </div>
-        <Button
-          variant={viewMode === "diff" ? "default" : "outline"}
-          size="sm"
-          onClick={onToggleViewMode}
-        >
-          {viewMode === "diff"
-            ? t("history.viewContent")
-            : t("history.viewDiff")}
-        </Button>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={() => selectedEntry && onRestore(selectedEntry)}
-        >
-          <RotateLeft01Icon className="h-4 w-4 mr-1" />
-          {t("history.restore")}
-        </Button>
       </div>
 
       {viewMode === "diff" ? (

@@ -1470,17 +1470,28 @@
     "imNoPoet": "Yo no soy poeta, ni Jotty tampoco. Estas son palabras aleatorias en secuencia."
   },
   "history": {
-    "fetchError": "No se pudo cargar el historial",
+    "fetchError": "Error al cargar el historial",
     "restoreError": "No se pudo restaurar la versión",
     "manualSavesOnly": "El historial se crea únicamente al guardar manualmente, no al guardar automáticamente.",
     "noHistory": "No hay historial disponible",
-    "noHistoryDescription": "Guarde su nota para crear un punto histórico.",
+    "noHistoryDescription": "Guarda la nota para crear un punto en el historial.",
     "restore": "Restaurar",
     "loadMore": "Cargar más",
     "viewContent": "Ver contenido",
     "viewDiff": "Ver cambios",
-    "noteHistory": "Historial de notas",
+    "noteHistory": "Historial de la nota",
     "restoreVersion": "Restaurar versión",
-    "restoreConfirm": "¿Restaurar esta versión? \nEl contenido actual será reemplazado."
+    "restoreConfirm": "¿Restaurar esta versión? \nEl contenido actual será reemplazado.",
+    "featureDisabled": "Historial desactivado",
+    "disabledAdmin": "El historial de notas está desactivado actualmente. Puede activarlo en la Configuración de administración > Editor.",
+    "disabledUser": "El historial de notas está desactivado actualmente. Póngase en contacto con su administrador para activar esta función.",
+    "goToSettings": "Ir a configuración",
+    "actionCreate": "Creado",
+    "actionUpdate": "Actualizado",
+    "actionRename": "Renombrado",
+    "actionMove": "Movido",
+    "actionDelete": "Eliminado",
+    "actionInit": "Inicializado",
+    "actionUnknown": "Cambiado"
   }
 }

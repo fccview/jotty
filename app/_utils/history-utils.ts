@@ -1,38 +1,27 @@
-export const formatHistoryDate = (isoDate: string): string => {
-  const date = new Date(isoDate);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+import { diffLines, Change } from "diff";
 
-  if (diffMins < 1) {
-    return "Just now";
-  }
+type TranslationFunction = (key: string, options?: any) => string;
 
-  if (diffMins < 60) {
-    return `${diffMins} minute${diffMins === 1 ? "" : "s"} ago`;
-  }
-
-  if (diffHours < 24) {
-    return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
-  }
-
-  if (diffDays < 7) {
-    return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
-  }
-
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+const actionTranslationKeys: Record<string, string> = {
+  create: "history.actionCreate",
+  update: "history.actionUpdate",
+  rename: "history.actionRename",
+  move: "history.actionMove",
+  delete: "history.actionDelete",
+  init: "history.actionInit",
 };
 
-export const getActionLabel = (action: string): string => {
-  const labels: Record<string, string> = {
+export const getActionLabel = (
+  action: string,
+  t?: TranslationFunction
+): string => {
+  const key = actionTranslationKeys[action] || "history.actionUnknown";
+
+  if (t) {
+    return t(key);
+  }
+
+  const fallbacks: Record<string, string> = {
     create: "Created",
     update: "Updated",
     rename: "Renamed",
@@ -40,13 +29,16 @@ export const getActionLabel = (action: string): string => {
     delete: "Deleted",
     init: "Initialized",
   };
-  return labels[action] || "Changed";
+  return fallbacks[action] || "Changed";
 };
 
 export const getActionColor = (
   action: string
 ): "default" | "success" | "warning" | "destructive" => {
-  const colors: Record<string, "default" | "success" | "warning" | "destructive"> = {
+  const colors: Record<
+    string,
+    "default" | "success" | "warning" | "destructive"
+  > = {
     create: "success",
     update: "default",
     rename: "warning",
@@ -55,4 +47,42 @@ export const getActionColor = (
     init: "default",
   };
   return colors[action] || "default";
+};
+
+export interface DiffLine {
+  type: "added" | "removed" | "unchanged";
+  content: string;
+}
+
+export const computeDiff = (
+  oldContent: string,
+  newContent: string
+): DiffLine[] => {
+  const changes: Change[] = diffLines(oldContent, newContent);
+  const result: DiffLine[] = [];
+
+  for (const change of changes) {
+    const lines = change.value.split("\n");
+    if (lines[lines.length - 1] === "") {
+      lines.pop();
+    }
+
+    for (const line of lines) {
+      if (change.added) {
+        result.push({ type: "added", content: line });
+      } else if (change.removed) {
+        result.push({ type: "removed", content: line });
+      } else {
+        result.push({ type: "unchanged", content: line });
+      }
+    }
+  }
+
+  return result;
+};
+
+export const hasChanges = (diffLines: DiffLine[]): boolean => {
+  return diffLines.some(
+    (line) => line.type === "added" || line.type === "removed"
+  );
 };
