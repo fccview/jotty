@@ -9,6 +9,15 @@
 			}
 		}
 		
+		@keyframes letter-stroke-color {
+			0%, 99% {
+				stroke: rgb(158 93 248);
+			}
+			100% {
+				stroke: #ffffff;
+			}
+		}
+		
 		.background-stroke {
 			fill: none;
 			stroke: rgb(158 93 248);
@@ -22,25 +31,27 @@
 		
 		.letter-stroke {
 			fill: none;
-			stroke: #ffffff;
+			stroke: rgb(158 93 248);
 			stroke-width: 16;
 			stroke-linecap: round;
 			stroke-linejoin: round;
 			stroke-dasharray: 1;
 			stroke-dashoffset: 1;
-			animation: draw-stroke 3s cubic-bezier(0.4, 0, 0.2, 1) 1.5s forwards;
+			animation: 
+				draw-stroke 3s cubic-bezier(0.4, 0, 0.2, 1) 3s forwards,
+				letter-stroke-color 6s ease forwards;
 		}
 		
 		.background-fill {
 			fill: rgb(158 93 248);
 			opacity: 0;
-			animation: fade-in 0.5s ease-in 2.5s forwards;
+			animation: fade-in 0.3s ease-in 6s forwards;
 		}
 		
 		.letter-fill {
 			fill: #ffffff;
 			opacity: 0;
-			animation: fade-in 0.5s ease-in 4s forwards;
+			animation: fade-in 0.3s ease-in 6.5s forwards;
 		}
 		
 		@keyframes fade-in {
