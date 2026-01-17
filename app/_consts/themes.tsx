@@ -92,19 +92,18 @@ export const getAllThemes = async (t?: (key: string) => string) => {
 
   const allThemes = BUILT_IN_THEMES.map((theme) => ({
     ...theme,
-    colors: THEME_PREVIEW_COLORS[theme.id] || null,
+    colors: THEME_PREVIEW_COLORS[theme.id] || { background: "249 249 249", primary: "157 95 254" },
   }));
 
   customThemes.forEach((customTheme) => {
     const iconComponent =
       ICON_MAP[customTheme.icon as keyof typeof ICON_MAP] || PaintBrush04Icon;
 
-    // Get colors from custom theme config
     const customColors = customConfig?.["custom-themes"]?.[customTheme.id]?.colors;
     const colors = customColors ? {
       background: customColors["--background"] || "249 249 249",
       primary: customColors["--primary"] || "157 95 254",
-    } : null;
+    } : { background: "249 249 249", primary: "157 95 254" };
 
     allThemes.push({
       id: customTheme.id as any,
