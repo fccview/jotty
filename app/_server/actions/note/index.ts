@@ -56,7 +56,7 @@ import {
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { extractYamlMetadata as stripYaml } from "@/app/_utils/yaml-metadata-utils";
-import { getAppSettings } from "../config";
+import { getSettings } from "../config";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { commitNote } from "@/app/_server/actions/history";
 
@@ -565,7 +565,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         "user",
         "uuid",
       ]);
-    const settings = await getAppSettings();
+    const settings = await getSettings();
 
     let currentUser = user;
 
@@ -575,7 +575,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     const sanitizedContent = sanitizeMarkdown(content);
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
-    const processedContent = settings?.data?.editor?.enableBilateralLinks
+    const processedContent = settings?.editor?.enableBilateralLinks
       ? await convertInternalLinksToNewFormat(
           contentWithoutMetadata,
           currentUser,
@@ -672,7 +672,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       );
     }
 
-    if (settings?.data?.editor?.enableBilateralLinks) {
+    if (settings?.editor?.enableBilateralLinks) {
       try {
         const links = (await parseInternalLinks(updatedDoc.content)) || [];
         const newItemKey = `${updatedDoc.category || "Uncategorized"}/${

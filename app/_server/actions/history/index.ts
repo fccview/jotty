@@ -8,7 +8,7 @@ import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { checkUserPermission } from "@/app/_server/actions/sharing";
 import { PermissionTypes } from "@/app/_types/enums";
-import { getAppSettings } from "@/app/_server/actions/config";
+import { getSettings } from "@/app/_server/actions/config";
 import { USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile } from "@/app/_server/actions/file";
 
@@ -90,8 +90,8 @@ const _parseCommitMessage = (
 
 const _isHistoryEnabled = async (): Promise<boolean> => {
   try {
-    const settings = await getAppSettings();
-    return settings?.data?.editor?.historyEnabled === true;
+    const settings = await getSettings();
+    return settings?.editor?.historyEnabled === true;
   } catch {
     return false;
   }
