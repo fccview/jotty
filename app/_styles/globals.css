@@ -503,7 +503,69 @@ p>code {
     margin: 0;
 }
 
+.callout {
+    padding: 1rem;
+    border-radius: 0.25rem;
+    border-left-width: 4px;
+    border-left-style: solid;
+}
 
+.callout .callout-content p:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.callout-info {
+    background-color: rgb(var(--primary) / 0.08);
+    border-left-color: rgb(var(--primary));
+}
+
+.callout-info .callout-icon-info {
+    color: rgb(var(--primary));
+}
+
+.callout-warning {
+    background-color: rgb(217 119 6 / 0.1);
+    border-left-color: rgb(217 119 6);
+}
+
+.callout-warning .callout-icon-warning {
+    color: rgb(217 119 6);
+}
+
+.callout-success {
+    background-color: rgb(22 163 74 / 0.1);
+    border-left-color: rgb(22 163 74);
+}
+
+.callout-success .callout-icon-success {
+    color: rgb(22 163 74);
+}
+
+.callout-danger {
+    background-color: rgb(var(--destructive) / 0.08);
+    border-left-color: rgb(var(--destructive));
+}
+
+.callout-danger .callout-icon-danger {
+    color: rgb(var(--destructive));
+}
+
+.callout-icon-info {
+    color: rgb(var(--primary));
+}
+
+.callout-icon-warning {
+    color: rgb(217 119 6);
+}
+
+.callout-icon-success {
+    color: rgb(22 163 74);
+}
+
+.callout-icon-danger {
+    color: rgb(var(--destructive));
+}
 
 pre.text-foreground,
 pre.text-foreground *,

@@ -390,6 +390,23 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     },
   });
 
+  service.addRule("callout", {
+    filter: (node) => {
+      return (
+        node.nodeName === "DIV" &&
+        (node as HTMLElement).getAttribute("data-type") === "callout"
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const calloutType = (element.getAttribute("data-callout-type") || "info").toUpperCase();
+      const innerContent = service.turndown(element.innerHTML);
+      const lines = innerContent.trim().split("\n");
+      const quotedContent = lines.map(line => `> ${line}`).join("\n");
+      return `\n> [!${calloutType}]\n${quotedContent}\n`;
+    },
+  });
+
   return service;
 };
 
@@ -665,6 +682,31 @@ const markdownProcessor = unified()
             node.children = newChildren;
 
             delete node.properties.href;
+          }
+        }
+
+        if (node.tagName === "blockquote" && node.children?.length > 0) {
+          const firstChild = node.children.find(
+            (child: any) => child.type === "element" && child.tagName === "p"
+          );
+          if (firstChild && firstChild.children?.length > 0) {
+            const textNode = firstChild.children[0];
+            if (textNode?.type === "text") {
+              const match = String(textNode.value).match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i);
+              if (match) {
+                const calloutType = match[1].toLowerCase();
+                textNode.value = String(textNode.value).replace(match[0], "");
+                if (!textNode.value && firstChild.children.length === 1) {
+                  node.children = node.children.filter((c: any) => c !== firstChild);
+                }
+                node.tagName = "div";
+                node.properties = {
+                  "data-type": "callout",
+                  "data-callout-type": calloutType,
+                  class: `callout callout-${calloutType}`,
+                };
+              }
+            }
           }
         }
 

@@ -1141,7 +1141,14 @@
     "mermaidDescription": "Text-based flowcharts & diagrams",
     "drawioDescription": "Visual diagram editor",
     "excalidrawDescription": "Sketch-style diagram editor",
-    "noLanguagesFound": "No languages found"
+    "noLanguagesFound": "No languages found",
+    "callout": "Callout",
+    "createCallout": "Create a callout block",
+    "changeCalloutType": "Change callout type",
+    "calloutInfo": "Info",
+    "calloutWarning": "Warning",
+    "calloutSuccess": "Success",
+    "calloutDanger": "Danger"
   },
   "sharing": {
     "share": "Share",

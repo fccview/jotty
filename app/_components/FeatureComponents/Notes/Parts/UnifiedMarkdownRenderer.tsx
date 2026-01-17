@@ -28,6 +28,12 @@ import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
 import { NoteFooterStats } from "@/app/_components/GlobalComponents/Statistics/NoteFooterStats";
 import { useTranslations } from "next-intl";
+import {
+  Idea01Icon,
+  AlertDiamondIcon,
+  Tick02Icon,
+  AlertCircleIcon,
+} from "hugeicons-react";
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -278,6 +284,60 @@ export const UnifiedMarkdownRenderer = ({
       }
       return <input type={type} {...props} />;
     },
+    blockquote({ node, children, ...props }) {
+      const childArray = Children.toArray(children);
+      let calloutType: "info" | "warning" | "success" | "danger" | null = null;
+      let matchIndex = -1;
+
+      for (let i = 0; i < childArray.length; i++) {
+        const child = childArray[i];
+        if (isValidElement(child)) {
+          const textContent = getRawTextFromChildren(child.props?.children);
+          const match = textContent.match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]/i);
+          if (match) {
+            calloutType = match[1].toLowerCase() as "info" | "warning" | "success" | "danger";
+            matchIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (calloutType && matchIndex >= 0) {
+        const CalloutIcon = {
+          info: Idea01Icon,
+          warning: AlertDiamondIcon,
+          success: Tick02Icon,
+          danger: AlertCircleIcon,
+        }[calloutType];
+
+        const modifiedChildren = Children.map(children, (child, index) => {
+          if (index === matchIndex && isValidElement(child)) {
+            const originalText = getRawTextFromChildren(child.props?.children);
+            const newText = originalText.replace(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i, "");
+            if (!newText.trim()) {
+              return null;
+            }
+            return <p>{newText}</p>;
+          }
+          return child;
+        })?.filter(Boolean);
+
+        return (
+          <div className={`callout callout-${calloutType}`}>
+            <div className="flex gap-3">
+              <div className={`flex-shrink-0 pt-0.5 callout-icon-${calloutType}`}>
+                <CalloutIcon className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                {modifiedChildren}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return <blockquote {...props}>{children}</blockquote>;
+    },
     ul({ node, className, children, ...props }) {
       const isTaskList = className?.includes("contains-task-list");
 
@@ -368,6 +428,41 @@ export const UnifiedMarkdownRenderer = ({
           node?.properties?.["data-mermaid-content"] ||
           "";
         return <MermaidRenderer code={mermaidContent} />;
+      }
+
+      const isCallout =
+        props["data-type"] === "callout" ||
+        props.dataType === "callout" ||
+        node?.properties?.["data-type"] === "callout";
+
+      if (isCallout) {
+        const calloutType: "info" | "warning" | "success" | "danger" =
+          props["data-callout-type"] ||
+          props.dataCalloutType ||
+          node?.properties?.["data-callout-type"] ||
+          "info";
+        const { children, ...restProps } = props;
+        const CalloutIcon = {
+          info: Idea01Icon,
+          warning: AlertDiamondIcon,
+          success: Tick02Icon,
+          danger: AlertCircleIcon,
+        }[calloutType] || Idea01Icon;
+        return (
+          <div
+            {...restProps}
+            className={`callout callout-${calloutType}`}
+          >
+            <div className="flex gap-3">
+              <div className={`flex-shrink-0 pt-0.5 callout-icon-${calloutType}`}>
+                <CalloutIcon className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                {children}
+              </div>
+            </div>
+          </div>
+        );
       }
 
       return <div {...props} />;
