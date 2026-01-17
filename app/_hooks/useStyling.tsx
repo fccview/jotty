@@ -388,6 +388,8 @@ export const useStyling = () => {
           "rwmarkable-light",
           "rwmarkable-dark",
           "fccview",
+          "sakura-blue",
+          "sakura-red",
           "black-white",
           "sunset",
           "ocean",

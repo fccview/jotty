@@ -3,11 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowDown01Icon, MoreHorizontalIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
+import { Logo } from "../Layout/Logo/Logo";
 
 interface DropdownOption {
   id: number | string;
   name: React.ReactNode;
   icon?: React.ComponentType<{ className?: string }>;
+  colors?: { background: string; primary: string } | null;
 }
 
 interface DropdownProps {
@@ -98,13 +100,25 @@ export const Dropdown = ({
               {selectedOption?.name || placeholder}
             </span>
           </div>
-          <ArrowDown01Icon
-            className={cn(
-              `h-4 w-4 transition-transform`,
-              isOpen ? "rotate-180" : "",
-              disabled && "opacity-50"
+          <div className="flex items-center gap-2">
+            {selectedOption?.colors && (
+              <Logo
+                className="h-5 w-5"
+                style={{
+                  backgroundColor: `rgb(${selectedOption.colors.background})`,
+                  border: `1px solid rgb(${selectedOption.colors.primary})`,
+                }}
+                pathStyle={{ fill: `rgb(${selectedOption.colors.primary})` }}
+              />
             )}
-          />
+            <ArrowDown01Icon
+              className={cn(
+                `h-4 w-4 transition-transform`,
+                isOpen ? "rotate-180" : "",
+                disabled && "opacity-50"
+              )}
+            />
+          </div>
         </button>
       )}
 
@@ -126,6 +140,16 @@ export const Dropdown = ({
               >
                 {option.icon && <option.icon className="h-4 w-4" />}
                 <span>{option.name}</span>
+                {option.colors && (
+                  <Logo
+                    className="h-5 w-5 ml-auto"
+                    style={{
+                      backgroundColor: `rgb(${option.colors.background})`,
+                      border: `1px solid rgb(${option.colors.primary})`,
+                    }}
+                    pathStyle={{ fill: `rgb(${option.colors.primary})` }}
+                  />
+                )}
               </button>
             ))}
           </div>

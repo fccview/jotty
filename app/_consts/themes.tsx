@@ -90,15 +90,27 @@ export const getAllThemes = async (t?: (key: string) => string) => {
   const customConfig = await loadCustomThemes();
   const customThemes = processCustomThemes(customConfig);
 
-  const allThemes = [...BUILT_IN_THEMES];
+  const allThemes = BUILT_IN_THEMES.map((theme) => ({
+    ...theme,
+    colors: THEME_PREVIEW_COLORS[theme.id] || null,
+  }));
 
   customThemes.forEach((customTheme) => {
     const iconComponent =
       ICON_MAP[customTheme.icon as keyof typeof ICON_MAP] || PaintBrush04Icon;
+
+    // Get colors from custom theme config
+    const customColors = customConfig?.["custom-themes"]?.[customTheme.id]?.colors;
+    const colors = customColors ? {
+      background: customColors["--background"] || "249 249 249",
+      primary: customColors["--primary"] || "157 95 254",
+    } : null;
+
     allThemes.push({
       id: customTheme.id as any,
       name: customTheme.name,
       icon: iconComponent,
+      colors,
     });
   });
 
@@ -149,6 +161,30 @@ const THEME_BACKGROUND_COLORS: Record<string, string> = {
   "solarized-dark": rgbToHex("0 43 54"),
   sakura: rgbToHex("249 249 249"),
   system: rgbToHex("255 255 255"),
+};
+
+export const THEME_PREVIEW_COLORS: Record<string, { background: string; primary: string }> = {
+  system: { background: "249 249 249", primary: "157 95 254" },
+  light: { background: "249 249 249", primary: "157 95 254" },
+  dark: { background: "14 24 64", primary: "157 95 254" },
+  "rwmarkable-light": { background: "249 249 249", primary: "37 99 235" },
+  "rwmarkable-dark": { background: "17 24 39", primary: "59 130 246" },
+  fccview: { background: "12 20 53", primary: "205 6 157" },
+  "sakura-blue": { background: "249 249 249", primary: "29 116 132" },
+  "sakura-red": { background: "249 249 249", primary: "152 44 97" },
+  "black-white": { background: "10 10 10", primary: "90 90 90" },
+  sunset: { background: "254 242 242", primary: "220 38 38" },
+  ocean: { background: "239 246 255", primary: "37 99 235" },
+  forest: { background: "240 253 244", primary: "22 163 74" },
+  nord: { background: "236 239 244", primary: "94 129 172" },
+  dracula: { background: "40 42 54", primary: "189 147 249" },
+  monokai: { background: "39 40 34", primary: "253 151 31" },
+  "github-dark": { background: "13 17 23", primary: "47 129 247" },
+  "tokyo-night": { background: "26 27 38", primary: "125 207 255" },
+  catppuccin: { background: "30 30 46", primary: "137 180 250" },
+  "rose-pine": { background: "25 23 36", primary: "196 167 231" },
+  gruvbox: { background: "40 40 40", primary: "250 189 47" },
+  "solarized-dark": { background: "0 43 54", primary: "38 139 210" },
 };
 
 export const getThemeBackgroundColor = (themeId: string): string => {
