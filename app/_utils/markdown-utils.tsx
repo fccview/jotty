@@ -403,7 +403,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const innerContent = service.turndown(element.innerHTML);
       const lines = innerContent.trim().split("\n");
       const quotedContent = lines.map(line => `> ${line}`).join("\n");
-      return `\n> [!${calloutType}]\n${quotedContent}\n`;
+      return `\n> [!${calloutType}]\n${quotedContent}\n\n`;
     },
   });
 

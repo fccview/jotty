@@ -269,7 +269,7 @@ export const SlashCommands = Extension.create({
                 return true;
               }
 
-              return (component.ref as any)?.onKeyDown?.(props);
+              return (component.ref as any)?.onKeyDown?.(props.event);
             },
 
             onExit() {
@@ -399,7 +399,7 @@ export const SlashCommands = Extension.create({
                 return true;
               }
 
-              return (component.ref as any)?.onKeyDown?.(props);
+              return (component.ref as any)?.onKeyDown?.(props.event);
             },
 
             onExit() {

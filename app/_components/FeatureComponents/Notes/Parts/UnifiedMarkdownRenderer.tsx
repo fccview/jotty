@@ -310,14 +310,45 @@ export const UnifiedMarkdownRenderer = ({
           danger: AlertCircleIcon,
         }[calloutType];
 
+        const stripCalloutPrefix = (children: React.ReactNode): React.ReactNode => {
+          const childArr = Children.toArray(children);
+          let prefixStripped = false;
+
+          return Children.map(childArr, (child) => {
+            if (prefixStripped) return child;
+
+            if (typeof child === "string") {
+              const match = child.match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i);
+              if (match) {
+                prefixStripped = true;
+                const remaining = child.replace(match[0], "");
+                return remaining || null;
+              }
+              return child;
+            }
+
+            if (isValidElement(child) && child.props?.children) {
+              const newChildren = stripCalloutPrefix(child.props.children);
+              if (newChildren !== child.props.children) {
+                prefixStripped = true;
+                return { ...child, props: { ...child.props, children: newChildren } };
+              }
+            }
+
+            return child;
+          });
+        };
+
         const modifiedChildren = Children.map(children, (child, index) => {
           if (index === matchIndex && isValidElement(child)) {
-            const originalText = getRawTextFromChildren(child.props?.children);
-            const newText = originalText.replace(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i, "");
-            if (!newText.trim()) {
+            const newChildren = stripCalloutPrefix(child.props?.children);
+            const hasContent = Children.toArray(newChildren).some(
+              (c) => (typeof c === "string" && c.trim()) || isValidElement(c)
+            );
+            if (!hasContent) {
               return null;
             }
-            return <p>{newText}</p>;
+            return { ...child, props: { ...child.props, children: newChildren } };
           }
           return child;
         })?.filter(Boolean);
