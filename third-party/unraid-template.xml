@@ -28,11 +28,11 @@
   <DonateLink>https://www.buymeacoffee.com/fccview</DonateLink>
   <Requires>Don't forget to click **Show more settings...** for all **Variables**!</Requires>
 
-  <Config Name="config" Target="/app/config" Default="" Mode="rw" Type="Path" Display="always">/mnt/user/appdata/jotty/config</Config>
-  <Config Name="data" Target="/app/data" Default="" Mode="rw" Type="Path" Display="always">/mnt/user/appdata/jotty/data</Config>
-  <Config Name="cache" Target="/app/.next/cache" Default="" Mode="rw" Type="Path" Display="always">/mnt/user/appdata/jotty/cache</Config>
-  <Config Name="Port" Target="3000" Default="" Mode="tcp" Type="Port" Display="always">1122</Config>
-  <Config Name="NODE_ENV" Target="NODE_ENV" Default="" Type="Variable" Display="always">production</Config>
+  <Config Name="config" Target="/app/config" Default="" Mode="rw" Type="Path" Display="always" Required="true">/mnt/user/appdata/jotty/config</Config>
+  <Config Name="data" Target="/app/data" Default="" Mode="rw" Type="Path" Display="always" Required="true">/mnt/user/appdata/jotty/data</Config>
+  <Config Name="cache" Target="/app/.next/cache" Default="" Mode="rw" Type="Path" Display="always" Required="true">/mnt/user/appdata/jotty/cache</Config>
+  <Config Name="Port" Target="3000" Default="" Mode="tcp" Type="Port" Display="always" Required="true">1122</Config>
+  <Config Name="NODE_ENV" Target="NODE_ENV" Default="" Type="Variable" Display="always" Required="true">production</Config>
   <Config Name="PUID" Target="PUID" Default="" Type="Variable" Display="advanced">99</Config>
   <Config Name="PGID" Target="PGID" Default="" Type="Variable" Display="advanced">100</Config>
   <Config Name="UMASK" Target="UMASK" Default="" Type="Variable" Display="advanced">022</Config>
