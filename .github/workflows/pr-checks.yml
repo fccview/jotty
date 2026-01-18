@@ -13,10 +13,10 @@ jobs:
         if: github.base_ref == 'main'
         run: |
           if [ "${{ github.head_ref }}" != "develop" ]; then
-            echo "ERROR: Pull requests to 'main' branch are only allowed from 'develop' branch"
+            echo "ERROR: Pull requests to 'main' are not allowed."
             echo "Current source branch: ${{ github.head_ref }}"
             echo ""
-            echo "Please create a PR to 'develop' first, then merge 'develop' into 'main'"
+            echo "Please create a PR to 'develop' first, this will become a release candidate when merged into 'main' by a maintainer"
             exit 1
           fi
           echo "Valid PR: develop → main"
@@ -50,5 +50,11 @@ jobs:
       - name: Run type check
         run: yarn tsc --noEmit
 
-      - name: Run tests
-        run: yarn test:run --reporter=verbose
+      - name: Run security tests
+        run: yarn test:run tests/security --reporter=verbose
+
+      - name: Run api tests
+        run: yarn test:run tests/api --reporter=verbose
+
+      - name: Run server action tests
+        run: yarn test:run tests/server-actions --reporter=verbose
