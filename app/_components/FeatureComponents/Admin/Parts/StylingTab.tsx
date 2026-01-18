@@ -145,9 +145,9 @@ export const StylingTab = () => {
         title={editingTheme ? t("admin.editTheme") : t("admin.createTheme")}
         className="!w-full lg:!max-w-[90vw] !h-[90vh] overflow-y-auto !max-h-[900px]"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            <div className="bg-muted/30 border border-border rounded-jotty p-6 space-y-6">
               <Input
                 id="themeName"
                 label={t("admin.themeName")}
@@ -194,67 +194,87 @@ export const StylingTab = () => {
 
             <div className="space-y-4">
               <h4 className="text-md lg:text-sm font-medium">{t("admin.colorVariables")}</h4>
-              <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto pr-2">
                 {Object.entries(themeForm.colors).map(([key, value]) => (
                   <div
                     key={key}
-                    className="flex items-center space-x-2 flex-wrap"
+                    className={`flex items-center gap-4 p-3 rounded-jotty border transition-colors ${
+                      focusedColor === key
+                        ? "border-primary bg-primary/5"
+                        : "border-border bg-muted/20 hover:bg-muted/40"
+                    }`}
                   >
-                    <label className="text-md lg:text-sm lg:text-xs font-mono text-muted-foreground min-w-0 flex-1">
+                    <label className="text-md lg:text-sm lg:text-xs font-mono text-muted-foreground w-44 shrink-0">
                       {key}
                     </label>
-                    <input
-                      type="color"
-                      value={
-                        value
-                          ? `#${value
-                            .split(" ")
-                            .map((v) => {
-                              const num = parseInt(v);
-                              return num.toString(16).padStart(2, "0");
-                            })
-                            .join("")}`
-                          : t("editor.colorPlaceholder")
-                      }
-                      onChange={(e) => {
-                        const hex = e.target.value;
-                        const r = parseInt(hex.substring(1, 3), 16);
-                        const g = parseInt(hex.substring(3, 5), 16);
-                        const b = parseInt(hex.substring(5, 7), 16);
-                        const rgbValue = `${r} ${g} ${b}`;
-                        handleThemeFormChange(key, rgbValue);
-                      }}
-                      onFocus={() => handleColorFocus(key)}
-                      onBlur={handleColorBlur}
-                      className="w-8 h-8 rounded border border-border cursor-pointer"
-                    />
-                    <Input
-                      id={key}
-                      type="text"
-                      defaultValue={value}
-                      onChange={(e) =>
-                        handleThemeFormChange(key, e.target.value)
-                      }
-                      onFocus={() => handleColorFocus(key)}
-                      onBlur={handleColorBlur}
-                      placeholder="255 255 255"
-                      className="flex-1 text-sm lg:text-xs font-mono"
-                    />
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="relative">
+                        <input
+                          type="color"
+                          value={
+                            value
+                              ? `#${value
+                                .split(" ")
+                                .map((v) => {
+                                  const num = parseInt(v);
+                                  return num.toString(16).padStart(2, "0");
+                                })
+                                .join("")}`
+                              : "#000000"
+                          }
+                          onChange={(e) => {
+                            const hex = e.target.value;
+                            const r = parseInt(hex.substring(1, 3), 16);
+                            const g = parseInt(hex.substring(3, 5), 16);
+                            const b = parseInt(hex.substring(5, 7), 16);
+                            const rgbValue = `${r} ${g} ${b}`;
+                            handleThemeFormChange(key, rgbValue);
+                          }}
+                          onFocus={() => handleColorFocus(key)}
+                          onBlur={handleColorBlur}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <div
+                          className="w-10 h-10 rounded-jotty border border-input shadow-sm cursor-pointer hover:border-primary transition-colors"
+                          style={{
+                            backgroundColor: value
+                              ? `rgb(${value.split(" ").join(",")})`
+                              : "#000000"
+                          }}
+                        />
+                      </div>
+                      <input
+                        id={key}
+                        type="text"
+                        value={value}
+                        onChange={(e) =>
+                          handleThemeFormChange(key, e.target.value)
+                        }
+                        onFocus={() => handleColorFocus(key)}
+                        onBlur={handleColorBlur}
+                        placeholder="255 255 255"
+                        className="flex-1 px-3 py-2 bg-background border border-input rounded-jotty text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-6 border-t border-border">
               <Button
                 variant="outline"
                 onClick={() => setThemeModalOpen(false)}
                 disabled={isSavingThemes}
-              >{t('common.cancel')}</Button>
+              >
+                {t('common.cancel')}
+              </Button>
               <Button onClick={handleSaveTheme} disabled={isSavingThemes}>
                 {isSavingThemes ? (
                   <>
-                    <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />{t('common.saving')}</>
+                    <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />
+                    {t('common.saving')}
+                  </>
                 ) : editingTheme ? (
                   t("admin.updateTheme")
                 ) : (
@@ -266,7 +286,7 @@ export const StylingTab = () => {
 
           <div className="space-y-4">
             <h4 className="text-md lg:text-sm font-medium">{t("admin.livePreview")}</h4>
-            <div className="border border-border rounded-jotty">
+            <div className="border border-border rounded-jotty sticky top-0">
               <ThemePreview
                 colors={themeForm.colors}
                 focusedColor={focusedColor}

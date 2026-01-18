@@ -146,6 +146,19 @@ jotty includes an optional API documentation service that provides interactive d
 2. **Start the Service**: Run `docker-compose --profile api-docs up -d`
 3. **Access**: Visit `http://localhost:8080` (or your configured `API_DOCS_PORT`)
 
+### Health Checks
+
+To keep the image as small as possible I try to not install many extra dependencies if they are not needed by the main app. For health checks we will simply use node to make an http request to the health endpoint.
+
+```yaml
+healthcheck:
+    test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+    interval: 30s
+    timeout: 10s
+    start_period: 40s
+    retries: 3
+```
+
 ### Service Configuration
 
 ```yaml

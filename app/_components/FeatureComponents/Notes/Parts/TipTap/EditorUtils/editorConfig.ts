@@ -27,6 +27,7 @@ import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/Ti
 import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
+import { CalloutExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/CalloutExtension";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { getContrastColor } from "@/app/_utils/color-utils";
 
@@ -75,6 +76,7 @@ export const createEditorExtensions = (
     }),
     ...generateCustomHtmlExtensions(),
     DetailsExtension,
+    CalloutExtension,
     KeyboardShortcuts.configure({
       onLinkRequest: callbacks.onLinkRequest,
     }),

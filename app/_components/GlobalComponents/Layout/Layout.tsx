@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { QuickNav } from "@/app/_components/FeatureComponents/Header/QuickNav";
 import { Sidebar } from "@/app/_components/FeatureComponents/Sidebar/Sidebar";
 import { SettingsSidebar } from "@/app/_components/FeatureComponents/Sidebar/SettingsSidebar";
@@ -10,6 +10,7 @@ import { useMobileGestures } from "@/app/_hooks/useMobileGestures";
 import { isMobileDevice } from "@/app/_utils/global-utils";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 import { usePathname } from "next/navigation";
+import { useUIStore } from "@/app/_utils/ui-store";
 
 interface LayoutProps {
   categories: Category[];
@@ -43,6 +44,7 @@ export const Layout = ({
 }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { setMode, isInitialized } = useAppMode();
+  const { isDragging } = useUIStore();
   const pathname = usePathname();
 
   const isSettingsPage = pathname?.startsWith("/settings");
@@ -50,10 +52,10 @@ export const Layout = ({
   useMobileGestures({
     onSwipeRight: () => setSidebarOpen(true),
     enabled:
-      isMobileDevice() && !window?.location.pathname.startsWith("/note/"),
-    swipeThreshold: 15,
-    edgeThreshold: 400,
-    velocityThreshold: 0.02,
+      isMobileDevice() && !window?.location.pathname.startsWith("/note/") && !isDragging,
+    swipeThreshold: 25,
+    edgeThreshold: 150,
+    velocityThreshold: 0.04,
   });
 
   if (!isInitialized) {

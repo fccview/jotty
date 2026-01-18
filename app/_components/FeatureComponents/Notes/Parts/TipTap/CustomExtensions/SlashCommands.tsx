@@ -16,6 +16,7 @@ import {
   SharedWifiIcon,
   DrawingModeIcon,
   PencilIcon,
+  Idea01Icon,
 } from "hugeicons-react";
 import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommandsList";
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
@@ -131,6 +132,14 @@ const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
         .deleteRange(range)
         .toggleWrap("details", { summary: !empty ? selectedText : undefined })
         .run();
+    },
+  },
+  {
+    title: t("editor.callout"),
+    description: t("editor.createCallout"),
+    icon: <Idea01Icon className="h-4 w-4" />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).setCallout("info").run();
     },
   },
   {
@@ -260,7 +269,7 @@ export const SlashCommands = Extension.create({
                 return true;
               }
 
-              return (component.ref as any)?.onKeyDown?.(props);
+              return (component.ref as any)?.onKeyDown?.(props.event);
             },
 
             onExit() {
@@ -390,7 +399,7 @@ export const SlashCommands = Extension.create({
                 return true;
               }
 
-              return (component.ref as any)?.onKeyDown?.(props);
+              return (component.ref as any)?.onKeyDown?.(props.event);
             },
 
             onExit() {

@@ -4,7 +4,7 @@ import { CHECKLISTS_FOLDER } from "./checklists";
 import { NOTES_FOLDER } from "./notes";
 
 export const ARCHIVED_DIR_NAME = ".archive";
-export const EXCLUDED_DIRS = ["images", "files", "videos"];
+export const EXCLUDED_DIRS = ["images", "files", "videos", ".git"];
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024;
 export const ALLOWED_IMAGE_TYPES = [
@@ -42,4 +42,5 @@ export const SHARED_ITEMS_FILE = path.join(SHARING_DIR, "shared-items.json");
 export const EXPORT_TEMP_DIR = path.join(DATA_DIR, "temp_exports");
 
 export const LOGS_DIR = "data/logs";
-export const getUserLogsDir = (username: string) => path.join(LOGS_DIR, username);
+export const getUserLogsDir = (username: string) =>
+  path.join(LOGS_DIR, username);

@@ -231,7 +231,9 @@
     "toggleSidebar": "Mostra/nascondi barra laterale",
     "openSearch": "Apri ricerca",
     "closeSearch": "Chiudi ricerca",
-    "moreOptions": "Altre opzioni"
+    "moreOptions": "Altre opzioni",
+    "retry": "Riprova",
+    "restoring": "Ripristino..."
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -1466,5 +1468,30 @@
     "goHome": "Torna alla Home",
     "seenCount": "Hai visto {count} {count, plural, one {haiku} other {haiku}}",
     "imNoPoet": "Non sono un poeta, e nemmeno Jotty. Queste sono parole casuali in sequenza."
+  },
+  "history": {
+    "fetchError": "Impossibile caricare la cronologia",
+    "restoreError": "Impossibile ripristinare la versione",
+    "manualSavesOnly": "La cronologia viene creata solo con i salvataggi manuali, non con quelli automatici.",
+    "noHistory": "Nessuna cronologia disponibile",
+    "noHistoryDescription": "Salva la nota per creare un punto nella cronologia.",
+    "restore": "Ripristina",
+    "loadMore": "Carica altro",
+    "viewContent": "Visualizza contenuto",
+    "viewDiff": "Visualizza modifiche",
+    "noteHistory": "Cronologia della nota",
+    "restoreVersion": "Ripristina versione",
+    "restoreConfirm": "Ripristinare questa versione? \nIl contenuto attuale verrà sostituito.",
+    "featureDisabled": "Cronologia disattivata",
+    "disabledAdmin": "La cronologia delle note è attualmente disattivata. Puoi abilitarla nelle Impostazioni amministratore > Editor.",
+    "disabledUser": "La cronologia delle note è attualmente disattivata. Contatta il tuo amministratore per abilitare questa funzione.",
+    "goToSettings": "Vai alle impostazioni",
+    "actionCreate": "Creato",
+    "actionUpdate": "Aggiornato",
+    "actionRename": "Rinominato",
+    "actionMove": "Spostato",
+    "actionDelete": "Eliminato",
+    "actionInit": "Inizializzato",
+    "actionUnknown": "Modificato"
   }
 }

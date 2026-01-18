@@ -231,7 +231,9 @@
     "toggleSidebar": "Alternar barra lateral",
     "openSearch": "Abrir búsqueda",
     "closeSearch": "Cerrar búsqueda",
-    "moreOptions": "Más opciones"
+    "moreOptions": "Más opciones",
+    "retry": "Rever",
+    "restoring": "Restaurando..."
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -1466,5 +1468,30 @@
     "goHome": "Ir al inicio",
     "seenCount": "Has visto {count} {count, plural, one {haiku} other {haikus}}",
     "imNoPoet": "Yo no soy poeta, ni Jotty tampoco. Estas son palabras aleatorias en secuencia."
+  },
+  "history": {
+    "fetchError": "Error al cargar el historial",
+    "restoreError": "No se pudo restaurar la versión",
+    "manualSavesOnly": "El historial se crea únicamente al guardar manualmente, no al guardar automáticamente.",
+    "noHistory": "No hay historial disponible",
+    "noHistoryDescription": "Guarda la nota para crear un punto en el historial.",
+    "restore": "Restaurar",
+    "loadMore": "Cargar más",
+    "viewContent": "Ver contenido",
+    "viewDiff": "Ver cambios",
+    "noteHistory": "Historial de la nota",
+    "restoreVersion": "Restaurar versión",
+    "restoreConfirm": "¿Restaurar esta versión? \nEl contenido actual será reemplazado.",
+    "featureDisabled": "Historial desactivado",
+    "disabledAdmin": "El historial de notas está desactivado actualmente. Puede activarlo en la Configuración de administración > Editor.",
+    "disabledUser": "El historial de notas está desactivado actualmente. Póngase en contacto con su administrador para activar esta función.",
+    "goToSettings": "Ir a configuración",
+    "actionCreate": "Creado",
+    "actionUpdate": "Actualizado",
+    "actionRename": "Renombrado",
+    "actionMove": "Movido",
+    "actionDelete": "Eliminado",
+    "actionInit": "Inicializado",
+    "actionUnknown": "Cambiado"
   }
 }

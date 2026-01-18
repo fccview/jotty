@@ -4,20 +4,24 @@ import { useState, useEffect } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppSettings } from "@/app/_types";
 import {
   getAppSettings,
   updateAppSettings,
 } from "@/app/_server/actions/config";
+import { deleteAllRepos } from "@/app/_server/actions/history";
 import { useTranslations } from "next-intl";
 
 export const EditorSettingsTab = () => {
   const t = useTranslations();
   const { showToast } = useToast();
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [originalHistoryEnabled, setOriginalHistoryEnabled] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showDisableHistoryModal, setShowDisableHistoryModal] = useState(false);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -46,11 +50,16 @@ export const EditorSettingsTab = () => {
               typeof result.data.editor?.drawioProxyEnabled === "boolean"
                 ? result.data.editor?.drawioProxyEnabled
                 : false,
+            historyEnabled:
+              typeof result.data.editor?.historyEnabled === "boolean"
+                ? result.data.editor?.historyEnabled
+                : false,
           };
           setSettings({
             ...result.data,
             editor: editorSettings,
           });
+          setOriginalHistoryEnabled(editorSettings.historyEnabled || false);
         } else {
           throw new Error(result.error || t("admin.failedToLoadSettings"));
         }
@@ -110,8 +119,29 @@ export const EditorSettingsTab = () => {
 
   const handleSave = async () => {
     if (!settings) return;
+
+    const isDisablingHistory =
+      originalHistoryEnabled && !settings.editor.historyEnabled;
+
+    if (isDisablingHistory) {
+      setShowDisableHistoryModal(true);
+      return;
+    }
+
+    await performSave();
+  };
+
+  const performSave = async (deleteHistory = false) => {
+    if (!settings) return;
     setIsSaving(true);
     try {
+      if (deleteHistory) {
+        const deleteResult = await deleteAllRepos();
+        if (!deleteResult.success) {
+          throw new Error(deleteResult.error || t("admin.failedToDisableHistory"));
+        }
+      }
+
       const formData = new FormData();
 
       Object.entries(settings).forEach(([key, value]) => {
@@ -127,9 +157,12 @@ export const EditorSettingsTab = () => {
         showToast({
           type: "success",
           title: t("common.success"),
-          message: t("admin.editorSettingsSaved"),
+          message: deleteHistory
+            ? t("admin.historyDisabled")
+            : t("admin.editorSettingsSaved"),
         });
         setHasChanges(false);
+        setOriginalHistoryEnabled(settings.editor.historyEnabled || false);
       } else {
         throw new Error(result.error || t("admin.failedToSaveSettings"));
       }
@@ -143,6 +176,11 @@ export const EditorSettingsTab = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleConfirmDisableHistory = async () => {
+    setShowDisableHistoryModal(false);
+    await performSave(true);
   };
 
   if (!settings) return;
@@ -230,6 +268,24 @@ export const EditorSettingsTab = () => {
                 }
               />
             </div>
+
+            <div className="flex items-center justify-between">
+              <label htmlFor="historyEnabled" className="space-y-1 cursor-pointer">
+                <div className="text-md lg:text-sm font-medium">
+                  {t("admin.historyEnabled")}
+                </div>
+                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                  {t("admin.historyDescription")}
+                </p>
+              </label>
+              <Toggle
+                id="historyEnabled"
+                checked={settings.editor.historyEnabled || false}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("historyEnabled", checked)
+                }
+              />
+            </div>
           </div>
 
           <div className="pt-4 border-t border-border">
@@ -295,6 +351,17 @@ export const EditorSettingsTab = () => {
           {isSaving ? t("admin.saving") : t("admin.saveChanges")}
         </Button>
       </div>
+
+      <ConfirmModal
+        isOpen={showDisableHistoryModal}
+        onClose={() => setShowDisableHistoryModal(false)}
+        onConfirm={handleConfirmDisableHistory}
+        title={t("admin.disableHistory")}
+        message={t("admin.disableHistoryWarning")}
+        confirmText={t("common.disable")}
+        cancelText={t("common.cancel")}
+        variant="destructive"
+      />
     </div>
   );
 };

@@ -232,7 +232,9 @@
     "toggleSidebar": "Przełącz pasek boczny",
     "openSearch": "Otwórz wyszukiwanie",
     "closeSearch": "Zamknij wyszukiwanie",
-    "moreOptions": "Więcej opcji"
+    "moreOptions": "Więcej opcji",
+    "retry": "Spróbować ponownie",
+    "restoring": "Przywracam..."
   },
   "auth": {
     "loginTitle": "Logowanie",
@@ -1467,5 +1469,30 @@
     "goHome": "Strona główna",
     "seenCount": "Widziałeś {count} {count, plural, one {haiku} other {haiku}}",
     "imNoPoet": "Nie jestem poetą, podobnie jak Jotty. To tylko przypadkowa sekwencja słów."
+  },
+  "history": {
+    "fetchError": "Nie udało się załadować historii",
+    "restoreError": "Nie udało się przywrócić wersji",
+    "manualSavesOnly": "Historia jest tworzona wyłącznie podczas zapisywania ręcznego, a nie automatycznego.",
+    "noHistory": "Brak dostępnej historii",
+    "noHistoryDescription": "Zapisz notatkę, aby utworzyć punkt w historii.",
+    "restore": "Przywróć",
+    "loadMore": "Załaduj więcej",
+    "viewContent": "Wyświetl zawartość",
+    "viewDiff": "Zobacz zmiany",
+    "noteHistory": "Historia notatki",
+    "restoreVersion": "Przywróć wersję",
+    "restoreConfirm": "Przywrócić tę wersję? \nBieżąca treść zostanie zastąpiona.",
+    "featureDisabled": "Historia wyłączona",
+    "disabledAdmin": "Historia notatek jest obecnie wyłączona. Możesz ją włączyć w Ustawieniach administratora > Edytor.",
+    "disabledUser": "Historia notatek jest obecnie wyłączona. Skontaktuj się z administratorem, aby włączyć tę funkcję.",
+    "goToSettings": "Idź do ustawień",
+    "actionCreate": "Utworzono",
+    "actionUpdate": "Zaktualizowano",
+    "actionRename": "Zmieniono nazwę",
+    "actionMove": "Przeniesiono",
+    "actionDelete": "Usunięto",
+    "actionInit": "Zainicjowano",
+    "actionUnknown": "Zmieniono"
   }
 }

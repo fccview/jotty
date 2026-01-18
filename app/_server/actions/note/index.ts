@@ -56,8 +56,9 @@ import {
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { extractYamlMetadata as stripYaml } from "@/app/_utils/yaml-metadata-utils";
-import { getAppSettings } from "../config";
+import { getSettings } from "../config";
 import { logContentEvent } from "@/app/_server/actions/log";
+import { commitNote } from "@/app/_server/actions/history";
 
 interface GetNotesOptions {
   username?: string;
@@ -505,6 +506,13 @@ export const createNote = async (formData: FormData) => {
 
     await serverWriteFile(filePath, _noteToMarkdown(newDoc));
 
+    const relativePath = path.join(category, `${id}.md`);
+    if (!isEncrypted(content)) {
+      commitNote(currentUser.username, relativePath, "create", title).catch(
+        () => {}
+      );
+    }
+
     try {
       const links = (await parseInternalLinks(newDoc.content)) || [];
       await updateIndexForItem(
@@ -557,7 +565,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         "user",
         "uuid",
       ]);
-    const settings = await getAppSettings();
+    const settings = await getSettings();
 
     let currentUser = user;
 
@@ -567,7 +575,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     const sanitizedContent = sanitizeMarkdown(content);
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
-    const processedContent = settings?.data?.editor?.enableBilateralLinks
+    const processedContent = settings?.editor?.enableBilateralLinks
       ? await convertInternalLinksToNewFormat(
           contentWithoutMetadata,
           currentUser,
@@ -654,7 +662,17 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     await serverWriteFile(filePath, _noteToMarkdown(updatedDoc));
 
-    if (settings?.data?.editor?.enableBilateralLinks) {
+    if (!autosaveNotes && !updatedDoc.encrypted) {
+      const historyRelativePath = path.join(
+        updatedDoc.category || "Uncategorized",
+        `${newId}.md`
+      );
+      commitNote(note.owner!, historyRelativePath, "update", title).catch(
+        () => {}
+      );
+    }
+
+    if (settings?.editor?.enableBilateralLinks) {
       try {
         const links = (await parseInternalLinks(updatedDoc.content)) || [];
         const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
@@ -810,6 +828,19 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     );
 
     await serverDeleteFile(filePath);
+
+    if (!note.encrypted) {
+      const deleteRelativePath = path.join(
+        note.category || "Uncategorized",
+        `${note.id}.md`
+      );
+      commitNote(
+        ownerUsername,
+        deleteRelativePath,
+        "delete",
+        note.title || note.id
+      ).catch(() => {});
+    }
 
     try {
       await removeItemFromIndex(note.owner!, "note", note.uuid!);

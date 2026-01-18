@@ -321,6 +321,7 @@ export interface AppSettings {
     enableBilateralLinks: boolean;
     drawioUrl?: string;
     drawioProxyEnabled?: boolean;
+    historyEnabled?: boolean;
   };
 }
 

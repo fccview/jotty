@@ -17,6 +17,7 @@ import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
 import { useTranslations } from "next-intl";
+import { useUIStore } from "@/app/_utils/ui-store";
 
 interface ChecklistBodyProps {
   localList: Checklist;
@@ -51,12 +52,12 @@ export const ChecklistBody = ({
 }: ChecklistBodyProps) => {
   const t = useTranslations();
   const { linkIndex, notes, checklists, appSettings } = useAppMode();
+  const { isDragging, setIsDragging } = useUIStore();
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const [overItem, setOverItem] = useState<{
     id: string;
     position: "before" | "after";
   } | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
 
   const referencingItems = useMemo(() => {
     return getReferences(
