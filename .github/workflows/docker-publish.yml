@@ -6,7 +6,32 @@ on:
     tags: ["*"]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm run test:run
+
   build-amd64:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -53,6 +78,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   build-arm64:
+    needs: test
     runs-on: ubuntu-22.04-arm
     permissions:
       contents: read
