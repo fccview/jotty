@@ -182,42 +182,57 @@ export const saveCustomEmojis = async (
 };
 
 export const getSettings = async () => {
+  const defaultSettings = {
+    appName: "jotty·page",
+    appDescription:
+      "A simple, fast, and lightweight checklist and notes application",
+    "16x16Icon": "",
+    "32x32Icon": "",
+    "180x180Icon": "",
+    "512x512Icon": "",
+    "192x192Icon": "",
+    notifyNewUpdates: "yes",
+    maximumFileSize: MAX_FILE_SIZE,
+    parseContent: "yes",
+    adminContentAccess: "yes",
+    editor: {
+      enableSlashCommands: true,
+      enableBubbleMenu: true,
+      enableTableToolbar: true,
+      enableBilateralLinks: true,
+      drawioProxyEnabled: false,
+      historyEnabled: false,
+    },
+  };
+
   try {
     const dataSettingsPath = path.join(process.cwd(), "data", "settings.json");
+    let settings;
     try {
-      const settings = await fs.readFile(dataSettingsPath, "utf-8");
-      return JSON.parse(settings);
+      const content = await fs.readFile(dataSettingsPath, "utf-8");
+      settings = JSON.parse(content);
     } catch {
       const configSettingsPath = path.join(
         process.cwd(),
         "config",
         "settings.json"
       );
-      const settings = await fs.readFile(configSettingsPath, "utf-8");
-      return JSON.parse(settings);
+      const content = await fs.readFile(configSettingsPath, "utf-8");
+      settings = JSON.parse(content);
     }
+
+    if (!settings.editor) {
+      settings.editor = defaultSettings.editor;
+    } else {
+      settings.editor = {
+        ...defaultSettings.editor,
+        ...settings.editor,
+      };
+    }
+
+    return settings;
   } catch (error) {
-    return {
-      appName: "jotty·page",
-      appDescription:
-        "A simple, fast, and lightweight checklist and notes application",
-      "16x16Icon": "",
-      "32x32Icon": "",
-      "180x180Icon": "",
-      "512x512Icon": "",
-      "192x192Icon": "",
-      notifyNewUpdates: "yes",
-      maximumFileSize: MAX_FILE_SIZE,
-      parseContent: "yes",
-      adminContentAccess: "yes",
-      editor: {
-        enableSlashCommands: true,
-        enableBubbleMenu: true,
-        enableTableToolbar: true,
-        enableBilateralLinks: true,
-        drawioProxyEnabled: false,
-      },
-    };
+    return defaultSettings;
   }
 };
 

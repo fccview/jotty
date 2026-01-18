@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 interface UseMobileGesturesProps {
   onSwipeRight?: () => void;
@@ -20,6 +20,11 @@ export const useMobileGestures = ({
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(
     null
   );
+  const enabledRef = useRef(enabled);
+
+  useEffect(() => {
+    enabledRef.current = enabled;
+  }, [enabled]);
 
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
@@ -58,7 +63,8 @@ export const useMobileGestures = ({
 
   const handleTouchEnd = useCallback(
     (e: TouchEvent) => {
-      if (!touchStartRef.current || !onSwipeRight) {
+      if (!touchStartRef.current || !onSwipeRight || !enabledRef.current) {
+        touchStartRef.current = null;
         return;
       }
 

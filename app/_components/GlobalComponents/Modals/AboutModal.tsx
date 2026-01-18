@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { getLatestGitHubRelease } from "@/app/_server/actions/github";
 import { Loading03Icon, ArrowUpDoubleIcon } from "hugeicons-react";
+import { JottyIcon } from "../Layout/CustomIcons/JottyIcon";
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -55,7 +56,9 @@ export const AboutModal = ({ isOpen, onClose }: AboutModalProps) => {
     <Modal isOpen={isOpen} onClose={onClose} title={t("common.about")}>
       <div className="flex flex-col items-center text-center space-y-6">
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold">jotty·page</h2>
+          <div className="w-full flex justify-center">
+            <JottyIcon className="h-12 w-12" animated slower />
+          </div>
           <div className="flex items-center justify-center gap-2">
             <p className="text-sm text-muted-foreground">
               {t("common.version")}: {appVersion || "unknown"}

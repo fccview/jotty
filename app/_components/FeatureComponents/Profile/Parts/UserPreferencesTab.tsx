@@ -388,6 +388,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                   id: theme.id,
                   name: theme.name,
                   icon: theme.icon,
+                  colors: theme.colors,
                 }))}
                 placeholder={t('settings.selectTheme')}
                 className="w-full"

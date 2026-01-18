@@ -1,4 +1,4 @@
-name: Build and Publish Multi-Platform Docker Image
+name: Build and Publish
 
 on:
   push:
