@@ -1,0 +1,54 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  validate-branch:
+    name: Validate Target Branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR to main is from develop
+        if: github.base_ref == 'main'
+        run: |
+          if [ "${{ github.head_ref }}" != "develop" ]; then
+            echo "ERROR: Pull requests to 'main' branch are only allowed from 'develop' branch"
+            echo "Current source branch: ${{ github.head_ref }}"
+            echo ""
+            echo "Please create a PR to 'develop' first, then merge 'develop' into 'main'"
+            exit 1
+          fi
+          echo "Valid PR: develop → main"
+
+      - name: Display PR info
+        run: |
+          echo "PR validation passed"
+          echo "Source: ${{ github.head_ref }}"
+          echo "Target: ${{ github.base_ref }}"
+
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: validate-branch
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run linter
+        run: yarn lint
+
+      - name: Run type check
+        run: yarn tsc --noEmit
+
+      - name: Run tests
+        run: yarn test:run --reporter=verbose
