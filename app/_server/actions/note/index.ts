@@ -668,7 +668,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         `${newId}.md`
       );
 
-      // Detect if this is a category change (move) or just an update
       const isCategoryChange = category && category !== note.category;
       const historyAction = isCategoryChange ? "move" : "update";
 

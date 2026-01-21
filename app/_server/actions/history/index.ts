@@ -253,7 +253,6 @@ export const getHistory = async (
     await ensureRepo(username);
     const git = _getGitInstance(userDir);
 
-    // Look up the note by UUID to get its current category and ID
     const { getNoteById } = await import("@/app/_server/actions/note");
     const note = await getNoteById(noteUuid, undefined, username);
 
@@ -261,7 +260,6 @@ export const getHistory = async (
       return { success: false, error: "Note not found" };
     }
 
-    // Use the actual current path from the note lookup
     const filePath = path.join(
       note.category || "Uncategorized",
       `${note.id}.md`
