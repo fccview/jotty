@@ -276,11 +276,11 @@ const _readNotesRecursively = async (
     .map((e) => e.name);
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -294,11 +294,11 @@ const _readNotesRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -346,9 +346,9 @@ const _readNotesRecursively = async (
               )
             );
           }
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subDocs = await _readNotesRecursively(
       categoryDir,
@@ -509,7 +509,7 @@ export const createNote = async (formData: FormData) => {
     const relativePath = path.join(category, `${id}.md`);
     if (!isEncrypted(content)) {
       commitNote(currentUser.username, relativePath, "create", title).catch(
-        () => {}
+        () => { }
       );
     }
 
@@ -577,10 +577,10 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
     const processedContent = settings?.editor?.enableBilateralLinks
       ? await convertInternalLinksToNewFormat(
-          contentWithoutMetadata,
-          currentUser,
-          originalCategory
-        )
+        contentWithoutMetadata,
+        currentUser,
+        originalCategory
+      )
       : contentWithoutMetadata;
 
     const convertedContent = processedContent;
@@ -667,17 +667,33 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         updatedDoc.category || "Uncategorized",
         `${newId}.md`
       );
-      commitNote(note.owner!, historyRelativePath, "update", title).catch(
-        () => {}
-      );
+
+      // Detect if this is a category change (move) or just an update
+      const isCategoryChange = category && category !== note.category;
+      const historyAction = isCategoryChange ? "move" : "update";
+
+      const historyMetadata = isCategoryChange
+        ? {
+          oldCategory: note.category || "Uncategorized",
+          newCategory: updatedDoc.category || "Uncategorized",
+          oldPath: path.join(note.category || "Uncategorized", `${id}.md`),
+        }
+        : undefined;
+
+      commitNote(
+        note.owner!,
+        historyRelativePath,
+        historyAction,
+        title,
+        historyMetadata
+      ).catch(() => { });
     }
 
     if (settings?.editor?.enableBilateralLinks) {
       try {
         const links = (await parseInternalLinks(updatedDoc.content)) || [];
-        const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
-          updatedDoc.id
-        }`;
+        const newItemKey = `${updatedDoc.category || "Uncategorized"}/${updatedDoc.id
+          }`;
 
         const oldItemKey = `${note.category || "Uncategorized"}/${id}`;
 
@@ -839,7 +855,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
         deleteRelativePath,
         "delete",
         note.title || note.id
-      ).catch(() => {});
+      ).catch(() => { });
     }
 
     try {
@@ -968,7 +984,7 @@ export const getNoteById = async (
       (d.id === id || d.uuid === id) &&
       (!category ||
         encodeCategoryPath(d.category || "Uncategorized")?.toLowerCase() ===
-          encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
+        encodeCategoryPath(category || "Uncategorized")?.toLowerCase())
   );
 
   if (note && "rawContent" in note) {

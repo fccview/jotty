@@ -160,6 +160,51 @@ export const renameCategory = async (formData: FormData) => {
 
     await fs.rename(oldCategoryDir, newCategoryDir);
 
+    if (mode === Modes.NOTES) {
+      try {
+        const username = await getUsername();
+        if (username) {
+          const { commitNote } = await import("@/app/_server/actions/history");
+          const { getUserNotes } = await import("@/app/_server/actions/note");
+
+          const notesResult = await getUserNotes({ username, isRaw: true });
+          if (notesResult.success && notesResult.data) {
+            const notesInCategory = notesResult.data.filter((note) => {
+              const category = note.category || "Uncategorized";
+              return category === newPath || category.startsWith(`${newPath}/`);
+            });
+
+            for (const note of notesInCategory) {
+              try {
+                const oldCategory = (note.category || "Uncategorized").replace(newPath, oldPath);
+                const newCategory = note.category || "Uncategorized";
+                const filePath = path.join(newCategoryDir, `${note.id}.md`);
+                const fileContent = await fs.readFile(filePath, "utf-8");
+                const titleMatch = fileContent.match(/^title:\s*(.+)$/m);
+                const title = titleMatch ? titleMatch[1] : note.id!;
+
+                await commitNote(
+                  username,
+                  path.join(newCategory, `${note.id}.md`),
+                  "move",
+                  title,
+                  {
+                    oldCategory,
+                    newCategory,
+                    oldPath: path.join(oldCategory, `${note.id}.md`),
+                  }
+                );
+              } catch (error) {
+                console.warn(`Failed to commit git mv for note ${note.id}:`, error);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("Failed to commit category rename to git history:", error);
+      }
+    }
+
     await logAudit({
       level: "INFO",
       action: "category_renamed",
@@ -483,6 +528,35 @@ export const moveNode = async (formData: FormData) => {
     if (activePath !== newPath) {
       try {
         await fs.rename(activePath, newPath);
+
+        if (activeType === "item" && oldParentDir !== newParentDir && mode === Modes.NOTES) {
+          try {
+            const username = await getUsername();
+            if (username) {
+              const { commitNote } = await import("@/app/_server/actions/history");
+              const oldCategory = activeParentPath || "Uncategorized";
+              const newCategory = newParentPath || "Uncategorized";
+
+              const fileContent = await fs.readFile(newPath, "utf-8");
+              const titleMatch = fileContent.match(/^title:\s*(.+)$/m);
+              const title = titleMatch ? titleMatch[1] : activeId;
+
+              await commitNote(
+                username,
+                path.join(newCategory, `${activeId}.md`),
+                "move",
+                title,
+                {
+                  oldCategory,
+                  newCategory,
+                  oldPath: path.join(oldCategory, `${activeId}.md`),
+                }
+              );
+            }
+          } catch (error) {
+            console.warn("Failed to commit note move to git history:", error);
+          }
+        }
       } catch (error: any) {
         console.error(
           `Failed to move node from ${activePath} to ${newPath}:`,

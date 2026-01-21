@@ -41,7 +41,7 @@ export const updateItem = async (
     const currentUser = username || (await getUsername());
 
     const canEdit = await checkUserPermission(
-      listId,
+      checklist.uuid || listId,
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
       currentUser,
@@ -214,7 +214,7 @@ export const createItem = async (
     const recurrenceStr = formData.get("recurrence") as string;
 
     const canEdit = await checkUserPermission(
-      listId,
+      list.uuid || listId,
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
       username || "",
@@ -284,16 +284,16 @@ export const createItem = async (
       lastModifiedAt: now,
       ...(list.type === "task" &&
         defaultStatus && {
-          status: defaultStatus,
-          timeEntries,
-          history: [
-            {
-              status: defaultStatus,
-              timestamp: now,
-              user: currentUser,
-            },
-          ],
-        }),
+        status: defaultStatus,
+        timeEntries,
+        history: [
+          {
+            status: defaultStatus,
+            timestamp: now,
+            user: currentUser,
+          },
+        ],
+      }),
       ...(recurrence && { recurrence }),
     };
 
@@ -357,6 +357,19 @@ export const deleteItem = async (
     );
     if (!list) {
       throw new Error("List not found");
+    }
+
+    const currentUser = await getUsername();
+    const canDelete = await checkUserPermission(
+      list.uuid || listId,
+      category || "Uncategorized",
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.DELETE
+    );
+
+    if (!canDelete) {
+      throw new Error("Permission denied");
     }
 
     const findItemExists = (items: any[], itemId: string): boolean => {
@@ -610,8 +623,12 @@ export const updateItemStatus = async (
     }
 
     const list = await getListById(listId, username, category);
+    if (!list) {
+      return { success: false, error: "List not found" };
+    }
+
     const canEdit = await checkUserPermission(
-      listId,
+      list.uuid || listId,
       category,
       ItemTypes.CHECKLIST,
       username,
@@ -620,10 +637,6 @@ export const updateItemStatus = async (
 
     if (!canEdit) {
       return { success: false, error: "Permission denied" };
-    }
-
-    if (!list) {
-      return { success: false, error: "List not found" };
     }
 
     const now = new Date().toISOString();
@@ -768,6 +781,18 @@ export const createBulkItems = async (
     }
 
     const currentUser = await getUsername();
+    const canEdit = await checkUserPermission(
+      list.uuid || listId,
+      category || "Uncategorized",
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      throw new Error("Permission denied");
+    }
+
     const now = new Date().toISOString();
 
     const lines = itemsText.split("\n").filter((line) => line.trim());
@@ -864,8 +889,12 @@ export const bulkToggleItems = async (
       : null;
 
     const list = await getListById(listId, currentUser, category);
+    if (!list) {
+      return { success: false, error: "List not found" };
+    }
+
     const canEdit = await checkUserPermission(
-      listId,
+      list.uuid || listId,
       category,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -874,10 +903,6 @@ export const bulkToggleItems = async (
 
     if (!canEdit) {
       return { success: false, error: "Permission denied" };
-    }
-
-    if (!list) {
-      return { success: false, error: "List not found" };
     }
 
     const now = new Date().toISOString();
@@ -1063,8 +1088,12 @@ export const bulkDeleteItems = async (
     }
 
     const list = await getListById(listId, currentUser, category);
+    if (!list) {
+      return { success: false, error: "List not found" };
+    }
+
     const canEdit = await checkUserPermission(
-      listId,
+      list.uuid || listId,
       category,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -1073,10 +1102,6 @@ export const bulkDeleteItems = async (
 
     if (!canEdit) {
       return { success: false, error: "Permission denied" };
-    }
-
-    if (!list) {
-      return { success: false, error: "List not found" };
     }
 
     const itemIdsSet = new Set(itemIdsToDelete);
@@ -1162,6 +1187,19 @@ export const createSubItem = async (
       throw new Error("List not found");
     }
 
+    const currentUser = await getUsername();
+    const canEdit = await checkUserPermission(
+      list.uuid || listId,
+      category || "Uncategorized",
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      throw new Error("Permission denied");
+    }
+
     const addSubItemToParent = (
       items: any[],
       parentId: string,
@@ -1186,7 +1224,6 @@ export const createSubItem = async (
       return false;
     };
 
-    const currentUser = await getUsername();
     const now = new Date().toISOString();
 
     const newSubItem: any = {
@@ -1278,8 +1315,12 @@ export const archiveItem = async (
     }
 
     const list = await getListById(listId, currentUser, category);
+    if (!list) {
+      return { success: false, error: "List not found" };
+    }
+
     const canEdit = await checkUserPermission(
-      listId,
+      list.uuid || listId,
       category,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -1288,10 +1329,6 @@ export const archiveItem = async (
 
     if (!canEdit) {
       return { success: false, error: "Permission denied" };
-    }
-
-    if (!list) {
-      return { success: false, error: "List not found" };
     }
 
     const now = new Date().toISOString();
@@ -1368,8 +1405,12 @@ export const unarchiveItem = async (
     }
 
     const list = await getListById(listId, currentUser, category);
+    if (!list) {
+      return { success: false, error: "List not found" };
+    }
+
     const canEdit = await checkUserPermission(
-      listId,
+      list.uuid || listId,
       category,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -1378,10 +1419,6 @@ export const unarchiveItem = async (
 
     if (!canEdit) {
       return { success: false, error: "Permission denied" };
-    }
-
-    if (!list) {
-      return { success: false, error: "List not found" };
     }
 
     const now = new Date().toISOString();

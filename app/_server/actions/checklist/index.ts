@@ -88,11 +88,11 @@ const readListsRecursively = async (
 
   const orderedDirNames: string[] = order?.categories
     ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
+      ...order.categories.filter((n) => dirNames.includes(n)),
+      ...dirNames
+        .filter((n) => !order.categories!.includes(n))
+        .sort((a, b) => a.localeCompare(b)),
+    ]
     : dirNames.sort((a, b) => a.localeCompare(b));
 
   for (const dirName of orderedDirNames) {
@@ -111,11 +111,11 @@ const readListsRecursively = async (
       const categoryOrder = await readOrderFile(categoryDir);
       const orderedIds: string[] = categoryOrder?.items
         ? [
-            ...categoryOrder.items.filter((id) => ids.includes(id)),
-            ...ids
-              .filter((id) => !categoryOrder.items!.includes(id))
-              .sort((a, b) => a.localeCompare(b)),
-          ]
+          ...categoryOrder.items.filter((id) => ids.includes(id)),
+          ...ids
+            .filter((id) => !categoryOrder.items!.includes(id))
+            .sort((a, b) => a.localeCompare(b)),
+        ]
         : ids.sort((a, b) => a.localeCompare(b));
 
       for (const id of orderedIds) {
@@ -164,9 +164,9 @@ const readListsRecursively = async (
             );
             lists.push(parsedList);
           }
-        } catch {}
+        } catch { }
       }
-    } catch {}
+    } catch { }
 
     const subLists = await readListsRecursively(
       categoryDir,
@@ -352,7 +352,7 @@ export const getListById = async (
       (list.id === id || list.uuid === id) &&
       (!category ||
         list.category?.toLowerCase() ===
-          decodeCategoryPath(category).toLowerCase())
+        decodeCategoryPath(category).toLowerCase())
   );
 
   if (list && "rawContent" in list) {
@@ -570,6 +570,10 @@ export const updateList = async (formData: FormData) => {
       unarchive === "true"
     );
 
+    if (!currentList) {
+      throw new Error("List not found");
+    }
+
     const canEdit = await checkUserPermission(
       id,
       originalCategory,
@@ -580,10 +584,6 @@ export const updateList = async (formData: FormData) => {
 
     if (!canEdit) {
       return { error: "Permission denied" };
-    }
-
-    if (!currentList) {
-      throw new Error("List not found");
     }
 
     const updatedList: Checklist = {
@@ -652,9 +652,8 @@ export const updateList = async (formData: FormData) => {
     try {
       const content = updatedList.items.map((i) => i.text).join("\n");
       const links = await parseInternalLinks(content);
-      const newItemKey = `${updatedList.category || "Uncategorized"}/${
-        updatedList.id
-      }`;
+      const newItemKey = `${updatedList.category || "Uncategorized"}/${updatedList.id
+        }`;
 
       const oldItemKey = `${currentList.category || "Uncategorized"}/${id}`;
       if (oldItemKey !== newItemKey) {
@@ -744,7 +743,7 @@ export const updateList = async (formData: FormData) => {
         title || "unknown",
         false
       );
-    } catch {}
+    } catch { }
     return { error: "Failed to update list" };
   }
 };
@@ -864,7 +863,7 @@ export const deleteList = async (formData: FormData) => {
         title || "unknown",
         false
       );
-    } catch {}
+    } catch { }
     return { error: "Failed to delete list" };
   }
 };

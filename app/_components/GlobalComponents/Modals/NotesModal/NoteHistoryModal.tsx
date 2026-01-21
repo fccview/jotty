@@ -74,7 +74,9 @@ export const NoteHistoryModal = ({
       } else {
         setIsLoadingMore(true);
       }
-      setEntries([]);
+      if (!append) {
+        setEntries([]);
+      }
       setError(null);
 
       try {
@@ -222,7 +224,7 @@ export const NoteHistoryModal = ({
       >
         <div className="space-y-4">
           {error === "HISTORY_DISABLED_ADMIN" ||
-          error === "HISTORY_DISABLED_USER" ? (
+            error === "HISTORY_DISABLED_USER" ? (
             <div className="text-center py-8 text-muted-foreground">
               <GitCompareIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="font-medium">{t("history.featureDisabled")}</p>
