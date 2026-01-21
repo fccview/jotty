@@ -83,14 +83,16 @@ export const HistoryPreview = ({
               {viewMode === "diff" ? <File02Icon /> : <GitCompareIcon />}
             </span>
           </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => selectedEntry && onRestore(selectedEntry)}
-          >
-            <RotateLeft01Icon className="h-4 w-4 mr-1" />
-            <span className="hidden lg:inline">{t("history.restore")}</span>
-          </Button>
+          {selectedEntry?.action !== "move" && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => selectedEntry && onRestore(selectedEntry)}
+            >
+              <RotateLeft01Icon className="h-4 w-4 mr-1" />
+              <span className="hidden lg:inline">{t("history.restore")}</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -100,20 +102,19 @@ export const HistoryPreview = ({
             {diffLines.map((line, idx) => (
               <div
                 key={idx}
-                className={`${
-                  line.type === "added"
+                className={`${line.type === "added"
                     ? "bg-primary/20 text-primary"
                     : line.type === "removed"
-                    ? "bg-destructive/20 text-destructive"
-                    : "text-muted-foreground"
-                }`}
+                      ? "bg-destructive/20 text-destructive"
+                      : "text-muted-foreground"
+                  }`}
               >
                 <span className="inline-block w-6 text-muted-foreground text-right mr-3 select-none">
                   {line.type === "added"
                     ? "+"
                     : line.type === "removed"
-                    ? "-"
-                    : " "}
+                      ? "-"
+                      : " "}
                 </span>
                 {line.content}
               </div>

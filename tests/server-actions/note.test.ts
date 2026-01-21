@@ -1,7 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
-  mockFs,
-  mockRevalidatePath,
   resetAllMocks,
   createFormData,
 } from "../setup";

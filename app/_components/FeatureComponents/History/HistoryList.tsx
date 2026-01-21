@@ -106,7 +106,7 @@ export const HistoryList = ({
                 </p>
               </div>
               <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                {entry.action !== "init" && entry.action !== "delete" && (
+                {entry.action !== "init" && entry.action !== "delete" && entry.action !== "move" && (
                   <>
                     <Button
                       variant="ghost"
@@ -115,7 +115,7 @@ export const HistoryList = ({
                       disabled={isLoadingVersion}
                     >
                       {isLoadingVersion &&
-                      selectedEntry?.commitHash === entry.commitHash ? (
+                        selectedEntry?.commitHash === entry.commitHash ? (
                         <Logo className="h-4 w-4 animate-pulse" />
                       ) : (
                         <ViewIcon className="h-4 w-4" />

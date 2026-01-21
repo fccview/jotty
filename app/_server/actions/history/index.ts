@@ -123,7 +123,7 @@ export const commitNote = async (
   relativePath: string,
   action: HistoryAction,
   noteTitle: string,
-  metadata?: { oldTitle?: string; oldCategory?: string; newCategory?: string }
+  metadata?: { oldTitle?: string; oldCategory?: string; newCategory?: string; oldPath?: string }
 ): Promise<HistoryResult<string>> => {
   const enabled = await _isHistoryEnabled();
   if (!enabled) {
@@ -172,6 +172,23 @@ export const commitNote = async (
         return { success: true };
       }
       await git.add(["-u", relativePath]);
+    } else if (action === "move" && metadata?.oldPath) {
+      const oldPathNormalized = metadata.oldPath.replace(/\\/g, "/");
+
+      try {
+        const oldFileExists = status.files.some(
+          (f) => f.path === oldPathNormalized || f.path === metadata.oldPath
+        );
+
+        if (oldFileExists) {
+          await git.mv(metadata.oldPath, relativePath);
+        } else {
+          await git.add(relativePath);
+        }
+      } catch (error) {
+        console.warn("Git mv failed, falling back to add:", error);
+        await git.add(relativePath);
+      }
     } else {
       const hasChanges = status.files.some(
         (f) =>
@@ -195,7 +212,7 @@ export const commitNote = async (
   } finally {
     try {
       await unlock(lockPath);
-    } catch {}
+    } catch { }
   }
 };
 
@@ -231,11 +248,24 @@ export const getHistory = async (
 
   const username = noteOwner || currentUser.username;
   const userDir = USER_NOTES_DIR(username);
-  const filePath = path.join(noteCategory || "Uncategorized", `${noteId}.md`);
 
   try {
     await ensureRepo(username);
     const git = _getGitInstance(userDir);
+
+    // Look up the note by UUID to get its current category and ID
+    const { getNoteById } = await import("@/app/_server/actions/note");
+    const note = await getNoteById(noteUuid, undefined, username);
+
+    if (!note) {
+      return { success: false, error: "Note not found" };
+    }
+
+    // Use the actual current path from the note lookup
+    const filePath = path.join(
+      note.category || "Uncategorized",
+      `${note.id}.md`
+    );
 
     const skip = (page - 1) * pageSize;
     const rawOutput = await git.raw([
@@ -317,37 +347,45 @@ export const getVersion = async (
 
   const username = noteOwner || currentUser.username;
   const userDir = USER_NOTES_DIR(username);
-  const filePath = path.join(noteCategory || "Uncategorized", `${noteId}.md`);
 
   try {
     const git = _getGitInstance(userDir);
 
-    const commitInfo = await git.raw([
-      "show",
+    const filesInCommit = await git.raw([
+      "ls-tree",
+      "-r",
       "--name-only",
-      "--format=",
       commitHash,
     ]);
 
-    const filesInCommit = commitInfo
+    const mdFiles = filesInCommit
       .trim()
       .split("\n")
-      .filter((l) => l.length > 0);
-    const categoryPrefix = (noteCategory || "Uncategorized") + "/";
-    let historicalPath = filePath;
-
-    for (const file of filesInCommit) {
-      if (file.startsWith(categoryPrefix) && file.endsWith(".md")) {
-        historicalPath = file;
-        break;
-      }
-    }
-
-    const content = await git.show([`${commitHash}:${historicalPath}`]);
+      .filter((f) => f.endsWith(".md") && f.length > 0);
 
     const { extractYamlMetadata } = await import(
       "@/app/_utils/yaml-metadata-utils"
     );
+
+    let historicalPath: string | null = null;
+    for (const file of mdFiles) {
+      try {
+        const fileContent = await git.show([`${commitHash}:${file}`]);
+        const { metadata } = extractYamlMetadata(fileContent);
+        if (metadata.uuid === noteUuid) {
+          historicalPath = file;
+          break;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    if (!historicalPath) {
+      return { success: false, error: "Note version not found in commit" };
+    }
+
+    const content = await git.show([`${commitHash}:${historicalPath}`]);
     const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
     const log = await git.log({
@@ -455,15 +493,15 @@ export const deleteAllRepos = async (): Promise<HistoryResult<void>> => {
 
       try {
         await fs.rm(userGitDir, { recursive: true, force: true });
-      } catch {}
+      } catch { }
 
       try {
         await fs.unlink(userLockFile);
-      } catch {}
+      } catch { }
 
       try {
         await fs.unlink(userGitignore);
-      } catch {}
+      } catch { }
     }
 
     return { success: true };
