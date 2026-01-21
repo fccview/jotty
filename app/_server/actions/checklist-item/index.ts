@@ -41,7 +41,7 @@ export const updateItem = async (
     const currentUser = username || (await getUsername());
 
     const canEdit = await checkUserPermission(
-      listId,
+      checklist.uuid || listId,
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
       currentUser,
