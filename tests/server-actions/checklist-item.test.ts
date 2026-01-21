@@ -905,4 +905,589 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       expect(result.success).toBe(true);
     });
   });
+
+  describe('Sharing Permissions - Checklist Item Operations', () => {
+    const sharedChecklist = {
+      ...mockChecklist,
+      owner: 'owner-user',
+    };
+
+    beforeEach(() => {
+      mockGetCurrentUser.mockResolvedValue({ username: 'shared-user' });
+      mockGetUsername.mockResolvedValue('shared-user');
+      mockGetListById.mockResolvedValue(sharedChecklist);
+      mockGetUserChecklists.mockResolvedValue({
+        success: true,
+        data: [sharedChecklist],
+      });
+    });
+
+    describe('updateItem - Shared Access', () => {
+      it('should allow checking/unchecking items with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          completed: 'true',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+        expect(mockCheckUserPermission).toHaveBeenCalled();
+      });
+
+      it('should deny checking items with read-only permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          completed: 'true',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe('Failed to update item');
+      });
+
+      it('should allow renaming items with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          text: 'Renamed item',
+          completed: 'false',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny renaming items with read-only permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          text: 'Renamed item',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(false);
+      });
+
+      it('should allow updating item description with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          description: 'Updated description',
+          completed: 'false',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should allow updating due date with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          dueDate: '2024-12-31',
+          completed: 'false',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should allow toggling parent item with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+        const checklistWithChildren = {
+          ...sharedChecklist,
+          items: [
+            {
+              id: 'parent-1',
+              text: 'Parent',
+              completed: false,
+              order: 0,
+              children: [
+                { id: 'child-1', text: 'Child 1', completed: false, order: 0 },
+                { id: 'child-2', text: 'Child 2', completed: false, order: 1 },
+              ],
+            },
+          ],
+        };
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'parent-1',
+          completed: 'true',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(checklistWithChildren, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+      });
+    });
+
+    describe('createItem - Shared Access', () => {
+      it('should allow creating items with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          text: 'New shared item',
+          category: 'TestCategory',
+        });
+
+        const result = await createItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+        expect(result.data?.text).toBe('New shared item');
+      });
+
+      it('should deny creating items with read-only permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          text: 'New item',
+          category: 'TestCategory',
+        });
+
+        const result = await createItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(false);
+      });
+
+      it('should allow creating items with description with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          text: 'Item with desc',
+          description: 'Description text',
+          category: 'TestCategory',
+        });
+
+        const result = await createItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+      });
+    });
+
+    describe('deleteItem - Shared Access', () => {
+      it('should allow deleting items with delete permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          category: 'TestCategory',
+        });
+
+        const result = await deleteItem(formData);
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny deleting items without delete permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          category: 'TestCategory',
+        });
+
+        const result = await deleteItem(formData);
+
+        expect(result.success).toBe(false);
+      });
+
+      it('should check delete permission specifically', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          category: 'TestCategory',
+        });
+
+        await deleteItem(formData);
+
+        expect(mockCheckUserPermission).toHaveBeenCalled();
+      });
+    });
+
+    describe('updateItemStatus - Shared Access (Task Items)', () => {
+      beforeEach(() => {
+        const sharedTaskChecklist = {
+          ...mockTaskChecklist,
+          owner: 'owner-user',
+        };
+        mockGetListById.mockResolvedValue(sharedTaskChecklist);
+        mockGetUserChecklists.mockResolvedValue({
+          success: true,
+          data: [sharedTaskChecklist],
+        });
+      });
+
+      it('should allow updating status with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'task-1',
+          status: 'in-progress',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItemStatus(formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny updating status with read-only permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'task-1',
+          status: 'in-progress',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItemStatus(formData, 'shared-user');
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe('Permission denied');
+      });
+
+      it('should allow updating time entries with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'task-1',
+          timeEntries: JSON.stringify([
+            { start: '2024-01-01T09:00:00Z', end: '2024-01-01T10:00:00Z', duration: 3600000 },
+          ]),
+          category: 'TestCategory',
+        });
+
+        const result = await updateItemStatus(formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny updating time entries without edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'task-1',
+          timeEntries: JSON.stringify([
+            { start: '2024-01-01T09:00:00Z', end: '2024-01-01T10:00:00Z', duration: 3600000 },
+          ]),
+          category: 'TestCategory',
+        });
+
+        const result = await updateItemStatus(formData, 'shared-user');
+
+        expect(result.success).toBe(false);
+      });
+    });
+
+    describe('createBulkItems - Shared Access', () => {
+      it('should allow bulk creating items with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemsText: 'Item 1\nItem 2\nItem 3',
+          category: 'TestCategory',
+        });
+
+        const result = await createBulkItems(formData);
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny bulk creating items with read-only permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemsText: 'Item 1\nItem 2',
+          category: 'TestCategory',
+        });
+
+        const result = await createBulkItems(formData);
+
+        expect(result.success).toBe(false);
+      });
+    });
+
+    describe('bulkToggleItems - Shared Access', () => {
+      it('should allow bulk toggling with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemIds: JSON.stringify(['item-1', 'item-2']),
+          category: 'TestCategory',
+        });
+
+        const result = await bulkToggleItems(formData);
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny bulk toggling with read-only permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemIds: JSON.stringify(['item-1', 'item-2']),
+          category: 'TestCategory',
+        });
+
+        const result = await bulkToggleItems(formData);
+
+        expect(result.success).toBe(false);
+      });
+
+      it('should allow toggling all items with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemIds: JSON.stringify([]),
+          toggleAll: 'true',
+          category: 'TestCategory',
+        });
+
+        const result = await bulkToggleItems(formData);
+
+        expect(result.success).toBe(true);
+      });
+    });
+
+    describe('bulkDeleteItems - Shared Access', () => {
+      it('should allow bulk deleting with delete permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemIds: JSON.stringify(['item-1', 'item-2']),
+          category: 'TestCategory',
+        });
+
+        const result = await bulkDeleteItems(formData);
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny bulk deleting without delete permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemIds: JSON.stringify(['item-1', 'item-2']),
+          category: 'TestCategory',
+        });
+
+        const result = await bulkDeleteItems(formData);
+
+        expect(result.success).toBe(false);
+      });
+    });
+
+    describe('reorderItems - Shared Access', () => {
+      it('should allow reordering items with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          activeItemId: 'item-1',
+          overItemId: 'item-3',
+          category: 'TestCategory',
+        });
+
+        const result = await reorderItems(formData);
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny reordering items with read-only permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+        mockGetUserChecklists.mockResolvedValue({
+          success: false,
+          error: 'Permission denied',
+        });
+
+        const formData = createFormData({
+          listId: 'test-list',
+          activeItemId: 'item-1',
+          overItemId: 'item-3',
+          category: 'TestCategory',
+        });
+
+        const result = await reorderItems(formData);
+
+        expect(result.success).toBe(false);
+      });
+    });
+
+    describe('createSubItem - Shared Access', () => {
+      it('should allow creating sub-items with edit permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          parentId: 'item-1',
+          text: 'New sub-item',
+          category: 'TestCategory',
+        });
+
+        const result = await createSubItem(formData);
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should deny creating sub-items with read-only permission', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          parentId: 'item-1',
+          text: 'New sub-item',
+          category: 'TestCategory',
+        });
+
+        const result = await createSubItem(formData);
+
+        expect(result.success).toBe(false);
+      });
+    });
+
+    describe('Edge Cases - Shared Access', () => {
+      it('should handle permission check for nested items', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+        const checklistWithNested = {
+          ...sharedChecklist,
+          items: [
+            {
+              id: 'parent',
+              text: 'Parent',
+              completed: false,
+              order: 0,
+              children: [
+                {
+                  id: 'child',
+                  text: 'Child',
+                  completed: false,
+                  order: 0,
+                  children: [
+                    { id: 'grandchild', text: 'Grandchild', completed: false, order: 0 },
+                  ],
+                },
+              ],
+            },
+          ],
+        };
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'grandchild',
+          completed: 'true',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(checklistWithNested, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+      });
+
+      it('should verify permission is checked before any item modification', async () => {
+        mockCheckUserPermission.mockResolvedValue(false);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          completed: 'true',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(false);
+        expect(mockCheckUserPermission).toHaveBeenCalled();
+        expect(mockServerWriteFile).not.toHaveBeenCalled();
+      });
+
+      it('should handle concurrent item updates with shared access', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData1 = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          completed: 'true',
+          category: 'TestCategory',
+        });
+
+        const formData2 = createFormData({
+          listId: 'test-list',
+          itemId: 'item-2',
+          completed: 'true',
+          category: 'TestCategory',
+        });
+
+        const [result1, result2] = await Promise.all([
+          updateItem(sharedChecklist, formData1, 'shared-user'),
+          updateItem(sharedChecklist, formData2, 'shared-user'),
+        ]);
+
+        expect(result1.success).toBe(true);
+        expect(result2.success).toBe(true);
+      });
+
+      it('should maintain item ownership metadata when shared user edits', async () => {
+        mockCheckUserPermission.mockResolvedValue(true);
+
+        const formData = createFormData({
+          listId: 'test-list',
+          itemId: 'item-1',
+          text: 'Updated by shared user',
+          completed: 'false',
+          category: 'TestCategory',
+        });
+
+        const result = await updateItem(sharedChecklist, formData, 'shared-user');
+
+        expect(result.success).toBe(true);
+        expect(result.data?.owner).toBe('owner-user');
+      });
+    });
+  });
 });
