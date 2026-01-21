@@ -173,6 +173,14 @@ mark {
     padding-bottom: 0.3em;
 }
 
+.prose li > code {
+    background: #292a2b !important;
+    color: #ce9178;
+    padding: .15rem .3rem;
+    border-radius: .15rem !important;
+    font-family: Google Sans Code Variable, monospace;
+}
+
 .prose h1,
 .prose h2,
 .prose h3,
