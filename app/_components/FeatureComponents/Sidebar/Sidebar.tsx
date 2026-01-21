@@ -66,40 +66,34 @@ export const Sidebar = (props: SidebarProps) => {
   useEffect(() => {
     if (!categoriesScrollRef.current || !pathname) return;
 
-    const scrollToSelectedItem = () => {
-      const selectedButton = categoriesScrollRef.current?.querySelector(
-        '[data-sidebar-item-selected="true"]'
-      ) as HTMLElement;
+    const selectedButton = categoriesScrollRef.current.querySelector(
+      '[data-sidebar-item-selected="true"]'
+    ) as HTMLElement;
 
-      if (selectedButton && categoriesScrollRef.current) {
-        const container = categoriesScrollRef.current;
-        const buttonRect = selectedButton.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
+    if (selectedButton && categoriesScrollRef.current) {
+      const container = categoriesScrollRef.current;
+      const buttonRect = selectedButton.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
 
-        const isVisible =
-          buttonRect.top >= containerRect.top &&
-          buttonRect.bottom <= containerRect.bottom;
+      const isVisible =
+        buttonRect.top >= containerRect.top &&
+        buttonRect.bottom <= containerRect.bottom;
 
-        if (!isVisible) {
-          const scrollTop =
-            container.scrollTop +
-            buttonRect.top -
-            containerRect.top -
-            containerRect.height / 2 +
-            buttonRect.height / 2;
+      if (!isVisible) {
+        const scrollTop =
+          container.scrollTop +
+          buttonRect.top -
+          containerRect.top -
+          containerRect.height / 2 +
+          buttonRect.height / 2;
 
-          container.scrollTo({
-            top: Math.max(0, scrollTop),
-            behavior: "smooth",
-          });
-        }
+        container.scrollTo({
+          top: Math.max(0, scrollTop),
+          behavior: "auto",
+        });
       }
-    };
-
-    const timeoutId = setTimeout(scrollToSelectedItem, 100);
-
-    return () => clearTimeout(timeoutId);
-  }, [pathname, sidebar.mode, currentItems]);
+    }
+  }, [pathname, sidebar.mode]);
 
   if (!sidebar.isInitialized) return null;
 
