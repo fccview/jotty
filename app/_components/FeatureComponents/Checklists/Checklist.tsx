@@ -88,7 +88,7 @@ export const ChecklistView = ({
           onEdit={() => onEdit?.(list)}
         />
         <div className="flex-1 flex items-center justify-center">
-          <p>{t('checklists.loadingChecklist')}</p>
+          <p>{t("checklists.loadingChecklist")}</p>
         </div>
       </div>
     );
@@ -118,12 +118,12 @@ export const ChecklistView = ({
                   <label className="block">
                     Deleting {deletingItemsCount} item(s)
                   </label>
-                  <label>{t('checklists.doNotRefresh')}</label>
+                  <label>{t("checklists.doNotRefresh")}</label>
                 </>
               ),
             },
           ]}
-          onRemove={() => { }}
+          onRemove={() => {}}
         ></ToastContainer>
       )}
 
@@ -138,12 +138,12 @@ export const ChecklistView = ({
                   <label className="block">
                     Syncing {pendingTogglesCount} item(s)
                   </label>
-                  <label>{t('checklists.doNotRefresh')}</label>
+                  <label>{t("checklists.doNotRefresh")}</label>
                 </>
               ),
             },
           ]}
-          onRemove={() => { }}
+          onRemove={() => {}}
         ></ToastContainer>
       )}
 
@@ -157,8 +157,8 @@ export const ChecklistView = ({
           isLoading={isLoading}
           autoFocus={true}
           focusKey={focusKey}
-          placeholder={t('checklists.addNewItem')}
-          submitButtonText={t('checklists.addItem')}
+          placeholder={t("checklists.addNewItem")}
+          submitButtonText={t("checklists.addItem")}
         />
       )}
 
@@ -180,4 +180,3 @@ export const ChecklistView = ({
     </div>
   );
 };
-

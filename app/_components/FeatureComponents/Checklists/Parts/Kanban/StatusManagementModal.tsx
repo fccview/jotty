@@ -26,6 +26,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 
 const defaultStatusColors: Record<string, string> = {
   [TaskStatus.TODO]: "#6b7280",
@@ -38,6 +39,7 @@ interface SortableStatusItemProps {
   status: KanbanStatus;
   onUpdateLabel: (id: string, label: string) => void;
   onUpdateColor: (id: string, color: string) => void;
+  onUpdateAutoComplete: (id: string, autoComplete: boolean) => void;
   onRemove: (id: string) => void;
   canRemove: boolean;
 }
@@ -46,6 +48,7 @@ const SortableStatusItem = ({
   status,
   onUpdateLabel,
   onUpdateColor,
+  onUpdateAutoComplete,
   onRemove,
   canRemove,
 }: SortableStatusItemProps) => {
@@ -99,6 +102,20 @@ const SortableStatusItem = ({
         title={t("checklists.statusColor")}
       />
 
+      <div className="flex items-center gap-2 cursor-pointer">
+        <Toggle
+          id={`autoComplete-${status.id}`}
+          checked={status.autoComplete || false}
+          onCheckedChange={(e) => onUpdateAutoComplete(status.id, e)}
+        />
+
+        <label htmlFor={`autoComplete-${status.id}`}>
+          <span className="text-sm text-muted-foreground cursor-pointer whitespace-nowrap">
+            {t("tasks.autoComplete")}
+          </span>
+        </label>
+      </div>
+
       <Button
         variant="destructive"
         size="sm"
@@ -135,7 +152,11 @@ export const StatusManagementModal = ({
     }))
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [statusToDelete, setStatusToDelete] = useState<{id: string, itemCount: number, targetLabel: string} | null>(null);
+  const [statusToDelete, setStatusToDelete] = useState<{
+    id: string;
+    itemCount: number;
+    targetLabel: string;
+  } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -165,29 +186,41 @@ export const StatusManagementModal = ({
     );
   };
 
+  const handleUpdateAutoComplete = (id: string, autoComplete: boolean) => {
+    setStatuses(
+      statuses.map((s) => (s.id === id ? { ...s, autoComplete } : s))
+    );
+  };
+
   const handleRemoveStatus = (id: string) => {
     const itemCount = itemsByStatus[id] || 0;
 
     const remainingStatuses = statuses.filter((s) => s.id !== id);
-    const sortedRemainingStatuses = [...remainingStatuses].sort((a, b) => a.order - b.order);
+    const sortedRemainingStatuses = [...remainingStatuses].sort(
+      (a, b) => a.order - b.order
+    );
     const targetStatus = sortedRemainingStatuses[0];
 
     if (itemCount > 0) {
       setStatusToDelete({
         id,
         itemCount,
-        targetLabel: targetStatus?.label || "the first remaining status"
+        targetLabel: targetStatus?.label || "the first remaining status",
       });
       setShowDeleteModal(true);
     } else {
-      setStatuses(remainingStatuses.map((s, index) => ({ ...s, order: index })));
+      setStatuses(
+        remainingStatuses.map((s, index) => ({ ...s, order: index }))
+      );
     }
   };
 
   const confirmRemoveStatus = () => {
     if (!statusToDelete) return;
 
-    const remainingStatuses = statuses.filter((s) => s.id !== statusToDelete.id);
+    const remainingStatuses = statuses.filter(
+      (s) => s.id !== statusToDelete.id
+    );
     setStatuses(remainingStatuses.map((s, index) => ({ ...s, order: index })));
     setShowDeleteModal(false);
     setStatusToDelete(null);
@@ -219,12 +252,12 @@ export const StatusManagementModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={t('tasks.manageStatuses')}
-      className="lg:max-w-2xl"
+      title={t("tasks.manageStatuses")}
+      className="lg:max-w-3xl"
     >
       <div className="space-y-4">
         <p className="text-md lg:text-sm text-muted-foreground">
-          {t('tasks.customizeStatuses')}
+          {t("tasks.customizeStatuses")}
         </p>
 
         <DndContext
@@ -243,6 +276,7 @@ export const StatusManagementModal = ({
                   status={status}
                   onUpdateLabel={handleUpdateLabel}
                   onUpdateColor={handleUpdateColor}
+                  onUpdateAutoComplete={handleUpdateAutoComplete}
                   onRemove={handleRemoveStatus}
                   canRemove={statuses.length > 1}
                 />
@@ -253,12 +287,14 @@ export const StatusManagementModal = ({
 
         <Button variant="outline" onClick={handleAddStatus} className="w-full">
           <Add01Icon className="h-4 w-4 mr-2" />
-          {t('tasks.addStatus')}
+          {t("tasks.addStatus")}
         </Button>
 
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={handleClose}>{t('common.cancel')}</Button>
-          <Button onClick={handleSave}>{t('common.saveChanges')}</Button>
+          <Button type="button" variant="outline" onClick={handleClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button onClick={handleSave}>{t("common.saveChanges")}</Button>
         </div>
       </div>
 
@@ -270,7 +306,15 @@ export const StatusManagementModal = ({
         }}
         onConfirm={confirmRemoveStatus}
         title={t("common.delete")}
-        message={statusToDelete ? `This status has ${statusToDelete.itemCount} item${statusToDelete.itemCount > 1 ? "s" : ""}. ${statusToDelete.itemCount > 1 ? "They" : "It"} will be moved to "${statusToDelete.targetLabel}". Continue?` : ""}
+        message={
+          statusToDelete
+            ? `This status has ${statusToDelete.itemCount} item${
+                statusToDelete.itemCount > 1 ? "s" : ""
+              }. ${
+                statusToDelete.itemCount > 1 ? "They" : "It"
+              } will be moved to "${statusToDelete.targetLabel}". Continue?`
+            : ""
+        }
         confirmText={t("common.confirm")}
         variant="destructive"
       />

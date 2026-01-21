@@ -40,6 +40,7 @@ export const SidebarActions = ({
           variant="outline"
           size="sm"
           className="h-14 rounded-jotty px-8 lg:h-9 lg:rounded-jotty lg:px-3 text-md lg:text-sm"
+          aria-label={t("common.newCategory")}
         >
           <FolderAddIcon className="h-4 w-4" />
         </Button>

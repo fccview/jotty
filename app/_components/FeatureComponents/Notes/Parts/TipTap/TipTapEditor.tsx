@@ -30,7 +30,7 @@ import { useTranslations } from "next-intl";
 
 type TiptapEditorProps = {
   content: string;
-  onChange: (content: string, isMarkdownMode: boolean) => void;
+  onChange: (content: string, isMarkdownMode: boolean, isDirty: boolean) => void;
   tableSyntax?: TableSyntax;
   notes?: any[];
   checklists?: any[];
@@ -80,27 +80,35 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const [showBubbleMenu, setShowBubbleMenu] = useState(false);
     const [showLineNumbers, setShowLineNumbers] = useState(true);
     const [showPreview, setShowPreview] = useState(false);
+    const [linkRequestPending, setLinkRequestPending] = useState(false);
+    const [linkRequestHasSelection, setLinkRequestHasSelection] = useState(false);
     const isInitialized = useRef(false);
     const debounceTimeoutRef = useRef<NodeJS.Timeout>();
     const originalMarkdownRef = useRef<string>(getOriginalMarkdown());
     const richEditorWasEditedRef = useRef<boolean>(false);
+    const isDirtyRef = useRef<boolean>(false);
 
     const uploadHook = useFileUpload(appSettings?.maximumFileSize);
     const tableToolbar = useTableToolbar();
 
     const debouncedOnChange = useCallback(
-      (newContent: string, isMarkdown: boolean) => {
+      (newContent: string, isMarkdown: boolean, isDirty: boolean) => {
         if (debounceTimeoutRef.current) {
           clearTimeout(debounceTimeoutRef.current);
         }
         debounceTimeoutRef.current = setTimeout(() => {
-          onChange(newContent, isMarkdown);
+          onChange(newContent, isMarkdown, isDirty);
         }, 0);
       },
       [onChange]
     );
 
     const imageClickRef = useRef<((pos: any) => void) | null>(null);
+
+    const handleRichEditorLinkRequest = useCallback((hasSelection: boolean) => {
+      setLinkRequestHasSelection(hasSelection);
+      setLinkRequestPending(true);
+    }, []);
 
     const editor: Editor | null = useEditor({
       immediatelyRender: false,
@@ -112,6 +120,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             }
           },
           onTableSelect: tableToolbar.handleTableSelect,
+          onLinkRequest: handleRichEditorLinkRequest,
         },
         editorSettings,
         {
@@ -125,7 +134,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       onUpdate: ({ editor }) => {
         if (!isMarkdownMode) {
           richEditorWasEditedRef.current = true;
-          debouncedOnChange(editor.getHTML(), false);
+          isDirtyRef.current = true;
+          debouncedOnChange(editor.getHTML(), false, true);
         }
       },
       editorProps: {
@@ -168,7 +178,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             const htmlContent = convertMarkdownToHtml(markdownContent);
             editor.commands.setContent(htmlContent, { emitUpdate: false });
             setIsMarkdownMode(false);
-            debouncedOnChange(htmlContent, false);
+            debouncedOnChange(htmlContent, false, isDirtyRef.current);
           }
         }, 0);
       } else {
@@ -186,7 +196,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             }
             setMarkdownContent(finalMarkdown);
             setIsMarkdownMode(true);
-            debouncedOnChange(finalMarkdown, true);
+            debouncedOnChange(finalMarkdown, true, isDirtyRef.current);
             richEditorWasEditedRef.current = false;
           }
         }, 0);
@@ -229,7 +239,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
       originalMarkdownRef.current = markdownContent;
 
-      if (isMarkdownMode) {
+      if (isMarkdownMode && !isDirtyRef.current) {
         setMarkdownContent(markdownContent);
       }
     }, [content, isMarkdownMode, tableSyntax]);
@@ -264,7 +274,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     ) => {
       const newContent = e.target.value;
       setMarkdownContent(newContent);
-      debouncedOnChange(newContent, true);
+      isDirtyRef.current = true;
+      debouncedOnChange(newContent, true, true);
     };
 
     const handleVisualFileDrop = useCallback(
@@ -306,13 +317,15 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
                 const markdownImage = `![${file.name}](${url})`;
                 const newContent = markdownContent + "\n" + markdownImage;
                 setMarkdownContent(newContent);
-                debouncedOnChange(newContent, true);
+                isDirtyRef.current = true;
+                debouncedOnChange(newContent, true, true);
               },
               onFileUpload: (data) => {
                 const markdownLink = `[📎 ${data.fileName}](${data.url})`;
                 const newContent = markdownContent + "\n" + markdownLink;
                 setMarkdownContent(newContent);
-                debouncedOnChange(newContent, true);
+                isDirtyRef.current = true;
+                debouncedOnChange(newContent, true, true);
               },
             },
             true
@@ -323,8 +336,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     );
 
     return (
-      <div className="flex flex-col h-full">
-        <div className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 ${isMarkdownMode ? "py-0 lg:py-2" : "py-2"}`}>
+      <div className="flex flex-col h-full pb-[4em]">
+        <div className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 py-2`}>
           <TiptapToolbar
             editor={editor}
             isMarkdownMode={isMarkdownMode}
@@ -334,6 +347,10 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             showPreview={showPreview}
             onTogglePreview={() => setShowPreview(!showPreview)}
             markdownContent={markdownContent}
+            onMarkdownChange={setMarkdownContent}
+            linkRequestPending={linkRequestPending}
+            linkRequestHasSelection={linkRequestHasSelection}
+            onLinkRequestHandled={() => setLinkRequestPending(false)}
           />
         </div>
 
@@ -364,6 +381,10 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             onChange={handleMarkdownChange}
             onFileDrop={handleMarkdownFileDrop}
             showLineNumbers={showLineNumbers}
+            onLinkRequest={(hasSelection) => {
+              setLinkRequestHasSelection(hasSelection);
+              setLinkRequestPending(true);
+            }}
           />
         ) : (
           <>

@@ -11,16 +11,19 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
 import { useTranslations } from "next-intl";
+import { insertMermaid } from "@/app/_utils/markdown-editor-utils";
 
 interface DiagramsDropdownProps {
   editor: Editor | null;
+  isMarkdownMode?: boolean;
+  onMarkdownChange?: (content: string) => void;
 }
 
-export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
+export const DiagramsDropdown = ({ editor, isMarkdownMode = false, onMarkdownChange }: DiagramsDropdownProps) => {
   const t = useTranslations();
   if (!editor) return null;
 
-  const insertMermaid = () => {
+  const handleInsertMermaid = () => {
     const defaultMermaid = `graph TD
     A[Start] --> B{Decision}
     B -->|Yes| C[Option 1]
@@ -28,20 +31,32 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
     C --> E[End]
     D --> E`;
 
-    (editor.chain().focus() as any).setMermaid(defaultMermaid).run();
+    if (isMarkdownMode && onMarkdownChange) {
+      const textarea = document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+      if (textarea) {
+        const newContent = insertMermaid(textarea, defaultMermaid);
+        onMarkdownChange(newContent);
+      }
+    } else {
+      (editor.chain().focus() as any).setMermaid(defaultMermaid).run();
+    }
   };
 
-  const insertDrawio = () => {
-    (editor.chain().focus() as any).insertDrawIo().run();
+  const handleInsertDrawio = () => {
+    if (!isMarkdownMode) {
+      (editor.chain().focus() as any).insertDrawIo().run();
+    }
   };
 
-  const insertExcalidraw = () => {
-    (editor.chain().focus() as any).insertExcalidraw().run();
+  const handleInsertExcalidraw = () => {
+    if (!isMarkdownMode) {
+      (editor.chain().focus() as any).insertExcalidraw().run();
+    }
   };
 
-  const isMermaidActive = editor.isActive("mermaid");
-  const isDrawioActive = editor.isActive("drawIo");
-  const isExcalidrawActive = editor.isActive("excalidraw");
+  const isMermaidActive = editor && editor.isActive("mermaid");
+  const isDrawioActive = editor && editor.isActive("drawIo");
+  const isExcalidrawActive = editor && editor.isActive("excalidraw");
 
   const trigger = (
     <Button
@@ -61,7 +76,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
       <div className="min-w-[200px]">
         <button
           className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent text-md lg:text-sm border-b border-border"
-          onClick={insertMermaid}
+          onClick={handleInsertMermaid}
         >
           <div className="flex items-center justify-center w-8 h-8 rounded">
             <DocumentCodeIcon className="h-5 w-5" />
@@ -75,8 +90,10 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
         </button>
 
         <button
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent text-md lg:text-sm border-b border-border"
-          onClick={insertDrawio}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-md lg:text-sm border-b border-border ${isMarkdownMode ? "opacity-50 cursor-not-allowed" : "hover:bg-accent"}`}
+          onClick={handleInsertDrawio}
+          disabled={isMarkdownMode}
+          title={isMarkdownMode ? "Not available in markdown mode" : ""}
         >
           <div className="flex items-center justify-center w-8 h-8 rounded">
             <DrawingModeIcon className="h-5 w-5" />
@@ -84,14 +101,16 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
           <div className="flex-1">
             <div className="font-medium">{t('editor.drawioDiagram')}</div>
             <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
-              {t('editor.drawioDescription')}
+              {isMarkdownMode ? "Rich mode only" : t('editor.drawioDescription')}
             </div>
           </div>
         </button>
 
         <button
-          className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent text-sm"
-          onClick={insertExcalidraw}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm ${isMarkdownMode ? "opacity-50 cursor-not-allowed" : "hover:bg-accent"}`}
+          onClick={handleInsertExcalidraw}
+          disabled={isMarkdownMode}
+          title={isMarkdownMode ? "Not available in markdown mode" : ""}
         >
           <div className="flex items-center justify-center w-8 h-8 rounded">
             <PencilIcon className="h-5 w-5" />
@@ -99,7 +118,7 @@ export const DiagramsDropdown = ({ editor }: DiagramsDropdownProps) => {
           <div className="flex-1">
             <div className="font-medium">{t('editor.excalidrawDiagram')}</div>
             <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
-              {t('editor.excalidrawDescription')}
+              {isMarkdownMode ? "Rich mode only" : t('editor.excalidrawDescription')}
             </div>
           </div>
         </button>

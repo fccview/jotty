@@ -224,7 +224,16 @@
     "read": "Leggere",
     "removeAll": "Rimuovi tutto",
     "noUsersFound": "Nessun utente trovato.",
-    "noCategoriesAvailable": "Nessuna categoria disponibile"
+    "noCategoriesAvailable": "Nessuna categoria disponibile",
+    "links": "Collegamenti",
+    "documentation": "Documentazione",
+    "githubRepository": "Repository GitHub",
+    "toggleSidebar": "Mostra/nascondi barra laterale",
+    "openSearch": "Apri ricerca",
+    "closeSearch": "Chiudi ricerca",
+    "moreOptions": "Altre opzioni",
+    "retry": "Riprova",
+    "restoring": "Ripristino..."
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -438,6 +447,7 @@
     "clearAllCompletedConfirmMessage": "Sei sicuro di voler eliminare tutti i {count} elementi completati? Questa azione non può essere annullata.",
     "clearAllIncompleteConfirmMessage": "Vuoi eliminare tutti i {count} elementi incompleti e i relativi elementi secondari? \nQuesta azione non può essere annullata.",
     "convertChecklistType": "Converti Tipo Checklist",
+    "convertTypeConfirmation": "Stai per convertire da {currentType} a {newType}. Sei sicuro di voler procedere?",
     "dataLossWarning": "⚠️ Avviso Perdita Dati",
     "dataLossWarningItems": "I seguenti dati andranno persi:",
     "allTaskStatusesReset": "Tutti gli stati delle attività verranno reimpostati",
@@ -504,7 +514,8 @@
     "manageStatuses": "Gestisci stati",
     "viewArchived": "Vedi archiviati",
     "customizeStatuses": "Personalizza gli stati per questa kanban board. Aggiungi, rimuovi o riordina gli stati.",
-    "addStatus": "Aggiungi stato"
+    "addStatus": "Aggiungi stato",
+    "autoComplete": "Complete automaticamente"
   },
   "profile": {
     "userProfile": "Utente",
@@ -844,6 +855,11 @@
     "enterAnyEmoji": "Inserisci un'emoji o usa il selettore (Win: Win+.; Mac: Ctrl+Cmd+Space",
     "sharingOverview": "Panoramica Condivisioni",
     "detailedSharingBreakdown": "Dettagli sui pattern di condivisione e coinvolgimento utenti",
+    "checkForUpdates": "Verifica aggiornamenti",
+    "checkingForUpdates": "Verifica aggiornamenti in corso...",
+    "updateAvailable": "Aggiornamento disponibile!",
+    "upToDate": "Sei aggiornato!",
+    "issuesAndBugs": "Problemi e segnalazioni di bug",
     "activeChecklistSharers": "Utenti attivi (Checklist)",
     "activeNotesSharers": "Utenti attivi (Note)",
     "totalSharing": "Azioni di condivisione totali",
@@ -1452,5 +1468,30 @@
     "goHome": "Torna alla Home",
     "seenCount": "Hai visto {count} {count, plural, one {haiku} other {haiku}}",
     "imNoPoet": "Non sono un poeta, e nemmeno Jotty. Queste sono parole casuali in sequenza."
+  },
+  "history": {
+    "fetchError": "Impossibile caricare la cronologia",
+    "restoreError": "Impossibile ripristinare la versione",
+    "manualSavesOnly": "La cronologia viene creata solo con i salvataggi manuali, non con quelli automatici.",
+    "noHistory": "Nessuna cronologia disponibile",
+    "noHistoryDescription": "Salva la nota per creare un punto nella cronologia.",
+    "restore": "Ripristina",
+    "loadMore": "Carica altro",
+    "viewContent": "Visualizza contenuto",
+    "viewDiff": "Visualizza modifiche",
+    "noteHistory": "Cronologia della nota",
+    "restoreVersion": "Ripristina versione",
+    "restoreConfirm": "Ripristinare questa versione? \nIl contenuto attuale verrà sostituito.",
+    "featureDisabled": "Cronologia disattivata",
+    "disabledAdmin": "La cronologia delle note è attualmente disattivata. Puoi abilitarla nelle Impostazioni amministratore > Editor.",
+    "disabledUser": "La cronologia delle note è attualmente disattivata. Contatta il tuo amministratore per abilitare questa funzione.",
+    "goToSettings": "Vai alle impostazioni",
+    "actionCreate": "Creato",
+    "actionUpdate": "Aggiornato",
+    "actionRename": "Rinominato",
+    "actionMove": "Spostato",
+    "actionDelete": "Eliminato",
+    "actionInit": "Inizializzato",
+    "actionUnknown": "Modificato"
   }
 }

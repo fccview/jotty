@@ -184,6 +184,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0 opacity-40 lg:opacity-20 group-hover:opacity-100 transition-opacity"
+                    aria-label={t("common.moreOptions")}
                   >
                     <FolderEditIcon className="h-4 w-4" />
                   </Button>

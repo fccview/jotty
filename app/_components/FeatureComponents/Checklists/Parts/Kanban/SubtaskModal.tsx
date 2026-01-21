@@ -8,6 +8,7 @@ import {
   createSubItem,
   updateItem,
   deleteItem,
+  bulkToggleItems,
 } from "@/app/_server/actions/checklist-item";
 import {
   Add01Icon,
@@ -68,7 +69,9 @@ export const SubtaskModal = ({
   }, [initialItem]);
 
   const descriptionHtml = useMemo(() => {
-    const noDescText = `<p class="text-muted-foreground text-md lg:text-sm opacity-50">${t("checklists.noDescription")}</p>`;
+    const noDescText = `<p class="text-muted-foreground text-md lg:text-sm opacity-50">${t(
+      "checklists.noDescription"
+    )}</p>`;
     if (!item.description) return noDescText;
     const unsanitized = unsanitizeDescription(item.description);
     const withLineBreaks = unsanitized.replace(/\n/g, "  \n");
@@ -213,16 +216,38 @@ export const SubtaskModal = ({
   const handleToggleAll = async (completed: boolean) => {
     if (!item.children?.length) return;
 
-    for (const subtask of item.children) {
-      const formData = new FormData();
-      formData.append("listId", checklistId);
-      formData.append("itemId", subtask.id);
-      formData.append("completed", completed.toString());
-      formData.append("category", category);
+    const findTargetItems = (items: Item[]): Item[] => {
+      const targets: Item[] = [];
 
-      const result = await updateItem(checklist, formData);
-      if (result.success && result.data) {
-        onUpdate(result.data);
+      items.forEach((subtask) => {
+        const shouldToggle = completed ? !subtask.completed : subtask.completed;
+        if (shouldToggle) {
+          targets.push(subtask);
+        }
+
+        if (subtask.children && subtask.children.length > 0) {
+          targets.push(...findTargetItems(subtask.children));
+        }
+      });
+
+      return targets;
+    };
+
+    const targetItems = findTargetItems(item.children);
+    if (targetItems.length === 0) return;
+
+    const formData = new FormData();
+    formData.append("listId", checklistId);
+    formData.append("completed", String(completed));
+    formData.append("itemIds", JSON.stringify(targetItems.map((t) => t.id)));
+    formData.append("category", category);
+
+    const result = await bulkToggleItems(formData);
+    if (result.success && result.data) {
+      onUpdate(result.data);
+      const updatedItem = findItemInChecklist(result.data, item.id);
+      if (updatedItem) {
+        setItem(updatedItem);
       }
     }
   };
@@ -234,7 +259,7 @@ export const SubtaskModal = ({
       metadata.push(
         t("common.createdByOn", {
           user: item.createdBy,
-          date: formatDateTimeString(item.createdAt!)
+          date: formatDateTimeString(item.createdAt!),
         })
       );
     }
@@ -243,7 +268,7 @@ export const SubtaskModal = ({
       metadata.push(
         t("common.lastModifiedByOn", {
           user: item.lastModifiedBy,
-          date: formatDateTimeString(item.lastModifiedAt!)
+          date: formatDateTimeString(item.lastModifiedAt!),
         })
       );
     }
@@ -285,7 +310,9 @@ export const SubtaskModal = ({
         {isEditing ? (
           <div className="space-y-4">
             <div>
-              <label className="block text-md lg:text-sm font-medium text-foreground mb-2">{t('tasks.taskTitle')}</label>
+              <label className="block text-md lg:text-sm font-medium text-foreground mb-2">
+                {t("tasks.taskTitle")}
+              </label>
               <input
                 type="text"
                 value={editText}
@@ -308,7 +335,9 @@ export const SubtaskModal = ({
               />
             </div>
             <div>
-              <label className="block text-md lg:text-sm font-medium text-foreground mb-2">{t('common.description')}</label>
+              <label className="block text-md lg:text-sm font-medium text-foreground mb-2">
+                {t("common.description")}
+              </label>
               <textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
@@ -355,7 +384,9 @@ export const SubtaskModal = ({
                   setIsEditing(false);
                 }}
               >
-                <MultiplicationSignIcon className="h-4 w-4 mr-2" />{t('common.cancel')}</Button>
+                <MultiplicationSignIcon className="h-4 w-4 mr-2" />
+                {t("common.cancel")}
+              </Button>
               <Button onClick={handleSave}>
                 <FloppyDiskIcon className="h-4 w-4 mr-2" />
                 {t("admin.saveChanges")}
@@ -365,8 +396,9 @@ export const SubtaskModal = ({
         ) : (
           <div className="space-y-4">
             <div
-              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""
-                }`}
+              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${
+                permissions?.canEdit ? "cursor-pointer" : ""
+              }`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
               <div
@@ -434,7 +466,7 @@ export const SubtaskModal = ({
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground text-md lg:text-sm bg-muted/20 rounded-jotty border border-dashed border-border mb-4">
-                {t('checklists.noSubtasksYet')}
+                {t("checklists.noSubtasksYet")}
               </div>
             )}
 
@@ -456,7 +488,7 @@ export const SubtaskModal = ({
                 <Button
                   onClick={() => handleAddSubtask()}
                   disabled={!newSubtaskText.trim()}
-                  title={t('checklists.addSubItem')}
+                  title={t("checklists.addSubItem")}
                 >
                   <Add01Icon className="h-4 w-4" />
                 </Button>

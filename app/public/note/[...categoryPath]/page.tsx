@@ -76,7 +76,7 @@ export default async function PublicNotePage({
   );
 
   const isPubliclyShared = await isItemSharedWith(
-    id,
+    note.uuid || id,
     category,
     "note",
     "public"

@@ -22,7 +22,10 @@ export async function GET(
       }
 
       if (task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 }
+        );
       }
 
       const statuses = task.statuses || [
@@ -49,7 +52,7 @@ export async function POST(
   return withApiAuth(request, async (user) => {
     try {
       const body = await request.json();
-      const { id, label, color, order } = body;
+      const { id, label, color, order, autoComplete } = body;
 
       if (!id || !label) {
         return NextResponse.json(
@@ -64,7 +67,10 @@ export async function POST(
       }
 
       if (task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 }
+        );
       }
 
       const currentStatuses = task.statuses || [
@@ -85,6 +91,7 @@ export async function POST(
         label,
         color,
         order: order ?? currentStatuses.length,
+        autoComplete: autoComplete ?? false,
       };
 
       const updatedStatuses = [...currentStatuses, newStatus];

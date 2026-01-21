@@ -1,13 +1,14 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 interface DroppableProps {
   id: string;
   data: Record<string, unknown>;
   children: ReactNode | ((props: { isOver: boolean }) => ReactNode);
   className?: string;
+  disabled?: boolean;
 }
 
 export const Droppable = ({
@@ -15,12 +16,39 @@ export const Droppable = ({
   data,
   children,
   className,
+  disabled = false,
 }: DroppableProps) => {
-  const { setNodeRef, isOver } = useDroppable({ id, data });
+  const [showDropIntoIndicator, setShowDropIntoIndicator] = useState(false);
+
+  const { setNodeRef, isOver, active } = useDroppable({
+    id,
+    data: {
+      ...data,
+      allowDropInto: showDropIntoIndicator && !disabled,
+    },
+    disabled,
+  });
+
+  useEffect(() => {
+    if (!isOver || !active) {
+      setShowDropIntoIndicator(false);
+      return;
+    }
+
+    const hoverTimeout = setTimeout(() => {
+      setShowDropIntoIndicator(true);
+    }, 600);
+
+    return () => {
+      clearTimeout(hoverTimeout);
+    };
+  }, [isOver, active]);
 
   return (
     <div ref={setNodeRef} className={className}>
-      {typeof children === "function" ? children({ isOver }) : children}
+      {typeof children === "function"
+        ? children({ isOver: isOver && showDropIntoIndicator })
+        : children}
     </div>
   );
 };

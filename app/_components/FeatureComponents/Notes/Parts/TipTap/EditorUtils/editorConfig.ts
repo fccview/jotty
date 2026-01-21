@@ -27,12 +27,14 @@ import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/Ti
 import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
+import { CalloutExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/CalloutExtension";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { getContrastColor } from "@/app/_utils/color-utils";
 
 interface OverlayCallbacks {
   onImageClick: (position: any) => void;
   onTableSelect: (position: any) => void;
+  onLinkRequest?: (hasSelection: boolean) => void;
 }
 
 interface EditorSettings {
@@ -74,7 +76,10 @@ export const createEditorExtensions = (
     }),
     ...generateCustomHtmlExtensions(),
     DetailsExtension,
-    KeyboardShortcuts,
+    CalloutExtension,
+    KeyboardShortcuts.configure({
+      onLinkRequest: callbacks.onLinkRequest,
+    }),
     OverlayExtension.configure({
       onImageClick: callbacks.onImageClick,
       onTableSelect: callbacks.onTableSelect,

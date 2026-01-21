@@ -163,7 +163,7 @@ export const ChecklistHeader = ({
               <DropdownMenu
                 align="right"
                 trigger={
-                  <Button variant="outline" size="sm" className="h-10 w-10 p-0">
+                  <Button variant="outline" size="sm" className="h-10 w-10 p-0" aria-label={t("common.moreOptions")}>
                     <MoreHorizontalIcon className="h-4 w-4" />
                   </Button>
                 }

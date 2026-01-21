@@ -225,7 +225,16 @@
     "read": "Odczytaj",
     "removeAll": "Usuń wszystko",
     "noUsersFound": "Nie znaleziono użytkowników.",
-    "noCategoriesAvailable": "Brak dostępnych kategorii"
+    "noCategoriesAvailable": "Brak dostępnych kategorii",
+    "links": "Linki",
+    "documentation": "Dokumentacja",
+    "githubRepository": "Repozytorium GitHub",
+    "toggleSidebar": "Przełącz pasek boczny",
+    "openSearch": "Otwórz wyszukiwanie",
+    "closeSearch": "Zamknij wyszukiwanie",
+    "moreOptions": "Więcej opcji",
+    "retry": "Spróbować ponownie",
+    "restoring": "Przywracam..."
   },
   "auth": {
     "loginTitle": "Logowanie",
@@ -439,6 +448,7 @@
     "clearAllCompletedConfirmMessage": "Czy na pewno chcesz usunąć wszystkie {count} ukończone elementy? Ta akcja nie może zostać cofnięta.",
     "clearAllIncompleteConfirmMessage": "Czy na pewno chcesz usunąć wszystkie niekompletne elementy ({count}) i ich elementy podrzędne? \nTej akcji nie można cofnąć.",
     "convertChecklistType": "Konwertuj typ listy kontrolnej",
+    "convertTypeConfirmation": "Zamierzasz przekonwertować z {currentType} na {newType}. Czy na pewno chcesz kontynuować?",
     "dataLossWarning": "⚠️ Ostrzeżenie o utracie danych",
     "dataLossWarningItems": "Poniższe dane zostaną utracone:",
     "allTaskStatusesReset": "Wszystkie statusy zadań zostaną zresetowane",
@@ -505,7 +515,8 @@
     "manageStatuses": "Zarządzaj statusami",
     "viewArchived": "Zobacz zarchiwizowane",
     "customizeStatuses": "Dostosuj statusy dla tej tablicy Kanban. Dodawaj, usuń lub zmieniaj kolejność statusów.",
-    "addStatus": "Dodaj status"
+    "addStatus": "Dodaj status",
+    "autoComplete": "Automatyczne uzupełnienie"
   },
   "profile": {
     "userProfile": "Użytkownik",
@@ -845,6 +856,11 @@
     "enterAnyEmoji": "Wprowadź dowolny emoji lub użyj pickera (Win: Win+.; Mac: Ctrl+Cmd+Space)",
     "sharingOverview": "Przegląd udostępniania",
     "detailedSharingBreakdown": "Szczegółowe podsumowanie udostępniania i zaangażowania użytkowników",
+    "checkForUpdates": "Sprawdź aktualizacje",
+    "checkingForUpdates": "Sprawdzanie aktualizacji...",
+    "updateAvailable": "Dostępna aktualizacja!",
+    "upToDate": "Jesteś na bieżąco!",
+    "issuesAndBugs": "Problemy i raporty błędów",
     "activeChecklistSharers": "Aktywni współdzielący listy kontrolne",
     "activeNotesSharers": "Aktywni współdzielący notatki",
     "totalSharing": "Całkowita liczba udostępnień",
@@ -1453,5 +1469,30 @@
     "goHome": "Strona główna",
     "seenCount": "Widziałeś {count} {count, plural, one {haiku} other {haiku}}",
     "imNoPoet": "Nie jestem poetą, podobnie jak Jotty. To tylko przypadkowa sekwencja słów."
+  },
+  "history": {
+    "fetchError": "Nie udało się załadować historii",
+    "restoreError": "Nie udało się przywrócić wersji",
+    "manualSavesOnly": "Historia jest tworzona wyłącznie podczas zapisywania ręcznego, a nie automatycznego.",
+    "noHistory": "Brak dostępnej historii",
+    "noHistoryDescription": "Zapisz notatkę, aby utworzyć punkt w historii.",
+    "restore": "Przywróć",
+    "loadMore": "Załaduj więcej",
+    "viewContent": "Wyświetl zawartość",
+    "viewDiff": "Zobacz zmiany",
+    "noteHistory": "Historia notatki",
+    "restoreVersion": "Przywróć wersję",
+    "restoreConfirm": "Przywrócić tę wersję? \nBieżąca treść zostanie zastąpiona.",
+    "featureDisabled": "Historia wyłączona",
+    "disabledAdmin": "Historia notatek jest obecnie wyłączona. Możesz ją włączyć w Ustawieniach administratora > Edytor.",
+    "disabledUser": "Historia notatek jest obecnie wyłączona. Skontaktuj się z administratorem, aby włączyć tę funkcję.",
+    "goToSettings": "Idź do ustawień",
+    "actionCreate": "Utworzono",
+    "actionUpdate": "Zaktualizowano",
+    "actionRename": "Zmieniono nazwę",
+    "actionMove": "Przeniesiono",
+    "actionDelete": "Usunięto",
+    "actionInit": "Zainicjowano",
+    "actionUnknown": "Zmieniono"
   }
 }

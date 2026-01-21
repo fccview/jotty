@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { login } from "@/app/_server/actions/auth";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
@@ -11,6 +12,7 @@ import { useTranslations } from "next-intl";
 
 export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
   const t = useTranslations('auth');
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
@@ -18,6 +20,13 @@ export default function LoginForm({ ssoEnabled }: { ssoEnabled: boolean }) {
   const [lockedUntil, setLockedUntil] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
   const { isDemoMode, appVersion, isRwMarkable } = useAppMode();
+
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "unauthorized") {
+      setError(t("notAuthorized"));
+    }
+  }, [searchParams, t]);
 
   useEffect(() => {
     if (!lockedUntil) {

@@ -30,6 +30,14 @@ svg {
     stroke: rgb(var(--background));
 }
 
+.fill-muted-foreground {
+    fill: rgb(var(--muted-foreground));
+}
+
+.jotty-user-menu-dropdown-item:hover .fill-muted-foreground {
+    fill: rgb(var(--accent-foreground));
+}
+
 @layer base {
     * {
         @apply border-border;
@@ -495,7 +503,69 @@ p>code {
     margin: 0;
 }
 
+.callout {
+    padding: 1rem;
+    border-radius: 0.25rem;
+    border-left-width: 4px;
+    border-left-style: solid;
+}
 
+.callout .callout-content p:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.callout-info {
+    background-color: rgb(var(--primary) / 0.08);
+    border-left-color: rgb(var(--primary));
+}
+
+.callout-info .callout-icon-info {
+    color: rgb(var(--primary));
+}
+
+.callout-warning {
+    background-color: rgb(217 119 6 / 0.1);
+    border-left-color: rgb(217 119 6);
+}
+
+.callout-warning .callout-icon-warning {
+    color: rgb(217 119 6);
+}
+
+.callout-success {
+    background-color: rgb(22 163 74 / 0.1);
+    border-left-color: rgb(22 163 74);
+}
+
+.callout-success .callout-icon-success {
+    color: rgb(22 163 74);
+}
+
+.callout-danger {
+    background-color: rgb(var(--destructive) / 0.08);
+    border-left-color: rgb(var(--destructive));
+}
+
+.callout-danger .callout-icon-danger {
+    color: rgb(var(--destructive));
+}
+
+.callout-icon-info {
+    color: rgb(var(--primary));
+}
+
+.callout-icon-warning {
+    color: rgb(217 119 6);
+}
+
+.callout-icon-success {
+    color: rgb(22 163 74);
+}
+
+.callout-icon-danger {
+    color: rgb(var(--destructive));
+}
 
 pre.text-foreground,
 pre.text-foreground *,
@@ -578,6 +648,30 @@ pre.text-foreground span,
 }
 
 @media (max-width: 992px) {
+    .jotty-checklist-page .jotty-quick-nav {
+        display: none;
+    }
+
+    .jotty-add-checklist-button {
+        max-width: calc(95% - calc(50px + 2.5%));
+    }
+
+    .jotty-add-checklist-button.right-handed {
+        left: 100vw;
+    }
+
+    .jotty-add-checklist-button.left-handed {
+        right: 100vw;
+    }
+
+    .jotty-add-checklist-button.right-handed.active {
+        left: 2.5%;
+    }
+
+    .jotty-add-checklist-button.left-handed.active {
+        right: 2.5%;
+    }
+
     .note-mobile-category-tree .jotty-category-tree-selector-dropdown {
         right: 0;
         left: auto;
@@ -603,5 +697,54 @@ pre.text-foreground span,
         .jotty-sidebar-content {
             padding-bottom: 1em;
         }
+    }
+}
+
+@keyframes jotty-draw {
+    0% {
+        stroke-dashoffset: 1;
+        fill-opacity: 0;
+        stroke-opacity: 0;
+    }
+    10% {
+        stroke-opacity: 1;
+    }
+    70% {
+        fill-opacity: 0;
+        stroke-opacity: 1;
+    }
+    100% {
+        stroke-dashoffset: 0;
+        fill-opacity: 1;
+        stroke-opacity: 0;
+    }
+}
+
+.jotty-path-animated {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    stroke: rgb(var(--primary));
+    fill: rgb(var(--primary));
+    stroke-width: 10;
+    fill-opacity: 0;
+    animation: jotty-draw 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.jotty-path-animated-slower {
+    animation: jotty-draw 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.jotty-icon-container-animated {
+    animation: jotty-fade-pulse 2s ease-in-out forwards;
+}
+
+@keyframes jotty-fade-pulse {
+    from {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }

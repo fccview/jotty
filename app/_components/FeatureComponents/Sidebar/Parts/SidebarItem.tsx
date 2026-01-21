@@ -252,6 +252,7 @@ export const SidebarItem = ({
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0 opacity-40 group-hover/item:opacity-100 transition-opacity"
+            aria-label={t("common.moreOptions")}
           >
             <MoreHorizontalIcon className="h-4 w-4" />
           </Button>

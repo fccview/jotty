@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/app-icons/logos/logo.svg" alt="Jotty Logo" width="100"> 
+  <img src="public/app-icons/logos/logo-animated.svg" alt="Jotty Logo" width="100"> 
   <br />
   <h1 align="center">jotty·page</h1><br/>
 </p>
@@ -14,13 +14,13 @@ A self-hosted app for your checklists and notes.
 
 <p align="center">
   <a href="https://discord.gg/invite/mMuk2WzVZu">
-    <img width="40" src="https://skills.syvixor.com/api/icons?i=discord">
+    <img width="40" src="public/repo-images/discord.svg">
   </a>
   <a href="https://www.reddit.com/r/jotty">
-    <img width="40" src="https://skills.syvixor.com/api/icons?i=reddit">
+    <img width="40" src="public/repo-images/reddit.svg">
   </a>
   <a href="https://t.me/jottypage">
-    <img width="40" src="https://skills.syvixor.com/api/icons?i=telegram">
+    <img width="40" src="public/repo-images/telegram.svg">
   </a>
   <br />
   <br />
@@ -86,6 +86,7 @@ A self-hosted app for your checklists and notes.
 ## Getting Started
 
 My recommended way to run `jotty·page` is with Docker. You can also use:
+
 - The [Proxmox community script](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/jotty.sh) for Proxmox VE
 - The [Unraid template](howto/UNRAID.md) for Unraid Community Applications
 
@@ -252,10 +253,9 @@ I will always detail these migrations in the release notes. I _highly recommend_
 
 ## Translations
 
-`jotty·page` can be translated in multiple languages, all translations are community driven and can be found in the [app/_translations](app/_translations) directory.
+`jotty·page` can be translated in multiple languages, all translations are community driven and can be found in the [app/\_translations](app/_translations) directory.
 
 📖 **For the complete translations documentation, see [howto/TRANSLATIONS.md](howto/TRANSLATIONS.md)**
-
 
 <a id="custom-themes-and-emojis"></a>
 
@@ -355,6 +355,14 @@ I would like to thank the following members for raising issues and help test/deb
       </td>
       <td align="center" valign="top" width="20%">
         <a href="https://github.com/rcallison"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/535687?s=100&v=4"><br />rcallison</a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/BaccanoMob"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/82655889?s=100&v=4"><br />BaccanoMob</a>
+      </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/DaxtonD"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/96708688?s=100&v=4"><br />DaxtonD</a>
       </td>
     </tr>
   </tbody>

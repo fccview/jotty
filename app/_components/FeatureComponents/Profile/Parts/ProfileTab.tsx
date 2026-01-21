@@ -341,7 +341,7 @@ export const ProfileTab = ({
                       size="sm"
                       onClick={() => setShowApiKey(!showApiKey)}
                       className="h-8 w-8 p-0"
-                      title={showApiKey ? t('profile.hideApiKey') : t('profile.showApiKey')}
+                      aria-label={showApiKey ? t('profile.hideApiKey') : t('profile.showApiKey')}
                     >
                       {showApiKey ? (
                         <ViewOffSlashIcon className="h-4 w-4" />
@@ -354,7 +354,7 @@ export const ProfileTab = ({
                       size="sm"
                       onClick={handleCopyApiKey}
                       className="h-8 w-8 p-0"
-                      title={t('profile.copyApiKey')}
+                      aria-label={t('profile.copyApiKey')}
                     >
                       <Copy01Icon className="h-4 w-4" />
                     </Button>

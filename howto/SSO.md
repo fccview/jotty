@@ -34,6 +34,8 @@ services:
       - SSO_FALLBACK_LOCAL=yes # Allow both SSO and local login
       - OIDC_ADMIN_GROUPS=admins # Map IDP groups claim to admin role
       - OIDC_ADMIN_ROLES=admins # Map IDP roles claim to admin role
+      - OIDC_USER_GROUPS=jotty_users,app_users # Restrict access to users in these groups (admins always allowed)
+      - OIDC_USER_ROLES=user,member # Restrict access to users with these roles (admins always allowed)
       - OIDC_GROUPS_SCOPE=groups # Scope to request for groups (set to empty string or "no" to disable for providers like Entra ID)
       - OIDC_LOGOUT_URL=https://authprovider.local/realms/master/logout # Custom logout URL for global logout
       # Optional for reverse proxy issues:
@@ -85,3 +87,45 @@ environment:
 This tells the app to use `localhost` for internal API calls instead of going through the reverse proxy. The default value is already `http://localhost:3000`, but explicitly setting it can help in some edge cases.
 
 **Why this happens**: When `APP_URL` is set to your external domain (e.g., `https://jotty.domain.com`), the middleware tries to validate sessions by making a fetch request to `https://jotty.domain.com/api/auth/check-session`. This request goes through your reverse proxy, which may block it with a 403 Forbidden response due to security policies or misconfigurations.
+
+## Advanced: Using Docker Secrets
+
+<details>
+<summary>Docker Secrets configuration</summary>
+
+For enhanced security in production environments, you can store OIDC credentials in files instead of environment variables. This prevents secrets from appearing in `docker inspect` output.
+
+**Example docker-compose.yml:**
+
+```yaml
+services:
+  jotty:
+    environment:
+      - SSO_MODE=oidc
+      - OIDC_ISSUER=https://YOUR_SSO_HOST/issuer/path
+      - OIDC_CLIENT_ID_FILE=/run/secrets/oidc_client_id
+      - OIDC_CLIENT_SECRET_FILE=/run/secrets/oidc_client_secret
+      - APP_URL=https://your-jotty-domain.com
+    secrets:
+      - oidc_client_id
+      - oidc_client_secret
+
+secrets:
+  oidc_client_id:
+    file: ./secrets/oidc_client_id.txt
+  oidc_client_secret:
+    file: ./secrets/oidc_client_secret.txt
+```
+
+**Create the secret files:**
+
+```bash
+mkdir secrets
+echo "your_client_id" > secrets/oidc_client_id.txt
+echo "your_client_secret" > secrets/oidc_client_secret.txt
+chmod 600 secrets/*
+```
+
+**Note:** You can mix and match - use `OIDC_CLIENT_ID` directly and `OIDC_CLIENT_SECRET_FILE` for the secret, or vice versa. The `_FILE` variants take priority if both are set. Most users can skip this and use regular environment variables.
+
+</details>

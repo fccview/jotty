@@ -1,16 +1,19 @@
 import { Extension, KeyboardShortcutCommand } from "@tiptap/core";
 
-export const KeyboardShortcuts = Extension.create({
+export interface KeyboardShortcutsOptions {
+  onLinkRequest?: (hasSelection: boolean) => void;
+}
+
+export const KeyboardShortcuts = Extension.create<KeyboardShortcutsOptions>({
   name: "keyboardShortcuts",
 
-  addKeyboardShortcuts(): Record<string, KeyboardShortcutCommand> {
-    const setLink = () => {
-      const url = window.prompt("URL");
-      if (url) {
-        this.editor.chain().focus().setLink({ href: url }).run();
-      }
+  addOptions() {
+    return {
+      onLinkRequest: undefined,
     };
+  },
 
+  addKeyboardShortcuts(): Record<string, KeyboardShortcutCommand> {
     return {
       "Mod-b": () => this.editor.chain().focus().toggleBold().run(),
       "Mod-i": () => this.editor.chain().focus().toggleItalic().run(),
@@ -18,7 +21,16 @@ export const KeyboardShortcuts = Extension.create({
       "Mod-Shift-x": () => this.editor.chain().focus().toggleStrike().run(),
       "Mod-e": () => this.editor.chain().focus().toggleCode().run(),
       "Mod-Shift-k": () => {
-        setLink();
+        if (this.options.onLinkRequest) {
+          const { from, to } = this.editor.state.selection;
+          const hasSelection = from !== to;
+          this.options.onLinkRequest(hasSelection);
+        } else {
+          const url = window.prompt("URL");
+          if (url) {
+            this.editor.chain().focus().setLink({ href: url }).run();
+          }
+        }
         return true;
       },
 
@@ -37,7 +49,7 @@ export const KeyboardShortcuts = Extension.create({
 
       "Mod-Alt-c": () => this.editor.chain().focus().toggleCodeBlock().run(),
 
-      "Tab": () => {
+      Tab: () => {
         if (this.editor.isActive("table")) {
           return this.editor.chain().focus().goToNextCell().run();
         }

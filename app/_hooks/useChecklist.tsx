@@ -65,7 +65,7 @@ export const useChecklist = ({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
-        delay: 50,
+        delay: 20,
         tolerance: 5,
       },
     }),
@@ -409,11 +409,20 @@ export const useChecklist = ({
     const activeId = active.id.toString();
     const overId = over.id.toString();
 
-    const isDropInto = overId.startsWith("drop-into-item::");
-    const isDropIndicator = overId.startsWith("drop-before") || overId.startsWith("drop-after");
+    const isDropIntoZone = overId.startsWith("drop-into-item::");
+    const isDropIndicator =
+      overId.startsWith("drop-before") || overId.startsWith("drop-after");
+
+    const allowDropInto =
+      isDropIntoZone && over.data.current?.allowDropInto === true;
+    const isDropInto = allowDropInto;
+
+    if (isDropIntoZone && !allowDropInto) {
+      return;
+    }
 
     let targetItemId: string;
-    if (isDropInto) {
+    if (isDropIntoZone) {
       targetItemId = overId.replace("drop-into-item::", "");
     } else if (isDropIndicator) {
       const data = over.data.current as any;
@@ -424,11 +433,51 @@ export const useChecklist = ({
 
     if (!targetItemId) return;
 
+    if (targetItemId === activeId) return;
+
+    const isDescendantOf = (
+      ancestorId: string,
+      descendantId: string,
+      items: Item[]
+    ): boolean => {
+      const findItem = (items: Item[], id: string): Item | null => {
+        for (const item of items) {
+          if (item.id === id) return item;
+          if (item.children) {
+            const found = findItem(item.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const checkDescendant = (item: Item, targetId: string): boolean => {
+        if (!item.children) return false;
+        for (const child of item.children) {
+          if (child.id === targetId) return true;
+          if (checkDescendant(child, targetId)) return true;
+        }
+        return false;
+      };
+
+      const ancestor = findItem(items, ancestorId);
+      return ancestor ? checkDescendant(ancestor, descendantId) : false;
+    };
+
+    if (isDescendantOf(activeId, targetItemId, localList.items)) {
+      return;
+    }
+
     const findItemWithParent = (
       items: Item[],
       targetId: string,
       parent: Item | null = null
-    ): { item: Item; parent: Item | null; siblings: Item[]; index: number } | null => {
+    ): {
+      item: Item;
+      parent: Item | null;
+      siblings: Item[];
+      index: number;
+    } | null => {
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (item.id === targetId) {
@@ -473,11 +522,21 @@ export const useChecklist = ({
         const targetSiblings = overInNew.siblings;
         const targetParent = overInNew.parent;
 
-        let newIndex = targetSiblings.findIndex((item) => item.id === targetItemId);
+        let newIndex = targetSiblings.findIndex(
+          (item) => item.id === targetItemId
+        );
 
-        const isDraggingDown = activeInfo.parent?.id === targetParent?.id && activeInfo.index < overInfo.index;
+        const isDraggingDown =
+          activeInfo.parent?.id === targetParent?.id &&
+          activeInfo.index < overInfo.index;
 
-        const position = isDropIndicator ? (overId.startsWith("drop-after::") ? "after" : "before") : (isDraggingDown ? "after" : "before");
+        const position = isDropIndicator
+          ? overId.startsWith("drop-after::")
+            ? "after"
+            : "before"
+          : isDraggingDown
+          ? "after"
+          : "before";
 
         if (position === "after") {
           newIndex = newIndex + 1;
@@ -706,10 +765,12 @@ export const useChecklist = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${localList.uuid
-        ? localList.uuid
-        : `${encodeCategoryPath(localList.category || "Uncategorized")}/${localList.id
-        }`
+      `${
+        localList.uuid
+          ? localList.uuid
+          : `${encodeCategoryPath(localList.category || "Uncategorized")}/${
+              localList.id
+            }`
       }`
     );
     if (success) {

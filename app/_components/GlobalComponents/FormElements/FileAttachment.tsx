@@ -45,7 +45,7 @@ export const FileAttachment = ({
               size="sm"
               onClick={() => window.open(url, "_blank")}
               className="jotty-file-attachment-view-button h-8 w-8 p-0"
-              title={t('common.openFile')}
+              aria-label={t('common.openFile')}
             >
               <ViewIcon className="h-4 w-4" />
             </Button>
@@ -59,7 +59,7 @@ export const FileAttachment = ({
                 link.click();
               }}
               className="jotty-file-attachment-download-button h-8 w-8 p-0"
-              title={t('common.downloadFile')}
+              aria-label={t('common.downloadFile')}
             >
               <Download01Icon className="h-4 w-4" />
             </Button>

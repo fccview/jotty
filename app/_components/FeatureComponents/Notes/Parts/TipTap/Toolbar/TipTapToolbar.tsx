@@ -24,13 +24,19 @@ import { CodeBlockDropdown } from "@/app/_components/FeatureComponents/Notes/Par
 import { DiagramsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/DiagramsDropdown";
 import { TableInsertModal } from "@/app/_components/FeatureComponents/Notes/Parts/Table/TableInsertModal";
 import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ExtraItemsDropdown";
 import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/PrismThemeDropdown";
 import { useTranslations } from "next-intl";
 import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
+import { insertTextAtCursor } from "@/app/_utils/markdown-editor-utils";
+
+const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+const mod = isMac ? "⌘" : "Ctrl";
+const alt = isMac ? "⌥" : "Alt";
 
 type ToolbarProps = {
   editor: Editor | null;
@@ -41,6 +47,10 @@ type ToolbarProps = {
   showPreview?: boolean;
   onTogglePreview?: () => void;
   markdownContent?: string;
+  onMarkdownChange?: (content: string) => void;
+  linkRequestPending?: boolean;
+  linkRequestHasSelection?: boolean;
+  onLinkRequestHandled?: () => void;
 };
 
 export const TiptapToolbar = ({
@@ -52,6 +62,10 @@ export const TiptapToolbar = ({
   showPreview = false,
   onTogglePreview,
   markdownContent = "",
+  onMarkdownChange,
+  linkRequestPending = false,
+  linkRequestHasSelection = false,
+  onLinkRequestHandled,
 }: ToolbarProps) => {
   const t = useTranslations();
   const { user } = useAppMode();
@@ -59,7 +73,9 @@ export const TiptapToolbar = ({
   const [showTableModal, setShowTableModal] = useState(false);
   const [showImageSizeModal, setShowImageSizeModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showLinkTextModal, setShowLinkTextModal] = useState(false);
   const [previousUrl, setPreviousUrl] = useState("");
+  const [pendingLinkUrl, setPendingLinkUrl] = useState("");
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
   const [selectedImageWidth, setSelectedImageWidth] = useState<
     number | undefined
@@ -68,22 +84,87 @@ export const TiptapToolbar = ({
     number | undefined
   >();
 
+  const getMarkdownTextarea = (): HTMLTextAreaElement | null => {
+    return document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
+  };
+
+  useEffect(() => {
+    if (linkRequestPending) {
+      if (linkRequestHasSelection) {
+        if (!isMarkdownMode && editor) {
+          const currentUrl = editor.getAttributes("link").href;
+          setPreviousUrl(currentUrl || "");
+        } else {
+          setPreviousUrl("");
+        }
+        setShowLinkModal(true);
+      } else {
+        setShowLinkTextModal(true);
+      }
+
+      if (onLinkRequestHandled) {
+        onLinkRequestHandled();
+      }
+    }
+  }, [linkRequestPending, linkRequestHasSelection, isMarkdownMode, editor, onLinkRequestHandled]);
+
   if (!editor) {
     return null;
   }
 
   const setLink = () => {
-    const currentUrl = editor.getAttributes("link").href;
-    setPreviousUrl(currentUrl || "");
-    setShowLinkModal(true);
+    if (isMarkdownMode) {
+      const textarea = getMarkdownTextarea();
+      const hasSelection = textarea && textarea.selectionStart !== textarea.selectionEnd;
+
+      if (hasSelection) {
+        setPreviousUrl("");
+        setShowLinkModal(true);
+      } else {
+        setShowLinkTextModal(true);
+      }
+    } else {
+      const { from, to } = editor.state.selection;
+      const hasSelection = from !== to;
+
+      if (hasSelection) {
+        const currentUrl = editor.getAttributes("link").href;
+        setPreviousUrl(currentUrl || "");
+        setShowLinkModal(true);
+      } else {
+        setShowLinkTextModal(true);
+      }
+    }
+  };
+
+  const confirmLinkText = (text: string) => {
+    if (text) {
+      setShowLinkModal(true);
+      if (isMarkdownMode) {
+        const textarea = getMarkdownTextarea();
+        if (textarea) {
+          const { start } = MarkdownUtils.getTextareaSelection(textarea);
+          textarea.value = textarea.value.substring(0, start) + text + textarea.value.substring(start);
+          textarea.setSelectionRange(start, start + text.length);
+        }
+      } else {
+        editor.chain().focus().insertContent(text).run();
+        const { from } = editor.state.selection;
+        editor.commands.setTextSelection({ from: from - text.length, to: from });
+      }
+    }
   };
 
   const confirmSetLink = (url: string) => {
-    if (url === "") {
-      editor.chain().focus().unsetLink().run();
-      return;
+    if (isMarkdownMode) {
+      handleMarkdownButtonClick((textarea) => MarkdownUtils.insertLink(textarea, url));
+    } else {
+      if (url === "") {
+        editor.chain().focus().unsetLink().run();
+        return;
+      }
+      editor.chain().focus().setLink({ href: url }).run();
     }
-    editor.chain().focus().setLink({ href: url }).run();
   };
 
   const handleFileSelect = (
@@ -99,17 +180,28 @@ export const TiptapToolbar = ({
       setShowImageSizeModal(true);
     } else {
       const finalFileName = fileName || url.split("/").pop() || t("editor.defaultFileName");
-      const finalMimeType = mimeType || "application/octet-stream";
-      editor
-        .chain()
-        .focus()
-        .setFileAttachment({
-          url,
-          fileName: finalFileName,
-          mimeType: finalMimeType,
-          type: type === "video" ? "video" : "file",
-        })
-        .run();
+
+      if (isMarkdownMode) {
+        handleMarkdownButtonClick((textarea) => {
+          if (type === "video") {
+            return MarkdownUtils.insertVideo(textarea, url, finalFileName);
+          } else {
+            return MarkdownUtils.insertFile(textarea, url, finalFileName);
+          }
+        });
+      } else {
+        const finalMimeType = mimeType || "application/octet-stream";
+        editor
+          .chain()
+          .focus()
+          .setFileAttachment({
+            url,
+            fileName: finalFileName,
+            mimeType: finalMimeType,
+            type: type === "video" ? "video" : "file",
+          })
+          .run();
+      }
     }
   };
 
@@ -118,12 +210,27 @@ export const TiptapToolbar = ({
     height: number | null
   ) => {
     if (selectedImageUrl) {
-      const imageAttrs: any = { src: selectedImageUrl };
+      if (isMarkdownMode) {
+        const alt = selectedImageUrl.split("/").pop() || "image";
+        let imageMarkdown = `![${alt}](${selectedImageUrl})`;
 
-      if (width && width > 0) imageAttrs.width = width;
-      if (height && height > 0) imageAttrs.height = height;
+        if (width || height) {
+          const widthAttr = width ? `width="${width}"` : "";
+          const heightAttr = height ? `height="${height}"` : "";
+          imageMarkdown = `<img src="${selectedImageUrl}" alt="${alt}" ${widthAttr} ${heightAttr} />`;
+        }
 
-      editor.chain().focus().setImage(imageAttrs).run();
+        handleMarkdownButtonClick((textarea) => {
+          return insertTextAtCursor(textarea, imageMarkdown, "", "", 0);
+        });
+      } else {
+        const imageAttrs: any = { src: selectedImageUrl };
+
+        if (width && width > 0) imageAttrs.width = width;
+        if (height && height > 0) imageAttrs.height = height;
+
+        editor.chain().focus().setImage(imageAttrs).run();
+      }
     }
   };
 
@@ -134,13 +241,46 @@ export const TiptapToolbar = ({
     setSelectedImageHeight(undefined);
   };
 
-  const isImageSelected = editor.isActive("image");
-  const selectedImageAttrs = editor.getAttributes("image");
+  const isImageSelected = editor && editor.isActive("image");
+  const selectedImageAttrs = editor ? editor.getAttributes("image") : {};
 
   const handleButtonClick = (command: () => void) => {
+    if (!editor) return;
     const { from, to } = editor.state.selection;
     command();
     editor.commands.setTextSelection({ from, to });
+  };
+
+  const handleMarkdownButtonClick = (markdownFn: (textarea: HTMLTextAreaElement) => string) => {
+    const textarea = getMarkdownTextarea();
+    if (textarea && onMarkdownChange) {
+      const scrollTop = textarea.scrollTop;
+      const scrollLeft = textarea.scrollLeft;
+      const newContent = markdownFn(textarea);
+      const selectionStart = textarea.selectionStart;
+      const selectionEnd = textarea.selectionEnd;
+      onMarkdownChange(newContent);
+      requestAnimationFrame(() => {
+        const ta = getMarkdownTextarea();
+        if (ta) {
+          ta.focus({ preventScroll: true });
+          ta.setSelectionRange(selectionStart, selectionEnd);
+          ta.scrollTop = scrollTop;
+          ta.scrollLeft = scrollLeft;
+        }
+      });
+    }
+  };
+
+  const handleDualModeButton = (
+    richCommand: () => void,
+    markdownFn: (textarea: HTMLTextAreaElement) => string
+  ) => {
+    if (isMarkdownMode) {
+      handleMarkdownButtonClick(markdownFn);
+    } else {
+      handleButtonClick(richCommand);
+    }
   };
 
   return (
@@ -262,125 +402,140 @@ export const TiptapToolbar = ({
         <div
           className={cn(
             "flex flex-1 min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap md:flex-wrap md:whitespace-normal",
-            "hide-scrollbar scroll-fade-right",
-            isMarkdownMode ? "hidden" : ""
+            "hide-scrollbar scroll-fade-right"
           )}
         >
           <Button
-            variant={editor.isActive("bold") ? "secondary" : "ghost"}
+            variant={editor && editor.isActive("bold") ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
-              handleButtonClick(() => editor.chain().focus().toggleBold().run())
+              handleDualModeButton(
+                () => editor.chain().focus().toggleBold().run(),
+                MarkdownUtils.insertBold
+              )
             }
-            title={t('editor.toggleBold')}
+            title={`${t('editor.toggleBold')} (${mod}+B)`}
           >
             <TextBoldIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive("italic") ? "secondary" : "ghost"}
+            variant={editor && editor.isActive("italic") ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
-              handleButtonClick(() =>
-                editor.chain().focus().toggleItalic().run()
+              handleDualModeButton(
+                () => editor.chain().focus().toggleItalic().run(),
+                MarkdownUtils.insertItalic
               )
             }
-            title={t('editor.toggleItalic')}
+            title={`${t('editor.toggleItalic')} (${mod}+I)`}
           >
             <TextItalicIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive("underline") ? "secondary" : "ghost"}
+            variant={editor && editor.isActive("underline") ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
-              handleButtonClick(() =>
-                editor.chain().focus().toggleUnderline().run()
+              handleDualModeButton(
+                () => editor.chain().focus().toggleUnderline().run(),
+                MarkdownUtils.insertUnderline
               )
             }
-            title={t('editor.toggleUnderline')}
+            title={`${t('editor.toggleUnderline')} (${mod}+U)`}
           >
             <TextUnderlineIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive("strike") ? "secondary" : "ghost"}
+            variant={editor && editor.isActive("strike") ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
-              handleButtonClick(() =>
-                editor.chain().focus().toggleStrike().run()
+              handleDualModeButton(
+                () => editor.chain().focus().toggleStrike().run(),
+                MarkdownUtils.insertStrikethrough
               )
             }
-            title={t('editor.toggleStrikethrough')}
+            title={`${t('editor.toggleStrikethrough')} (${mod}+Shift+X)`}
           >
             <TextStrikethroughIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive("code") ? "secondary" : "ghost"}
+            variant={editor && editor.isActive("code") ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
-              handleButtonClick(() => editor.chain().focus().toggleCode().run())
+              handleDualModeButton(
+                () => editor.chain().focus().toggleCode().run(),
+                MarkdownUtils.insertInlineCode
+              )
             }
-            title={t('editor.toggleInlineCode')}
+            title={`${t('editor.toggleInlineCode')} (${mod}+E)`}
           >
             <SourceCodeIcon className="h-4 w-4" />
           </Button>
-          <div className="w-px h-6 bg-border mx-2" />
-          <FontFamilyDropdown editor={editor} />
-          <div className="w-px h-6 bg-border mx-2" />
+          {!isMarkdownMode && (
+            <>
+              <div className="w-px h-6 bg-border mx-2" />
+              <FontFamilyDropdown editor={editor} />
+              <div className="w-px h-6 bg-border mx-2" />
+            </>
+          )}
           <Button
             variant={
-              editor.isActive("heading", { level: 2 }) ? "secondary" : "ghost"
+              editor && editor.isActive("heading", { level: 2 }) ? "secondary" : "ghost"
             }
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
-              handleButtonClick(() =>
-                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              handleDualModeButton(
+                () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+                (textarea) => MarkdownUtils.insertHeading(textarea, 2)
               )
             }
-            title={t('editor.toggleHeading2')}
+            title={`${t('editor.toggleHeading2')} (${mod}+${alt}+2)`}
           >
             <Heading02Icon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive("bulletList") ? "secondary" : "ghost"}
+            variant={editor && editor.isActive("bulletList") ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
-              handleButtonClick(() =>
-                editor.chain().focus().toggleBulletList().run()
+              handleDualModeButton(
+                () => editor.chain().focus().toggleBulletList().run(),
+                MarkdownUtils.insertBulletList
               )
             }
-            title={t('editor.toggleBulletList')}
+            title={`${t('editor.toggleBulletList')} (${mod}+Shift+8)`}
           >
             <LeftToRightListBulletIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive("blockquote") ? "secondary" : "ghost"}
+            variant={editor && editor.isActive("blockquote") ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
-              handleButtonClick(() =>
-                editor.chain().focus().toggleBlockquote().run()
+              handleDualModeButton(
+                () => editor.chain().focus().toggleBlockquote().run(),
+                MarkdownUtils.insertBlockquote
               )
             }
-            title={t('editor.toggleBlockquote')}
+            title={`${t('editor.toggleBlockquote')} (${mod}+Shift+B)`}
           >
             <QuoteUpIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive("link") ? "secondary" : "ghost"}
+            variant={editor && editor.isActive("link") ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleButtonClick(setLink)}
-            title={t('editor.toggleLink')}
+            title={`${t('editor.toggleLink')} (${mod}+Shift+K)`}
           >
             <Attachment01Icon className="h-4 w-4" />
           </Button>
-          {isImageSelected && (
+          {isImageSelected && !isMarkdownMode && (
             <Button
               variant="secondary"
               size="sm"
@@ -397,11 +552,21 @@ export const TiptapToolbar = ({
             </Button>
           )}
           <div className="w-px h-6 bg-border mx-2" />
-          <CodeBlockDropdown editor={editor} />
-          <DiagramsDropdown editor={editor} />
+          <CodeBlockDropdown
+            editor={editor}
+            isMarkdownMode={isMarkdownMode}
+            onMarkdownChange={onMarkdownChange}
+          />
+          <DiagramsDropdown
+            editor={editor}
+            isMarkdownMode={isMarkdownMode}
+            onMarkdownChange={onMarkdownChange}
+          />
           <div className="w-px h-6 bg-border mx-2" />
           <ExtraItemsDropdown
             editor={editor}
+            isMarkdownMode={isMarkdownMode}
+            onMarkdownChange={onMarkdownChange}
             onFileModalOpen={() => setShowFileModal(true)}
             onTableModalOpen={() => setShowTableModal(true)}
             onImageSizeModalOpen={(url) => {
@@ -431,6 +596,16 @@ export const TiptapToolbar = ({
         currentWidth={selectedImageWidth}
         currentHeight={selectedImageHeight}
         imageUrl={selectedImageUrl}
+      />
+
+      <PromptModal
+        isOpen={showLinkTextModal}
+        onClose={() => setShowLinkTextModal(false)}
+        onConfirm={confirmLinkText}
+        title={t("editor.addLink")}
+        message="Enter link text"
+        placeholder="Link text"
+        confirmText={t("common.continue")}
       />
 
       <PromptModal

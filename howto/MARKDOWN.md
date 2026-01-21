@@ -176,12 +176,29 @@ Create tables using standard Markdown pipe syntax or raw HTML.
 Wrap your code in triple backticks. You can specify a language for syntax highlighting.
 
 ````markdown
-```javascript
+javascript
 function helloWorld() {
   console.log("Hello, world!");
 }
-```
+
 ````
+
+### Callouts
+
+Callouts are styled blocks that help highlight important information. They use the GitHub/Obsidian-style syntax and come in four types:
+
+```markdown
+You can use !INFO, !WARNING, !SUCCESS, !DANGER.
+
+> [!INFO]
+> This is an informational callout for general tips and notes.
+
+```
+
+> [!INFO]
+> In the visual editor, you can insert callouts using the `/callout` slash command and change the type by clicking the icon.
+
+---
 
 ## Custom HTML Tags
 

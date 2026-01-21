@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { QuickNav } from "@/app/_components/FeatureComponents/Header/QuickNav";
 import { Sidebar } from "@/app/_components/FeatureComponents/Sidebar/Sidebar";
 import { SettingsSidebar } from "@/app/_components/FeatureComponents/Sidebar/SettingsSidebar";
@@ -10,6 +10,7 @@ import { useMobileGestures } from "@/app/_hooks/useMobileGestures";
 import { isMobileDevice } from "@/app/_utils/global-utils";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 import { usePathname } from "next/navigation";
+import { useUIStore } from "@/app/_utils/ui-store";
 
 interface LayoutProps {
   categories: Category[];
@@ -20,8 +21,12 @@ interface LayoutProps {
   onCategoryRenamed?: (oldName: string, newName: string) => void;
   children: React.ReactNode;
   user: SanitisedUser | null;
-  customSidebar?: (props: { isOpen: boolean; onClose: () => void }) => React.ReactNode;
+  customSidebar?: (props: {
+    isOpen: boolean;
+    onClose: () => void;
+  }) => React.ReactNode;
   isEditorInEditMode?: boolean;
+  extraClasses?: string;
 }
 
 export const Layout = ({
@@ -35,11 +40,11 @@ export const Layout = ({
   children,
   customSidebar,
   isEditorInEditMode = false,
+  extraClasses = "",
 }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(true);
-  const lastScrollY = useRef(0);
   const { setMode, isInitialized } = useAppMode();
+  const { isDragging } = useUIStore();
   const pathname = usePathname();
 
   const isSettingsPage = pathname?.startsWith("/settings");
@@ -47,10 +52,10 @@ export const Layout = ({
   useMobileGestures({
     onSwipeRight: () => setSidebarOpen(true),
     enabled:
-      isMobileDevice() && !window?.location.pathname.startsWith("/note/"),
-    swipeThreshold: 15,
-    edgeThreshold: 400,
-    velocityThreshold: 0.02,
+      isMobileDevice() && !window?.location.pathname.startsWith("/note/") && !isDragging,
+    swipeThreshold: 25,
+    edgeThreshold: 150,
+    velocityThreshold: 0.04,
   });
 
   if (!isInitialized) {
@@ -58,9 +63,14 @@ export const Layout = ({
   }
 
   return (
-    <div className="jotty-layout flex h-screen lg:bg-background w-full overflow-hidden transition-[margin-top] duration-300 ease-in-out relative">
+    <div
+      className={`jotty-layout flex h-screen lg:bg-background w-full overflow-hidden transition-[margin-top] duration-300 ease-in-out relative ${extraClasses}`}
+    >
       {customSidebar ? (
-        customSidebar({ isOpen: sidebarOpen, onClose: () => setSidebarOpen(false) })
+        customSidebar({
+          isOpen: sidebarOpen,
+          onClose: () => setSidebarOpen(false),
+        })
       ) : isSettingsPage ? (
         <SettingsSidebar
           isOpen={sidebarOpen}
@@ -99,4 +109,3 @@ export const Layout = ({
     </div>
   );
 };
-

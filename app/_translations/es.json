@@ -224,7 +224,16 @@
     "read": "Leer",
     "removeAll": "Eliminar todo",
     "noUsersFound": "No se encontraron usuarios.",
-    "noCategoriesAvailable": "No hay categorías disponibles"
+    "noCategoriesAvailable": "No hay categorías disponibles",
+    "links": "Enlaces",
+    "documentation": "Documentación",
+    "githubRepository": "Repositorio de GitHub",
+    "toggleSidebar": "Alternar barra lateral",
+    "openSearch": "Abrir búsqueda",
+    "closeSearch": "Cerrar búsqueda",
+    "moreOptions": "Más opciones",
+    "retry": "Rever",
+    "restoring": "Restaurando..."
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -438,6 +447,7 @@
     "clearAllCompletedConfirmMessage": "¿Está seguro de que desea eliminar todos los {count} elementos completados? Esta acción no se puede deshacer.",
     "clearAllIncompleteConfirmMessage": "¿Está seguro de que desea eliminar todos los {count} elementos incompletos y sus elementos secundarios? \nEsta acción no se puede deshacer.",
     "convertChecklistType": "Convertir tipo de lista de verificación",
+    "convertTypeConfirmation": "Está a punto de convertir de {currentType} a {newType}. ¿Está seguro de que desea continuar?",
     "dataLossWarning": "⚠️ Advertencia de pérdida de datos",
     "dataLossWarningItems": "Se perderán los siguientes datos:",
     "allTaskStatusesReset": "Todos los estados de tareas se restablecerán",
@@ -504,7 +514,8 @@
     "manageStatuses": "Gestionar estados",
     "viewArchived": "Ver archivados",
     "customizeStatuses": "Personalice los estados para este tablero Kanban. Agregue, elimine o reordene estados.",
-    "addStatus": "Agregar estado"
+    "addStatus": "Agregar estado",
+    "autoComplete": "Autocompletar"
   },
   "profile": {
     "userProfile": "Usuario",
@@ -842,6 +853,11 @@
     "customEmojis": "Emojis personalizados",
     "noEmojisYet": "Aún no se han creado emojis personalizados. Haga clic en 'Agregar emoji' para comenzar.",
     "enterAnyEmoji": "Ingresa cualquier emoji o use el selector de emojis (Win: Win+.; Mac: Ctrl+Cmd+Espacio",
+    "checkForUpdates": "Buscar actualizaciones",
+    "checkingForUpdates": "Buscando actualizaciones...",
+    "updateAvailable": "¡Actualización disponible!",
+    "upToDate": "¡Estás actualizado!",
+    "issuesAndBugs": "Problemas e informes de errores",
     "sharingOverview": "Resumen de actividad de compartición",
     "detailedSharingBreakdown": "Desglose detallado de patrones de compartición y participación de usuarios",
     "activeChecklistSharers": "Usuarios activos compartiendo listas",
@@ -1452,5 +1468,30 @@
     "goHome": "Ir al inicio",
     "seenCount": "Has visto {count} {count, plural, one {haiku} other {haikus}}",
     "imNoPoet": "Yo no soy poeta, ni Jotty tampoco. Estas son palabras aleatorias en secuencia."
+  },
+  "history": {
+    "fetchError": "Error al cargar el historial",
+    "restoreError": "No se pudo restaurar la versión",
+    "manualSavesOnly": "El historial se crea únicamente al guardar manualmente, no al guardar automáticamente.",
+    "noHistory": "No hay historial disponible",
+    "noHistoryDescription": "Guarda la nota para crear un punto en el historial.",
+    "restore": "Restaurar",
+    "loadMore": "Cargar más",
+    "viewContent": "Ver contenido",
+    "viewDiff": "Ver cambios",
+    "noteHistory": "Historial de la nota",
+    "restoreVersion": "Restaurar versión",
+    "restoreConfirm": "¿Restaurar esta versión? \nEl contenido actual será reemplazado.",
+    "featureDisabled": "Historial desactivado",
+    "disabledAdmin": "El historial de notas está desactivado actualmente. Puede activarlo en la Configuración de administración > Editor.",
+    "disabledUser": "El historial de notas está desactivado actualmente. Póngase en contacto con su administrador para activar esta función.",
+    "goToSettings": "Ir a configuración",
+    "actionCreate": "Creado",
+    "actionUpdate": "Actualizado",
+    "actionRename": "Renombrado",
+    "actionMove": "Movido",
+    "actionDelete": "Eliminado",
+    "actionInit": "Inicializado",
+    "actionUnknown": "Cambiado"
   }
 }
