@@ -1,0 +1,88 @@
+name: Build and Release Prebuilt Tarball
+
+on:
+  push:
+    branches: ["main", "develop"]
+    tags: ["*"]
+
+jobs:
+  build-prebuild:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build application
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+        run: yarn build
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+            echo "release_tag=latest" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/heads/develop ]]; then
+            echo "version=develop" >> $GITHUB_OUTPUT
+            echo "release_tag=develop" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
+            echo "version=main" >> $GITHUB_OUTPUT
+            echo "release_tag=main" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create prebuild directory structure
+        run: |
+          mkdir -p prebuild-release/jotty
+          cp -r .next/standalone/* prebuild-release/jotty/
+          cp -r .next/static prebuild-release/jotty/.next/static
+          cp -r public prebuild-release/jotty/public
+          cp -r howto prebuild-release/jotty/howto
+
+      - name: Create tarball
+        run: |
+          cd prebuild-release
+          tar -czf jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz jotty
+          sha256sum jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz > jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz.sha256
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            cp jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz jotty-prebuild-latest.tar.gz
+            cp jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz.sha256 jotty-prebuild-latest.tar.gz.sha256
+          fi
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            prebuild-release/jotty-prebuild-*.tar.gz
+            prebuild-release/jotty-prebuild-*.tar.gz.sha256
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+          make_latest: true
+
+      - name: Create or Update Release (branches)
+        if: startsWith(github.ref, 'refs/heads/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            prebuild-release/jotty-prebuild-*.tar.gz
+            prebuild-release/jotty-prebuild-*.tar.gz.sha256
+          tag_name: ${{ steps.version.outputs.release_tag }}
+          name: Prebuild ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: ${{ github.ref == 'refs/heads/develop' }}
+          make_latest: false
