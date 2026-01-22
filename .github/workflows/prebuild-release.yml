@@ -61,7 +61,7 @@ jobs:
             cp jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz.sha256 jotty-prebuild-latest.tar.gz.sha256
           fi
 
-      - name: Create Release
+      - name: Attach to Release (tags)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
@@ -69,20 +69,13 @@ jobs:
             prebuild-release/jotty-prebuild-*.tar.gz
             prebuild-release/jotty-prebuild-*.tar.gz.sha256
           tag_name: ${{ steps.version.outputs.version }}
-          name: Release ${{ steps.version.outputs.version }}
-          draft: false
-          prerelease: false
-          make_latest: true
 
-      - name: Create or Update Release (branches)
+      - name: Upload artifact (branches)
         if: startsWith(github.ref, 'refs/heads/')
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-artifact@v4
         with:
-          files: |
+          name: jotty-prebuild-${{ steps.version.outputs.version }}
+          path: |
             prebuild-release/jotty-prebuild-*.tar.gz
             prebuild-release/jotty-prebuild-*.tar.gz.sha256
-          tag_name: ${{ steps.version.outputs.release_tag }}
-          name: Prebuild ${{ steps.version.outputs.version }}
-          draft: false
-          prerelease: ${{ github.ref == 'refs/heads/develop' }}
-          make_latest: false
+          retention-days: 90
