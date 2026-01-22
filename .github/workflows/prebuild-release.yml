@@ -45,7 +45,7 @@ jobs:
 
       - name: Create prebuild directory structure
         run: |
-          mkdir -p prebuild-release/jotty
+          mkdir -p prebuild-release/jotty/.next
           cp -r .next/standalone/* prebuild-release/jotty/
           cp -r .next/static prebuild-release/jotty/.next/static
           cp -r public prebuild-release/jotty/public
