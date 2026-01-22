@@ -25,6 +25,7 @@ jobs:
 
       - name: Build application
         env:
+          NODE_ENV: production
           NEXT_TELEMETRY_DISABLED: 1
         run: yarn build
 
@@ -46,8 +47,11 @@ jobs:
       - name: Create prebuild directory structure
         run: |
           mkdir -p prebuild-release/jotty/.next
-          cp -r .next/standalone/* prebuild-release/jotty/
+          cp -r .next/standalone/. prebuild-release/jotty/
           cp -r .next/static prebuild-release/jotty/.next/static
+          if [ -f .next/BUILD_ID ]; then
+            cp .next/BUILD_ID prebuild-release/jotty/.next/BUILD_ID
+          fi
           cp -r public prebuild-release/jotty/public
           cp -r howto prebuild-release/jotty/howto
 
