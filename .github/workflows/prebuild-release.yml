@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup the best engine ever
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build application
+      - name: Bake Jotty
         env:
           NODE_ENV: production
           NEXT_TELEMETRY_DISABLED: 1
@@ -34,7 +34,7 @@ jobs:
           VERSION="${GITHUB_REF#refs/tags/}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Create prebuild directory structure
+      - name: Structure the prebuild stuff
         run: |
           mkdir -p prebuild-release/jotty/.next
           cp -r .next/standalone/. prebuild-release/jotty/
@@ -45,7 +45,7 @@ jobs:
           cp -r public prebuild-release/jotty/public
           cp -r howto prebuild-release/jotty/howto
 
-      - name: Create tarball
+      - name: Create tarball - tarball is a funny name
         run: |
           cd prebuild-release
           tar -czf jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz jotty
@@ -53,7 +53,7 @@ jobs:
           cp jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz jotty_latest_prebuild.tar.gz
           cp jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz.sha256 jotty_latest_prebuild.tar.gz.sha256
 
-      - name: Attach to Release
+      - name: Attach to Release - pray it works
         uses: softprops/action-gh-release@v1
         with:
           files: |

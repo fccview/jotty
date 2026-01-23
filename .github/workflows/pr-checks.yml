@@ -9,7 +9,7 @@ jobs:
     name: Validate Target Branch
     runs-on: ubuntu-latest
     steps:
-      - name: Check if PR to main is from develop
+      - name: YOU SHALL NOT PASS
         if: github.base_ref == 'main'
         run: |
           if [ "${{ github.head_ref }}" != "develop" ]; then
@@ -21,40 +21,40 @@ jobs:
           fi
           echo "Valid PR: develop → main"
 
-      - name: Display PR info
+      - name: PR info
         run: |
           echo "PR validation passed"
           echo "Source: ${{ github.head_ref }}"
           echo "Target: ${{ github.base_ref }}"
 
   tests:
-    name: Run Tests
+    name: Tests now - BOOORING
     runs-on: ubuntu-latest
     needs: validate-branch
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup the best engine ever
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
 
-      - name: Install dependencies
+      - name: Install all dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Run linter
+      - name: You better have linting rules in your vscode
         run: yarn lint
 
-      - name: Run type check
+      - name: This will totally fail if you only use AI
         run: yarn tsc --noEmit
 
-      - name: Run security tests
+      - name: As important as boring security tests
         run: yarn test:run tests/security --reporter=verbose
 
-      - name: Run api tests
+      - name: Api tests so JotTick keeps working lmfao
         run: yarn test:run tests/api --reporter=verbose
 
-      - name: Run server action tests
+      - name: Server actions also need to be tested
         run: yarn test:run tests/server-actions --reporter=verbose
