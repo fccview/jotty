@@ -22,12 +22,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to the Container registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
@@ -36,6 +42,7 @@ jobs:
           images: |
             ghcr.io/${{ steps.repo.outputs.name }}
             ghcr.io/fccview/rwmarkable
+            fccview/jotty
           tags: |
             type=ref,event=branch,suffix=-amd64
             type=ref,event=tag,suffix=-amd64
@@ -71,12 +78,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to the Container registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
@@ -85,6 +98,7 @@ jobs:
           images: |
             ghcr.io/${{ steps.repo.outputs.name }}
             ghcr.io/fccview/rwmarkable
+            fccview/jotty
           tags: |
             type=ref,event=branch,suffix=-arm64
             type=ref,event=tag,suffix=-arm64
@@ -113,12 +127,18 @@ jobs:
         id: repo
         run: echo "name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-      - name: Log in to the Container registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata for final manifest
         id: meta
@@ -127,6 +147,7 @@ jobs:
           images: |
             ghcr.io/${{ steps.repo.outputs.name }}
             ghcr.io/fccview/rwmarkable
+            fccview/jotty
           tags: |
             type=ref,event=branch
             type=ref,event=tag
