@@ -392,7 +392,10 @@
     "noteNotFound": "Note not found",
     "unarchiveNote": "Unarchive Note",
     "enterNoteName": "Enter note name...",
-    "updateNote": "Update Note"
+    "updateNote": "Update Note",
+    "tags": "Tags",
+    "noTagsFound": "No tags found",
+    "searchTags": "Search tags..."
   },
   "checklists": {
     "title": "Checklists",
@@ -946,7 +949,14 @@
     "deleteUserConfirmAdmin": "Are you sure you want to delete user \"{username}\"? This action cannot be undone.",
     "failedToUnsharePublicItem": "Failed to unshare public item",
     "deleteAccountWarning": "Warning: This action cannot be undone",
-    "enterPasswordToConfirm": "Enter your password to confirm"
+    "enterPasswordToConfirm": "Enter your password to confirm",
+    "tags": "Tags",
+    "tagsDescription": "Enable hashtag autocomplete in the editor with # trigger",
+    "updateTags": "Update Tags",
+    "updatingTags": "Updating...",
+    "updateTagsTitle": "Scan notes for hashtags and update frontmatter",
+    "tagsUpdated": "Processed {processed} files, updated {updated} with new tags",
+    "failedToUpdateTags": "Failed to update tags"
   },
   "errors": {
     "notFound": "Not Found",

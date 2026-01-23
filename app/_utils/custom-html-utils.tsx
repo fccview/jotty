@@ -45,6 +45,12 @@ export const customHtmlMarks: CustomHtmlMarkDefinition[] = [
     classes: "",
     attributesToPreserve: ["style"],
   },
+  {
+    name: "tag",
+    tag: "span",
+    classes: "",
+    attributesToPreserve: ["data-tag"],
+  },
 ];
 
 export const generateCustomHtmlExtensions = (): Mark[] => {
@@ -93,6 +99,19 @@ export const generateCustomHtmlExtensions = (): Mark[] => {
           ];
         }
 
+        if (markDef.name === "tag") {
+          return [
+            {
+              tag: "span[data-tag]",
+              getAttrs: (node) => {
+                if (typeof node === "string") return false;
+                const tag = (node as HTMLElement).getAttribute("data-tag");
+                return tag ? { "data-tag": tag } : false;
+              },
+            },
+          ];
+        }
+
         return [
           {
             tag: markDef.tag,
@@ -113,6 +132,13 @@ export const generateCustomHtmlExtensions = (): Mark[] => {
       },
 
       renderHTML({ HTMLAttributes }) {
+        if (markDef.name === "tag") {
+          return [
+            "span",
+            mergeAttributes(HTMLAttributes),
+            0,
+          ];
+        }
         return [
           markDef.tag,
           mergeAttributes(HTMLAttributes, { class: markDef.classes || "" }),

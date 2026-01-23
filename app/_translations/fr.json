@@ -363,7 +363,10 @@
     "noteNotFound": "Note introuvable",
     "unarchiveNote": "Désarchiver la note",
     "enterNoteName": "Saisir le nom de la note...",
-    "updateNote": "Mettre la note à jour"
+    "updateNote": "Mettre la note à jour",
+    "tags": "Tags",
+    "noTagsFound": "Aucun tag trouvé",
+    "searchTags": "Rechercher des tags..."
   },
   "checklists": {
     "title": "Listes de tâches",
@@ -911,7 +914,14 @@
     "deleteUserConfirmAdmin": "Êtes‑vous sûr de vouloir supprimer l’utilisateur « {username} » ? Cette action est irréversible.",
     "failedToUnsharePublicItem": "Échec de l’arrêt du partage public de l’élément",
     "deleteAccountWarning": "Avertissement : cette action est irréversible",
-    "enterPasswordToConfirm": "Saisissez votre mot de passe pour confirmer"
+    "enterPasswordToConfirm": "Saisissez votre mot de passe pour confirmer",
+    "tags": "Tags",
+    "tagsDescription": "Activer l'autocomplétion des hashtags dans l'éditeur avec #",
+    "updateTags": "Mettre à jour les tags",
+    "updatingTags": "Mise à jour...",
+    "updateTagsTitle": "Analyser les notes pour les hashtags et mettre à jour le frontmatter",
+    "tagsUpdated": "{processed} fichiers traités, {updated} mis à jour avec de nouveaux tags",
+    "failedToUpdateTags": "Échec de la mise à jour des tags"
   },
   "errors": {
     "notFound": "Introuvable",

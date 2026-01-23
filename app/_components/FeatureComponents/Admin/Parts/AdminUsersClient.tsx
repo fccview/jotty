@@ -8,8 +8,6 @@ import { User, Checklist, Note } from "@/app/_types";
 import { deleteUser } from "@/app/_server/actions/users";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
-import { getAllLists } from "@/app/_server/actions/checklist";
-import { getAllNotes } from "@/app/_server/actions/note";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
@@ -78,7 +76,7 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
         showToast({
           type: "error",
           title: t('common.error'),
-          message: result.error || "Failed to delete user",
+          message: result.error || t('errors.failedToDeleteUser'),
         });
       }
     } catch (error) {
@@ -86,7 +84,7 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
       showToast({
         type: "error",
         title: t('common.error'),
-        message: "Failed to delete user",
+        message: t('errors.failedToDeleteUser'),
       });
     } finally {
       setDeletingUser(null);

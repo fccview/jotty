@@ -362,7 +362,10 @@
     "noteNotFound": "Notiz nicht gefunden",
     "unarchiveNote": "Notiz entarchivieren",
     "enterNoteName": "Notizname eingeben...",
-    "updateNote": "Notiz aktualisieren"
+    "updateNote": "Notiz aktualisieren",
+    "tags": "Tags",
+    "noTagsFound": "Keine Tags gefunden",
+    "searchTags": "Tags suchen..."
   },
   "checklists": {
     "title": "Aufgabenlisten",
@@ -898,7 +901,14 @@
     "deleteUserConfirmAdmin": "Bist du sicher, dass du den Benutzer \"{username}\" löschen willst? Diese Aktion kann nicht rückgängig gemacht werden.",
     "failedToUnsharePublicItem": "Löschung der Freigabe ist fehlgeschlagen",
     "deleteAccountWarning": "Warnung: Das kann nicht rückgängig gemacht werden",
-    "enterPasswordToConfirm": "Gib zur Bestätigung dein Passwort ein"
+    "enterPasswordToConfirm": "Gib zur Bestätigung dein Passwort ein",
+    "tags": "Tags",
+    "tagsDescription": "Hashtag-Autovervollständigung im Editor mit # aktivieren",
+    "updateTags": "Tags aktualisieren",
+    "updatingTags": "Aktualisiere...",
+    "updateTagsTitle": "Notizen nach Hashtags durchsuchen und Frontmatter aktualisieren",
+    "tagsUpdated": "{processed} Dateien verarbeitet, {updated} mit neuen Tags aktualisiert",
+    "failedToUpdateTags": "Tags konnten nicht aktualisiert werden"
   },
   "errors": {
     "notFound": "Nicht gefunden",

@@ -1,5 +1,6 @@
 import { Modes, ItemTypes } from "./enums";
 import { LinkIndex } from "../_server/actions/link";
+import { TagsIndex } from "../_utils/tag-utils";
 
 export type ChecklistType = "simple" | "task";
 export type ItemType = "checklist" | "note";
@@ -110,6 +111,7 @@ export interface Note {
   encrypted?: boolean;
   encryptedContent?: string;
   encryptionMethod?: EncryptionMethod;
+  tags?: string[];
 }
 
 export interface NoteEditorViewModel {
@@ -319,6 +321,7 @@ export interface AppSettings {
     enableBubbleMenu: boolean;
     enableTableToolbar: boolean;
     enableBilateralLinks: boolean;
+    enableTags?: boolean;
     drawioUrl?: string;
     drawioProxyEnabled?: boolean;
     historyEnabled?: boolean;
@@ -403,6 +406,8 @@ export interface AppModeContextType {
   userSharedItems: UserSharedItems | null;
   globalSharing: any;
   availableLocales: { code: string; countryCode: string; name: string }[];
+  tagsIndex: TagsIndex;
+  tagsEnabled: boolean;
 }
 
 export type AuditLogLevel = "DEBUG" | "INFO" | "WARNING" | "ERROR" | "CRITICAL";

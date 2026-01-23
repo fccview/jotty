@@ -2,7 +2,6 @@ name: Build and Release Prebuilt Tarball
 
 on:
   push:
-    branches: ["main", "develop"]
     tags: ["*"]
 
 jobs:
@@ -29,20 +28,11 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
         run: yarn build
 
-      - name: Determine version
+      - name: Get version from tag
         id: version
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/}"
-            echo "version=${VERSION}" >> $GITHUB_OUTPUT
-            echo "release_tag=latest" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == refs/heads/develop ]]; then
-            echo "version=develop" >> $GITHUB_OUTPUT
-            echo "release_tag=develop" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
-            echo "version=main" >> $GITHUB_OUTPUT
-            echo "release_tag=main" >> $GITHUB_OUTPUT
-          fi
+          VERSION="${GITHUB_REF#refs/tags/}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Create prebuild directory structure
         run: |
@@ -58,30 +48,15 @@ jobs:
       - name: Create tarball
         run: |
           cd prebuild-release
-          tar -czf jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz jotty
-          sha256sum jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz > jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz.sha256
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            cp jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz jotty-prebuild-latest.tar.gz
-            cp jotty-prebuild-${{ steps.version.outputs.version }}.tar.gz.sha256 jotty-prebuild-latest.tar.gz.sha256
-          fi
+          tar -czf jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz jotty
+          sha256sum jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz > jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz.sha256
+          cp jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz jotty_latest_prebuild.tar.gz
+          cp jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz.sha256 jotty_latest_prebuild.tar.gz.sha256
 
-      - name: Attach to Release (tags)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Attach to Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            prebuild-release/jotty-prebuild-*.tar.gz
-            prebuild-release/jotty-prebuild-*.tar.gz.sha256
+            prebuild-release/jotty_*_prebuild.tar.gz
+            prebuild-release/jotty_*_prebuild.tar.gz.sha256
           tag_name: ${{ steps.version.outputs.version }}
-
-      - name: Create Draft Release (branches)
-        if: startsWith(github.ref, 'refs/heads/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            prebuild-release/jotty-prebuild-*.tar.gz
-            prebuild-release/jotty-prebuild-*.tar.gz.sha256
-          tag_name: ${{ steps.version.outputs.release_tag }}
-          name: Prebuild ${{ steps.version.outputs.version }}
-          draft: true
-          prerelease: ${{ github.ref == 'refs/heads/develop' }}

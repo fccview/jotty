@@ -235,8 +235,10 @@ export const parseChecklistContent = (
 export const parseNoteContent = (
   rawContent: string,
   id: string
-): { title: string; content: string; uuid?: string; encrypted?: boolean; encryptionMethod?: "pgp" | "xchacha" } => {
+): { title: string; content: string; uuid?: string; encrypted?: boolean; encryptionMethod?: "pgp" | "xchacha"; tags?: string[] } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
+
+  const tags = Array.isArray(metadata.tags) ? metadata.tags : undefined;
 
   if (metadata.title) {
     return {
@@ -245,6 +247,7 @@ export const parseNoteContent = (
       uuid: metadata.uuid,
       encrypted: metadata.encrypted || false,
       encryptionMethod: metadata.encryptionMethod,
+      tags,
     };
   }
 
@@ -256,5 +259,6 @@ export const parseNoteContent = (
     uuid: metadata.uuid,
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
+    tags,
   };
 };

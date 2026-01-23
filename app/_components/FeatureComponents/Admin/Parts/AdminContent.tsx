@@ -15,9 +15,11 @@ import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
+import { updateTagsFromContent } from "@/app/_server/actions/tags";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface AdminContentProps {
   allLists: Checklist[];
@@ -32,8 +34,10 @@ export const AdminContent = ({
 }: AdminContentProps) => {
   const t = useTranslations();
   const { showToast } = useToast();
+  const { tagsEnabled } = useAppMode();
   const [expandedUsers, setExpandedUsers] = useState<Set<string> | null>(null);
   const [rebuildingIndex, setRebuildingIndex] = useState<string | null>(null);
+  const [updatingTags, setUpdatingTags] = useState(false);
 
   const sortedUserContent = useMemo(() => {
     const listsByOwner = new Map<string, Checklist[]>();
@@ -121,6 +125,30 @@ export const AdminContent = ({
     }
   };
 
+  const handleUpdateTags = async () => {
+    setUpdatingTags(true);
+    try {
+      const result = await updateTagsFromContent();
+      if (result.success) {
+        showToast({
+          type: "success",
+          title: t("common.success"),
+          message: t("admin.tagsUpdated", { processed: result.data?.processed || 0, updated: result.data?.updated || 0 }),
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: t("admin.failedToUpdateTags"),
+      });
+    } finally {
+      setUpdatingTags(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Accordion title={t('admin.dataExport')} defaultOpen={false} className="mb-6">
@@ -139,6 +167,17 @@ export const AdminContent = ({
             {isAllExpanded ? t('common.collapseAll') : t('common.expandAll')}
           </button>
         </div>
+        {tagsEnabled && (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleUpdateTags}
+            disabled={updatingTags}
+            title={t("admin.updateTagsTitle")}
+          >
+            {updatingTags ? t("admin.updatingTags") : t("admin.updateTags")}
+          </Button>
+        )}
       </div>
 
       <div className="space-y-4">

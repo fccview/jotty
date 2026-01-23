@@ -363,7 +363,10 @@
     "noteNotFound": "Nota non trovata",
     "unarchiveNote": "Annulla archiviazione nota",
     "enterNoteName": "Inserisci nome nota...",
-    "updateNote": "Aggiorna Nota"
+    "updateNote": "Aggiorna Nota",
+    "tags": "Tag",
+    "noTagsFound": "Nessun tag trovato",
+    "searchTags": "Cerca tag..."
   },
   "checklists": {
     "title": "Checklist",
@@ -911,7 +914,14 @@
     "deleteUserConfirmAdmin": "Sei sicuro di voler eliminare l'utente \"{username}\"? Questa azione non può essere annullata.",
     "failedToUnsharePublicItem": "Impossibile rimuovere la condivisione pubblica",
     "deleteAccountWarning": "Attenzione: Questa azione non può essere annullata",
-    "enterPasswordToConfirm": "Inserisci la tua password per confermare"
+    "enterPasswordToConfirm": "Inserisci la tua password per confermare",
+    "tags": "Tag",
+    "tagsDescription": "Abilita autocompletamento hashtag nell'editor con #",
+    "updateTags": "Aggiorna tag",
+    "updatingTags": "Aggiornamento...",
+    "updateTagsTitle": "Scansiona le note per hashtag e aggiorna frontmatter",
+    "tagsUpdated": "{processed} file elaborati, {updated} aggiornati con nuovi tag",
+    "failedToUpdateTags": "Impossibile aggiornare i tag"
   },
   "errors": {
     "notFound": "Non Trovato",

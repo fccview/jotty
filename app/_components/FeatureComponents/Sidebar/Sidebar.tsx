@@ -10,7 +10,9 @@ import { AppMode, Checklist, Note } from "@/app/_types";
 import { SidebarNavigation } from "./Parts/SidebarNavigation";
 import { CategoryList } from "./Parts/CategoryList";
 import { SharedItemsList } from "./Parts/SharedItemsList";
+import { TagsList } from "./Parts/TagsList";
 import { SidebarActions } from "./Parts/SidebarActions";
+import { ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { Modes } from "@/app/_types/enums";
 import { SidebarProps, useSidebar } from "@/app/_hooks/useSidebar";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -30,6 +32,7 @@ export const Sidebar = (props: SidebarProps) => {
   } = props;
 
   const { checklists, notes } = useAppMode();
+  const { tagsEnabled } = useAppMode();
   const searchParams = useSearchParams();
   const { mode, setMode } = useAppMode();
   const pathname = usePathname();
@@ -104,9 +107,17 @@ export const Sidebar = (props: SidebarProps) => {
         onClose={onClose}
         scrollRef={categoriesScrollRef}
         title={
-          <h3 className="jotty-sidebar-categories-title text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider">
-            {t('notes.categories')}
-          </h3>
+          <button
+            onClick={() => sidebar.setCategoriesSectionCollapsed((p) => !p)}
+            className="jotty-sidebar-categories-title flex items-center gap-1 text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider hover:text-foreground transition-colors"
+          >
+            {sidebar.categoriesSectionCollapsed ? (
+              <ArrowRight01Icon className="h-3 w-3" />
+            ) : (
+              <ArrowDown01Icon className="h-3 w-3" />
+            )}
+            {t("notes.categories")}
+          </button>
         }
         navigation={
           <SidebarNavigation
@@ -129,6 +140,20 @@ export const Sidebar = (props: SidebarProps) => {
             onOpenCategoryModal={onOpenCategoryModal}
           />
         }
+        tagsSection={
+          sidebar.mode === Modes.NOTES && tagsEnabled ? (
+            <TagsList
+              collapsed={sidebar.tagsCollapsed}
+              onToggleCollapsed={() =>
+                sidebar.setTagsCollapsed((p) => !p)
+              }
+              collapsedTags={sidebar.collapsedTags}
+              toggleTag={sidebar.toggleTag}
+              onItemClick={sidebar.handleItemClick}
+              isItemSelected={sidebar.isItemSelected}
+            />
+          ) : null
+        }
       >
         <div className="space-y-4">
           <SharedItemsList
@@ -140,25 +165,27 @@ export const Sidebar = (props: SidebarProps) => {
             isItemSelected={sidebar.isItemSelected}
             mode={sidebar.mode}
           />
-          <CategoryList
-            categories={categories}
-            items={currentItems as unknown as (Checklist | Note)[]}
-            collapsedCategories={sidebar.collapsedCategoriesForMode}
-            onToggleCategory={sidebar.toggleCategory}
-            onDeleteCategory={(path: string) =>
-              sidebar.openModal("deleteCategory", path)
-            }
-            onRenameCategory={(path: string) =>
-              sidebar.openModal("renameCategory", path)
-            }
-            onQuickCreate={onOpenCreateModal}
-            onCreateSubcategory={onOpenCategoryModal}
-            onItemClick={sidebar.handleItemClick}
-            onEditItem={sidebar.handleEditItem}
-            isItemSelected={sidebar.isItemSelected}
-            mode={sidebar.mode}
-            user={user || undefined}
-          />
+          {!sidebar.categoriesSectionCollapsed && (
+            <CategoryList
+              categories={categories}
+              items={currentItems as unknown as (Checklist | Note)[]}
+              collapsedCategories={sidebar.collapsedCategoriesForMode}
+              onToggleCategory={sidebar.toggleCategory}
+              onDeleteCategory={(path: string) =>
+                sidebar.openModal("deleteCategory", path)
+              }
+              onRenameCategory={(path: string) =>
+                sidebar.openModal("renameCategory", path)
+              }
+              onQuickCreate={onOpenCreateModal}
+              onCreateSubcategory={onOpenCategoryModal}
+              onItemClick={sidebar.handleItemClick}
+              onEditItem={sidebar.handleEditItem}
+              isItemSelected={sidebar.isItemSelected}
+              mode={sidebar.mode}
+              user={user || undefined}
+            />
+          )}
         </div>
       </SidebarWrapper>
 

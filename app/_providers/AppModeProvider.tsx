@@ -21,6 +21,7 @@ import {
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { LinkIndex } from "../_server/actions/link";
+import { buildTagsIndex } from "../_utils/tag-utils";
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
@@ -96,6 +97,13 @@ export const AppModeProvider = ({
     localStorage.setItem("app-mode", newMode);
   };
 
+  const tagsEnabled = appSettings?.editor?.enableTags !== false;
+
+  const tagsIndex = useMemo(() => {
+    if (!tagsEnabled || !notes) return {};
+    return buildTagsIndex(notes);
+  }, [notes, tagsEnabled]);
+
   const contextValue = useMemo(
     () => ({
       mode,
@@ -117,6 +125,8 @@ export const AppModeProvider = ({
       userSharedItems: userSharedItems || null,
       globalSharing: globalSharing || null,
       availableLocales: availableLocales || [],
+      tagsIndex,
+      tagsEnabled,
     }),
     [
       mode,
@@ -137,6 +147,8 @@ export const AppModeProvider = ({
       userSharedItems,
       globalSharing,
       availableLocales,
+      tagsIndex,
+      tagsEnabled,
     ]
   );
 

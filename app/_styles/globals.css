@@ -320,6 +320,23 @@ mark {
     margin-right: 0.25rem;
 }
 
+.prose span[data-tag],
+.ProseMirror span[data-tag] {
+    color: rgb(var(--primary));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.prose span[data-tag]::before,
+.ProseMirror span[data-tag]::before {
+    content: "#";
+}
+
+.prose span[data-tag]:hover,
+.ProseMirror span[data-tag]:hover {
+    text-decoration: none;
+}
+
 .prose kbd {
     @apply bg-muted px-2 py-1 text-sm lg:text-xs rounded-jotty border border-border shadow-border shadow-sm;
 }

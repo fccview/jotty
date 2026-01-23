@@ -42,6 +42,7 @@ interface EditorSettings {
   enableBubbleMenu: boolean;
   enableTableToolbar: boolean;
   enableBilateralLinks: boolean;
+  enableTags?: boolean;
   drawioUrl?: string;
   drawioProxyEnabled?: boolean;
 }
@@ -50,6 +51,7 @@ interface EditorData {
   notes?: any[];
   checklists?: any[];
   username?: string;
+  tags?: string[];
 }
 
 export const createEditorExtensions = (
@@ -115,8 +117,10 @@ export const createEditorExtensions = (
       notes: editorData?.notes || [],
       checklists: editorData?.checklists || [],
       username: editorData?.username || "",
+      tags: editorData?.tags || [],
       enableBilateralLinks: settings.enableBilateralLinks,
       enableSlashCommands: settings.enableSlashCommands,
+      enableTags: settings.enableTags !== false,
       t: t || ((key: string) => key),
     }),
     InternalLink,

@@ -16,6 +16,7 @@ interface SidebarWrapperProps {
   navigation?: ReactNode;
   headerActions?: ReactNode;
   scrollRef?: Ref<HTMLDivElement>;
+  tagsSection?: ReactNode;
 }
 
 export const SidebarWrapper = ({
@@ -27,6 +28,7 @@ export const SidebarWrapper = ({
   navigation,
   headerActions,
   scrollRef,
+  tagsSection,
 }: SidebarWrapperProps) => {
   const { isDemoMode, isRwMarkable } = useAppMode();
   const { sidebarWidth, isResizing, startResizing } = useResizing();
@@ -82,7 +84,12 @@ export const SidebarWrapper = ({
           </div>
           {navigation}
           <div ref={scrollRef} className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-4">
-            <div className="px-2 pt-2">
+            {tagsSection && (
+              <div className="pt-2">
+                {tagsSection}
+              </div>
+            )}
+            <div className="pt-2">
               <div className="flex items-center justify-between">
                 {typeof title === 'string' ? (
                   <h3 className="jotty-sidebar-categories-title text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider">

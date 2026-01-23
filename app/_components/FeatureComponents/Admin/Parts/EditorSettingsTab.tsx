@@ -45,6 +45,10 @@ export const EditorSettingsTab = () => {
               typeof result.data.editor?.enableBilateralLinks === "boolean"
                 ? result.data.editor?.enableBilateralLinks
                 : true,
+            enableTags:
+              typeof result.data.editor?.enableTags === "boolean"
+                ? result.data.editor?.enableTags
+                : true,
             drawioUrl: result.data.editor?.drawioUrl || "",
             drawioProxyEnabled:
               typeof result.data.editor?.drawioProxyEnabled === "boolean"
@@ -265,6 +269,24 @@ export const EditorSettingsTab = () => {
                 checked={settings.editor.enableBilateralLinks}
                 onCheckedChange={(checked) =>
                   handleToggleChange("enableBilateralLinks", checked)
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label htmlFor="enableTags" className="space-y-1 cursor-pointer">
+                <div className="text-md lg:text-sm font-medium">
+                  {t("admin.tags")}
+                </div>
+                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                  {t("admin.tagsDescription")}
+                </p>
+              </label>
+              <Toggle
+                id="enableTags"
+                checked={settings.editor.enableTags || false}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableTags", checked)
                 }
               />
             </div>

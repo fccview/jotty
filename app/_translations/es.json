@@ -363,7 +363,10 @@
     "noteNotFound": "Nota no encontrada",
     "unarchiveNote": "Desarchivar nota",
     "enterNoteName": "Ingrese el nombre de la nota...",
-    "updateNote": "Actualizar nota"
+    "updateNote": "Actualizar nota",
+    "tags": "Etiquetas",
+    "noTagsFound": "No se encontraron etiquetas",
+    "searchTags": "Buscar etiquetas..."
   },
   "checklists": {
     "title": "Listas de verificación",
@@ -911,7 +914,14 @@
     "deleteUserConfirmAdmin": "¿Está seguro de que desea eliminar al usuario \"{username}\"? Esta acción no se puede deshacer.",
     "failedToUnsharePublicItem": "No se pudo dejar de compartir el elemento público",
     "deleteAccountWarning": "Advertencia: Esta acción no se puede deshacer",
-    "enterPasswordToConfirm": "Ingrese su contraseña para confirmar"
+    "enterPasswordToConfirm": "Ingrese su contraseña para confirmar",
+    "tags": "Etiquetas",
+    "tagsDescription": "Habilitar autocompletado de hashtags en el editor con #",
+    "updateTags": "Actualizar etiquetas",
+    "updatingTags": "Actualizando...",
+    "updateTagsTitle": "Escanear notas en busca de hashtags y actualizar frontmatter",
+    "tagsUpdated": "{processed} archivos procesados, {updated} actualizados con nuevas etiquetas",
+    "failedToUpdateTags": "Error al actualizar las etiquetas"
   },
   "errors": {
     "notFound": "No encontrado",

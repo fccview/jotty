@@ -37,6 +37,10 @@ export const useSidebar = (props: SidebarProps) => {
     Record<AppMode, Set<string>>
   >({ [Modes.CHECKLISTS]: new Set(), [Modes.NOTES]: new Set() });
   const [sharedItemsCollapsed, setSharedItemsCollapsed] = useState(false);
+  const [tagsCollapsed, setTagsCollapsed] = useState(true);
+  const [categoriesSectionCollapsed, setCategoriesSectionCollapsed] = useState(false);
+  const [collapsedTags, setCollapsedTags] = useState<Set<string>>(new Set());
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [isLocalStorageInitialized, setIsLocalStorageInitialized] =
     useState(false);
 
@@ -63,6 +67,23 @@ export const useSidebar = (props: SidebarProps) => {
           localStorage.getItem("sidebar-shared-items-collapsed") || "false"
         )
       );
+      setTagsCollapsed(
+        JSON.parse(
+          localStorage.getItem("sidebar-tags-collapsed") || "true"
+        )
+      );
+      setCategoriesSectionCollapsed(
+        JSON.parse(
+          localStorage.getItem("sidebar-categories-section-collapsed") || "false"
+        )
+      );
+      setCollapsedTags(
+        new Set(
+          JSON.parse(
+            localStorage.getItem("sidebar-collapsed-tags") || "[]"
+          )
+        )
+      );
     } catch (error) {
       console.error("Failed to parse sidebar state from localStorage:", error);
     }
@@ -84,6 +105,30 @@ export const useSidebar = (props: SidebarProps) => {
         JSON.stringify(sharedItemsCollapsed)
       );
   }, [sharedItemsCollapsed, isLocalStorageInitialized]);
+
+  useEffect(() => {
+    if (isLocalStorageInitialized)
+      localStorage.setItem(
+        "sidebar-tags-collapsed",
+        JSON.stringify(tagsCollapsed)
+      );
+  }, [tagsCollapsed, isLocalStorageInitialized]);
+
+  useEffect(() => {
+    if (isLocalStorageInitialized)
+      localStorage.setItem(
+        "sidebar-categories-section-collapsed",
+        JSON.stringify(categoriesSectionCollapsed)
+      );
+  }, [categoriesSectionCollapsed, isLocalStorageInitialized]);
+
+  useEffect(() => {
+    if (isLocalStorageInitialized)
+      localStorage.setItem(
+        "sidebar-collapsed-tags",
+        JSON.stringify(Array.from(collapsedTags))
+      );
+  }, [collapsedTags, isLocalStorageInitialized]);
 
   const openModal = (type: string, data: any = null) =>
     setModalState({ type, data });
@@ -185,6 +230,18 @@ export const useSidebar = (props: SidebarProps) => {
     });
   };
 
+  const toggleTag = (tagPath: string) => {
+    setCollapsedTags((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(tagPath)) {
+        newSet.delete(tagPath);
+      } else {
+        newSet.add(tagPath);
+      }
+      return newSet;
+    });
+  };
+
   const isItemSelected = (item: Checklist | Note) => {
     const expectedPath = buildCategoryPath(
       item.category || "Uncategorized",
@@ -254,6 +311,14 @@ export const useSidebar = (props: SidebarProps) => {
     toggleCategory,
     sharedItemsCollapsed,
     setSharedItemsCollapsed,
+    tagsCollapsed,
+    setTagsCollapsed,
+    categoriesSectionCollapsed,
+    setCategoriesSectionCollapsed,
+    collapsedTags,
+    toggleTag,
+    selectedTag,
+    setSelectedTag,
     handleToggleAllCategories,
     areAnyCollapsed,
     handleItemClick,

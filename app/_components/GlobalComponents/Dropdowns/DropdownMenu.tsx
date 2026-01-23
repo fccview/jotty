@@ -66,7 +66,7 @@ export const DropdownMenu = ({
 
       let scrollParent: HTMLElement | null = triggerRef.current.parentElement;
       while (scrollParent) {
-        if (scrollParent.classList.contains('jotty-sidebar-categories')) {
+        if (scrollParent.classList.contains('jotty-sidebar-categories') || scrollParent.classList.contains('jotty-sidebar-tags')) {
           break;
         }
         scrollParent = scrollParent.parentElement;

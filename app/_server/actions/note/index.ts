@@ -34,6 +34,7 @@ import {
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { serverReadFile } from "@/app/_server/actions/file";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
+import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
 import {
   buildCategoryPath,
   decodeCategoryPath,
@@ -102,6 +103,7 @@ const _parseMarkdownNote = (
     isShared,
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
+    tags: Array.isArray(metadata.tags) ? metadata.tags : [],
   };
 };
 
@@ -248,6 +250,10 @@ const _noteToMarkdown = (note: Note): string => {
     if (note.encryptionMethod) {
       metadata.encryptionMethod = note.encryptionMethod;
     }
+  }
+
+  if (note.tags && note.tags.length > 0) {
+    metadata.tags = note.tags;
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);
@@ -493,6 +499,8 @@ export const createNote = async (formData: FormData) => {
     const id = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 
+    const extractedTags = extractHashtagsFromContent(content);
+
     const newDoc: Note = {
       id,
       uuid: generateUuid(),
@@ -502,6 +510,7 @@ export const createNote = async (formData: FormData) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       owner: currentUser.username,
+      tags: extractedTags.length > 0 ? extractedTags : undefined,
     };
 
     await serverWriteFile(filePath, _noteToMarkdown(newDoc));
@@ -605,6 +614,10 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     const encryptionMethod =
       detectEncryptionMethod(convertedContent) || undefined;
+
+    const extractedTags = extractHashtagsFromContent(convertedContent);
+    const sortedTags = Array.from(new Set(extractedTags)).sort();
+
     const updatedDoc = {
       ...note,
       title,
@@ -613,6 +626,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       updatedAt: new Date().toISOString(),
       encrypted: isEncrypted(convertedContent),
       encryptionMethod,
+      tags: sortedTags.length > 0 ? sortedTags : undefined,
     };
 
     const ownerDir = USER_NOTES_DIR(note.owner!);
@@ -1030,6 +1044,7 @@ export const getNoteById = async (
       uuid: finalUuid,
       encrypted: parsedData.encrypted || false,
       encryptionMethod: parsedData.encryptionMethod,
+      tags: parsedData.tags || [],
     };
     return result as Note;
   }

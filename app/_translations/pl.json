@@ -364,7 +364,10 @@
     "noteNotFound": "Notatka nie znaleziona",
     "unarchiveNote": "Odarchiwizuj notatkę",
     "enterNoteName": "Wprowadź nazwę notatki…",
-    "updateNote": "Zaktualizuj notatkę"
+    "updateNote": "Zaktualizuj notatkę",
+    "tags": "Tagi",
+    "noTagsFound": "Nie znaleziono tagów",
+    "searchTags": "Szukaj tagów..."
   },
   "checklists": {
     "title": "Listy kontrolne",
@@ -912,7 +915,14 @@
     "deleteUserConfirmAdmin": "Czy na pewno chcesz usunąć użytkownika „{username}”? Ta czynność nie może zostać cofnięta.",
     "failedToUnsharePublicItem": "Nie udało się odsprzedać publicznego elementu",
     "deleteAccountWarning": "Ostrzeżenie: Ta akcja nie może być cofnięta",
-    "enterPasswordToConfirm": "Wprowadź hasło, aby potwierdzić"
+    "enterPasswordToConfirm": "Wprowadź hasło, aby potwierdzić",
+    "tags": "Tagi",
+    "tagsDescription": "Włącz autouzupełnianie hashtagów w edytorze za pomocą #",
+    "updateTags": "Aktualizuj tagi",
+    "updatingTags": "Aktualizowanie...",
+    "updateTagsTitle": "Przeskanuj notatki w poszukiwaniu hashtagów i zaktualizuj frontmatter",
+    "tagsUpdated": "Przetworzono {processed} plików, zaktualizowano {updated} z nowymi tagami",
+    "failedToUpdateTags": "Nie udało się zaktualizować tagów"
   },
   "errors": {
     "notFound": "Nie znaleziono",

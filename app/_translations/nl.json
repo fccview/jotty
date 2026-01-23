@@ -363,7 +363,10 @@
     "noteNotFound": "Notitie niet gevonden",
     "unarchiveNote": "Notitie dearchiveren",
     "enterNoteName": "Voer notitienaam in...",
-    "updateNote": "Notitie bijwerken"
+    "updateNote": "Notitie bijwerken",
+    "tags": "Tags",
+    "noTagsFound": "Geen tags gevonden",
+    "searchTags": "Tags zoeken..."
   },
   "checklists": {
     "title": "Checklists",
@@ -911,7 +914,14 @@
     "deleteUserConfirmAdmin": "Weet u zeker dat u gebruiker \"{username}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
     "failedToUnsharePublicItem": "Publiek item delen ongedaan maken mislukt",
     "deleteAccountWarning": "Waarschuwing: Deze actie kan niet ongedaan worden gemaakt",
-    "enterPasswordToConfirm": "Voer uw wachtwoord in ter bevestiging"
+    "enterPasswordToConfirm": "Voer uw wachtwoord in ter bevestiging",
+    "tags": "Tags",
+    "tagsDescription": "Schakel hashtag autocomplete in de editor in met #",
+    "updateTags": "Tags bijwerken",
+    "updatingTags": "Bijwerken...",
+    "updateTagsTitle": "Scan notities op hashtags en update frontmatter",
+    "tagsUpdated": "{processed} bestanden verwerkt, {updated} bijgewerkt met nieuwe tags",
+    "failedToUpdateTags": "Tags bijwerken mislukt"
   },
   "errors": {
     "notFound": "Niet gevonden",

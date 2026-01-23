@@ -392,7 +392,10 @@
     "noteNotFound": "笔记未找到",
     "unarchiveNote": "取消归档笔记",
     "enterNoteName": "输入笔记名称...",
-    "updateNote": "更新笔记"
+    "updateNote": "更新笔记",
+    "tags": "标签",
+    "noTagsFound": "未找到标签",
+    "searchTags": "搜索标签..."
   },
   "checklists": {
     "title": "清单",
@@ -946,7 +949,14 @@
     "deleteUserConfirmAdmin": "确定要删除用户 \"{username}\" 吗？此操作无法撤销。",
     "failedToUnsharePublicItem": "取消共享公开项目失败",
     "deleteAccountWarning": "警告：此操作无法撤销",
-    "enterPasswordToConfirm": "输入密码以确认"
+    "enterPasswordToConfirm": "输入密码以确认",
+    "tags": "标签",
+    "tagsDescription": "在编辑器中使用 # 启用标签自动补全",
+    "updateTags": "更新标签",
+    "updatingTags": "更新中...",
+    "updateTagsTitle": "扫描笔记中的标签并更新前置数据",
+    "tagsUpdated": "已处理 {processed} 个文件，{updated} 个已更新新标签",
+    "failedToUpdateTags": "更新标签失败"
   },
   "errors": {
     "notFound": "未找到",

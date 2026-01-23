@@ -407,6 +407,21 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     },
   });
 
+  service.addRule("tag", {
+    filter: (node) => {
+      return (
+        node.nodeName === "SPAN" &&
+        (node as HTMLElement).hasAttribute("data-tag")
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const tag = element.getAttribute("data-tag");
+      if (!tag) return content;
+      return `<span data-tag="${tag}">${content}</span>`;
+    },
+  });
+
   return service;
 };
 
