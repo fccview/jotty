@@ -135,6 +135,9 @@
     "createCategory": "Categorie aanmaken",
     "selectCategory": "Selecteer categorie...",
     "categoryWillBeCreatedIn": "Nieuwe categorie wordt aangemaakt in:",
+    "clone": "Klonen",
+    "cloneItem": "{item} klonen",
+    "selectCategoryForClone": "Selecteer de categorie waar u dit item naartoe wilt kopiëren:",
     "rootLevel": "Hoofdniveau",
     "newCategory": "Nieuwe categorie",
     "renameCategory": "Categorie hernoemen",
@@ -232,7 +235,8 @@
     "toggleSidebar": "Zijbalk aan/uit",
     "openSearch": "Zoeken openen",
     "closeSearch": "Zoeken sluiten",
-    "moreOptions": "Meer opties"
+    "moreOptions": "Meer opties",
+    "copiedToClipboard": "Gekopieerd naar klembord"
   },
   "auth": {
     "loginTitle": "Inloggen",
@@ -366,7 +370,8 @@
     "updateNote": "Notitie bijwerken",
     "tags": "Tags",
     "noTagsFound": "Geen tags gevonden",
-    "searchTags": "Tags zoeken..."
+    "searchTags": "Tags zoeken...",
+    "copyRawContent": "Kopieer markdown"
   },
   "checklists": {
     "title": "Checklists",

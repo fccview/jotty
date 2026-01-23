@@ -135,6 +135,9 @@
     "createCategory": "创建分类",
     "selectCategory": "选择分类...",
     "categoryWillBeCreatedIn": "新分类将创建于：",
+    "clone": "克隆",
+    "cloneItem": "克隆 {item}",
+    "selectCategoryForClone": "选择要将此项目复制到的分类：",
     "rootLevel": "根目录",
     "newCategory": "新分类",
     "renameCategory": "重命名分类",
@@ -236,7 +239,8 @@
     "history": "历史记录",
     "disable": "禁用",
     "restoring": "恢复中...",
-    "retry": "重试"
+    "retry": "重试",
+    "copiedToClipboard": "已复制到剪贴板"
   },
   "history": {
     "noteHistory": "笔记历史",
@@ -395,7 +399,8 @@
     "updateNote": "更新笔记",
     "tags": "标签",
     "noTagsFound": "未找到标签",
-    "searchTags": "搜索标签..."
+    "searchTags": "搜索标签...",
+    "copyRawContent": "复制降价"
   },
   "checklists": {
     "title": "清单",

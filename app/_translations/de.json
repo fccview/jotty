@@ -134,6 +134,9 @@
     "createCategory": "Kategorie erstellen",
     "selectCategory": "Kategorie auswählen...",
     "categoryWillBeCreatedIn": "Neue Kategorie wird erstellt in:",
+    "clone": "Klonen",
+    "cloneItem": "{item} klonen",
+    "selectCategoryForClone": "Wählen Sie die Kategorie aus, in die Sie dieses Element kopieren möchten:",
     "rootLevel": "Wurzel-Ebene",
     "newCategory": "Neue Kategorie",
     "renameCategory": "Kategorie umbenennen",
@@ -233,7 +236,8 @@
     "closeSearch": "Suche schließen",
     "moreOptions": "Mehr Optionen",
     "retry": "Wiederholen",
-    "restoring": "Wiederherstellung..."
+    "restoring": "Wiederherstellung...",
+    "copiedToClipboard": "In die Zwischenablage kopiert"
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -365,7 +369,8 @@
     "updateNote": "Notiz aktualisieren",
     "tags": "Tags",
     "noTagsFound": "Keine Tags gefunden",
-    "searchTags": "Tags suchen..."
+    "searchTags": "Tags suchen...",
+    "copyRawContent": "Markdown kopieren"
   },
   "checklists": {
     "title": "Aufgabenlisten",

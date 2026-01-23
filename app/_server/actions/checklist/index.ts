@@ -1092,13 +1092,14 @@ export const updateChecklistStatuses = async (formData: FormData) => {
 export const cloneChecklist = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
-    const category = formData.get("category") as string;
+    const originalCategory = formData.get("originalCategory") as string | null;
+    const targetCategory = formData.get("category") as string;
     const ownerUsername = formData.get("user") as string | null;
 
     const checklist = await getListById(
       id,
       ownerUsername || undefined,
-      category
+      originalCategory || undefined
     );
     if (!checklist) {
       return { error: "Checklist not found" };
@@ -1109,11 +1110,11 @@ export const cloneChecklist = async (formData: FormData) => {
 
     const isOwnedByCurrentUser =
       !checklist.owner || checklist.owner === currentUser?.username;
-    const targetCategory = isOwnedByCurrentUser
-      ? category || "Uncategorized"
+    const finalTargetCategory = isOwnedByCurrentUser
+      ? targetCategory || "Uncategorized"
       : "Uncategorized";
 
-    const categoryDir = path.join(userDir, targetCategory);
+    const categoryDir = path.join(userDir, finalTargetCategory);
     await ensureDir(categoryDir);
 
     const cloneTitle = `${checklist.title} (Copy)`;
@@ -1140,7 +1141,7 @@ export const cloneChecklist = async (formData: FormData) => {
     const clonedChecklist = await getListById(
       newId,
       currentUser?.username,
-      targetCategory
+      finalTargetCategory
     );
 
     try {

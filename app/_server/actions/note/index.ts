@@ -1148,10 +1148,16 @@ export const CheckForNeedsMigration = async (): Promise<boolean> => {
 export const cloneNote = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
-    const category = formData.get("category") as string;
+    const uuid = formData.get("uuid") as string;
+    const originalCategory = formData.get("originalCategory") as string | null;
+    const targetCategory = formData.get("category") as string;
     const ownerUsername = formData.get("user") as string | null;
 
-    const note = await getNoteById(id, ownerUsername || undefined, category);
+    const note = await getNoteById(
+      uuid || id,
+      originalCategory || undefined,
+      ownerUsername || undefined
+    );
     if (!note) {
       return { error: "Note not found" };
     }
@@ -1161,11 +1167,11 @@ export const cloneNote = async (formData: FormData) => {
 
     const isOwnedByCurrentUser =
       !note.owner || note.owner === currentUser?.username;
-    const targetCategory = isOwnedByCurrentUser
-      ? category || "Uncategorized"
+    const finalTargetCategory = isOwnedByCurrentUser
+      ? targetCategory || "Uncategorized"
       : "Uncategorized";
 
-    const categoryDir = path.join(userDir, targetCategory);
+    const categoryDir = path.join(userDir, finalTargetCategory);
     await ensureDir(categoryDir);
 
     const cloneTitle = `${note.title} (Copy)`;
@@ -1191,7 +1197,7 @@ export const cloneNote = async (formData: FormData) => {
     const newId = path.basename(filename, ".md");
     const clonedNote = await getNoteById(
       newId,
-      targetCategory,
+      finalTargetCategory,
       currentUser?.username
     );
 

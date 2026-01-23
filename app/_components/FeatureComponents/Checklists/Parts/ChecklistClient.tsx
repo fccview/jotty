@@ -11,6 +11,7 @@ import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/Confirma
 import { EditChecklistModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/EditChecklistModal";
 import { CreateListModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/CreateListModal";
 import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/CreateCategoryModal";
+import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/CloneCategoryModal";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { useChecklist } from "@/app/_hooks/useChecklist";
@@ -40,6 +41,7 @@ export const ChecklistClient = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showCloneModal, setShowCloneModal] = useState(false);
   const [initialCategory, setInitialCategory] = useState<string>("");
   const [initialParentCategory, setInitialParentCategory] =
     useState<string>("");
@@ -71,10 +73,15 @@ export const ChecklistClient = ({
     }
   };
 
-  const handleClone = async () => {
+  const handleClone = () => {
+    setShowCloneModal(true);
+  };
+
+  const handleCloneConfirm = async (targetCategory: string) => {
     const formData = new FormData();
     formData.append("id", localChecklist.id);
-    formData.append("category", localChecklist.category || "Uncategorized");
+    formData.append("originalCategory", localChecklist.category || "Uncategorized");
+    formData.append("category", targetCategory || "Uncategorized");
     if (localChecklist.owner) {
       formData.append("user", localChecklist.owner);
     }
@@ -235,6 +242,16 @@ export const ChecklistClient = ({
       )}
 
       <DeleteModal />
+      {showCloneModal && (
+        <CloneCategoryModal
+          isOpen={showCloneModal}
+          onClose={() => setShowCloneModal(false)}
+          onConfirm={handleCloneConfirm}
+          categories={categories}
+          currentCategory={localChecklist.category || ""}
+          itemType="checklist"
+        />
+      )}
     </Layout>
   );
 };

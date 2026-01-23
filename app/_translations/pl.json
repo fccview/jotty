@@ -135,6 +135,9 @@
     "createCategory": "Utwórz kategorię",
     "selectCategory": "Wybierz kategorię…",
     "categoryWillBeCreatedIn": "Nowa kategoria zostanie utworzona w:",
+    "clone": "Klonuj",
+    "cloneItem": "Klonuj {item}",
+    "selectCategoryForClone": "Wybierz kategorię, do której chcesz skopiować ten element:",
     "rootLevel": "Poziom główny",
     "newCategory": "Nowa kategoria",
     "renameCategory": "Zmień nazwę kategorii",
@@ -234,7 +237,8 @@
     "closeSearch": "Zamknij wyszukiwanie",
     "moreOptions": "Więcej opcji",
     "retry": "Spróbować ponownie",
-    "restoring": "Przywracam..."
+    "restoring": "Przywracam...",
+    "copiedToClipboard": "Skopiowano do schowka"
   },
   "auth": {
     "loginTitle": "Logowanie",
@@ -367,7 +371,8 @@
     "updateNote": "Zaktualizuj notatkę",
     "tags": "Tagi",
     "noTagsFound": "Nie znaleziono tagów",
-    "searchTags": "Szukaj tagów..."
+    "searchTags": "Szukaj tagów...",
+    "copyRawContent": "Skopiuj markdown"
   },
   "checklists": {
     "title": "Listy kontrolne",

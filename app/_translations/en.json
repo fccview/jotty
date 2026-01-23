@@ -135,6 +135,9 @@
     "createCategory": "Create category",
     "selectCategory": "Select category...",
     "categoryWillBeCreatedIn": "New category will be created in:",
+    "clone": "Clone",
+    "cloneItem": "Clone {item}",
+    "selectCategoryForClone": "Select the category where you want to copy this item:",
     "rootLevel": "Root level",
     "newCategory": "New category",
     "renameCategory": "Rename category",
@@ -236,7 +239,8 @@
     "history": "History",
     "disable": "Disable",
     "restoring": "Restoring...",
-    "retry": "Retry"
+    "retry": "Retry",
+    "copiedToClipboard": "Copied to clipboard"
   },
   "history": {
     "noteHistory": "Note History",
@@ -388,6 +392,7 @@
     "enterNoteTitle": "Enter note title...",
     "byType": "By type",
     "publiclySharedNote": "Publicly shared",
+    "copyRawContent": "Copy markdown",
     "quickSave": "Quick Save",
     "noteNotFound": "Note not found",
     "unarchiveNote": "Unarchive Note",
