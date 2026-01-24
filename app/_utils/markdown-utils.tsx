@@ -47,7 +47,14 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     emDelimiter: "*",
     bulletListMarker: "-",
     blankReplacement: function (content, node) {
-      return node.nodeName === "P" ? "\u200b" : content;
+      if (node.nodeName === "P") {
+        const element = node as HTMLElement;
+        if (element.querySelector?.("img")) {
+          return content;
+        }
+        return "\u200b";
+      }
+      return content;
     },
   });
 
