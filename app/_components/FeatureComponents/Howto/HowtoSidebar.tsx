@@ -76,6 +76,7 @@ export const HowtoSidebar = ({ isOpen, onClose }: HowtoSidebarProps) => {
 
                         return (
                             <SidebarItem
+                                href={`/howto/${guide.id}`}
                                 key={guide.id}
                                 icon={Icon}
                                 label={guide.name}
