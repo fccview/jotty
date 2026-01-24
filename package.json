@@ -48,7 +48,7 @@
         "@types/speakeasy": "^2.0.10",
         "archiver": "^7.0.1",
         "clsx": "^2.0.0",
-        "diff": "5.2.0",
+        "diff": "^5.2.2",
         "dompurify": "^3.3.0",
         "hast-util-to-html": "^9.0.5",
         "hugeicons-react": "^0.3.0",
@@ -92,6 +92,12 @@
         "uuid": "^11.1.0",
         "zod": "^4.1.12",
         "zustand": "^5.0.6"
+    },
+    "resolutions": {
+        "lodash-es": "^4.17.23",
+        "lodash": "^4.17.23",
+        "nanoid": "^3.3.8",
+        "**/mermaid": "^11.12.1"
     },
     "devDependencies": {
         "@types/archiver": "^6.0.3",
