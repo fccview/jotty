@@ -31,8 +31,8 @@ export const Sidebar = (props: SidebarProps) => {
     user,
   } = props;
 
-  const { checklists, notes } = useAppMode();
-  const { tagsEnabled } = useAppMode();
+  const { checklists, notes, tagsIndex, tagsEnabled } = useAppMode();
+  const totalTags = Object.keys(tagsIndex).length;
   const searchParams = useSearchParams();
   const { mode, setMode } = useAppMode();
   const pathname = usePathname();
@@ -141,7 +141,7 @@ export const Sidebar = (props: SidebarProps) => {
           />
         }
         tagsSection={
-          sidebar.mode === Modes.NOTES && tagsEnabled ? (
+          sidebar.mode === Modes.NOTES && tagsEnabled && totalTags > 0 ? (
             <TagsList
               collapsed={sidebar.tagsCollapsed}
               onToggleCollapsed={() =>

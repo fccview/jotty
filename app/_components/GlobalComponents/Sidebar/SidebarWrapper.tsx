@@ -83,7 +83,7 @@ export const SidebarWrapper = ({
             </div>
           </div>
           {navigation}
-          <div ref={scrollRef} className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-4">
+          <div ref={scrollRef} className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-2">
             {tagsSection && (
               <div className="pt-2">
                 {tagsSection}

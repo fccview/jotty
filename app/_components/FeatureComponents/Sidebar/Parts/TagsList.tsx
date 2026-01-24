@@ -180,44 +180,48 @@ export const TagsList = ({
   };
 
   return (
-    <div className="space-y-1 overflow-hidden">
-      <div className="flex items-center justify-between group">
-        <button
-          onClick={onToggleCollapsed}
-          className="jotty-sidebar-tags-title flex items-center gap-1 text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider hover:text-foreground transition-colors"
-        >
-          {collapsed ? (
-            <ArrowRight01Icon className="h-3 w-3" />
-          ) : (
-            <ArrowDown01Icon className="h-3 w-3" />
-          )}
-          {t("notes.tags")}
-        </button>
-        <button
-          onClick={handleToggleAllTags}
-          className="jotty-sidebar-tags-toggle-all text-sm lg:text-xs font-medium text-primary hover:underline focus:outline-none"
-        >
-          {areAnyTagsCollapsed ? t("common.expandAll") : t("common.collapseAll")}
-        </button>
-      </div>
+    <>
+      {rootTags.length > 0 && (
+        <div className="space-y-1 overflow-hidden">
+          <div className="flex items-center justify-between group">
+            <button
+              onClick={onToggleCollapsed}
+              className="jotty-sidebar-tags-title flex items-center gap-1 text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider hover:text-foreground transition-colors"
+            >
+              {collapsed ? (
+                <ArrowRight01Icon className="h-3 w-3" />
+              ) : (
+                <ArrowDown01Icon className="h-3 w-3" />
+              )}
+              {t("notes.tags")}
+            </button>
+            <button
+              onClick={handleToggleAllTags}
+              className="jotty-sidebar-tags-toggle-all text-sm lg:text-xs font-medium text-primary hover:underline focus:outline-none"
+            >
+              {areAnyTagsCollapsed ? t("common.expandAll") : t("common.collapseAll")}
+            </button>
+          </div>
 
-      {!collapsed && (
-        <div>
-          {rootTags.map((tag) => (
-            <TagRenderer
-              key={tag.name}
-              tag={tag}
-              tagsIndex={tagsIndex}
-              collapsedTags={collapsedTags}
-              toggleTag={toggleTag}
-              onItemClick={onItemClick}
-              isItemSelected={isItemSelected}
-              notes={notes}
-              appSettings={appSettings}
-            />
-          ))}
+          {!collapsed && (
+            <div>
+              {rootTags.map((tag) => (
+                <TagRenderer
+                  key={tag.name}
+                  tag={tag}
+                  tagsIndex={tagsIndex}
+                  collapsedTags={collapsedTags}
+                  toggleTag={toggleTag}
+                  onItemClick={onItemClick}
+                  isItemSelected={isItemSelected}
+                  notes={notes}
+                  appSettings={appSettings}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 };
