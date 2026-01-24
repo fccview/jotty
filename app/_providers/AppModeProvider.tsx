@@ -79,6 +79,7 @@ export const AppModeProvider = ({
 
   const [mode, setMode] = useState<AppMode>(modeToSet);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<{ type: 'category' | 'tag'; value: string } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 
@@ -94,6 +95,7 @@ export const AppModeProvider = ({
 
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);
+    setSelectedFilter(null);
     localStorage.setItem("app-mode", newMode);
   };
 
@@ -110,6 +112,8 @@ export const AppModeProvider = ({
       setMode: handleSetMode,
       selectedNote,
       setSelectedNote,
+      selectedFilter,
+      setSelectedFilter,
       isInitialized,
       isDemoMode,
       isRwMarkable,
@@ -132,6 +136,7 @@ export const AppModeProvider = ({
       mode,
       handleSetMode,
       selectedNote,
+      selectedFilter,
       isInitialized,
       isDemoMode,
       isRwMarkable,

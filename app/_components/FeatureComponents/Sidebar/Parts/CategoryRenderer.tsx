@@ -27,11 +27,12 @@ interface CategoryRendererProps {
   allItems: (Checklist | Note)[];
   collapsedCategories: Set<string>;
   onToggleCategory: (categoryName: string) => void;
+  onCategorySelect: (categoryPath: string) => void;
   onDeleteCategory: (categoryName: string) => void;
   onRenameCategory: (categoryName: string) => void;
   onQuickCreate: (categoryName: string) => void;
   onCreateSubcategory: (categoryPath: string) => void;
-  onItemClick: (item: Checklist | Note) => void;
+  onClose?: () => void;
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
@@ -46,11 +47,12 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     allItems,
     collapsedCategories,
     onToggleCategory,
+    onCategorySelect,
     onDeleteCategory,
     onRenameCategory,
     onQuickCreate,
     onCreateSubcategory,
-    onItemClick,
+    onClose,
     onEditItem,
     isItemSelected,
     mode,
@@ -142,39 +144,54 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                 isOver && "bg-primary/10 rounded-jotty"
               )}
             >
-              <button
-                onClick={() => onToggleCategory(category.path)}
+              <div
                 className={cn(
                   "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
                   hasContent
-                    ? "hover:bg-muted/50 cursor-pointer"
-                    : "text-muted-foreground cursor-default"
+                    ? "hover:bg-muted/50"
+                    : "text-muted-foreground"
                 )}
                 style={{ paddingLeft: `${category.level * 16}px` }}
               >
-                {hasContent ? (
-                  isCollapsed ? (
-                    <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (hasContent) onToggleCategory(category.path);
+                  }}
+                  className={cn(
+                    "flex items-center shrink-0",
+                    hasContent ? "cursor-pointer" : "cursor-default"
+                  )}
+                >
+                  {hasContent ? (
+                    isCollapsed ? (
                       <ArrowRight01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
-                      <Folder01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
-                    </>
-                  ) : (
-                    <>
+                    ) : (
                       <ArrowDown01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
-                      <Folder02Icon className="h-5 w-5 lg:h-4 lg:w-4" />
-                    </>
-                  )
-                ) : (
-                  <>
+                    )
+                  ) : (
                     <ArrowRight01Icon className="h-5 w-5 lg:h-4 lg:w-4 opacity-20" />
-                    <Folder01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
-                  </>
-                )}
-                <span className="truncate font-[500]">{category.name}</span>
-                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
-                  {getTotalItemsInCategory(category.path)}
-                </span>
-              </button>
+                  )}
+                </button>
+                <button
+                  onClick={() => onCategorySelect(category.path)}
+                  className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+                >
+                  {hasContent ? (
+                    isCollapsed ? (
+                      <Folder01Icon className="h-5 w-5 lg:h-4 lg:w-4 shrink-0" />
+                    ) : (
+                      <Folder02Icon className="h-5 w-5 lg:h-4 lg:w-4 shrink-0" />
+                    )
+                  ) : (
+                    <Folder01Icon className="h-5 w-5 lg:h-4 lg:w-4 shrink-0" />
+                  )}
+                  <span className="truncate font-[500]">{category.name}</span>
+                  <span className="text-md lg:text-xs text-muted-foreground ml-auto">
+                    {getTotalItemsInCategory(category.path)}
+                  </span>
+                </button>
+              </div>
 
               <DropdownMenu
                 align="right"
@@ -238,7 +255,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                   item={item}
                   mode={mode}
                   isSelected={isItemSelected(item)}
-                  onItemClick={onItemClick}
+                  onClose={onClose}
                   onEditItem={onEditItem}
                   style={{ paddingLeft: `${category.level * 16}px` }}
                   user={user}

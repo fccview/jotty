@@ -1,11 +1,9 @@
 "use client";
 
-import { cn } from "@/app/_utils/global-utils";
 import { SidebarWrapper } from "@/app/_components/GlobalComponents/Sidebar/SidebarWrapper";
 import { SidebarItem } from "@/app/_components/GlobalComponents/Sidebar/SidebarItem";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -49,8 +47,6 @@ interface SettingsSection {
 export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarProps) => {
     const t = useTranslations();
     const pathname = usePathname();
-    const router = useRouter();
-    const { checkNavigation } = useNavigationGuard();
     const { appSettings, user } = useAppMode();
 
     const [profileCollapsed, setProfileCollapsed] = useState(false);
@@ -181,13 +177,10 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
             : []),
     ];
 
-    const handleNavigate = (path: string) => {
-        checkNavigation(() => {
-            router.push(path);
-            if (window.innerWidth < 1024) {
-                onClose();
-            }
-        });
+    const handleItemClick = () => {
+        if (window.innerWidth < 1024) {
+            onClose();
+        }
     };
 
     const isItemActive = (path: string) => {
@@ -230,7 +223,8 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
                                         icon={item.icon}
                                         label={item.label}
                                         isActive={isItemActive(item.path)}
-                                        onClick={() => handleNavigate(item.path)}
+                                        href={item.path}
+                                        onClick={handleItemClick}
                                     />
                                 ))}
                             </div>

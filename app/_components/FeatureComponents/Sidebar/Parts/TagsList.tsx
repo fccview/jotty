@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   ArrowDown01Icon,
   ArrowRight01Icon,
@@ -7,19 +8,23 @@ import {
   File02Icon,
   GridOffIcon,
 } from "hugeicons-react";
-import { cn } from "@/app/_utils/global-utils";
+import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
 import { TagInfo, getChildTags, buildTagTree } from "@/app/_utils/tag-utils";
 import { useTranslations } from "next-intl";
+import { ItemTypes } from "@/app/_types/enums";
+import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
+import { useRouter } from "next/navigation";
 
 interface TagsListProps {
   collapsed: boolean;
   onToggleCollapsed: () => void;
   collapsedTags: Set<string>;
   toggleTag: (tagPath: string) => void;
-  onItemClick: (item: Note) => void;
+  onTagSelect: (tagName: string) => void;
+  onClose?: () => void;
   isItemSelected: (item: Note) => boolean;
 }
 
@@ -28,7 +33,8 @@ const TagRenderer = ({
   tagsIndex,
   collapsedTags,
   toggleTag,
-  onItemClick,
+  onTagSelect,
+  onClose,
   isItemSelected,
   notes,
   appSettings,
@@ -38,12 +44,16 @@ const TagRenderer = ({
   tagsIndex: Record<string, TagInfo>;
   collapsedTags: Set<string>;
   toggleTag: (tagPath: string) => void;
-  onItemClick: (item: Note) => void;
+  onTagSelect: (tagName: string) => void;
+  onClose?: () => void;
   isItemSelected: (item: Note) => boolean;
   notes: Partial<Note>[];
   appSettings: any;
   level?: number;
 }) => {
+  const { checkNavigation, checkWouldBlock } = useNavigationGuard();
+  const router = useRouter();
+
   const children = getChildTags(tagsIndex, tag.name);
   const notesForTag = tag.noteUuids
     .map((uuid) => notes.find((n) => n.uuid === uuid))
@@ -51,41 +61,72 @@ const TagRenderer = ({
   const hasContent = notesForTag.length > 0 || children.length > 0;
   const isCollapsed = collapsedTags.has(tag.name);
 
+  const getNoteHref = (note: Partial<Note>) => {
+    return `/${ItemTypes.NOTE}/${buildCategoryPath(note.category || 'Uncategorized', note.id!)}`;
+  };
+
+  const handleNoteClick = (e: React.MouseEvent, note: Partial<Note>) => {
+    if (checkWouldBlock()) {
+      e.preventDefault();
+      checkNavigation(() => {
+        router.push(getNoteHref(note));
+        onClose?.();
+      });
+    } else {
+      onClose?.();
+    }
+  };
+
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => toggleTag(tag.name)}
+        <div
           className={cn(
             "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
             hasContent
-              ? "hover:bg-muted/50 cursor-pointer"
-              : "text-muted-foreground cursor-default"
+              ? "hover:bg-muted/50"
+              : "text-muted-foreground"
           )}
         >
-          {hasContent ? (
-            isCollapsed ? (
-              <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (hasContent) toggleTag(tag.name);
+            }}
+            className={cn(
+              "flex items-center shrink-0",
+              hasContent ? "cursor-pointer" : "cursor-default"
+            )}
+          >
+            {hasContent ? (
+              isCollapsed ? (
                 <ArrowRight01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
-                <GridIcon className="h-5 w-5 lg:h-4 lg:w-4 " />
-              </>
-            ) : (
-              <>
+              ) : (
                 <ArrowDown01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
-                <GridIcon className="h-5 w-5 lg:h-4 lg:w-4 transform -rotate-[20deg]" />
-              </>
-            )
-          ) : (
-            <>
+              )
+            ) : (
               <ArrowRight01Icon className="h-5 w-5 lg:h-4 lg:w-4 opacity-20" />
-              <GridOffIcon className="h-5 w-5 lg:h-4 lg:w-4" />
-            </>
-          )}
-          <span className="truncate font-[500]">{tag.displayName}</span>
-          <span className="text-md lg:text-xs text-muted-foreground ml-auto">
-            {tag.totalCount}
-          </span>
-        </button>
+            )}
+          </button>
+          <button
+            onClick={() => onTagSelect(tag.name)}
+            className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+          >
+            {hasContent ? (
+              isCollapsed ? (
+                <GridIcon className="h-5 w-5 lg:h-4 lg:w-4 shrink-0" />
+              ) : (
+                <GridIcon className="h-5 w-5 lg:h-4 lg:w-4 shrink-0 transform -rotate-[20deg]" />
+              )
+            ) : (
+              <GridOffIcon className="h-5 w-5 lg:h-4 lg:w-4 shrink-0" />
+            )}
+            <span className="truncate font-[500]">{tag.displayName}</span>
+            <span className="text-md lg:text-xs text-muted-foreground ml-auto">
+              {tag.totalCount}
+            </span>
+          </button>
+        </div>
       </div>
 
       {!isCollapsed && (
@@ -97,9 +138,10 @@ const TagRenderer = ({
                 const noteIsSelected = isItemSelected(note as Note);
 
                 return (
-                  <button
+                  <Link
                     key={note.uuid || note.id}
-                    onClick={() => onItemClick(note as Note)}
+                    href={getNoteHref(note)}
+                    onClick={(e) => handleNoteClick(e, note)}
                     data-sidebar-item-selected={noteIsSelected}
                     className={cn(
                       "flex items-center gap-2 py-2 px-3 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
@@ -114,7 +156,7 @@ const TagRenderer = ({
                         ? note.title
                         : capitalize((note.title || "").replace(/-/g, " "))}
                     </span>
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -127,7 +169,8 @@ const TagRenderer = ({
               tagsIndex={tagsIndex}
               collapsedTags={collapsedTags}
               toggleTag={toggleTag}
-              onItemClick={onItemClick}
+              onTagSelect={onTagSelect}
+              onClose={onClose}
               isItemSelected={isItemSelected}
               notes={notes}
               appSettings={appSettings}
@@ -145,7 +188,8 @@ export const TagsList = ({
   onToggleCollapsed,
   collapsedTags,
   toggleTag,
-  onItemClick,
+  onTagSelect,
+  onClose,
   isItemSelected,
 }: TagsListProps) => {
   const t = useTranslations();
@@ -212,7 +256,8 @@ export const TagsList = ({
                   tagsIndex={tagsIndex}
                   collapsedTags={collapsedTags}
                   toggleTag={toggleTag}
-                  onItemClick={onItemClick}
+                  onTagSelect={onTagSelect}
+                  onClose={onClose}
                   isItemSelected={isItemSelected}
                   notes={notes}
                   appSettings={appSettings}

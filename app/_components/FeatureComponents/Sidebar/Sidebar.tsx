@@ -6,7 +6,7 @@ import { RenameCategoryModal } from "@/app/_components/GlobalComponents/Modals/C
 import { EditChecklistModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/EditChecklistModal";
 import { EditNoteModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/EditNoteModal";
 import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/SettingsModals/Settings";
-import { AppMode, Checklist, Note } from "@/app/_types";
+import { Checklist, Note } from "@/app/_types";
 import { SidebarNavigation } from "./Parts/SidebarNavigation";
 import { CategoryList } from "./Parts/CategoryList";
 import { SharedItemsList } from "./Parts/SharedItemsList";
@@ -17,7 +17,7 @@ import { Modes } from "@/app/_types/enums";
 import { SidebarProps, useSidebar } from "@/app/_hooks/useSidebar";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 export const Sidebar = (props: SidebarProps) => {
@@ -41,12 +41,11 @@ export const Sidebar = (props: SidebarProps) => {
   const isSomePage = isNotesPage || isChecklistsPage;
 
   const sidebar = useSidebar(props);
-  const categoriesScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const searchMode = searchParams?.get("mode") as AppMode;
+    const searchMode = searchParams?.get("mode") as typeof mode;
     const localStorageMode =
-      mode || (localStorage.getItem("app-mode") as AppMode);
+      mode || (localStorage.getItem("app-mode") as typeof mode);
 
     let updatedMode =
       user?.landingPage !== "last-visited"
@@ -66,38 +65,6 @@ export const Sidebar = (props: SidebarProps) => {
 
   const currentItems = mode === Modes.CHECKLISTS ? checklists : notes || [];
 
-  useEffect(() => {
-    if (!categoriesScrollRef.current || !pathname) return;
-
-    const selectedButton = categoriesScrollRef.current.querySelector(
-      '[data-sidebar-item-selected="true"]'
-    ) as HTMLElement;
-
-    if (selectedButton && categoriesScrollRef.current) {
-      const container = categoriesScrollRef.current;
-      const buttonRect = selectedButton.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-
-      const isVisible =
-        buttonRect.top >= containerRect.top &&
-        buttonRect.bottom <= containerRect.bottom;
-
-      if (!isVisible) {
-        const scrollTop =
-          container.scrollTop +
-          buttonRect.top -
-          containerRect.top -
-          containerRect.height / 2 +
-          buttonRect.height / 2;
-
-        container.scrollTo({
-          top: Math.max(0, scrollTop),
-          behavior: "auto",
-        });
-      }
-    }
-  }, [pathname, sidebar.mode]);
-
   if (!sidebar.isInitialized) return null;
 
   return (
@@ -105,10 +72,9 @@ export const Sidebar = (props: SidebarProps) => {
       <SidebarWrapper
         isOpen={isOpen}
         onClose={onClose}
-        scrollRef={categoriesScrollRef}
         title={
           <button
-            onClick={() => sidebar.setCategoriesSectionCollapsed((p) => !p)}
+            onClick={() => sidebar.setCategoriesSectionCollapsed(!sidebar.categoriesSectionCollapsed)}
             className="jotty-sidebar-categories-title flex items-center gap-1 text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider hover:text-foreground transition-colors"
           >
             {sidebar.categoriesSectionCollapsed ? (
@@ -145,11 +111,12 @@ export const Sidebar = (props: SidebarProps) => {
             <TagsList
               collapsed={sidebar.tagsCollapsed}
               onToggleCollapsed={() =>
-                sidebar.setTagsCollapsed((p) => !p)
+                sidebar.setTagsCollapsed(!sidebar.tagsCollapsed)
               }
               collapsedTags={sidebar.collapsedTags}
               toggleTag={sidebar.toggleTag}
-              onItemClick={sidebar.handleItemClick}
+              onTagSelect={sidebar.handleTagSelect}
+              onClose={onClose}
               isItemSelected={sidebar.isItemSelected}
             />
           ) : null
@@ -159,9 +126,9 @@ export const Sidebar = (props: SidebarProps) => {
           <SharedItemsList
             collapsed={sidebar.sharedItemsCollapsed}
             onToggleCollapsed={() =>
-              sidebar.setSharedItemsCollapsed((p) => !p)
+              sidebar.setSharedItemsCollapsed(!sidebar.sharedItemsCollapsed)
             }
-            onItemClick={sidebar.handleItemClick}
+            onClose={onClose}
             isItemSelected={sidebar.isItemSelected}
             mode={sidebar.mode}
           />
@@ -171,6 +138,7 @@ export const Sidebar = (props: SidebarProps) => {
               items={currentItems as unknown as (Checklist | Note)[]}
               collapsedCategories={sidebar.collapsedCategoriesForMode}
               onToggleCategory={sidebar.toggleCategory}
+              onCategorySelect={sidebar.handleCategorySelect}
               onDeleteCategory={(path: string) =>
                 sidebar.openModal("deleteCategory", path)
               }
@@ -179,8 +147,8 @@ export const Sidebar = (props: SidebarProps) => {
               }
               onQuickCreate={onOpenCreateModal}
               onCreateSubcategory={onOpenCategoryModal}
-              onItemClick={sidebar.handleItemClick}
-              onEditItem={sidebar.handleEditItem}
+              onClose={onClose}
+              onEditItem={(item) => sidebar.openModal("editItem", item)}
               isItemSelected={sidebar.isItemSelected}
               mode={sidebar.mode}
               user={user || undefined}

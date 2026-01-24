@@ -24,11 +24,12 @@ interface CategoryListProps {
   items: (Checklist | Note)[];
   collapsedCategories: Set<string>;
   onToggleCategory: (categoryName: string) => void;
+  onCategorySelect: (categoryPath: string) => void;
   onDeleteCategory: (categoryName: string) => void;
   onRenameCategory: (categoryName: string) => void;
   onQuickCreate: (categoryName: string) => void;
   onCreateSubcategory: (categoryPath: string) => void;
-  onItemClick: (item: Checklist | Note) => void;
+  onClose?: () => void;
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;

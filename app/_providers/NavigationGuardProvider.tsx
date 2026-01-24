@@ -14,6 +14,7 @@ interface NavigationGuardContextType {
   registerNavigationGuard: (guard: () => boolean) => void;
   unregisterNavigationGuard: () => void;
   checkNavigation: (action: () => void) => void;
+  checkWouldBlock: () => boolean;
   setPendingNavigation: (action: () => void) => void;
   executePendingNavigation: () => void;
 }
@@ -54,6 +55,10 @@ export const NavigationGuardProvider = ({
     [navigationGuard]
   );
 
+  const checkWouldBlock = useCallback(() => {
+    return navigationGuard ? !navigationGuard() : false;
+  }, [navigationGuard]);
+
   const executePendingNavigation = useCallback(() => {
     if (pendingNavigation) {
       pendingNavigation();
@@ -69,6 +74,7 @@ export const NavigationGuardProvider = ({
         registerNavigationGuard,
         unregisterNavigationGuard,
         checkNavigation,
+        checkWouldBlock,
         setPendingNavigation,
         executePendingNavigation,
       }}

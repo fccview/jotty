@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ArrowDown01Icon,
   ArrowRight01Icon,
@@ -8,16 +9,19 @@ import {
   File02Icon,
   CheckmarkSquare04Icon,
 } from "hugeicons-react";
-import { cn } from "@/app/_utils/global-utils";
+import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { ItemTypes, Modes } from "@/app/_types/enums";
+import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
+import { useRouter } from "next/navigation";
 
 interface SharedItemsListProps {
   collapsed: boolean;
   onToggleCollapsed: () => void;
-  onItemClick: (item: Checklist | Note) => void;
+  onClose?: () => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
 }
@@ -32,12 +36,14 @@ interface SharedItemEntry {
 export const SharedItemsList = ({
   collapsed,
   onToggleCollapsed,
-  onItemClick,
+  onClose,
   isItemSelected,
   mode,
 }: SharedItemsListProps) => {
   const [collapsedUsers, setCollapsedUsers] = useState<Set<string>>(new Set());
   const { userSharedItems, appSettings, checklists, notes } = useAppMode();
+  const { checkNavigation, checkWouldBlock } = useNavigationGuard();
+  const router = useRouter();
 
   if (!userSharedItems) {
     return null;
@@ -75,6 +81,22 @@ export const SharedItemsList = ({
     });
   };
 
+  const getItemHref = (item: Checklist | Note) => {
+    return `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || 'Uncategorized', item.id)}`;
+  };
+
+  const handleItemClick = (e: React.MouseEvent, item: Checklist | Note) => {
+    if (checkWouldBlock()) {
+      e.preventDefault();
+      checkNavigation(() => {
+        router.push(getItemHref(item));
+        onClose?.();
+      });
+    } else {
+      onClose?.();
+    }
+  };
+
   return (
     <div className="space-y-1 overflow-hidden">
       <div className="flex items-center justify-between group">
@@ -94,7 +116,7 @@ export const SharedItemsList = ({
           <span className="truncate font-medium text-primary">
             Shared with you
           </span>
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
+          <span className="text-md lg:text-xs text-muted-foreground ml-auto">
             {modeItems.length}
           </span>
         </button>
@@ -123,7 +145,7 @@ export const SharedItemsList = ({
                   <span className="truncate font-medium text-foreground">
                     {sharer}
                   </span>
-                  <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
+                  <span className="text-md lg:text-xs text-muted-foreground ml-auto">
                     {sharerItems.length}
                   </span>
                 </button>
@@ -142,9 +164,10 @@ export const SharedItemsList = ({
                       const isSelected = isItemSelected(fullItem);
 
                       return (
-                        <button
+                        <Link
                           key={`${sharedItem.id}-${sharedItem.category}`}
-                          onClick={() => onItemClick(fullItem)}
+                          href={getItemHref(fullItem)}
+                          onClick={(e) => handleItemClick(e, fullItem)}
                           data-sidebar-item-selected={isSelected}
                           className={cn(
                             "flex items-center gap-2 py-2 px-3 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
@@ -163,7 +186,7 @@ export const SharedItemsList = ({
                               ? fullItem.title
                               : capitalize(fullItem.title.replace(/-/g, " "))}
                           </span>
-                        </button>
+                        </Link>
                       );
                     })}
                   </div>

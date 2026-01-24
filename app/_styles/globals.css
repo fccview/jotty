@@ -118,6 +118,10 @@ code span {
     scrollbar-width: none !important;
 }
 
+.jotty-sidebar-categories {
+    contain: layout paint;
+}
+
 .scroll-fade-right {
     mask-image: linear-gradient(to right, black 90%, transparent 100%);
 }

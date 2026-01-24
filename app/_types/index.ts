@@ -391,6 +391,8 @@ export interface AppModeContextType {
   setMode: (mode: AppMode) => void;
   selectedNote: string | null;
   setSelectedNote: (id: string | null) => void;
+  selectedFilter: { type: 'category' | 'tag'; value: string } | null;
+  setSelectedFilter: (filter: { type: 'category' | 'tag'; value: string } | null) => void;
   isInitialized: boolean;
   isDemoMode: boolean;
   isRwMarkable: boolean;
