@@ -31,6 +31,8 @@ const _getCountryCode = (locale: string): string => {
     vi: 'VN',
     fa: 'IR',
     bn: 'BD',
+    klingon: 'KL',
+    pirate: 'ARR',
   };
   return special[locale] || locale.toUpperCase();
 }

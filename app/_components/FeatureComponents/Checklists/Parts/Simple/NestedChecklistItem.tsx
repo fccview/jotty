@@ -263,13 +263,13 @@ const NestedChecklistItemComponent = ({
           className={cn(
             "relative my-1",
             hasChildren &&
-              !isChild &&
-              "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+            !isChild &&
+            "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
             !hasChildren &&
-              !isChild &&
-              "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+            !isChild &&
+            "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
             isChild &&
-              "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
+            "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
             "first:mt-0 transition-colors duration-150",
             isActive && "bg-muted/20",
             isDragging && "opacity-50 z-50",
@@ -288,7 +288,7 @@ const NestedChecklistItemComponent = ({
               isChild ? "px-2.5 py-2" : "p-3",
               completed && "opacity-80",
               !permissions?.canEdit &&
-                "opacity-50 cursor-not-allowed pointer-events-none"
+              "opacity-50 cursor-not-allowed pointer-events-none"
             )}
           >
             {!isPublicView && !isDragDisabled && permissions?.canEdit && (
@@ -391,7 +391,7 @@ const NestedChecklistItemComponent = ({
 
             {!isEditing && permissions?.canEdit && (
               <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
-                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground mr-1">
+                <span className="text-md lg:text-xs text-muted-foreground mr-1">
                   #{index}
                 </span>
 
@@ -542,9 +542,8 @@ const NestedChecklistItemComponent = ({
             <div className={cn("pt-1")}>
               {draggedItemId !== item.id && (
                 <DropIndicator
-                  id={`drop-before-child::${
-                    item.children![0]?.id || `${item.id}-start`
-                  }`}
+                  id={`drop-before-child::${item.children![0]?.id || `${item.id}-start`
+                    }`}
                   data={{
                     type: "drop-indicator",
                     position: "before",

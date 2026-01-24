@@ -126,7 +126,7 @@ export const EmojiManager = () => {
                 {emojiForm.emoji || t('common.exampleEmoji')}
               </div>
             </div>
-            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+            <p className="text-md lg:text-xs text-muted-foreground">
               {t('admin.enterAnyEmoji')}
             </p>
           </div>

@@ -49,7 +49,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   preferredLocale: user?.preferredLocale || "en",
   preferredTheme: user?.preferredTheme || "system",
   tableSyntax: user?.tableSyntax || "html",
-  landingPage: user?.landingPage || Modes.CHECKLISTS,
+  landingPage: user?.landingPage || "last-visited",
   notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
   notesDefaultMode: user?.notesDefaultMode || "view",
   notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
@@ -360,7 +360,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.choosePreferredLanguage')}
             </p>
-            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-2">
+            <p className="text-md lg:text-xs text-muted-foreground mt-2">
               <a
                 href="https://github.com/fccview/jotty/blob/main/howto/TRANSLATIONS.md"
                 target="_blank"

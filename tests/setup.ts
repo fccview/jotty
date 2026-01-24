@@ -1,3 +1,11 @@
+/**
+ * @fccview here!
+ * Majority of the tests were blatantly made with AI.
+ * 
+ * I have set up a dozen, so there are coding standards, I have obviously went through all of them, but there's not much to check really.
+ * I swear this has saved me HOURS and Jotty feels so much more stable because of it. This is LITERALLY what llms were made for I swear!
+ */
+
 import { vi, beforeAll, afterAll } from "vitest";
 
 const originalConsoleError = console.error;

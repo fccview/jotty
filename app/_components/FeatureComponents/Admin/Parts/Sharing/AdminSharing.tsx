@@ -165,7 +165,7 @@ export const AdminSharing = () => {
                                 }}
                               />
                             </div>
-                            <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                            <span className="text-md lg:text-xs text-muted-foreground">
                               {sharer.sharedCount >
                                 mostActiveSharers[0].sharedCount * 0.8
                                 ? t('common.high')
@@ -195,7 +195,7 @@ export const AdminSharing = () => {
               <p className="text-md lg:text-sm font-medium text-foreground">
                 {t('admin.contentHidden')}
               </p>
-              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
+              <p className="text-md lg:text-xs text-muted-foreground mt-1">
                 {t('admin.noSharingPermissionsLabel')}
               </p>
             </div>

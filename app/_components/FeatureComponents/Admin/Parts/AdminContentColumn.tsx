@@ -40,12 +40,12 @@ export const AdminContentColumn = ({
                     </p>
                     <LinkForwardIcon className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                   </div>
-                  <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
+                  <p className="text-md lg:text-xs text-muted-foreground mt-1">
                     {item.details}
                   </p>
                 </div>
                 {item.isShared && (
-                  <span className="text-md lg:text-sm lg:text-xs bg-primary/10 text-primary px-2 py-1 rounded-full ml-2 flex-shrink-0">{t('common.shared')}</span>
+                  <span className="text-md lg:text-xs bg-primary/10 text-primary px-2 py-1 rounded-full ml-2 flex-shrink-0">{t('common.shared')}</span>
                 )}
               </div>
             </Link>

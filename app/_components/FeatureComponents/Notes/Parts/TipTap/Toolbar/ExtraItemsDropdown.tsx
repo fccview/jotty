@@ -228,9 +228,8 @@ export const ExtraItemsDropdown = ({
           {items.map((item, index) => (
             <button
               key={index}
-              className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm ${
-                item.isActive ? "bg-accent" : ""
-              }`}
+              className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm ${item.isActive ? "bg-accent" : ""
+                }`}
               onClick={item.command}
             >
               <div className="flex items-center gap-2">
@@ -238,7 +237,7 @@ export const ExtraItemsDropdown = ({
                 <span>{item.label}</span>
               </div>
               {item.shortcut && (
-                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                <span className="text-md lg:text-xs text-muted-foreground">
                   {getShortcutDisplay(item.shortcut)}
                 </span>
               )}

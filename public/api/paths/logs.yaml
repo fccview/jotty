@@ -1,0 +1,270 @@
+/logs:
+  get:
+    summary: Get Audit Logs
+    description: |
+      Retrieve audit logs with optional filtering and pagination.
+      - Regular users can only view their own logs
+      - Admins can view all users' logs by omitting the username parameter or specifying a username
+    tags:
+      - Audit Logs
+    parameters:
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: Filter by username (admin only, defaults to current user for non-admins)
+        example: "fccview"
+      - in: query
+        name: action
+        schema:
+          type: string
+        description: Filter by action type
+        example: "login"
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum: [auth, user, checklist, note, sharing, settings, encryption, api, system, file, upload]
+        description: Filter by category
+        example: "auth"
+      - in: query
+        name: level
+        schema:
+          type: string
+          enum: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
+        description: Filter by log level
+        example: "INFO"
+      - in: query
+        name: startDate
+        schema:
+          type: string
+          format: date-time
+        description: Start date for log range (defaults to 30 days ago)
+        example: "2025-12-01T00:00:00Z"
+      - in: query
+        name: endDate
+        schema:
+          type: string
+          format: date-time
+        description: End date for log range (defaults to now)
+        example: "2025-12-26T23:59:59Z"
+      - in: query
+        name: success
+        schema:
+          type: boolean
+        description: Filter by success status
+        example: true
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 50
+        description: Number of logs to return
+        example: 50
+      - in: query
+        name: offset
+        schema:
+          type: integer
+          default: 0
+        description: Number of logs to skip
+        example: 0
+    responses:
+      '200':
+        description: Audit logs retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                logs:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AuditLogEntry'
+                total:
+                  type: integer
+                  description: Total number of logs matching the filters
+                  example: 150
+      '403':
+        description: Forbidden - user tried to access another user's logs
+      '500':
+        description: Failed to fetch audit logs
+
+/logs/export:
+  post:
+    summary: Export Audit Logs
+    description: |
+      Export audit logs in JSON or CSV format.
+      - Regular users can only export their own logs
+      - Admins can export logs for all users or specific users
+    tags:
+      - Audit Logs
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - format
+            properties:
+              format:
+                type: string
+                enum: [json, csv]
+                description: Export format
+                example: "json"
+              filters:
+                type: object
+                description: Same filters as GET /logs endpoint
+                properties:
+                  username:
+                    type: string
+                  action:
+                    type: string
+                  category:
+                    type: string
+                  level:
+                    type: string
+                  startDate:
+                    type: string
+                    format: date-time
+                  endDate:
+                    type: string
+                    format: date-time
+                  success:
+                    type: boolean
+                  limit:
+                    type: integer
+    responses:
+      '200':
+        description: Audit logs exported successfully
+        content:
+          application/json:
+            schema:
+              description: When format is json
+              type: array
+              items:
+                $ref: '#/components/schemas/AuditLogEntry'
+          text/csv:
+            schema:
+              description: When format is csv
+              type: string
+              example: |
+                Timestamp,Level,Username,Action,Category,Resource Type,Resource ID,Resource Title,Success,IP Address,Error Message
+                "2025-12-26T19:51:14.300Z","WARNING","fccview","logs_cleaned","system","","","","true","::ffff:192.168.86.20",""
+      '400':
+        description: Invalid format specified
+      '500':
+        description: Export failed
+
+/logs/stats:
+  get:
+    summary: Get Audit Log Statistics
+    description: |
+      Retrieve aggregated statistics for audit logs (admin only).
+      Statistics include log counts by level, category, top actions, top users, and recent activity.
+    tags:
+      - Audit Logs
+    responses:
+      '200':
+        description: Statistics retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                totalLogs:
+                  type: integer
+                  description: Total number of logs in the system
+                  example: 1250
+                logsByLevel:
+                  type: object
+                  properties:
+                    DEBUG:
+                      type: integer
+                      example: 50
+                    INFO:
+                      type: integer
+                      example: 800
+                    WARNING:
+                      type: integer
+                      example: 300
+                    ERROR:
+                      type: integer
+                      example: 90
+                    CRITICAL:
+                      type: integer
+                      example: 10
+                logsByCategory:
+                  type: object
+                  additionalProperties:
+                    type: integer
+                  example:
+                    auth: 450
+                    user: 200
+                    checklist: 300
+                    note: 250
+                    system: 50
+                topActions:
+                  type: array
+                  description: Top 10 most frequent actions
+                  items:
+                    type: object
+                    properties:
+                      action:
+                        type: string
+                        example: "login"
+                      count:
+                        type: integer
+                        example: 350
+                topUsers:
+                  type: array
+                  description: Top 10 most active users
+                  items:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: "fccview"
+                      count:
+                        type: integer
+                        example: 425
+                recentActivity:
+                  type: array
+                  description: Last 10 log entries
+                  items:
+                    $ref: '#/components/schemas/AuditLogEntry'
+      '403':
+        description: Admin access required
+      '500':
+        description: Failed to fetch statistics
+
+/logs/cleanup:
+  post:
+    summary: Cleanup Old Logs
+    description: |
+      Delete audit logs older than the configured retention period (admin only).
+      The retention period is configured via the maxLogAgeDays setting.
+    tags:
+      - Audit Logs
+    responses:
+      '200':
+        description: Cleanup completed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                deletedFiles:
+                  type: integer
+                  description: Number of log files deleted
+                  example: 15
+      '403':
+        description: Admin access required
+      '500':
+        description: Cleanup failed

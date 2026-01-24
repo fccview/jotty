@@ -100,7 +100,7 @@ export const NoteListItem = ({
             )}
           </div>
           {categoryName && (
-            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1 truncate">
+            <div className="text-md lg:text-xs text-muted-foreground mt-1 truncate">
               {categoryName}
             </div>
           )}

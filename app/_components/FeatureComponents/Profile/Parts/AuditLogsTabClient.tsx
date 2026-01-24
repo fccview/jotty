@@ -145,7 +145,7 @@ export const AuditLogsTabClient = ({
                                     days: maxLogAge
                                 })}
                             </p>
-                            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
+                            <p className="text-md lg:text-xs text-muted-foreground mt-1">
                                 {t("auditLogs.oldLogsFoundDescription")}
                             </p>
                         </div>

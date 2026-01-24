@@ -144,7 +144,7 @@ export const AppSettingsTab = () => {
             <p className="text-md lg:text-sm font-medium text-foreground">
               {t("admin.superAdminOnly")}
             </p>
-            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
+            <p className="text-md lg:text-xs text-muted-foreground mt-1">
               {t("admin.viewOnlySettingsNotice")}
             </p>
           </div>
@@ -177,7 +177,7 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+          <span className="text-md lg:text-xs text-muted-foreground">
             {t("admin.thisUsesGithubAPI")}
           </span>
         </div>
@@ -194,7 +194,7 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+          <span className="text-md lg:text-xs text-muted-foreground">
             {t("admin.parseContentEnabledDescription")} <br />
             {t("admin.parseContentDisabledDescription")}
             <br />
@@ -218,7 +218,7 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+          <span className="text-md lg:text-xs text-muted-foreground">
             {t("admin.hideLanguageSelectorDescription")}
           </span>
         </div>
@@ -228,7 +228,7 @@ export const AppSettingsTab = () => {
               {t("admin.adminContentAccess")}
             </Label>
             {!isSuperAdmin && (
-              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground italic">
+              <span className="text-md lg:text-xs text-muted-foreground italic">
                 ({t("admin.superAdminOnly")})
               </span>
             )}
@@ -242,7 +242,7 @@ export const AppSettingsTab = () => {
             ]}
             disabled={!isSuperAdmin}
           />
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+          <span className="text-md lg:text-xs text-muted-foreground">
             {t("admin.adminContentAccessDescription")}
           </span>
         </div>

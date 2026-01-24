@@ -1,0 +1,12 @@
+title: Jotty API
+description: |
+  Programmatic access to your checklists and notes with full CRUD operations.
+
+  ## Authentication
+  All endpoints require authentication via API key in the `x-api-key` header.
+
+  Get your API key from: Profile → Settings → API Key → Generate
+version: "1.19.0"
+contact:
+  name: Jotty
+  url: https://github.com/fccview/jotty

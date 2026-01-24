@@ -85,7 +85,7 @@ const KanbanColumnComponent = ({
           />
           <h3 className="font-medium text-md lg:text-sm text-foreground">{title}</h3>
         </div>
-        <span className="text-md lg:text-sm lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+        <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
           {items.length}
         </span>
       </div>

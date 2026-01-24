@@ -1,3 +1,14 @@
+/**
+ * @fccview here!
+ * I know this feels quite complext for a i18n.ts file, but hear me out.
+ * 
+ * My idea was to actually allow users to override the translations with a custom translation file.
+ * This is a bit of a hacky solution but it'll make it so ANYONE can create their own translation file and test it locally
+ * without the need to pull the repo, right in the comfort of their own docker container.
+ * 
+ * If you have any ideas on how to improve this and make it feel less hacky please create a PR!!!
+ */
+
 import { getRequestConfig } from 'next-intl/server';
 import path from 'path';
 import fs from 'fs';

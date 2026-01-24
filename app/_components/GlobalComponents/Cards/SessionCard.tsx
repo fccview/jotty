@@ -23,11 +23,10 @@ export const SessionCard = ({
   const t = useTranslations();
   return (
     <div
-      className={`jotty-session-card flex items-start justify-between p-4 rounded-jotty border ${
-        session.isCurrent
+      className={`jotty-session-card flex items-start justify-between p-4 rounded-jotty border ${session.isCurrent
           ? "bg-primary/5 border-primary/20"
           : "bg-background border-border"
-      }`}
+        }`}
     >
       <div className="flex items-start gap-4 flex-1 min-w-0">
         <div className="p-2 bg-muted rounded-jotty flex-shrink-0">
@@ -54,13 +53,13 @@ export const SessionCard = ({
               {formatTimeAgo(session.lastActivity, t)}
             </div>
           </div>
-          <p className="text-md lg:text-sm lg:text-xs text-muted-foreground truncate">
+          <p className="text-md lg:text-xs text-muted-foreground truncate">
             {isDemoMode
               ? "Browser info hidden in demo mode"
               : session.userAgent}
           </p>
           {isDemoMode && (
-            <p className="text-md lg:text-sm lg:text-xs text-amber-600 mt-1">
+            <p className="text-md lg:text-xs text-amber-600 mt-1">
               Sensitive information is hidden in demo mode
             </p>
           )}

@@ -88,7 +88,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               }`}
           >
             <SchoolReportCardIcon className="h-5 w-5" />
-            <span className="text-md lg:text-sm lg:text-xs font-medium">{t('settingsModal.viewModeCard')}</span>
+            <span className="text-md lg:text-xs font-medium">{t('settingsModal.viewModeCard')}</span>
           </button>
           <button
             onClick={() => setViewMode('list')}
@@ -96,7 +96,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               }`}
           >
             <ListViewIcon className="h-5 w-5" />
-            <span className="text-md lg:text-sm lg:text-xs font-medium">{t('settingsModal.viewModeList')}</span>
+            <span className="text-md lg:text-xs font-medium">{t('settingsModal.viewModeList')}</span>
           </button>
           <button
             onClick={() => setViewMode('grid')}
@@ -104,7 +104,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               }`}
           >
             <GridViewIcon className="h-5 w-5" />
-            <span className="text-md lg:text-sm lg:text-xs font-medium">{t('settingsModal.viewModeGrid')}</span>
+            <span className="text-md lg:text-xs font-medium">{t('settingsModal.viewModeGrid')}</span>
           </button>
         </div>
       </div>

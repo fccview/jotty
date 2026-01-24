@@ -90,9 +90,6 @@ export const PrismThemeDropdown = ({ isMarkdownMode }: PrismThemeDropdownProps) 
                         onClick={() => handleThemeChange(theme.id)}
                     >
                         <span>{theme.name}</span>
-                        {currentTheme === theme.id && (
-                            <span className="ml-auto text-sm lg:text-xs text-muted-foreground">✓</span>
-                        )}
                     </button>
                 ))}
             </div>

@@ -204,7 +204,7 @@ export const ColorPicker = ({
               size="sm"
               onClick={handleCustomColorSubmit}
               disabled={!customColor}
-              className="text-md lg:text-sm lg:text-xs"
+              className="text-md lg:text-xs"
             >{t('common.apply')}</Button>
           </div>
         </div>

@@ -59,12 +59,12 @@ export const CategoryInput = ({
             >{t('common.cancel')}</Button>
           </div>
           {isNotAllowedName && (
-            <div className="text-md lg:text-sm lg:text-xs text-destructive">
+            <div className="text-md lg:text-xs text-destructive">
               {t('common.notAllowedName', { name: newCategory })}
             </div>
           )}
           {!isNotAllowedName && (
-            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+            <div className="text-md lg:text-xs text-muted-foreground">
               {t('common.categoryWillBeCreatedIn')}{" "}
               <strong>{selectedCategoryName}</strong>
             </div>

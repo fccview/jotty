@@ -1,0 +1,60 @@
+/user/{username}:
+  get:
+    summary: Get User Information
+    description: Retrieves user information (full data if authenticated as user or admin, public data otherwise)
+    tags:
+      - Users
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Username to retrieve information for
+    responses:
+      '200':
+        description: User information
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                    isAdmin:
+                      type: boolean
+                    createdAt:
+                      type: string
+                      format: date-time
+                    lastLogin:
+                      type: string
+                      format: date-time
+                    avatarUrl:
+                      type: string
+                    preferredTheme:
+                      type: string
+                    imageSyntax:
+                      type: string
+                    tableSyntax:
+                      type: string
+                    landingPage:
+                      type: string
+                    notesAutoSaveInterval:
+                      type: integer
+                    notesDefaultEditor:
+                      type: string
+                    notesDefaultMode:
+                      type: string
+                    pinnedLists:
+                      type: array
+                      items:
+                        type: string
+                    pinnedNotes:
+                      type: array
+                      items:
+                        type: string
+      '404':
+        description: User not found

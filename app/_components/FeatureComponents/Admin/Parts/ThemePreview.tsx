@@ -239,7 +239,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
               >
                 {t('settings.customTheme.calendarDay')}
               </span>
-              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">15</span>
+              <span className="text-md lg:text-xs text-muted-foreground">15</span>
             </div>
           </div>
 

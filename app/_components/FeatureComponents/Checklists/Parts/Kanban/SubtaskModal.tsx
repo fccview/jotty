@@ -280,14 +280,14 @@ export const SubtaskModal = ({
     return metadata.length ? (
       <div className="border-t border-border pt-4">
         <div className="bg-muted/30 rounded-jotty p-3 border border-border/50">
-          <h5 className="text-md lg:text-sm lg:text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+          <h5 className="text-md lg:text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
             {t("auditLogs.metadata")}
           </h5>
           <div className="space-y-1.5">
             {metadata.map((text, i) => (
               <p
                 key={i}
-                className="text-md lg:text-sm lg:text-xs text-muted-foreground flex items-start gap-2"
+                className="text-md lg:text-xs text-muted-foreground flex items-start gap-2"
               >
                 <span className="text-muted-foreground/40">•</span>
                 <span>{text}</span>
@@ -357,7 +357,7 @@ export const SubtaskModal = ({
                   }
                 }}
               />
-              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-2">
+              <p className="text-md lg:text-xs text-muted-foreground mt-2">
                 Press{" "}
                 <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] border border-border">
                   Enter
@@ -396,9 +396,8 @@ export const SubtaskModal = ({
         ) : (
           <div className="space-y-4">
             <div
-              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${
-                permissions?.canEdit ? "cursor-pointer" : ""
-              }`}
+              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""
+                }`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
               <div
@@ -415,7 +414,7 @@ export const SubtaskModal = ({
               <h4 className="text-base font-semibold text-foreground flex items-center gap-2">
                 <span>{t("checklists.subtasks")}</span>
                 {item.children?.length ? (
-                  <span className="text-md lg:text-sm lg:text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                  <span className="text-md lg:text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                     {item.children.filter((s) => s.completed).length} /{" "}
                     {item.children.length}
                   </span>
@@ -428,7 +427,7 @@ export const SubtaskModal = ({
                     size="sm"
                     onClick={() => handleToggleAll(true)}
                     disabled={!item.children?.length}
-                    className="text-md lg:text-sm lg:text-xs"
+                    className="text-md lg:text-xs"
                   >
                     {t("common.completeAll")}
                   </Button>
@@ -437,7 +436,7 @@ export const SubtaskModal = ({
                     size="sm"
                     onClick={() => handleToggleAll(false)}
                     disabled={!item.children?.length}
-                    className="text-md lg:text-sm lg:text-xs"
+                    className="text-md lg:text-xs"
                   >
                     {t("common.resetAll")}
                   </Button>

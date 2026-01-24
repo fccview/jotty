@@ -96,7 +96,7 @@ export const CreateCategoryModal = ({
         />
 
         {notAllowedNames.includes(categoryName.trim().toLowerCase()) && (
-          <div className="text-md lg:text-sm lg:text-xs text-destructive">
+          <div className="text-md lg:text-xs text-destructive">
             {t('common.notAllowedName', { name: categoryName })}
           </div>
         )}

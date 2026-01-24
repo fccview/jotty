@@ -72,7 +72,7 @@ export const CategoryTreeNode = ({
         )}
         <span className="truncate">{category.name}</span>
         {category.count > 0 && (
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-auto">
+          <span className="text-md lg:text-xs text-muted-foreground ml-auto">
             {category.count}
           </span>
         )}

@@ -83,7 +83,7 @@ export const DiagramsDropdown = ({ editor, isMarkdownMode = false, onMarkdownCha
           </div>
           <div className="flex-1">
             <div className="font-medium">{t('editor.mermaidDiagram')}</div>
-            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+            <div className="text-md lg:text-xs text-muted-foreground">
               {t('editor.mermaidDescription')}
             </div>
           </div>
@@ -100,7 +100,7 @@ export const DiagramsDropdown = ({ editor, isMarkdownMode = false, onMarkdownCha
           </div>
           <div className="flex-1">
             <div className="font-medium">{t('editor.drawioDiagram')}</div>
-            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+            <div className="text-md lg:text-xs text-muted-foreground">
               {isMarkdownMode ? "Rich mode only" : t('editor.drawioDescription')}
             </div>
           </div>
@@ -117,7 +117,7 @@ export const DiagramsDropdown = ({ editor, isMarkdownMode = false, onMarkdownCha
           </div>
           <div className="flex-1">
             <div className="font-medium">{t('editor.excalidrawDiagram')}</div>
-            <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+            <div className="text-md lg:text-xs text-muted-foreground">
               {isMarkdownMode ? "Rich mode only" : t('editor.excalidrawDescription')}
             </div>
           </div>

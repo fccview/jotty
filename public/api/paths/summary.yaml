@@ -1,0 +1,74 @@
+/summary:
+  get:
+    summary: Get User Summary Statistics
+    description: Retrieves comprehensive statistics about user content
+    tags:
+      - Statistics
+    parameters:
+      - name: username
+        in: query
+        schema:
+          type: string
+        description: Username to get summary for (admin only)
+    responses:
+      '200':
+        description: User statistics
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                summary:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                    notes:
+                      type: object
+                      properties:
+                        total:
+                          type: integer
+                        categories:
+                          type: object
+                          additionalProperties:
+                            type: integer
+                    checklists:
+                      type: object
+                      properties:
+                        total:
+                          type: integer
+                        categories:
+                          type: object
+                          additionalProperties:
+                            type: integer
+                        types:
+                          type: object
+                          properties:
+                            simple:
+                              type: integer
+                            task:
+                              type: integer
+                    items:
+                      type: object
+                      properties:
+                        total:
+                          type: integer
+                        completed:
+                          type: integer
+                        pending:
+                          type: integer
+                        completionRate:
+                          type: integer
+                    tasks:
+                      type: object
+                      properties:
+                        total:
+                          type: integer
+                        completed:
+                          type: integer
+                        inProgress:
+                          type: integer
+                        todo:
+                          type: integer
+                        completionRate:
+                          type: integer

@@ -232,7 +232,7 @@ export const AdminContent = ({
                       : t('admin.rebuildIndexes')}
                   </Button>
                   {hasContent && (
-                    <span className="text-md lg:text-sm lg:text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+                    <span className="text-md lg:text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                       {t('common.itemCount', { count: totalItems })}
                     </span>
                   )}

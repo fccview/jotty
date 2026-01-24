@@ -30,11 +30,10 @@ export const ChecklistTypeSelector = ({
             key={type}
             type="button"
             onClick={() => onTypeChange(type)}
-            className={`p-4 rounded-jotty border-2 transition-all text-center ${
-              selectedType === type
+            className={`p-4 rounded-jotty border-2 transition-all text-center ${selectedType === type
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
-            }`}
+              }`}
             disabled={disabled}
           >
             <div className="flex flex-col items-center gap-2">
@@ -48,7 +47,7 @@ export const ChecklistTypeSelector = ({
                   ? t("checklists.simpleChecklist")
                   : t("checklists.taskProject")}
               </div>
-              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+              <div className="text-md lg:text-xs text-muted-foreground">
                 {type === ChecklistsTypes.SIMPLE
                   ? t("checklists.basicTodoItems")
                   : t("checklists.withTimeTracking")}

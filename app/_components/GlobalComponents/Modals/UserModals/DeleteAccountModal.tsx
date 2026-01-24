@@ -126,7 +126,7 @@ export const DeleteAccountModal = ({
                 )}
               </button>
             </div>
-            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
+            <p className="text-md lg:text-xs text-muted-foreground mt-1">
               Enter your password to confirm account deletion
             </p>
           </div>

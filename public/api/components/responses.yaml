@@ -1,0 +1,24 @@
+UnauthorizedError:
+  description: API key missing or invalid
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+ForbiddenError:
+  description: Insufficient permissions
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+NotFoundError:
+  description: Resource not found
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+BadRequestError:
+  description: Invalid request parameters
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'

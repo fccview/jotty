@@ -144,7 +144,7 @@ export const UsersShareTab = ({
                         className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <ViewIcon className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-md lg:text-sm lg:text-xs font-medium">{t('common.read')}</span>
+                        <span className="text-md lg:text-xs font-medium">{t('common.read')}</span>
                         <Toggle
                           size="sm"
                           checked={permissions.canRead}
@@ -171,7 +171,7 @@ export const UsersShareTab = ({
                         className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <PencilEdit02Icon className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-md lg:text-sm lg:text-xs font-medium">{t('common.edit')}</span>
+                        <span className="text-md lg:text-xs font-medium">{t('common.edit')}</span>
                         <Toggle
                           size="sm"
                           checked={permissions.canEdit}
@@ -198,7 +198,7 @@ export const UsersShareTab = ({
                         className="flex items-center gap-1 py-1 rounded-jotty bg-muted/30 hover:bg-muted/50 transition-colors disabled:opacity-50"
                       >
                         <Delete03Icon className="h-3 w-3 text-destructive" />
-                        <span className="text-md lg:text-sm lg:text-xs font-medium">{t('common.delete')}</span>
+                        <span className="text-md lg:text-xs font-medium">{t('common.delete')}</span>
                         <Toggle
                           size="sm"
                           checked={permissions.canDelete}

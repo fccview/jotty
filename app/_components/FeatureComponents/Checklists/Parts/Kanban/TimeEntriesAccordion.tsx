@@ -77,16 +77,16 @@ const TimeEntriesAccordionComponent = ({
                   />
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="text-md lg:text-sm lg:text-xs font-semibold text-foreground">
+                  <span className="text-md lg:text-xs font-semibold text-foreground">
                     {formatTimerTime(entry.duration || 0)}
                   </span>
                 </div>
-                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                <span className="text-md lg:text-xs text-muted-foreground">
                   {formatTimeString(entry.startTime)}
                 </span>
               </div>
               {entry.endTime && (
-                <div className="text-md lg:text-sm lg:text-xs text-muted-foreground/70 mt-0.5">
+                <div className="text-md lg:text-xs text-muted-foreground/70 mt-0.5">
                   {formatDateString(entry.startTime)} •{" "}
                   {formatTimeString(entry.endTime)}
                 </div>

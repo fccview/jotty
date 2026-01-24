@@ -68,7 +68,7 @@ export const FileUpload = ({
                   {selectedFile.name}
                 </span>
               </div>
-              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+              <span className="text-md lg:text-xs text-muted-foreground">
                 {formatFileSize(selectedFile.size)}
               </span>
               {!isUploading && !uploadError && (

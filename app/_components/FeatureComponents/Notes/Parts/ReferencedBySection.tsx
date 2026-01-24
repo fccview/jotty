@@ -60,13 +60,13 @@ export const ReferencedBySection = ({
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-md lg:text-sm lg:text-xs text-muted-foreground capitalize">
+                <span className="text-md lg:text-xs text-muted-foreground capitalize">
                   {item.type}
                 </span>
                 {item.category && item.category !== "Uncategorized" && (
                   <>
-                    <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">•</span>
-                    <span className="text-md lg:text-sm lg:text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                    <span className="text-md lg:text-xs text-muted-foreground">•</span>
+                    <span className="text-md lg:text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
                       {item.category.split("/").pop()}
                     </span>
                   </>

@@ -9,8 +9,7 @@
         "lint": "next lint",
         "test": "vitest",
         "test:run": "vitest run",
-        "test:coverage": "vitest run --coverage",
-        "test:api": "node scripts/test-api.js"
+        "test:coverage": "vitest run --coverage"
     },
     "dependencies": {
         "@dnd-kit/core": "^6.3.1",

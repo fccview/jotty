@@ -69,9 +69,9 @@ export const ChecklistCard = ({
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-        transform: CSS.Transform.toString(transform),
-        transition,
-      };
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
 
   const cardStyle = {
     ...style,
@@ -86,9 +86,8 @@ export const ChecklistCard = ({
       ref={setNodeRef}
       style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-checklist-card bg-card border border-border rounded-jotty p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${
-        isDragging ? "border-primary/30" : ""
-      }`}
+      className={`jotty-checklist-card bg-card border border-border rounded-jotty p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${isDragging ? "border-primary/30" : ""
+        }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div
@@ -108,9 +107,8 @@ export const ChecklistCard = ({
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${
-                isPinned ? "opacity-100" : "opacity-0"
-              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              className={`${isPinned ? "opacity-100" : "opacity-0"
+                } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
               title={isPinned ? t("common.unpin") : t("common.pin")}
             >
               {isPinned ? (
@@ -121,7 +119,7 @@ export const ChecklistCard = ({
             </button>
           )}
           {list.category && (
-            <span className="text-md lg:text-sm lg:text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+            <span className="text-md lg:text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
               {list.category.split("/").pop()}
             </span>
           )}
@@ -148,7 +146,7 @@ export const ChecklistCard = ({
           {sharer && (
             <div className="flex items-center gap-1">
               <UserAvatar username={sharer} size="xs" />
-              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+              <span className="text-md lg:text-xs text-muted-foreground">
                 {t("common.sharedBy", { sharer })}
               </span>
             </div>

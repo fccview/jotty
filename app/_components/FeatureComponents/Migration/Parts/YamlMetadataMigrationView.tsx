@@ -87,7 +87,7 @@ export const YamlMetadataMigrationView = ({
                   <File02Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-md lg:text-sm font-medium">YAML Metadata Format</p>
-                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                    <p className="text-md lg:text-xs text-muted-foreground">
                       Documents will now use YAML frontmatter for metadata:
                     </p>
                     <pre className="mt-2 text-sm lg:text-xs bg-muted p-2 rounded overflow-x-auto">
@@ -105,7 +105,7 @@ checklistType: task|simple
                     <p className="text-md lg:text-sm font-medium">
                       UUID-based Identification
                     </p>
-                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                    <p className="text-md lg:text-xs text-muted-foreground">
                       Each document gets a unique, immutable UUID for better
                       identification and linking across the system.
                     </p>
@@ -117,7 +117,7 @@ checklistType: task|simple
                     <p className="text-md lg:text-sm font-medium">
                       Preserves Existing Metadata
                     </p>
-                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                    <p className="text-md lg:text-xs text-muted-foreground">
                       If your documents already have YAML metadata (from other
                       tools), we only add missing fields like{" "}
                       <code className="bg-muted px-1 rounded text-xs">
@@ -346,7 +346,7 @@ checklistType: task|simple
                   >
                     I understand this migration will automatically backup my
                     data and update document formats.
-                    <span className="text-md lg:text-sm lg:text-xs text-muted-foreground block">
+                    <span className="text-md lg:text-xs text-muted-foreground block">
                       The migration is designed to be safe and reversible.
                     </span>
                   </label>

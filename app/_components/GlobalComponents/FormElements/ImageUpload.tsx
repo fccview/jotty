@@ -181,14 +181,13 @@ export const ImageUpload: FC<ImageUploadProps> = ({
   return (
     <div className="jotty-image-upload space-y-2 w-full">
       <Label className="text-md lg:text-sm font-medium">{label}</Label>
-      <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">{description}</p>
+      <p className="text-md lg:text-xs text-muted-foreground">{description}</p>
       <div
-        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${
-          disabled
+        className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${disabled
             ? "border-muted-foreground/15 bg-muted/30 cursor-not-allowed"
             : dragOver
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-muted-foreground/50"
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-muted-foreground/50"
           }`}
         onDragOver={(e) => {
           e.preventDefault();
@@ -206,7 +205,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
             />
             <div className="flex-1 min-w-0">
               <p className="text-md lg:text-sm font-medium truncate">{t("common.currentIcon")}</p>
-              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground truncate">
+              <p className="text-md lg:text-xs text-muted-foreground truncate">
                 {currentUrl.split("/").pop()}
               </p>
             </div>
@@ -230,7 +229,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
           >
             <Image02Icon className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-md lg:text-sm font-medium">{t("common.dropImageOrClick")}</p>
-            <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+            <p className="text-md lg:text-xs text-muted-foreground">
               PNG, JPG, WebP up to 5MB
             </p>
           </label>

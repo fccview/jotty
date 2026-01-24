@@ -1,0 +1,6 @@
+securitySchemes:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: x-api-key
+    description: API key obtained from Profile → Settings → API Key
