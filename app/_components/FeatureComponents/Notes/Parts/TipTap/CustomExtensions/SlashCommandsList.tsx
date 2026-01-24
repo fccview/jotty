@@ -114,7 +114,7 @@ export const SlashCommandsList = forwardRef<
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-xs">{item.title}</div>
-                <div className="text-md lg:text-sm lg:text-xs text-muted-foreground truncate">
+                <div className="text-md lg:text-xs text-muted-foreground truncate">
                   {item.description}
                 </div>
               </div>
