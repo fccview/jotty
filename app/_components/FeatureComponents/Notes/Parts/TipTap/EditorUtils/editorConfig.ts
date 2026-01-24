@@ -24,6 +24,7 @@ import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Par
 import { OverlayExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
 import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
+import { TagLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagLink";
 import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
@@ -124,6 +125,7 @@ export const createEditorExtensions = (
       t: t || ((key: string) => key),
     }),
     InternalLink,
+    TagLink,
     TextUnderlineIcon,
     HardBreak,
     CodeBlock.extend({

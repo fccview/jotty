@@ -21,8 +21,8 @@ import { QUOTES } from "@/app/_consts/notes";
 import { ImageAttachment } from "@/app/_components/GlobalComponents/FormElements/ImageAttachment";
 import { VideoAttachment } from "@/app/_components/GlobalComponents/FormElements/VideoAttachment";
 import { prism } from "@/app/_utils/prism-utils";
-import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
+import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
@@ -100,6 +100,20 @@ export const UnifiedMarkdownRenderer = ({
       }
     }
   );
+
+  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
+  const codeBlocks: string[] = [];
+  processedContent = processedContent.replace(codeBlockRegex, (match) => {
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  });
+  processedContent = processedContent.replace(
+    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
+    '<span data-tag="$1">$1</span>'
+  );
+  codeBlocks.forEach((block, i) => {
+    processedContent = processedContent.replace(`__CODE_BLOCK_${i}__`, block);
+  });
 
   useEffect(() => {
     setIsClient(true);
@@ -497,6 +511,19 @@ export const UnifiedMarkdownRenderer = ({
       }
 
       return <div {...props} />;
+    },
+    span({ node, ...props }: any) {
+      const dataTag =
+        props["data-tag"] ||
+        props.dataTag ||
+        node?.properties?.["data-tag"] ||
+        node?.properties?.dataTag;
+
+      if (dataTag) {
+        return <TagLinkViewComponent tag={dataTag} />;
+      }
+
+      return <span {...props} />;
     },
   };
 

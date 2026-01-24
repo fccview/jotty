@@ -195,6 +195,9 @@ export const SlashCommands = Extension.create({
       t: (key: string) => key,
       suggestion: {
         char: "/",
+        allow: ({ editor }: { editor: any }) => {
+          return !editor.isActive("codeBlock");
+        },
         command: ({
           editor,
           range,
@@ -293,6 +296,9 @@ export const SlashCommands = Extension.create({
       },
       atSuggestion: {
         char: "@",
+        allow: ({ editor }: { editor: any }) => {
+          return !editor.isActive("codeBlock");
+        },
         command: ({
           editor,
           range,
@@ -425,6 +431,9 @@ export const SlashCommands = Extension.create({
         char: "#",
         allowSpaces: false,
         startOfLine: false,
+        allow: ({ editor }: { editor: any }) => {
+          return !editor.isActive("codeBlock");
+        },
         command: ({
           editor,
           range,
@@ -438,7 +447,12 @@ export const SlashCommands = Extension.create({
             .chain()
             .focus()
             .deleteRange(range)
-            .insertContent(`<span data-tag="${props.tag}">${props.display}</span>`)
+            .insertContent({
+              type: "tagLink",
+              attrs: {
+                tag: props.tag,
+              },
+            })
             .run();
         },
         items: ({ query }: { query: string }) => {

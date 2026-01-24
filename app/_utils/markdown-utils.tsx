@@ -425,7 +425,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const element = node as HTMLElement;
       const tag = element.getAttribute("data-tag");
       if (!tag) return content;
-      return `<span data-tag="${tag}">${content}</span>`;
+      return `#${tag}`;
     },
   });
 
@@ -780,7 +780,23 @@ const markdownProcessor = unified()
 export const convertMarkdownToHtml = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  const file = markdownProcessor.processSync(markdown);
+  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
+  const codeBlocks: string[] = [];
+  let processed = markdown.replace(codeBlockRegex, (match) => {
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  });
+
+  processed = processed.replace(
+    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/g,
+    '<span data-tag="$1">$1</span>'
+  );
+
+  codeBlocks.forEach((block, i) => {
+    processed = processed.replace(`__CODE_BLOCK_${i}__`, block);
+  });
+
+  const file = markdownProcessor.processSync(processed);
 
   return String(file);
 };

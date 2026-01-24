@@ -331,11 +331,6 @@ mark {
     text-underline-offset: 2px;
 }
 
-.prose span[data-tag]::before,
-.ProseMirror span[data-tag]::before {
-    content: "#";
-}
-
 .prose span[data-tag]:hover,
 .ProseMirror span[data-tag]:hover {
     text-decoration: none;

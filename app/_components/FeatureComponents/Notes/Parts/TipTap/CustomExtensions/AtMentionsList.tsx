@@ -149,7 +149,7 @@ export const AtMentionsList = forwardRef<
   );
 
   return (
-    <div className="bg-card border border-border rounded-jotty shadow-lg p-3 min-w-80 max-w-96">
+    <div className="bg-card border border-border rounded-jotty shadow-lg p-3 min-w-80 max-w-96 mt-3">
       <div className="relative mb-3">
         <Search01Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <input

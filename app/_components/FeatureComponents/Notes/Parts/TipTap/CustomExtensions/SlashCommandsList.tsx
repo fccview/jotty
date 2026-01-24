@@ -95,7 +95,7 @@ export const SlashCommandsList = forwardRef<
   }));
 
   return (
-    <div className="bg-card border border-border rounded-jotty shadow-lg p-2 min-w-80 max-w-96">
+    <div className="bg-card border border-border rounded-jotty shadow-lg p-2 min-w-80 max-w-96 mt-3">
       {items.length ? (
         <div className="grid grid-cols-2 gap-1">
           {items.map((item, index) => (
