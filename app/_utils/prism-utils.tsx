@@ -151,6 +151,7 @@ import "prismjs/components/prism-xeora";
 import "prismjs/components/prism-xojo";
 import "prismjs/components/prism-xquery";
 import "prismjs/components/prism-yaml";
+import "prismjs/components/prism-zig";
 
 export const highlight = (language: string, code: string): string => {
   if (!Prism.languages[language]) {
