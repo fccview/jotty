@@ -16,8 +16,7 @@ import { updateUserSettings } from "../_server/actions/users";
 import { useAppMode } from "./AppModeProvider";
 import { useRouter } from "next/navigation";
 import { useEasterEggs } from "../_hooks/useEasterEggs";
-import { Modal } from "../_components/GlobalComponents/Modals/Modal";
-import Image from "next/image";
+import { ImageOverlay } from "../_components/GlobalComponents/ImageOverlay/ImageOverlay";
 
 const ChaosContext = createContext<{
   isChaos: boolean;
@@ -73,23 +72,7 @@ export function KonamiProvider({ children }: { children: React.ReactNode }) {
   return (
     <ChaosContext.Provider value={{ isChaos, toggleChaos }}>
       {children}
-      <Modal
-        isOpen={!!activeGif}
-        onClose={clearGif}
-        title=""
-        className="!p-0 !border-0 !bg-transparent !shadow-none lg:!max-w-fit"
-      >
-        {activeGif && (
-          <Image
-            src={activeGif}
-            alt="Easter egg"
-            width={400}
-            height={300}
-            unoptimized
-            className="rounded-lg"
-          />
-        )}
-      </Modal>
+      <ImageOverlay src={activeGif} onClose={clearGif} alt="Easter egg" />
     </ChaosContext.Provider>
   );
 }
