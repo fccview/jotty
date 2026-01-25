@@ -6,8 +6,13 @@ export const isSpecialTranslation = (locale: string): boolean => {
   return SPECIAL_TRANSLATIONS.includes(locale as SpecialTranslation);
 };
 
+export const SPECIAL_TRANSLATION_GIFS: Record<SpecialTranslation, string> = {
+  klingon: "/images/gifs/qapla.gif",
+  pirate: "/images/gifs/limewire.gif",
+};
+
 export const SPECIAL_TRANSLATION_TRIGGERS: Record<SpecialTranslation, string> = {
-  klingon: "worf",
+  klingon: "qapla",
   pirate: "limewire",
 };
 

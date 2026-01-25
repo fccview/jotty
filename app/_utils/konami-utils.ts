@@ -1,3 +1,11 @@
+/**
+ * @fccview here, I used to always add easter eggs to my websites/app growing up and since
+ * I became a tech lead my job has been so serious I haven't been able to have much fun with things.
+ * If you found this in the codebase... try typing ↑ ↑ ↓ ↓ ← → ← → B A and see what happens.
+ *
+ * Thank you for using Jotty <3
+ */
+
 export const KONAMI_CODE = [
   "ArrowUp",
   "ArrowUp",
