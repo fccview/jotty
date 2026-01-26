@@ -364,6 +364,9 @@ I would like to thank the following members for raising issues and help test/deb
       <td align="center" valign="top" width="20%">
         <a href="https://github.com/DaxtonD"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/96708688?s=100&v=4"><br />DaxtonD</a>
       </td>
+      <td align="center" valign="top" width="20%">
+        <a href="https://github.com/wein-geist"><img width="100" height="100" src="https://avatars.githubusercontent.com/u/11159094?v=4"><br />wein-geist</a>
+      </td>
     </tr>
   </tbody>
 </table>
