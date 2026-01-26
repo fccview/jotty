@@ -283,9 +283,9 @@ const NestedChecklistItemComponent = ({
           )}
           <div
             className={cn(
-              "group/item flex items-center gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
+              "group/item flex items-center gap-0.5 lg:gap-1 hover:bg-muted/50 transition-all duration-200 checklist-item",
               "rounded-jotty",
-              isChild ? "px-2.5 py-2" : "p-3",
+              isChild ? "px-2.5 py-1.5 lg:py-2" : "p-1.5 lg:p-2",
               completed && "opacity-80",
               !permissions?.canEdit &&
               "opacity-50 cursor-not-allowed pointer-events-none"
@@ -368,9 +368,9 @@ const NestedChecklistItemComponent = ({
                     onMouseLeave={() => setIsActive(false)}
                   >
                     {item.completed || completed ? (
-                      <CheckmarkSquare02Icon className="h-8 w-8 min-w-8 sm:h-6 sm:w-6 sm:min-w-6 text-primary mr-2 !stroke-1" />
+                      <CheckmarkSquare02Icon className="h-6 w-6 min-w-8 text-primary mr-2 !stroke-1" />
                     ) : (
-                      <SquareIcon className="h-8 w-8 min-w-8 sm:h-6 sm:w-6 sm:min-w-6 text-muted-foreground mr-2 !stroke-1" />
+                      <SquareIcon className="h-6 w-6 min-w-8 text-muted-foreground mr-2 !stroke-1" />
                     )}
 
                     {item.recurrence && user?.enableRecurrence === "enable" && (
@@ -391,7 +391,7 @@ const NestedChecklistItemComponent = ({
 
             {!isEditing && permissions?.canEdit && (
               <div className="flex items-center gap-1 opacity-50 lg:opacity-0 group-hover/item:opacity-100 transition-opacity">
-                <span className="text-md lg:text-xs text-muted-foreground mr-1">
+                <span className="text-md lg:text-xs text-muted-foreground mr-1 hidden lg:block">
                   #{index}
                 </span>
 

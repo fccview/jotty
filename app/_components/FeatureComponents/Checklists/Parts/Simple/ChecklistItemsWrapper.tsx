@@ -86,7 +86,7 @@ export const ChecklistItemsWrapper = ({
             </div>
           )}
         </div>
-        <div className="space-y-2">{children}</div>
+        <div className="space-y-1">{children}</div>
       </div>
 
       <ConfirmModal
