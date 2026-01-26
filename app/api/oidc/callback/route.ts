@@ -150,9 +150,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
-  const discoveryUrl = issuer.endsWith("/")
-    ? `${issuer}.well-known/openid-configuration`
-    : `${issuer}/.well-known/openid-configuration`;
+  const discoveryUrl = issuer.includes(".well-known/openid-configuration")
+    ? issuer
+    : issuer.endsWith("/")
+      ? `${issuer}.well-known/openid-configuration`
+      : `${issuer}/.well-known/openid-configuration`;
   const discoveryRes = await fetch(discoveryUrl, { cache: "no-store" });
   if (!discoveryRes.ok) {
     return NextResponse.redirect(`${appUrl}/auth/login`);

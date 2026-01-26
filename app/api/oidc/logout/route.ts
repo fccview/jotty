@@ -37,9 +37,11 @@ export async function GET(request: NextRequest) {
     console.log("OIDC LOGOUT - issuer:", issuer);
   }
 
-  const discoveryUrl = issuer.endsWith("/")
-    ? `${issuer}.well-known/openid-configuration`
-    : `${issuer}/.well-known/openid-configuration`;
+  const discoveryUrl = issuer.includes(".well-known/openid-configuration")
+    ? issuer
+    : issuer.endsWith("/")
+      ? `${issuer}.well-known/openid-configuration`
+      : `${issuer}/.well-known/openid-configuration`;
 
   if (process.env.DEBUGGER) {
     console.log("OIDC LOGOUT - discoveryUrl:", discoveryUrl);
