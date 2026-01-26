@@ -50,8 +50,6 @@ jobs:
           cd prebuild-release
           tar -czf jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz jotty
           sha256sum jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz > jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz.sha256
-          cp jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz jotty_latest_prebuild.tar.gz
-          cp jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz.sha256 jotty_latest_prebuild.tar.gz.sha256
 
       - name: Attach to Release - pray it works
         uses: softprops/action-gh-release@v1
