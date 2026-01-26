@@ -50,7 +50,6 @@ A self-hosted app for your checklists and notes.
 - [Getting Started](#getting-started)
   - [Docker Compose (Recommended)](#docker-compose)
   - [Initial Setup](#initial-setup)
-  - [Local Development (Without Docker)](#local-development-without-docker)
 - [Data Storage](#data-storage)
 - [Versioning Scheme](#versioning)
 - [Encryption](#encryption)
@@ -141,24 +140,6 @@ The application will be available at `http://localhost:1122`.
 On your first visit, you'll be redirected to `/auth/setup` to create your admin account if SSO is disabled, otherwise you'll be prompted to sign in via your choosen SSO provider.
 
 Once that's done, you're ready to go! First user will be admin by default.
-
-<a id="local-development-without-docker"></a>
-
-### Local Development (Without Docker)
-
-If you want to run the app locally for development:
-
-1.  **Clone & Install:**
-    ```bash
-    git clone <repository-url>
-    cd checklist
-    yarn install
-    ```
-2.  **Run Dev Server:**
-    ```bash
-    yarn dev
-    ```
-    The app will be running at `http://localhost:3000`.
 
 <a id="data-storage"></a>
 
