@@ -9,6 +9,7 @@ import { DATA_DIR, USERS_FILE, EXPORT_TEMP_DIR } from "@/app/_consts/files";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllNotes } from "@/app/_server/actions/note";
 import { readJsonFile, ensureDir } from "@/app/_server/actions/file";
+import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 
@@ -73,6 +74,14 @@ const zipDirectory = async (
 };
 
 export const exportAllChecklistsNotes = async (): Promise<ExportResult> => {
+  const hasAccess = await canAccessAllContent();
+  if (!hasAccess) {
+    return {
+      success: false,
+      error: "Forbidden: Admin access with content permissions required",
+    };
+  }
+
   updateProgress(0, "Preparing all checklists and notes for export...");
   try {
     const tempExportPath = path.join(
@@ -146,6 +155,18 @@ export const exportAllChecklistsNotes = async (): Promise<ExportResult> => {
 export const exportUserChecklistsNotes = async (
   username: string
 ): Promise<ExportResult> => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  if (username !== currentUser.username) {
+    const hasAccess = await canAccessAllContent();
+    if (!hasAccess) {
+      return { success: false, error: "Forbidden: You can only export your own data" };
+    }
+  }
+
   updateProgress(
     0,
     `Preparing ${username}'s checklists and notes for export...`
@@ -226,6 +247,14 @@ export const exportUserChecklistsNotes = async (
 };
 
 export const exportAllUsersData = async (): Promise<ExportResult> => {
+  const hasAccess = await canAccessAllContent();
+  if (!hasAccess) {
+    return {
+      success: false,
+      error: "Forbidden: Admin access with content permissions required",
+    };
+  }
+
   updateProgress(0, "Preparing all user data for export...");
   try {
     const tempExportPath = path.join(
@@ -267,6 +296,14 @@ export const exportAllUsersData = async (): Promise<ExportResult> => {
 };
 
 export const exportWholeDataFolder = async (): Promise<ExportResult> => {
+  const hasAccess = await canAccessAllContent();
+  if (!hasAccess) {
+    return {
+      success: false,
+      error: "Forbidden: Admin access with content permissions required",
+    };
+  }
+
   updateProgress(0, "Preparing the whole data folder for export...");
   try {
     const dataFolderPath = path.join(process.cwd(), DATA_DIR);
