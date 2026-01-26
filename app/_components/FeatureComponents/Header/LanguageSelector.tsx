@@ -1,21 +1,31 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { updateUserSettings } from "@/app/_server/actions/users";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { getFlagPath } from '@/app/_utils/global-utils';
- 
+import { isSpecialTranslation } from "@/app/_utils/special-translations-utils";
+
 export const LanguageSelector = ({ currentLocale }: { currentLocale: string }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [locales, setLocales] = useState<Array<{code: string, countryCode: string, name: string, flagPath: string}>>([]);
+  const [locales, setLocales] = useState<Array<{ code: string, countryCode: string, name: string, flagPath: string }>>([]);
   const [currentFlagPath, setCurrentFlagPath] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { setUser, availableLocales } = useAppMode();
 
+  const visibleLocales = useMemo(() => {
+    return availableLocales.filter((locale) => {
+      if (isSpecialTranslation(locale.code)) {
+        return locale.code === currentLocale;
+      }
+      return true;
+    });
+  }, [availableLocales, currentLocale]);
+
   useEffect(() => {
-    const localesWithFlags = availableLocales.map((locale) => ({
+    const localesWithFlags = visibleLocales.map((locale) => ({
       ...locale,
       flagPath: getFlagPath(locale.countryCode),
     }));
@@ -23,7 +33,7 @@ export const LanguageSelector = ({ currentLocale }: { currentLocale: string }) =
 
     const current = localesWithFlags.find(l => l.code === currentLocale);
     if (current) setCurrentFlagPath(current.flagPath);
-  }, [currentLocale, availableLocales]);
+  }, [currentLocale, visibleLocales]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -52,9 +62,9 @@ export const LanguageSelector = ({ currentLocale }: { currentLocale: string }) =
         onClick={() => setIsOpen(!isOpen)}
         className="h-6 w-6 rounded-full overflow-hidden hover:opacity-80 transition p-0 mt-2 border-0 flex-shrink-0"
       >
-        <img 
-          src={currentFlagPath} 
-          alt="Current language" 
+        <img
+          src={currentFlagPath}
+          alt="Current language"
           className="w-full h-full object-cover"
         />
       </button>

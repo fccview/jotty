@@ -11,6 +11,7 @@ import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/CloneCategoryModal";
 
 interface NoteClientProps {
   note: Note;
@@ -24,6 +25,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
     useShortcut();
   const { user } = useAppMode();
   const [localNote, setLocalNote] = useState<Note>(note);
+  const [showCloneModal, setShowCloneModal] = useState(false);
   const prevNoteId = useRef(note.id);
 
   useEffect(() => {
@@ -43,10 +45,16 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
     });
   };
 
-  const handleClone = async () => {
+  const handleClone = () => {
+    setShowCloneModal(true);
+  };
+
+  const handleCloneConfirm = async (targetCategory: string) => {
     const formData = new FormData();
     formData.append("id", localNote.id);
-    formData.append("category", localNote.category || "Uncategorized");
+    formData.append("uuid", localNote.uuid || "");
+    formData.append("originalCategory", localNote.category || "Uncategorized");
+    formData.append("category", targetCategory || "Uncategorized");
     if (localNote.owner) {
       formData.append("user", localNote.owner);
     }
@@ -110,6 +118,16 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
         onClone={handleClone}
       />
       <viewModel.DeleteModal />
+      {showCloneModal && (
+        <CloneCategoryModal
+          isOpen={showCloneModal}
+          onClose={() => setShowCloneModal(false)}
+          onConfirm={handleCloneConfirm}
+          categories={categories}
+          currentCategory={localNote.category || ""}
+          itemType="note"
+        />
+      )}
     </Layout>
   );
 };

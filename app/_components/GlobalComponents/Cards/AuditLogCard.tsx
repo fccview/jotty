@@ -163,7 +163,7 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
                 <span className="font-medium capitalize">{log.resourceType}:</span>{" "}
                 <span className="font-mono text-xs">{displayResourceTitle}</span>
                 {log.resourceId && (
-                  <span className="text-md lg:text-sm lg:text-xs text-muted-foreground ml-2">
+                  <span className="text-md lg:text-xs text-muted-foreground ml-2">
                     (ID: {log.resourceId})
                   </span>
                 )}
@@ -171,7 +171,7 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
             )}
 
             {log.metadata && Object.keys(log.metadata).length > 0 && !showDetails && (
-              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+              <div className="text-md lg:text-xs text-muted-foreground">
                 {log.metadata.receiver && (
                   <span className="mr-3">→ {log.metadata.receiver as string}</span>
                 )}
@@ -201,13 +201,13 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
             </div>
 
             {!log.success && log.errorMessage && (
-              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
+              <p className="text-md lg:text-xs text-muted-foreground mt-1">
                 Error: {log.errorMessage}
               </p>
             )}
 
             {isDemoMode && (
-              <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mt-1">
+              <p className="text-md lg:text-xs text-muted-foreground mt-1">
                 Sensitive information is hidden in demo mode
               </p>
             )}

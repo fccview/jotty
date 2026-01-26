@@ -1,6 +1,6 @@
 {
     "name": "jotty.page",
-    "version": "1.18.1",
+    "version": "1.19.0",
     "private": true,
     "scripts": {
         "dev": "next dev",
@@ -10,7 +10,8 @@
         "test": "vitest",
         "test:run": "vitest run",
         "test:coverage": "vitest run --coverage",
-        "test:api": "node scripts/test-api.js"
+        "mock:data:lists": "tsx tests/mock-data/checklist-generator.ts",
+        "mock:data:notes": "tsx tests/mock-data/note-generator.ts"
     },
     "dependencies": {
         "@dnd-kit/core": "^6.3.1",
@@ -48,7 +49,7 @@
         "@types/speakeasy": "^2.0.10",
         "archiver": "^7.0.1",
         "clsx": "^2.0.0",
-        "diff": "5.2.0",
+        "diff": "^5.2.2",
         "dompurify": "^3.3.0",
         "hast-util-to-html": "^9.0.5",
         "hugeicons-react": "^0.3.0",
@@ -93,6 +94,12 @@
         "zod": "^4.1.12",
         "zustand": "^5.0.6"
     },
+    "resolutions": {
+        "lodash-es": "^4.17.23",
+        "lodash": "^4.17.23",
+        "nanoid": "^3.3.8",
+        "**/mermaid": "^11.12.1"
+    },
     "devDependencies": {
         "@types/archiver": "^6.0.3",
         "@types/diff": "^5.2.0",
@@ -116,6 +123,7 @@
         "eslint-config-next": "14.0.4",
         "postcss": "^8",
         "tailwindcss": "^3.3.0",
+        "tsx": "^4.21.0",
         "typescript": "^5",
         "vitest": "^4.0.17"
     }

@@ -24,6 +24,7 @@ import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Par
 import { OverlayExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
 import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
+import { TagLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagLink";
 import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
@@ -42,6 +43,7 @@ interface EditorSettings {
   enableBubbleMenu: boolean;
   enableTableToolbar: boolean;
   enableBilateralLinks: boolean;
+  enableTags?: boolean;
   drawioUrl?: string;
   drawioProxyEnabled?: boolean;
 }
@@ -50,6 +52,7 @@ interface EditorData {
   notes?: any[];
   checklists?: any[];
   username?: string;
+  tags?: string[];
 }
 
 export const createEditorExtensions = (
@@ -115,11 +118,14 @@ export const createEditorExtensions = (
       notes: editorData?.notes || [],
       checklists: editorData?.checklists || [],
       username: editorData?.username || "",
+      tags: editorData?.tags || [],
       enableBilateralLinks: settings.enableBilateralLinks,
       enableSlashCommands: settings.enableSlashCommands,
+      enableTags: settings.enableTags !== false,
       t: t || ((key: string) => key),
     }),
     InternalLink,
+    TagLink,
     TextUnderlineIcon,
     HardBreak,
     CodeBlock.extend({

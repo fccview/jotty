@@ -8,7 +8,7 @@ export interface DocumentMetadata {
   [key: string]: any;
 }
 
-const YAML_FRONTMATTER_REGEX = /^---\n([\s\S]*?)\n---\n?/;
+const YAML_FRONTMATTER_REGEX = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---(?:\r?\n)?/;
 
 export const extractYamlMetadata = (
   content: string

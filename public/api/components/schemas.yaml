@@ -1,0 +1,147 @@
+Error:
+  type: object
+  properties:
+    error:
+      type: string
+      example: "Error message description"
+
+AuditLogEntry:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Unix timestamp as string
+      example: "1766778674300"
+    uuid:
+      type: string
+      format: uuid
+      description: Generated UUID for the log entry
+      example: "4a0d76b5-18de-400c-8b36-5fbdd9d8299b"
+    timestamp:
+      type: string
+      format: date-time
+      description: ISO 8601 format timestamp
+      example: "2025-12-26T19:51:14.300Z"
+    level:
+      type: string
+      enum: [DEBUG, INFO, WARNING, ERROR, CRITICAL]
+      description: Log severity level
+      example: "INFO"
+    username:
+      type: string
+      description: Username of the user who performed the action
+      example: "fccview"
+    action:
+      type: string
+      description: Type of action performed
+      example: "login"
+    category:
+      type: string
+      enum: [auth, user, checklist, note, sharing, settings, encryption, api, system, file, upload]
+      description: Category of the log entry
+      example: "auth"
+    resourceType:
+      type: string
+      description: Type of resource affected (e.g., "checklist", "note", "user")
+      example: "checklist"
+    resourceId:
+      type: string
+      description: UUID of the affected resource
+      example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    resourceTitle:
+      type: string
+      description: Human-readable name of the affected resource
+      example: "My Checklist"
+    metadata:
+      type: object
+      description: Custom data object with additional context
+      additionalProperties: true
+      example:
+        deletedFiles: 4
+        deleteAll: true
+    ipAddress:
+      type: string
+      description: IP address of the request
+      example: "::ffff:192.168.86.20"
+    userAgent:
+      type: string
+      description: User agent string from the request
+      example: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    success:
+      type: boolean
+      description: Whether the action was successful
+      example: true
+    errorMessage:
+      type: string
+      description: Error message if the action failed
+      example: "Invalid credentials"
+    duration:
+      type: integer
+      description: Duration of the action in milliseconds
+      example: 150
+
+KanbanStatus:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Unique identifier for the status
+      example: "todo"
+    label:
+      type: string
+      description: Display name for the status
+      example: "To Do"
+    color:
+      type: string
+      description: Optional color code for the status column
+      example: "#3b82f6"
+    order:
+      type: integer
+      description: Display order of the status column
+      example: 0
+
+ChecklistItem:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Internal item ID
+      example: "listId-1234567890"
+    index:
+      type: integer
+      description: Position in the parent's items array
+      example: 0
+    text:
+      type: string
+      example: "Task 1"
+    completed:
+      type: boolean
+      example: false
+    status:
+      type: string
+      enum: [todo, in_progress, paused, completed]
+      description: Only present for task-type checklists
+    time:
+      oneOf:
+        - type: integer
+          example: 0
+        - type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              startTime:
+                type: string
+                format: date-time
+              endTime:
+                type: string
+                format: date-time
+              duration:
+                type: integer
+      description: Only present for task-type checklists
+    children:
+      type: array
+      items:
+        $ref: '#/components/schemas/ChecklistItem'
+      description: Nested sub-items

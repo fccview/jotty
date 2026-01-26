@@ -20,6 +20,7 @@ import {
 } from "hugeicons-react";
 import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommandsList";
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
+import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { PluginKey } from "@tiptap/pm/state";
@@ -43,6 +44,10 @@ let atMentionData = {
   notes: [] as any[],
   checklists: [] as any[],
   username: "",
+};
+
+let tagSuggestionData = {
+  tags: [] as string[],
 };
 
 const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
@@ -186,9 +191,13 @@ export const SlashCommands = Extension.create({
     return {
       enableBilateralLinks: true,
       enableSlashCommands: true,
+      enableTags: true,
       t: (key: string) => key,
       suggestion: {
         char: "/",
+        allow: ({ editor }: { editor: any }) => {
+          return !editor.isActive("codeBlock");
+        },
         command: ({
           editor,
           range,
@@ -287,6 +296,9 @@ export const SlashCommands = Extension.create({
       },
       atSuggestion: {
         char: "@",
+        allow: ({ editor }: { editor: any }) => {
+          return !editor.isActive("codeBlock");
+        },
         command: ({
           editor,
           range,
@@ -415,6 +427,130 @@ export const SlashCommands = Extension.create({
           };
         },
       },
+      hashSuggestion: {
+        char: "#",
+        allowSpaces: false,
+        startOfLine: false,
+        allow: ({ editor }: { editor: any }) => {
+          return !editor.isActive("codeBlock");
+        },
+        command: ({
+          editor,
+          range,
+          props,
+        }: {
+          editor: any;
+          range: any;
+          props: { tag: string; display: string };
+        }) => {
+          editor
+            .chain()
+            .focus()
+            .deleteRange(range)
+            .insertContent({
+              type: "tagLink",
+              attrs: {
+                tag: props.tag,
+              },
+            })
+            .run();
+        },
+        items: ({ query }: { query: string }) => {
+          const lowerQuery = query.toLowerCase().trim();
+          const filtered = tagSuggestionData.tags
+            .filter((tag) => tag.toLowerCase().includes(lowerQuery))
+            .slice(0, 9);
+
+          const results = filtered.map((tag) => ({
+            tag,
+            display: tag,
+          }));
+
+          if (lowerQuery && !tagSuggestionData.tags.some((t) => t.toLowerCase() === lowerQuery)) {
+            results.unshift({
+              tag: lowerQuery,
+              display: lowerQuery,
+            });
+          }
+
+          return results;
+        },
+        render: () => {
+          let component: ReactRenderer;
+          let popup: any;
+
+          return {
+            onStart: (props: any) => {
+              component = new ReactRenderer(TagMentionsList, {
+                props,
+                editor: props.editor,
+              });
+
+              if (!props.clientRect) {
+                return;
+              }
+
+              const referenceElement = document.createElement("div");
+              referenceElement.style.position = "absolute";
+              referenceElement.style.pointerEvents = "none";
+              referenceElement.style.zIndex = "10";
+              document.body.appendChild(referenceElement);
+
+              const rect = props.clientRect();
+              referenceElement.style.left = `${rect.left}px`;
+              referenceElement.style.top = `${rect.top}px`;
+
+              popup = tippy(referenceElement, {
+                content: component.element,
+                showOnCreate: true,
+                interactive: true,
+                trigger: "manual",
+                placement: "bottom-start",
+                theme: "light",
+                maxWidth: "none",
+                appendTo: () => document.body,
+              });
+
+              (popup as any).referenceElement = referenceElement;
+            },
+
+            onUpdate(props: any) {
+              component.updateProps(props);
+
+              if (!props.clientRect) {
+                return;
+              }
+
+              const rect = props.clientRect();
+              const referenceElement = (popup as any).referenceElement;
+              if (referenceElement) {
+                referenceElement.style.left = `${rect.left}px`;
+                referenceElement.style.top = `${rect.top}px`;
+              }
+            },
+
+            onKeyDown(props: any) {
+              if (props.event.key === "Escape") {
+                popup[0].hide();
+                return true;
+              }
+
+              return (component.ref as any)?.onKeyDown?.(props.event);
+            },
+
+            onExit() {
+              if (popup && popup[0]) {
+                popup[0].destroy();
+                const referenceElement = (popup as any).referenceElement;
+                if (referenceElement && referenceElement.parentNode) {
+                  referenceElement.parentNode.removeChild(referenceElement);
+                }
+              }
+              component.destroy();
+            },
+          };
+        },
+      },
     };
   },
 
@@ -438,6 +574,11 @@ export const SlashCommands = Extension.create({
 
           return true;
         },
+      updateTagSuggestionData:
+        (tags: string[]) => () => {
+          tagSuggestionData.tags = tags || [];
+          return true;
+        },
     };
   },
 
@@ -450,6 +591,7 @@ export const SlashCommands = Extension.create({
       this.options.checklists?.filter(
         (checklist: any) => checklist.owner === this.options.username
       ) || [];
+    tagSuggestionData.tags = this.options.tags || [];
 
     const plugins = [];
 
@@ -469,6 +611,16 @@ export const SlashCommands = Extension.create({
           editor: this.editor,
           ...this.options.atSuggestion,
           pluginKey: new PluginKey("atSuggestion"),
+        })
+      );
+    }
+
+    if (this.options.enableTags) {
+      plugins.push(
+        Suggestion({
+          editor: this.editor,
+          ...this.options.hashSuggestion,
+          pluginKey: new PluginKey("hashSuggestion"),
         })
       );
     }

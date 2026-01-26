@@ -178,7 +178,7 @@ export const VideoAttachment = ({
               <span className="text-md lg:text-sm font-medium text-foreground truncate">
                 {displayName}
               </span>
-              <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">Video</span>
+              <span className="text-md lg:text-xs text-muted-foreground">Video</span>
             </span>
           </span>
         </span>

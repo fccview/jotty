@@ -47,7 +47,14 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     emDelimiter: "*",
     bulletListMarker: "-",
     blankReplacement: function (content, node) {
-      return node.nodeName === "P" ? "\u200b" : content;
+      if (node.nodeName === "P") {
+        const element = node as HTMLElement;
+        if (element.querySelector?.("img")) {
+          return content;
+        }
+        return "\u200b";
+      }
+      return content;
     },
   });
 
@@ -359,7 +366,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
           ? btoa(svgData)
           : Buffer.from(svgData).toString("base64");
 
-      return `\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n`;
+      return `\n\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n\n`;
     },
   });
 
@@ -386,7 +393,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
           ? btoa(svgData)
           : Buffer.from(svgData).toString("base64");
 
-      return `\n<!-- excalidraw-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n`;
+      return `\n\n<!-- excalidraw-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n\n`;
     },
   });
 
@@ -404,6 +411,21 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const lines = innerContent.trim().split("\n");
       const quotedContent = lines.map(line => `> ${line}`).join("\n");
       return `\n> [!${calloutType}]\n${quotedContent}\n\n`;
+    },
+  });
+
+  service.addRule("tag", {
+    filter: (node) => {
+      return (
+        node.nodeName === "SPAN" &&
+        (node as HTMLElement).hasAttribute("data-tag")
+      );
+    },
+    replacement: function (content, node) {
+      const element = node as HTMLElement;
+      const tag = element.getAttribute("data-tag");
+      if (!tag) return content;
+      return `#${tag}`;
     },
   });
 
@@ -758,7 +780,23 @@ const markdownProcessor = unified()
 export const convertMarkdownToHtml = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  const file = markdownProcessor.processSync(markdown);
+  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
+  const codeBlocks: string[] = [];
+  let processed = markdown.replace(codeBlockRegex, (match) => {
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  });
+
+  processed = processed.replace(
+    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/g,
+    '<span data-tag="$1">$1</span>'
+  );
+
+  codeBlocks.forEach((block, i) => {
+    processed = processed.replace(`__CODE_BLOCK_${i}__`, block);
+  });
+
+  const file = markdownProcessor.processSync(processed);
 
   return String(file);
 };

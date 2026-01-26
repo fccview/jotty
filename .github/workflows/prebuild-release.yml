@@ -1,0 +1,62 @@
+name: Build and Release Prebuilt Tarball
+
+on:
+  push:
+    tags: ["*"]
+
+jobs:
+  build-prebuild:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup the best engine ever
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Bake Jotty
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+        run: yarn build
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Structure the prebuild stuff
+        run: |
+          mkdir -p prebuild-release/jotty/.next
+          cp -r .next/standalone/. prebuild-release/jotty/
+          cp -r .next/static prebuild-release/jotty/.next/static
+          if [ -f .next/BUILD_ID ]; then
+            cp .next/BUILD_ID prebuild-release/jotty/.next/BUILD_ID
+          fi
+          cp -r public prebuild-release/jotty/public
+          cp -r howto prebuild-release/jotty/howto
+
+      - name: Create tarball - tarball is a funny name
+        run: |
+          cd prebuild-release
+          tar -czf jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz jotty
+          sha256sum jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz > jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz.sha256
+          cp jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz jotty_latest_prebuild.tar.gz
+          cp jotty_${{ steps.version.outputs.version }}_prebuild.tar.gz.sha256 jotty_latest_prebuild.tar.gz.sha256
+
+      - name: Attach to Release - pray it works
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            prebuild-release/jotty_*_prebuild.tar.gz
+            prebuild-release/jotty_*_prebuild.tar.gz.sha256
+          tag_name: ${{ steps.version.outputs.version }}

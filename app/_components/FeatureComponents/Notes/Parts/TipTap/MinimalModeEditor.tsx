@@ -77,7 +77,7 @@ export const MinimalModeEditor = ({
           <span className="text-md lg:text-sm font-medium text-foreground">
             {t("editor.minimalMode")}
           </span>
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+          <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
             {showPreview ? t("editor.preview") : t("editor.rawMarkdown")}
           </span>
         </div>

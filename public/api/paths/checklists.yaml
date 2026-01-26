@@ -1,0 +1,309 @@
+/checklists:
+  get:
+    summary: Get All Checklists
+    description: Retrieves all checklists for the authenticated user. Supports filtering and search.
+    tags:
+      - Checklists
+    parameters:
+      - name: category
+        in: query
+        schema:
+          type: string
+        description: Filter checklists by category
+      - name: type
+        in: query
+        schema:
+          type: string
+          enum: [simple, task]
+        description: Filter checklists by type
+      - name: q
+        in: query
+        schema:
+          type: string
+        description: Search checklists by title or item text
+    responses:
+      '200':
+        description: List of checklists
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                checklists:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                      title:
+                        type: string
+                        example: "My Tasks"
+                      category:
+                        type: string
+                        example: "Work"
+                      type:
+                        type: string
+                        enum: [simple, task]
+                        example: "simple"
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChecklistItem'
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+
+  post:
+    summary: Create Checklist
+    description: Creates a new checklist for the authenticated user
+    tags:
+      - Checklists
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - title
+            properties:
+              title:
+                type: string
+                example: "My New Checklist"
+              category:
+                type: string
+                default: "Uncategorized"
+                example: "Work"
+              type:
+                type: string
+                enum: [simple, task]
+                default: simple
+                example: "simple"
+    responses:
+      '200':
+        description: Checklist created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    category:
+                      type: string
+                    type:
+                      type: string
+                    items:
+                      type: array
+                      items: {}
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      '400':
+        description: Invalid request (missing title or invalid type)
+
+/checklists/{listId}/items:
+  post:
+    summary: Create Checklist Item
+    description: |
+      Adds a new item to the specified checklist.
+
+      To create a nested item, provide the `parentIndex` parameter with the index path of the parent item (e.g., "0" for first item's child, "0.1" for second child of first item).
+    tags:
+      - Checklists
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the checklist
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - text
+            properties:
+              text:
+                type: string
+                example: "New task to complete"
+              parentIndex:
+                type: string
+                description: Index path of parent item (e.g., "0", "0.1", "2.0.1") for creating nested sub-items
+                example: "0"
+              status:
+                type: string
+                enum: [in_progress, paused, completed]
+                default: in_progress
+              time:
+                oneOf:
+                  - type: integer
+                    default: 0
+                  - type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        startTime:
+                          type: string
+                          format: date-time
+                        endTime:
+                          type: string
+                          format: date-time
+                        duration:
+                          type: integer
+    responses:
+      '200':
+        description: Item created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Checklist not found
+      '400':
+        description: Invalid request
+
+/checklists/{listId}/items/{itemIndex}/check:
+  put:
+    summary: Mark Item as Completed
+    description: |
+      Marks a checklist item as completed.
+
+      Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
+    tags:
+      - Checklists
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index or index path (e.g., "0", "0.1", "2.0.1")
+        example: "0.1"
+    responses:
+      '200':
+        description: Item marked as completed
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Checklist or item not found
+      '400':
+        description: Invalid item index
+
+/checklists/{listId}/items/{itemIndex}/uncheck:
+  put:
+    summary: Mark Item as Incomplete
+    description: |
+      Marks a checklist item as incomplete.
+
+      Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
+    tags:
+      - Checklists
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index or index path (e.g., "0", "0.1", "2.0.1")
+        example: "0.1"
+    responses:
+      '200':
+        description: Item marked as incomplete
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Checklist or item not found
+      '400':
+        description: Invalid item index
+
+/checklists/{listId}/items/{itemIndex}:
+  delete:
+    summary: Delete Item
+    description: |
+      Deletes a checklist item.
+
+      Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
+    tags:
+      - Checklists
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index or index path (e.g., "0", "0.1", "2.0.1")
+        example: "1"
+    responses:
+      '200':
+        description: Item deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Checklist or item not found
+      '400':
+        description: Invalid item index

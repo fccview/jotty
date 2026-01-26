@@ -103,7 +103,7 @@ export const ImageSizeModal = ({
             </div>
           </div>
 
-          <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+          <div className="text-md lg:text-xs text-muted-foreground">
             {t("editor.leaveEmptyForAutoSize")}
           </div>
         </div>

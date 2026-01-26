@@ -1,0 +1,203 @@
+/notes:
+  get:
+    summary: Get All Notes
+    description: Retrieves all notes for the authenticated user. Supports filtering and search.
+    tags:
+      - Notes
+    parameters:
+      - name: category
+        in: query
+        schema:
+          type: string
+        description: Filter notes by category
+      - name: q
+        in: query
+        schema:
+          type: string
+        description: Search notes by title or content
+    responses:
+      '200':
+        description: List of notes
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+                      title:
+                        type: string
+                        example: "My Note"
+                      category:
+                        type: string
+                        example: "Personal"
+                      content:
+                        type: string
+                        description: Markdown content
+                        example: "Note content here..."
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+
+  post:
+    summary: Create Note
+    description: Creates a new note for the authenticated user
+    tags:
+      - Notes
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - title
+            properties:
+              title:
+                type: string
+                example: "My New Note"
+              content:
+                type: string
+                description: Markdown content
+                example: "Note content here..."
+              category:
+                type: string
+                default: "Uncategorized"
+                example: "Personal"
+    responses:
+      '200':
+        description: Note created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    content:
+                      type: string
+                    category:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    owner:
+                      type: string
+      '400':
+        description: Invalid request (missing title)
+
+/notes/{noteId}:
+  put:
+    summary: Update Note
+    description: Updates an existing note. All fields are optional - unspecified fields will preserve their current values.
+    tags:
+      - Notes
+    parameters:
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the note to update
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                example: "Updated Note Title"
+              content:
+                type: string
+                description: Markdown content
+                example: "Updated note content..."
+              category:
+                type: string
+                example: "Work"
+    responses:
+      '200':
+        description: Note updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    content:
+                      type: string
+                    category:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    owner:
+                      type: string
+      '404':
+        description: Note not found
+      '400':
+        description: Invalid request
+
+  delete:
+    summary: Delete Note
+    description: Deletes an existing note
+    tags:
+      - Notes
+    parameters:
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the note to delete
+    responses:
+      '200':
+        description: Note deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Note not found

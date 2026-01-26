@@ -74,17 +74,17 @@ export const Pagination = ({
     <div className={className}>
       <div className={isSidebar ? "space-y-3" : "space-y-3 bg-card border border-border rounded-jotty p-4"}>
         <div className="flex items-center justify-between">
-          <span className={isSidebar ? "text-md lg:text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider" : "text-md lg:text-sm font-medium text-foreground"}>
+          <span className={isSidebar ? "text-md lg:text-xs font-bold uppercase text-muted-foreground tracking-wider" : "text-md lg:text-sm font-medium text-foreground"}>
             {t('common.page')}
           </span>
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+          <span className="text-md lg:text-xs text-muted-foreground">
             {t('common.pageOfPages', { currentPage, totalPages })}
           </span>
         </div>
 
         {itemsPerPage && onItemsPerPageChange && (
           <div>
-            <label className="text-md lg:text-sm lg:text-xs text-muted-foreground mb-2 block">
+            <label className="text-md lg:text-xs text-muted-foreground mb-2 block">
               {t('common.itemsPerPage')}
             </label>
             <Dropdown

@@ -19,7 +19,7 @@ export const CompletedSuggestionsDropdown = ({
       className={`bg-card border border-border rounded-jotty shadow-lg z-50 max-h-60 overflow-y-auto ${className}`}
     >
       <div className="p-2">
-        <div className="text-md lg:text-sm lg:text-xs text-muted-foreground mb-2 px-2">
+        <div className="text-md lg:text-xs text-muted-foreground mb-2 px-2">
           Completed tasks - click to re-enable:
         </div>
         {completedItems.map((item) => (

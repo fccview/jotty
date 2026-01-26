@@ -1,0 +1,577 @@
+/tasks:
+  get:
+    summary: Get All Tasks
+    description: Retrieves all task checklists for the authenticated user. Supports filtering and search.
+    tags:
+      - Tasks
+    parameters:
+      - name: category
+        in: query
+        schema:
+          type: string
+        description: Filter tasks by category
+      - name: status
+        in: query
+        schema:
+          type: string
+        description: Filter tasks that contain items with this status
+      - name: q
+        in: query
+        schema:
+          type: string
+        description: Search tasks by title or item text
+    responses:
+      '200':
+        description: List of tasks
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tasks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                      title:
+                        type: string
+                        example: "Sprint Tasks"
+                      category:
+                        type: string
+                        example: "Work"
+                      statuses:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/KanbanStatus'
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChecklistItem'
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+
+  post:
+    summary: Create Task
+    description: Creates a new task checklist for the authenticated user
+    tags:
+      - Tasks
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - title
+            properties:
+              title:
+                type: string
+                example: "New Sprint"
+              category:
+                type: string
+                default: "Uncategorized"
+                example: "Work"
+              statuses:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KanbanStatus'
+                description: Custom Kanban statuses (defaults to todo/in_progress/completed)
+    responses:
+      '200':
+        description: Task created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    category:
+                      type: string
+                    statuses:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/KanbanStatus'
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ChecklistItem'
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      '400':
+        description: Invalid request
+
+/tasks/{taskId}:
+  get:
+    summary: Get Task
+    description: Retrieves a specific task checklist
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+    responses:
+      '200':
+        description: Task details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    category:
+                      type: string
+                    statuses:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/KanbanStatus'
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ChecklistItem'
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      '404':
+        description: Task not found
+      '400':
+        description: Not a task checklist
+
+  put:
+    summary: Update Task
+    description: Updates task metadata (title, category). All fields are optional.
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task to update
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                example: "Updated Sprint Title"
+              category:
+                type: string
+                example: "Work"
+    responses:
+      '200':
+        description: Task updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    category:
+                      type: string
+                    statuses:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/KanbanStatus'
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+      '404':
+        description: Task not found
+      '400':
+        description: Invalid request or not a task checklist
+
+  delete:
+    summary: Delete Task
+    description: Deletes a task checklist
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task to delete
+    responses:
+      '200':
+        description: Task deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Task not found
+      '400':
+        description: Not a task checklist
+
+/tasks/{taskId}/statuses:
+  get:
+    summary: Get Task Statuses
+    description: Retrieves all Kanban column statuses for a task
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+    responses:
+      '200':
+        description: List of statuses
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                statuses:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/KanbanStatus'
+      '404':
+        description: Task not found
+      '400':
+        description: Not a task checklist
+
+  post:
+    summary: Create Status
+    description: Adds a new Kanban column status to a task
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - id
+              - label
+            properties:
+              id:
+                type: string
+                example: "review"
+              label:
+                type: string
+                example: "In Review"
+              color:
+                type: string
+                example: "#3b82f6"
+              order:
+                type: integer
+                example: 2
+    responses:
+      '200':
+        description: Status created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/KanbanStatus'
+      '400':
+        description: Invalid request or status ID already exists
+      '404':
+        description: Task not found
+
+/tasks/{taskId}/statuses/{statusId}:
+  put:
+    summary: Update Status
+    description: Updates a Kanban column status
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+      - name: statusId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the status to update
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              label:
+                type: string
+                example: "Code Review"
+              color:
+                type: string
+                example: "#8b5cf6"
+              order:
+                type: integer
+                example: 3
+    responses:
+      '200':
+        description: Status updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  $ref: '#/components/schemas/KanbanStatus'
+      '404':
+        description: Task or status not found
+      '400':
+        description: Invalid request or not a task checklist
+
+  delete:
+    summary: Delete Status
+    description: Deletes a Kanban column status. Items with this status will be moved to the first available status.
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+      - name: statusId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: ID of the status to delete
+    responses:
+      '200':
+        description: Status deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Task or status not found
+      '400':
+        description: Not a task checklist
+
+/tasks/{taskId}/items:
+  post:
+    summary: Create Task Item
+    description: Creates a new item in a task checklist
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - text
+            properties:
+              text:
+                type: string
+                example: "Implement user authentication"
+              status:
+                type: string
+                default: "todo"
+                example: "todo"
+              parentIndex:
+                type: string
+                description: Index path for creating nested items (e.g., "0" for child of first item, "0.1" for grandchild)
+                example: "0"
+    responses:
+      '200':
+        description: Item created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+      '400':
+        description: Invalid request
+      '404':
+        description: Task or parent item not found
+
+/tasks/{taskId}/items/{itemIndex}/status:
+  put:
+    summary: Update Item Status
+    description: Changes an item's status (moves it between Kanban columns)
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index path of the item (e.g., "0", "0.1", "2.0.1")
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: "in_progress"
+    responses:
+      '200':
+        description: Item status updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '400':
+        description: Invalid request or item index
+      '404':
+        description: Task or item not found
+
+/tasks/{taskId}/items/{itemIndex}:
+  delete:
+    summary: Delete Task Item
+    description: Deletes an item from a task checklist
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index path of the item to delete (e.g., "0", "0.1", "2.0.1")
+    responses:
+      '200':
+        description: Item deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '400':
+        description: Invalid item index or not a task checklist
+      '404':
+        description: Task or item not found

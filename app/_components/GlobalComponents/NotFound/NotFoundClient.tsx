@@ -37,7 +37,7 @@ export const NotFoundClient = () => {
 
     intervalRef.current = setInterval(() => {
       changePoem();
-    }, 10000); 
+    }, 10000);
 
     return () => {
       if (intervalRef.current) {
@@ -94,8 +94,8 @@ export const NotFoundClient = () => {
           <div className="relative w-full overflow-y-auto max-h-[40vh] py-4">
             <pre
               className={`text-lg md:text-xl text-muted-foreground transition-all duration-300 transform whitespace-pre-wrap ${isTransitioning
-                  ? "opacity-0 translate-y-2"
-                  : "opacity-100 translate-y-0"
+                ? "opacity-0 translate-y-2"
+                : "opacity-100 translate-y-0"
                 }`}
             >
               &ldquo;{currentPoem}&rdquo;
@@ -130,7 +130,7 @@ export const NotFoundClient = () => {
         </div>
 
         <div className="space-y-2">
-          <div className="text-md lg:text-sm lg:text-xs text-muted-foreground/70">
+          <div className="text-md lg:text-xs text-muted-foreground/70">
             {t("seenCount", { count: quoteCount })}
           </div>
         </div>

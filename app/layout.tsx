@@ -180,14 +180,14 @@ export default async function RootLayout({
     shouldParseContent && user && !isPublicRoute
       ? getUserNotes()
       : user && !isPublicRoute
-      ? getUserNotes({
+        ? getUserNotes({
           projection: ["id", "title", "category", "owner", "uuid"],
         })
-      : Promise.resolve({ success: false, data: [] }),
+        : Promise.resolve({ success: false, data: [] }),
     shouldParseContent && user && !isPublicRoute
       ? getUserChecklists()
       : user && !isPublicRoute
-      ? getUserChecklists({
+        ? getUserChecklists({
           projection: [
             "id",
             "title",
@@ -198,14 +198,14 @@ export default async function RootLayout({
             "items",
           ],
         })
-      : Promise.resolve({ success: false, data: [] }),
+        : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
       ? getAllSharedItems()
       : Promise.resolve({
-          notes: [],
-          checklists: [],
-          public: { notes: [], checklists: [] },
-        }),
+        notes: [],
+        checklists: [],
+        public: { notes: [], checklists: [] },
+      }),
     user && !isPublicRoute
       ? getAllSharedItemsForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
@@ -239,7 +239,7 @@ export default async function RootLayout({
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
         <link rel="icon" href="/app-icons/favicon.ico" />
-        <link rel="stylesheet" href="/themes/excalidraw/excalidraw.css" />
+        <link rel="stylesheet" href="/themes/excalidraw/excalidraw.css" /> {/* eslint-disable-line @next/next/no-css-tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
@@ -254,23 +254,23 @@ export default async function RootLayout({
       </head>
       <body className={`jotty-body`}>
         <NextIntlClientProvider messages={messages}>
-          <KonamiProvider>
-            <AppModeProvider
-              isDemoMode={settings?.isDemo || false}
-              isRwMarkable={settings?.isRwMarkable || false}
-              user={user}
-              appVersion={appVersion.data || ""}
-              pathname={pathname || ""}
-              initialSettings={settings}
-              usersPublicData={users}
-              linkIndex={linkIndex}
-              notes={notes}
-              checklists={checklists}
-              allSharedItems={allSharedItems}
-              userSharedItems={userSharedItems}
-              globalSharing={globalSharing}
-              availableLocales={availableLocales}
-            >
+          <AppModeProvider
+            isDemoMode={settings?.isDemo || false}
+            isRwMarkable={settings?.isRwMarkable || false}
+            user={user}
+            appVersion={appVersion.data || ""}
+            pathname={pathname || ""}
+            initialSettings={settings}
+            usersPublicData={users}
+            linkIndex={linkIndex}
+            notes={notes}
+            checklists={checklists}
+            allSharedItems={allSharedItems}
+            userSharedItems={userSharedItems}
+            globalSharing={globalSharing}
+            availableLocales={availableLocales}
+          >
+            <KonamiProvider>
               <ThemeProvider user={user || {}}>
                 <EmojiProvider>
                   <NavigationGuardProvider>
@@ -295,8 +295,8 @@ export default async function RootLayout({
                   </NavigationGuardProvider>
                 </EmojiProvider>
               </ThemeProvider>
-            </AppModeProvider>
-          </KonamiProvider>
+            </KonamiProvider>
+          </AppModeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

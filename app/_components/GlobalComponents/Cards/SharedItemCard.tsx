@@ -14,7 +14,7 @@ export const SharedItemCard = ({ item }: { item: SharedItem }) => {
             <Globe02Icon className="h-4 w-4 text-primary" />
           )}
         </div>
-        <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+        <div className="text-md lg:text-xs text-muted-foreground">
           {new Date(item.sharedAt).toLocaleDateString()}
         </div>
       </div>

@@ -46,7 +46,7 @@ export interface TiptapEditorRef {
 
 export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
   ({ content, onChange, tableSyntax, notes, checklists }, ref) => {
-    const { user, appSettings } = useAppMode();
+    const { user, appSettings, tagsIndex } = useAppMode();
     const { compactMode } = useSettings();
     const t = useTranslations();
 
@@ -127,6 +127,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           notes: notes || [],
           checklists: checklists || [],
           username: user?.username || "",
+          tags: Object.keys(tagsIndex || {}),
         },
         t
       ),

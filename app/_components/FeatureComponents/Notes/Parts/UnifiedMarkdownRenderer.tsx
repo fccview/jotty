@@ -21,8 +21,8 @@ import { QUOTES } from "@/app/_consts/notes";
 import { ImageAttachment } from "@/app/_components/GlobalComponents/FormElements/ImageAttachment";
 import { VideoAttachment } from "@/app/_components/GlobalComponents/FormElements/VideoAttachment";
 import { prism } from "@/app/_utils/prism-utils";
-import { InternalLink } from "./TipTap/CustomExtensions/InternalLink";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
+import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
@@ -50,11 +50,13 @@ const getRawTextFromChildren = (children: React.ReactNode): string => {
 interface UnifiedMarkdownRendererProps {
   content: string;
   className?: string;
+  forceLightMode?: boolean;
 }
 
 export const UnifiedMarkdownRenderer = ({
   content,
   className = "",
+  forceLightMode = false,
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
@@ -71,10 +73,7 @@ export const UnifiedMarkdownRenderer = ({
         return `<div data-drawio="" data-drawio-data="${diagramData.replace(
           /"/g,
           "&quot;"
-        )}" data-drawio-svg="${svgData.replace(
-          /"/g,
-          "&quot;"
-        )}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
+        )}" data-drawio-svg="${svgBase64.trim()}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
       } catch (e) {
         return match;
       }
@@ -100,6 +99,20 @@ export const UnifiedMarkdownRenderer = ({
       }
     }
   );
+
+  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
+  const codeBlocks: string[] = [];
+  processedContent = processedContent.replace(codeBlockRegex, (match) => {
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  });
+  processedContent = processedContent.replace(
+    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
+    '<span data-tag="$1">$1</span>'
+  );
+  codeBlocks.forEach((block, i) => {
+    processedContent = processedContent.replace(`__CODE_BLOCK_${i}__`, block);
+  });
 
   useEffect(() => {
     setIsClient(true);
@@ -142,7 +155,7 @@ export const UnifiedMarkdownRenderer = ({
         const rawCode = getRawTextFromChildren(codeElement.props.children);
 
         if (language === "mermaid") {
-          return <MermaidRenderer code={rawCode} />;
+          return <MermaidRenderer code={rawCode} forceLightMode={forceLightMode} />;
         }
 
         let highlightedHtml: string;
@@ -415,16 +428,23 @@ export const UnifiedMarkdownRenderer = ({
           node.properties["data-drawio"] !== undefined);
 
       if (isDrawio) {
-        const svgData =
+        const rawSvgData =
           props["data-drawio-svg"] ||
           props.dataDrawioSvg ||
           node?.properties?.["data-drawio-svg"];
-        const themeMode =
-          props["data-drawio-theme"] ||
-          props.dataDrawioTheme ||
-          node?.properties?.["data-drawio-theme"] ||
-          "light";
-        return <DrawioRenderer svgData={svgData} themeMode={themeMode} />;
+        let decodedSvgData = rawSvgData;
+        try {
+          if (rawSvgData && !rawSvgData.trim().startsWith("<")) {
+            decodedSvgData = atob(rawSvgData);
+          }
+        } catch (e) {}
+        const themeMode = forceLightMode
+          ? "light"
+          : props["data-drawio-theme"] ||
+            props.dataDrawioTheme ||
+            node?.properties?.["data-drawio-theme"] ||
+            "light";
+        return <DrawioRenderer svgData={decodedSvgData} themeMode={themeMode} />;
       }
 
       const isExcalidraw =
@@ -435,18 +455,19 @@ export const UnifiedMarkdownRenderer = ({
           node.properties["data-excalidraw"] !== undefined);
 
       if (isExcalidraw) {
-        const svgData =
+        const excalidrawSvgData =
           props["data-excalidraw-svg"] ||
           props.dataExcalidrawSvg ||
           node?.properties?.["data-excalidraw-svg"] ||
           "";
-        const themeMode =
-          props["data-excalidraw-theme"] ||
-          props.dataExcalidrawTheme ||
-          node?.properties?.["data-excalidraw-theme"] ||
-          "light";
+        const themeMode = forceLightMode
+          ? "light"
+          : props["data-excalidraw-theme"] ||
+            props.dataExcalidrawTheme ||
+            node?.properties?.["data-excalidraw-theme"] ||
+            "light";
 
-        return <ExcalidrawRenderer svgData={svgData} themeMode={themeMode} />;
+        return <ExcalidrawRenderer svgData={excalidrawSvgData} themeMode={themeMode} />;
       }
 
       if (
@@ -458,7 +479,7 @@ export const UnifiedMarkdownRenderer = ({
           props.dataMermaidContent ||
           node?.properties?.["data-mermaid-content"] ||
           "";
-        return <MermaidRenderer code={mermaidContent} />;
+        return <MermaidRenderer code={mermaidContent} forceLightMode={forceLightMode} />;
       }
 
       const isCallout =
@@ -497,6 +518,19 @@ export const UnifiedMarkdownRenderer = ({
       }
 
       return <div {...props} />;
+    },
+    span({ node, ...props }: any) {
+      const dataTag =
+        props["data-tag"] ||
+        props.dataTag ||
+        node?.properties?.["data-tag"] ||
+        node?.properties?.dataTag;
+
+      if (dataTag) {
+        return <TagLinkViewComponent tag={dataTag} />;
+      }
+
+      return <span {...props} />;
     },
   };
 

@@ -14,6 +14,7 @@ import {
   MoreHorizontalIcon,
   Archive02Icon,
   Copy01Icon,
+  Copy02Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
@@ -194,7 +195,7 @@ export const ChecklistHeader = ({
                       {
                         type: "item" as const,
                         label: "Clone",
-                        icon: <Copy01Icon className="h-4 w-4" />,
+                        icon: <Copy02Icon className="h-4 w-4" />,
                         onClick: onClone,
                       },
                     ]

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   File02Icon,
   CheckmarkSquare04Icon,
@@ -16,7 +17,7 @@ import {
   Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { cn } from "@/app/_utils/global-utils";
+import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
@@ -35,12 +36,13 @@ import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 
 interface SidebarItemProps {
   item: Checklist | Note;
   mode: AppMode;
   isSelected: boolean;
-  onItemClick: (item: Checklist | Note) => void;
+  onClose?: () => void;
   onEditItem?: (item: Checklist | Note) => void;
   style?: React.CSSProperties;
   user?: any;
@@ -50,13 +52,14 @@ export const SidebarItem = ({
   item,
   mode,
   isSelected,
-  onItemClick,
+  onClose,
   onEditItem,
   style,
   user,
 }: SidebarItemProps) => {
   const t = useTranslations();
   const router = useRouter();
+  const { checkNavigation, checkWouldBlock } = useNavigationGuard();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const { globalSharing, appSettings } = useAppMode();
@@ -70,6 +73,8 @@ export const SidebarItem = ({
   const sharedWith = itemDetails.sharedWith;
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
+
+  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || 'Uncategorized', item.id)}`;
 
   const handleDeleteItem = async () => {
     const formData = new FormData();
@@ -181,10 +186,23 @@ export const SidebarItem = ({
     },
   ];
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (checkWouldBlock()) {
+      e.preventDefault();
+      checkNavigation(() => {
+        router.push(itemHref);
+        onClose?.();
+      });
+    } else {
+      onClose?.();
+    }
+  };
+
   return (
     <div className="flex items-center group/item" style={style}>
-      <button
-        onClick={() => onItemClick(item)}
+      <Link
+        href={itemHref}
+        onClick={handleClick}
         data-sidebar-item-selected={isSelected}
         className={cn(
           "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors flex-1 text-left truncate",
@@ -242,7 +260,7 @@ export const SidebarItem = ({
             </span>
           )}
         </div>
-      </button>
+      </Link>
 
       <DropdownMenu
         align="right"

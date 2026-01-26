@@ -187,7 +187,7 @@ export const ChecklistsPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.totalLists}
               </div>
-              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('lists')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">{t('lists')}</div>
             </div>
           </div>
 
@@ -199,7 +199,7 @@ export const ChecklistsPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.completedItems}
               </div>
-              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('completed')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">{t('completed')}</div>
             </div>
           </div>
 
@@ -211,7 +211,7 @@ export const ChecklistsPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.completionRate}%
               </div>
-              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('progress')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">{t('progress')}</div>
             </div>
           </div>
 
@@ -223,7 +223,7 @@ export const ChecklistsPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.totalItems}
               </div>
-              <div className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('totalItems')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">{t('totalItems')}</div>
             </div>
           </div>
         </div>

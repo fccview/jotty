@@ -297,7 +297,13 @@ export const codeblockLangs: CodeBlockLanguage[] = [
     label: "YAML",
     icon: <File02Icon className={iconSize} />,
     category: "Data",
-  }
+  },
+  {
+    value: "zig",
+    label: "Zig",
+    icon: <SourceCodeIcon className={iconSize} />,
+    category: "Backend",
+  },
 ];
 
 export const getLanguageByValue = (

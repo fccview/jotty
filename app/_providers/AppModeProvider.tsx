@@ -21,6 +21,7 @@ import {
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { LinkIndex } from "../_server/actions/link";
+import { buildTagsIndex } from "../_utils/tag-utils";
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
@@ -78,6 +79,7 @@ export const AppModeProvider = ({
 
   const [mode, setMode] = useState<AppMode>(modeToSet);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<{ type: 'category' | 'tag'; value: string } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 
@@ -93,8 +95,16 @@ export const AppModeProvider = ({
 
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);
+    setSelectedFilter(null);
     localStorage.setItem("app-mode", newMode);
   };
+
+  const tagsEnabled = appSettings?.editor?.enableTags !== false;
+
+  const tagsIndex = useMemo(() => {
+    if (!tagsEnabled || !notes) return {};
+    return buildTagsIndex(notes);
+  }, [notes, tagsEnabled]);
 
   const contextValue = useMemo(
     () => ({
@@ -102,6 +112,8 @@ export const AppModeProvider = ({
       setMode: handleSetMode,
       selectedNote,
       setSelectedNote,
+      selectedFilter,
+      setSelectedFilter,
       isInitialized,
       isDemoMode,
       isRwMarkable,
@@ -117,11 +129,14 @@ export const AppModeProvider = ({
       userSharedItems: userSharedItems || null,
       globalSharing: globalSharing || null,
       availableLocales: availableLocales || [],
+      tagsIndex,
+      tagsEnabled,
     }),
     [
       mode,
       handleSetMode,
       selectedNote,
+      selectedFilter,
       isInitialized,
       isDemoMode,
       isRwMarkable,
@@ -137,6 +152,8 @@ export const AppModeProvider = ({
       userSharedItems,
       globalSharing,
       availableLocales,
+      tagsIndex,
+      tagsEnabled,
     ]
   );
 

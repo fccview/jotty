@@ -118,6 +118,10 @@ code span {
     scrollbar-width: none !important;
 }
 
+.jotty-sidebar-categories {
+    contain: layout paint;
+}
+
 .scroll-fade-right {
     mask-image: linear-gradient(to right, black 90%, transparent 100%);
 }
@@ -318,6 +322,18 @@ mark {
 .prose span[data-internal-link] span:last-child::before {
     content: "•";
     margin-right: 0.25rem;
+}
+
+.prose span[data-tag],
+.ProseMirror span[data-tag] {
+    color: rgb(var(--primary));
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.prose span[data-tag]:hover,
+.ProseMirror span[data-tag]:hover {
+    text-decoration: none;
 }
 
 .prose kbd {

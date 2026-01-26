@@ -1,0 +1,43 @@
+/categories:
+  get:
+    summary: Get All Categories
+    description: Retrieves all categories for notes and checklists
+    tags:
+      - Categories
+    responses:
+      '200':
+        description: Categories organized by type
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categories:
+                  type: object
+                  properties:
+                    notes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          path:
+                            type: string
+                          count:
+                            type: integer
+                          level:
+                            type: integer
+                    checklists:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          path:
+                            type: string
+                          count:
+                            type: integer
+                          level:
+                            type: integer

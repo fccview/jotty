@@ -1,0 +1,56 @@
+/exports:
+  post:
+    summary: Request Data Export
+    description: Initiates an export of user data
+    tags:
+      - Exports
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [all_checklists_notes, user_checklists_notes, all_users_data, whole_data_folder]
+                example: "all_checklists_notes"
+              username:
+                type: string
+                description: Required for user_checklists_notes type
+    responses:
+      '200':
+        description: Export initiated
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                downloadUrl:
+                  type: string
+                  example: "/api/exports/all_checklists_notes_1678886400000.zip"
+
+  get:
+    summary: Get Export Progress
+    description: Retrieves current export operation progress
+    tags:
+      - Exports
+    responses:
+      '200':
+        description: Export progress
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                progress:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                  example: 75
+                message:
+                  type: string
+                  example: "Compressing files: 150/200 bytes"

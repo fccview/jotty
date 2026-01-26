@@ -108,7 +108,7 @@ export const ArchivedItemsModal = ({
                   <p className="text-md lg:text-sm font-medium truncate">{item.text}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {item.archivedAt && (
-                      <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                      <p className="text-md lg:text-xs text-muted-foreground">
                         {t('common.archived')}{" "}
                         {formatDateString(item.archivedAt)}
                         {item.archivedBy && ` ${t('common.by')} ${item.archivedBy}`}
@@ -123,7 +123,7 @@ export const ArchivedItemsModal = ({
                           backgroundColor: getStatusColor(item.previousStatus),
                         }}
                       />
-                      <p className="text-md lg:text-sm lg:text-xs font-medium">
+                      <p className="text-md lg:text-xs font-medium">
                         {getStatusLabel(item.previousStatus)}
                       </p>
                     </div>

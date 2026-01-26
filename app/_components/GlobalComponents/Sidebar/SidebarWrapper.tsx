@@ -5,7 +5,9 @@ import { DynamicLogo } from "@/app/_components/GlobalComponents/Layout/Logo/Dyna
 import { AppName } from "@/app/_components/GlobalComponents/Layout/AppName";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useResizing } from "@/app/_hooks/useResizing";
-import { ReactNode, Ref } from "react";
+import { useSidebarStore } from "@/app/_utils/sidebar-store";
+import { ReactNode, Ref, useRef, useLayoutEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 
 interface SidebarWrapperProps {
   isOpen: boolean;
@@ -16,6 +18,7 @@ interface SidebarWrapperProps {
   navigation?: ReactNode;
   headerActions?: ReactNode;
   scrollRef?: Ref<HTMLDivElement>;
+  tagsSection?: ReactNode;
 }
 
 export const SidebarWrapper = ({
@@ -27,9 +30,33 @@ export const SidebarWrapper = ({
   navigation,
   headerActions,
   scrollRef,
+  tagsSection,
 }: SidebarWrapperProps) => {
   const { isDemoMode, isRwMarkable } = useAppMode();
   const { sidebarWidth, isResizing, startResizing } = useResizing();
+  const { scrollTop, setScrollTop } = useSidebarStore();
+  const internalScrollRef = useRef<HTMLDivElement>(null);
+  const isRestoringScroll = useRef(false);
+  const pathname = usePathname();
+
+  useLayoutEffect(() => {
+    const el = internalScrollRef.current;
+    if (el && scrollTop > 0) {
+      isRestoringScroll.current = true;
+      el.scrollTop = scrollTop;
+      requestAnimationFrame(() => {
+        isRestoringScroll.current = false;
+      });
+    }
+  }, [pathname]);
+
+  const handleScroll = useCallback(() => {
+    if (isRestoringScroll.current) return;
+    const el = internalScrollRef.current;
+    if (el) {
+      setScrollTop(el.scrollTop);
+    }
+  }, [setScrollTop]);
 
   return (
     <>
@@ -57,7 +84,7 @@ export const SidebarWrapper = ({
         )}
       >
         <div
-          className="jotty-sidebar-resize-handle absolute top-0 right-0 w-2 h-full cursor-ew-resize hidden lg:block hover:bg-primary/10"
+          className="jotty-sidebar-resize-handle z-10 absolute top-0 right-0 w-2 h-full cursor-ew-resize hidden lg:block hover:bg-primary/10"
           onMouseDown={startResizing}
         />
 
@@ -81,8 +108,13 @@ export const SidebarWrapper = ({
             </div>
           </div>
           {navigation}
-          <div ref={scrollRef} className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-4">
-            <div className="px-2 pt-2">
+          <div ref={internalScrollRef} onScroll={handleScroll} className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-2">
+            {tagsSection && (
+              <div className="pt-2">
+                {tagsSection}
+              </div>
+            )}
+            <div className="pt-2">
               <div className="flex items-center justify-between">
                 {typeof title === 'string' ? (
                   <h3 className="jotty-sidebar-categories-title text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider">

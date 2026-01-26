@@ -101,7 +101,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {description && (
-          <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">{description}</p>
+          <p className="text-md lg:text-xs text-muted-foreground">{description}</p>
         )}
       </div>
     );

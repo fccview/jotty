@@ -4,6 +4,7 @@ import {
   Add01Icon,
   CheckmarkSquare04Icon,
   ArrowRight04Icon,
+  Cancel01Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist, SanitisedUser } from "@/app/_types";
@@ -21,6 +22,7 @@ import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
+import { useMemo } from "react";
 
 interface ChecklistHomeProps {
   lists: Checklist[];
@@ -36,7 +38,8 @@ export const ChecklistHome = ({
   onSelectChecklist,
 }: ChecklistHomeProps) => {
   const t = useTranslations();
-  const { userSharedItems } = useAppMode();
+  const { userSharedItems, selectedFilter, setSelectedFilter } = useAppMode();
+  const selectedCategory = selectedFilter?.type === 'category' ? selectedFilter.value : null;
   const { viewMode } = useSettings();
 
   const {
@@ -52,6 +55,26 @@ export const ChecklistHome = ({
     activeList,
     draggedItemWidth,
   } = useChecklistHome({ lists, user });
+
+  const filteredLists = useMemo(() => {
+    if (!selectedCategory) return null;
+    return lists.filter((list) => {
+      const listCategory = list.category || "Uncategorized";
+      return listCategory === selectedCategory || listCategory.startsWith(selectedCategory + "/");
+    });
+  }, [lists, selectedCategory]);
+
+  const filteredTaskLists = useMemo(() => {
+    if (!selectedCategory) return taskLists;
+    return (filteredLists || []).filter((list) => list.type === "task");
+  }, [taskLists, filteredLists, selectedCategory]);
+
+  const filteredSimpleLists = useMemo(() => {
+    if (!selectedCategory) return simpleLists;
+    return (filteredLists || []).filter((list) => list.type !== "task");
+  }, [simpleLists, filteredLists, selectedCategory]);
+
+  const categoryDisplayName = selectedCategory?.split("/").pop() || selectedCategory;
 
   const getListSharer = (list: Checklist) => {
     const encodedCategory = encodeCategoryPath(
@@ -83,10 +106,20 @@ export const ChecklistHome = ({
     <div className="h-full overflow-y-auto hide-scrollbar bg-background pb-16 lg:pb-0 jotty-scrollable-content">
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
-          <div>
+          <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
-              {t("checklists.title")}
+              {selectedCategory ? categoryDisplayName : t("checklists.title")}
             </h1>
+            {selectedCategory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedFilter(null)}
+                className="mt-1"
+              >
+                <Cancel01Icon className="h-3 w-3" />
+              </Button>
+            )}
           </div>
           <div className="flex gap-2">
             <Button
@@ -187,7 +220,7 @@ export const ChecklistHome = ({
                     {viewMode === "card" && (
                       <ChecklistCard
                         list={activeList}
-                        onSelect={() => {}}
+                        onSelect={() => { }}
                         isPinned={true}
                         isDraggable={false}
                         sharer={getListSharer(activeList)}
@@ -197,7 +230,7 @@ export const ChecklistHome = ({
                     {viewMode === "list" && (
                       <ChecklistListItem
                         list={activeList}
-                        onSelect={() => {}}
+                        onSelect={() => { }}
                         isPinned={true}
                         sharer={getListSharer(activeList)}
                       />
@@ -205,7 +238,7 @@ export const ChecklistHome = ({
                     {viewMode === "grid" && (
                       <ChecklistGridItem
                         list={activeList}
-                        onSelect={() => {}}
+                        onSelect={() => { }}
                         isPinned={true}
                         sharer={getListSharer(activeList)}
                       />
@@ -217,13 +250,13 @@ export const ChecklistHome = ({
           </div>
         )}
 
-        {recent.length > 0 && (
+        {(selectedCategory ? (filteredTaskLists.length > 0 || filteredSimpleLists.length > 0) : recent.length > 0) && (
           <div className="space-y-6 sm:space-y-8">
-            {taskLists.length > 0 && (
+            {filteredTaskLists.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    {t("tasks.recentTasks")}
+                    {selectedCategory ? t("tasks.title") : t("tasks.recentTasks")}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
@@ -241,7 +274,7 @@ export const ChecklistHome = ({
                 </div>
                 {viewMode === "card" && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {taskLists.map((list) => (
+                    {filteredTaskLists.map((list) => (
                       <ChecklistCard
                         key={`task-${list.category}-${list.id}`}
                         list={list}
@@ -256,7 +289,7 @@ export const ChecklistHome = ({
 
                 {viewMode === "list" && (
                   <div className="space-y-3">
-                    {taskLists.map((list) => (
+                    {filteredTaskLists.map((list) => (
                       <ChecklistListItem
                         key={`task-${list.category}-${list.id}`}
                         list={list}
@@ -271,7 +304,7 @@ export const ChecklistHome = ({
 
                 {viewMode === "grid" && (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {taskLists.map((list) => (
+                    {filteredTaskLists.map((list) => (
                       <ChecklistGridItem
                         key={`task-${list.category}-${list.id}`}
                         list={list}
@@ -286,11 +319,11 @@ export const ChecklistHome = ({
               </div>
             )}
 
-            {simpleLists.length > 0 && (
+            {filteredSimpleLists.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    {t("checklists.recent")}
+                    {selectedCategory ? t("checklists.title") : t("checklists.recent")}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
@@ -308,7 +341,7 @@ export const ChecklistHome = ({
                 </div>
                 {viewMode === "card" && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {simpleLists.map((list) => (
+                    {filteredSimpleLists.map((list) => (
                       <ChecklistCard
                         key={`simple-${list.category}-${list.id}`}
                         list={list}
@@ -323,7 +356,7 @@ export const ChecklistHome = ({
 
                 {viewMode === "list" && (
                   <div className="space-y-3">
-                    {simpleLists.map((list) => (
+                    {filteredSimpleLists.map((list) => (
                       <ChecklistListItem
                         key={`simple-${list.category}-${list.id}`}
                         list={list}
@@ -338,7 +371,7 @@ export const ChecklistHome = ({
 
                 {viewMode === "grid" && (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {simpleLists.map((list) => (
+                    {filteredSimpleLists.map((list) => (
                       <ChecklistGridItem
                         key={`simple-${list.category}-${list.id}`}
                         list={list}

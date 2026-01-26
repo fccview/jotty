@@ -95,7 +95,7 @@ export const SlashCommandsList = forwardRef<
   }));
 
   return (
-    <div className="bg-card border border-border rounded-jotty shadow-lg p-2 min-w-80 max-w-96">
+    <div className="bg-card border border-border rounded-jotty shadow-lg p-2 min-w-80 max-w-96 mt-3">
       {items.length ? (
         <div className="grid grid-cols-2 gap-1">
           {items.map((item, index) => (
@@ -114,7 +114,7 @@ export const SlashCommandsList = forwardRef<
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-xs">{item.title}</div>
-                <div className="text-md lg:text-sm lg:text-xs text-muted-foreground truncate">
+                <div className="text-md lg:text-xs text-muted-foreground truncate">
                   {item.description}
                 </div>
               </div>

@@ -1,4 +1,7 @@
 #!/bin/sh
+# fccview here! This is just a quick script the Dockerfile uses to set up permissions for the container.
+# You don't need to use it, nor worry about it, feel free to ignore it while developing.
+
 set -e
 
 PUID=${PUID:-1000}

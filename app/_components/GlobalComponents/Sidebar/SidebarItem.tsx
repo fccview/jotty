@@ -1,22 +1,26 @@
 "use client";
 
+import Link from "next/link";
 import { cn } from "@/app/_utils/global-utils";
 
 interface SidebarItemProps {
   icon: any;
   label: string;
   isActive: boolean;
-  onClick: () => void;
+  href: string;
+  onClick?: () => void;
 }
 
 export const SidebarItem = ({
   icon: Icon,
   label,
   isActive,
+  href,
   onClick,
 }: SidebarItemProps) => {
   return (
-    <button
+    <Link
+      href={href}
       onClick={onClick}
       className={cn(
         "w-full flex items-center gap-3 px-3 py-2.5 text-md lg:text-sm rounded-jotty transition-colors",
@@ -27,6 +31,6 @@ export const SidebarItem = ({
     >
       <Icon className="h-5 w-5 lg:h-4 lg:w-4 flex-shrink-0" />
       <span className="truncate text-left">{label}</span>
-    </button>
+    </Link>
   );
 };

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   resetAllMocks,
   createFormData,
+  mockFs,
 } from "../setup";
 
 const mockGetUserModeDir = vi.fn();
@@ -20,6 +21,12 @@ const mockUpdateIndexForItem = vi.fn();
 const mockRemoveItemFromIndex = vi.fn();
 const mockCommitNote = vi.fn();
 const mockGetSettings = vi.fn();
+const mockExtractHashtagsFromContent = vi.fn();
+const mockGenerateYamlFrontmatter = vi.fn();
+const mockExtractYamlMetadata = vi.fn();
+const mockExtractTitle = vi.fn();
+const mockGetUserByNote = vi.fn();
+const mockGetUserByNoteUuid = vi.fn();
 
 vi.mock("@/app/_server/actions/file", () => ({
   getUserModeDir: (...args: any[]) => mockGetUserModeDir(...args),
@@ -35,8 +42,8 @@ vi.mock("@/app/_server/actions/file", () => ({
 vi.mock("@/app/_server/actions/users", () => ({
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
   getUsername: (...args: any[]) => mockGetUsername(...args),
-  getUserByNote: vi.fn().mockResolvedValue({ success: false }),
-  getUserByNoteUuid: vi.fn().mockResolvedValue({ success: false }),
+  getUserByNote: (...args: any[]) => mockGetUserByNote(...args),
+  getUserByNoteUuid: (...args: any[]) => mockGetUserByNoteUuid(...args),
   getUserByUsername: vi.fn().mockResolvedValue(null),
   isAuthenticated: vi.fn().mockResolvedValue(true),
 }));
@@ -75,21 +82,21 @@ vi.mock("@/app/_utils/filename-utils", () => ({
 
 vi.mock("@/app/_utils/yaml-metadata-utils", () => ({
   generateUuid: vi.fn().mockReturnValue("test-uuid-123"),
-  generateYamlFrontmatter: vi
-    .fn()
-    .mockReturnValue("---\nuuid: test-uuid-123\n---\n"),
-  extractYamlMetadata: vi.fn().mockReturnValue({
-    metadata: { uuid: "test-uuid-123" },
-    contentWithoutMetadata: "Test content",
-  }),
+  generateYamlFrontmatter: (...args: any[]) => mockGenerateYamlFrontmatter(...args),
+  extractYamlMetadata: (...args: any[]) => mockExtractYamlMetadata(...args),
   updateYamlMetadata: vi
     .fn()
     .mockReturnValue("---\nuuid: test-uuid-123\n---\nTest content"),
-  extractTitle: vi.fn().mockReturnValue("Test Note"),
+  extractTitle: (...args: any[]) => mockExtractTitle(...args),
 }));
 
 vi.mock("@/app/_utils/markdown-utils", () => ({
   sanitizeMarkdown: vi.fn().mockImplementation((content) => content),
+}));
+
+vi.mock("@/app/_utils/tag-utils", () => ({
+  extractHashtagsFromContent: (...args: any[]) =>
+    mockExtractHashtagsFromContent(...args),
 }));
 
 vi.mock("@/app/_utils/encryption-utils", () => ({
@@ -97,7 +104,7 @@ vi.mock("@/app/_utils/encryption-utils", () => ({
   detectEncryptionMethod: vi.fn().mockReturnValue(null),
 }));
 
-import { createNote, deleteNote } from "@/app/_server/actions/note";
+import { createNote, deleteNote, updateNote } from "@/app/_server/actions/note";
 
 describe("Note Actions", () => {
   beforeEach(() => {
@@ -121,6 +128,15 @@ describe("Note Actions", () => {
     mockRemoveItemFromIndex.mockResolvedValue(undefined);
     mockCommitNote.mockResolvedValue(undefined);
     mockGetSettings.mockResolvedValue({});
+    mockExtractHashtagsFromContent.mockReturnValue([]);
+    mockGenerateYamlFrontmatter.mockReturnValue("---\nuuid: test-uuid-123\n---\n");
+    mockExtractYamlMetadata.mockReturnValue({
+      metadata: { uuid: "test-uuid-123" },
+      contentWithoutMetadata: "Test content",
+    });
+    mockExtractTitle.mockReturnValue("Test Note");
+    mockGetUserByNote.mockResolvedValue({ success: false });
+    mockGetUserByNoteUuid.mockResolvedValue({ success: false });
   });
 
   describe("createNote", () => {
@@ -290,6 +306,328 @@ describe("Note Actions", () => {
       const result = await deleteNote(formData);
 
       expect(result.error).toBeDefined();
+    });
+  });
+
+  describe("Tags in Notes", () => {
+    describe("createNote with tags", () => {
+      it("should extract hashtags from content when creating note", async () => {
+        mockExtractHashtagsFromContent.mockReturnValue(["work", "project"]);
+
+        const formData = createFormData({
+          title: "Tagged Note",
+          category: "TestCategory",
+          rawContent: "Content with #work and #project tags",
+        });
+
+        const result = await createNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(mockExtractHashtagsFromContent).toHaveBeenCalled();
+      });
+
+      it("should include extracted tags in note data", async () => {
+        mockExtractHashtagsFromContent.mockReturnValue(["important", "todo"]);
+
+        const formData = createFormData({
+          title: "Multi-Tag Note",
+          category: "TestCategory",
+          rawContent: "Content with #important #todo",
+        });
+
+        const result = await createNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(result.data?.tags).toEqual(["important", "todo"]);
+      });
+
+      it("should not include tags property when no tags extracted", async () => {
+        mockExtractHashtagsFromContent.mockReturnValue([]);
+
+        const formData = createFormData({
+          title: "No Tags Note",
+          category: "TestCategory",
+          rawContent: "Content without any tags",
+        });
+
+        const result = await createNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(result.data?.tags).toBeUndefined();
+      });
+
+      it("should write tags to frontmatter", async () => {
+        mockExtractHashtagsFromContent.mockReturnValue(["work"]);
+        mockGenerateYamlFrontmatter.mockImplementation((metadata) => {
+          const lines = ["---"];
+          if (metadata.uuid) lines.push(`uuid: ${metadata.uuid}`);
+          if (metadata.title) lines.push(`title: ${metadata.title}`);
+          if (metadata.tags && metadata.tags.length > 0) {
+            lines.push("tags:");
+            metadata.tags.forEach((tag: string) => lines.push(`  - ${tag}`));
+          }
+          lines.push("---\n");
+          return lines.join("\n");
+        });
+
+        const formData = createFormData({
+          title: "Frontmatter Tags Note",
+          category: "TestCategory",
+          rawContent: "Content with #work",
+        });
+
+        await createNote(formData);
+
+        expect(mockGenerateYamlFrontmatter).toHaveBeenCalledWith(
+          expect.objectContaining({
+            tags: ["work"],
+          })
+        );
+      });
+
+      it("should extract nested hashtags", async () => {
+        mockExtractHashtagsFromContent.mockReturnValue(["work/project", "personal/health"]);
+
+        const formData = createFormData({
+          title: "Nested Tags Note",
+          category: "TestCategory",
+          rawContent: "Content with #work/project and #personal/health",
+        });
+
+        const result = await createNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(result.data?.tags).toContain("work/project");
+        expect(result.data?.tags).toContain("personal/health");
+      });
+    });
+
+    describe("updateNote with tags", () => {
+      const setupUpdateNoteMocks = () => {
+        mockGetUserByNoteUuid.mockResolvedValue({
+          success: true,
+          data: { username: "testuser" },
+        });
+
+        mockServerReadDir.mockImplementation(async (dirPath: string) => {
+          if (dirPath.includes("TestCategory")) {
+            return [
+              {
+                name: "test-note.md",
+                isFile: () => true,
+                isDirectory: () => false,
+              },
+            ];
+          }
+          if (dirPath.includes("testuser")) {
+            return [
+              {
+                name: "TestCategory",
+                isFile: () => false,
+                isDirectory: () => true,
+              },
+            ];
+          }
+          return [];
+        });
+
+        const storedContent = `---\nuuid: test-uuid-123\ntitle: Test Note\n---\nExisting content`;
+        mockServerReadFile.mockResolvedValue(storedContent);
+
+        mockFs.stat.mockResolvedValue({
+          birthtime: new Date("2024-01-01"),
+          mtime: new Date("2024-01-02"),
+        });
+
+        mockExtractYamlMetadata.mockReturnValue({
+          metadata: { uuid: "test-uuid-123", title: "Test Note" },
+          contentWithoutMetadata: "Existing content",
+        });
+
+        mockExtractTitle.mockReturnValue("Test Note");
+      };
+
+      it("should extract tags from updated content", async () => {
+        setupUpdateNoteMocks();
+        mockExtractHashtagsFromContent.mockReturnValue(["work", "project"]);
+
+        const formData = createFormData({
+          id: "test-note",
+          uuid: "test-uuid-123",
+          title: "Test Note",
+          content: "Content with #work and #project",
+          category: "TestCategory",
+          originalCategory: "TestCategory",
+        });
+
+        const result = await updateNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(mockExtractHashtagsFromContent).toHaveBeenCalled();
+        expect(result.data?.tags).toContain("work");
+        expect(result.data?.tags).toContain("project");
+      });
+
+      it("should sort extracted tags alphabetically", async () => {
+        setupUpdateNoteMocks();
+        mockExtractHashtagsFromContent.mockReturnValue(["zebra", "alpha", "middle"]);
+
+        const formData = createFormData({
+          id: "test-note",
+          uuid: "test-uuid-123",
+          title: "Test Note",
+          content: "Content with #zebra #alpha #middle",
+          category: "TestCategory",
+          originalCategory: "TestCategory",
+        });
+
+        const result = await updateNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(result.data?.tags).toEqual(["alpha", "middle", "zebra"]);
+      });
+
+      it("should remove tags when removed from content", async () => {
+        setupUpdateNoteMocks();
+        mockExtractHashtagsFromContent.mockReturnValue([]);
+
+        const formData = createFormData({
+          id: "test-note",
+          uuid: "test-uuid-123",
+          title: "Test Note",
+          content: "Content without any tags now",
+          category: "TestCategory",
+          originalCategory: "TestCategory",
+        });
+
+        const result = await updateNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(result.data?.tags).toBeUndefined();
+      });
+
+      it("should extract nested hashtags", async () => {
+        setupUpdateNoteMocks();
+        mockExtractHashtagsFromContent.mockReturnValue(["work/project", "personal/health"]);
+
+        const formData = createFormData({
+          id: "test-note",
+          uuid: "test-uuid-123",
+          title: "Test Note",
+          content: "Content with #work/project and #personal/health",
+          category: "TestCategory",
+          originalCategory: "TestCategory",
+        });
+
+        const result = await updateNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(result.data?.tags).toContain("work/project");
+        expect(result.data?.tags).toContain("personal/health");
+      });
+
+      it("should deduplicate tags in content", async () => {
+        setupUpdateNoteMocks();
+        mockExtractHashtagsFromContent.mockReturnValue(["duplicate"]);
+
+        const formData = createFormData({
+          id: "test-note",
+          uuid: "test-uuid-123",
+          title: "Test Note",
+          content: "Content with #duplicate mentioned twice",
+          category: "TestCategory",
+          originalCategory: "TestCategory",
+        });
+
+        const result = await updateNote(formData);
+
+        expect(result.success).toBe(true);
+        expect(result.data?.tags).toHaveLength(1);
+        expect(result.data?.tags?.[0]).toBe("duplicate");
+      });
+    });
+
+    describe("Frontmatter tag handling", () => {
+      it("should include tags in generated frontmatter when saving", async () => {
+        mockExtractHashtagsFromContent.mockReturnValue(["save-tag"]);
+        mockGenerateYamlFrontmatter.mockImplementation((metadata) => {
+          const lines = ["---"];
+          Object.entries(metadata).forEach(([key, value]) => {
+            if (key === "tags" && Array.isArray(value)) {
+              lines.push("tags:");
+              (value as string[]).forEach((tag) => lines.push(`  - ${tag}`));
+            } else {
+              lines.push(`${key}: ${value}`);
+            }
+          });
+          lines.push("---\n");
+          return lines.join("\n");
+        });
+
+        const formData = createFormData({
+          title: "Save Tags Note",
+          category: "TestCategory",
+          rawContent: "Content with #save-tag",
+        });
+
+        await createNote(formData);
+
+        expect(mockServerWriteFile).toHaveBeenCalled();
+        expect(mockGenerateYamlFrontmatter).toHaveBeenCalledWith(
+          expect.objectContaining({
+            tags: ["save-tag"],
+          })
+        );
+      });
+
+      it("should write tags to YAML frontmatter format", async () => {
+        mockExtractHashtagsFromContent.mockReturnValue(["alpha", "beta"]);
+        let capturedFrontmatter = "";
+        mockGenerateYamlFrontmatter.mockImplementation((metadata) => {
+          const lines = ["---"];
+          Object.entries(metadata).forEach(([key, value]) => {
+            if (key === "tags" && Array.isArray(value)) {
+              lines.push("tags:");
+              (value as string[]).forEach((tag) => lines.push(`  - ${tag}`));
+            } else if (value !== undefined) {
+              lines.push(`${key}: ${value}`);
+            }
+          });
+          lines.push("---\n");
+          capturedFrontmatter = lines.join("\n");
+          return capturedFrontmatter;
+        });
+
+        const formData = createFormData({
+          title: "YAML Tags Note",
+          category: "TestCategory",
+          rawContent: "Content with #alpha #beta",
+        });
+
+        await createNote(formData);
+
+        expect(capturedFrontmatter).toContain("tags:");
+        expect(capturedFrontmatter).toContain("  - alpha");
+        expect(capturedFrontmatter).toContain("  - beta");
+      });
+
+      it("should not include tags in frontmatter when no tags exist", async () => {
+        mockExtractHashtagsFromContent.mockReturnValue([]);
+
+        const formData = createFormData({
+          title: "No Tags Note",
+          category: "TestCategory",
+          rawContent: "Content without any tags",
+        });
+
+        await createNote(formData);
+
+        expect(mockGenerateYamlFrontmatter).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            tags: expect.anything(),
+          })
+        );
+      });
     });
   });
 });

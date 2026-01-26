@@ -45,6 +45,10 @@ export const EditorSettingsTab = () => {
               typeof result.data.editor?.enableBilateralLinks === "boolean"
                 ? result.data.editor?.enableBilateralLinks
                 : true,
+            enableTags:
+              typeof result.data.editor?.enableTags === "boolean"
+                ? result.data.editor?.enableTags
+                : true,
             drawioUrl: result.data.editor?.drawioUrl || "",
             drawioProxyEnabled:
               typeof result.data.editor?.drawioProxyEnabled === "boolean"
@@ -200,7 +204,7 @@ export const EditorSettingsTab = () => {
             <div className="flex items-center justify-between">
               <label htmlFor="enableSlashCommands" className="space-y-1 cursor-pointer">
                 <div className="text-md lg:text-sm font-medium">{t('editor.slashCommands')}</div>
-                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                <p className="text-md lg:text-xs text-muted-foreground">
                   {t("admin.enableSlashCommandsDescription")}
                 </p>
               </label>
@@ -216,7 +220,7 @@ export const EditorSettingsTab = () => {
             <div className="flex items-center justify-between">
               <label htmlFor="enableBubbleMenu" className="space-y-1 cursor-pointer">
                 <div className="text-md lg:text-sm font-medium">{t('editor.bubbleMenu')}</div>
-                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                <p className="text-md lg:text-xs text-muted-foreground">
                   {t("admin.enableBubbleMenuDescription")}
                 </p>
               </label>
@@ -232,7 +236,7 @@ export const EditorSettingsTab = () => {
             <div className="flex items-center justify-between">
               <label htmlFor="enableTableToolbar" className="space-y-1 cursor-pointer">
                 <div className="text-md lg:text-sm font-medium">{t('editor.tableToolbar')}</div>
-                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                <p className="text-md lg:text-xs text-muted-foreground">
                   {t("admin.enableTableToolbarDescription")}
                 </p>
               </label>
@@ -253,7 +257,7 @@ export const EditorSettingsTab = () => {
                     {t("admin.experimental")}
                   </span>
                 </div>
-                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                <p className="text-md lg:text-xs text-muted-foreground">
                   {t("admin.bilateralLinksDescription")}
                   <span className="mt-1 block text-sm lg:text-xs italic text-muted-foreground">
                     {t("admin.bilateralLinksWarning")}
@@ -270,11 +274,29 @@ export const EditorSettingsTab = () => {
             </div>
 
             <div className="flex items-center justify-between">
+              <label htmlFor="enableTags" className="space-y-1 cursor-pointer">
+                <div className="text-md lg:text-sm font-medium">
+                  {t("admin.tags")}
+                </div>
+                <p className="text-md lg:text-xs text-muted-foreground">
+                  {t("admin.tagsDescription")}
+                </p>
+              </label>
+              <Toggle
+                id="enableTags"
+                checked={settings.editor.enableTags || false}
+                onCheckedChange={(checked) =>
+                  handleToggleChange("enableTags", checked)
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
               <label htmlFor="historyEnabled" className="space-y-1 cursor-pointer">
                 <div className="text-md lg:text-sm font-medium">
                   {t("admin.historyEnabled")}
                 </div>
-                <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                <p className="text-md lg:text-xs text-muted-foreground">
                   {t("admin.historyDescription")}
                 </p>
               </label>
@@ -303,7 +325,7 @@ export const EditorSettingsTab = () => {
                       {t("admin.optional")}
                     </span>
                   </div>
-                  <p className="text-md lg:text-sm lg:text-xs text-muted-foreground mb-2">
+                  <p className="text-md lg:text-xs text-muted-foreground mb-2">
                     {t("admin.drawioUrlDescription")}
                     <span className="mt-1 block text-sm lg:text-xs italic">
                       {t("admin.drawioUrlExample")}
@@ -324,7 +346,7 @@ export const EditorSettingsTab = () => {
                 <div className="flex items-center justify-between">
                   <label htmlFor="drawioProxyEnabled" className="space-y-1 cursor-pointer">
                     <div className="text-md lg:text-sm font-medium">{t("admin.drawioProxyEnabled")}</div>
-                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                    <p className="text-md lg:text-xs text-muted-foreground">
                       {t("admin.drawioProxyEnabledDescription")}
                     </p>
                   </label>

@@ -116,10 +116,9 @@ export const InternalLinkComponent = ({
 
       if (fullItem) {
         router.push(
-          `/${
-            fullItem && "type" in fullItem && fullItem.type
-              ? ItemTypes.CHECKLIST
-              : ItemTypes.NOTE
+          `/${fullItem && "type" in fullItem && fullItem.type
+            ? ItemTypes.CHECKLIST
+            : ItemTypes.NOTE
           }/${buildCategoryPath(
             fullItem.category || "Uncategorized",
             fullItem.id
@@ -192,13 +191,13 @@ export const InternalLinkComponent = ({
             (n) =>
               encodeId(n.id || "") === encodeId(itemId) &&
               encodeCategoryPath(n?.category || "") ===
-                encodeCategoryPath(category)
+              encodeCategoryPath(category)
           ) ||
           checklists.find(
             (c) =>
               encodeId(c.id || "") === encodeId(itemId) &&
               encodeCategoryPath(c?.category || "") ===
-                encodeCategoryPath(category)
+              encodeCategoryPath(category)
           );
 
         if (foundItem?.uuid) {
@@ -235,11 +234,11 @@ export const InternalLinkComponent = ({
           href.startsWith("/checklist/")) && (
           <span className="block absolute top-[110%] left-0 min-w-[300px] max-w-[400px] z-10">
             {fullItem && "type" in fullItem && fullItem.type ? (
-              <ChecklistCard list={fullItem as Checklist} onSelect={() => {}} />
+              <ChecklistCard list={fullItem as Checklist} onSelect={() => { }} />
             ) : (
               <NoteCard
                 note={fullItem as Note}
-                onSelect={() => {}}
+                onSelect={() => { }}
                 fullScrollableContent
               />
             )}
@@ -271,22 +270,21 @@ export const InternalLinkComponent = ({
       </span>
       {isEditable && (isPathBasedLink || canToggle) && (
         <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-border">
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">{t('editor.linkType')}</span>
+          <span className="text-md lg:text-xs text-muted-foreground">{t('editor.linkType')}</span>
           <button
             onClick={handleToggleConversion}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-sm lg:text-xs font-medium transition-all ${
-              isJottyLink
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-sm lg:text-xs font-medium transition-all ${isJottyLink
                 ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
                 : convertToBidirectional
-                ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
-                : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
-            }`}
+                  ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
+              }`}
             title={
               isJottyLink
                 ? "Click to convert to path-based link (cross-platform compatible)"
                 : convertToBidirectional
-                ? "Will convert to bidirectional UUID link on save (enables backlinks)"
-                : "Click to convert to bidirectional UUID link (enables backlinks)"
+                  ? "Will convert to bidirectional UUID link on save (enables backlinks)"
+                  : "Click to convert to bidirectional UUID link (enables backlinks)"
             }
           >
             {isJottyLink || convertToBidirectional ? (

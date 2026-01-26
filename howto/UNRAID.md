@@ -1,6 +1,7 @@
 # Unraid Deployment Guide
 
 jotty·page can be installed on Unraid through the Community Applications store.
+You can find the template **[here](https://github.com/fccview/unraid-templates/raw/main/templates/jotty.xml)**
 
 ## Installation
 
@@ -38,72 +39,9 @@ To use different user/group, remove `--user 99:100` from Extra Parameters and up
 
 ### Environment Variables
 
-See [ENV-VARIABLES.md](ENV-VARIABLES.md) for full list. Common options:
-
-- **`NODE_ENV`**: `production` (required)
-- **`APP_URL`**: Your full URL (required for HTTPS/SSO)
-- **`HTTPS`**: `true` (if using SSL)
-- **`SSO_MODE`**: `oidc` (for SSO, see [SSO.md](SSO.md))
-- **`SERVE_PUBLIC_IMAGES`**: `yes` (default)
-- **`SERVE_PUBLIC_FILES`**: `yes` (default)
-
-## First-Time Setup
-
-1. Access `http://[UNRAID-IP]:1122`
-2. Create admin account at `/auth/setup` (or sign in via SSO if enabled)
-
-## Updating
-
-### Via Web UI
-1. **Docker** tab → Click jotty icon
-2. **Check for Updates** → **Update**
-
-### Via CLI
-```bash
-docker stop jotty
-docker pull ghcr.io/fccview/jotty:latest
-docker start jotty
-```
+See [ENV-VARIABLES.md](ENV-VARIABLES.md) for full list.
 
 ## Image Tags
 
 - **`latest`**: Stable release (recommended)
-- **`develop`**: Development branch (testing)
-- **`1.x.x`**: Specific version
-
-## Troubleshooting
-
-### Permission Errors
-```bash
-chown -R 99:100 /mnt/user/appdata/jotty/
-```
-
-### 403 Errors After SSO Login
-Add environment variable:
-```
-INTERNAL_API_URL=http://localhost:3000
-```
-
-### Container Won't Start
-1. Check logs: **Docker** tab → Click icon → **Logs**
-2. Verify paths exist
-3. Check port not in use
-
-## Backup
-
-**Always backup before updates!**
-
-### Manual
-```bash
-tar -czf jotty-backup-$(date +%Y%m%d).tar.gz /mnt/user/appdata/jotty/data/
-```
-
-### Automated
-Use Unraid plugins:
-- **CA Backup / Restore Appdata** (recommended)
-- **Duplicati**
-- **Restic**
-
----
-
-**Template made by [sean](http://discordapp.com/users/66198431953059840) from our discord community**
+- **`develop`**: Development branch (beta pre-release)

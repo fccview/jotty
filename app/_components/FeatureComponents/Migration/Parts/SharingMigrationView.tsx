@@ -83,7 +83,7 @@ export const SharingMigrationView = ({
                   <UserMultipleIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-md lg:text-sm font-medium">User-focused sharing</p>
-                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                    <p className="text-md lg:text-xs text-muted-foreground">
                       Each user now has an array of items they shared{" "}
                       <strong>WITH</strong> them rather than items having an
                       array of users they shared with.
@@ -96,7 +96,7 @@ export const SharingMigrationView = ({
                     <p className="text-md lg:text-sm font-medium">
                       Separate sharing files
                     </p>
-                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                    <p className="text-md lg:text-xs text-muted-foreground">
                       Notes and checklists now have their own{" "}
                       <code className="bg-muted px-1 rounded text-xs">
                         .sharing.json
@@ -111,7 +111,7 @@ export const SharingMigrationView = ({
                     <p className="text-md lg:text-sm font-medium">
                       Public sharing support
                     </p>
-                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                    <p className="text-md lg:text-xs text-muted-foreground">
                       Publicly shared items are now properly organized in a
                       &quot;public&quot; array.
                     </p>
@@ -123,7 +123,7 @@ export const SharingMigrationView = ({
                     <p className="text-md lg:text-sm font-medium">
                       Granular sharing permissions
                     </p>
-                    <p className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+                    <p className="text-md lg:text-xs text-muted-foreground">
                       Each item will have read, edit and delete permissions for
                       each user it is shared with.
                     </p>
@@ -174,7 +174,7 @@ export const SharingMigrationView = ({
                   >
                     I have backed up my sharing data and understand the
                     migration process.
-                    <span className="text-md lg:text-sm lg:text-xs text-muted-foreground block">
+                    <span className="text-md lg:text-xs text-muted-foreground block">
                       Please confirm you&apos;ve created a backup before
                       proceeding.
                     </span>

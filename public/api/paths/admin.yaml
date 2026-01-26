@@ -1,0 +1,34 @@
+/admin/rebuild-index:
+  post:
+    summary: Rebuild Link Index
+    description: Rebuilds internal link index for a user (admin only)
+    tags:
+      - Admin
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - username
+            properties:
+              username:
+                type: string
+                example: "fccview"
+    responses:
+      '200':
+        description: Index rebuilt successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Successfully rebuilt link index for fccview"
+      '403':
+        description: Admin access required

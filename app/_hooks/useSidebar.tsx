@@ -1,13 +1,12 @@
 import { useRouter, usePathname } from "next/navigation";
 import { useAppMode } from "../_providers/AppModeProvider";
 import { useNavigationGuard } from "../_providers/NavigationGuardProvider";
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Checklist, Category, Note, AppMode, User, SanitisedUser } from "../_types";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Checklist, Category, Note, AppMode, SanitisedUser } from "../_types";
 import { ItemTypes, Modes } from "../_types/enums";
+import { buildCategoryPath } from "../_utils/global-utils";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
-import { buildCategoryPath, encodeId } from "../_utils/global-utils";
-import { getListById } from "../_server/actions/checklist";
-import { getNoteById } from "../_server/actions/note";
+import { useSidebarStore } from "../_utils/sidebar-store";
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -26,64 +25,38 @@ export const useSidebar = (props: SidebarProps) => {
 
   const router = useRouter();
   const pathname = usePathname();
-  const { mode, setMode, isInitialized, checklists, notes } = useAppMode();
+  const { mode, setMode, isInitialized, checklists, notes, selectedFilter, setSelectedFilter } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
+
+  const {
+    collapsedCategories,
+    toggleCategory: storeToggleCategory,
+    expandCategoryPath: storeExpandCategoryPath,
+    setAllCategoriesCollapsed,
+    sharedItemsCollapsed,
+    setSharedItemsCollapsed,
+    tagsCollapsed,
+    setTagsCollapsed,
+    categoriesSectionCollapsed,
+    setCategoriesSectionCollapsed,
+    collapsedTags,
+    toggleTag: storeToggleTag,
+  } = useSidebarStore();
 
   const [modalState, setModalState] = useState<{
     type: string | null;
     data: any;
   }>({ type: null, data: null });
-  const [collapsedCategories, setCollapsedCategories] = useState<
-    Record<AppMode, Set<string>>
-  >({ [Modes.CHECKLISTS]: new Set(), [Modes.NOTES]: new Set() });
-  const [sharedItemsCollapsed, setSharedItemsCollapsed] = useState(false);
-  const [isLocalStorageInitialized, setIsLocalStorageInitialized] =
-    useState(false);
 
-  useEffect(() => {
-    try {
-      setCollapsedCategories({
-        [Modes.CHECKLISTS]: new Set(
-          JSON.parse(
-            localStorage.getItem(
-              `sidebar-collapsed-categories-${Modes.CHECKLISTS}`
-            ) || "[]"
-          )
-        ),
-        [Modes.NOTES]: new Set(
-          JSON.parse(
-            localStorage.getItem(
-              `sidebar-collapsed-categories-${Modes.NOTES}`
-            ) || "[]"
-          )
-        ),
-      });
-      setSharedItemsCollapsed(
-        JSON.parse(
-          localStorage.getItem("sidebar-shared-items-collapsed") || "false"
-        )
-      );
-    } catch (error) {
-      console.error("Failed to parse sidebar state from localStorage:", error);
-    }
-    setIsLocalStorageInitialized(true);
-  }, []);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isLocalStorageInitialized)
-      localStorage.setItem(
-        `sidebar-collapsed-categories-${mode}`,
-        JSON.stringify(Array.from(collapsedCategories[mode]))
-      );
-  }, [collapsedCategories, mode, isLocalStorageInitialized]);
+  const collapsedCategoriesForMode = useMemo(() => {
+    return new Set(collapsedCategories[mode] || []);
+  }, [collapsedCategories, mode]);
 
-  useEffect(() => {
-    if (isLocalStorageInitialized)
-      localStorage.setItem(
-        "sidebar-shared-items-collapsed",
-        JSON.stringify(sharedItemsCollapsed)
-      );
-  }, [sharedItemsCollapsed, isLocalStorageInitialized]);
+  const collapsedTagsSet = useMemo(() => {
+    return new Set(collapsedTags);
+  }, [collapsedTags]);
 
   const openModal = (type: string, data: any = null) =>
     setModalState({ type, data });
@@ -118,8 +91,6 @@ export const useSidebar = (props: SidebarProps) => {
 
   const { allCollapsiblePaths, areAnyCollapsed } = useMemo(() => {
     const items = mode === Modes.CHECKLISTS ? checklists : notes;
-    const currentModeCollapsedCategories =
-      collapsedCategories[mode] || new Set();
 
     const pathsOfParentsToCategories = new Set(
       categories.map((c) => c.parent).filter(Boolean) as string[]
@@ -135,18 +106,29 @@ export const useSidebar = (props: SidebarProps) => {
     );
 
     const anyCollapsed = Array.from(allPaths).some((path) =>
-      currentModeCollapsedCategories.has(path)
+      collapsedCategoriesForMode.has(path)
     );
 
     return { allCollapsiblePaths: allPaths, areAnyCollapsed: anyCollapsed };
-  }, [categories, checklists, notes, mode, collapsedCategories]);
+  }, [categories, checklists, notes, mode, collapsedCategoriesForMode]);
 
   const handleToggleAllCategories = () => {
-    setCollapsedCategories((prev) => ({
-      ...prev,
-      [mode]: areAnyCollapsed ? new Set() : allCollapsiblePaths,
-    }));
+    setAllCategoriesCollapsed(mode, Array.from(allCollapsiblePaths), !areAnyCollapsed);
   };
+
+  const toggleCategory = useCallback(
+    (categoryPath: string) => {
+      storeToggleCategory(mode, categoryPath);
+    },
+    [mode, storeToggleCategory]
+  );
+
+  const toggleTag = useCallback(
+    (tagPath: string) => {
+      storeToggleTag(tagPath);
+    },
+    [storeToggleTag]
+  );
 
   const handleModeSwitch = (newMode: AppMode) =>
     checkNavigation(() => {
@@ -154,35 +136,32 @@ export const useSidebar = (props: SidebarProps) => {
       router.push("/?mode=" + newMode);
     });
 
-  const handleItemClick = async (item: Checklist | Note) => {
-    const itemObject = mode === Modes.CHECKLISTS ? await getListById(item?.uuid || item.id) :  await getNoteById(item?.uuid || item.id);
+  const isHomePage = pathname === "/" || pathname === "";
 
-    checkNavigation(() => {
-      const categoryPath = buildCategoryPath(
-        itemObject?.category || item.category || "Uncategorized",
-        itemObject?.id || item.id
-      );
-
-      router.push(
-        `/${
-          mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
-        }/${categoryPath}`
-      );
-      onClose();
-    });
+  const handleCategorySelect = (categoryPath: string) => {
+    if (!isHomePage) {
+      toggleCategory(categoryPath);
+      return;
+    }
+    if (selectedFilter?.type === 'category' && selectedFilter.value === categoryPath) {
+      setSelectedFilter(null);
+    } else {
+      setSelectedFilter({ type: 'category', value: categoryPath });
+    }
+    onClose();
   };
 
-  const handleEditItem = (item: Checklist | Note) =>
-    openModal("editItem", item);
-
-  const toggleCategory = (categoryPath: string) => {
-    setCollapsedCategories((prev) => {
-      const newModeSet = new Set(prev[mode]);
-      newModeSet.has(categoryPath)
-        ? newModeSet.delete(categoryPath)
-        : newModeSet.add(categoryPath);
-      return { ...prev, [mode]: newModeSet };
-    });
+  const handleTagSelect = (tagName: string) => {
+    if (!isHomePage) {
+      toggleTag(tagName);
+      return;
+    }
+    if (selectedFilter?.type === 'tag' && selectedFilter.value === tagName) {
+      setSelectedFilter(null);
+    } else {
+      setSelectedFilter({ type: 'tag', value: tagName });
+    }
+    onClose();
   };
 
   const isItemSelected = (item: Checklist | Note) => {
@@ -201,29 +180,9 @@ export const useSidebar = (props: SidebarProps) => {
 
   const expandCategoryPath = useCallback(
     (categoryPath: string) => {
-      if (!categoryPath) return;
-
-      setCollapsedCategories((prev) => {
-        const newCollapsed = { ...prev };
-        const currentModeCollapsed = new Set(newCollapsed[mode]);
-
-        const pathParts = categoryPath.split("/");
-        let currentPath = "";
-        for (const part of pathParts) {
-          if (currentPath === "") {
-            currentPath = part;
-          } else {
-            currentPath = `${currentPath}/${part}`;
-          }
-          if (currentModeCollapsed.has(currentPath)) {
-            currentModeCollapsed.delete(currentPath);
-          }
-        }
-        newCollapsed[mode] = currentModeCollapsed;
-        return newCollapsed;
-      });
+      storeExpandCategoryPath(mode, categoryPath);
     },
-    [mode]
+    [mode, storeExpandCategoryPath]
   );
 
   useEffect(() => {
@@ -250,17 +209,29 @@ export const useSidebar = (props: SidebarProps) => {
     modalState,
     openModal,
     closeModal,
-    collapsedCategoriesForMode: collapsedCategories[mode],
+    collapsedCategoriesForMode,
     toggleCategory,
     sharedItemsCollapsed,
     setSharedItemsCollapsed,
+    tagsCollapsed,
+    setTagsCollapsed,
+    categoriesSectionCollapsed,
+    setCategoriesSectionCollapsed,
+    collapsedTags: collapsedTagsSet,
+    toggleTag,
+    selectedTag,
+    setSelectedTag,
+    selectedFilter,
+    setSelectedFilter,
+    handleCategorySelect,
+    handleTagSelect,
     handleToggleAllCategories,
     areAnyCollapsed,
-    handleItemClick,
-    handleEditItem,
-    handleConfirmDeleteCategory,
-    handleConfirmRenameCategory,
     isItemSelected,
     router,
+    onClose,
+    checkNavigation,
+    handleConfirmDeleteCategory,
+    handleConfirmRenameCategory,
   };
 };

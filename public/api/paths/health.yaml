@@ -1,0 +1,29 @@
+/health:
+  get:
+    summary: Health Check
+    description: Returns the application health status and version information
+    tags:
+      - System
+    security: []  # Public endpoint
+    responses:
+      '200':
+        description: Application is healthy
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [healthy, unhealthy]
+                  example: healthy
+                version:
+                  type: string
+                  example: "1.9.3"
+                timestamp:
+                  type: string
+                  format: date-time
+                  example: "2025-10-31T21:15:57.009Z"
+                error:
+                  type: string
+                  description: Only present when status is unhealthy

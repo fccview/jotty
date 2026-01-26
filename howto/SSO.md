@@ -10,6 +10,8 @@
 
 - Client Type: Public
 - Grant Type: Authorization Code with PKCE
+- PKCE Code Challenge Method: S256
+  - _**note** S256 is the only PKCE method Jotty supports_
 - Scopes: openid, profile, email
 - Redirect URI: https://YOUR_APP_HOST/api/oidc/callback
 - Post-logout URI: https://YOUR_APP_HOST/

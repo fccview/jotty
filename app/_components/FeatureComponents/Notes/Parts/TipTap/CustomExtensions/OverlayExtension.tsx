@@ -17,8 +17,8 @@ export const OverlayExtension = Extension.create<OverlayExtensionOptions>({
 
   addOptions() {
     return {
-      onImageClick: () => {},
-      onTableSelect: () => {},
+      onImageClick: () => { },
+      onTableSelect: () => { },
     };
   },
 
@@ -48,13 +48,14 @@ export const OverlayExtension = Extension.create<OverlayExtensionOptions>({
                 target.closest("td") ||
                 target.closest("th")
               ) {
-                const tableElement = target.closest("table") as HTMLElement;
-                if (tableElement) {
-                  const rect = tableElement.getBoundingClientRect();
+                const cellElement = (target.closest("td") ||
+                  target.closest("th")) as HTMLElement;
+                if (cellElement) {
+                  const rect = cellElement.getBoundingClientRect();
                   this.options.onTableSelect?.({
                     x: rect.left,
                     y: rect.top - 10,
-                    element: tableElement,
+                    element: cellElement,
                   });
                 }
                 return false;

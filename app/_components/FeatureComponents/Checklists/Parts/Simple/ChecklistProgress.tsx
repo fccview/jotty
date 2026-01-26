@@ -44,10 +44,10 @@ export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
       >
         <div className="flex items-center gap-2">
           {progress === 100 ? <CheckmarkCircle04Icon className="h-3.5 w-3.5 transition-all duration-300 text-primary" /> : <CircleIcon className="h-3.5 w-3.5 transition-all duration-300 text-primary/60" />}
-          <span className="text-md lg:text-sm lg:text-xs font-medium text-foreground">
+          <span className="text-md lg:text-xs font-medium text-foreground">
             {completedCount}/{totalCount}
           </span>
-          <span className="text-md lg:text-sm lg:text-xs text-muted-foreground">
+          <span className="text-md lg:text-xs text-muted-foreground">
             {Math.round(progress)}%
           </span>
         </div>
