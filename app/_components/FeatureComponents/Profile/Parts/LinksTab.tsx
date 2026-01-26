@@ -319,7 +319,7 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
 
         <div className="bg-card border border-border rounded-md p-8">
           <div className="text-center space-y-4">
-            <div className="text-6xl">🔗</div>
+            <div className="text-6xl"><Link04Icon className="h-12 w-12" /></div>
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">{t('profile.noLinksFound')}</h3>
               <p className="text-muted-foreground max-w-md mx-auto">

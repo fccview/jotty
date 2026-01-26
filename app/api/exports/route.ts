@@ -7,9 +7,22 @@ import {
   exportWholeDataFolder,
   getExportProgress,
 } from "@/app/_server/actions/export";
-import { ExportType } from "@/app/_types";
+import { getAppSettings } from "@/app/_server/actions/config";
+import { ExportType, User } from "@/app/_types";
 
 export const dynamic = "force-dynamic";
+
+const canAccessOtherUsersContent = async (user: User): Promise<boolean> => {
+  if (user.isSuperAdmin) return true;
+  if (!user.isAdmin) return false;
+
+  const settingsResult = await getAppSettings();
+  if (!settingsResult.success || !settingsResult.data) {
+    return true;
+  }
+
+  return settingsResult.data.adminContentAccess !== "no";
+};
 
 export async function POST(
   request: NextRequest,
@@ -27,9 +40,17 @@ export async function POST(
         );
       }
 
+      const hasContentAccess = await canAccessOtherUsersContent(user);
+
       let result;
       switch (type as ExportType) {
         case "all_checklists_notes":
+          if (!hasContentAccess) {
+            return NextResponse.json(
+              { error: "Forbidden: Admin access with content permissions required" },
+              { status: 403 }
+            );
+          }
           result = await exportAllChecklistsNotes();
           break;
         case "user_checklists_notes":
@@ -39,12 +60,30 @@ export async function POST(
               { status: 400 }
             );
           }
+          if (username !== user.username && !hasContentAccess) {
+            return NextResponse.json(
+              { error: "Forbidden: You can only export your own data" },
+              { status: 403 }
+            );
+          }
           result = await exportUserChecklistsNotes(username);
           break;
         case "all_users_data":
+          if (!hasContentAccess) {
+            return NextResponse.json(
+              { error: "Forbidden: Admin access with content permissions required" },
+              { status: 403 }
+            );
+          }
           result = await exportAllUsersData();
           break;
         case "whole_data_folder":
+          if (!hasContentAccess) {
+            return NextResponse.json(
+              { error: "Forbidden: Admin access with content permissions required" },
+              { status: 403 }
+            );
+          }
           result = await exportWholeDataFolder();
           break;
         default:

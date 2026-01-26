@@ -5,7 +5,6 @@ import {
   mockGetUserNotes,
   mockGetUserChecklists,
   mockGetCategories,
-  mockIsAdmin,
   mockGetUserByUsername,
   resetApiMocks,
   createMockRequest,
@@ -166,7 +165,6 @@ describe("User & Summary API", () => {
     it("should return summary for specific user when admin", async () => {
       const adminUser = { ...mockUser, isAdmin: true }
       mockAuthenticateApiKey.mockResolvedValue(adminUser)
-      mockIsAdmin.mockResolvedValue(true)
 
       const mockNotes = [{ id: "1", title: "Note 1", category: "Work", owner: "otheruser" }]
       const mockChecklists = [
@@ -192,8 +190,6 @@ describe("User & Summary API", () => {
     })
 
     it("should return 403 when non-admin queries other users", async () => {
-      mockIsAdmin.mockResolvedValue(false)
-
       const request = createMockRequest("GET", "http://localhost:3000/api/summary?username=otheruser")
       const response = await GET_SUMMARY(request)
       const data = await getResponseJson(response)

@@ -30,6 +30,7 @@ export const mockExportUserChecklistsNotes = vi.fn();
 export const mockExportAllUsersData = vi.fn();
 export const mockExportWholeDataFolder = vi.fn();
 export const mockGetExportProgress = vi.fn();
+export const mockGetAppSettings = vi.fn();
 
 vi.mock("@/app/_server/actions/api", () => ({
   authenticateApiKey: (...args: any[]) => mockAuthenticateApiKey(...args),
@@ -80,6 +81,10 @@ vi.mock("@/app/_server/actions/export", () => ({
   getExportProgress: (...args: any[]) => mockGetExportProgress(...args),
 }));
 
+vi.mock("@/app/_server/actions/config", () => ({
+  getAppSettings: (...args: any[]) => mockGetAppSettings(...args),
+}));
+
 export function resetApiMocks() {
   vi.clearAllMocks();
   mockAuthenticateApiKey.mockReset();
@@ -105,6 +110,7 @@ export function resetApiMocks() {
   mockExportAllUsersData.mockReset();
   mockExportWholeDataFolder.mockReset();
   mockGetExportProgress.mockReset();
+  mockGetAppSettings.mockReset();
 }
 
 export function createMockRequest(

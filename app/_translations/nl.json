@@ -591,7 +591,7 @@
     "visualizeRelationships": "Visualiseer relaties tussen uw notities en checklists",
     "connectedItems": "Verbonden items",
     "noLinksFound": "Geen links gevonden",
-    "startCreatingInternalLinks": "Begin met het maken van interne links in uw notities en checklists om het relatienetwerk hier te zien. Gebruik het formaat",
+    "startCreatingInternalLinks": "Begin met het maken van interne links door `@` in uw notities te typen om het relatienetwerk hier te zien.",
     "orFormat": "of",
     "inYourContent": "in uw inhoud.",
     "highlyConnected": "sterk verbonden",
