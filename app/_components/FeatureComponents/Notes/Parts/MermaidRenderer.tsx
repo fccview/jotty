@@ -7,10 +7,11 @@ import { useTranslations } from "next-intl";
 interface MermaidRendererProps {
   code: string;
   className?: string;
+  forceLightMode?: boolean;
 }
 
-const getCSSVariable = (variable: string): string => {
-  if (typeof window === 'undefined') return '';
+const _getCSSVariable = (variable: string, forceLight: boolean): string => {
+  if (forceLight || typeof window === 'undefined') return '';
   const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
   if (value && /^\d+\s+\d+\s+\d+$/.test(value)) {
     return `rgb(${value.replace(/\s+/g, ', ')})`;
@@ -18,32 +19,32 @@ const getCSSVariable = (variable: string): string => {
   return value;
 };
 
-const initializeMermaidTheme = () => {
+const initializeMermaidTheme = (forceLight = false) => {
   mermaid.initialize({
     startOnLoad: false,
     theme: "base",
     securityLevel: "loose",
     themeVariables: {
-      primaryColor: getCSSVariable('--primary') || 'rgb(139, 59, 208)',
-      primaryTextColor: getCSSVariable('--primary-foreground') || 'rgb(255, 255, 255)',
-      primaryBorderColor: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      lineColor: getCSSVariable('--primary') || 'rgb(139, 59, 208)',
-      secondaryColor: getCSSVariable('--secondary') || 'rgb(243, 240, 249)',
-      tertiaryColor: getCSSVariable('--muted') || 'rgb(243, 240, 249)',
-      background: getCSSVariable('--background') || 'rgb(255, 255, 255)',
-      mainBkg: getCSSVariable('--background') || 'rgb(255, 255, 255)',
-      secondBkg: getCSSVariable('--muted') || 'rgb(243, 240, 249)',
-      tertiaryBkg: getCSSVariable('--accent') || 'rgb(243, 240, 249)',
-      textColor: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      border1: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      border2: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      nodeBorder: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      clusterBkg: getCSSVariable('--muted') || 'rgb(243, 240, 249)',
-      clusterBorder: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      defaultLinkColor: getCSSVariable('--primary') || 'rgb(139, 59, 208)',
-      titleColor: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
-      edgeLabelBackground: getCSSVariable('--background') || 'rgb(255, 255, 255)',
-      nodeTextColor: getCSSVariable('--foreground') || 'rgb(20, 20, 20)',
+      primaryColor: _getCSSVariable('--primary', forceLight) || 'rgb(139, 59, 208)',
+      primaryTextColor: _getCSSVariable('--primary-foreground', forceLight) || 'rgb(255, 255, 255)',
+      primaryBorderColor: _getCSSVariable('--foreground', forceLight) || 'rgb(20, 20, 20)',
+      lineColor: _getCSSVariable('--primary', forceLight) || 'rgb(139, 59, 208)',
+      secondaryColor: _getCSSVariable('--secondary', forceLight) || 'rgb(243, 240, 249)',
+      tertiaryColor: _getCSSVariable('--muted', forceLight) || 'rgb(243, 240, 249)',
+      background: _getCSSVariable('--background', forceLight) || 'rgb(255, 255, 255)',
+      mainBkg: _getCSSVariable('--background', forceLight) || 'rgb(255, 255, 255)',
+      secondBkg: _getCSSVariable('--muted', forceLight) || 'rgb(243, 240, 249)',
+      tertiaryBkg: _getCSSVariable('--accent', forceLight) || 'rgb(243, 240, 249)',
+      textColor: _getCSSVariable('--foreground', forceLight) || 'rgb(20, 20, 20)',
+      border1: _getCSSVariable('--foreground', forceLight) || 'rgb(20, 20, 20)',
+      border2: _getCSSVariable('--foreground', forceLight) || 'rgb(20, 20, 20)',
+      nodeBorder: _getCSSVariable('--foreground', forceLight) || 'rgb(20, 20, 20)',
+      clusterBkg: _getCSSVariable('--muted', forceLight) || 'rgb(243, 240, 249)',
+      clusterBorder: _getCSSVariable('--foreground', forceLight) || 'rgb(20, 20, 20)',
+      defaultLinkColor: _getCSSVariable('--primary', forceLight) || 'rgb(139, 59, 208)',
+      titleColor: _getCSSVariable('--foreground', forceLight) || 'rgb(20, 20, 20)',
+      edgeLabelBackground: _getCSSVariable('--background', forceLight) || 'rgb(255, 255, 255)',
+      nodeTextColor: _getCSSVariable('--foreground', forceLight) || 'rgb(20, 20, 20)',
     },
   });
 };
@@ -52,7 +53,7 @@ if (typeof window !== 'undefined') {
   initializeMermaidTheme();
 }
 
-export const MermaidRenderer = ({ code, className = "" }: MermaidRendererProps) => {
+export const MermaidRenderer = ({ code, className = "", forceLightMode = false }: MermaidRendererProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
   const t = useTranslations();
@@ -62,7 +63,7 @@ export const MermaidRenderer = ({ code, className = "" }: MermaidRendererProps) 
       if (!containerRef.current || !code) return;
 
       try {
-        initializeMermaidTheme();
+        initializeMermaidTheme(forceLightMode);
 
         setError(null);
         const id = `mermaid-view-${Math.random().toString(36).substring(2, 11)}`;
@@ -79,7 +80,7 @@ export const MermaidRenderer = ({ code, className = "" }: MermaidRendererProps) 
     };
 
     renderDiagram();
-  }, [code]);
+  }, [code, forceLightMode]);
 
   if (error) {
     return (

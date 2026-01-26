@@ -50,11 +50,13 @@ const getRawTextFromChildren = (children: React.ReactNode): string => {
 interface UnifiedMarkdownRendererProps {
   content: string;
   className?: string;
+  forceLightMode?: boolean;
 }
 
 export const UnifiedMarkdownRenderer = ({
   content,
   className = "",
+  forceLightMode = false,
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
@@ -71,10 +73,7 @@ export const UnifiedMarkdownRenderer = ({
         return `<div data-drawio="" data-drawio-data="${diagramData.replace(
           /"/g,
           "&quot;"
-        )}" data-drawio-svg="${svgData.replace(
-          /"/g,
-          "&quot;"
-        )}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
+        )}" data-drawio-svg="${svgBase64.trim()}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
       } catch (e) {
         return match;
       }
@@ -156,7 +155,7 @@ export const UnifiedMarkdownRenderer = ({
         const rawCode = getRawTextFromChildren(codeElement.props.children);
 
         if (language === "mermaid") {
-          return <MermaidRenderer code={rawCode} />;
+          return <MermaidRenderer code={rawCode} forceLightMode={forceLightMode} />;
         }
 
         let highlightedHtml: string;
@@ -429,16 +428,23 @@ export const UnifiedMarkdownRenderer = ({
           node.properties["data-drawio"] !== undefined);
 
       if (isDrawio) {
-        const svgData =
+        const rawSvgData =
           props["data-drawio-svg"] ||
           props.dataDrawioSvg ||
           node?.properties?.["data-drawio-svg"];
-        const themeMode =
-          props["data-drawio-theme"] ||
-          props.dataDrawioTheme ||
-          node?.properties?.["data-drawio-theme"] ||
-          "light";
-        return <DrawioRenderer svgData={svgData} themeMode={themeMode} />;
+        let decodedSvgData = rawSvgData;
+        try {
+          if (rawSvgData && !rawSvgData.trim().startsWith("<")) {
+            decodedSvgData = atob(rawSvgData);
+          }
+        } catch (e) {}
+        const themeMode = forceLightMode
+          ? "light"
+          : props["data-drawio-theme"] ||
+            props.dataDrawioTheme ||
+            node?.properties?.["data-drawio-theme"] ||
+            "light";
+        return <DrawioRenderer svgData={decodedSvgData} themeMode={themeMode} />;
       }
 
       const isExcalidraw =
@@ -449,18 +455,19 @@ export const UnifiedMarkdownRenderer = ({
           node.properties["data-excalidraw"] !== undefined);
 
       if (isExcalidraw) {
-        const svgData =
+        const excalidrawSvgData =
           props["data-excalidraw-svg"] ||
           props.dataExcalidrawSvg ||
           node?.properties?.["data-excalidraw-svg"] ||
           "";
-        const themeMode =
-          props["data-excalidraw-theme"] ||
-          props.dataExcalidrawTheme ||
-          node?.properties?.["data-excalidraw-theme"] ||
-          "light";
+        const themeMode = forceLightMode
+          ? "light"
+          : props["data-excalidraw-theme"] ||
+            props.dataExcalidrawTheme ||
+            node?.properties?.["data-excalidraw-theme"] ||
+            "light";
 
-        return <ExcalidrawRenderer svgData={svgData} themeMode={themeMode} />;
+        return <ExcalidrawRenderer svgData={excalidrawSvgData} themeMode={themeMode} />;
       }
 
       if (
@@ -472,7 +479,7 @@ export const UnifiedMarkdownRenderer = ({
           props.dataMermaidContent ||
           node?.properties?.["data-mermaid-content"] ||
           "";
-        return <MermaidRenderer code={mermaidContent} />;
+        return <MermaidRenderer code={mermaidContent} forceLightMode={forceLightMode} />;
       }
 
       const isCallout =
