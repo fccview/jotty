@@ -620,7 +620,7 @@
     "visualizeRelationships": "ghItlhmey 'ej tetlhmey rar yIlegh",
     "connectedItems": "Dochmey rar",
     "noLinksFound": "lI'mey tu'be'lu'",
-    "startCreatingInternalLinks": "ghItlhDaq 'ej tetlhDaq lI'mey yIchenmoH. mIwvam yIlo':",
+    "startCreatingInternalLinks": "Start creating internal links by typing `@` in your notes to see the relationship network here.",
     "orFormat": "pagh",
     "inYourContent": "De'lIjDaq.",
     "highlyConnected": "rarqu'",

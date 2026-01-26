@@ -592,7 +592,7 @@
     "visualizeRelationships": "Wizualizuj relacje między notatkami i listami kontrolnymi",
     "connectedItems": "Połączone elementy",
     "noLinksFound": "Nie znaleziono linków",
-    "startCreatingInternalLinks": "Rozpocznij tworzenie wewnętrznych linków w swoich notatkach i listach kontrolnych, aby zobaczyć sieć relacji tutaj. Użyj formatu",
+    "startCreatingInternalLinks": "Zacznij tworzyć linki wewnętrzne, wpisując `@` w swoich notatkach, aby zobaczyć tutaj sieć relacji.",
     "orFormat": "lub",
     "inYourContent": "w Twojej zawartości.",
     "highlyConnected": "wysoko połączone",

@@ -578,7 +578,7 @@
     "visualizeRelationships": "Beziehungen zwischen deinen Notizen und Aufgabenlisten visualisieren",
     "connectedItems": "Verbundene Inhalte",
     "noLinksFound": "Keine Verbindungen gefunden",
-    "startCreatingInternalLinks": "Benutze interne Verknüfungen in deinen Notizen und Aufgabenlisten, um das Netzwerk der Verknüpfungen hier zu sehen. Benutzer das Format",
+    "startCreatingInternalLinks": "Beginnen Sie mit der Erstellung interner Links, indem Sie „@“ in Ihre Notizen eingeben, um das Beziehungsnetzwerk hier anzuzeigen.",
     "orFormat": "oder",
     "inYourContent": "in deinen Inhalten.",
     "highlyConnected": "stark verknüpft",

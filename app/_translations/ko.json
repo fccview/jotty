@@ -612,7 +612,7 @@
     "visualizeRelationships": "노트와 체크리스트 간의 관계를 시각화합니다",
     "connectedItems": "연결된 항목",
     "noLinksFound": "링크를 찾을 수 없습니다",
-    "startCreatingInternalLinks": "이곳에서 관계 네트워크를 확인하려면 노트와 체크리스트에 내부 링크를 추가하세요. 다음 형식을 사용하세요",
+    "startCreatingInternalLinks": "여기에서 관계 네트워크를 보려면 노트에 `@`를 입력하여 내부 링크 만들기를 시작하세요.",
     "orFormat": "또는",
     "inYourContent": "콘텐츠에서.",
     "highlyConnected": "연결 많음",

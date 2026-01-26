@@ -620,7 +620,7 @@
     "visualizeRelationships": "Spy the web",
     "connectedItems": "Tied Items",
     "noLinksFound": "No lines found",
-    "startCreatingInternalLinks": "Start throwing lines to connect yer logs.",
+    "startCreatingInternalLinks": "Start creating internal links by typing `@` in your notes to see the relationship network here.",
     "orFormat": "or",
     "inYourContent": "in yer yarn.",
     "highlyConnected": "tightly bound",

@@ -620,7 +620,7 @@
     "visualizeRelationships": "可视化笔记和清单之间的关系",
     "connectedItems": "关联项目",
     "noLinksFound": "未找到链接",
-    "startCreatingInternalLinks": "在笔记和清单中创建内部链接，即可在此处查看关系网络。使用格式",
+    "startCreatingInternalLinks": "通过在笔记中输入“@”开始创建内部链接，以在此处查看关系网络。",
     "orFormat": "或",
     "inYourContent": "在您的内容中。",
     "highlyConnected": "高度关联",

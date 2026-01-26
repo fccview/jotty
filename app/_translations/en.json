@@ -620,7 +620,7 @@
     "visualizeRelationships": "Visualize relationships between your notes and checklists",
     "connectedItems": "Connected Items",
     "noLinksFound": "No Links Found",
-    "startCreatingInternalLinks": "Start creating internal links in your notes and checklists to see the relationship network here. Use the format",
+    "startCreatingInternalLinks": "Start creating internal links by typing `@` in your notes to see the relationship network here.",
     "orFormat": "or",
     "inYourContent": "in your content.",
     "highlyConnected": "highly connected",

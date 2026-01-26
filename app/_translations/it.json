@@ -591,7 +591,7 @@
     "visualizeRelationships": "Visualizza le relazioni tra le tue note e checklist",
     "connectedItems": "Elementi Connessi",
     "noLinksFound": "Nessun Link Trovato",
-    "startCreatingInternalLinks": "Inizia a creare link interni nelle tue note e checklist per vedere la rete di relazioni qui. Usa il formato",
+    "startCreatingInternalLinks": "Inizia a creare collegamenti interni digitando \"@\" nelle tue note per vedere la rete di relazioni qui.",
     "orFormat": "o",
     "inYourContent": "nel tuo contenuto.",
     "highlyConnected": "altamente connesso",

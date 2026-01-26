@@ -3,7 +3,6 @@ import { withApiAuth } from "@/app/_utils/api-utils";
 import { getUserNotes } from "@/app/_server/actions/note";
 import { getUserChecklists } from "@/app/_server/actions/checklist";
 import { Checklist, Result } from "@/app/_types";
-import { isAdmin } from "@/app/_server/actions/users";
 import { TaskStatus } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +14,7 @@ export async function GET(request: NextRequest) {
       const requestedUsername = searchParams.get("username");
 
       if (requestedUsername && requestedUsername !== user.username) {
-        const isAdminUser = await isAdmin();
-        if (!isAdminUser) {
+        if (!user.isAdmin) {
           return NextResponse.json(
             {
               error: "Only administrators can query other users' summary data",
