@@ -1,8 +1,9 @@
 "use client";
 
-import { Note, User } from "@/app/_types";
+import { Note } from "@/app/_types";
 import { Clock01Icon, ViewIcon, LockKeyIcon } from "hugeicons-react";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
+import { PrintView } from "@/app/_components/FeatureComponents/Notes/Parts/PrintView";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -34,17 +35,13 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
     }
   }, [user?.avatarUrl]);
 
-  const containerClass = isPrintView
-    ? "bg-background"
-    : "min-h-screen bg-background relative";
+  if (isPrintView) {
+    return <PrintView note={note} />;
+  }
 
-  const mainContainerClass = isPrintView
-    ? ""
-    : "container mx-auto px-4 py-8 max-w-6xl";
-
-  const cardClass = isPrintView
-    ? ""
-    : "bg-card border border-border rounded-jotty p-6";
+  const containerClass = "min-h-screen bg-background relative";
+  const mainContainerClass = "container mx-auto px-4 py-8 max-w-6xl";
+  const cardClass = "bg-card border border-border rounded-jotty p-6";
 
   return (
     <div className={containerClass}>

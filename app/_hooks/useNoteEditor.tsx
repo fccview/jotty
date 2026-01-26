@@ -376,14 +376,30 @@ export const useNoteEditor = ({
         cleanup();
         return;
       }
-      win.addEventListener("afterprint", cleanup);
-      try {
-        win.focus();
-        win.print();
-      } catch (e) {
-        console.error("Failed to call print() on iframe:", e);
-        cleanup();
-      }
+
+      const triggerPrint = () => {
+        win.addEventListener("afterprint", cleanup);
+        try {
+          win.focus();
+          win.print();
+        } catch (e) {
+          console.error("Failed to call print() on iframe:", e);
+          cleanup();
+        }
+      };
+
+      const checkReady = setInterval(() => {
+        if ((win as any).printReady) {
+          clearInterval(checkReady);
+          clearTimeout(timeout);
+          triggerPrint();
+        }
+      }, 100);
+
+      const timeout = setTimeout(() => {
+        clearInterval(checkReady);
+        triggerPrint();
+      }, 5000);
     };
 
     iframe.onerror = () => {
