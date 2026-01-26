@@ -366,7 +366,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
           ? btoa(svgData)
           : Buffer.from(svgData).toString("base64");
 
-      return `\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n`;
+      return `\n\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n\n`;
     },
   });
 
@@ -393,7 +393,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
           ? btoa(svgData)
           : Buffer.from(svgData).toString("base64");
 
-      return `\n<!-- excalidraw-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n`;
+      return `\n\n<!-- excalidraw-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n\n`;
     },
   });
 
