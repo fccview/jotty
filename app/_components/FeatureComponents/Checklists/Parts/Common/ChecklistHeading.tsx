@@ -157,8 +157,8 @@ export const ChecklistHeading = ({
     <>
       <div className="lg:p-6 lg:border-b border-border bg-gradient-to-r from-background to-muted/20">
         <div
-          className={`fixed transition-all duration-200 ease-in-out jotty-add-checklist-button-trigger bottom-12 z-20 toggle-mobile-input justify-center border border-border bg-background border border-border rounded-jotty p-1 lg:hidden ${
-            user?.handedness === "right-handed" ? "right-[2.5%]" : "left-[2.5%]"
+          className={`fixed transition-all duration-200 ease-in-out jotty-add-checklist-button-trigger bottom-12 z-20 toggle-mobile-input justify-center border border-border bg-background rounded-jotty p-1 lg:hidden ${
+            user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"
           }`}
         >
           <Button
@@ -171,10 +171,10 @@ export const ChecklistHeading = ({
               <PlusSignIcon className="h-5 w-5" />
             ) : (
               <>
-                {user?.handedness === "right-handed" ? (
-                  <ArrowRight01Icon className="h-5 w-5" />
-                ) : (
+                {user?.handedness === "left-handed" ? (
                   <ArrowLeft01Icon className="h-5 w-5" />
+                ) : (
+                  <ArrowRight01Icon className="h-5 w-5" />
                 )}
               </>
             )}
@@ -185,8 +185,8 @@ export const ChecklistHeading = ({
           className={`fixed jotty-add-checklist-button ${
             inputToggled ? "active" : ""
           } ${
-            user?.handedness === "right-handed" ? "right-handed" : "left-handed"
-          } bottom-10 transition-all duration-200 ease-in-out lg:relative lg:bottom-auto lg:left-auto lg:right-auto bg-background w-full border rounded-jotty lg:border-0 lg:max-w-full lg:left-auto border-border p-2 lg:p-0 z-20 lg:z-auto items-center`}
+            user?.handedness === "left-handed" ? "left-handed" : "right-handed"
+          } bottom-10 transition-all duration-200 ease-in-out lg:relative lg:bottom-auto lg:right-auto bg-background w-full border rounded-jotty lg:border-0 lg:max-w-full lg:left-auto border-border p-2 lg:p-0 z-20 lg:z-auto items-center`}
         >
           <form
             onSubmit={handleSubmit}
