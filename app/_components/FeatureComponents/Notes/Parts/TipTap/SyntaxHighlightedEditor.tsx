@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-markup";
@@ -19,11 +19,7 @@ interface SyntaxHighlightedEditorProps {
   onCodeBlockRequest?: (language?: string) => void;
 }
 
-const editorFontStyle = {
-  fontFamily: "Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace",
-  fontSize: "14px",
-  lineHeight: "21px",
-};
+const LINE_HEIGHT = 21;
 
 export const SyntaxHighlightedEditor = ({
   content,
@@ -34,8 +30,9 @@ export const SyntaxHighlightedEditor = ({
   onCodeBlockRequest,
 }: SyntaxHighlightedEditorProps) => {
   const { user } = useAppMode();
-  const [lineCount, setLineCount] = useState(1);
   const editorRef = useRef<HTMLDivElement>(null);
+  const charWidthRef = useRef(0);
+  const [editorWidth, setEditorWidth] = useState(0);
   const pendingSelectionRef = useRef<{ start: number; end: number } | null>(
     null
   );
@@ -43,8 +40,27 @@ export const SyntaxHighlightedEditor = ({
   usePrismTheme(user?.markdownTheme || "prism");
 
   useEffect(() => {
-    setLineCount(content.split("\n").length);
-  }, [content]);
+    const el = document.createElement("span");
+    el.className = "markdown-line-measure";
+    el.textContent = "x".repeat(100);
+    document.body.append(el);
+    charWidthRef.current = el.offsetWidth / 100;
+    el.remove();
+
+    const updateWidth = () => {
+      const pre = editorRef.current?.querySelector("pre");
+      if (pre) setEditorWidth(pre.clientWidth - 32);
+    };
+    updateWidth();
+    const obs = new ResizeObserver(updateWidth);
+    if (editorRef.current) obs.observe(editorRef.current);
+    return () => obs.disconnect();
+  }, []);
+
+  const calcHeight = (line: string) => {
+    if (!editorWidth || !line || !charWidthRef.current) return LINE_HEIGHT;
+    return Math.max(1, Math.ceil((line.length * charWidthRef.current) / editorWidth)) * LINE_HEIGHT;
+  };
 
   useEffect(() => {
     if (pendingSelectionRef.current) {
@@ -174,23 +190,14 @@ export const SyntaxHighlightedEditor = ({
     >
       <div className="flex min-h-full" ref={editorRef}>
         {showLineNumbers && (
-          <div
-            className="py-4 h-full px-1 text-foreground text-right select-none hidden lg:block opacity-50"
-            style={editorFontStyle}
-          >
-            {Array.from({ length: lineCount }, (_, i) => i + 1).map((num) => (
-              <div key={num}>{num}</div>
+          <div className="markdown-line-numbers py-4 px-1 text-foreground text-right select-none hidden lg:block opacity-50">
+            {content.split("\n").map((line, i) => (
+              <div key={i} className="leading-[21px]" style={{ height: calcHeight(line) }}>
+                {i + 1}
+              </div>
             ))}
           </div>
         )}
-        <style>{`
-          .markdown-code-editor, .markdown-code-editor * {
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace !important;
-            font-size: 14px !important;
-            line-height: 21px !important;
-          }
-          .markdown-code-editor pre { background: transparent !important; }
-        `}</style>
         <Editor
           value={content}
           onValueChange={onChange}
@@ -199,7 +206,7 @@ export const SyntaxHighlightedEditor = ({
           tabSize={4}
           insertSpaces={true}
           className="markdown-code-editor flex-1 jotty-scrollable-content"
-          style={{ ...editorFontStyle, minHeight: "400px" }}
+          style={{ minHeight: "400px" }}
           textareaId="markdown-editor-textarea"
           textareaClassName="focus:outline-none bg-transparent"
           onKeyDown={handleKeyDown}
