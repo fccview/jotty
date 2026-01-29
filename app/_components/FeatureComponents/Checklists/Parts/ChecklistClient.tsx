@@ -60,9 +60,9 @@ export const ChecklistClient = ({
     setLocalChecklist(updatedChecklist);
   }, []);
 
-  const handleBack = () => {
+  const handleBack = () => {  
     checkNavigation(() => {
-      router.push("/");
+      router.push("/?mode=checklists");
     });
   };
 
@@ -106,7 +106,7 @@ export const ChecklistClient = ({
 
   const handleDelete = (deletedId: string) => {
     checkNavigation(() => {
-      router.push("/");
+      router.push("/?mode=checklists");
     });
   };
 

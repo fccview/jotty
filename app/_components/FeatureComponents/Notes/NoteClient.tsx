@@ -41,7 +41,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleBack = () => {
     checkNavigation(() => {
-      router.push("/");
+      router.push("/?mode=notes");
     });
   };
 
@@ -75,7 +75,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleDelete = () => {
     checkNavigation(() => {
-      router.push("/");
+      router.push("/?mode=notes");
     });
   };
 

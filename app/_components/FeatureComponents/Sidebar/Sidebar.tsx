@@ -17,6 +17,7 @@ import { Modes } from "@/app/_types/enums";
 import { SidebarProps, useSidebar } from "@/app/_hooks/useSidebar";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useSidebarStore } from "@/app/_utils/sidebar-store";
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 
@@ -42,28 +43,41 @@ export const Sidebar = (props: SidebarProps) => {
 
   const sidebar = useSidebar(props);
 
+  const { mode: storedMode, setMode: setStoredMode } = useSidebarStore();
+  const searchMode = searchParams?.get("mode") as typeof mode;
+  const isLastVisited = user?.landingPage === "last-visited";
+
+  const persistedMode = isLastVisited && typeof window !== "undefined"
+    ? localStorage.getItem("app-mode") as typeof mode
+    : null;
+
+  const defaultMode = !isLastVisited
+    ? user?.landingPage || Modes.CHECKLISTS
+    : Modes.CHECKLISTS;
+
+  let sidebarMode = searchMode || storedMode || persistedMode || defaultMode || Modes.CHECKLISTS;
+
+  if (isSomePage) {
+    sidebarMode = isNotesPage
+      ? Modes.NOTES
+      : isChecklistsPage
+        ? Modes.CHECKLISTS
+        : sidebarMode;
+  }
+
   useEffect(() => {
-    const searchMode = searchParams?.get("mode") as typeof mode;
-    const localStorageMode =
-      mode || (localStorage.getItem("app-mode") as typeof mode);
-
-    let updatedMode =
-      user?.landingPage !== "last-visited"
-        ? user?.landingPage
-        : localStorageMode || Modes.CHECKLISTS;
-
-    if (isSomePage) {
-      updatedMode = isNotesPage
-        ? Modes.NOTES
-        : isChecklistsPage
-          ? Modes.CHECKLISTS
-          : sidebar.mode || Modes.CHECKLISTS;
+    if (mode !== sidebarMode) {
+      setMode(sidebarMode);
     }
+    if (storedMode !== sidebarMode) {
+      setStoredMode(sidebarMode);
+    }
+    if (isLastVisited && sidebarMode) {
+      localStorage.setItem("app-mode", sidebarMode);
+    }
+  }, [sidebarMode]);
 
-    setMode(searchMode || updatedMode || Modes.CHECKLISTS);
-  }, []);
-
-  const currentItems = mode === Modes.CHECKLISTS ? checklists : notes || [];
+  const currentItems = sidebarMode === Modes.CHECKLISTS ? checklists : notes || [];
 
   if (!sidebar.isInitialized) return null;
 
@@ -87,7 +101,7 @@ export const Sidebar = (props: SidebarProps) => {
         }
         navigation={
           <SidebarNavigation
-            mode={mode}
+            mode={sidebarMode}
             onModeChange={sidebar.handleModeSwitch}
           />
         }
