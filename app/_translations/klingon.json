@@ -1163,7 +1163,9 @@
     "calloutInfo": "De'",
     "calloutWarning": "ghuH",
     "calloutSuccess": "Qapla'",
-    "calloutDanger": "Qob"
+    "calloutDanger": "Qob",
+    "ruler": "Ruler",
+    "lineNumbers": "Line numbers"
   },
   "sharing": {
     "share": "ghom",

@@ -1121,7 +1121,9 @@
     "mermaidDescription": "Diagrammi di flusso basati su testo",
     "drawioDescription": "Editor di diagrammi visivi",
     "excalidrawDescription": "Editor di diagrammi in stile schizzo",
-    "noLanguagesFound": "Nessun linguaggio trovato"
+    "noLanguagesFound": "Nessun linguaggio trovato",
+    "ruler": "Righello",
+    "lineNumbers": "Numeri di riga"
   },
   "sharing": {
     "share": "Condividi",

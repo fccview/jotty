@@ -1104,7 +1104,9 @@
     "mermaidDescription": "Textbasierte Fluss- und andere Diagramme",
     "drawioDescription": "Visueller Diagramm-Editor",
     "excalidrawDescription": "Editor für Diagramme im Zeichenstil",
-    "noLanguagesFound": "Keine Sprachen gefunden"
+    "noLanguagesFound": "Keine Sprachen gefunden",
+    "ruler": "Herrscher",
+    "lineNumbers": "Zeilennummern"
   },
   "sharing": {
     "share": "Freigeben",

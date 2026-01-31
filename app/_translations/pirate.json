@@ -1163,7 +1163,9 @@
     "calloutInfo": "Intel",
     "calloutWarning": "Warning",
     "calloutSuccess": "Victory",
-    "calloutDanger": "Danger"
+    "calloutDanger": "Danger",
+    "ruler": "Ruler",
+    "lineNumbers": "Line numbers"
   },
   "sharing": {
     "share": "Divvy",

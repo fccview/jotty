@@ -1121,7 +1121,9 @@
     "mermaidDescription": "Organigrammes & diagrammes basés sur du texte",
     "drawioDescription": "Éditeur de diagrammes visuels",
     "excalidrawDescription": "Éditeur de diagrammes style croquis",
-    "noLanguagesFound": "Aucun langage trouvé"
+    "noLanguagesFound": "Aucun langage trouvé",
+    "ruler": "Règle",
+    "lineNumbers": "Numéros de ligne"
   },
   "sharing": {
     "share": "Partager",

@@ -1163,7 +1163,9 @@
     "calloutInfo": "Info",
     "calloutWarning": "Warning",
     "calloutSuccess": "Success",
-    "calloutDanger": "Danger"
+    "calloutDanger": "Danger",
+    "ruler": "Ruler",
+    "lineNumbers": "Line numbers"
   },
   "sharing": {
     "share": "Share",

@@ -1121,7 +1121,9 @@
     "mermaidDescription": "Diagramas y flujos de texto",
     "drawioDescription": "Editor visual de diagramas",
     "excalidrawDescription": "Editor de diagramas tipo boceto",
-    "noLanguagesFound": "No se encontraron idiomas"
+    "noLanguagesFound": "No se encontraron idiomas",
+    "ruler": "Gobernante",
+    "lineNumbers": "Números de línea"
   },
   "sharing": {
     "share": "Compartir",

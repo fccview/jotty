@@ -78,7 +78,6 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       isMarkdownMode ? initialOutput : ""
     );
     const [showBubbleMenu, setShowBubbleMenu] = useState(false);
-    const [showLineNumbers, setShowLineNumbers] = useState(true);
     const [showPreview, setShowPreview] = useState(false);
     const [linkRequestPending, setLinkRequestPending] = useState(false);
     const [linkRequestHasSelection, setLinkRequestHasSelection] = useState(false);
@@ -343,11 +342,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             editor={editor}
             isMarkdownMode={isMarkdownMode}
             toggleMode={toggleMode}
-            showLineNumbers={showLineNumbers}
-            onToggleLineNumbers={() => setShowLineNumbers(!showLineNumbers)}
             showPreview={showPreview}
             onTogglePreview={() => setShowPreview(!showPreview)}
-            markdownContent={markdownContent}
             onMarkdownChange={setMarkdownContent}
             linkRequestPending={linkRequestPending}
             linkRequestHasSelection={linkRequestHasSelection}
@@ -381,7 +377,6 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             content={markdownContent}
             onChange={handleMarkdownChange}
             onFileDrop={handleMarkdownFileDrop}
-            showLineNumbers={showLineNumbers}
             onLinkRequest={(hasSelection) => {
               setLinkRequestHasSelection(hasSelection);
               setLinkRequestPending(true);

@@ -1163,7 +1163,9 @@
     "calloutInfo": "信息",
     "calloutWarning": "警告",
     "calloutSuccess": "成功",
-    "calloutDanger": "危险"
+    "calloutDanger": "危险",
+    "ruler": "统治者",
+    "lineNumbers": "行号"
   },
   "sharing": {
     "share": "共享",

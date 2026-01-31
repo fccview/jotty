@@ -17,6 +17,8 @@ interface SyntaxHighlightedEditorProps {
   showLineNumbers?: boolean;
   onLinkRequest?: (hasSelection: boolean) => void;
   onCodeBlockRequest?: (language?: string) => void;
+  showVisualGuides?: boolean;
+  visualGuideColumns?: number[];
 }
 
 const LINE_HEIGHT = 21;
@@ -28,6 +30,8 @@ export const SyntaxHighlightedEditor = ({
   showLineNumbers = true,
   onLinkRequest,
   onCodeBlockRequest,
+  showVisualGuides = false,
+  visualGuideColumns = [],
 }: SyntaxHighlightedEditorProps) => {
   const { user } = useAppMode();
   const editorRef = useRef<HTMLDivElement>(null);
@@ -198,20 +202,34 @@ export const SyntaxHighlightedEditor = ({
             ))}
           </div>
         )}
-        <Editor
-          value={content}
-          onValueChange={onChange}
-          highlight={handleHighlight}
-          padding={16}
-          tabSize={4}
-          insertSpaces={true}
-          className="markdown-code-editor flex-1 jotty-scrollable-content"
-          style={{ minHeight: "400px" }}
-          textareaId="markdown-editor-textarea"
-          textareaClassName="focus:outline-none bg-transparent"
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-        />
+        <div className="relative flex-1">
+          {showVisualGuides && charWidthRef.current > 0 && (
+            <div className="absolute inset-0 pointer-events-none hidden lg:block" aria-hidden="true">
+              {visualGuideColumns.map((column) => (
+                <div
+                  key={column}
+                  className="absolute top-0 bottom-0 w-px bg-primary/30"
+                  style={{ left: `${column * charWidthRef.current + 16}px` }}
+                  title={`Column ${column}`}
+                />
+              ))}
+            </div>
+          )}
+          <Editor
+            value={content}
+            onValueChange={onChange}
+            highlight={handleHighlight}
+            padding={16}
+            tabSize={4}
+            insertSpaces={true}
+            className="markdown-code-editor flex-1 jotty-scrollable-content"
+            style={{ minHeight: "400px" }}
+            textareaId="markdown-editor-textarea"
+            textareaClassName="focus:outline-none bg-transparent"
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+          />
+        </div>
       </div>
     </div>
   );

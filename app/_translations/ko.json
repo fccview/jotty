@@ -1148,7 +1148,9 @@
     "calloutInfo": "정보",
     "calloutWarning": "경고",
     "calloutSuccess": "성공",
-    "calloutDanger": "위험"
+    "calloutDanger": "위험",
+    "ruler": "자",
+    "lineNumbers": "줄 번호"
   },
   "sharing": {
     "share": "공유",

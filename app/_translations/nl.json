@@ -1121,7 +1121,9 @@
     "mermaidDescription": "Op tekst gebaseerde stroomdiagrammen & diagrammen",
     "drawioDescription": "Visuele diagrameditor",
     "excalidrawDescription": "Schets-stijl diagrameditor",
-    "noLanguagesFound": "Geen talen gevonden"
+    "noLanguagesFound": "Geen talen gevonden",
+    "ruler": "Liniaal",
+    "lineNumbers": "Lijnnummers"
   },
   "sharing": {
     "share": "Delen",
