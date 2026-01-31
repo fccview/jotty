@@ -13,12 +13,7 @@ const nextConfig = {
   output: 'standalone',
   experimental: {
     serverComponentsExternalPackages: [],
-    webpackBuildWorker: true,
-    serverActions: {
-      allowedOrigins: process.env.ALLOWED_ORIGINS
-        ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-        : undefined,
-    },
+    webpackBuildWorker: true
   },
   swcMinify: true,
   images: {
