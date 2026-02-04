@@ -333,14 +333,12 @@ export const getListById = async (
   category?: string,
   unarchive?: boolean
 ): Promise<Checklist | undefined> => {
-  if (!username) {
-    const { getUserByChecklistUuid } = await import(
-      "@/app/_server/actions/users"
-    );
-    const userByUuid = await getUserByChecklistUuid(id);
-    if (userByUuid.success && userByUuid.data) {
-      username = userByUuid.data.username;
-    }
+  const { getUserByChecklistUuid } = await import(
+    "@/app/_server/actions/users"
+  );
+  const userByUuid = await getUserByChecklistUuid(id);
+  if (userByUuid.success && userByUuid.data) {
+    username = userByUuid.data.username;
   }
 
   const lists = await (username

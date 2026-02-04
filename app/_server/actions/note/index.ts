@@ -966,20 +966,18 @@ export const getNoteById = async (
   category?: string,
   username?: string
 ): Promise<Note | undefined> => {
-  if (!username) {
-    const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
-    const userByUuid = await getUserByNoteUuid(id);
+  const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
+  const userByUuid = await getUserByNoteUuid(id);
 
-    if (userByUuid.success && userByUuid.data) {
-      username = userByUuid.data.username;
+  if (userByUuid.success && userByUuid.data) {
+    username = userByUuid.data.username;
+  } else if (!username) {
+    const user = await getUserByNote(id, category || "Uncategorized");
+
+    if (user.success && user.data) {
+      username = user.data.username;
     } else {
-      const user = await getUserByNote(id, category || "Uncategorized");
-
-      if (user.success && user.data) {
-        username = user.data.username;
-      } else {
-        return undefined;
-      }
+      return undefined;
     }
   }
 

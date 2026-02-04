@@ -141,8 +141,8 @@ const _getUserByItemUuid = async (
 
         const result =
           itemType === ItemTypes.NOTE
-            ? await getUserNotes({ username: user.username, isRaw: true, allowArchived: true })
-            : await getUserChecklists({ username: user.username, isRaw: true, allowArchived: true });
+            ? await getUserNotes({ username: user.username, isRaw: true, allowArchived: true, includeShared: false })
+            : await getUserChecklists({ username: user.username, isRaw: true, allowArchived: true, includeShared: false });
 
         if (result.success && result.data) {
           const item = result.data.find((item) => item.uuid === uuid);
