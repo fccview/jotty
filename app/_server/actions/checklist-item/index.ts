@@ -217,7 +217,7 @@ export const createItem = async (
       list.uuid || listId,
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
-      username || "",
+      currentUser,
       PermissionTypes.EDIT
     );
 
