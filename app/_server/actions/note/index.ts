@@ -66,7 +66,6 @@ interface GetNotesOptions {
   allowArchived?: boolean;
   isRaw?: boolean;
   projection?: string[];
-  includeShared?: boolean;
 }
 
 const USER_NOTES_DIR = (username: string) =>
@@ -966,18 +965,20 @@ export const getNoteById = async (
   category?: string,
   username?: string
 ): Promise<Note | undefined> => {
-  const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
-  const userByUuid = await getUserByNoteUuid(id);
+  if (!username) {
+    const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
+    const userByUuid = await getUserByNoteUuid(id);
 
-  if (userByUuid.success && userByUuid.data) {
-    username = userByUuid.data.username;
-  } else if (!username) {
-    const user = await getUserByNote(id, category || "Uncategorized");
-
-    if (user.success && user.data) {
-      username = user.data.username;
+    if (userByUuid.success && userByUuid.data) {
+      username = userByUuid.data.username;
     } else {
-      return undefined;
+      const user = await getUserByNote(id, category || "Uncategorized");
+
+      if (user.success && user.data) {
+        username = user.data.username;
+      } else {
+        return undefined;
+      }
     }
   }
 
@@ -985,7 +986,6 @@ export const getNoteById = async (
     username,
     allowArchived: true,
     isRaw: true,
-    includeShared: false,
   });
 
   if (!notes.success || !notes.data) {
@@ -1058,7 +1058,6 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     allowArchived = false,
     isRaw = false,
     projection,
-    includeShared = true,
   } = options;
 
   try {
@@ -1085,36 +1084,41 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       isRaw
     );
 
-    if (includeShared) {
-      const { getAllSharedItemsForUser } = await import(
-        "@/app/_server/actions/sharing"
-      );
-      const sharedData = await getAllSharedItemsForUser(currentUser.username);
+    const { getAllSharedItemsForUser } = await import(
+      "@/app/_server/actions/sharing"
+    );
+    const sharedData = await getAllSharedItemsForUser(currentUser.username);
 
-      for (const sharedItem of sharedData.notes) {
-        try {
-          const itemIdentifier = sharedItem.uuid || sharedItem.id;
-          if (!itemIdentifier) continue;
+    for (const sharedItem of sharedData.notes) {
+      try {
+        const itemIdentifier = sharedItem.uuid || sharedItem.id;
+        if (!itemIdentifier) continue;
 
-          const sharedNote = await getNoteById(
-            itemIdentifier,
-            undefined,
-            sharedItem.sharer
-          );
+        const sharerDir = USER_NOTES_DIR(sharedItem.sharer);
+        await ensureDir(sharerDir);
+        const sharerNotes = await _readNotesRecursively(
+          sharerDir,
+          "",
+          sharedItem.sharer,
+          allowArchived,
+          isRaw
+        );
+        const sharedNote = sharerNotes.find(
+          (note) => note.uuid === itemIdentifier || note.id === itemIdentifier
+        );
 
-          if (sharedNote) {
-            notes.push({
-              ...sharedNote,
-              isShared: true,
-            });
-          }
-        } catch (error) {
-          console.error(
-            `Error reading shared note ${sharedItem.uuid || sharedItem.id}:`,
-            error
-          );
-          continue;
+        if (sharedNote) {
+          notes.push({
+            ...sharedNote,
+            isShared: true,
+          });
         }
+      } catch (error) {
+        console.error(
+          `Error reading shared note ${sharedItem.uuid || sharedItem.id}:`,
+          error
+        );
+        continue;
       }
     }
 

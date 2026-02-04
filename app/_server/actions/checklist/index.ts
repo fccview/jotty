@@ -63,7 +63,6 @@ interface GetChecklistsOptions {
   allowArchived?: boolean;
   isRaw?: boolean;
   projection?: string[];
-  includeShared?: boolean;
 }
 
 const getChecklistType = (content: string): ChecklistType => {
@@ -232,7 +231,6 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     allowArchived = false,
     isRaw = false,
     projection,
-    includeShared = true,
   } = options;
 
   try {
@@ -259,35 +257,46 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       isRaw
     );
 
-    if (includeShared) {
-      const { getAllSharedItemsForUser } = await import(
-        "@/app/_server/actions/sharing"
-      );
-      const sharedData = await getAllSharedItemsForUser(currentUser.username);
+    const { getAllSharedItemsForUser } = await import(
+      "@/app/_server/actions/sharing"
+    );
+    const sharedData = await getAllSharedItemsForUser(currentUser.username);
 
-      for (const sharedItem of sharedData.checklists) {
-        try {
-          const itemIdentifier = sharedItem.uuid || sharedItem.id;
-          if (!itemIdentifier) continue;
+    for (const sharedItem of sharedData.checklists) {
+      try {
+        const itemIdentifier = sharedItem.uuid || sharedItem.id;
+        if (!itemIdentifier) continue;
 
-          const sharedChecklist = await getListById(
-            itemIdentifier,
-            sharedItem.sharer
-          );
+        const sharerDir = path.join(
+          process.cwd(),
+          "data",
+          CHECKLISTS_FOLDER,
+          sharedItem.sharer
+        );
+        await ensureDir(sharerDir);
+        const sharerLists = await readListsRecursively(
+          sharerDir,
+          "",
+          sharedItem.sharer,
+          allowArchived,
+          isRaw
+        );
+        const sharedChecklist = sharerLists.find(
+          (list) => list.uuid === itemIdentifier || list.id === itemIdentifier
+        );
 
-          if (sharedChecklist) {
-            lists.push({
-              ...sharedChecklist,
-              isShared: true,
-            });
-          }
-        } catch (error) {
-          console.error(
-            `Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`,
-            error
-          );
-          continue;
+        if (sharedChecklist) {
+          lists.push({
+            ...sharedChecklist,
+            isShared: true,
+          });
         }
+      } catch (error) {
+        console.error(
+          `Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`,
+          error
+        );
+        continue;
       }
     }
 
@@ -333,16 +342,18 @@ export const getListById = async (
   category?: string,
   unarchive?: boolean
 ): Promise<Checklist | undefined> => {
-  const { getUserByChecklistUuid } = await import(
-    "@/app/_server/actions/users"
-  );
-  const userByUuid = await getUserByChecklistUuid(id);
-  if (userByUuid.success && userByUuid.data) {
-    username = userByUuid.data.username;
+  if (!username) {
+    const { getUserByChecklistUuid } = await import(
+      "@/app/_server/actions/users"
+    );
+    const userByUuid = await getUserByChecklistUuid(id);
+    if (userByUuid.success && userByUuid.data) {
+      username = userByUuid.data.username;
+    }
   }
 
   const lists = await (username
-    ? getUserChecklists({ username, allowArchived: unarchive, isRaw: true, includeShared: false })
+    ? getUserChecklists({ username, allowArchived: unarchive, isRaw: true })
     : getAllLists(unarchive, true));
 
   if (!lists.success || !lists.data) {
