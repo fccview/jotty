@@ -127,6 +127,25 @@ const _getUserByItem = async (
   }
 };
 
+const _findUuidInDirectory = async (
+  dir: string,
+  targetUuid: string
+): Promise<boolean> => {
+  try {
+    const { exec } = await import("child_process");
+    const { promisify } = await import("util");
+    const execAsync = promisify(exec);
+
+    const { stdout } = await execAsync(
+      `grep -rl "uuid: ${targetUuid}" "${dir}" --include="*.md" 2>/dev/null || true`
+    );
+
+    return stdout.trim().length > 0;
+  } catch {
+    return false;
+  }
+};
+
 const _getUserByItemUuid = async (
   uuid: string,
   itemType: ItemType
@@ -136,24 +155,16 @@ const _getUserByItemUuid = async (
 
     for (const user of users) {
       try {
-        const { getUserNotes } = await import("@/app/_server/actions/note");
-        const { getUserChecklists } = await import("@/app/_server/actions/checklist");
-
-        const result =
+        const userDir =
           itemType === ItemTypes.NOTE
-            ? await getUserNotes({ username: user.username, isRaw: true, allowArchived: true })
-            : await getUserChecklists({ username: user.username, isRaw: true, allowArchived: true });
+            ? NOTES_DIR(user.username)
+            : CHECKLISTS_DIR(user.username);
 
-        if (result.success && result.data) {
-          const item = result.data.find((item) => item.uuid === uuid);
-          if (item) {
-            return { success: true, data: user };
-          }
-        } else {
-          console.log("Failed to get items for user", user.username, "result:", result);
+        const found = await _findUuidInDirectory(userDir, uuid);
+        if (found) {
+          return { success: true, data: user };
         }
       } catch (error) {
-        console.log("Error checking user", user.username, ":", error);
         await logAudit({
           level: "DEBUG",
           action: "user_item_check",

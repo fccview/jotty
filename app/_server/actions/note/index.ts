@@ -1009,9 +1009,6 @@ export const getNoteById = async (
 
     let finalUuid = existingUuid;
     if (!finalUuid && username) {
-      const { generateUuid, updateYamlMetadata } = await import(
-        "@/app/_utils/yaml-metadata-utils"
-      );
       finalUuid = generateUuid();
 
       try {
@@ -1019,9 +1016,6 @@ export const getNoteById = async (
           uuid: finalUuid,
           title: parsedData.title || note.id?.replace(/-/g, " "),
         });
-
-        const fs = await import("fs/promises");
-        const path = await import("path");
 
         const dataDir = path.join(process.cwd(), "data");
         const userDir = path.join(dataDir, NOTES_FOLDER, username);

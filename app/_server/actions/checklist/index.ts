@@ -379,9 +379,6 @@ export const getListById = async (
 
     let finalUuid = existingUuid;
     if (!finalUuid && username) {
-      const { generateUuid, updateYamlMetadata } = await import(
-        "@/app/_utils/yaml-metadata-utils"
-      );
       finalUuid = generateUuid();
 
       try {
@@ -391,20 +388,15 @@ export const getListById = async (
           checklistType: checklistType,
         });
 
-        const fs = await import("fs/promises");
-        const path = await import("path");
-
         const dataDir = path.join(process.cwd(), "data");
-        if (username) {
-          const userDir = path.join(dataDir, CHECKLISTS_FOLDER, username);
-          const decodedCategory = decodeURIComponent(
-            list.category || "Uncategorized"
-          );
-          const categoryDir = path.join(userDir, decodedCategory);
-          const filePath = path.join(categoryDir, `${list.id}.md`);
+        const userDir = path.join(dataDir, CHECKLISTS_FOLDER, username);
+        const decodedCategory = decodeURIComponent(
+          list.category || "Uncategorized"
+        );
+        const categoryDir = path.join(userDir, decodedCategory);
+        const filePath = path.join(categoryDir, `${list.id}.md`);
 
-          await fs.writeFile(filePath, updatedContent, "utf-8");
-        }
+        await fs.writeFile(filePath, updatedContent, "utf-8");
       } catch (error) {
         console.warn("Failed to save UUID to checklist file:", error);
       }
