@@ -66,6 +66,7 @@ interface GetNotesOptions {
   allowArchived?: boolean;
   isRaw?: boolean;
   projection?: string[];
+  includeShared?: boolean;
 }
 
 const USER_NOTES_DIR = (username: string) =>
@@ -986,6 +987,7 @@ export const getNoteById = async (
     username,
     allowArchived: true,
     isRaw: true,
+    includeShared: false,
   });
 
   if (!notes.success || !notes.data) {
@@ -1058,6 +1060,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     allowArchived = false,
     isRaw = false,
     projection,
+    includeShared = true,
   } = options;
 
   try {
@@ -1084,34 +1087,36 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       isRaw
     );
 
-    const { getAllSharedItemsForUser } = await import(
-      "@/app/_server/actions/sharing"
-    );
-    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+    if (includeShared) {
+      const { getAllSharedItemsForUser } = await import(
+        "@/app/_server/actions/sharing"
+      );
+      const sharedData = await getAllSharedItemsForUser(currentUser.username);
 
-    for (const sharedItem of sharedData.notes) {
-      try {
-        const itemIdentifier = sharedItem.uuid || sharedItem.id;
-        if (!itemIdentifier) continue;
+      for (const sharedItem of sharedData.notes) {
+        try {
+          const itemIdentifier = sharedItem.uuid || sharedItem.id;
+          if (!itemIdentifier) continue;
 
-        const sharedNote = await getNoteById(
-          itemIdentifier,
-          undefined,
-          sharedItem.sharer
-        );
+          const sharedNote = await getNoteById(
+            itemIdentifier,
+            undefined,
+            sharedItem.sharer
+          );
 
-        if (sharedNote) {
-          notes.push({
-            ...sharedNote,
-            isShared: true,
-          });
+          if (sharedNote) {
+            notes.push({
+              ...sharedNote,
+              isShared: true,
+            });
+          }
+        } catch (error) {
+          console.error(
+            `Error reading shared note ${sharedItem.uuid || sharedItem.id}:`,
+            error
+          );
+          continue;
         }
-      } catch (error) {
-        console.error(
-          `Error reading shared note ${sharedItem.uuid || sharedItem.id}:`,
-          error
-        );
-        continue;
       }
     }
 

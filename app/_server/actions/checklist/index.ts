@@ -63,6 +63,7 @@ interface GetChecklistsOptions {
   allowArchived?: boolean;
   isRaw?: boolean;
   projection?: string[];
+  includeShared?: boolean;
 }
 
 const getChecklistType = (content: string): ChecklistType => {
@@ -231,6 +232,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     allowArchived = false,
     isRaw = false,
     projection,
+    includeShared = true,
   } = options;
 
   try {
@@ -257,33 +259,35 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       isRaw
     );
 
-    const { getAllSharedItemsForUser } = await import(
-      "@/app/_server/actions/sharing"
-    );
-    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+    if (includeShared) {
+      const { getAllSharedItemsForUser } = await import(
+        "@/app/_server/actions/sharing"
+      );
+      const sharedData = await getAllSharedItemsForUser(currentUser.username);
 
-    for (const sharedItem of sharedData.checklists) {
-      try {
-        const itemIdentifier = sharedItem.uuid || sharedItem.id;
-        if (!itemIdentifier) continue;
+      for (const sharedItem of sharedData.checklists) {
+        try {
+          const itemIdentifier = sharedItem.uuid || sharedItem.id;
+          if (!itemIdentifier) continue;
 
-        const sharedChecklist = await getListById(
-          itemIdentifier,
-          sharedItem.sharer
-        );
+          const sharedChecklist = await getListById(
+            itemIdentifier,
+            sharedItem.sharer
+          );
 
-        if (sharedChecklist) {
-          lists.push({
-            ...sharedChecklist,
-            isShared: true,
-          });
+          if (sharedChecklist) {
+            lists.push({
+              ...sharedChecklist,
+              isShared: true,
+            });
+          }
+        } catch (error) {
+          console.error(
+            `Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`,
+            error
+          );
+          continue;
         }
-      } catch (error) {
-        console.error(
-          `Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`,
-          error
-        );
-        continue;
       }
     }
 
@@ -340,7 +344,7 @@ export const getListById = async (
   }
 
   const lists = await (username
-    ? getUserChecklists({ username, allowArchived: unarchive, isRaw: true })
+    ? getUserChecklists({ username, allowArchived: unarchive, isRaw: true, includeShared: false })
     : getAllLists(unarchive, true));
 
   if (!lists.success || !lists.data) {
