@@ -908,8 +908,6 @@
     "totalSharing": "Total Sharing Actions",
     "topContributors": "Top Contributors",
     "itemsShared": "Items Shared",
-    "activityLevel": "Activity Level",
-    "sharedCMS": "Shared Content Management",
     "totalPublicItems": "{count} public items",
     "userContent": "{checklistsLength} checklists • {notesLength} notes",
     "rebuildIndexes": "Rebuild Indexes",

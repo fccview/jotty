@@ -14,11 +14,11 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import { Checklist, SanitisedUser } from "@/app/_types";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
-import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { useHomeFilter } from "@/app/_utils/home-filter-store";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
+import { HOMEPAGE_ITEMS_LIMIT } from "@/app/_consts/files";
 
 interface UseChecklistHomeProps {
   lists: Checklist[];
@@ -48,7 +48,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
         tolerance: 5,
       },
     }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -69,24 +69,23 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
 
     const pinned = getPinnedLists();
     const oldIndex = pinned.findIndex(
-      (list) => (list.uuid || list.id) === active.id
+      (list) => (list.uuid || list.id) === active.id,
     );
     const newIndex = pinned.findIndex(
-      (list) => (list.uuid || list.id) === over.id
+      (list) => (list.uuid || list.id) === over.id,
     );
 
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newOrder = arrayMove(pinned, oldIndex, newIndex);
     const newPinnedPaths = newOrder.map(
-      (list) =>
-        `${list.category || "Uncategorized"}/${list.uuid || list.id}`
+      (list) => `${list.category || "Uncategorized"}/${list.uuid || list.id}`,
     );
 
     try {
       const result = await updatePinnedOrder(
         newPinnedPaths,
-        ItemTypes.CHECKLIST
+        ItemTypes.CHECKLIST,
       );
       if (result.success) {
         router.refresh();
@@ -111,13 +110,13 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
       return pinned.filter(
         (list) =>
           list.items.length > 0 &&
-          list.items.every((item) => isItemCompleted(item, list.type))
+          list.items.every((item) => isItemCompleted(item, list.type)),
       );
     } else if (checklistFilter === "incomplete") {
       return pinned.filter(
         (list) =>
           list.items.length === 0 ||
-          !list.items.every((item) => isItemCompleted(item, list.type))
+          !list.items.every((item) => isItemCompleted(item, list.type)),
       );
     }
 
@@ -131,13 +130,13 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
       filtered = filtered.filter(
         (list) =>
           list.items.length > 0 &&
-          list.items.every((item) => isItemCompleted(item, list.type))
+          list.items.every((item) => isItemCompleted(item, list.type)),
       );
     } else if (checklistFilter === "incomplete") {
       filtered = filtered.filter(
         (list) =>
           list.items.length === 0 ||
-          !list.items.every((item) => isItemCompleted(item, list.type))
+          !list.items.every((item) => isItemCompleted(item, list.type)),
       );
     }
 
@@ -153,9 +152,8 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
       .filter((list) => !pinnedIds.has(list.id))
       .sort(
         (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      )
-      .slice(0, 12);
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
   };
 
   const handleTogglePin = async (list: Checklist) => {
@@ -166,7 +164,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
       const result = await togglePin(
         list.uuid || list.id,
         list.category || "Uncategorized",
-        ItemTypes.CHECKLIST
+        ItemTypes.CHECKLIST,
       );
       if (result.success) {
         router.refresh();
@@ -191,15 +189,10 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     let completedItems = 0;
 
     lists.forEach((list) => {
-      let items = list.items;
-
-      if ("rawContent" in list && (list as any).rawContent) {
-        const parsedData = parseChecklistContent((list as any).rawContent, list.id);
-        items = parsedData.items;
-      }
-
+      const items = list.items;
       totalItems += items?.length || 0;
-      completedItems += items?.filter((item) => isItemCompleted(item, list.type)).length || 0;
+      completedItems +=
+        items?.filter((item) => isItemCompleted(item, list.type)).length || 0;
     });
 
     const taskLists = lists.filter((list) => list.type === "task").length;

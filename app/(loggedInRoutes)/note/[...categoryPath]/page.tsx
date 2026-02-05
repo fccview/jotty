@@ -55,7 +55,7 @@ export default async function NotePage({ params }: NotePageProps) {
   await CheckForNeedsMigration();
 
   const [docsResult, categoriesResult] = await Promise.all([
-    getUserNotes({ isRaw: true }),
+    getUserNotes({ isRaw: true, metadataOnly: true }),
     getCategories(Modes.NOTES),
   ]);
 
@@ -69,7 +69,7 @@ export default async function NotePage({ params }: NotePageProps) {
     const allDocsResult = await getAllNotes();
     if (allDocsResult.success && allDocsResult.data) {
       note = allDocsResult.data.find(
-        (doc) => doc.id === id && doc.category === category
+        (doc) => doc.id === id && doc.category === category,
       );
     }
   }

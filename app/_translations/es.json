@@ -873,8 +873,6 @@
     "totalSharing": "Total de acciones de compartición",
     "topContributors": "Principales contribuyentes",
     "itemsShared": "Elementos compartidos",
-    "activityLevel": "Nivel de actividad",
-    "sharedCMS": "Gestión de contenido compartido",
     "totalPublicItems": "{count} elementos públicos",
     "userContent": "{checklistsLength} listas • {notesLength} notas",
     "rebuildIndexes": "Reconstruir índices",

@@ -30,7 +30,11 @@ import { useTranslations } from "next-intl";
 
 type TiptapEditorProps = {
   content: string;
-  onChange: (content: string, isMarkdownMode: boolean, isDirty: boolean) => void;
+  onChange: (
+    content: string,
+    isMarkdownMode: boolean,
+    isDirty: boolean,
+  ) => void;
   tableSyntax?: TableSyntax;
   notes?: any[];
   checklists?: any[];
@@ -40,7 +44,7 @@ export interface TiptapEditorRef {
   updateAtMentionData: (
     notes: any[],
     checklists: any[],
-    username: string
+    username: string,
   ) => void;
 }
 
@@ -67,20 +71,22 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       return convertHtmlToMarkdownUnified(content, tableSyntax);
     };
 
-    const initialOutput = defaultEditorIsMarkdown && !contentIsMarkdown
-      ? convertHtmlToMarkdownUnified(content, tableSyntax)
-      : content;
+    const initialOutput =
+      defaultEditorIsMarkdown && !contentIsMarkdown
+        ? convertHtmlToMarkdownUnified(content, tableSyntax)
+        : content;
 
     const [isMarkdownMode, setIsMarkdownMode] = useState(
-      defaultEditorIsMarkdown
+      defaultEditorIsMarkdown,
     );
     const [markdownContent, setMarkdownContent] = useState(
-      isMarkdownMode ? initialOutput : ""
+      isMarkdownMode ? initialOutput : "",
     );
     const [showBubbleMenu, setShowBubbleMenu] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
     const [linkRequestPending, setLinkRequestPending] = useState(false);
-    const [linkRequestHasSelection, setLinkRequestHasSelection] = useState(false);
+    const [linkRequestHasSelection, setLinkRequestHasSelection] =
+      useState(false);
     const isInitialized = useRef(false);
     const debounceTimeoutRef = useRef<NodeJS.Timeout>();
     const originalMarkdownRef = useRef<string>(getOriginalMarkdown());
@@ -99,7 +105,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           onChange(newContent, isMarkdown, isDirty);
         }, 0);
       },
-      [onChange]
+      [onChange],
     );
 
     const imageClickRef = useRef<((pos: any) => void) | null>(null);
@@ -128,7 +134,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           username: user?.username || "",
           tags: Object.keys(tagsIndex || {}),
         },
-        t
+        t,
       ),
       content: "",
       onUpdate: ({ editor }) => {
@@ -140,8 +146,9 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       },
       editorProps: {
         attributes: {
-          class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
-            }`,
+          class: `prose prose-sm px-6 pt-6 pb-12 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${
+            compactMode ? "!max-w-[900px] mx-auto" : ""
+          }`,
         },
         handleKeyDown: (view, event) => {
           return createKeyDownHandler(editor)(view, event);
@@ -149,7 +156,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         handlePaste: (view, event) => {
           return createPasteHandler(editor, uploadHook.handleFileUpload)(
             view,
-            event
+            event,
           );
         },
       },
@@ -159,12 +166,12 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       updateAtMentionData: (
         notes: any[],
         checklists: any[],
-        username: string
+        username: string,
       ) => {
         (editor?.commands as any)?.updateAtMentionData(
           notes,
           checklists,
-          username
+          username,
         );
       },
     }));
@@ -189,7 +196,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
               const htmlContent = editor.getHTML();
               finalMarkdown = convertHtmlToMarkdownUnified(
                 htmlContent,
-                tableSyntax
+                tableSyntax,
               );
             } else {
               finalMarkdown = originalMarkdownRef.current;
@@ -201,7 +208,13 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           }
         }, 0);
       }
-    }, [isMarkdownMode, markdownContent, tableSyntax, editor, debouncedOnChange]);
+    }, [
+      isMarkdownMode,
+      markdownContent,
+      tableSyntax,
+      editor,
+      debouncedOnChange,
+    ]);
 
     useShortcuts([
       {
@@ -270,7 +283,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     }, []);
 
     const handleMarkdownChange = (
-      e: React.ChangeEvent<HTMLTextAreaElement>
+      e: React.ChangeEvent<HTMLTextAreaElement>,
     ) => {
       const newContent = e.target.value;
       setMarkdownContent(newContent);
@@ -300,11 +313,11 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
                   .run();
               },
             },
-            true
+            true,
           );
         });
       },
-      [editor, uploadHook]
+      [editor, uploadHook],
     );
 
     const handleMarkdownFileDrop = useCallback(
@@ -328,16 +341,18 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
                 debouncedOnChange(newContent, true, true);
               },
             },
-            true
+            true,
           );
         });
       },
-      [markdownContent, uploadHook, debouncedOnChange]
+      [markdownContent, uploadHook, debouncedOnChange],
     );
 
     return (
       <div className="flex flex-col h-full pb-[4em]">
-        <div className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 py-2`}>
+        <div
+          className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 py-2`}
+        >
           <TiptapToolbar
             editor={editor}
             isMarkdownMode={isMarkdownMode}
@@ -367,8 +382,9 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
         {isMarkdownMode && showPreview ? (
           <div
-            className={`px-6 pt-6 pb-12 overflow-y-auto flex-1 ${compactMode ? "max-w-[900px] mx-auto" : ""
-              }`}
+            className={`px-6 pt-6 pb-12 overflow-y-auto flex-1 ${
+              compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
           >
             <UnifiedMarkdownRenderer content={markdownContent} />
           </div>
@@ -423,7 +439,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 TiptapEditor.displayName = "TiptapEditor";

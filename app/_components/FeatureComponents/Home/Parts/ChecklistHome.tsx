@@ -22,7 +22,8 @@ import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useTransition } from "react";
+import { getChecklistsForDisplay } from "@/app/_server/actions/checklist";
 
 interface ChecklistHomeProps {
   lists: Checklist[];
@@ -32,15 +33,40 @@ interface ChecklistHomeProps {
 }
 
 export const ChecklistHome = ({
-  lists,
+  lists: initialLists,
   user,
   onCreateModal,
   onSelectChecklist,
 }: ChecklistHomeProps) => {
   const t = useTranslations();
-  const { userSharedItems, selectedFilter, setSelectedFilter } = useAppMode();
-  const selectedCategory = selectedFilter?.type === 'category' ? selectedFilter.value : null;
+  const {
+    userSharedItems,
+    selectedFilter,
+    setSelectedFilter,
+    checklists: allChecklistsMetadata,
+  } = useAppMode();
+  const selectedCategory =
+    selectedFilter?.type === "category" ? selectedFilter.value : null;
   const { viewMode } = useSettings();
+  const [isPending, startTransition] = useTransition();
+  const [displayLists, setDisplayLists] = useState<Checklist[]>(initialLists);
+
+  useEffect(() => {
+    if (!selectedFilter || selectedFilter.type !== "category") {
+      setDisplayLists(initialLists);
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await getChecklistsForDisplay({
+        type: "category",
+        value: selectedFilter.value,
+      });
+      if (result.success && result.data) {
+        setDisplayLists(result.data as Checklist[]);
+      }
+    });
+  }, [selectedFilter, initialLists]);
 
   const {
     sensors,
@@ -54,39 +80,39 @@ export const ChecklistHome = ({
     isListPinned,
     activeList,
     draggedItemWidth,
-  } = useChecklistHome({ lists, user });
-
-  const filteredLists = useMemo(() => {
-    if (!selectedCategory) return null;
-    return lists.filter((list) => {
-      const listCategory = list.category || "Uncategorized";
-      return listCategory === selectedCategory || listCategory.startsWith(selectedCategory + "/");
-    });
-  }, [lists, selectedCategory]);
+  } = useChecklistHome({ lists: displayLists, user });
 
   const filteredTaskLists = useMemo(() => {
     if (!selectedCategory) return taskLists;
-    return (filteredLists || []).filter((list) => list.type === "task");
-  }, [taskLists, filteredLists, selectedCategory]);
+    return displayLists
+      .filter((list) => list.type === "task")
+      .filter((list) => !pinned.some((p) => p.id === list.id));
+  }, [taskLists, displayLists, selectedCategory, pinned]);
 
   const filteredSimpleLists = useMemo(() => {
     if (!selectedCategory) return simpleLists;
-    return (filteredLists || []).filter((list) => list.type !== "task");
-  }, [simpleLists, filteredLists, selectedCategory]);
+    return displayLists
+      .filter((list) => list.type !== "task")
+      .filter((list) => !pinned.some((p) => p.id === list.id));
+  }, [simpleLists, displayLists, selectedCategory, pinned]);
 
-  const categoryDisplayName = selectedCategory?.split("/").pop() || selectedCategory;
+  const categoryDisplayName =
+    selectedCategory?.split("/").pop() || selectedCategory;
 
   const getListSharer = (list: Checklist) => {
     const encodedCategory = encodeCategoryPath(
-      list.category || "Uncategorized"
+      list.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.id === list.id && item.category === encodedCategory
+      (item) => item.id === list.id && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
 
-  if (lists.length === 0) {
+  const hasAnyChecklists =
+    allChecklistsMetadata && allChecklistsMetadata.length > 0;
+
+  if (!hasAnyChecklists) {
     return (
       <div className="h-full flex items-center justify-center">
         <EmptyState
@@ -220,7 +246,7 @@ export const ChecklistHome = ({
                     {viewMode === "card" && (
                       <ChecklistCard
                         list={activeList}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         isDraggable={false}
                         sharer={getListSharer(activeList)}
@@ -230,7 +256,7 @@ export const ChecklistHome = ({
                     {viewMode === "list" && (
                       <ChecklistListItem
                         list={activeList}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         sharer={getListSharer(activeList)}
                       />
@@ -238,7 +264,7 @@ export const ChecklistHome = ({
                     {viewMode === "grid" && (
                       <ChecklistGridItem
                         list={activeList}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         sharer={getListSharer(activeList)}
                       />
@@ -250,13 +276,17 @@ export const ChecklistHome = ({
           </div>
         )}
 
-        {(selectedCategory ? (filteredTaskLists.length > 0 || filteredSimpleLists.length > 0) : recent.length > 0) && (
+        {(selectedCategory
+          ? filteredTaskLists.length > 0 || filteredSimpleLists.length > 0
+          : recent.length > 0) && (
           <div className="space-y-6 sm:space-y-8">
             {filteredTaskLists.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    {selectedCategory ? t("tasks.title") : t("tasks.recentTasks")}
+                    {selectedCategory
+                      ? t("tasks.title")
+                      : t("tasks.recentTasks")}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
@@ -323,7 +353,9 @@ export const ChecklistHome = ({
               <div>
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    {selectedCategory ? t("checklists.title") : t("checklists.recent")}
+                    {selectedCategory
+                      ? t("checklists.title")
+                      : t("checklists.recent")}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button

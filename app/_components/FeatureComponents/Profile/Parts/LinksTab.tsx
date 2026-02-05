@@ -14,7 +14,6 @@ import { ItemTypes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/app/_providers/ToastProvider";
 
@@ -39,8 +38,7 @@ const getLabel = (
   return `${fullItem?.id}.md`;
 };
 
-const CustomNode = ({ node, onHover, onLeave }: any) => {
-  const { notes, checklists } = useAppMode();
+const CustomNode = ({ node, onHover, onLeave, notes, checklists }: any) => {
   const label = getLabel(node, notes, checklists);
 
   const nodeColors: Record<string, string> = {
@@ -84,6 +82,8 @@ const CustomNode = ({ node, onHover, onLeave }: any) => {
 
 interface LinksTabProps {
   linkIndex: LinkIndex;
+  notes: Partial<Note>[];
+  checklists: Partial<Checklist>[];
 }
 
 interface NetworkNode {
@@ -101,9 +101,8 @@ interface NetworkLink {
   distance: number;
 }
 
-export const LinksTab = ({ linkIndex }: LinksTabProps) => {
+export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
   const t = useTranslations();
-  const { notes, checklists } = useAppMode();
   const { showToast } = useToast();
   const [hoveredNode, setHoveredNode] = useState<any>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -436,6 +435,8 @@ export const LinksTab = ({ linkIndex }: LinksTabProps) => {
                   {...props}
                   onHover={handleNodeHover}
                   onLeave={handleNodeLeave}
+                  notes={notes}
+                  checklists={checklists}
                 />
               )}
               linkThickness={2}

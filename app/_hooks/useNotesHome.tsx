@@ -15,6 +15,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { Note, Category, SanitisedUser } from "@/app/_types";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
+import { HOMEPAGE_ITEMS_LIMIT } from "@/app/_consts/files";
 
 interface UseNotesHomeProps {
   notes: Note[];
@@ -47,7 +48,7 @@ export const useNotesHome = ({
         tolerance: 5,
       },
     }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -69,18 +70,17 @@ export const useNotesHome = ({
 
     const pinned = getPinnedNotes();
     const oldIndex = pinned.findIndex(
-      (note) => (note.uuid || note.id) === active.id
+      (note) => (note.uuid || note.id) === active.id,
     );
     const newIndex = pinned.findIndex(
-      (note) => (note.uuid || note.id) === over.id
+      (note) => (note.uuid || note.id) === over.id,
     );
 
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newOrder = arrayMove(pinned, oldIndex, newIndex);
     const newPinnedPaths = newOrder.map(
-      (note) =>
-        `${note.category || "Uncategorized"}/${note.uuid || note.id}`
+      (note) => `${note.category || "Uncategorized"}/${note.uuid || note.id}`,
     );
 
     try {
@@ -112,9 +112,8 @@ export const useNotesHome = ({
       .filter((note) => !pinnedIds.has(note.id))
       .sort(
         (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      )
-      .slice(0, 12);
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
   };
 
   const handleTogglePin = async (note: Note) => {
@@ -125,7 +124,7 @@ export const useNotesHome = ({
       const result = await togglePin(
         note.uuid || note.id,
         note.category || "Uncategorized",
-        ItemTypes.NOTE
+        ItemTypes.NOTE,
       );
       if (result.success) {
         router.refresh();

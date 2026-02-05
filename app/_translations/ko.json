@@ -900,8 +900,6 @@
     "totalSharing": "전체 공유 작업",
     "topContributors": "상위 기여자",
     "itemsShared": "공유된 항목",
-    "activityLevel": "활동 수준",
-    "sharedCMS": "공유 콘텐츠 관리",
     "totalPublicItems": "공유 항목 {count}개",
     "userContent": "체크리스트 {checklistsLength}개 • 노트 {notesLength}개",
     "rebuildIndexes": "인덱스 재구성",

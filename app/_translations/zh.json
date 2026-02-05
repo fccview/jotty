@@ -908,8 +908,6 @@
     "totalSharing": "总共享操作",
     "topContributors": "主要贡献者",
     "itemsShared": "已共享项目",
-    "activityLevel": "活跃度",
-    "sharedCMS": "共享内容管理",
     "totalPublicItems": "{count} 个公开项目",
     "userContent": "{checklistsLength} 个清单 • {notesLength} 条笔记",
     "rebuildIndexes": "重建索引",

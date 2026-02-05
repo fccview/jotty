@@ -539,3 +539,29 @@ export interface AuditLogStats {
   topUsers: { username: string; count: number }[];
   recentActivity: AuditLogEntry[];
 }
+
+export interface ContentFilter {
+  type: 'category' | 'tag';
+  value: string;
+}
+
+export interface GetNotesOptions {
+  username?: string;
+  allowArchived?: boolean;
+  isRaw?: boolean;
+  projection?: string[];
+  metadataOnly?: boolean;
+  excerptLength?: number;
+  filter?: ContentFilter;
+  limit?: number;
+}
+
+export interface GetChecklistsOptions {
+  username?: string;
+  allowArchived?: boolean;
+  isRaw?: boolean;
+  projection?: string[];
+  metadataOnly?: boolean;
+  filter?: ContentFilter;
+  limit?: number;
+}

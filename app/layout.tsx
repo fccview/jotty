@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-css-tags */
+
 import "@fontsource-variable/work-sans";
 import "@fontsource-variable/google-sans-code";
 import "@fontsource-variable/ibm-plex-sans";
@@ -79,8 +81,8 @@ export const generateMetadata = async (): Promise<Metadata> => {
       app512x512Icon,
       app192x192Icon,
       themeColor,
-      appVersion
-    )
+      appVersion,
+    ),
   );
 
   try {
@@ -88,7 +90,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
   } catch (error) {
     console.error(
       "Your data and/or config folders seem to be using the wrong permissions, please fix them by following the instructions here: https://github.com/fccview/jotty/blob/main/howto/DOCKER.md and/or setting the correct env variables from here: https://github.com/fccview/jotty/blob/main/howto/ENV-VARIABLES.md",
-      error
+      error,
     );
   }
 
@@ -167,8 +169,6 @@ export default async function RootLayout({
   const messages = await getMessages();
   const user = sanitizeUserForClient(userRecord);
 
-  const shouldParseContent = settings?.parseContent === "yes";
-
   const [
     notesResult,
     checklistsResult,
@@ -177,35 +177,19 @@ export default async function RootLayout({
     globalSharing,
     availableLocales,
   ] = await Promise.all([
-    shouldParseContent && user && !isPublicRoute
-      ? getUserNotes()
-      : user && !isPublicRoute
-        ? getUserNotes({
-          projection: ["id", "title", "category", "owner", "uuid"],
-        })
-        : Promise.resolve({ success: false, data: [] }),
-    shouldParseContent && user && !isPublicRoute
-      ? getUserChecklists()
-      : user && !isPublicRoute
-        ? getUserChecklists({
-          projection: [
-            "id",
-            "title",
-            "category",
-            "owner",
-            "uuid",
-            "type",
-            "items",
-          ],
-        })
-        : Promise.resolve({ success: false, data: [] }),
+    user && !isPublicRoute
+      ? getUserNotes({ metadataOnly: true })
+      : Promise.resolve({ success: false, data: [] }),
+    user && !isPublicRoute
+      ? getUserChecklists({ metadataOnly: true })
+      : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
       ? getAllSharedItems()
       : Promise.resolve({
-        notes: [],
-        checklists: [],
-        public: { notes: [], checklists: [] },
-      }),
+          notes: [],
+          checklists: [],
+          public: { notes: [], checklists: [] },
+        }),
     user && !isPublicRoute
       ? getAllSharedItemsForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
@@ -239,7 +223,7 @@ export default async function RootLayout({
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
         <link rel="icon" href="/app-icons/favicon.ico" />
-        <link rel="stylesheet" href="/themes/excalidraw/excalidraw.css" /> {/* eslint-disable-line @next/next/no-css-tags */}
+        <link rel="stylesheet" href="/themes/excalidraw/excalidraw.css" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
@@ -247,7 +231,7 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: themeInitScript(
-              JSON.stringify(customThemes["custom-themes"] || {})
+              JSON.stringify(customThemes["custom-themes"] || {}),
             ),
           }}
         />

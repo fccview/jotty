@@ -44,3 +44,5 @@ export const EXPORT_TEMP_DIR = path.join(DATA_DIR, "temp_exports");
 export const LOGS_DIR = "data/logs";
 export const getUserLogsDir = (username: string) =>
   path.join(LOGS_DIR, username);
+
+export const HOMEPAGE_ITEMS_LIMIT = 12;

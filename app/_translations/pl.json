@@ -874,8 +874,6 @@
     "totalSharing": "Całkowita liczba udostępnień",
     "topContributors": "Najbardziej aktywni użytkownicy",
     "itemsShared": "Udostępnione elementy",
-    "activityLevel": "Poziom aktywności",
-    "sharedCMS": "Zarządzanie treścią współdzieloną",
     "totalPublicItems": "{count} publicznych elementów",
     "userContent": "{checklistsLength} list kontrolnych • {notesLength} notatek",
     "rebuildIndexes": "Przebuduj indeksy",

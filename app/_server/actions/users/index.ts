@@ -131,19 +131,8 @@ const _findUuidInDirectory = async (
   dir: string,
   targetUuid: string
 ): Promise<boolean> => {
-  try {
-    const { exec } = await import("child_process");
-    const { promisify } = await import("util");
-    const execAsync = promisify(exec);
-
-    const { stdout } = await execAsync(
-      `grep -rl "uuid: ${targetUuid}" "${dir}" --include="*.md" 2>/dev/null || true`
-    );
-
-    return stdout.trim().length > 0;
-  } catch {
-    return false;
-  }
+  const { grepCheckUuidExists } = await import("@/app/_utils/grep-utils");
+  return grepCheckUuidExists(dir, targetUuid);
 };
 
 const _getUserByItemUuid = async (

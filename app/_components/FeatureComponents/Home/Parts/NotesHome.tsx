@@ -18,7 +18,8 @@ import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
 import { NoteGridItem } from "@/app/_components/GlobalComponents/Cards/NoteGridItem";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useTransition } from "react";
+import { getNotesForDisplay } from "@/app/_server/actions/note";
 
 interface NotesHomeProps {
   notes: Note[];
@@ -29,15 +30,31 @@ interface NotesHomeProps {
 }
 
 export const NotesHome = ({
-  notes,
+  notes: initialNotes,
   categories,
   user,
   onCreateModal,
   onSelectNote,
 }: NotesHomeProps) => {
   const t = useTranslations();
-  const { userSharedItems, selectedFilter, setSelectedFilter, tagsIndex } = useAppMode();
+  const { userSharedItems, selectedFilter, setSelectedFilter, tagsIndex, notes: allNotesMetadata } = useAppMode();
   const { viewMode } = useSettings();
+  const [isPending, startTransition] = useTransition();
+  const [displayNotes, setDisplayNotes] = useState<Note[]>(initialNotes);
+
+  useEffect(() => {
+    if (!selectedFilter) {
+      setDisplayNotes(initialNotes);
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await getNotesForDisplay(selectedFilter);
+      if (result.success && result.data) {
+        setDisplayNotes(result.data as Note[]);
+      }
+    });
+  }, [selectedFilter, initialNotes]);
 
   const {
     sensors,
@@ -50,26 +67,12 @@ export const NotesHome = ({
     isNotePinned,
     activeNote,
     draggedItemWidth,
-  } = useNotesHome({ notes, categories, user });
+  } = useNotesHome({ notes: displayNotes, categories, user });
 
   const filteredRecent = useMemo(() => {
     if (!selectedFilter) return recent;
-
-    if (selectedFilter.type === 'category') {
-      return notes.filter((note) => {
-        const noteCategory = note.category || "Uncategorized";
-        return noteCategory === selectedFilter.value || noteCategory.startsWith(selectedFilter.value + "/");
-      });
-    }
-
-    if (selectedFilter.type === 'tag') {
-      const tagInfo = tagsIndex[selectedFilter.value];
-      if (!tagInfo) return [];
-      return notes.filter((note) => tagInfo.noteUuids.includes(note.uuid || ''));
-    }
-
-    return recent;
-  }, [notes, recent, selectedFilter, tagsIndex]);
+    return displayNotes.filter((note) => !pinned.some((p) => p.id === note.id));
+  }, [displayNotes, recent, selectedFilter, pinned]);
 
   const filterDisplayName = useMemo(() => {
     if (!selectedFilter) return null;
@@ -89,7 +92,9 @@ export const NotesHome = ({
     return sharedItem?.sharer;
   };
 
-  if (notes.length === 0) {
+  const hasAnyNotes = allNotesMetadata && allNotesMetadata.length > 0;
+
+  if (!hasAnyNotes) {
     return (
       <div className="flex-1 overflow-y-auto jotty-scrollable-content bg-background h-full">
         <EmptyState

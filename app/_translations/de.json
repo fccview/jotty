@@ -860,8 +860,6 @@
     "totalSharing": "Freigabeaktionen insgesamt",
     "topContributors": "Aktivste Benutzer",
     "itemsShared": "Freigegebene Inhalte",
-    "activityLevel": "Aktivitätsgrad",
-    "sharedCMS": "Verwaltung freigegebener Inhalte",
     "totalPublicItems": "{count} öffentliche Inhalte",
     "userContent": "{checklistsLength} Aufgabenlisten • {notesLength} Notizen",
     "rebuildIndexes": "Indizes neu aufbauen",

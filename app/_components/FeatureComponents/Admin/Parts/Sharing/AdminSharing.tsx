@@ -24,12 +24,17 @@ import { useToast } from "@/app/_providers/ToastProvider";
 export const AdminSharing = () => {
   const t = useTranslations();
   const { showToast } = useToast();
-  const { allSharedItems, globalSharing: rawGlobalSharing, user, appSettings } = useAppMode();
+  const {
+    allSharedItems,
+    globalSharing: rawGlobalSharing,
+    user,
+    appSettings,
+  } = useAppMode();
   const colors = useThemeColors();
 
   const handleUnsharePublicItem = async (
     item: { id: string; category: string },
-    itemType: ItemType
+    itemType: ItemType,
   ) => {
     try {
       const currentUser = await getCurrentUser();
@@ -40,7 +45,7 @@ export const AdminSharing = () => {
         item.category,
         currentUser.username,
         "public",
-        itemType
+        itemType,
       );
 
       window.location.reload();
@@ -68,17 +73,17 @@ export const AdminSharing = () => {
     Object.values(rawGlobalSharing?.checklists || {}).reduce(
       (sum: number, entries) =>
         sum + (Array.isArray(entries) ? entries.length : 0),
-      0
+      0,
     ) +
     Object.values(rawGlobalSharing?.notes || {}).reduce(
       (sum: number, entries) =>
         sum + (Array.isArray(entries) ? entries.length : 0),
-      0
+      0,
     );
 
   const mostActiveSharers = useMemo(
     () => calculateMostActiveSharers(rawGlobalSharing),
-    [rawGlobalSharing]
+    [rawGlobalSharing],
   );
 
   return (
@@ -86,9 +91,11 @@ export const AdminSharing = () => {
       <section className="space-y-6">
         <div className="rounded-md border bg-card p-6 shadow-sm">
           <div className="space-y-2 mb-6">
-            <h3 className="text-lg font-semibold">{t('admin.sharingOverview')}</h3>
+            <h3 className="text-lg font-semibold">
+              {t("admin.sharingOverview")}
+            </h3>
             <p className="text-md lg:text-sm text-muted-foreground">
-              {t('admin.detailedSharingBreakdown')}
+              {t("admin.detailedSharingBreakdown")}
             </p>
           </div>
           <div className="space-y-4">
@@ -98,7 +105,7 @@ export const AdminSharing = () => {
                   {Object.keys(rawGlobalSharing?.checklists || {}).length}
                 </div>
                 <div className="text-md lg:text-sm text-muted-foreground">
-                  {t('admin.activeChecklistSharers')}
+                  {t("admin.activeChecklistSharers")}
                 </div>
               </div>
               <div className="bg-muted/50 rounded-jotty p-4">
@@ -106,7 +113,7 @@ export const AdminSharing = () => {
                   {Object.keys(rawGlobalSharing?.notes || {}).length}
                 </div>
                 <div className="text-md lg:text-sm text-muted-foreground">
-                  {t('admin.activeNotesSharers')}
+                  {t("admin.activeNotesSharers")}
                 </div>
               </div>
               <div className="bg-muted/50 rounded-jotty p-4">
@@ -114,23 +121,22 @@ export const AdminSharing = () => {
                   {totalSharingRelationships}
                 </div>
                 <div className="text-md lg:text-sm text-muted-foreground">
-                  {t('admin.totalSharing')}
+                  {t("admin.totalSharing")}
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h4 className="font-semibold">{t('admin.topContributors')}</h4>
+              <h4 className="font-semibold">{t("admin.topContributors")}</h4>
               <div className="overflow-hidden rounded-jotty border">
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-md lg:text-sm font-medium">{t('common.user')}</th>
                       <th className="px-4 py-3 text-left text-md lg:text-sm font-medium">
-                        {t('admin.itemsShared')}
+                        {t("common.user")}
                       </th>
                       <th className="px-4 py-3 text-left text-md lg:text-sm font-medium">
-                        {t('admin.activityLevel')}
+                        {t("admin.itemsShared")}
                       </th>
                     </tr>
                   </thead>
@@ -150,32 +156,6 @@ export const AdminSharing = () => {
                             {sharer.sharedCount}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center space-x-2">
-                            <div className="flex-1 bg-muted rounded-full h-2">
-                              <div
-                                className="bg-primary h-2 rounded-full"
-                                style={{
-                                  width: `${Math.min(
-                                    (sharer.sharedCount /
-                                      mostActiveSharers[0].sharedCount) *
-                                    100,
-                                    100
-                                  )}%`,
-                                }}
-                              />
-                            </div>
-                            <span className="text-md lg:text-xs text-muted-foreground">
-                              {sharer.sharedCount >
-                                mostActiveSharers[0].sharedCount * 0.8
-                                ? t('common.high')
-                                : sharer.sharedCount >
-                                  mostActiveSharers[0].sharedCount * 0.5
-                                  ? t('common.medium')
-                                  : t('common.low')}
-                            </span>
-                          </div>
-                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -184,91 +164,6 @@ export const AdminSharing = () => {
             </div>
           </div>
         </div>
-      </section>
-
-      <section className="space-y-6">
-        <h2 className="text-xl font-semibold">{t('admin.sharedCMS')}</h2>
-        {!hasContentAccess && (
-          <div className="bg-muted border border-border rounded-jotty p-4 flex items-start gap-3">
-            <Globe02Icon className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-md lg:text-sm font-medium text-foreground">
-                {t('admin.contentHidden')}
-              </p>
-              <p className="text-md lg:text-xs text-muted-foreground mt-1">
-                {t('admin.noSharingPermissionsLabel')}
-              </p>
-            </div>
-          </div>
-        )}
-        {hasContentAccess && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <div className="rounded-md border bg-card p-6 shadow-sm">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="rounded-jotty bg-primary/10 p-2">
-                    <CheckmarkSquare04Icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">{t('checklists.sharedChecklists')}</h4>
-                    <p className="text-md lg:text-sm text-muted-foreground">
-                      {totalSharedChecklists} {t('checklists.title')}
-                    </p>
-                  </div>
-                </div>
-                <AdminSharedItemsList items={allSharedItems?.checklists || []} />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-md border bg-card p-6 shadow-sm">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="rounded-jotty bg-primary/10 p-2">
-                    <File02Icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">{t('notes.sharedNotes')}</h4>
-                    <p className="text-md lg:text-sm text-muted-foreground">
-                      {totalSharedNotes} {t('notes.title')}
-                    </p>
-                  </div>
-                </div>
-                <AdminSharedItemsList items={allSharedItems?.notes || []} />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-md border bg-card p-6 shadow-sm">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="rounded-jotty bg-primary/10 p-2">
-                    <Globe02Icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">{t('sharing.publicShares')}</h4>
-                    <p className="text-md lg:text-sm text-muted-foreground">
-                      {t('admin.totalPublicItems', { count: totalPublicShares })}
-                    </p>
-                  </div>
-                </div>
-                <AdminSharedItemsList
-                  items={[
-                    ...(allSharedItems?.public.checklists || []),
-                    ...(allSharedItems?.public.notes || []),
-                  ]}
-                  onUnshare={(item) => {
-                    const isChecklist = allSharedItems?.public.checklists.some(
-                      (c) => c.id === item.id && c.category === item.category
-                    );
-                    handleUnsharePublicItem(
-                      item,
-                      isChecklist ? ItemTypes.CHECKLIST : ItemTypes.NOTE
-                    );
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
       </section>
     </div>
   );

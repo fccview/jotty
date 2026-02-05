@@ -14,14 +14,21 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalModeEditor";
 import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { detectEncryptionMethod, isEncrypted } from "@/app/_utils/encryption-utils";
+import {
+  detectEncryptionMethod,
+  isEncrypted,
+} from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
   noteContent?: string;
   editorContent: string;
-  onEditorContentChange: (content: string, isMarkdown: boolean, isDirty: boolean) => void;
+  onEditorContentChange: (
+    content: string,
+    isMarkdown: boolean,
+    isDirty: boolean,
+  ) => void;
   noteId?: string;
   noteCategory?: string;
   encrypted?: boolean;
@@ -60,7 +67,7 @@ export const NoteEditorContent = ({
       noteCategory,
       "note",
       notes,
-      checklists
+      checklists,
     );
   }, [linkIndex, noteId, noteCategory, notes, checklists]);
 
@@ -73,7 +80,7 @@ export const NoteEditorContent = ({
       editorRef.current.updateAtMentionData(
         notes,
         checklists,
-        user?.username || ""
+        user?.username || "",
       );
     }
   }, [
@@ -103,10 +110,15 @@ export const NoteEditorContent = ({
               <LockKeyIcon className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <h3 className="text-xl font-semibold">{t("encryption.thisNoteIsEncrypted")}</h3>
+          <h3 className="text-xl font-semibold">
+            {t("encryption.thisNoteIsEncrypted")}
+          </h3>
           <p className="text-md lg:text-sm text-muted-foreground">
             {t("encryption.noteProtectedWith", {
-              type: encryptionType === "pgp" ? t("encryption.pgp") : t("encryption.xchacha")
+              type:
+                encryptionType === "pgp"
+                  ? t("encryption.pgp")
+                  : t("encryption.xchacha"),
             })}
           </p>
           <div className="flex items-center justify-center gap-3 pt-4">
@@ -116,14 +128,18 @@ export const NoteEditorContent = ({
                 onClick={onOpenViewModal}
                 className="flex items-center gap-2"
               >
-                <ViewIcon className="h-4 w-4" />{t('settings.view')}</Button>
+                <ViewIcon className="h-4 w-4" />
+                {t("settings.view")}
+              </Button>
             )}
             {onOpenDecryptModal && (
               <Button
                 onClick={onOpenDecryptModal}
                 className="flex items-center gap-2"
               >
-                <SquareUnlock01Icon className="h-4 w-4" />{t('encryption.decrypt')}</Button>
+                <SquareUnlock01Icon className="h-4 w-4" />
+                {t("encryption.decrypt")}
+              </Button>
             )}
           </div>
         </div>
@@ -136,7 +152,7 @@ export const NoteEditorContent = ({
       <div className="flex-1 h-full pb-10 lg:pb-0">
         <MinimalModeEditor
           isEditing={isEditMode ?? false}
-          noteContent={encrypted ? editorContent : (noteContent || "")}
+          noteContent={encrypted ? editorContent : noteContent || ""}
           onEditorContentChange={onEditorContentChange}
           compactMode={compactMode}
         />
@@ -159,10 +175,13 @@ export const NoteEditorContent = ({
         <>
           <ReadingProgressBar />
           <div
-            className={`px-6 pt-6 pb-12 ${compactMode ? "max-w-[900px] mx-auto" : ""
-              }`}
+            className={`px-6 pt-6 pb-24 ${
+              compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
           >
-            <UnifiedMarkdownRenderer content={encrypted ? editorContent : (noteContent || "")} />
+            <UnifiedMarkdownRenderer
+              content={encrypted ? editorContent : noteContent || ""}
+            />
             {referencingItems.length > 0 &&
               appSettings?.editor?.enableBilateralLinks && (
                 <ReferencedBySection referencingItems={referencingItems} />
