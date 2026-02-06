@@ -237,7 +237,10 @@
     "moreOptions": "Más opciones",
     "retry": "Rever",
     "restoring": "Restaurando...",
-    "copiedToClipboard": "Copiado al portapapeles"
+    "copiedToClipboard": "Copiado al portapapeles",
+    "offline": "Desconectado",
+    "connected": "Conectado",
+    "reconnecting": "Reconectando..."
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -745,7 +748,12 @@
       "calendarDay": "Día del calendario",
       "sampleInputLabel": "Entrada de ejemplo",
       "sampleInputPlaceholder": "Ingrese algún texto..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Oculte el indicador de conexión websocket del logotipo. \nAún verás un punto rojo si no estás conectado, independientemente de esta configuración.",
+    "selectConnectionIndicator": "Seleccionar el estado del indicador de conexión",
+    "showIndicator": "Mostrar indicador",
+    "hideIndicator": "Ocultar indicador",
+    "hideConnectionIndicator": "Ocultar indicador de conexión del logotipo"
   },
   "admin": {
     "title": "Administrador",

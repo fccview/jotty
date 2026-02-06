@@ -237,7 +237,10 @@
     "moreOptions": "Mehr Optionen",
     "retry": "Wiederholen",
     "restoring": "Wiederherstellung...",
-    "copiedToClipboard": "In die Zwischenablage kopiert"
+    "copiedToClipboard": "In die Zwischenablage kopiert",
+    "offline": "Offline",
+    "connected": "Verbunden",
+    "reconnecting": "Verbindung wird wieder hergestellt..."
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -732,7 +735,12 @@
       "calendarDay": "Kalendertag",
       "sampleInputLabel": "Beispiel-Eingabefeld",
       "sampleInputPlaceholder": "Gib irgendeinen Text ein..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Blenden Sie die WebSocket-Verbindungsanzeige aus dem Logo aus. \nUnabhängig von dieser Einstellung wird immer noch ein roter Punkt angezeigt, wenn Sie offline sind.",
+    "selectConnectionIndicator": "Wählen Sie den Status der Verbindungsanzeige aus",
+    "showIndicator": "Indikator anzeigen",
+    "hideIndicator": "Anzeige ausblenden",
+    "hideConnectionIndicator": "Verbindungsanzeige im Logo ausblenden"
   },
   "admin": {
     "title": "Administration",

@@ -25,6 +25,7 @@ import { checkUserPermission } from "@/app/_server/actions/sharing";
 import { generateUuid, updateYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { getListById, getUserChecklists } from "./queries";
+import { broadcast } from "@/app/_server/ws/broadcast";
 
 export const createList = async (formData: FormData) => {
   try {
@@ -102,6 +103,8 @@ export const createList = async (formData: FormData) => {
       true,
       { category: newList.category }
     );
+
+    await broadcast({ type: "checklist", action: "created", entityId: newList.uuid, username: currentUser?.username || "" });
 
     return { success: true, data: newList };
   } catch (error) {
@@ -311,6 +314,8 @@ export const updateList = async (formData: FormData) => {
       { category: updatedList.category }
     );
 
+    await broadcast({ type: "checklist", action: "updated", entityId: updatedList.uuid, username: actingUser.username });
+
     return { success: true, data: updatedList };
   } catch (error) {
     try {
@@ -431,6 +436,8 @@ export const deleteList = async (formData: FormData) => {
       true,
       { category: list.category }
     );
+    await broadcast({ type: "checklist", action: "deleted", entityId: list.uuid || list.id, username: currentUser.username });
+
     return { success: true };
   } catch (error) {
     try {
@@ -510,6 +517,8 @@ export const cloneChecklist = async (formData: FormData) => {
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "created", entityId: newId, username: currentUser?.username || "" });
 
     return { success: true, data: clonedChecklist };
   } catch (error) {

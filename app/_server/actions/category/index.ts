@@ -22,6 +22,7 @@ import {
 } from "@/app/_utils/global-utils";
 import { encodeId } from "@/app/_utils/global-utils";
 import { logAudit } from "@/app/_server/actions/log";
+import { broadcast } from "@/app/_server/ws/broadcast";
 
 export const createCategory = async (formData: FormData) => {
   try {
@@ -41,6 +42,8 @@ export const createCategory = async (formData: FormData) => {
       success: true,
       metadata: { categoryName: name, parentCategory: parent, mode },
     });
+
+    await broadcast({ type: "category", action: "created", entityId: name, username: (await getUsername()) });
 
     return { success: true, data: { name, count: 0 } };
   } catch (error) {
@@ -83,6 +86,9 @@ export const deleteCategory = async (formData: FormData) => {
         error
       );
     }
+
+    await broadcast({ type: "category", action: "deleted", entityId: categoryPath, username: (await getUsername()) });
+
     return { success: true };
   } catch (error) {
     const categoryPath = formData.get("path") as string;
@@ -221,6 +227,9 @@ export const renameCategory = async (formData: FormData) => {
         error
       );
     }
+
+    await broadcast({ type: "category", action: "updated", entityId: newName, username: (await getUsername()) });
+
     return { success: true };
   } catch (error) {
     const oldPath = formData.get("oldPath") as string;
@@ -268,6 +277,9 @@ export const setCategoryOrder = async (formData: FormData) => {
     try {
       revalidatePath("/");
     } catch { }
+
+    await broadcast({ type: "category", action: "updated", username: (await getUsername()) });
+
     return { success: true };
   } catch {
     return { error: "Failed to set category order" };
@@ -292,6 +304,9 @@ export const setChecklistOrderInCategory = async (formData: FormData) => {
     try {
       revalidatePath("/");
     } catch { }
+
+    await broadcast({ type: "category", action: "updated", username: (await getUsername()) });
+
     return { success: true };
   } catch {
     return { error: "Failed to set item order" };
@@ -708,6 +723,9 @@ export const moveNode = async (formData: FormData) => {
     });
 
     revalidatePath("/");
+
+    await broadcast({ type: "category", action: "updated", username: (await getUsername()) });
+
     return { success: true };
   } catch (error: any) {
     const mode = formData.get("mode") as Modes;

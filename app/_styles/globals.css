@@ -724,6 +724,11 @@ pre.text-foreground span,
     }
 }
 
+@keyframes jotty-pulse-connected {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 @keyframes jotty-draw {
     0% {
         stroke-dashoffset: 1;

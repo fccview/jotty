@@ -37,6 +37,7 @@ import { logContentEvent } from "@/app/_server/actions/log";
 import { commitNote } from "@/app/_server/actions/history";
 import { noteToMarkdown, convertInternalLinksToNewFormat } from "./parsers";
 import { getNoteById } from "./queries";
+import { broadcast } from "@/app/_server/ws/broadcast";
 
 export const createNote = async (formData: FormData) => {
   try {
@@ -119,6 +120,8 @@ export const createNote = async (formData: FormData) => {
       true,
       { category: newDoc.category }
     );
+
+    await broadcast({ type: "note", action: "created", entityId: newDoc.uuid, username: currentUser.username });
 
     return { success: true, data: newDoc };
   } catch (error) {
@@ -360,6 +363,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       );
     }
 
+    await broadcast({ type: "note", action: "updated", entityId: updatedDoc.uuid, username: currentUser });
+
     return { success: true, data: updatedDoc };
   } catch (error) {
     const { title, uuid } = getFormData(formData, ["title", "uuid"]);
@@ -489,6 +494,8 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       { category: note.category }
     );
 
+    await broadcast({ type: "note", action: "deleted", entityId: note.uuid || note.id, username: currentUser.username });
+
     return { success: true };
   } catch (error) {
     const { uuid } = getFormData(formData, ["uuid"]);
@@ -568,6 +575,8 @@ export const cloneNote = async (formData: FormData) => {
         error
       );
     }
+
+    await broadcast({ type: "note", action: "created", entityId: newId, username: currentUser?.username || "" });
 
     return { success: true, data: clonedNote };
   } catch (error) {

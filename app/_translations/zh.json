@@ -240,7 +240,10 @@
     "disable": "禁用",
     "restoring": "恢复中...",
     "retry": "重试",
-    "copiedToClipboard": "已复制到剪贴板"
+    "copiedToClipboard": "已复制到剪贴板",
+    "offline": "离线",
+    "connected": "已连接",
+    "reconnecting": "正在重新连接..."
   },
   "history": {
     "noteHistory": "笔记历史",
@@ -774,7 +777,12 @@
       "calendarDay": "日历日",
       "sampleInputLabel": "示例输入",
       "sampleInputPlaceholder": "输入一些文本..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "从徽标中隐藏 websocket 连接指示器。\n无论此设置如何，如果您处于离线状态，您仍然会看到一个红点。",
+    "selectConnectionIndicator": "选择连接指示灯状态",
+    "showIndicator": "显示指标",
+    "hideIndicator": "隐藏指示器",
+    "hideConnectionIndicator": "隐藏徽标中的连接指示符"
   },
   "admin": {
     "title": "管理",

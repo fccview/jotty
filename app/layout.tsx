@@ -45,6 +45,7 @@ import { getMessages } from "next-intl/server";
 import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { KonamiProvider } from "./_providers/KonamiProvider";
+import { WebSocketProvider } from "./_providers/WebSocketProvider";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -255,6 +256,7 @@ export default async function RootLayout({
             globalSharing={globalSharing}
             availableLocales={availableLocales}
           >
+            <WebSocketProvider>
             <KonamiProvider>
               <ThemeProvider user={user || {}}>
                 <EmojiProvider>
@@ -281,6 +283,7 @@ export default async function RootLayout({
                 </EmojiProvider>
               </ThemeProvider>
             </KonamiProvider>
+            </WebSocketProvider>
           </AppModeProvider>
         </NextIntlClientProvider>
         <ServiceWorkerRegister />

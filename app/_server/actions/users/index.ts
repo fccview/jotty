@@ -40,6 +40,7 @@ const _findFileRecursively = async (
   const entries = await fs.readdir(dir, { withFileTypes: true });
 
   for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
     if (entry.isDirectory()) {
       if (entry.name === currentCategoryPart) {
         if (remainingCategoryParts.length === 0) {

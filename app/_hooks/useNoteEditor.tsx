@@ -7,6 +7,7 @@ import {
   processMarkdownContent,
 } from "@/app/_utils/markdown-utils";
 import { useSettings } from "@/app/_utils/settings-store";
+import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
 import { encryptNoteContent } from "@/app/_server/actions/pgp";
@@ -120,6 +121,19 @@ export const useNoteEditor = ({
       setHasUnsavedChanges(false);
     }
   }, [note, isMinimalMode, defaultEditorIsMarkdown]);
+
+  const editorActivity = useEditorActivityStore();
+
+  useEffect(() => {
+    if (isEditing) {
+      editorActivity.register("note-editor");
+    } else {
+      editorActivity.unregister("note-editor");
+    }
+    return () => {
+      editorActivity.unregister("note-editor");
+    };
+  }, [isEditing]);
 
   useEffect(() => {
     if (notesDefaultMode !== "edit" && !isEditing) return;

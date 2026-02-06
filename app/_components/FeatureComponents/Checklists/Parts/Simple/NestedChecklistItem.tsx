@@ -29,6 +29,7 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useTranslations } from "next-intl";
 import { Droppable } from "./Droppable";
 import { DropIndicator } from "./DropIndicator";
+import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -106,6 +107,20 @@ const NestedChecklistItemComponent = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownButtonRef = useRef<HTMLButtonElement>(null);
+
+  const editorActivity = useEditorActivityStore();
+
+  useEffect(() => {
+    const editorId = `checklist-item-${item.id}`;
+    if (isEditing) {
+      editorActivity.register(editorId);
+    } else {
+      editorActivity.unregister(editorId);
+    }
+    return () => {
+      editorActivity.unregister(editorId);
+    };
+  }, [isEditing, item.id]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {

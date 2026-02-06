@@ -27,11 +27,16 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const [localNote, setLocalNote] = useState<Note>(note);
   const [showCloneModal, setShowCloneModal] = useState(false);
   const prevNoteId = useRef(note.id);
+  const prevUpdatedAt = useRef(note.updatedAt);
 
   useEffect(() => {
-    if (note.id !== prevNoteId.current) {
+    if (
+      note.id !== prevNoteId.current ||
+      note.updatedAt !== prevUpdatedAt.current
+    ) {
       setLocalNote(note);
       prevNoteId.current = note.id;
+      prevUpdatedAt.current = note.updatedAt;
     }
   }, [note]);
 
@@ -66,8 +71,8 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       router.push(
         `/note/${buildCategoryPath(
           result.data.category || "Uncategorized",
-          result.data.id
-        )}`
+          result.data.id,
+        )}`,
       );
       router.refresh();
     }

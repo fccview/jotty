@@ -25,6 +25,7 @@ import {
   DefaultChecklistFilter,
   DefaultNoteFilter,
   QuickCreateNotes,
+  HideConnectionIndicator,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -65,6 +66,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   defaultNoteFilter: user?.defaultNoteFilter || "all",
   quickCreateNotes: user?.quickCreateNotes || "disable",
   quickCreateNotesCategory: user?.quickCreateNotesCategory || "",
+  hideConnectionIndicator: user?.hideConnectionIndicator || "disable",
 });
 
 const pick = <T extends object, K extends keyof T>(
@@ -137,6 +139,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     "preferredDateFormat",
     "preferredTimeFormat",
     "handedness",
+    "hideConnectionIndicator",
   ]);
   const hasEditorChanges = hasChanges([
     "notesDefaultEditor",
@@ -330,6 +333,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                   "preferredDateFormat",
                   "preferredTimeFormat",
                   "handedness",
+                  "hideConnectionIndicator",
                 ],
                 generalSettingsSchema,
                 "General"
@@ -515,6 +519,28 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             )}
             <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.chooseHandedness')}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="hide-connection-indicator">{t('settings.hideConnectionIndicator')}</Label>
+            <Dropdown
+              value={currentSettings.hideConnectionIndicator || "disable"}
+              onChange={(value) =>
+                handleSettingChange(
+                  "hideConnectionIndicator",
+                  value as HideConnectionIndicator
+                )
+              }
+              options={[
+                { id: "disable", name: t('settings.showIndicator') },
+                { id: "enable", name: t('settings.hideIndicator') },
+              ]}
+              placeholder={t('settings.selectConnectionIndicator')}
+              className="w-full"
+            />
+            <p className="text-md lg:text-sm text-muted-foreground">
+              {t('settings.hideConnectionIndicatorDescription')}
             </p>
           </div>
         </div>

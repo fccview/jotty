@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin("./i18n.ts");
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  serverExternalPackages: ["ws"],
   images: {
     unoptimized: true,
   },

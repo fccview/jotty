@@ -8,6 +8,7 @@ import { useResizing } from "@/app/_hooks/useResizing";
 import { useSidebarStore } from "@/app/_utils/sidebar-store";
 import { ReactNode, Ref, useRef, useLayoutEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { ConnectionIndicator } from "@/app/_components/GlobalComponents/Indicators/ConnectionIndicator";
 
 interface SidebarWrapperProps {
   isOpen: boolean;
@@ -92,7 +93,10 @@ export const SidebarWrapper = ({
           <div className="jotty-sidebar-header p-4 lg:p-6 border-b border-border">
             <div className="flex items-center justify-between">
               <a href="/" className="flex items-center gap-3">
-                <DynamicLogo className="h-10 w-10 lg:h-8 lg:w-8" size="32x32" />
+                <div className="relative">
+                  <DynamicLogo className="h-10 w-10 lg:h-8 lg:w-8" size="32x32" />
+                  <ConnectionIndicator borderColor="border-background" />
+                </div>
                 <div className="flex items-center gap-2">
                   <AppName
                     className="text-2xl lg:text-xl font-bold text-foreground jotty-app-name"

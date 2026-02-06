@@ -237,7 +237,10 @@
     "moreOptions": "Plus d'options",
     "retry": "Réessayer",
     "restoring": "Restauration...",
-    "copiedToClipboard": "Copié dans le presse-papiers"
+    "copiedToClipboard": "Copié dans le presse-papiers",
+    "offline": "Hors ligne",
+    "connected": "Connecté",
+    "reconnecting": "Reconnexion..."
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -745,7 +748,12 @@
       "calendarDay": "Jour de calendrier",
       "sampleInputLabel": "Champ d’exemple",
       "sampleInputPlaceholder": "Saisissez du texte..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Masquez l’indicateur de connexion Websocket du logo. \nVous verrez toujours un point rouge si vous êtes hors ligne, quel que soit ce paramètre.",
+    "selectConnectionIndicator": "Sélectionner l'état de l'indicateur de connexion",
+    "showIndicator": "Afficher l'indicateur",
+    "hideIndicator": "Masquer l'indicateur",
+    "hideConnectionIndicator": "Masquer l'indicateur de connexion du logo"
   },
   "admin": {
     "title": "Admin",

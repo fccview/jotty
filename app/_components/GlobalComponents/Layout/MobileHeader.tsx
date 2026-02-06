@@ -10,6 +10,7 @@ import { Button } from "../Buttons/Button";
 import { useEffect, useRef, useState } from "react";
 import { cn, handleScroll } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
+import { ConnectionIndicator } from "@/app/_components/GlobalComponents/Indicators/ConnectionIndicator";
 
 interface MobileHeaderProps {
   user: SanitisedUser | null;
@@ -25,22 +26,9 @@ export const MobileHeader = ({
   const { isRwMarkable } = useAppMode();
   const [isScrolled, setIsScrolled] = useState(true);
   const [scrollPos, setScrollPos] = useState(0);
-  const [isOffline, setIsOffline] = useState(false);
   const lastScrollY = useRef(0);
   const router = useRouter();
   const t = useTranslations();
-
-  useEffect(() => {
-    setIsOffline(!navigator.onLine);
-    const goOffline = () => setIsOffline(true);
-    const goOnline = () => setIsOffline(false);
-    window.addEventListener("offline", goOffline);
-    window.addEventListener("online", goOnline);
-    return () => {
-      window.removeEventListener("offline", goOffline);
-      window.removeEventListener("online", goOnline);
-    };
-  }, []);
 
   useEffect(() => {
     const handleGlobalScroll = (e: Event) => {
@@ -74,11 +62,7 @@ export const MobileHeader = ({
       <a href="/" className="flex items-center gap-3">
         <div className="relative">
           <DynamicLogo className="h-10 w-10" size="32x32" />
-          {isOffline && (
-            <span
-              className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-destructive border-[3px] ${scrollPos < 150 ? "border-background" : "border-muted"}`}
-            />
-          )}
+          <ConnectionIndicator borderColor={scrollPos < 150 ? "border-background" : "border-muted"} />
         </div>
         <div className="flex items-center gap-2">
           <AppName

@@ -236,7 +236,10 @@
     "history": "기록",
     "disable": "비활성화",
     "restoring": "복원 중...",
-    "retry": "다시 시도"
+    "retry": "다시 시도",
+    "offline": "오프라인",
+    "connected": "연결됨",
+    "reconnecting": "다시 연결하는 중..."
   },
   "history": {
     "noteHistory": "노트 기록",
@@ -766,7 +769,12 @@
       "calendarDay": "달력 날짜",
       "sampleInputLabel": "입력 예시",
       "sampleInputPlaceholder": "텍스트를 입력하세요..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "로고에서 웹소켓 연결 표시기를 숨깁니다. \n이 설정에 관계없이 오프라인인 경우에도 빨간색 점이 표시됩니다.",
+    "selectConnectionIndicator": "연결 표시기 상태 선택",
+    "showIndicator": "표시기 표시",
+    "hideIndicator": "표시 숨기기",
+    "hideConnectionIndicator": "로고에서 연결 표시 숨기기"
   },
   "admin": {
     "title": "관리자",

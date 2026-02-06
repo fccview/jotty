@@ -236,7 +236,10 @@
     "openSearch": "Zoeken openen",
     "closeSearch": "Zoeken sluiten",
     "moreOptions": "Meer opties",
-    "copiedToClipboard": "Gekopieerd naar klembord"
+    "copiedToClipboard": "Gekopieerd naar klembord",
+    "offline": "Offline",
+    "connected": "Aangesloten",
+    "reconnecting": "Opnieuw verbinding maken..."
   },
   "auth": {
     "loginTitle": "Inloggen",
@@ -745,7 +748,12 @@
       "calendarDay": "Kalenderdag",
       "sampleInputLabel": "Voorbeeldinvoer",
       "sampleInputPlaceholder": "Voer wat tekst in..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Verberg de websocket-verbindingsindicator in het logo. \nJe ziet nog steeds een rode stip als je offline bent, ongeacht deze instelling.",
+    "selectConnectionIndicator": "Selecteer de status van de verbindingsindicator",
+    "showIndicator": "Toon indicator",
+    "hideIndicator": "Indicator verbergen",
+    "hideConnectionIndicator": "Verbindingsindicator verbergen in logo"
   },
   "admin": {
     "title": "Beheer",

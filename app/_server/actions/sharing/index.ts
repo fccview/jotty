@@ -8,6 +8,7 @@ import {
   writeJsonFile,
 } from "@/app/_server/actions/file";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { broadcast } from "@/app/_server/ws/broadcast";
 import path from "path";
 import { DATA_DIR } from "@/app/_consts/files";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
@@ -151,6 +152,8 @@ export const shareWith = async (
       resourceTitle: item,
       metadata: { receiver: receiverUsername, permissions },
     });
+
+    await broadcast({ type: "sharing", action: "updated", entityId: item, username: sharerUsername });
 
     return { success: true, data: null };
   } catch (error) {
@@ -386,6 +389,8 @@ export const unshareWith = async (
       resourceTitle: item,
       metadata: { receiver: receiverUsername },
     });
+
+    await broadcast({ type: "sharing", action: "updated", entityId: item, username: sharerUsername });
   } catch (error) {
     await logAudit({
       level: "ERROR",
@@ -661,6 +666,9 @@ export const updateItemPermissions = async (
         newPermissions: permissions,
       },
     });
+
+    await broadcast({ type: "sharing", action: "updated", entityId: item, username });
+
     return { success: true, data: null };
   } catch (error) {
     await logAudit({

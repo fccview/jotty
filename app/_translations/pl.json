@@ -238,7 +238,10 @@
     "moreOptions": "Więcej opcji",
     "retry": "Spróbować ponownie",
     "restoring": "Przywracam...",
-    "copiedToClipboard": "Skopiowano do schowka"
+    "copiedToClipboard": "Skopiowano do schowka",
+    "offline": "Nieaktywny",
+    "connected": "Połączony",
+    "reconnecting": "Ponowne łączenie..."
   },
   "auth": {
     "loginTitle": "Logowanie",
@@ -746,7 +749,12 @@
       "calendarDay": "Dzień kalendarza",
       "sampleInputLabel": "Przykładowy etykieta wejściowa",
       "sampleInputPlaceholder": "Wprowadź tekst…"
-    }
+    },
+    "hideConnectionIndicatorDescription": "Ukryj wskaźnik połączenia websocket przed logo. \nNiezależnie od tego ustawienia, jeśli jesteś offline, nadal będziesz widzieć czerwoną kropkę.",
+    "selectConnectionIndicator": "Wybierz stan wskaźnika połączenia",
+    "showIndicator": "Pokaż wskaźnik",
+    "hideIndicator": "Ukryj wskaźnik",
+    "hideConnectionIndicator": "Ukryj wskaźnik połączenia przed logo"
   },
   "admin": {
     "title": "Admin",

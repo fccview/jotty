@@ -23,6 +23,7 @@ import {
   TaskStatus,
 } from "@/app/_types/enums";
 import { checkUserPermission } from "../sharing";
+import { broadcast } from "@/app/_server/ws/broadcast";
 
 export const updateItem = async (
   checklist: Checklist,
@@ -183,6 +184,8 @@ export const updateItem = async (
       }
     }
 
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error(
@@ -334,6 +337,8 @@ export const createItem = async (
       }
     }
 
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+
     return { success: true, data: newItem };
   } catch (error) {
     console.error(
@@ -446,6 +451,8 @@ export const deleteItem = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -592,6 +599,8 @@ export const reorderItems = async (formData: FormData) => {
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: (await getUsername()) });
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -758,6 +767,8 @@ export const updateItemStatus = async (
         error
       );
     }
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username });
+
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error updating item status:", error);
@@ -866,6 +877,8 @@ export const createBulkItems = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -1071,6 +1084,8 @@ export const bulkToggleItems = async (
         error
       );
     }
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error bulk toggling items:", error);
@@ -1166,6 +1181,8 @@ export const bulkDeleteItems = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true };
   } catch (error) {
@@ -1302,6 +1319,8 @@ export const createSubItem = async (
       );
     }
 
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error creating sub-item:", error);
@@ -1391,6 +1410,8 @@ export const archiveItem = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -1485,6 +1506,8 @@ export const unarchiveItem = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {

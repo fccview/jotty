@@ -216,6 +216,7 @@ export interface User {
   defaultNoteFilter?: DefaultNoteFilter;
   quickCreateNotes?: QuickCreateNotes;
   quickCreateNotesCategory?: string;
+  hideConnectionIndicator?: HideConnectionIndicator;
   mfaEnabled?: boolean;
   mfaSecret?: string;
   mfaRecoveryCode?: string;
@@ -256,6 +257,7 @@ export type DefaultChecklistFilter =
   | "simple";
 export type DefaultNoteFilter = "all" | "recent" | "pinned";
 export type QuickCreateNotes = "enable" | "disable";
+export type HideConnectionIndicator = "enable" | "disable";
 
 export interface SharedItem {
   id: string;
@@ -552,6 +554,18 @@ export interface AuditLogStats {
   topActions: { action: string; count: number }[];
   topUsers: { username: string; count: number }[];
   recentActivity: AuditLogEntry[];
+}
+
+export interface WsEvent {
+  type: "checklist" | "note" | "category" | "settings" | "sharing";
+  action: "created" | "updated" | "deleted";
+  entityId?: string;
+  username: string;
+  connectionId?: string;
+}
+
+declare global {
+  var __jottyBroadcast: ((event: WsEvent) => void) | undefined;
 }
 
 export interface ContentFilter {

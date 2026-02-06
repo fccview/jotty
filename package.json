@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/postbuild.js",
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest",
@@ -90,6 +90,7 @@
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0",
     "uuid": "^11.1.0",
+    "ws": "^8.19.0",
     "zod": "^4.1.12",
     "zustand": "^5.0.6"
   },
@@ -120,6 +121,7 @@
     "@types/turndown": "^5.0.5",
     "@types/unist": "^3.0.3",
     "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^4.0.17",
     "autoprefixer": "^10.0.1",
     "esbuild": "^0.27.3",
