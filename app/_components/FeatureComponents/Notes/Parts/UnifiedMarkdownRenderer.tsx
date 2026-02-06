@@ -40,8 +40,11 @@ const getRawTextFromChildren = (children: React.ReactNode): string => {
   Children.forEach(children, (child) => {
     if (typeof child === "string") {
       text += child;
-    } else if (isValidElement(child) && child.props.children) {
-      text += getRawTextFromChildren(child.props.children);
+    } else if (isValidElement(child)) {
+      const props = child.props as Record<string, unknown>;
+      if (props.children) {
+        text += getRawTextFromChildren(props.children as React.ReactNode);
+      }
     }
   });
   return text;
@@ -149,7 +152,7 @@ export const UnifiedMarkdownRenderer = ({
       const child = Children.toArray(children)[0];
 
       if (isValidElement(child) && child.type === "code") {
-        const codeElement = child as ReactElement;
+        const codeElement = child as ReactElement<any>;
         const language =
           codeElement.props.className?.replace("language-", "") || "plaintext";
         const rawCode = getRawTextFromChildren(codeElement.props.children);
@@ -305,7 +308,8 @@ export const UnifiedMarkdownRenderer = ({
       for (let i = 0; i < childArray.length; i++) {
         const child = childArray[i];
         if (isValidElement(child)) {
-          const textContent = getRawTextFromChildren(child.props?.children);
+          const childProps = child.props as Record<string, unknown>;
+          const textContent = getRawTextFromChildren(childProps?.children as React.ReactNode);
           const match = textContent.match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]/i);
           if (match) {
             calloutType = match[1].toLowerCase() as "info" | "warning" | "success" | "danger";
@@ -340,11 +344,14 @@ export const UnifiedMarkdownRenderer = ({
               return child;
             }
 
-            if (isValidElement(child) && child.props?.children) {
-              const newChildren = stripCalloutPrefix(child.props.children);
-              if (newChildren !== child.props.children) {
-                prefixStripped = true;
-                return { ...child, props: { ...child.props, children: newChildren } };
+            if (isValidElement(child)) {
+              const cProps = child.props as Record<string, unknown>;
+              if (cProps?.children) {
+                const newChildren = stripCalloutPrefix(cProps.children as React.ReactNode);
+                if (newChildren !== cProps.children) {
+                  prefixStripped = true;
+                  return { ...child, props: { ...cProps, children: newChildren } };
+                }
               }
             }
 
@@ -354,14 +361,15 @@ export const UnifiedMarkdownRenderer = ({
 
         const modifiedChildren = Children.map(children, (child, index) => {
           if (index === matchIndex && isValidElement(child)) {
-            const newChildren = stripCalloutPrefix(child.props?.children);
+            const cProps = child.props as Record<string, unknown>;
+            const newChildren = stripCalloutPrefix(cProps?.children as React.ReactNode);
             const hasContent = Children.toArray(newChildren).some(
               (c) => (typeof c === "string" && c.trim()) || isValidElement(c)
             );
             if (!hasContent) {
               return null;
             }
-            return { ...child, props: { ...child.props, children: newChildren } };
+            return { ...child, props: { ...cProps, children: newChildren } };
           }
           return child;
         })?.filter(Boolean);

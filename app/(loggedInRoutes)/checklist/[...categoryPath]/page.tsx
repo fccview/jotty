@@ -16,16 +16,15 @@ import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 interface ChecklistPageProps {
-  params: {
+  params: Promise<{
     categoryPath: string[];
-  };
+  }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: ChecklistPageProps): Promise<Metadata> {
+export async function generateMetadata(props: ChecklistPageProps): Promise<Metadata> {
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
@@ -37,7 +36,8 @@ export async function generateMetadata({
   return getMedatadaTitle(Modes.CHECKLISTS, id, category);
 }
 
-export default async function ChecklistPage({ params }: ChecklistPageProps) {
+export default async function ChecklistPage(props: ChecklistPageProps) {
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");

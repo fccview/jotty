@@ -1,5 +1,6 @@
 import { LinksTab } from "@/app/_components/FeatureComponents/Profile/Parts/LinksTab";
-import { readLinkIndex, LinkIndex } from "@/app/_server/actions/link";
+import { readLinkIndex } from "@/app/_server/actions/link";
+import { LinkIndex } from "@/app/_types";
 import { getUsername } from "@/app/_server/actions/users";
 import { getArchivedItems } from "@/app/_server/actions/archived";
 import { getUserNotes } from "@/app/_server/actions/note";

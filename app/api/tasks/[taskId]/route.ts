@@ -5,10 +5,8 @@ import { TaskStatus } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { taskId: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ taskId: string }> }) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const task = await getListById(params.taskId, user.username);
@@ -63,10 +61,8 @@ export async function GET(
   });
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { taskId: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ taskId: string }> }) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const body = await request.json();
@@ -117,10 +113,8 @@ export async function PUT(
   });
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { taskId: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ taskId: string }> }) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const task = await getListById(params.taskId, user.username);

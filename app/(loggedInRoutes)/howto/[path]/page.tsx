@@ -7,16 +7,15 @@ import { getTranslations } from "next-intl/server";
 import { getHowtoGuideById, getHowtoFilePath, isValidHowtoGuide } from "@/app/_utils/howto-utils";
 
 interface HowtoPageProps {
-  params: {
+  params: Promise<{
     path: string;
-  };
+  }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: HowtoPageProps): Promise<Metadata> {
+export async function generateMetadata(props: HowtoPageProps): Promise<Metadata> {
+  const params = await props.params;
   const { path } = params;
   const t = await getTranslations();
   const guide = getHowtoGuideById(path, t);
@@ -33,7 +32,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function HowtoPage({ params }: HowtoPageProps) {
+export default async function HowtoPage(props: HowtoPageProps) {
+  const params = await props.params;
   const { path } = params;
   const t = await getTranslations();
 

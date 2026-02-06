@@ -107,7 +107,7 @@ export const register = async (formData: FormData) => {
       ? "__Host-session"
       : "session";
 
-  cookies().set(cookieName, sessionId, {
+  (await cookies()).set(cookieName, sessionId, {
     httpOnly: true,
     secure:
       process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
@@ -228,7 +228,7 @@ export const login = async (formData: FormData) => {
           ? "__Host-mfa-pending"
           : "mfa-pending";
 
-      cookies().set(cookieName, pendingSessionId, {
+      (await cookies()).set(cookieName, pendingSessionId, {
         httpOnly: true,
         secure:
           process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
@@ -267,7 +267,7 @@ export const login = async (formData: FormData) => {
         ? "__Host-session"
         : "session";
 
-    cookies().set(cookieName, sessionId, {
+    (await cookies()).set(cookieName, sessionId, {
       httpOnly: true,
       secure:
         process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
@@ -292,7 +292,7 @@ export const logout = async () => {
       ? "__Host-session"
       : "session";
 
-  const sessionId = cookies().get(cookieName)?.value;
+  const sessionId = (await cookies()).get(cookieName)?.value;
 
   if (sessionId) {
     const sessions = await readSessionData();
@@ -303,9 +303,9 @@ export const logout = async () => {
       await writeSessionData(sessions);
       await removeSession(sessionId);
 
-      cookies().delete(cookieName);
+      (await cookies()).delete(cookieName);
     } catch (error) {
-      cookies().delete(cookieName);
+      (await cookies()).delete(cookieName);
     }
   }
 
@@ -331,7 +331,7 @@ export const verifyMfaLogin = async (formData: FormData) => {
       ? "__Host-mfa-pending"
       : "mfa-pending";
 
-  const pendingSessionId = cookies().get(pendingCookieName)?.value;
+  const pendingSessionId = (await cookies()).get(pendingCookieName)?.value;
 
   if (!pendingSessionId) {
     return { error: "No pending MFA session" };
@@ -404,14 +404,14 @@ export const verifyMfaLogin = async (formData: FormData) => {
   await removeSession(pendingSessionId);
   await createSession(sessionId, username, "local");
 
-  cookies().delete(pendingCookieName);
+  (await cookies()).delete(pendingCookieName);
 
   const cookieName =
     process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
       ? "__Host-session"
       : "session";
 
-  cookies().set(cookieName, sessionId, {
+  (await cookies()).set(cookieName, sessionId, {
     httpOnly: true,
     secure:
       process.env.NODE_ENV === "production" && process.env.HTTPS === "true",

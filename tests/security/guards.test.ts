@@ -8,10 +8,11 @@ vi.mock("@/app/_server/actions/users", () => ({
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
 }));
 
-vi.mock("next/dist/client/components/headers", () => ({
-  headers: () => ({
-    get: (name: string) => mockHeaders(name),
-  }),
+vi.mock("next/headers", () => ({
+  headers: () =>
+    Promise.resolve({
+      get: (name: string) => mockHeaders(name),
+    }),
 }));
 
 vi.mock("next/navigation", () => ({

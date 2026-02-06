@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const cookieName =
       process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
         ? "__Host-session"

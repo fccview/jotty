@@ -12,17 +12,16 @@ import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
 
 interface PublicNotePageProps {
-  params: {
+  params: Promise<{
     categoryPath: string[];
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+  }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: PublicNotePageProps): Promise<Metadata> {
+export async function generateMetadata(props: PublicNotePageProps): Promise<Metadata> {
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
@@ -34,10 +33,9 @@ export async function generateMetadata({
   return getMedatadaTitle(Modes.NOTES, id, category);
 }
 
-export default async function PublicNotePage({
-  params,
-  searchParams,
-}: PublicNotePageProps) {
+export default async function PublicNotePage(props: PublicNotePageProps) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");

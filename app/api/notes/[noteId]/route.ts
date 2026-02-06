@@ -4,10 +4,8 @@ import { updateNote, deleteNote } from "@/app/_server/actions/note";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-    request: NextRequest,
-    { params }: { params: { noteId: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ noteId: string }> }) {
+    const params = await props.params;
     return withApiAuth(request, async (user) => {
         try {
             const body = await request.json();
@@ -63,10 +61,8 @@ export async function PUT(
     });
 }
 
-export async function DELETE(
-    request: NextRequest,
-    { params }: { params: { noteId: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ noteId: string }> }) {
+    const params = await props.params;
     return withApiAuth(request, async (user) => {
         try {
             const { getUserNotes } = await import("@/app/_server/actions/note");

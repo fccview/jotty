@@ -14,18 +14,16 @@ import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
 
 interface PublicChecklistPageProps {
-  params: {
+  params: Promise<{
     categoryPath: string[];
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+  }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: PublicChecklistPageProps): Promise<Metadata> {
+export async function generateMetadata(props: PublicChecklistPageProps): Promise<Metadata> {
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
@@ -37,10 +35,9 @@ export async function generateMetadata({
   return getMedatadaTitle(Modes.CHECKLISTS, id, category);
 }
 
-export default async function PublicChecklistPage({
-  params,
-  searchParams,
-}: PublicChecklistPageProps) {
+export default async function PublicChecklistPage(props: PublicChecklistPageProps) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");

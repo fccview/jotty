@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { username: string; filename: string } }
+  props: { params: Promise<{ username: string; filename: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await getCurrentUser();
     if (!user && !process.env.SERVE_PUBLIC_VIDEOS) {

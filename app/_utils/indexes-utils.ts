@@ -1,4 +1,4 @@
-import { LinkIndex } from "../_server/actions/link";
+import { LinkIndex } from "../_types";
 import { Checklist, ItemType, Note } from "../_types";
 import { ItemTypes } from "../_types/enums";
 import { encodeCategoryPath } from "./global-utils";

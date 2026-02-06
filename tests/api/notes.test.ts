@@ -151,7 +151,7 @@ describe("Notes API", () => {
         content: "This note has been updated via API",
         category: "Work",
       })
-      const response = await PUT(request, { params: { noteId: "uuid-1" } })
+      const response = await PUT(request, { params: Promise.resolve({ noteId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -179,7 +179,7 @@ describe("Notes API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/notes/uuid-1", {
         content: "Updated content only",
       })
-      const response = await PUT(request, { params: { noteId: "uuid-1" } })
+      const response = await PUT(request, { params: Promise.resolve({ noteId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -192,7 +192,7 @@ describe("Notes API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/notes/nonexistent", {
         title: "Updated Title",
       })
-      const response = await PUT(request, { params: { noteId: "nonexistent" } })
+      const response = await PUT(request, { params: Promise.resolve({ noteId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -205,7 +205,7 @@ describe("Notes API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/notes/uuid-1", {
         title: "Updated Title",
       })
-      const response = await PUT(request, { params: { noteId: "uuid-1" } })
+      const response = await PUT(request, { params: Promise.resolve({ noteId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -228,7 +228,7 @@ describe("Notes API", () => {
       mockDeleteNote.mockResolvedValue({ success: true })
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/notes/uuid-1")
-      const response = await DELETE(request, { params: { noteId: "uuid-1" } })
+      const response = await DELETE(request, { params: Promise.resolve({ noteId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -239,7 +239,7 @@ describe("Notes API", () => {
       mockGetUserNotes.mockResolvedValue({ success: true, data: [] })
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/notes/nonexistent")
-      const response = await DELETE(request, { params: { noteId: "nonexistent" } })
+      const response = await DELETE(request, { params: Promise.resolve({ noteId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -250,7 +250,7 @@ describe("Notes API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/notes/uuid-1")
-      const response = await DELETE(request, { params: { noteId: "uuid-1" } })
+      const response = await DELETE(request, { params: Promise.resolve({ noteId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)

@@ -1,6 +1,6 @@
 "use server";
 
-import { ItemType, Result, SharingPermissions } from "@/app/_types";
+import { ItemType, Result, SharingPermissions } from "@/app/_types/core";
 import { extractUuid } from "@/app/_utils/yaml-metadata-utils";
 import {
   ensureDir,
@@ -691,5 +691,3 @@ export const updateReceiverUsername = async (
     await writeShareFile(itemType, sharingData);
   }
 };
-
-export type { SharingPermissions };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LinkIndex } from "@/app/_server/actions/link";
+import { LinkIndex } from "@/app/_types";
 import dynamic from "next/dynamic";
 import {
   File02Icon,

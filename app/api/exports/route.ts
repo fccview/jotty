@@ -26,7 +26,7 @@ const canAccessOtherUsersContent = async (user: User): Promise<boolean> => {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  _context: { params: Promise<Record<string, never>> }
 ) {
   return withApiAuth(request, async (user) => {
     try {

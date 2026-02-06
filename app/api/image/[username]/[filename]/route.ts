@@ -9,9 +9,10 @@ export const dynamic = "force-dynamic";
 
 export const GET = withCacheControl(async function GET(
   request: NextRequest,
-  { params }: { params: { username: string; filename: string } }
+  props: { params: Promise<{ username: string; filename: string }> },
 ) {
   try {
+    const params = await props.params;
     const user = await getCurrentUser();
 
     if (!user && !process.env.SERVE_PUBLIC_IMAGES) {
@@ -27,7 +28,7 @@ export const GET = withCacheControl(async function GET(
       NOTES_FOLDER,
       username,
       "images",
-      filename
+      filename,
     );
 
     try {

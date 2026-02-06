@@ -1,14 +1,6 @@
-import { Note } from "@/app/_types";
+import { Note, TagsIndex, TagInfo } from "@/app/_types";
 
-export interface TagInfo {
-  name: string;
-  displayName: string;
-  parent: string | null;
-  noteUuids: string[];
-  totalCount: number;
-}
-
-export type TagsIndex = Record<string, TagInfo>;
+export type { TagsIndex, TagInfo };
 
 export const normalizeTag = (tag: string): string => {
   return tag.toLowerCase().trim().replace(/^#/, "");

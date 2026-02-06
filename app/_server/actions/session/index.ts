@@ -49,7 +49,7 @@ export const createSession = async (
   username: string,
   loginType: "local" | "sso" | "pending-mfa"
 ): Promise<void> => {
-  const headersList = headers();
+  const headersList = await headers();
   const userAgent = headersList.get("user-agent") || "Unknown";
   const forwarded = headersList.get("x-forwarded-for");
   const realIp = headersList.get("x-real-ip");
@@ -106,7 +106,7 @@ export const getSessionId = async (): Promise<string> => {
     process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
       ? "__Host-session"
       : "session";
-  return cookies().get(cookieName)?.value || "";
+  return (await cookies()).get(cookieName)?.value || "";
 };
 
 export const getLoginType = async (): Promise<"local" | "sso" | "pending-mfa" | undefined> => {
@@ -210,7 +210,7 @@ export const terminateAllOtherSessions = async (): Promise<Result<null>> => {
       process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
         ? "__Host-session"
         : "session";
-    const sessionId = cookies().get(cookieName)?.value;
+    const sessionId = (await cookies()).get(cookieName)?.value;
 
     await removeAllSessionsForUser(currentUser.username, sessionId);
 

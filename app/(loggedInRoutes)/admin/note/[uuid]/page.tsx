@@ -14,21 +14,21 @@ import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
 interface AdminNotePageProps {
-  params: {
+  params: Promise<{
     uuid: string;
-  };
+  }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: AdminNotePageProps): Promise<Metadata> {
+export async function generateMetadata(props: AdminNotePageProps): Promise<Metadata> {
+  const params = await props.params;
   const { uuid } = params;
   return getMedatadaTitle(Modes.NOTES, uuid, "Admin");
 }
 
-export default async function AdminNotePage({ params }: AdminNotePageProps) {
+export default async function AdminNotePage(props: AdminNotePageProps) {
+  const params = await props.params;
   const { uuid } = params;
   const hasContentAccess = await canAccessAllContent();
 

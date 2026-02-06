@@ -1,10 +1,36 @@
 import { Modes, ItemTypes } from "./enums";
-import { LinkIndex } from "../_server/actions/link";
-import { TagsIndex } from "../_utils/tag-utils";
+
+export type { ItemType, Result, SharingPermissions } from "./core";
 
 export type ChecklistType = "simple" | "task";
-export type ItemType = "checklist" | "note";
 export type EncryptionMethod = "pgp" | "xchacha";
+
+export interface ItemLinks {
+  isLinkedTo: {
+    notes: string[];
+    checklists: string[];
+  };
+  isReferencedIn: {
+    notes: string[];
+    checklists: string[];
+  };
+}
+
+export interface LinkIndex {
+  notes: Record<string, ItemLinks>;
+  checklists: Record<string, ItemLinks>;
+  [key: string]: Record<string, ItemLinks>;
+}
+
+export interface TagInfo {
+  name: string;
+  displayName: string;
+  parent: string | null;
+  noteUuids: string[];
+  totalCount: number;
+}
+
+export type TagsIndex = Record<string, TagInfo>;
 
 export interface PGPKeyMetadata {
   keyFingerprint: string;
@@ -159,12 +185,6 @@ export interface Category {
   level: number;
 }
 
-export interface Result<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
 export interface User {
   username: string;
   passwordHash: string;
@@ -252,12 +272,6 @@ export interface SharedItem {
 export interface SharingMetadata {
   checklists: Record<string, SharedItem>;
   notes: Record<string, SharedItem>;
-}
-
-export interface SharingPermissions {
-  canRead: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
 }
 
 export interface GlobalSharing {

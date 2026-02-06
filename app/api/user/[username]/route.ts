@@ -4,10 +4,8 @@ import { withApiAuth } from "@/app/_utils/api-utils";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { username: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ username: string }> }) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const { username } = params;

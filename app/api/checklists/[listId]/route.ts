@@ -4,10 +4,8 @@ import { getListById, updateList, deleteList } from "@/app/_server/actions/check
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { listId: string } }
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ listId: string }> }) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const body = await request.json();
@@ -50,10 +48,8 @@ export async function PUT(
   });
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { listId: string } }
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ listId: string }> }) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const list = await getListById(params.listId, user.username);

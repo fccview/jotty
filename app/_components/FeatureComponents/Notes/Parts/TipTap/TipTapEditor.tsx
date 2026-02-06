@@ -88,7 +88,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const [linkRequestHasSelection, setLinkRequestHasSelection] =
       useState(false);
     const isInitialized = useRef(false);
-    const debounceTimeoutRef = useRef<NodeJS.Timeout>();
+    const debounceTimeoutRef = useRef<NodeJS.Timeout>(undefined);
     const originalMarkdownRef = useRef<string>(getOriginalMarkdown());
     const richEditorWasEditedRef = useRef<boolean>(false);
     const isDirtyRef = useRef<boolean>(false);

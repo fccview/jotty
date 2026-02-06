@@ -19,16 +19,15 @@ import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
 interface NotePageProps {
-  params: {
+  params: Promise<{
     categoryPath: string[];
-  };
+  }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: NotePageProps): Promise<Metadata> {
+export async function generateMetadata(props: NotePageProps): Promise<Metadata> {
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
@@ -40,7 +39,8 @@ export async function generateMetadata({
   return getMedatadaTitle(Modes.NOTES, id, category);
 }
 
-export default async function NotePage({ params }: NotePageProps) {
+export default async function NotePage(props: NotePageProps) {
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");

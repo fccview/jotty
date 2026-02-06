@@ -5,6 +5,8 @@ import { Checklist } from "@/app/_types";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import type { JSX } from "react";
+
 interface ChecklistModalsProps {
   localList: Checklist;
   showShareModal: boolean;

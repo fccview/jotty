@@ -11,8 +11,8 @@ import {
   readShareFile,
   getItemPermissions,
   updateItemPermissions,
-  SharingPermissions,
 } from "../_server/actions/sharing";
+import { SharingPermissions } from "@/app/_types";
 import { getCurrentUser } from "../_server/actions/users";
 import { ItemTypes } from "../_types/enums";
 

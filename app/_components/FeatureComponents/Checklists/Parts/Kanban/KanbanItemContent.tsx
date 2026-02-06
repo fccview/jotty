@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, type JSX } from "react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
@@ -17,7 +17,7 @@ interface KanbanItemContentProps {
   isShared: boolean;
   getUserAvatarUrl: (username: string) => string;
   getStatusIcon: (status?: string) => JSX.Element | null;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   onEditTextChange: (text: string) => void;
   onEditSave: () => void;
   onEditKeyDown: (e: React.KeyboardEvent) => void;

@@ -13,6 +13,7 @@ import { NavigationGuardProvider } from "@/app/_providers/NavigationGuardProvide
 import { EmojiProvider } from "@/app/_providers/EmojiProvider";
 import { InstallPrompt } from "@/app/_components/GlobalComponents/Prompts/InstallPrompt";
 import { UpdatePrompt } from "@/app/_components/GlobalComponents/Pwa/UpdatePrompt";
+import { ServiceWorkerRegister } from "@/app/_components/GlobalComponents/Pwa/ServiceWorkerRegister";
 import { getSettings } from "@/app/_server/actions/config";
 import { DynamicFavicon } from "@/app/_components/GlobalComponents/Layout/Logo/DynamicFavicon";
 import { ShortcutProvider } from "@/app/_providers/ShortcutsProvider";
@@ -151,7 +152,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = headers().get("x-pathname");
+  const pathname = (await headers()).get("x-pathname");
   const isPublicRoute = pathname?.startsWith("/public");
   const settings = await getSettings();
   const appName =
@@ -282,6 +283,7 @@ export default async function RootLayout({
             </KonamiProvider>
           </AppModeProvider>
         </NextIntlClientProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

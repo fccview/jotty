@@ -20,7 +20,7 @@ import {
   SanitisedUser,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { LinkIndex } from "../_server/actions/link";
+import { LinkIndex } from "../_types";
 import { buildTagsIndex } from "../_utils/tag-utils";
 import { useSidebarStore } from "../_utils/sidebar-store";
 
