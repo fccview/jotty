@@ -24,11 +24,6 @@ export default async function HomePage() {
       getCategories(Modes.NOTES),
     ]);
 
-  console.log("limit", HOMEPAGE_ITEMS_LIMIT);
-
-  console.log("listsResult", listsResult.data?.length);
-  console.log("notesResult", notesResult.data?.length);
-
   const lists = listsResult.success && listsResult.data ? listsResult.data : [];
   const notes = notesResult.success && notesResult.data ? notesResult.data : [];
 
