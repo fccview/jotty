@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getAllLists } from "@/app/_server/actions/checklist";
+import { getAllLists, getListById } from "@/app/_server/actions/checklist";
 import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
 import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
@@ -51,22 +51,26 @@ export default async function PublicChecklistPage({
 
   await CheckForNeedsMigration();
 
-  const listsResult = await getAllLists();
-  if (!listsResult.success || !listsResult.data) {
-    redirect("/");
-  }
+  let checklist = await getListById(id, undefined, category);
 
-  let checklist = listsResult.data.find(
-    (list) => list.id === id && list.category === category
-  );
+  if (!checklist) {
+    const listsResult = await getAllLists();
+    if (!listsResult.success || !listsResult.data) {
+      redirect("/");
+    }
 
-  if (!checklist && categoryPath.length === 1) {
     checklist = listsResult.data.find(
-      (list) => list.id === id && list.category === "Uncategorized"
+      (list) => list.id === id && list.category === category
     );
 
-    if (!checklist) {
-      checklist = listsResult.data.find((list) => list.id === id);
+    if (!checklist && categoryPath.length === 1) {
+      checklist = listsResult.data.find(
+        (list) => list.id === id && list.category === "Uncategorized"
+      );
+
+      if (!checklist) {
+        checklist = listsResult.data.find((list) => list.id === id);
+      }
     }
   }
 

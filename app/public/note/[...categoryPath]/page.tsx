@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getAllNotes } from "@/app/_server/actions/note";
+import { getAllNotes, getNoteById } from "@/app/_server/actions/note";
 import { PublicNoteView } from "@/app/_components/FeatureComponents/PublicView/PublicNoteView";
 import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
 import type { Metadata } from "next";
@@ -46,22 +46,27 @@ export default async function PublicNotePage({
       ? "Uncategorized"
       : decodeCategoryPath(encodedCategoryPath);
 
-  const docsResult = await getAllNotes();
-  if (!docsResult.success || !docsResult.data) {
-    redirect("/");
-  }
+  const isUuidOnly = categoryPath.length === 1;
+  let note = await getNoteById(id, isUuidOnly ? undefined : category);
 
-  let note = docsResult.data.find(
-    (doc) => doc.id === id && doc.category === category
-  );
+  if (!note) {
+    const notesResult = await getAllNotes();
+    if (!notesResult.success || !notesResult.data) {
+      redirect("/");
+    }
 
-  if (!note && categoryPath.length === 1) {
-    note = docsResult.data.find(
-      (doc) => doc.id === id && doc.category === "Uncategorized"
+    note = notesResult.data.find(
+      (n) => n.id === id && n.category === category
     );
 
-    if (!note) {
-      note = docsResult.data.find((doc) => doc.id === id);
+    if (!note && isUuidOnly) {
+      note = notesResult.data.find(
+        (n) => n.id === id && n.category === "Uncategorized"
+      );
+
+      if (!note) {
+        note = notesResult.data.find((n) => n.id === id);
+      }
     }
   }
 
