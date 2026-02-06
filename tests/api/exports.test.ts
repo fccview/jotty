@@ -39,7 +39,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "all_checklists_notes",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -53,7 +53,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "all_checklists_notes",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(403)
@@ -66,7 +66,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "all_checklists_notes",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -86,7 +86,7 @@ describe("Exports API", () => {
         type: "user_checklists_notes",
         username: "testuser",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -106,7 +106,7 @@ describe("Exports API", () => {
         type: "user_checklists_notes",
         username: "otheruser",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -120,7 +120,7 @@ describe("Exports API", () => {
         type: "user_checklists_notes",
         username: "otheruser",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(403)
@@ -133,7 +133,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "user_checklists_notes",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -147,7 +147,7 @@ describe("Exports API", () => {
         type: "user_checklists_notes",
         username: "testuser",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -167,7 +167,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "all_users_data",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -181,7 +181,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "all_users_data",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(403)
@@ -194,7 +194,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "all_users_data",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -214,7 +214,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "whole_data_folder",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -228,7 +228,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "whole_data_folder",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(403)
@@ -241,7 +241,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "whole_data_folder",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -254,7 +254,7 @@ describe("Exports API", () => {
       mockGetAppSettings.mockResolvedValue(mockAppSettings)
 
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {})
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -267,7 +267,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "invalid_type",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -287,7 +287,7 @@ describe("Exports API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "all_checklists_notes",
       })
-      const response = await POST(request, { params: { filename: "" } })
+      const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(500)
