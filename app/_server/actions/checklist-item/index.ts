@@ -272,11 +272,16 @@ export const createItem = async (
 
     const defaultStatus = list.type === "task" ? getDefaultStatus() : undefined;
 
+    const shiftedItems = list.items.map((item) => ({
+      ...item,
+      order: item.order + 1,
+    }));
+
     const newItem = {
       id: `${listId}-${Date.now()}`,
       text,
       completed: false,
-      order: list.items.length,
+      order: 0,
       description: description || undefined,
       createdBy: currentUser,
       createdAt: now,
@@ -299,7 +304,7 @@ export const createItem = async (
 
     const updatedList = {
       ...list,
-      items: [...list.items, newItem],
+      items: [newItem, ...shiftedItems],
       updatedAt: new Date().toISOString(),
     };
 
@@ -796,11 +801,15 @@ export const createBulkItems = async (
     const now = new Date().toISOString();
 
     const lines = itemsText.split("\n").filter((line) => line.trim());
+    const shiftedItems = (list.items || []).map((item) => ({
+      ...item,
+      order: item.order + lines.length,
+    }));
     const newItems = lines.map((text, index) => ({
       id: `${listId}-${Date.now()}-${index}`,
       text: text.trim(),
       completed: false,
-      order: list?.items?.length || 0 + index,
+      order: index,
       createdBy: currentUser,
       createdAt: now,
       lastModifiedBy: currentUser,
@@ -820,7 +829,7 @@ export const createBulkItems = async (
 
     const updatedList = {
       ...list,
-      items: [...(list.items || []), ...newItems],
+      items: [...newItems, ...shiftedItems],
       updatedAt: new Date().toISOString(),
     };
 
