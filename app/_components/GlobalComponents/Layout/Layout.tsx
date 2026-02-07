@@ -6,7 +6,7 @@ import { Sidebar } from "@/app/_components/FeatureComponents/Sidebar/Sidebar";
 import { SettingsSidebar } from "@/app/_components/FeatureComponents/Sidebar/SettingsSidebar";
 import { Category, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useMobileGestures } from "@/app/_hooks/useMobileGestures";
+import { useSidebarGesture } from "@/app/_hooks/useSidebarGesture";
 import { isMobileDevice } from "@/app/_utils/global-utils";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 import { usePathname } from "next/navigation";
@@ -49,13 +49,11 @@ export const Layout = ({
 
   const isSettingsPage = pathname?.startsWith("/settings");
 
-  useMobileGestures({
-    onSwipeRight: () => setSidebarOpen(true),
-    enabled:
-      isMobileDevice() && !window?.location.pathname.startsWith("/note/") && !isDragging,
-    swipeThreshold: 25,
-    edgeThreshold: 150,
-    velocityThreshold: 0.04,
+  useSidebarGesture({
+    isOpen: sidebarOpen,
+    onOpen: () => setSidebarOpen(true),
+    onClose: () => setSidebarOpen(false),
+    enabled: isMobileDevice() && !pathname?.startsWith("/note/") && !isDragging,
   });
 
   if (!isInitialized) {
