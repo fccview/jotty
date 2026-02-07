@@ -28,9 +28,12 @@ export const SwipeNavigationWrapper = ({
 }: SwipeNavigationWrapperProps) => {
   const router = useRouter();
   const { checkNavigation } = useNavigationGuard();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const currentRef = useRef<HTMLDivElement>(null);
+  const prevRef = useRef<HTMLDivElement>(null);
+  const nextRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [screenWidth, setScreenWidth] = useState(0);
+
   const { prev, next } = useAdjacentNotes(noteId);
 
   const prevUrl = getNoteUrl(prev);
@@ -43,11 +46,7 @@ export const SwipeNavigationWrapper = ({
       return;
     }
 
-    const mobile = isMobileDevice();
-    setIsMobile(mobile);
-    if (mobile) {
-      setScreenWidth(window.innerWidth);
-    }
+    setIsMobile(isMobileDevice());
   }, []);
 
   useEffect(() => {
@@ -76,54 +75,57 @@ export const SwipeNavigationWrapper = ({
     enabled: isMobile && enabled,
     onNavigateLeft: handleNavigateLeft,
     onNavigateRight: handleNavigateRight,
-    containerRef,
+    wrapperRef,
+    currentRef,
+    prevRef,
+    nextRef,
     hasPrev: !!prev,
     hasNext: !!next,
   });
 
-  if (!isMobile || screenWidth === 0) {
+  if (!isMobile) {
     return <>{children}</>;
   }
 
   return (
-    <div className="overflow-hidden w-full h-full">
+    <div ref={wrapperRef} className="relative w-full h-full overflow-x-hidden" style={{ touchAction: "pan-y" }}>
       <div
-        ref={containerRef}
-        className="flex h-full"
-        style={{
-          width: `${screenWidth * 3}px`,
-          transform: `translateX(-${screenWidth}px)`,
-          willChange: "transform",
-        }}
+        ref={currentRef}
+        className="relative z-10 w-full h-full"
+        style={{ willChange: "transform, opacity" }}
       >
-        <div className="h-full overflow-hidden" style={{ width: `${screenWidth}px`, flexShrink: 0 }}>
-          {prevUrl ? (
-            <iframe
-              src={prevUrl}
-              className="w-full h-full border-0 pointer-events-none"
-              tabIndex={-1}
-              aria-hidden="true"
-            />
-          ) : (
-            <div className="w-full h-full bg-background" />
-          )}
-        </div>
-        <div className="h-full" style={{ width: `${screenWidth}px`, flexShrink: 0 }}>
-          {children}
-        </div>
-        <div className="h-full overflow-hidden" style={{ width: `${screenWidth}px`, flexShrink: 0 }}>
-          {nextUrl ? (
-            <iframe
-              src={nextUrl}
-              className="w-full h-full border-0 pointer-events-none"
-              tabIndex={-1}
-              aria-hidden="true"
-            />
-          ) : (
-            <div className="w-full h-full bg-background" />
-          )}
-        </div>
+        {children}
       </div>
+
+      {prevUrl && (
+        <div
+          ref={prevRef}
+          className="absolute inset-0 z-20 bg-background pointer-events-none"
+          style={{ opacity: 0, willChange: "transform, opacity" }}
+        >
+          <iframe
+            src={prevUrl}
+            className="w-full h-full border-0 pointer-events-none"
+            tabIndex={-1}
+            aria-hidden="true"
+          />
+        </div>
+      )}
+
+      {nextUrl && (
+        <div
+          ref={nextRef}
+          className="absolute inset-0 z-20 bg-background pointer-events-none"
+          style={{ opacity: 0, willChange: "transform, opacity" }}
+        >
+          <iframe
+            src={nextUrl}
+            className="w-full h-full border-0 pointer-events-none"
+            tabIndex={-1}
+            aria-hidden="true"
+          />
+        </div>
+      )}
     </div>
   );
 };

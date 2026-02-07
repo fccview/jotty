@@ -6,7 +6,10 @@ interface UseSwipeNavigationProps {
   enabled: boolean;
   onNavigateLeft: () => void;
   onNavigateRight: () => void;
-  containerRef: RefObject<HTMLDivElement | null>;
+  wrapperRef: RefObject<HTMLDivElement | null>;
+  currentRef: RefObject<HTMLDivElement | null>;
+  prevRef: RefObject<HTMLDivElement | null>;
+  nextRef: RefObject<HTMLDivElement | null>;
   hasPrev: boolean;
   hasNext: boolean;
 }
@@ -20,11 +23,34 @@ const COMPLETE_DURATION = 280;
 const SNAP_EASING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 const COMPLETE_EASING = "cubic-bezier(0.22, 0.68, 0.31, 1)";
 
+const CURRENT_PARALLAX = 0.35;
+const CURRENT_FADE_TO = 0.25;
+const CURRENT_SHRINK_TO = 0.92;
+const INCOMING_START_SCALE = 0.88;
+
+const ALL_TRANSITION = `transform ${SNAP_DURATION}ms ${SNAP_EASING}, opacity ${SNAP_DURATION}ms ease-out`;
+const COMPLETE_TRANSITION = `transform ${COMPLETE_DURATION}ms ${COMPLETE_EASING}, opacity ${COMPLETE_DURATION}ms ${COMPLETE_EASING}`;
+
+const applyStyles = (
+  el: HTMLElement | null,
+  transform: string,
+  opacity: number,
+  transition: string | null,
+) => {
+  if (!el) return;
+  el.style.transition = transition || "none";
+  el.style.transform = transform;
+  el.style.opacity = String(opacity);
+};
+
 export const useSwipeNavigation = ({
   enabled,
   onNavigateLeft,
   onNavigateRight,
-  containerRef,
+  wrapperRef,
+  currentRef,
+  prevRef,
+  nextRef,
   hasPrev,
   hasNext,
 }: UseSwipeNavigationProps) => {
@@ -32,7 +58,6 @@ export const useSwipeNavigation = ({
   const directionLockedRef = useRef<"horizontal" | "vertical" | null>(null);
   const navigatingRef = useRef(false);
   const swipingRef = useRef(false);
-  const currentDeltaRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const enabledRef = useRef(enabled);
   const hasPrevRef = useRef(hasPrev);
@@ -46,36 +71,49 @@ export const useSwipeNavigation = ({
   useEffect(() => { onNavigateLeftRef.current = onNavigateLeft; }, [onNavigateLeft]);
   useEffect(() => { onNavigateRightRef.current = onNavigateRight; }, [onNavigateRight]);
 
-  const setTransform = useCallback((deltaX: number, transition: string | null) => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const screenWidth = window.innerWidth;
-    const baseOffset = -screenWidth;
-
-    container.style.transition = transition || "none";
-    container.style.transform = `translateX(${baseOffset + deltaX}px)`;
-  }, [containerRef]);
-
-  const resetPosition = useCallback(() => {
-    setTransform(0, `transform ${SNAP_DURATION}ms ${SNAP_EASING}`);
+  const resetAll = useCallback((transition: string | null) => {
+    const sw = window.innerWidth;
+    applyStyles(currentRef.current, "translateX(0)", 1, transition);
+    applyStyles(prevRef.current, `translateX(-${sw}px) scale(${INCOMING_START_SCALE})`, 0, transition);
+    applyStyles(nextRef.current, `translateX(${sw}px) scale(${INCOMING_START_SCALE})`, 0, transition);
     swipingRef.current = false;
-    currentDeltaRef.current = 0;
-  }, [setTransform]);
+  }, [currentRef, prevRef, nextRef]);
+
+  const applyProgress = useCallback((
+    progress: number,
+    direction: "left" | "right",
+    transition: string | null,
+  ) => {
+    const p = Math.min(Math.max(progress, 0), 1);
+    const sw = window.innerWidth;
+
+    const currentShift = direction === "left"
+      ? -p * CURRENT_PARALLAX * sw
+      : p * CURRENT_PARALLAX * sw;
+    const currentOpacity = 1 - p * (1 - CURRENT_FADE_TO);
+    const currentScale = 1 - p * (1 - CURRENT_SHRINK_TO);
+    applyStyles(currentRef.current, `translateX(${currentShift}px) scale(${currentScale})`, currentOpacity, transition);
+
+    const incomingRef = direction === "left" ? nextRef : prevRef;
+    const incomingX = direction === "left"
+      ? (1 - p) * sw
+      : -(1 - p) * sw;
+    const incomingScale = INCOMING_START_SCALE + p * (1 - INCOMING_START_SCALE);
+    applyStyles(incomingRef.current, `translateX(${incomingX}px) scale(${incomingScale})`, 1, transition);
+  }, [currentRef, prevRef, nextRef]);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (!enabledRef.current || navigatingRef.current || window.innerWidth >= 1024) return;
     if (e.touches.length !== 1) return;
 
-    const touch = e.touches[0];
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+      time: Date.now(),
+    };
     directionLockedRef.current = null;
     swipingRef.current = false;
-    currentDeltaRef.current = 0;
-
-    const container = containerRef.current;
-    if (container) container.style.transition = "none";
-  }, [containerRef]);
+  }, []);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
     if (!touchStartRef.current || !enabledRef.current || navigatingRef.current) return;
@@ -99,52 +137,52 @@ export const useSwipeNavigation = ({
 
     if (directionLockedRef.current !== "horizontal") return;
 
-    e.preventDefault();
-
+    const sw = window.innerWidth;
     const swipingLeft = deltaX < 0;
-    const swipingRight = deltaX > 0;
+    const hasTarget = swipingLeft ? hasNextRef.current : hasPrevRef.current;
 
-    let adjustedDelta = deltaX;
-    if ((swipingLeft && !hasNextRef.current) || (swipingRight && !hasPrevRef.current)) {
-      adjustedDelta = deltaX * RESISTANCE_FACTOR;
-    }
+    let effectiveDelta = Math.abs(deltaX);
+    if (!hasTarget) effectiveDelta *= RESISTANCE_FACTOR;
 
-    currentDeltaRef.current = adjustedDelta;
+    const progress = Math.min(effectiveDelta / sw, 1);
+    const direction: "left" | "right" = swipingLeft ? "left" : "right";
 
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
-      setTransform(adjustedDelta, null);
+      if (!hasTarget) {
+        const resistedShift = swipingLeft ? -effectiveDelta * 0.5 : effectiveDelta * 0.5;
+        applyStyles(currentRef.current, `translateX(${resistedShift}px)`, 1, null);
+      } else {
+        applyProgress(progress, direction, null);
+      }
     });
-  }, [setTransform]);
+  }, [applyProgress, currentRef]);
 
   const finishTouch = useCallback((deltaX: number, deltaTime: number) => {
     const velocity = Math.abs(deltaX) / deltaTime;
-    const screenWidth = window.innerWidth;
-    const progress = Math.abs(deltaX) / screenWidth;
-
+    const sw = window.innerWidth;
+    const progress = Math.abs(deltaX) / sw;
     const swipingLeft = deltaX < 0;
-    const swipingRight = deltaX > 0;
+    const direction: "left" | "right" = swipingLeft ? "left" : "right";
+    const hasTarget = swipingLeft ? hasNextRef.current : hasPrevRef.current;
+    const meetsThreshold = hasTarget && (progress > COMPLETION_THRESHOLD || velocity > VELOCITY_THRESHOLD);
 
-    const meetsThreshold = progress > COMPLETION_THRESHOLD || velocity > VELOCITY_THRESHOLD;
+    if (meetsThreshold) {
+      navigatingRef.current = true;
+      applyProgress(1, direction, COMPLETE_TRANSITION);
 
-    if (swipingLeft && hasNextRef.current && meetsThreshold) {
-      navigatingRef.current = true;
-      setTransform(-screenWidth, `transform ${COMPLETE_DURATION}ms ${COMPLETE_EASING}`);
       setTimeout(() => {
-        onNavigateLeftRef.current();
-        setTimeout(() => { navigatingRef.current = false; }, 150);
-      }, COMPLETE_DURATION);
-    } else if (swipingRight && hasPrevRef.current && meetsThreshold) {
-      navigatingRef.current = true;
-      setTransform(screenWidth, `transform ${COMPLETE_DURATION}ms ${COMPLETE_EASING}`);
-      setTimeout(() => {
-        onNavigateRightRef.current();
+        if (direction === "left") {
+          onNavigateLeftRef.current();
+        } else {
+          onNavigateRightRef.current();
+        }
         setTimeout(() => { navigatingRef.current = false; }, 150);
       }, COMPLETE_DURATION);
     } else {
-      resetPosition();
+      resetAll(ALL_TRANSITION);
     }
-  }, [setTransform, resetPosition]);
+  }, [applyProgress, resetAll]);
 
   const handleTouchEnd = useCallback((e: TouchEvent) => {
     if (rafRef.current) {
@@ -153,7 +191,7 @@ export const useSwipeNavigation = ({
     }
 
     if (!touchStartRef.current || !enabledRef.current || navigatingRef.current) {
-      if (swipingRef.current) resetPosition();
+      if (swipingRef.current) resetAll(ALL_TRANSITION);
       touchStartRef.current = null;
       directionLockedRef.current = null;
       return;
@@ -171,42 +209,40 @@ export const useSwipeNavigation = ({
 
     touchStartRef.current = null;
     directionLockedRef.current = null;
-
     finishTouch(deltaX, deltaTime);
-  }, [finishTouch, resetPosition]);
+  }, [finishTouch, resetAll]);
 
   const handleTouchCancel = useCallback(() => {
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-
     touchStartRef.current = null;
     directionLockedRef.current = null;
-
-    if (swipingRef.current) {
-      resetPosition();
-    }
-  }, [resetPosition]);
+    if (swipingRef.current) resetAll(ALL_TRANSITION);
+  }, [resetAll]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !enabled) return;
 
-    document.addEventListener("touchstart", handleTouchStart, { passive: true });
-    document.addEventListener("touchmove", handleTouchMove, { passive: false });
-    document.addEventListener("touchend", handleTouchEnd, { passive: true });
-    document.addEventListener("touchcancel", handleTouchCancel, { passive: true });
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchmove", handleTouchMove, { passive: true });
+    el.addEventListener("touchend", handleTouchEnd, { passive: true });
+    el.addEventListener("touchcancel", handleTouchCancel, { passive: true });
 
     return () => {
-      document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
-      document.removeEventListener("touchcancel", handleTouchCancel);
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchmove", handleTouchMove);
+      el.removeEventListener("touchend", handleTouchEnd);
+      el.removeEventListener("touchcancel", handleTouchCancel);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [enabled, handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel]);
+  }, [enabled, wrapperRef, handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel]);
 
   useEffect(() => {
-    setTransform(0, null);
-  }, [setTransform]);
+    resetAll(null);
+  }, [resetAll]);
 };
