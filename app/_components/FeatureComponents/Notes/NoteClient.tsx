@@ -12,6 +12,7 @@ import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/CloneCategoryModal";
+import { SwipeNavigationWrapper } from "@/app/_components/FeatureComponents/Notes/Parts/SwipeNavigationWrapper";
 
 interface NoteClientProps {
   note: Note;
@@ -115,13 +116,19 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       user={user}
       isEditorInEditMode={viewModel.isEditing}
     >
-      <NoteEditor
-        note={localNote}
-        categories={categories}
-        viewModel={viewModel}
-        onBack={handleBack}
-        onClone={handleClone}
-      />
+      <SwipeNavigationWrapper
+        noteId={localNote.id}
+        noteCategory={localNote.category}
+        enabled={!viewModel.isEditing}
+      >
+        <NoteEditor
+          note={localNote}
+          categories={categories}
+          viewModel={viewModel}
+          onBack={handleBack}
+          onClone={handleClone}
+        />
+      </SwipeNavigationWrapper>
       <viewModel.DeleteModal />
       {showCloneModal && (
         <CloneCategoryModal

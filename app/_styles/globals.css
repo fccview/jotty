@@ -672,7 +672,8 @@ pre.text-foreground span,
 }
 
 @media (max-width: 992px) {
-    .jotty-checklist-page .jotty-quick-nav {
+    .jotty-checklist-page .jotty-quick-nav,
+    .jotty-embed .jotty-quick-nav {
         display: none;
     }
 
