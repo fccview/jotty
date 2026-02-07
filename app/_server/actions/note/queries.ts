@@ -145,6 +145,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     excerptLength,
     filter,
     limit,
+    preserveOrder = false,
   } = options;
 
   try {
@@ -233,10 +234,12 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       }
     }
 
-    filteredNotes.sort(
-      (a: any, b: any) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    );
+    if (!preserveOrder) {
+      filteredNotes.sort(
+        (a: any, b: any) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+    }
 
     if (limit && limit > 0) {
       filteredNotes = filteredNotes.slice(0, limit);

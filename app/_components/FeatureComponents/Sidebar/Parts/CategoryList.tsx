@@ -1,6 +1,13 @@
 "use client";
 
-import { AppMode, Category, Checklist, Note, User, SanitisedUser } from "@/app/_types";
+import {
+  AppMode,
+  Category,
+  Checklist,
+  Note,
+  User,
+  SanitisedUser,
+} from "@/app/_types";
 import {
   DndContext,
   DragEndEvent,
@@ -16,7 +23,10 @@ import { CategoryRenderer } from "@/app/_components/FeatureComponents/Sidebar/Pa
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { buildCategoryPath, encodeCategoryPath } from "@/app/_utils/global-utils";
+import {
+  buildCategoryPath,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
 import { Modes } from "@/app/_types/enums";
 
 interface CategoryListProps {
@@ -48,7 +58,7 @@ export const CategoryList = (props: CategoryListProps) => {
         distance: 8,
       },
     }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   if (!categories || categories.length === 0) {
@@ -112,7 +122,7 @@ export const CategoryList = (props: CategoryListProps) => {
       const routePrefix = mode === Modes.CHECKLISTS ? "/checklist" : "/note";
       const currentCategoryPath = buildCategoryPath(
         activeNode.category,
-        activeNode.id
+        activeNode.id,
       );
       currentItemPath = `${routePrefix}/${currentCategoryPath}`;
     }
@@ -140,7 +150,7 @@ export const CategoryList = (props: CategoryListProps) => {
       formData.append("targetCategoryPath", overNode.categoryPath);
     }
 
-    const result = await moveNode(formData);
+    await moveNode(formData);
 
     if (
       activeNode.type === "item" &&
@@ -161,7 +171,7 @@ export const CategoryList = (props: CategoryListProps) => {
       const routePrefix = mode === Modes.CHECKLISTS ? "/checklist" : "/note";
       const newItemPath = `${routePrefix}/${buildCategoryPath(
         newCategory,
-        activeNode.id
+        activeNode.id,
       )}`;
 
       router.push(newItemPath);
@@ -186,8 +196,10 @@ export const CategoryList = (props: CategoryListProps) => {
       let matched = false;
 
       if (pathname.startsWith(oldCategoryUrl) && pathnameParts.length > 3) {
-        const categoryPathParts = encodeCategoryPath(oldCategoryPath).split("/");
-        const startIndex = routePrefix.split("/").length + categoryPathParts.length;
+        const categoryPathParts =
+          encodeCategoryPath(oldCategoryPath).split("/");
+        const startIndex =
+          routePrefix.split("/").length + categoryPathParts.length;
         itemPart = pathnameParts.slice(startIndex).join("/");
         matched = true;
       }
@@ -195,7 +207,7 @@ export const CategoryList = (props: CategoryListProps) => {
       if (matched) {
         const newPath = `${routePrefix}/${buildCategoryPath(
           newCategoryPath,
-          decodeURIComponent(itemPart)
+          decodeURIComponent(itemPart),
         )}`;
         router.push(newPath);
       } else {

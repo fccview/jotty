@@ -582,6 +582,7 @@ export interface GetNotesOptions {
   excerptLength?: number;
   filter?: ContentFilter;
   limit?: number;
+  preserveOrder?: boolean;
 }
 
 export interface GetChecklistsOptions {
@@ -592,4 +593,5 @@ export interface GetChecklistsOptions {
   metadataOnly?: boolean;
   filter?: ContentFilter;
   limit?: number;
+  preserveOrder?: boolean;
 }

@@ -28,6 +28,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     metadataOnly = false,
     filter,
     limit,
+    preserveOrder = false,
   } = options;
 
   try {
@@ -108,10 +109,12 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       });
     }
 
-    lists.sort(
-      (a: any, b: any) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    );
+    if (!preserveOrder) {
+      lists.sort(
+        (a: any, b: any) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+    }
 
     const limitNum = typeof limit === "number" && limit > 0 ? limit : undefined;
     if (limitNum !== undefined) {

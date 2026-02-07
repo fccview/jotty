@@ -12,7 +12,12 @@ export async function register() {
 
       if ((globalThis as any).__jottyWsStarted) return;
       (globalThis as any).__jottyWsStarted = true;
-      const sessionsFilePath = path.join(process.cwd(), "data", "users", "sessions.json");
+      const sessionsFilePath = path.join(
+        process.cwd(),
+        "data",
+        "users",
+        "sessions.json",
+      );
 
       const readSessions = (): Record<string, string> => {
         try {
@@ -23,13 +28,17 @@ export async function register() {
         }
       };
 
-      const parseCookies = (cookieHeader: string | undefined): Record<string, string> => {
+      const parseCookies = (
+        cookieHeader: string | undefined,
+      ): Record<string, string> => {
         const cookies: Record<string, string> = {};
         if (!cookieHeader) return cookies;
         cookieHeader.split(";").forEach((pair) => {
           const idx = pair.indexOf("=");
           if (idx < 0) return;
-          cookies[pair.substring(0, idx).trim()] = pair.substring(idx + 1).trim();
+          cookies[pair.substring(0, idx).trim()] = pair
+            .substring(idx + 1)
+            .trim();
         });
         return cookies;
       };
@@ -58,20 +67,31 @@ export async function register() {
         ws.send(JSON.stringify({ type: "connected", connectionId }));
 
         (ws as any).isAlive = true;
-        ws.on("pong", () => { (ws as any).isAlive = true; });
-        ws.on("close", () => { connectedClients.delete(ws); });
+        ws.on("pong", () => {
+          (ws as any).isAlive = true;
+        });
+        ws.on("close", () => {
+          connectedClients.delete(ws);
+        });
       });
 
       const heartbeat = setInterval(() => {
         wss.clients.forEach((ws) => {
           if (!(ws as any).isAlive) {
             connectedClients.delete(ws);
-            return ws.terminate();
+            ws.terminate();
+            return;
           }
           (ws as any).isAlive = false;
           ws.ping();
         });
       }, 30000);
+
+      setInterval(() => {
+        connectedClients.forEach((_, ws) => {
+          if (ws.readyState >= 2) connectedClients.delete(ws);
+        });
+      }, 60000);
 
       wss.on("close", () => clearInterval(heartbeat));
 

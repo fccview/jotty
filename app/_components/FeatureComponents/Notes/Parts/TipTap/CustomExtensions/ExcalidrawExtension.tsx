@@ -29,6 +29,17 @@ export const ExcalidrawNodeView = ({
   const themeMode = node.attrs.themeMode || "light";
 
   useEffect(() => {
+    if (!isEditing) return;
+    const id = "excalidraw-lazy-css";
+    if (document.getElementById(id)) return;
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = "/themes/excalidraw/excalidraw.css";
+    document.head.appendChild(link);
+  }, [isEditing]);
+
+  useEffect(() => {
     if (node.attrs.diagramData) {
       try {
         const parsed = JSON.parse(node.attrs.diagramData);

@@ -86,12 +86,19 @@ const heartbeat = setInterval(() => {
   wss.clients.forEach((ws) => {
     if (!ws.isAlive) {
       connectedClients.delete(ws);
-      return ws.terminate();
+      ws.terminate();
+      return;
     }
     ws.isAlive = false;
     ws.ping();
   });
 }, 30000);
+
+setInterval(() => {
+  for (const [ws] of connectedClients) {
+    if (ws.readyState >= 2) connectedClients.delete(ws);
+  }
+}, 60000);
 
 wss.on("close", () => {
   clearInterval(heartbeat);

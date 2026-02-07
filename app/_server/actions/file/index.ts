@@ -220,6 +220,7 @@ export const writeOrderFile = async (
     if (data.items && data.items.length > 0) {
       toWrite.items = data.items;
     }
+
     await fs.writeFile(filePath, JSON.stringify(toWrite, null, 2), "utf-8");
     return { success: true };
   } catch {

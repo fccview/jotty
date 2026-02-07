@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-css-tags */
-
 import "@fontsource-variable/work-sans";
 import "@fontsource-variable/google-sans-code";
 import "@fontsource-variable/ibm-plex-sans";
@@ -180,10 +178,10 @@ export default async function RootLayout({
     availableLocales,
   ] = await Promise.all([
     user && !isPublicRoute
-      ? getUserNotes({ metadataOnly: true })
+      ? getUserNotes({ metadataOnly: true, preserveOrder: true })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
-      ? getUserChecklists({ metadataOnly: true })
+      ? getUserChecklists({ metadataOnly: true, preserveOrder: true })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
       ? getAllSharedItems()
@@ -225,7 +223,6 @@ export default async function RootLayout({
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
         <link rel="icon" href="/app-icons/favicon.ico" />
-        <link rel="stylesheet" href="/themes/excalidraw/excalidraw.css" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
@@ -257,32 +254,34 @@ export default async function RootLayout({
             availableLocales={availableLocales}
           >
             <WebSocketProvider>
-            <KonamiProvider>
-              <ThemeProvider user={user || {}}>
-                <EmojiProvider>
-                  <NavigationGuardProvider>
-                    <ToastProvider>
-                      <ShortcutProvider
-                        user={user}
-                        noteCategories={noteCategories.data || []}
-                        checklistCategories={checklistCategories.data || []}
-                      >
-                        <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                          <DynamicFavicon />
-                          {children}
+              <KonamiProvider>
+                <ThemeProvider user={user || {}}>
+                  <EmojiProvider>
+                    <NavigationGuardProvider>
+                      <ToastProvider>
+                        <ShortcutProvider
+                          user={user}
+                          noteCategories={noteCategories.data || []}
+                          checklistCategories={checklistCategories.data || []}
+                        >
+                          <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                            <DynamicFavicon />
+                            {children}
 
-                          {!pathname?.includes("/public") && <InstallPrompt />}
+                            {!pathname?.includes("/public") && (
+                              <InstallPrompt />
+                            )}
 
-                          {serveUpdates && !pathname?.includes("/public") && (
-                            <UpdatePrompt />
-                          )}
-                        </div>
-                      </ShortcutProvider>
-                    </ToastProvider>
-                  </NavigationGuardProvider>
-                </EmojiProvider>
-              </ThemeProvider>
-            </KonamiProvider>
+                            {serveUpdates && !pathname?.includes("/public") && (
+                              <UpdatePrompt />
+                            )}
+                          </div>
+                        </ShortcutProvider>
+                      </ToastProvider>
+                    </NavigationGuardProvider>
+                  </EmojiProvider>
+                </ThemeProvider>
+              </KonamiProvider>
             </WebSocketProvider>
           </AppModeProvider>
         </NextIntlClientProvider>
