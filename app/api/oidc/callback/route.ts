@@ -14,6 +14,7 @@ import {
 } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 function base64UrlEncode(buffer: Buffer) {
   return buffer
@@ -25,7 +26,7 @@ function base64UrlEncode(buffer: Buffer) {
 
 function checkClaims(
   allowedClaimValues: string | undefined,
-  availableClaimValues: string[] | string
+  availableClaimValues: string[] | string,
 ) {
   let available: string[] = [];
   if (Array.isArray(availableClaimValues)) {
@@ -68,10 +69,10 @@ async function ensureUser(username: string, isAdmin: boolean) {
         isSuperAdmin: true,
         createdAt: new Date().toISOString(),
       });
-      if (process.env.DEBUGGER) {
+      if (isEnvEnabled(process.env.DEBUGGER)) {
         console.log(
           "SSO CALLBACK - Created first user as super admin:",
-          username
+          username,
         );
       }
     } else {
@@ -83,7 +84,7 @@ async function ensureUser(username: string, isAdmin: boolean) {
           isAdmin,
           createdAt: new Date().toISOString(),
         });
-        if (process.env.DEBUGGER) {
+        if (isEnvEnabled(process.env.DEBUGGER)) {
           console.log("SSO CALLBACK - Created new user:", {
             username,
             isAdmin,
@@ -93,14 +94,14 @@ async function ensureUser(username: string, isAdmin: boolean) {
         const wasAdmin = existing.isAdmin;
         if (isAdmin && !existing.isAdmin) {
           existing.isAdmin = true;
-          if (process.env.DEBUGGER) {
+          if (isEnvEnabled(process.env.DEBUGGER)) {
             console.log("SSO CALLBACK - Updated existing user to admin:", {
               username,
               wasAdmin,
               nowAdmin: true,
             });
           }
-        } else if (process.env.DEBUGGER) {
+        } else if (isEnvEnabled(process.env.DEBUGGER)) {
           console.log("SSO CALLBACK - User already exists:", {
             username,
             currentIsAdmin: existing.isAdmin,
@@ -118,7 +119,7 @@ async function ensureUser(username: string, isAdmin: boolean) {
     process.cwd(),
     "data",
     CHECKLISTS_FOLDER,
-    username
+    username,
   );
   const notesDir = path.join(process.cwd(), "data", NOTES_FOLDER, username);
   await fs.mkdir(checklistDir, { recursive: true });
@@ -174,7 +175,7 @@ export async function GET(request: NextRequest) {
   const redirectUri = `${appUrl}/api/oidc/callback`;
   const clientSecret = await getEnvOrFile(
     "OIDC_CLIENT_SECRET",
-    "OIDC_CLIENT_SECRET_FILE"
+    "OIDC_CLIENT_SECRET_FILE",
   );
   const body = new URLSearchParams();
 
@@ -207,13 +208,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
-  if (process.env.DEBUGGER) {
+  if (isEnvEnabled(process.env.DEBUGGER)) {
     console.log("ID_TOKEN_DEBUG:", {
       tokenLength: idToken.length,
       tokenStart: idToken.substring(0, 50),
       tokenParts: idToken.split(".").length,
       isValidJWT: /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(
-        idToken
+        idToken,
       ),
     });
   }
@@ -228,7 +229,7 @@ export async function GET(request: NextRequest) {
     claims = payload;
   } catch (error) {
     console.error("ID Token validation failed:", error);
-    if (process.env.DEBUGGER) {
+    if (isEnvEnabled(process.env.DEBUGGER)) {
       console.error("ID_TOKEN_ERROR_DEBUG:", {
         tokenLength: idToken?.length,
         tokenStructure: idToken?.split(".").length,
@@ -251,7 +252,7 @@ export async function GET(request: NextRequest) {
 
   if (needsUserinfo) {
     try {
-      if (process.env.DEBUGGER) {
+      if (isEnvEnabled(process.env.DEBUGGER)) {
         console.log(
           "OIDC USERINFO FALLBACK - Critical claims missing from ID token, fetching from userinfo endpoint:",
           {
@@ -263,7 +264,7 @@ export async function GET(request: NextRequest) {
             missingAuthzClaims,
             userinfoEndpoint: discovery.userinfo_endpoint,
             hasAccessToken: !!accessToken,
-          }
+          },
         );
       }
 
@@ -281,19 +282,19 @@ export async function GET(request: NextRequest) {
           const jwtString = await userinfoResponse.text();
           userinfoClaims = decodeJwt(jwtString);
 
-          if (process.env.DEBUGGER) {
+          if (isEnvEnabled(process.env.DEBUGGER)) {
             console.log(
               "OIDC USERINFO FALLBACK - Received JWT response from userinfo endpoint, decoded claims:",
-              userinfoClaims
+              userinfoClaims,
             );
           }
         } else {
           userinfoClaims = await userinfoResponse.json();
 
-          if (process.env.DEBUGGER) {
+          if (isEnvEnabled(process.env.DEBUGGER)) {
             console.log(
               "OIDC USERINFO FALLBACK - Successfully fetched claims from userinfo endpoint:",
-              userinfoClaims
+              userinfoClaims,
             );
           }
         }
@@ -313,21 +314,21 @@ export async function GET(request: NextRequest) {
           },
         });
       } else {
-        if (process.env.DEBUGGER) {
+        if (isEnvEnabled(process.env.DEBUGGER)) {
           console.warn(
             "OIDC USERINFO FALLBACK - Userinfo endpoint request failed, continuing with ID token claims:",
             {
               status: userinfoResponse.status,
               statusText: userinfoResponse.statusText,
-            }
+            },
           );
         }
       }
     } catch (error) {
-      if (process.env.DEBUGGER) {
+      if (isEnvEnabled(process.env.DEBUGGER)) {
         console.warn(
           "OIDC USERINFO FALLBACK - Error fetching from userinfo endpoint, continuing with ID token claims:",
-          error
+          error,
         );
       }
     }
@@ -339,7 +340,7 @@ export async function GET(request: NextRequest) {
   let username =
     preferred || (email ? email.split("@")[0] : undefined) || sub || "";
 
-  if (process.env.DEBUGGER) {
+  if (isEnvEnabled(process.env.DEBUGGER)) {
     console.log("SSO CALLBACK - claims", claims);
   }
 
@@ -349,13 +350,13 @@ export async function GET(request: NextRequest) {
 
   const isInAdminGroup = checkClaims(
     process.env.OIDC_ADMIN_GROUPS,
-    claims.groups
+    claims.groups,
   );
   const isInAdminRole = checkClaims(process.env.OIDC_ADMIN_ROLES, claims.roles);
 
   const isAdmin = isInAdminGroup || isInAdminRole;
 
-  if (process.env.DEBUGGER) {
+  if (isEnvEnabled(process.env.DEBUGGER)) {
     console.log("SSO CALLBACK - groups processing:", {
       envOidcAdminGroups: process.env.OIDC_ADMIN_GROUPS,
       envOidcAdminRoles: process.env.OIDC_ADMIN_ROLES,
@@ -369,14 +370,14 @@ export async function GET(request: NextRequest) {
   if (process.env.OIDC_USER_GROUPS || process.env.OIDC_USER_ROLES) {
     const isInAllowedGroup = checkClaims(
       process.env.OIDC_USER_GROUPS,
-      claims.groups
+      claims.groups,
     );
     const isInAllowedRole = checkClaims(
       process.env.OIDC_USER_ROLES,
-      claims.roles
+      claims.roles,
     );
 
-    if (process.env.DEBUGGER) {
+    if (isEnvEnabled(process.env.DEBUGGER)) {
       console.log("SSO CALLBACK - user authorization check:", {
         envOidcUserGroups: process.env.OIDC_USER_GROUPS,
         envOidcUserRoles: process.env.OIDC_USER_ROLES,
@@ -389,7 +390,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!isInAllowedGroup && !isInAllowedRole && !isAdmin) {
-      if (process.env.DEBUGGER) {
+      if (isEnvEnabled(process.env.DEBUGGER)) {
         console.log("SSO CALLBACK - user not authorized:", {
           username,
           requiredGroups: process.env.OIDC_USER_GROUPS,
@@ -427,14 +428,14 @@ export async function GET(request: NextRequest) {
 
   const sessionId = base64UrlEncode(crypto.randomBytes(32));
   const cookieName =
-    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+    process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
       ? "__Host-session"
       : "session";
   const response = NextResponse.redirect(`${appUrl}/`);
   response.cookies.set(cookieName, sessionId, {
     httpOnly: true,
     secure:
-      process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
+      process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS),
     sameSite: "lax",
     path: "/",
     maxAge: 30 * 24 * 60 * 60,
@@ -444,7 +445,7 @@ export async function GET(request: NextRequest) {
     process.cwd(),
     "data",
     "users",
-    "sessions.json"
+    "sessions.json",
   );
   await fs.mkdir(path.dirname(sessionsFile), { recursive: true });
 

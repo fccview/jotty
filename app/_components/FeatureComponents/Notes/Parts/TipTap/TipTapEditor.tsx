@@ -359,7 +359,11 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             toggleMode={toggleMode}
             showPreview={showPreview}
             onTogglePreview={() => setShowPreview(!showPreview)}
-            onMarkdownChange={setMarkdownContent}
+            onMarkdownChange={(newContent: string) => {
+              setMarkdownContent(newContent);
+              isDirtyRef.current = true;
+              debouncedOnChange(newContent, true, true);
+            }}
             linkRequestPending={linkRequestPending}
             linkRequestHasSelection={linkRequestHasSelection}
             onLinkRequestHandled={() => setLinkRequestPending(false)}

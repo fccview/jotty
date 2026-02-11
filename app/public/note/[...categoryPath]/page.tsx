@@ -10,6 +10,7 @@ import { isItemSharedWith } from "@/app/_server/actions/sharing";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 interface PublicNotePageProps {
   params: Promise<{
@@ -20,7 +21,9 @@ interface PublicNotePageProps {
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(props: PublicNotePageProps): Promise<Metadata> {
+export async function generateMetadata(
+  props: PublicNotePageProps,
+): Promise<Metadata> {
   const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
@@ -53,13 +56,11 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
       redirect("/");
     }
 
-    note = notesResult.data.find(
-      (n) => n.id === id && n.category === category
-    );
+    note = notesResult.data.find((n) => n.id === id && n.category === category);
 
     if (!note && isUuidOnly) {
       note = notesResult.data.find(
-        (n) => n.id === id && n.category === "Uncategorized"
+        (n) => n.id === id && n.category === "Uncategorized",
       );
 
       if (!note) {
@@ -75,14 +76,14 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
   const userRecord = await getUserByUsername(note.owner!);
   const user = sanitizeUserForPublic(
     userRecord,
-    !!process.env.SERVE_PUBLIC_IMAGES
+    !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
   );
 
   const isPubliclyShared = await isItemSharedWith(
     note.uuid || id,
     category,
     "note",
-    "public"
+    "public",
   );
   const isPrintView = searchParams.view_mode === "print";
 

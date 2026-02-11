@@ -12,6 +12,7 @@ import { isItemSharedWith } from "@/app/_server/actions/sharing";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 interface PublicChecklistPageProps {
   params: Promise<{
@@ -22,7 +23,9 @@ interface PublicChecklistPageProps {
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(props: PublicChecklistPageProps): Promise<Metadata> {
+export async function generateMetadata(
+  props: PublicChecklistPageProps,
+): Promise<Metadata> {
   const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
@@ -35,7 +38,9 @@ export async function generateMetadata(props: PublicChecklistPageProps): Promise
   return getMedatadaTitle(Modes.CHECKLISTS, id, category);
 }
 
-export default async function PublicChecklistPage(props: PublicChecklistPageProps) {
+export default async function PublicChecklistPage(
+  props: PublicChecklistPageProps,
+) {
   const searchParams = await props.searchParams;
   const params = await props.params;
   const { categoryPath } = params;
@@ -57,12 +62,12 @@ export default async function PublicChecklistPage(props: PublicChecklistPageProp
     }
 
     checklist = listsResult.data.find(
-      (list) => list.id === id && list.category === category
+      (list) => list.id === id && list.category === category,
     );
 
     if (!checklist && categoryPath.length === 1) {
       checklist = listsResult.data.find(
-        (list) => list.id === id && list.category === "Uncategorized"
+        (list) => list.id === id && list.category === "Uncategorized",
       );
 
       if (!checklist) {
@@ -78,14 +83,14 @@ export default async function PublicChecklistPage(props: PublicChecklistPageProp
   const userRecord = await getUserByUsername(checklist.owner!);
   const user = sanitizeUserForPublic(
     userRecord,
-    !!process.env.SERVE_PUBLIC_IMAGES
+    !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
   );
 
   const isPubliclyShared = await isItemSharedWith(
     checklist.uuid || id,
     category,
     "checklist",
-    "public"
+    "public",
   );
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.username === checklist.owner;

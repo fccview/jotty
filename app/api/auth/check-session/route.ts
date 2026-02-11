@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { readSessions } from "@/app/_server/actions/session";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 type Session = Record<string, string>;
 
@@ -10,7 +11,7 @@ export async function GET() {
   try {
     const cookieStore = await cookies();
     const cookieName =
-      process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
         ? "__Host-session"
         : "session";
     const sessionId = cookieStore.get(cookieName)?.value;
@@ -26,7 +27,7 @@ export async function GET() {
     if (sessions && sessions[sessionId]) {
       return new NextResponse(
         JSON.stringify({ success: true, username: sessions[sessionId] }),
-        { status: 200 }
+        { status: 200 },
       );
     } else {
       return new NextResponse(JSON.stringify({ error: "Invalid session" }), {
@@ -37,7 +38,7 @@ export async function GET() {
     console.error("Session check API error:", error);
     return new NextResponse(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

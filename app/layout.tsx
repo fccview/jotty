@@ -44,6 +44,7 @@ import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { KonamiProvider } from "./_providers/KonamiProvider";
 import { WebSocketProvider } from "./_providers/WebSocketProvider";
+import { isEnvEnabled } from "./_utils/env-utils";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -161,7 +162,7 @@ export default async function RootLayout({
   const userRecord = await getCurrentUser();
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
-  const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
+  const stopCheckUpdates = process.env.STOP_CHECK_UPDATES;
   const users = isPublicRoute || !userRecord ? [] : await getUsers();
   const linkIndex = userRecord?.username
     ? await readLinkIndex(userRecord.username)
@@ -204,12 +205,7 @@ export default async function RootLayout({
 
   let serveUpdates = true;
 
-  if (
-    (stopCheckUpdates &&
-      (stopCheckUpdates.toLowerCase() !== "no" ||
-        stopCheckUpdates.toLowerCase() !== "false")) ||
-    settings?.notifyNewUpdates === "no"
-  ) {
+  if (isEnvEnabled(stopCheckUpdates) || settings?.notifyNewUpdates === "no") {
     serveUpdates = false;
   }
 

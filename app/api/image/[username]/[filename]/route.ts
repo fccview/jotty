@@ -4,6 +4,7 @@ import path from "path";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { withCacheControl } from "@/app/_middleware/caching";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export const GET = withCacheControl(async function GET(
     const params = await props.params;
     const user = await getCurrentUser();
 
-    if (!user && !process.env.SERVE_PUBLIC_IMAGES) {
+    if (!user && !isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES)) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

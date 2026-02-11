@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,11 @@ function resolveFileRef(obj: unknown, baseDir: string): unknown {
         const content = fs.readFileSync(refPath, "utf8");
         const loaded = yaml.load(content) as unknown;
         const resolved = resolveFileRef(loaded, path.dirname(refPath));
-        if (typeof resolved === "object" && resolved !== null && !Array.isArray(resolved)) {
+        if (
+          typeof resolved === "object" &&
+          resolved !== null &&
+          !Array.isArray(resolved)
+        ) {
           Object.assign(result, resolved);
         } else {
           return resolved;
@@ -84,10 +89,10 @@ export async function OPTIONS(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  if (process.env.ENABLE_API_DOCS !== "true") {
+  if (isEnvEnabled(process.env.ENABLE_API_DOCS)) {
     return NextResponse.json(
       { error: "API docs not enabled" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -143,7 +148,7 @@ export async function GET(request: NextRequest) {
     console.error("Failed to load API spec:", error);
     return NextResponse.json(
       { error: "Failed to load API spec" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
