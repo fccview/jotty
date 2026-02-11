@@ -406,6 +406,7 @@ export const deleteList = async (formData: FormData) => {
       );
       await updateSharingData(
         {
+          uuid: list.uuid,
           id: list.id,
           category: list.category || "Uncategorized",
           itemType: ItemTypes.CHECKLIST,

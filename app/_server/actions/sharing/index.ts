@@ -514,14 +514,17 @@ export const updateSharingData = async (
   let hasChanges = false;
 
   if (newItem === null) {
+    const encodedCategory = encodeCategoryPath(
+      previousItem.category || "Uncategorized"
+    );
     Object.keys(sharingData).forEach((username) => {
       const originalLength = sharingData[username].length;
       sharingData[username] = sharingData[username].filter(
         (entry) =>
           !(
-            entry.id === previousItem.id &&
-            entry.category ===
-              encodeCategoryPath(previousItem.category || "Uncategorized")
+            (previousItem.uuid && entry.uuid === previousItem.uuid) ||
+            (entry.id === previousItem.id &&
+              (!entry.category || entry.category === encodedCategory))
           )
       );
       if (sharingData[username].length !== originalLength) {

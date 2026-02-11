@@ -29,12 +29,28 @@ const pageStrategy = new NetworkFirst({
   ],
 });
 
+const embedPageStrategy = new StaleWhileRevalidate({
+  cacheName: "embed-pages",
+  plugins: [
+    new CacheableResponsePlugin({ statuses: [200] }),
+    new ExpirationPlugin({
+      maxEntries: 32,
+      maxAgeSeconds: 7 * 24 * 60 * 60,
+    }),
+  ],
+});
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: false,
   runtimeCaching: [
+    {
+      matcher: ({ request, url }) =>
+        request.mode === "navigate" && url.searchParams.has("embed"),
+      handler: embedPageStrategy,
+    },
     {
       matcher: ({ request }) => request.mode === "navigate",
       handler: pageStrategy,

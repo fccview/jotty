@@ -113,10 +113,18 @@ export const TableOfContents = ({
 
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
-    if (element) {
+    if (!element) return;
+
+    const scrollContainer = element.closest(".jotty-scrollable-content");
+    if (scrollContainer) {
+      const containerRect = scrollContainer.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const offset = elementRect.top - containerRect.top + scrollContainer.scrollTop;
+      scrollContainer.scrollTo({ top: offset, behavior: "smooth" });
+    } else {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
-      setActiveHeading(id);
     }
+    setActiveHeading(id);
   };
 
   const renderContent = () => {

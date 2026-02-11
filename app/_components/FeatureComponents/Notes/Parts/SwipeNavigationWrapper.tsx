@@ -15,9 +15,10 @@ interface SwipeNavigationWrapperProps {
   enabled: boolean;
 }
 
-const getNoteUrl = (note: Partial<Note> | null): string | null => {
+const getNoteUrl = (note: Partial<Note> | null, embed = false): string | null => {
   if (!note?.id) return null;
-  return `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`;
+  const base = `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`;
+  return embed ? `${base}?embed=true` : base;
 };
 
 export const SwipeNavigationWrapper = ({
@@ -36,8 +37,10 @@ export const SwipeNavigationWrapper = ({
 
   const { prev, next } = useAdjacentNotes(noteId);
 
-  const prevUrl = getNoteUrl(prev);
-  const nextUrl = getNoteUrl(next);
+  const prevUrl = getNoteUrl(prev, true);
+  const nextUrl = getNoteUrl(next, true);
+  const prevNavUrl = getNoteUrl(prev);
+  const nextNavUrl = getNoteUrl(next);
 
   useEffect(() => {
     const isInIframe = window.self !== window.top;
@@ -51,9 +54,9 @@ export const SwipeNavigationWrapper = ({
 
   useEffect(() => {
     if (!isMobile) return;
-    if (prevUrl) router.prefetch(prevUrl);
-    if (nextUrl) router.prefetch(nextUrl);
-  }, [isMobile, prevUrl, nextUrl, router]);
+    if (prevNavUrl) router.prefetch(prevNavUrl);
+    if (nextNavUrl) router.prefetch(nextNavUrl);
+  }, [isMobile, prevNavUrl, nextNavUrl, router]);
 
   const navigateToNote = useCallback((note: Partial<Note> | null) => {
     const url = getNoteUrl(note);

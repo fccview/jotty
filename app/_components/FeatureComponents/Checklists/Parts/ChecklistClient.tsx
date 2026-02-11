@@ -138,13 +138,7 @@ export const ChecklistClient = ({
             checklist={localChecklist}
             onBack={handleBack}
             onEdit={handleEdit}
-            onDelete={
-              localChecklist.isShared
-                ? user?.isAdmin || user?.username === localChecklist.owner
-                  ? handleDeleteList
-                  : undefined
-                : handleDeleteList
-            }
+            onDelete={handleDeleteList}
             onShare={() => setShowShareModal(true)}
             onConvertType={() => setShowConversionModal(true)}
             onArchive={handleArchive}
@@ -163,8 +157,6 @@ export const ChecklistClient = ({
         onEdit={handleEdit}
         onDelete={handleDelete}
         onClone={handleClone}
-        currentUsername={user?.username}
-        isAdmin={user?.isAdmin}
         sensors={sensors}
       />
     );

@@ -462,6 +462,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       );
       await updateSharingData(
         {
+          uuid: note.uuid,
           id: note.id,
           category: note.category || "Uncategorized",
           itemType: "note",
