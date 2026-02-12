@@ -4,18 +4,15 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { ItemType, User } from "@/app/_types";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
-import {
-  buildCategoryPath,
-  encodeCategoryPath,
-} from "@/app/_utils/global-utils";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import {
   shareWith,
   unshareWith,
   readShareFile,
   getItemPermissions,
   updateItemPermissions,
-  SharingPermissions,
 } from "../_server/actions/sharing";
+import { SharingPermissions } from "@/app/_types";
 import { getCurrentUser } from "../_server/actions/users";
 import { ItemTypes } from "../_types/enums";
 
@@ -192,11 +189,7 @@ export const useSharingTools = ({
       if (isPublic) {
         const publicPath =
           itemType === ItemTypes.CHECKLIST ? "public/checklist" : "public/note";
-        const categoryPath = buildCategoryPath(
-          itemCategory || "Uncategorized",
-          itemId
-        );
-        setPublicUrl(`${window.location.origin}/${publicPath}/${categoryPath}`);
+        setPublicUrl(`${window.location.origin}/${publicPath}/${itemUuid || itemId}`);
       }
     } catch (error) {
       setStatus({
@@ -380,11 +373,7 @@ export const useSharingTools = ({
       if (isPublic) {
         const publicPath =
           itemType === ItemTypes.CHECKLIST ? "public/checklist" : "public/note";
-        const categoryPath = buildCategoryPath(
-          itemCategory || "Uncategorized",
-          itemId
-        );
-        setPublicUrl(`${window.location.origin}/${publicPath}/${categoryPath}`);
+        setPublicUrl(`${window.location.origin}/${publicPath}/${itemUuid || itemId}`);
       } else {
         setPublicUrl("");
       }

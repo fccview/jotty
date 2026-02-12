@@ -10,10 +10,8 @@ const CHECKLISTS_FOLDER = "checklists";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { listId: string } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ listId: string }> }) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const body = await request.json();

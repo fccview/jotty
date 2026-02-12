@@ -157,7 +157,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(mockTask)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1")
-      const response = await GET_TASK(request, { params: { taskId: "task-uuid-1" } })
+      const response = await GET_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -169,7 +169,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/tasks/nonexistent")
-      const response = await GET_TASK(request, { params: { taskId: "nonexistent" } })
+      const response = await GET_TASK(request, { params: Promise.resolve({ taskId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -180,7 +180,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue({ ...mockTask, type: "simple" })
 
       const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1")
-      const response = await GET_TASK(request, { params: { taskId: "task-uuid-1" } })
+      const response = await GET_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -191,7 +191,7 @@ describe("Tasks API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1")
-      const response = await GET_TASK(request, { params: { taskId: "task-uuid-1" } })
+      const response = await GET_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -209,7 +209,7 @@ describe("Tasks API", () => {
         title: "Updated Task Board",
         category: "Work",
       })
-      const response = await PUT_TASK(request, { params: { taskId: "task-uuid-1" } })
+      const response = await PUT_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -223,7 +223,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/nonexistent", {
         title: "Updated",
       })
-      const response = await PUT_TASK(request, { params: { taskId: "nonexistent" } })
+      const response = await PUT_TASK(request, { params: Promise.resolve({ taskId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -236,7 +236,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1", {
         title: "Updated",
       })
-      const response = await PUT_TASK(request, { params: { taskId: "task-uuid-1" } })
+      const response = await PUT_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -250,7 +250,7 @@ describe("Tasks API", () => {
       mockDeleteList.mockResolvedValue({ success: true })
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1")
-      const response = await DELETE_TASK(request, { params: { taskId: "task-uuid-1" } })
+      const response = await DELETE_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -261,7 +261,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/nonexistent")
-      const response = await DELETE_TASK(request, { params: { taskId: "nonexistent" } })
+      const response = await DELETE_TASK(request, { params: Promise.resolve({ taskId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -272,7 +272,7 @@ describe("Tasks API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1")
-      const response = await DELETE_TASK(request, { params: { taskId: "task-uuid-1" } })
+      const response = await DELETE_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -285,7 +285,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(mockTask)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1/statuses")
-      const response = await GET_STATUSES(request, { params: { taskId: "task-uuid-1" } })
+      const response = await GET_STATUSES(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -297,7 +297,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/tasks/nonexistent/statuses")
-      const response = await GET_STATUSES(request, { params: { taskId: "nonexistent" } })
+      const response = await GET_STATUSES(request, { params: Promise.resolve({ taskId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -308,7 +308,7 @@ describe("Tasks API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1/statuses")
-      const response = await GET_STATUSES(request, { params: { taskId: "task-uuid-1" } })
+      const response = await GET_STATUSES(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -326,7 +326,7 @@ describe("Tasks API", () => {
         color: "#3b82f6",
         order: 2,
       })
-      const response = await POST_STATUS(request, { params: { taskId: "task-uuid-1" } })
+      const response = await POST_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -340,7 +340,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/statuses", {
         color: "#3b82f6",
       })
-      const response = await POST_STATUS(request, { params: { taskId: "task-uuid-1" } })
+      const response = await POST_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -354,7 +354,7 @@ describe("Tasks API", () => {
         id: "todo",
         label: "Duplicate To Do",
       })
-      const response = await POST_STATUS(request, { params: { taskId: "task-uuid-1" } })
+      const response = await POST_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -368,7 +368,7 @@ describe("Tasks API", () => {
         id: "review",
         label: "In Review",
       })
-      const response = await POST_STATUS(request, { params: { taskId: "task-uuid-1" } })
+      const response = await POST_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -384,7 +384,7 @@ describe("Tasks API", () => {
         label: "Code Review",
         color: "#8b5cf6",
       })
-      const response = await PUT_STATUS(request, { params: { taskId: "task-uuid-1", statusId: "in_progress" } })
+      const response = await PUT_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", statusId: "in_progress" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -398,7 +398,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/statuses/nonexistent", {
         label: "Updated",
       })
-      const response = await PUT_STATUS(request, { params: { taskId: "task-uuid-1", statusId: "nonexistent" } })
+      const response = await PUT_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", statusId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -411,7 +411,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/statuses/todo", {
         label: "Updated",
       })
-      const response = await PUT_STATUS(request, { params: { taskId: "task-uuid-1", statusId: "todo" } })
+      const response = await PUT_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", statusId: "todo" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -431,7 +431,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(taskWithReview)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1/statuses/review")
-      const response = await DELETE_STATUS(request, { params: { taskId: "task-uuid-1", statusId: "review" } })
+      const response = await DELETE_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", statusId: "review" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -442,7 +442,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(mockTask)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1/statuses/nonexistent")
-      const response = await DELETE_STATUS(request, { params: { taskId: "task-uuid-1", statusId: "nonexistent" } })
+      const response = await DELETE_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", statusId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -453,7 +453,7 @@ describe("Tasks API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1/statuses/todo")
-      const response = await DELETE_STATUS(request, { params: { taskId: "task-uuid-1", statusId: "todo" } })
+      const response = await DELETE_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", statusId: "todo" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -470,7 +470,7 @@ describe("Tasks API", () => {
         text: "Implement feature X",
         status: "todo",
       })
-      const response = await POST_TASK_ITEM(request, { params: { taskId: "task-uuid-1" } })
+      const response = await POST_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -485,7 +485,7 @@ describe("Tasks API", () => {
         status: "todo",
         parentIndex: "0",
       })
-      const response = await POST_TASK_ITEM(request, { params: { taskId: "task-uuid-1" } })
+      const response = await POST_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -498,7 +498,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/items", {
         status: "todo",
       })
-      const response = await POST_TASK_ITEM(request, { params: { taskId: "task-uuid-1" } })
+      const response = await POST_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -511,7 +511,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/items", {
         text: "Test",
       })
-      const response = await POST_TASK_ITEM(request, { params: { taskId: "task-uuid-1" } })
+      const response = await POST_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -527,7 +527,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/items/0/status", {
         status: "in_progress",
       })
-      const response = await PUT_ITEM_STATUS(request, { params: { taskId: "task-uuid-1", itemIndex: "0" } })
+      const response = await PUT_ITEM_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -541,7 +541,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/items/0.0/status", {
         status: "in_progress",
       })
-      const response = await PUT_ITEM_STATUS(request, { params: { taskId: "task-uuid-1", itemIndex: "0.0" } })
+      const response = await PUT_ITEM_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0.0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -552,7 +552,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(mockTask)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/items/0/status", {})
-      const response = await PUT_ITEM_STATUS(request, { params: { taskId: "task-uuid-1", itemIndex: "0" } })
+      const response = await PUT_ITEM_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -565,7 +565,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/items/999/status", {
         status: "in_progress",
       })
-      const response = await PUT_ITEM_STATUS(request, { params: { taskId: "task-uuid-1", itemIndex: "999" } })
+      const response = await PUT_ITEM_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "999" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -578,7 +578,7 @@ describe("Tasks API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/items/0/status", {
         status: "in_progress",
       })
-      const response = await PUT_ITEM_STATUS(request, { params: { taskId: "task-uuid-1", itemIndex: "0" } })
+      const response = await PUT_ITEM_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -591,7 +591,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(mockTask)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1/items/0")
-      const response = await DELETE_TASK_ITEM(request, { params: { taskId: "task-uuid-1", itemIndex: "0" } })
+      const response = await DELETE_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -602,7 +602,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(mockTask)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1/items/0.0")
-      const response = await DELETE_TASK_ITEM(request, { params: { taskId: "task-uuid-1", itemIndex: "0.0" } })
+      const response = await DELETE_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0.0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -613,7 +613,7 @@ describe("Tasks API", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/nonexistent/items/0")
-      const response = await DELETE_TASK_ITEM(request, { params: { taskId: "nonexistent", itemIndex: "0" } })
+      const response = await DELETE_TASK_ITEM(request, { params: Promise.resolve({ taskId: "nonexistent", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -624,7 +624,7 @@ describe("Tasks API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1/items/0")
-      const response = await DELETE_TASK_ITEM(request, { params: { taskId: "task-uuid-1", itemIndex: "0" } })
+      const response = await DELETE_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)

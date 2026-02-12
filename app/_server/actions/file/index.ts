@@ -19,7 +19,7 @@ export interface OrderData {
 
 export const getEnvOrFile = async (
   envVar: string,
-  fileVar: string
+  fileVar: string,
 ): Promise<string> => {
   const filePath = process.env[fileVar];
   if (filePath) {
@@ -76,7 +76,7 @@ export const readJsonFile = async (filePath: string): Promise<any> => {
   try {
     const content = await fs.readFile(
       path.join(process.cwd(), filePath),
-      "utf-8"
+      "utf-8",
     );
     return JSON.parse(content) || {};
   } catch (error) {
@@ -86,14 +86,14 @@ export const readJsonFile = async (filePath: string): Promise<any> => {
 
 export const writeJsonFile = async (
   data: any,
-  filePath: string
+  filePath: string,
 ): Promise<void> => {
   try {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(
       path.join(process.cwd(), filePath),
       JSON.stringify(data, null, 2),
-      "utf-8"
+      "utf-8",
     );
   } catch (error) {
     console.error("Error writing data:", error);
@@ -105,7 +105,7 @@ export const readFile = async (filePath: string): Promise<string> => {
   try {
     const content = await fs.readFile(
       path.join(process.cwd(), filePath),
-      "utf-8"
+      "utf-8",
     );
     return content || "";
   } catch (error) {
@@ -113,17 +113,20 @@ export const readFile = async (filePath: string): Promise<string> => {
   }
 };
 
+const getCwd = (): Promise<string> => Promise.resolve(process.cwd());
+
 export const getUserModeDir = async (
   mode: Modes,
-  username?: string
+  username?: string,
 ): Promise<string> => {
+  const base = await getCwd();
   if (username) {
-    return path.join(process.cwd(), DATA_DIR, mode, username);
+    return path.join(base, DATA_DIR, mode, username);
   }
 
   const user = await getCurrentUser();
   if (!user) throw new Error("Not authenticated");
-  return path.join(process.cwd(), DATA_DIR, mode, user.username || "");
+  return path.join(base, DATA_DIR, mode, user.username || "");
 };
 
 /**
@@ -134,7 +137,7 @@ export const getUserModeDir = async (
 
 export const serverReadFile = async (
   filePath: string,
-  customReturn?: any
+  customReturn?: any,
 ): Promise<string> => {
   try {
     return (await fs.readFile(filePath, "utf-8")) || "";
@@ -187,7 +190,7 @@ export const serverDeleteDir = async (dirPath: string) => {
 };
 
 export const readOrderFile = async (
-  dirPath: string
+  dirPath: string,
 ): Promise<OrderData | null> => {
   try {
     const filePath = path.join(dirPath, ".order.json");
@@ -205,7 +208,7 @@ export const readOrderFile = async (
 
 export const writeOrderFile = async (
   dirPath: string,
-  data: OrderData
+  data: OrderData,
 ): Promise<{ success: boolean }> => {
   try {
     await fs.mkdir(dirPath, { recursive: true });
@@ -217,6 +220,7 @@ export const writeOrderFile = async (
     if (data.items && data.items.length > 0) {
       toWrite.items = data.items;
     }
+
     await fs.writeFile(filePath, JSON.stringify(toWrite, null, 2), "utf-8");
     return { success: true };
   } catch {

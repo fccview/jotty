@@ -672,7 +672,8 @@ pre.text-foreground span,
 }
 
 @media (max-width: 992px) {
-    .jotty-checklist-page .jotty-quick-nav {
+    .jotty-checklist-page .jotty-quick-nav,
+    .jotty-embed .jotty-quick-nav {
         display: none;
     }
 
@@ -724,6 +725,11 @@ pre.text-foreground span,
     }
 }
 
+@keyframes jotty-pulse-connected {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 @keyframes jotty-draw {
     0% {
         stroke-dashoffset: 1;
@@ -771,4 +777,31 @@ pre.text-foreground span,
         opacity: 1;
         transform: scale(1);
     }
+}
+
+.markdown-code-editor,
+.markdown-code-editor * {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace !important;
+    font-size: 14px !important;
+    line-height: 21px !important;
+}
+
+.markdown-code-editor pre {
+    background: transparent !important;
+}
+
+.markdown-line-numbers {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 21px;
+}
+
+.markdown-line-measure {
+    position: fixed;
+    visibility: hidden;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 21px;
 }

@@ -1,10 +1,36 @@
 import { Modes, ItemTypes } from "./enums";
-import { LinkIndex } from "../_server/actions/link";
-import { TagsIndex } from "../_utils/tag-utils";
+
+export type { ItemType, Result, SharingPermissions } from "./core";
 
 export type ChecklistType = "simple" | "task";
-export type ItemType = "checklist" | "note";
 export type EncryptionMethod = "pgp" | "xchacha";
+
+export interface ItemLinks {
+  isLinkedTo: {
+    notes: string[];
+    checklists: string[];
+  };
+  isReferencedIn: {
+    notes: string[];
+    checklists: string[];
+  };
+}
+
+export interface LinkIndex {
+  notes: Record<string, ItemLinks>;
+  checklists: Record<string, ItemLinks>;
+  [key: string]: Record<string, ItemLinks>;
+}
+
+export interface TagInfo {
+  name: string;
+  displayName: string;
+  parent: string | null;
+  noteUuids: string[];
+  totalCount: number;
+}
+
+export type TagsIndex = Record<string, TagInfo>;
 
 export interface PGPKeyMetadata {
   keyFingerprint: string;
@@ -159,12 +185,6 @@ export interface Category {
   level: number;
 }
 
-export interface Result<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
 export interface User {
   username: string;
   passwordHash: string;
@@ -196,6 +216,7 @@ export interface User {
   defaultNoteFilter?: DefaultNoteFilter;
   quickCreateNotes?: QuickCreateNotes;
   quickCreateNotesCategory?: string;
+  hideConnectionIndicator?: HideConnectionIndicator;
   mfaEnabled?: boolean;
   mfaSecret?: string;
   mfaRecoveryCode?: string;
@@ -236,6 +257,7 @@ export type DefaultChecklistFilter =
   | "simple";
 export type DefaultNoteFilter = "all" | "recent" | "pinned";
 export type QuickCreateNotes = "enable" | "disable";
+export type HideConnectionIndicator = "enable" | "disable";
 
 export interface SharedItem {
   id: string;
@@ -252,12 +274,6 @@ export interface SharedItem {
 export interface SharingMetadata {
   checklists: Record<string, SharedItem>;
   notes: Record<string, SharedItem>;
-}
-
-export interface SharingPermissions {
-  canRead: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
 }
 
 export interface GlobalSharing {
@@ -538,4 +554,44 @@ export interface AuditLogStats {
   topActions: { action: string; count: number }[];
   topUsers: { username: string; count: number }[];
   recentActivity: AuditLogEntry[];
+}
+
+export interface WsEvent {
+  type: "checklist" | "note" | "category" | "settings" | "sharing";
+  action: "created" | "updated" | "deleted";
+  entityId?: string;
+  username: string;
+  connectionId?: string;
+}
+
+declare global {
+  var __jottyBroadcast: ((event: WsEvent) => void) | undefined;
+}
+
+export interface ContentFilter {
+  type: 'category' | 'tag';
+  value: string;
+}
+
+export interface GetNotesOptions {
+  username?: string;
+  allowArchived?: boolean;
+  isRaw?: boolean;
+  projection?: string[];
+  metadataOnly?: boolean;
+  excerptLength?: number;
+  filter?: ContentFilter;
+  limit?: number;
+  preserveOrder?: boolean;
+}
+
+export interface GetChecklistsOptions {
+  username?: string;
+  allowArchived?: boolean;
+  isRaw?: boolean;
+  projection?: string[];
+  metadataOnly?: boolean;
+  filter?: ContentFilter;
+  limit?: number;
+  preserveOrder?: boolean;
 }

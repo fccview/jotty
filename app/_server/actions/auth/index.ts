@@ -24,6 +24,7 @@ import fs from "fs/promises";
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { logAuthEvent } from "../log";
 import { getUsername } from "../users";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 interface User {
   username: string;
@@ -67,7 +68,7 @@ export const register = async (formData: FormData) => {
   if (users.length > 0) {
     if (
       users.some(
-        (u: User) => u.username.toLowerCase() === username.toLowerCase()
+        (u: User) => u.username.toLowerCase() === username.toLowerCase(),
       )
     ) {
       return { error: "Username already exists" };
@@ -103,14 +104,14 @@ export const register = async (formData: FormData) => {
   await writeSessions(sessions);
 
   const cookieName =
-    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+    process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
       ? "__Host-session"
       : "session";
 
-  cookies().set(cookieName, sessionId, {
+  (await cookies()).set(cookieName, sessionId, {
     httpOnly: true,
     secure:
-      process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
+      process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS),
     sameSite: "lax",
     maxAge: 30 * 24 * 60 * 60,
     path: "/",
@@ -120,7 +121,7 @@ export const register = async (formData: FormData) => {
     process.cwd(),
     "data",
     CHECKLISTS_FOLDER,
-    username
+    username,
   );
   await fs.mkdir(userChecklistDir, { recursive: true });
 
@@ -146,10 +147,11 @@ export const login = async (formData: FormData) => {
   try {
     const users = await readJsonFile(USERS_FILE);
     const user = users.find(
-      (u: User) => u.username.toLowerCase() === username.toLowerCase()
+      (u: User) => u.username.toLowerCase() === username.toLowerCase(),
     );
 
-    const bruteforceProtectionDisabled = process.env.DISABLE_BRUTEFORCE_PROTECTION === "true";
+    const bruteforceProtectionDisabled =
+      process.env.DISABLE_BRUTEFORCE_PROTECTION === "true";
 
     if (!bruteforceProtectionDisabled && user) {
       const now = Date.now();
@@ -163,13 +165,13 @@ export const login = async (formData: FormData) => {
           "login",
           username,
           false,
-          `Rate limited - attempt ${(user.failedLoginAttempts || 0) + 1}`
+          `Rate limited - attempt ${(user.failedLoginAttempts || 0) + 1}`,
         );
         return {
           error: "Too many failed attempts",
           lockedUntil: user.nextAllowedLoginAttempt,
           attemptsRemaining: 0,
-          waitSeconds
+          waitSeconds,
         };
       }
     }
@@ -177,11 +179,12 @@ export const login = async (formData: FormData) => {
     if (!user || user.passwordHash !== hashPassword(password)) {
       if (user && !bruteforceProtectionDisabled) {
         const userIndex = users.findIndex(
-          (u: User) => u.username.toLowerCase() === username.toLowerCase()
+          (u: User) => u.username.toLowerCase() === username.toLowerCase(),
         );
 
         if (userIndex !== -1) {
-          const failedAttempts = (users[userIndex].failedLoginAttempts || 0) + 1;
+          const failedAttempts =
+            (users[userIndex].failedLoginAttempts || 0) + 1;
           users[userIndex].failedLoginAttempts = failedAttempts;
 
           const delayMs = _youShallNotPass(failedAttempts);
@@ -199,22 +202,30 @@ export const login = async (formData: FormData) => {
             "login",
             username,
             false,
-            `Invalid credentials - attempt ${failedAttempts}`
+            `Invalid credentials - attempt ${failedAttempts}`,
           );
 
           const attemptsRemaining = Math.max(0, 4 - failedAttempts);
           const waitSeconds = delayMs > 0 ? Math.ceil(delayMs / 1000) : 0;
 
           return {
-            error: delayMs > 0 ? "Too many failed attempts" : "Invalid username or password",
+            error:
+              delayMs > 0
+                ? "Too many failed attempts"
+                : "Invalid username or password",
             attemptsRemaining,
             failedAttempts,
-            ...(lockedUntil && { lockedUntil, waitSeconds })
+            ...(lockedUntil && { lockedUntil, waitSeconds }),
           };
         }
       }
 
-      await logAuthEvent("login", username, false, "Invalid username or password");
+      await logAuthEvent(
+        "login",
+        username,
+        false,
+        "Invalid username or password",
+      );
       return { error: "Invalid username or password" };
     }
 
@@ -224,14 +235,15 @@ export const login = async (formData: FormData) => {
         .digest("hex");
 
       const cookieName =
-        process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+        process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
           ? "__Host-mfa-pending"
           : "mfa-pending";
 
-      cookies().set(cookieName, pendingSessionId, {
+      (await cookies()).set(cookieName, pendingSessionId, {
         httpOnly: true,
         secure:
-          process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
+          process.env.NODE_ENV === "production" &&
+          isEnvEnabled(process.env.HTTPS),
         sameSite: "lax",
         maxAge: 10 * 60,
         path: "/",
@@ -243,7 +255,7 @@ export const login = async (formData: FormData) => {
     }
 
     const userIndex = users.findIndex(
-      (u: User) => u.username.toLowerCase() === username.toLowerCase()
+      (u: User) => u.username.toLowerCase() === username.toLowerCase(),
     );
     if (userIndex !== -1) {
       users[userIndex].lastLogin = new Date().toISOString();
@@ -263,14 +275,15 @@ export const login = async (formData: FormData) => {
     await createSession(sessionId, user.username, "local");
 
     const cookieName =
-      process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
         ? "__Host-session"
         : "session";
 
-    cookies().set(cookieName, sessionId, {
+    (await cookies()).set(cookieName, sessionId, {
       httpOnly: true,
       secure:
-        process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
+        process.env.NODE_ENV === "production" &&
+        isEnvEnabled(process.env.HTTPS),
       sameSite: "lax",
       maxAge: 30 * 24 * 60 * 60,
       path: "/",
@@ -288,11 +301,11 @@ export const logout = async () => {
   const username = await getUsername();
 
   const cookieName =
-    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+    process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
       ? "__Host-session"
       : "session";
 
-  const sessionId = cookies().get(cookieName)?.value;
+  const sessionId = (await cookies()).get(cookieName)?.value;
 
   if (sessionId) {
     const sessions = await readSessionData();
@@ -303,9 +316,9 @@ export const logout = async () => {
       await writeSessionData(sessions);
       await removeSession(sessionId);
 
-      cookies().delete(cookieName);
+      (await cookies()).delete(cookieName);
     } catch (error) {
-      cookies().delete(cookieName);
+      (await cookies()).delete(cookieName);
     }
   }
 
@@ -327,11 +340,11 @@ export const verifyMfaLogin = async (formData: FormData) => {
   }
 
   const pendingCookieName =
-    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+    process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
       ? "__Host-mfa-pending"
       : "mfa-pending";
 
-  const pendingSessionId = cookies().get(pendingCookieName)?.value;
+  const pendingSessionId = (await cookies()).get(pendingCookieName)?.value;
 
   if (!pendingSessionId) {
     return { error: "No pending MFA session" };
@@ -346,7 +359,7 @@ export const verifyMfaLogin = async (formData: FormData) => {
 
   const users = await readJsonFile(USERS_FILE);
   const user = users.find(
-    (u: User) => u.username.toLowerCase() === username.toLowerCase()
+    (u: User) => u.username.toLowerCase() === username.toLowerCase(),
   );
 
   if (!user || !user.mfaEnabled) {
@@ -384,7 +397,7 @@ export const verifyMfaLogin = async (formData: FormData) => {
   }
 
   const userIndex = users.findIndex(
-    (u: User) => u.username.toLowerCase() === username.toLowerCase()
+    (u: User) => u.username.toLowerCase() === username.toLowerCase(),
   );
   if (userIndex !== -1) {
     users[userIndex].lastLogin = new Date().toISOString();
@@ -404,17 +417,17 @@ export const verifyMfaLogin = async (formData: FormData) => {
   await removeSession(pendingSessionId);
   await createSession(sessionId, username, "local");
 
-  cookies().delete(pendingCookieName);
+  (await cookies()).delete(pendingCookieName);
 
   const cookieName =
-    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+    process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
       ? "__Host-session"
       : "session";
 
-  cookies().set(cookieName, sessionId, {
+  (await cookies()).set(cookieName, sessionId, {
     httpOnly: true,
     secure:
-      process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
+      process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS),
     sameSite: "lax",
     maxAge: 30 * 24 * 60 * 60,
     path: "/",

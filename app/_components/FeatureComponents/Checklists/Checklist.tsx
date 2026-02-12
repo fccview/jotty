@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Checklist } from "@/app/_types";
 import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
 import { useChecklist } from "@/app/_hooks/useChecklist";
@@ -22,8 +22,6 @@ interface ChecklistViewProps {
   onEdit?: (checklist: Checklist) => void;
   onDelete?: (deletedId: string) => void;
   onClone?: () => void;
-  currentUsername?: string;
-  isAdmin?: boolean;
   sensors: any;
 }
 
@@ -34,8 +32,6 @@ export const ChecklistView = ({
   onEdit,
   onDelete,
   onClone,
-  currentUsername,
-  isAdmin = false,
   sensors,
 }: ChecklistViewProps) => {
   const t = useTranslations();
@@ -66,10 +62,7 @@ export const ChecklistView = ({
 
   const { permissions } = usePermissions();
 
-  const canDelete = true
-    ? isAdmin || currentUsername === localList.owner
-    : true;
-  const deleteHandler = canDelete ? handleDeleteList : undefined;
+  const deleteHandler = permissions?.canDelete ? handleDeleteList : undefined;
 
   const archiveHandler = async () => {
     const result = await toggleArchive(localList, Modes.CHECKLISTS);

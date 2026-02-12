@@ -7,6 +7,7 @@ import { readJsonFile, writeJsonFile } from "../file";
 import { SESSION_DATA_FILE, SESSIONS_FILE } from "@/app/_consts/files";
 import { getCurrentUser } from "../users";
 import { logAuthEvent } from "@/app/_server/actions/log";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 export interface SessionData {
   id: string;
@@ -30,7 +31,7 @@ export const readSessionData = async (): Promise<
 };
 
 export const writeSessionData = async (
-  sessions: Record<string, SessionData>
+  sessions: Record<string, SessionData>,
 ): Promise<void> => {
   await writeJsonFile(sessions, SESSION_DATA_FILE);
 };
@@ -47,9 +48,9 @@ export const readSessions = async (): Promise<Session> => {
 export const createSession = async (
   sessionId: string,
   username: string,
-  loginType: "local" | "sso" | "pending-mfa"
+  loginType: "local" | "sso" | "pending-mfa",
 ): Promise<void> => {
-  const headersList = headers();
+  const headersList = await headers();
   const userAgent = headersList.get("user-agent") || "Unknown";
   const forwarded = headersList.get("x-forwarded-for");
   const realIp = headersList.get("x-real-ip");
@@ -74,7 +75,7 @@ export const createSession = async (
 };
 
 export const updateSessionActivity = async (
-  sessionId: string
+  sessionId: string,
 ): Promise<void> => {
   const sessionsData = await readSessionData();
   if (sessionsData[sessionId]) {
@@ -93,23 +94,25 @@ export const removeSession = async (sessionId: string): Promise<void> => {
 };
 
 export const getSessionsForUser = async (
-  username: string
+  username: string,
 ): Promise<SessionData[]> => {
   const sessions = await readSessionData();
   return Object.values(sessions).filter(
-    (session) => session.username === username
+    (session) => session.username === username,
   );
 };
 
 export const getSessionId = async (): Promise<string> => {
   const cookieName =
-    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+    process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
       ? "__Host-session"
       : "session";
-  return cookies().get(cookieName)?.value || "";
+  return (await cookies()).get(cookieName)?.value || "";
 };
 
-export const getLoginType = async (): Promise<"local" | "sso" | "pending-mfa" | undefined> => {
+export const getLoginType = async (): Promise<
+  "local" | "sso" | "pending-mfa" | undefined
+> => {
   const sessionId = await getSessionId();
   if (!sessionId) return undefined;
 
@@ -119,7 +122,7 @@ export const getLoginType = async (): Promise<"local" | "sso" | "pending-mfa" | 
 
 export const removeAllSessionsForUser = async (
   username: string,
-  exceptSessionId?: string
+  exceptSessionId?: string,
 ): Promise<void> => {
   const sessionsData = await readSessionData();
   const sessions = await readSessions();
@@ -127,7 +130,7 @@ export const removeAllSessionsForUser = async (
     .filter(
       ([id, sessionData]) =>
         sessionData.username === username &&
-        (!exceptSessionId || id !== exceptSessionId)
+        (!exceptSessionId || id !== exceptSessionId),
     )
     .map(([id]) => id);
 
@@ -156,7 +159,7 @@ export const clearAllSessions = async (): Promise<Result<null>> => {
 };
 
 export const terminateSession = async (
-  formData: FormData
+  formData: FormData,
 ): Promise<Result<null>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -186,7 +189,12 @@ export const terminateSession = async (
       data: null,
     };
   } catch (error) {
-    await logAuthEvent("session_terminated", "unknown", false, "Failed to terminate session");
+    await logAuthEvent(
+      "session_terminated",
+      "unknown",
+      false,
+      "Failed to terminate session",
+    );
     console.error("Error terminating session:", error);
     return {
       success: false,
@@ -207,10 +215,10 @@ export const terminateAllOtherSessions = async (): Promise<Result<null>> => {
     }
 
     const cookieName =
-      process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+      process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
         ? "__Host-session"
         : "session";
-    const sessionId = cookies().get(cookieName)?.value;
+    const sessionId = (await cookies()).get(cookieName)?.value;
 
     await removeAllSessionsForUser(currentUser.username, sessionId);
 

@@ -240,7 +240,10 @@
     "disable": "Disable",
     "restoring": "Fishing out...",
     "retry": "Try Again",
-    "copiedToClipboard": "Scribed to hook"
+    "copiedToClipboard": "Scribed to hook",
+    "offline": "Offline",
+    "connected": "Connected",
+    "reconnecting": "Reconnecting..."
   },
   "history": {
     "noteHistory": "Log History",
@@ -774,7 +777,12 @@
       "calendarDay": "Day",
       "sampleInputLabel": "Input",
       "sampleInputPlaceholder": "Scribe here..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Hide the websocket connection indicator from the logo. You will still see a red dot if you are offline, regardless of this setting.",
+    "selectConnectionIndicator": "Select connection indicator status",
+    "showIndicator": "Show indicator",
+    "hideIndicator": "Hide indicator",
+    "hideConnectionIndicator": "Hide connection indicator from logo"
   },
   "admin": {
     "title": "Captain",
@@ -908,8 +916,6 @@
     "totalSharing": "Total Divvying",
     "topContributors": "Best Mates",
     "itemsShared": "Items Shared",
-    "activityLevel": "Hustle",
-    "sharedCMS": "Shared Loot",
     "totalPublicItems": "{count} public items",
     "userContent": "{checklistsLength} manifests • {notesLength} logs",
     "rebuildIndexes": "Retie Knots",
@@ -1163,7 +1169,9 @@
     "calloutInfo": "Intel",
     "calloutWarning": "Warning",
     "calloutSuccess": "Victory",
-    "calloutDanger": "Danger"
+    "calloutDanger": "Danger",
+    "ruler": "Ruler",
+    "lineNumbers": "Line numbers"
   },
   "sharing": {
     "share": "Divvy",

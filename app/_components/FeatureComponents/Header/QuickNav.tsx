@@ -116,43 +116,41 @@ export const QuickNav = ({
         </div>
 
         <div className="contents lg:hidden">
-          <NavigationGlobalIcon
-            icon={
-              <CheckmarkSquare04Icon
-                className={cn(
-                  "h-10 w-10 p-2 rounded-jotty",
-                  mode === Modes.CHECKLISTS
-                    ? "bg-primary text-primary-foreground"
-                    : ""
-                )}
-              />
-            }
-            onClick={() =>
-              checkNavigation(() => {
-                onModeChange?.(Modes.CHECKLISTS);
-                router.push("/");
-              })
-            }
-          />
-
-          <NavigationGlobalIcon
-            icon={
-              <File02Icon
-                className={cn(
-                  "h-10 w-10 p-2 rounded-jotty",
-                  mode === Modes.NOTES
-                    ? "bg-primary text-primary-foreground"
-                    : ""
-                )}
-              />
-            }
-            onClick={() =>
-              checkNavigation(() => {
-                onModeChange?.(Modes.NOTES);
-                router.push("/");
-              })
-            }
-          />
+          {(user?.landingPage === Modes.NOTES
+            ? ([Modes.NOTES, Modes.CHECKLISTS] as AppMode[])
+            : ([Modes.CHECKLISTS, Modes.NOTES] as AppMode[])
+          ).map((modeOption) => (
+            <NavigationGlobalIcon
+              key={modeOption}
+              icon={
+                modeOption === Modes.CHECKLISTS ? (
+                  <CheckmarkSquare04Icon
+                    className={cn(
+                      "h-10 w-10 p-2 rounded-jotty",
+                      mode === Modes.CHECKLISTS
+                        ? "bg-primary text-primary-foreground"
+                        : ""
+                    )}
+                  />
+                ) : (
+                  <File02Icon
+                    className={cn(
+                      "h-10 w-10 p-2 rounded-jotty",
+                      mode === Modes.NOTES
+                        ? "bg-primary text-primary-foreground"
+                        : ""
+                    )}
+                  />
+                )
+              }
+              onClick={() =>
+                checkNavigation(() => {
+                  onModeChange?.(modeOption);
+                  router.push("/");
+                })
+              }
+            />
+          ))}
 
           <NavigationSearchIcon onModeChange={onModeChange} />
         </div>

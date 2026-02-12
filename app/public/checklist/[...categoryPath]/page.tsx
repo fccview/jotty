@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getAllLists } from "@/app/_server/actions/checklist";
+import { getAllLists, getListById } from "@/app/_server/actions/checklist";
 import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
 import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
@@ -12,20 +12,21 @@ import { isItemSharedWith } from "@/app/_server/actions/sharing";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 interface PublicChecklistPageProps {
-  params: {
+  params: Promise<{
     categoryPath: string[];
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+  }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: PublicChecklistPageProps): Promise<Metadata> {
+export async function generateMetadata(
+  props: PublicChecklistPageProps,
+): Promise<Metadata> {
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
@@ -37,10 +38,11 @@ export async function generateMetadata({
   return getMedatadaTitle(Modes.CHECKLISTS, id, category);
 }
 
-export default async function PublicChecklistPage({
-  params,
-  searchParams,
-}: PublicChecklistPageProps) {
+export default async function PublicChecklistPage(
+  props: PublicChecklistPageProps,
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const { categoryPath } = params;
   const id = decodeId(categoryPath[categoryPath.length - 1]);
   const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
@@ -51,22 +53,26 @@ export default async function PublicChecklistPage({
 
   await CheckForNeedsMigration();
 
-  const listsResult = await getAllLists();
-  if (!listsResult.success || !listsResult.data) {
-    redirect("/");
-  }
+  let checklist = await getListById(id, undefined, category);
 
-  let checklist = listsResult.data.find(
-    (list) => list.id === id && list.category === category
-  );
+  if (!checklist) {
+    const listsResult = await getAllLists();
+    if (!listsResult.success || !listsResult.data) {
+      redirect("/");
+    }
 
-  if (!checklist && categoryPath.length === 1) {
     checklist = listsResult.data.find(
-      (list) => list.id === id && list.category === "Uncategorized"
+      (list) => list.id === id && list.category === category,
     );
 
-    if (!checklist) {
-      checklist = listsResult.data.find((list) => list.id === id);
+    if (!checklist && categoryPath.length === 1) {
+      checklist = listsResult.data.find(
+        (list) => list.id === id && list.category === "Uncategorized",
+      );
+
+      if (!checklist) {
+        checklist = listsResult.data.find((list) => list.id === id);
+      }
     }
   }
 
@@ -77,14 +83,14 @@ export default async function PublicChecklistPage({
   const userRecord = await getUserByUsername(checklist.owner!);
   const user = sanitizeUserForPublic(
     userRecord,
-    !!process.env.SERVE_PUBLIC_IMAGES
+    !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
   );
 
   const isPubliclyShared = await isItemSharedWith(
     checklist.uuid || id,
     category,
     "checklist",
-    "public"
+    "public",
   );
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.username === checklist.owner;

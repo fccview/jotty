@@ -7,8 +7,9 @@ export const dynamic = "force-dynamic";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { taskId: string; itemIndex: string } }
+  props: { params: Promise<{ taskId: string; itemIndex: string }> }
 ) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const body = await request.json();

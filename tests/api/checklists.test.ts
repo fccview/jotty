@@ -196,7 +196,7 @@ describe("Checklists API", () => {
         title: "Updated Test Checklist - API",
         category: "API Tests Updated",
       })
-      const response = await PUT(request, { params: { listId: "uuid-1" } })
+      const response = await PUT(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -210,7 +210,7 @@ describe("Checklists API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/nonexistent", {
         title: "Updated Title",
       })
-      const response = await PUT(request, { params: { listId: "nonexistent" } })
+      const response = await PUT(request, { params: Promise.resolve({ listId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -223,7 +223,7 @@ describe("Checklists API", () => {
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1", {
         title: "Updated Title",
       })
-      const response = await PUT(request, { params: { listId: "uuid-1" } })
+      const response = await PUT(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -247,7 +247,7 @@ describe("Checklists API", () => {
       mockDeleteList.mockResolvedValue({ success: true })
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/uuid-1")
-      const response = await DELETE(request, { params: { listId: "uuid-1" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -258,7 +258,7 @@ describe("Checklists API", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/nonexistent")
-      const response = await DELETE(request, { params: { listId: "nonexistent" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -269,7 +269,7 @@ describe("Checklists API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/uuid-1")
-      const response = await DELETE(request, { params: { listId: "uuid-1" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)

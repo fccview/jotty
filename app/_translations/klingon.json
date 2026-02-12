@@ -240,7 +240,10 @@
     "disable": "QotmoH",
     "restoring": "SabHa'lI'...",
     "retry": "nIDqa'",
-    "copiedToClipboard": "De' lI'lu'pu'"
+    "copiedToClipboard": "De' lI'lu'pu'",
+    "offline": "Offline",
+    "connected": "Connected",
+    "reconnecting": "Reconnecting..."
   },
   "history": {
     "noteHistory": "ghItlh Qu' tetlh",
@@ -774,7 +777,12 @@
       "calendarDay": "jaj",
       "sampleInputLabel": "ghItlh",
       "sampleInputPlaceholder": "mu'mey yIghItlh..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Hide the websocket connection indicator from the logo. You will still see a red dot if you are offline, regardless of this setting.",
+    "selectConnectionIndicator": "Select connection indicator status",
+    "showIndicator": "Show indicator",
+    "hideIndicator": "Hide indicator",
+    "hideConnectionIndicator": "Hide connection indicator from logo"
   },
   "admin": {
     "title": "ra'wI'",
@@ -908,8 +916,6 @@
     "totalSharing": "Hoch ghom",
     "topContributors": "vumwI'pu' Jen",
     "itemsShared": "Dochmey ghom",
-    "activityLevel": "vum ghu'",
-    "sharedCMS": "De' ghom vu'",
     "totalPublicItems": "{count} Dochmey Hoch",
     "userContent": "{checklistsLength} tetlhmey • {notesLength} ghItlhmey",
     "rebuildIndexes": "mI'mey yIchenmoHqa'",
@@ -1163,7 +1169,9 @@
     "calloutInfo": "De'",
     "calloutWarning": "ghuH",
     "calloutSuccess": "Qapla'",
-    "calloutDanger": "Qob"
+    "calloutDanger": "Qob",
+    "ruler": "Ruler",
+    "lineNumbers": "Line numbers"
   },
   "sharing": {
     "share": "ghom",

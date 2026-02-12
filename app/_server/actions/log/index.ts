@@ -45,7 +45,7 @@ export const getDailyLogPath = async (username: string, date: Date = new Date())
 
 const getRequestContext = async () => {
   try {
-    const headersList = headers();
+    const headersList = await headers();
     const userAgent = headersList.get("user-agent") || "Unknown";
     const forwarded = headersList.get("x-forwarded-for");
     const realIp = headersList.get("x-real-ip");

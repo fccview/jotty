@@ -35,7 +35,7 @@ describe("User & Summary API", () => {
       mockGetUserByUsername.mockResolvedValue(mockUserData)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/testuser")
-      const response = await GET_USER(request, { params: { username: "testuser" } })
+      const response = await GET_USER(request, { params: Promise.resolve({ username: "testuser" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -58,7 +58,7 @@ describe("User & Summary API", () => {
       mockGetUserByUsername.mockResolvedValue(mockOtherUser)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/otheruser")
-      const response = await GET_USER(request, { params: { username: "otheruser" } })
+      const response = await GET_USER(request, { params: Promise.resolve({ username: "otheruser" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -84,7 +84,7 @@ describe("User & Summary API", () => {
       mockGetUserByUsername.mockResolvedValue(mockOtherUser)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/otheruser")
-      const response = await GET_USER(request, { params: { username: "otheruser" } })
+      const response = await GET_USER(request, { params: Promise.resolve({ username: "otheruser" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -97,7 +97,7 @@ describe("User & Summary API", () => {
       mockGetUserByUsername.mockResolvedValue(null)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/nonexistent_user_12345")
-      const response = await GET_USER(request, { params: { username: "nonexistent_user_12345" } })
+      const response = await GET_USER(request, { params: Promise.resolve({ username: "nonexistent_user_12345" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -108,7 +108,7 @@ describe("User & Summary API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/testuser")
-      const response = await GET_USER(request, { params: { username: "testuser" } })
+      const response = await GET_USER(request, { params: Promise.resolve({ username: "testuser" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)

@@ -3,9 +3,6 @@
 import { useState, useCallback, useEffect } from "react";
 import {
   ViewIcon,
-  ViewOffSlashIcon,
-  LeftToRightListBulletIcon,
-  RightToLeftListTriangleIcon,
   File02Icon,
 } from "hugeicons-react";
 import { SyntaxHighlightedEditor } from "./SyntaxHighlightedEditor";
@@ -15,6 +12,9 @@ import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useNotesStore } from "@/app/_utils/notes-store";
+import { VisualGuideRuler } from "./VisualGuideRuler";
+import { EditorSettingsDropdown } from "./Toolbar/EditorSettingsDropdown";
 
 interface MinimalModeEditorProps {
   isEditing: boolean;
@@ -31,12 +31,22 @@ export const MinimalModeEditor = ({
 }: MinimalModeEditorProps) => {
   const t = useTranslations();
   const { user } = useAppMode();
+  const { showLineNumbers, showRuler, showVisualGuides, visualGuideColumns } = useNotesStore();
   const { contentWithoutMetadata } = extractYamlMetadata(noteContent);
   const [markdownContent, setMarkdownContent] = useState(
     contentWithoutMetadata
   );
   const [showPreview, setShowPreview] = useState(false);
-  const [showLineNumbers, setShowLineNumbers] = useState(true);
+  const [charWidth, setCharWidth] = useState(0);
+
+  useEffect(() => {
+    const el = document.createElement("span");
+    el.className = "markdown-line-measure";
+    el.textContent = "x".repeat(100);
+    document.body.append(el);
+    setCharWidth(el.offsetWidth / 100);
+    el.remove();
+  }, []);
 
   useEffect(() => {
     const { contentWithoutMetadata: newContent } =
@@ -82,35 +92,11 @@ export const MinimalModeEditor = ({
           </span>
         </div>
         <div className="hidden lg:flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowLineNumbers(!showLineNumbers)}
-            title={showLineNumbers ? t("editor.hideLineNumbers") : t("editor.showLineNumbers")}
-            className="h-8 px-2"
-          >
-            {showLineNumbers ? (
-              <RightToLeftListTriangleIcon className="h-4 w-4" />
-            ) : (
-              <LeftToRightListBulletIcon className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowPreview(!showPreview)}
-            title={showPreview ? t("editor.showEditor") : t("editor.showPreview")}
-            className="h-8 px-2"
-          >
-            {showPreview ? (
-              <ViewOffSlashIcon className="h-4 w-4" />
-            ) : (
-              <ViewIcon className="h-4 w-4" />
-            )}
-            <span className="ml-1 text-xs">
-              {showPreview ? t("common.edit") : t("editor.preview")}
-            </span>
-          </Button>
+          <EditorSettingsDropdown
+            isMarkdownMode={true}
+            showPreview={showPreview}
+            onTogglePreview={() => setShowPreview(!showPreview)}
+          />
         </div>
       </div>
 
@@ -137,6 +123,12 @@ export const MinimalModeEditor = ({
           <File02Icon className="h-5 w-5" />
         </Button>
       </div>
+      {!showPreview && showRuler && (
+        <VisualGuideRuler
+          charWidth={charWidth}
+          showLineNumbers={showLineNumbers}
+        />
+      )}
       <div className="flex-1 overflow-y-auto jotty-scrollable-content max-h-[95vh]">
         {showPreview ? (
           <div
@@ -152,6 +144,8 @@ export const MinimalModeEditor = ({
               onChange={handleChange}
               onFileDrop={handleFileDrop}
               showLineNumbers={showLineNumbers}
+              showVisualGuides={showRuler && showVisualGuides}
+              visualGuideColumns={visualGuideColumns}
             />
           </div>
         )}

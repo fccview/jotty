@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, CSSProperties } from "react";
+import { ReactNode, CSSProperties, useRef } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -24,6 +24,9 @@ export const Draggable = ({
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id, data, disabled });
 
+  const wasDragging = useRef(false);
+  if (isDragging) wasDragging.current = true;
+
   const combinedStyle: CSSProperties = {
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0.6 : undefined,
@@ -36,6 +39,13 @@ export const Draggable = ({
       ref={setNodeRef}
       {...attributes}
       {...listeners}
+      onClickCapture={(e) => {
+        if (wasDragging.current) {
+          e.stopPropagation();
+          e.preventDefault();
+          wasDragging.current = false;
+        }
+      }}
       className={className}
       style={combinedStyle}
     >

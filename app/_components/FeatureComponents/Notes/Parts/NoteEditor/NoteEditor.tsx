@@ -5,10 +5,11 @@ import { UnsavedChangesModal } from "@/app/_components/GlobalComponents/Modals/C
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { NoteEditorHeader } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorHeader";
 import { NoteEditorContent } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorContent";
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { TableOfContents } from "../TableOfContents";
 import { useSearchParams } from "next/navigation";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useNotesStore } from "@/app/_utils/notes-store";
 
 export interface NoteEditorProps {
   note: Note;
@@ -27,7 +28,7 @@ export const NoteEditor = ({
 }: NoteEditorProps) => {
   const { permissions } = usePermissions();
   const isOwner = permissions?.isOwner || false;
-  const [showTOC, setShowTOC] = useState(false);
+  const { showTOC, setShowTOC } = useNotesStore();
   const decryptModalRef = useRef<(() => void) | null>(null);
   const viewModalRef = useRef<(() => void) | null>(null);
 

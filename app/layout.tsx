@@ -11,6 +11,7 @@ import { NavigationGuardProvider } from "@/app/_providers/NavigationGuardProvide
 import { EmojiProvider } from "@/app/_providers/EmojiProvider";
 import { InstallPrompt } from "@/app/_components/GlobalComponents/Prompts/InstallPrompt";
 import { UpdatePrompt } from "@/app/_components/GlobalComponents/Pwa/UpdatePrompt";
+import { ServiceWorkerRegister } from "@/app/_components/GlobalComponents/Pwa/ServiceWorkerRegister";
 import { getSettings } from "@/app/_server/actions/config";
 import { DynamicFavicon } from "@/app/_components/GlobalComponents/Layout/Logo/DynamicFavicon";
 import { ShortcutProvider } from "@/app/_providers/ShortcutsProvider";
@@ -42,6 +43,8 @@ import { getMessages } from "next-intl/server";
 import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { KonamiProvider } from "./_providers/KonamiProvider";
+import { WebSocketProvider } from "./_providers/WebSocketProvider";
+import { isEnvEnabled } from "./_utils/env-utils";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -79,8 +82,8 @@ export const generateMetadata = async (): Promise<Metadata> => {
       app512x512Icon,
       app192x192Icon,
       themeColor,
-      appVersion
-    )
+      appVersion,
+    ),
   );
 
   try {
@@ -88,7 +91,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
   } catch (error) {
     console.error(
       "Your data and/or config folders seem to be using the wrong permissions, please fix them by following the instructions here: https://github.com/fccview/jotty/blob/main/howto/DOCKER.md and/or setting the correct env variables from here: https://github.com/fccview/jotty/blob/main/howto/ENV-VARIABLES.md",
-      error
+      error,
     );
   }
 
@@ -149,7 +152,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = headers().get("x-pathname");
+  const pathname = (await headers()).get("x-pathname");
   const isPublicRoute = pathname?.startsWith("/public");
   const settings = await getSettings();
   const appName =
@@ -159,15 +162,13 @@ export default async function RootLayout({
   const userRecord = await getCurrentUser();
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
-  const stopCheckUpdates = process.env.STOP_CHECK_UPDATES?.toLowerCase();
+  const stopCheckUpdates = process.env.STOP_CHECK_UPDATES;
   const users = isPublicRoute || !userRecord ? [] : await getUsers();
   const linkIndex = userRecord?.username
     ? await readLinkIndex(userRecord.username)
     : null;
   const messages = await getMessages();
   const user = sanitizeUserForClient(userRecord);
-
-  const shouldParseContent = settings?.parseContent === "yes";
 
   const [
     notesResult,
@@ -177,35 +178,19 @@ export default async function RootLayout({
     globalSharing,
     availableLocales,
   ] = await Promise.all([
-    shouldParseContent && user && !isPublicRoute
-      ? getUserNotes()
-      : user && !isPublicRoute
-        ? getUserNotes({
-          projection: ["id", "title", "category", "owner", "uuid"],
-        })
-        : Promise.resolve({ success: false, data: [] }),
-    shouldParseContent && user && !isPublicRoute
-      ? getUserChecklists()
-      : user && !isPublicRoute
-        ? getUserChecklists({
-          projection: [
-            "id",
-            "title",
-            "category",
-            "owner",
-            "uuid",
-            "type",
-            "items",
-          ],
-        })
-        : Promise.resolve({ success: false, data: [] }),
+    user && !isPublicRoute
+      ? getUserNotes({ metadataOnly: true, preserveOrder: true })
+      : Promise.resolve({ success: false, data: [] }),
+    user && !isPublicRoute
+      ? getUserChecklists({ metadataOnly: true, preserveOrder: true })
+      : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
       ? getAllSharedItems()
       : Promise.resolve({
-        notes: [],
-        checklists: [],
-        public: { notes: [], checklists: [] },
-      }),
+          notes: [],
+          checklists: [],
+          public: { notes: [], checklists: [] },
+        }),
     user && !isPublicRoute
       ? getAllSharedItemsForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
@@ -220,12 +205,7 @@ export default async function RootLayout({
 
   let serveUpdates = true;
 
-  if (
-    (stopCheckUpdates &&
-      (stopCheckUpdates.toLowerCase() !== "no" ||
-        stopCheckUpdates.toLowerCase() !== "false")) ||
-    settings?.notifyNewUpdates === "no"
-  ) {
+  if (isEnvEnabled(stopCheckUpdates) || settings?.notifyNewUpdates === "no") {
     serveUpdates = false;
   }
 
@@ -239,7 +219,6 @@ export default async function RootLayout({
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
         <link rel="icon" href="/app-icons/favicon.ico" />
-        <link rel="stylesheet" href="/themes/excalidraw/excalidraw.css" /> {/* eslint-disable-line @next/next/no-css-tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
@@ -247,7 +226,7 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: themeInitScript(
-              JSON.stringify(customThemes["custom-themes"] || {})
+              JSON.stringify(customThemes["custom-themes"] || {}),
             ),
           }}
         />
@@ -270,34 +249,39 @@ export default async function RootLayout({
             globalSharing={globalSharing}
             availableLocales={availableLocales}
           >
-            <KonamiProvider>
-              <ThemeProvider user={user || {}}>
-                <EmojiProvider>
-                  <NavigationGuardProvider>
-                    <ToastProvider>
-                      <ShortcutProvider
-                        user={user}
-                        noteCategories={noteCategories.data || []}
-                        checklistCategories={checklistCategories.data || []}
-                      >
-                        <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
-                          <DynamicFavicon />
-                          {children}
+            <WebSocketProvider>
+              <KonamiProvider>
+                <ThemeProvider user={user || {}}>
+                  <EmojiProvider>
+                    <NavigationGuardProvider>
+                      <ToastProvider>
+                        <ShortcutProvider
+                          user={user}
+                          noteCategories={noteCategories.data || []}
+                          checklistCategories={checklistCategories.data || []}
+                        >
+                          <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                            <DynamicFavicon />
+                            {children}
 
-                          {!pathname?.includes("/public") && <InstallPrompt />}
+                            {!pathname?.includes("/public") && (
+                              <InstallPrompt />
+                            )}
 
-                          {serveUpdates && !pathname?.includes("/public") && (
-                            <UpdatePrompt />
-                          )}
-                        </div>
-                      </ShortcutProvider>
-                    </ToastProvider>
-                  </NavigationGuardProvider>
-                </EmojiProvider>
-              </ThemeProvider>
-            </KonamiProvider>
+                            {serveUpdates && !pathname?.includes("/public") && (
+                              <UpdatePrompt />
+                            )}
+                          </div>
+                        </ShortcutProvider>
+                      </ToastProvider>
+                    </NavigationGuardProvider>
+                  </EmojiProvider>
+                </ThemeProvider>
+              </KonamiProvider>
+            </WebSocketProvider>
           </AppModeProvider>
         </NextIntlClientProvider>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

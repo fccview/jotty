@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { NodeViewWrapper } from "@tiptap/react";
 import {
   File02Icon,
@@ -87,6 +87,8 @@ export const InternalLinkComponent = ({
   const { href, title, uuid, itemId, type, category, convertToBidirectional } =
     node.attrs;
   const [showPopup, setShowPopup] = useState(false);
+  const [loadedFullItem, setLoadedFullItem] = useState<Note | Checklist | null>(null);
+  const [isLoadingItem, setIsLoadingItem] = useState(false);
   const potentialCategory = href
     ?.replace("/jotty/", "")
     .replace("/note/", "")
@@ -103,9 +105,37 @@ export const InternalLinkComponent = ({
 
   const canToggle = isPathBasedLink || isJottyLink;
 
-  const fullItem =
-    (notes.find((n) => n.uuid === uuid) as Note | undefined) ||
-    (checklists.find((c) => c.uuid === uuid) as Checklist | undefined);
+  const metadataItem =
+    (notes.find((n) => n.uuid === uuid) as Partial<Note> | undefined) ||
+    (checklists.find((c) => c.uuid === uuid) as Partial<Checklist> | undefined);
+
+  const fullItem = loadedFullItem || metadataItem;
+
+  const loadFullItem = useCallback(async () => {
+    if (loadedFullItem || isLoadingItem || !uuid) return;
+
+    setIsLoadingItem(true);
+    try {
+      const isChecklist = metadataItem && "type" in metadataItem && metadataItem.type;
+      if (isChecklist) {
+        const checklist = await getListById(uuid);
+        if (checklist) setLoadedFullItem(checklist);
+      } else {
+        const note = await getNoteById(uuid);
+        if (note) setLoadedFullItem(note);
+      }
+    } catch (error) {
+      console.warn("Failed to load item for preview:", error);
+    } finally {
+      setIsLoadingItem(false);
+    }
+  }, [uuid, loadedFullItem, isLoadingItem, metadataItem]);
+
+  useEffect(() => {
+    if (showPopup && !loadedFullItem && !isLoadingItem) {
+      loadFullItem();
+    }
+  }, [showPopup, loadedFullItem, isLoadingItem, loadFullItem]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -114,7 +144,7 @@ export const InternalLinkComponent = ({
     if (href.startsWith("/jotty/")) {
       const uuidFromPath = href.replace("/jotty/", "");
 
-      if (fullItem) {
+      if (fullItem && fullItem.id) {
         router.push(
           `/${fullItem && "type" in fullItem && fullItem.type
             ? ItemTypes.CHECKLIST
@@ -150,7 +180,7 @@ export const InternalLinkComponent = ({
     e.stopPropagation();
 
     if (isJottyLink) {
-      if (fullItem) {
+      if (fullItem && fullItem.id) {
         const pathPrefix =
           fullItem && "type" in fullItem && fullItem.type
             ? "/checklist/"
@@ -233,14 +263,22 @@ export const InternalLinkComponent = ({
           href.startsWith("/note/") ||
           href.startsWith("/checklist/")) && (
           <span className="block absolute top-[110%] left-0 min-w-[300px] max-w-[400px] z-10">
-            {fullItem && "type" in fullItem && fullItem.type ? (
-              <ChecklistCard list={fullItem as Checklist} onSelect={() => { }} />
-            ) : (
+            {isLoadingItem ? (
+              <div className="bg-card border border-border rounded-jotty p-4 text-muted-foreground text-sm">
+                Loading...
+              </div>
+            ) : loadedFullItem && "type" in loadedFullItem && loadedFullItem.type ? (
+              <ChecklistCard list={loadedFullItem as Checklist} onSelect={() => { }} />
+            ) : loadedFullItem ? (
               <NoteCard
-                note={fullItem as Note}
+                note={loadedFullItem as Note}
                 onSelect={() => { }}
                 fullScrollableContent
               />
+            ) : (
+              <div className="bg-card border border-border rounded-jotty p-4 text-muted-foreground text-sm">
+                {metadataItem?.title || title}
+              </div>
             )}
           </span>
         )}

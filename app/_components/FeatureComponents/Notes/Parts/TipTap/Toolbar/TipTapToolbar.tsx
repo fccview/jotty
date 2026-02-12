@@ -5,8 +5,6 @@ import {
   TextStrikethroughIcon,
   SourceCodeIcon,
   Heading02Icon,
-  RightToLeftListTriangleIcon,
-  LeftToRightListNumberIcon,
   QuoteUpIcon,
   Attachment01Icon,
   File02Icon,
@@ -28,6 +26,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ExtraItemsDropdown";
 import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/PrismThemeDropdown";
+import { EditorSettingsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/EditorSettingsDropdown";
 import { useTranslations } from "next-intl";
 import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -42,11 +41,8 @@ type ToolbarProps = {
   editor: Editor | null;
   isMarkdownMode: boolean;
   toggleMode: () => void;
-  showLineNumbers?: boolean;
-  onToggleLineNumbers?: () => void;
   showPreview?: boolean;
   onTogglePreview?: () => void;
-  markdownContent?: string;
   onMarkdownChange?: (content: string) => void;
   linkRequestPending?: boolean;
   linkRequestHasSelection?: boolean;
@@ -57,11 +53,8 @@ export const TiptapToolbar = ({
   editor,
   isMarkdownMode,
   toggleMode,
-  showLineNumbers = true,
-  onToggleLineNumbers,
   showPreview = false,
   onTogglePreview,
-  markdownContent = "",
   onMarkdownChange,
   linkRequestPending = false,
   linkRequestHasSelection = false,
@@ -75,7 +68,6 @@ export const TiptapToolbar = ({
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showLinkTextModal, setShowLinkTextModal] = useState(false);
   const [previousUrl, setPreviousUrl] = useState("");
-  const [pendingLinkUrl, setPendingLinkUrl] = useState("");
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
   const [selectedImageWidth, setSelectedImageWidth] = useState<
     number | undefined
@@ -292,50 +284,19 @@ export const TiptapToolbar = ({
         )}
       >
         <div className="flex-shrink-0 md:order-last flex items-center gap-1">
-          {isMarkdownMode && onToggleLineNumbers && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={onToggleLineNumbers}
-              className="flex-shrink-0 hidden lg:flex"
-              title={
-                showLineNumbers ? t('editor.hideLineNumbers') : t('editor.showLineNumbers')
-              }
-            >
-              {showLineNumbers ? (
-                <RightToLeftListTriangleIcon className="h-4 w-4" />
-              ) : (
-                <LeftToRightListNumberIcon className="h-4 w-4" />
-              )}
-            </Button>
+          {isMarkdownMode && (
+            <div className="hidden lg:flex">
+              <EditorSettingsDropdown
+                isMarkdownMode={isMarkdownMode}
+                showPreview={showPreview}
+                onTogglePreview={onTogglePreview}
+              />
+            </div>
           )}
           {isMarkdownMode && (
             <div className="hidden lg:flex">
               <PrismThemeDropdown isMarkdownMode={isMarkdownMode} />
             </div>
-          )}
-          {isMarkdownMode && onTogglePreview && (
-            <Button
-              variant={showPreview ? "secondary" : "ghost"}
-              size="sm"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={onTogglePreview}
-              className="flex-shrink-0 hidden lg:flex"
-              title={showPreview ? t('editor.hidePreview') : t('editor.showPreview')}
-            >
-              {showPreview ? (
-                <>
-                  <ViewOffSlashIcon className="h-4 w-4 mr-2" />
-                  <span>{t('editor.edit')}</span>
-                </>
-              ) : (
-                <>
-                  <ViewIcon className="h-4 w-4 mr-2" />
-                  <span>{t('editor.preview')}</span>
-                </>
-              )}
-            </Button>
           )}
           <Button
             variant="ghost"

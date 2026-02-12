@@ -20,8 +20,9 @@ import {
   SanitisedUser,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { LinkIndex } from "../_server/actions/link";
+import { LinkIndex } from "../_types";
 import { buildTagsIndex } from "../_utils/tag-utils";
+import { useSidebarStore } from "../_utils/sidebar-store";
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
@@ -93,10 +94,12 @@ export const AppModeProvider = ({
     }
   }, [initialUser]);
 
+  const { setMode: setStoredMode } = useSidebarStore();
+
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);
     setSelectedFilter(null);
-    localStorage.setItem("app-mode", newMode);
+    setStoredMode(newMode);
   };
 
   const tagsEnabled = appSettings?.editor?.enableTags !== false;

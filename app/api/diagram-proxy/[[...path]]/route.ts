@@ -121,17 +121,13 @@ async function proxyDrawioRequest(
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { path?: string[] } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ path?: string[] }> }) {
+  const params = await props.params;
   return proxyDrawioRequest(request, params);
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { path?: string[] } }
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ path?: string[] }> }) {
+  const params = await props.params;
   return proxyDrawioRequest(request, params);
 }
 

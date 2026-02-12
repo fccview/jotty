@@ -7,16 +7,17 @@ export const dynamic = "force-dynamic";
 
 export const GET = withCacheControl(async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  props: { params: Promise<{ filename: string }> },
 ) {
   try {
+    const params = await props.params;
     const filename = params.filename;
     const filepath = path.join(
       process.cwd(),
       "data",
       "uploads",
       "app-icons",
-      filename
+      filename,
     );
 
     try {
@@ -56,8 +57,7 @@ export const GET = withCacheControl(async function GET(
     console.error("Error serving app icon:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
-},
-true);
+}, true);

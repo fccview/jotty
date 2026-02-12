@@ -12,7 +12,7 @@ interface SearchInputProps {
   onFocus: () => void;
   placeholder?: string;
   className?: string;
-  inputRef?: React.RefObject<HTMLInputElement>;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 export const SearchInput = ({

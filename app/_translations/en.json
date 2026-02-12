@@ -240,7 +240,10 @@
     "disable": "Disable",
     "restoring": "Restoring...",
     "retry": "Retry",
-    "copiedToClipboard": "Copied to clipboard"
+    "copiedToClipboard": "Copied to clipboard",
+    "offline": "Offline",
+    "connected": "Connected",
+    "reconnecting": "Reconnecting..."
   },
   "history": {
     "noteHistory": "Note History",
@@ -774,7 +777,12 @@
       "calendarDay": "Calendar day",
       "sampleInputLabel": "Sample Input",
       "sampleInputPlaceholder": "Enter some text..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Hide the websocket connection indicator from the logo. You will still see a red dot if you are offline, regardless of this setting.",
+    "selectConnectionIndicator": "Select connection indicator status",
+    "showIndicator": "Show indicator",
+    "hideIndicator": "Hide indicator",
+    "hideConnectionIndicator": "Hide connection indicator from logo"
   },
   "admin": {
     "title": "Admin",
@@ -908,8 +916,6 @@
     "totalSharing": "Total Sharing Actions",
     "topContributors": "Top Contributors",
     "itemsShared": "Items Shared",
-    "activityLevel": "Activity Level",
-    "sharedCMS": "Shared Content Management",
     "totalPublicItems": "{count} public items",
     "userContent": "{checklistsLength} checklists • {notesLength} notes",
     "rebuildIndexes": "Rebuild Indexes",
@@ -1163,7 +1169,9 @@
     "calloutInfo": "Info",
     "calloutWarning": "Warning",
     "calloutSuccess": "Success",
-    "calloutDanger": "Danger"
+    "calloutDanger": "Danger",
+    "ruler": "Ruler",
+    "lineNumbers": "Line numbers"
   },
   "sharing": {
     "share": "Share",

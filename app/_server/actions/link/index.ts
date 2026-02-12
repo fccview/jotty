@@ -6,24 +6,7 @@ import { ItemTypes, Modes } from "@/app/_types/enums";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
 import { getUserNotes } from "@/app/_server/actions/note";
 import { getUserChecklists } from "@/app/_server/actions/checklist";
-import { ItemType } from "@/app/_types";
-
-export interface LinkIndex {
-  notes: Record<string, ItemLinks>;
-  checklists: Record<string, ItemLinks>;
-  [key: string]: Record<string, ItemLinks>;
-}
-
-export interface ItemLinks {
-  isLinkedTo: {
-    notes: string[];
-    checklists: string[];
-  };
-  isReferencedIn: {
-    notes: string[];
-    checklists: string[];
-  };
-}
+import { ItemType, LinkIndex, ItemLinks } from "@/app/_types";
 
 export interface LinkTarget {
   type: ItemType;
@@ -49,13 +32,15 @@ export const readLinkIndex = async (username: string): Promise<LinkIndex> => {
 
 export const writeLinkIndex = async (
   username: string,
-  index: LinkIndex
+  index: LinkIndex,
 ): Promise<void> => {
   const indexPath = await getIndexFilePath(username);
   await serverWriteFile(indexPath, JSON.stringify(index, null, 2));
 };
 
-export const parseInternalLinks = (content: string): LinkTarget[] => {
+export const parseInternalLinks = async (
+  content: string
+): Promise<LinkTarget[]> => {
   const links: LinkTarget[] = [];
 
   const htmlRegex = /data-href="([^"]+)"[^>]*data-type="(note|checklist)"/g;
@@ -96,17 +81,17 @@ export const parseInternalLinks = (content: string): LinkTarget[] => {
   const uniqueLinks = links.filter(
     (link, index, self) =>
       index ===
-      self.findIndex((l) => l.type === link.type && l.uuid === link.uuid)
+      self.findIndex((l) => l.type === link.type && l.uuid === link.uuid),
   );
 
-  return uniqueLinks;
+  return Promise.resolve(uniqueLinks);
 };
 
 export const updateIndexForItem = async (
   username: string,
   itemType: ItemType,
   itemUuid: string,
-  currentLinks: LinkTarget[]
+  currentLinks: LinkTarget[],
 ): Promise<void> => {
   if (!Array.isArray(currentLinks)) {
     currentLinks = [];
@@ -122,7 +107,7 @@ export const updateIndexForItem = async (
 
   for (const targetUuid of currentItemLinks.isLinkedTo.notes) {
     if (index.notes[targetUuid]) {
-      const refKey = currentItemKey as keyof ItemLinks['isReferencedIn'];
+      const refKey = currentItemKey as keyof ItemLinks["isReferencedIn"];
       index.notes[targetUuid].isReferencedIn[refKey] = index.notes[
         targetUuid
       ].isReferencedIn[refKey].filter((ref: string) => ref !== itemUuid);
@@ -131,11 +116,10 @@ export const updateIndexForItem = async (
 
   for (const targetUuid of currentItemLinks.isLinkedTo.checklists) {
     if (index.checklists[targetUuid]) {
-      const refKey = currentItemKey as keyof ItemLinks['isReferencedIn'];
-      index.checklists[targetUuid].isReferencedIn[refKey] =
-        index.checklists[targetUuid].isReferencedIn[refKey].filter(
-          (ref: string) => ref !== itemUuid
-        );
+      const refKey = currentItemKey as keyof ItemLinks["isReferencedIn"];
+      index.checklists[targetUuid].isReferencedIn[refKey] = index.checklists[
+        targetUuid
+      ].isReferencedIn[refKey].filter((ref: string) => ref !== itemUuid);
     }
   }
 
@@ -152,11 +136,11 @@ export const updateIndexForItem = async (
     }
     if (
       !(index[currentItemKey][itemUuid].isLinkedTo as any)[targetKey].includes(
-        link.uuid
+        link.uuid,
       )
     ) {
       (index[currentItemKey][itemUuid].isLinkedTo as any)[targetKey].push(
-        link.uuid
+        link.uuid,
       );
     }
 
@@ -175,7 +159,7 @@ export const updateIndexForItem = async (
       ].includes(itemUuid)
     ) {
       (index[targetKey][link.uuid].isReferencedIn as any)[currentItemKey].push(
-        itemUuid
+        itemUuid,
       );
     }
   }
@@ -186,7 +170,7 @@ export const updateIndexForItem = async (
 export const removeItemFromIndex = async (
   username: string,
   itemType: ItemType,
-  itemUuid: string
+  itemUuid: string,
 ): Promise<void> => {
   const index = await readLinkIndex(username);
   const itemKey = `${itemType}s`;
@@ -244,7 +228,7 @@ export const updateItemCategory = async (
   username: string,
   itemType: ItemType,
   oldItemId: string,
-  newItemId: string
+  newItemId: string,
 ): Promise<void> => {
   const index = await readLinkIndex(username);
   const itemKey = `${itemType}s`;
@@ -269,7 +253,7 @@ export const updateItemCategory = async (
     if (index.checklists[referencingChecklistId]) {
       index.checklists[referencingChecklistId].isLinkedTo.notes =
         index.checklists[referencingChecklistId].isLinkedTo.notes.map((link) =>
-          link === oldItemId ? newItemId : link
+          link === oldItemId ? newItemId : link,
         );
     }
   }
@@ -340,7 +324,7 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
           const refType = sourceType === "notes" ? "notes" : "checklists";
           if (
             !newIndex.notes[targetUuid].isReferencedIn[refType].includes(
-              sourceUuid
+              sourceUuid,
             )
           ) {
             newIndex.notes[targetUuid].isReferencedIn[refType].push(sourceUuid);
@@ -353,11 +337,11 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
           const refType = sourceType === "notes" ? "notes" : "checklists";
           if (
             !newIndex.checklists[targetUuid].isReferencedIn[refType].includes(
-              sourceUuid
+              sourceUuid,
             )
           ) {
             newIndex.checklists[targetUuid].isReferencedIn[refType].push(
-              sourceUuid
+              sourceUuid,
             );
           }
         }

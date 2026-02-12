@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isEnvEnabled } from "./app/_utils/env-utils";
 
-export const middleware = async (request: NextRequest) => {
+export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
   if (
@@ -20,12 +21,12 @@ export const middleware = async (request: NextRequest) => {
   }
 
   const cookieName =
-    process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+    process.env.NODE_ENV === "production" && isEnvEnabled(process.env.HTTPS)
       ? "__Host-session"
       : "session";
   const sessionId = request.cookies.get(cookieName)?.value;
 
-  if (process.env.DEBUGGER) {
+  if (isEnvEnabled(process.env.DEBUGGER)) {
     console.log("MIDDLEWARE - sessionId:", sessionId);
     console.log("MIDDLEWARE - cookies:", request.cookies.getAll());
   }
@@ -42,11 +43,11 @@ export const middleware = async (request: NextRequest) => {
       process.env.APP_URL ||
       request.nextUrl.origin;
 
-    if (process.env.DEBUGGER) {
+    if (isEnvEnabled(process.env.DEBUGGER)) {
       console.log("MIDDLEWARE - URL Resolution:");
       console.log(
         "  INTERNAL_API_URL:",
-        process.env.INTERNAL_API_URL || "(not set)"
+        process.env.INTERNAL_API_URL || "(not set)",
       );
       console.log("  APP_URL:", process.env.APP_URL || "(not set)");
       console.log("  request.nextUrl.origin:", request.nextUrl.origin);
@@ -55,7 +56,7 @@ export const middleware = async (request: NextRequest) => {
 
     const sessionCheckUrl = new URL(`${internalApiUrl}/api/auth/check-session`);
 
-    if (process.env.DEBUGGER) {
+    if (isEnvEnabled(process.env.DEBUGGER)) {
       console.log("MIDDLEWARE - Session Check URL:", sessionCheckUrl.href);
     }
 
@@ -66,7 +67,7 @@ export const middleware = async (request: NextRequest) => {
       cache: "no-store",
     });
 
-    if (process.env.DEBUGGER) {
+    if (isEnvEnabled(process.env.DEBUGGER)) {
       console.log("MIDDLEWARE - Session Check Response:");
       console.log("  status:", sessionCheck.status);
       console.log("  statusText:", sessionCheck.statusText);
@@ -77,7 +78,7 @@ export const middleware = async (request: NextRequest) => {
       const redirectResponse = NextResponse.redirect(loginUrl);
       redirectResponse.cookies.delete(cookieName);
 
-      if (process.env.DEBUGGER) {
+      if (isEnvEnabled(process.env.DEBUGGER)) {
         console.log("MIDDLEWARE - session is not ok");
       }
 

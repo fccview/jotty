@@ -3,16 +3,18 @@ import { getCurrentUser } from "@/app/_server/actions/users";
 import path from "path";
 import fs from "fs/promises";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
+import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { username: string; filename: string } }
+  props: { params: Promise<{ username: string; filename: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await getCurrentUser();
-    if (!user && !process.env.SERVE_PUBLIC_FILES) {
+    if (!user && !isEnvEnabled(process.env.SERVE_PUBLIC_FILES)) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

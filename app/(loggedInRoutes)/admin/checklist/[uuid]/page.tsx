@@ -14,21 +14,21 @@ import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 interface AdminChecklistPageProps {
-  params: {
+  params: Promise<{
     uuid: string;
-  };
+  }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: AdminChecklistPageProps): Promise<Metadata> {
+export async function generateMetadata(props: AdminChecklistPageProps): Promise<Metadata> {
+  const params = await props.params;
   const { uuid } = params;
   return getMedatadaTitle(Modes.CHECKLISTS, uuid, "Admin");
 }
 
-export default async function AdminChecklistPage({ params }: AdminChecklistPageProps) {
+export default async function AdminChecklistPage(props: AdminChecklistPageProps) {
+  const params = await props.params;
   const { uuid } = params;
   const userRecord = await getCurrentUser();
   const hasContentAccess = await canAccessAllContent();

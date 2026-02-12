@@ -48,11 +48,16 @@ export const ChecklistClient = ({
   const { openCreateChecklistModal, openCreateCategoryModal, openSettings } =
     useShortcut();
   const prevChecklistId = useRef(checklist.id);
+  const prevUpdatedAt = useRef(checklist.updatedAt);
 
   useEffect(() => {
-    if (checklist.id !== prevChecklistId.current) {
+    if (
+      checklist.id !== prevChecklistId.current ||
+      checklist.updatedAt !== prevUpdatedAt.current
+    ) {
       setLocalChecklist(checklist);
       prevChecklistId.current = checklist.id;
+      prevUpdatedAt.current = checklist.updatedAt;
     }
   }, [checklist]);
 
@@ -62,7 +67,7 @@ export const ChecklistClient = ({
 
   const handleBack = () => {
     checkNavigation(() => {
-      router.push("/");
+      router.push("/?mode=checklists");
     });
   };
 
@@ -80,7 +85,10 @@ export const ChecklistClient = ({
   const handleCloneConfirm = async (targetCategory: string) => {
     const formData = new FormData();
     formData.append("id", localChecklist.id);
-    formData.append("originalCategory", localChecklist.category || "Uncategorized");
+    formData.append(
+      "originalCategory",
+      localChecklist.category || "Uncategorized",
+    );
     formData.append("category", targetCategory || "Uncategorized");
     if (localChecklist.owner) {
       formData.append("user", localChecklist.owner);
@@ -93,8 +101,8 @@ export const ChecklistClient = ({
       router.push(
         `/checklist/${buildCategoryPath(
           result.data.category || "Uncategorized",
-          result.data.id
-        )}`
+          result.data.id,
+        )}`,
       );
       router.refresh();
     }
@@ -106,7 +114,7 @@ export const ChecklistClient = ({
 
   const handleDelete = (deletedId: string) => {
     checkNavigation(() => {
-      router.push("/");
+      router.push("/?mode=checklists");
     });
   };
 
@@ -130,13 +138,7 @@ export const ChecklistClient = ({
             checklist={localChecklist}
             onBack={handleBack}
             onEdit={handleEdit}
-            onDelete={
-              localChecklist.isShared
-                ? user?.isAdmin || user?.username === localChecklist.owner
-                  ? handleDeleteList
-                  : undefined
-                : handleDeleteList
-            }
+            onDelete={handleDeleteList}
             onShare={() => setShowShareModal(true)}
             onConvertType={() => setShowConversionModal(true)}
             onArchive={handleArchive}
@@ -155,8 +157,6 @@ export const ChecklistClient = ({
         onEdit={handleEdit}
         onDelete={handleDelete}
         onClone={handleClone}
-        currentUsername={user?.username}
-        isAdmin={user?.isAdmin}
         sensors={sensors}
       />
     );
@@ -190,8 +190,14 @@ export const ChecklistClient = ({
           onConfirm={handleConfirmConversion}
           title={t("checklists.convertChecklistType")}
           message={t("checklists.convertTypeConfirmation", {
-            currentType: localChecklist.type === "simple" ? t("checklists.simpleChecklist") : t("checklists.taskProject"),
-            newType: getNewType(localChecklist.type) === "simple" ? t("checklists.simpleChecklist") : t("checklists.taskProject")
+            currentType:
+              localChecklist.type === "simple"
+                ? t("checklists.simpleChecklist")
+                : t("checklists.taskProject"),
+            newType:
+              getNewType(localChecklist.type) === "simple"
+                ? t("checklists.simpleChecklist")
+                : t("checklists.taskProject"),
           })}
           confirmText={t("checklists.convert")}
         />

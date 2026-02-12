@@ -237,7 +237,10 @@
     "moreOptions": "Plus d'options",
     "retry": "Réessayer",
     "restoring": "Restauration...",
-    "copiedToClipboard": "Copié dans le presse-papiers"
+    "copiedToClipboard": "Copié dans le presse-papiers",
+    "offline": "Hors ligne",
+    "connected": "Connecté",
+    "reconnecting": "Reconnexion..."
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -745,7 +748,12 @@
       "calendarDay": "Jour de calendrier",
       "sampleInputLabel": "Champ d’exemple",
       "sampleInputPlaceholder": "Saisissez du texte..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Masquez l’indicateur de connexion Websocket du logo. \nVous verrez toujours un point rouge si vous êtes hors ligne, quel que soit ce paramètre.",
+    "selectConnectionIndicator": "Sélectionner l'état de l'indicateur de connexion",
+    "showIndicator": "Afficher l'indicateur",
+    "hideIndicator": "Masquer l'indicateur",
+    "hideConnectionIndicator": "Masquer l'indicateur de connexion du logo"
   },
   "admin": {
     "title": "Admin",
@@ -873,8 +881,6 @@
     "totalSharing": "Nombre total d’actions de partage",
     "topContributors": "Principaux contributeurs",
     "itemsShared": "Éléments partagés",
-    "activityLevel": "Niveau d’activité",
-    "sharedCMS": "Gestion du contenu partagé",
     "totalPublicItems": "{count} éléments publics",
     "userContent": "{checklistsLength} listes • {notesLength} notes",
     "rebuildIndexes": "Reconstruire les index",
@@ -1121,7 +1127,9 @@
     "mermaidDescription": "Organigrammes & diagrammes basés sur du texte",
     "drawioDescription": "Éditeur de diagrammes visuels",
     "excalidrawDescription": "Éditeur de diagrammes style croquis",
-    "noLanguagesFound": "Aucun langage trouvé"
+    "noLanguagesFound": "Aucun langage trouvé",
+    "ruler": "Règle",
+    "lineNumbers": "Numéros de ligne"
   },
   "sharing": {
     "share": "Partager",

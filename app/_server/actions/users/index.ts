@@ -40,6 +40,7 @@ const _findFileRecursively = async (
   const entries = await fs.readdir(dir, { withFileTypes: true });
 
   for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
     if (entry.isDirectory()) {
       if (entry.name === currentCategoryPart) {
         if (remainingCategoryParts.length === 0) {
@@ -127,6 +128,14 @@ const _getUserByItem = async (
   }
 };
 
+const _findUuidInDirectory = async (
+  dir: string,
+  targetUuid: string
+): Promise<boolean> => {
+  const { grepCheckUuidExists } = await import("@/app/_utils/grep-utils");
+  return grepCheckUuidExists(dir, targetUuid);
+};
+
 const _getUserByItemUuid = async (
   uuid: string,
   itemType: ItemType
@@ -136,24 +145,16 @@ const _getUserByItemUuid = async (
 
     for (const user of users) {
       try {
-        const { getUserNotes } = await import("@/app/_server/actions/note");
-        const { getUserChecklists } = await import("@/app/_server/actions/checklist");
-
-        const result =
+        const userDir =
           itemType === ItemTypes.NOTE
-            ? await getUserNotes({ username: user.username, isRaw: true, allowArchived: true })
-            : await getUserChecklists({ username: user.username, isRaw: true, allowArchived: true });
+            ? NOTES_DIR(user.username)
+            : CHECKLISTS_DIR(user.username);
 
-        if (result.success && result.data) {
-          const item = result.data.find((item) => item.uuid === uuid);
-          if (item) {
-            return { success: true, data: user };
-          }
-        } else {
-          console.log("Failed to get items for user", user.username, "result:", result);
+        const found = await _findUuidInDirectory(userDir, uuid);
+        if (found) {
+          return { success: true, data: user };
         }
       } catch (error) {
-        console.log("Error checking user", user.username, ":", error);
         await logAudit({
           level: "DEBUG",
           action: "user_item_check",

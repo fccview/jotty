@@ -12,6 +12,7 @@ import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/CloneCategoryModal";
+import { SwipeNavigationWrapper } from "@/app/_components/FeatureComponents/Notes/Parts/SwipeNavigationWrapper";
 
 interface NoteClientProps {
   note: Note;
@@ -27,11 +28,16 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const [localNote, setLocalNote] = useState<Note>(note);
   const [showCloneModal, setShowCloneModal] = useState(false);
   const prevNoteId = useRef(note.id);
+  const prevUpdatedAt = useRef(note.updatedAt);
 
   useEffect(() => {
-    if (note.id !== prevNoteId.current) {
+    if (
+      note.id !== prevNoteId.current ||
+      note.updatedAt !== prevUpdatedAt.current
+    ) {
       setLocalNote(note);
       prevNoteId.current = note.id;
+      prevUpdatedAt.current = note.updatedAt;
     }
   }, [note]);
 
@@ -41,7 +47,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleBack = () => {
     checkNavigation(() => {
-      router.push("/");
+      router.push("/?mode=notes");
     });
   };
 
@@ -66,8 +72,8 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       router.push(
         `/note/${buildCategoryPath(
           result.data.category || "Uncategorized",
-          result.data.id
-        )}`
+          result.data.id,
+        )}`,
       );
       router.refresh();
     }
@@ -75,7 +81,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleDelete = () => {
     checkNavigation(() => {
-      router.push("/");
+      router.push("/?mode=notes");
     });
   };
 
@@ -110,13 +116,19 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       user={user}
       isEditorInEditMode={viewModel.isEditing}
     >
-      <NoteEditor
-        note={localNote}
-        categories={categories}
-        viewModel={viewModel}
-        onBack={handleBack}
-        onClone={handleClone}
-      />
+      <SwipeNavigationWrapper
+        noteId={localNote.id}
+        noteCategory={localNote.category}
+        enabled={!viewModel.isEditing}
+      >
+        <NoteEditor
+          note={localNote}
+          categories={categories}
+          viewModel={viewModel}
+          onBack={handleBack}
+          onClone={handleClone}
+        />
+      </SwipeNavigationWrapper>
       <viewModel.DeleteModal />
       {showCloneModal && (
         <CloneCategoryModal

@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { AppMode } from "@/app/_types";
 
 interface SidebarState {
+  mode: AppMode | null;
+  setMode: (mode: AppMode) => void;
+
   sidebarWidth: number;
   setSidebarWidth: (width: number) => void;
 
@@ -77,6 +81,12 @@ const migrateOldLocalStorage = (): Partial<SidebarState> => {
       migrated.collapsedTags = JSON.parse(oldCollapsedTags);
       localStorage.removeItem("sidebar-collapsed-tags");
     }
+
+    const oldMode = localStorage.getItem("app-mode");
+    if (oldMode && (oldMode === "checklists" || oldMode === "notes")) {
+      migrated.mode = oldMode as AppMode;
+      localStorage.removeItem("app-mode");
+    }
   } catch (error) {
     console.error("Failed to migrate old sidebar localStorage:", error);
   }
@@ -87,6 +97,9 @@ const migrateOldLocalStorage = (): Partial<SidebarState> => {
 export const useSidebarStore = create<SidebarState>()(
   persist(
     (set, get) => ({
+      mode: null,
+      setMode: (mode) => set({ mode }),
+
       sidebarWidth: 320,
       setSidebarWidth: (width) => set({ sidebarWidth: Math.max(320, Math.min(800, width)) }),
 
@@ -165,7 +178,7 @@ export const useSidebarStore = create<SidebarState>()(
     {
       name: "sidebar-state",
       partialize: (state) => {
-        const { scrollTop, ...rest } = state;
+        const { scrollTop, mode, ...rest } = state;
         return rest;
       },
       onRehydrateStorage: () => (state) => {

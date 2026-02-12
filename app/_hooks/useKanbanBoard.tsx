@@ -148,11 +148,8 @@ export const useKanbanBoard = ({
 
       const formData = new FormData();
       formData.append("listId", localChecklist.id);
-      formData.append(
-        "itemIds",
-        JSON.stringify(allItems.map((item) => item.id))
-      );
-      formData.append("currentItems", JSON.stringify(allItems));
+      formData.append("activeItemId", activeId);
+      formData.append("overItemId", overId);
       formData.append("category", localChecklist.category || "Uncategorized");
 
       const result = await reorderItems(formData);

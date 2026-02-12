@@ -237,7 +237,10 @@
     "moreOptions": "Altre opzioni",
     "retry": "Riprova",
     "restoring": "Ripristino...",
-    "copiedToClipboard": "Copiato negli appunti"
+    "copiedToClipboard": "Copiato negli appunti",
+    "offline": "Non in linea",
+    "connected": "Collegato",
+    "reconnecting": "Riconnessione..."
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -745,7 +748,12 @@
       "calendarDay": "Giorno calendario",
       "sampleInputLabel": "Input Esempio",
       "sampleInputPlaceholder": "Scrivi qualcosa..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Nascondi l'indicatore di connessione websocket dal logo. \nVedrai comunque un punto rosso se sei offline, indipendentemente da questa impostazione.",
+    "selectConnectionIndicator": "Seleziona lo stato dell'indicatore di connessione",
+    "showIndicator": "Mostra indicatore",
+    "hideIndicator": "Nascondi indicatore",
+    "hideConnectionIndicator": "Nascondi l'indicatore di connessione dal logo"
   },
   "admin": {
     "title": "Admin",
@@ -873,8 +881,6 @@
     "totalSharing": "Azioni di condivisione totali",
     "topContributors": "Top Contributor",
     "itemsShared": "Elementi Condivisi",
-    "activityLevel": "Livello Attività",
-    "sharedCMS": "Gestione Contenuti Condivisi",
     "totalPublicItems": "{count} elementi pubblici",
     "userContent": "{checklistsLength} checklist • {notesLength} note",
     "rebuildIndexes": "Ricostruisci Indici",
@@ -1121,7 +1127,9 @@
     "mermaidDescription": "Diagrammi di flusso basati su testo",
     "drawioDescription": "Editor di diagrammi visivi",
     "excalidrawDescription": "Editor di diagrammi in stile schizzo",
-    "noLanguagesFound": "Nessun linguaggio trovato"
+    "noLanguagesFound": "Nessun linguaggio trovato",
+    "ruler": "Righello",
+    "lineNumbers": "Numeri di riga"
   },
   "sharing": {
     "share": "Condividi",

@@ -23,6 +23,7 @@ import {
   TaskStatus,
 } from "@/app/_types/enums";
 import { checkUserPermission } from "../sharing";
+import { broadcast } from "@/app/_server/ws/broadcast";
 
 export const updateItem = async (
   checklist: Checklist,
@@ -183,6 +184,8 @@ export const updateItem = async (
       }
     }
 
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error(
@@ -217,7 +220,7 @@ export const createItem = async (
       list.uuid || listId,
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
-      username || "",
+      currentUser,
       PermissionTypes.EDIT
     );
 
@@ -272,11 +275,16 @@ export const createItem = async (
 
     const defaultStatus = list.type === "task" ? getDefaultStatus() : undefined;
 
+    const shiftedItems = list.items.map((item) => ({
+      ...item,
+      order: item.order + 1,
+    }));
+
     const newItem = {
       id: `${listId}-${Date.now()}`,
       text,
       completed: false,
-      order: list.items.length,
+      order: 0,
       description: description || undefined,
       createdBy: currentUser,
       createdAt: now,
@@ -299,7 +307,7 @@ export const createItem = async (
 
     const updatedList = {
       ...list,
-      items: [...list.items, newItem],
+      items: [newItem, ...shiftedItems],
       updatedAt: new Date().toISOString(),
     };
 
@@ -328,6 +336,8 @@ export const createItem = async (
         );
       }
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: newItem };
   } catch (error) {
@@ -441,6 +451,8 @@ export const deleteItem = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -587,6 +599,8 @@ export const reorderItems = async (formData: FormData) => {
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: (await getUsername()) });
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -753,6 +767,8 @@ export const updateItemStatus = async (
         error
       );
     }
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username });
+
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error updating item status:", error);
@@ -796,11 +812,15 @@ export const createBulkItems = async (
     const now = new Date().toISOString();
 
     const lines = itemsText.split("\n").filter((line) => line.trim());
+    const shiftedItems = (list.items || []).map((item) => ({
+      ...item,
+      order: item.order + lines.length,
+    }));
     const newItems = lines.map((text, index) => ({
       id: `${listId}-${Date.now()}-${index}`,
       text: text.trim(),
       completed: false,
-      order: list?.items?.length || 0 + index,
+      order: index,
       createdBy: currentUser,
       createdAt: now,
       lastModifiedBy: currentUser,
@@ -820,7 +840,7 @@ export const createBulkItems = async (
 
     const updatedList = {
       ...list,
-      items: [...(list.items || []), ...newItems],
+      items: [...newItems, ...shiftedItems],
       updatedAt: new Date().toISOString(),
     };
 
@@ -857,6 +877,8 @@ export const createBulkItems = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -1062,6 +1084,8 @@ export const bulkToggleItems = async (
         error
       );
     }
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error bulk toggling items:", error);
@@ -1157,6 +1181,8 @@ export const bulkDeleteItems = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true };
   } catch (error) {
@@ -1293,6 +1319,8 @@ export const createSubItem = async (
       );
     }
 
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error("Error creating sub-item:", error);
@@ -1382,6 +1410,8 @@ export const archiveItem = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -1476,6 +1506,8 @@ export const unarchiveItem = async (
         error
       );
     }
+
+    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {

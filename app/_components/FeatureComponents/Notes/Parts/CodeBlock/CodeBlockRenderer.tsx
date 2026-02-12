@@ -7,7 +7,7 @@ import { getLanguageByValue } from "@/app/_utils/code-block-utils";
 import { cn, copyTextToClipboard } from "@/app/_utils/global-utils";
 
 interface CodeBlockRendererProps {
-  children: ReactElement;
+  children: ReactElement<any>;
   className?: string;
   language?: string;
   code: string;

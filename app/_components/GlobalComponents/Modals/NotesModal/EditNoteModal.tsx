@@ -10,7 +10,6 @@ import { Note, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
 
@@ -41,22 +40,25 @@ export const EditNoteModal = ({
 
   useEffect(() => {
     const fetchNote = async () => {
-      const note = await getNoteById(
-        initialNote.id,
-        initialNote.category || t("notes.uncategorized"),
-        user?.username || ""
-      );
-      const parsedNote = parseNoteContent(
-        note?.rawContent || "",
-        note?.id || ""
+      if (!user?.username) return;
+
+      const fetchedNote = await getNoteById(
+        initialNote.uuid || initialNote.id,
+        initialNote.category || "Uncategorized",
+        user.username
       );
 
-      setNote(note || null);
-      setTitle(parsedNote?.title || "");
-      setIsOwner(user?.username === note?.owner);
+      if (!fetchedNote) {
+        setNote(null);
+        return;
+      }
+
+      setNote(fetchedNote);
+      setTitle(fetchedNote.title || initialNote.title || "");
+      setIsOwner(user.username === fetchedNote.owner);
     };
     fetchNote();
-  }, [initialNote]);
+  }, [initialNote, user?.username]);
 
   if (!note) {
     return (
@@ -74,9 +76,12 @@ export const EditNoteModal = ({
     const formData = new FormData();
     formData.append("id", note.id);
     formData.append("title", title.trim());
-    formData.append("content", note.content);
+    formData.append("content", note.content || "");
     formData.append("unarchive", unarchive ? "true" : "false");
     formData.append("user", note.owner || "");
+    if (note.uuid) {
+      formData.append("uuid", note.uuid);
+    }
 
     if (isOwner) {
       formData.append("category", category || "");

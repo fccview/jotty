@@ -47,3 +47,7 @@ next-env.d.ts
 
 *.test.yml
 .claude
+
+# serwist (auto-generated service worker)
+public/sw*
+public/swe-worker*

@@ -29,6 +29,7 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useTranslations } from "next-intl";
 import { Droppable } from "./Droppable";
 import { DropIndicator } from "./DropIndicator";
+import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -79,7 +80,7 @@ const NestedChecklistItemComponent = ({
 
     return (
       usersPublicData?.find(
-        (user) => user.username?.toLowerCase() === username?.toLowerCase()
+        (user) => user.username?.toLowerCase() === username?.toLowerCase(),
       )?.avatarUrl || ""
     );
   };
@@ -106,6 +107,20 @@ const NestedChecklistItemComponent = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownButtonRef = useRef<HTMLButtonElement>(null);
+
+  const editorActivity = useEditorActivityStore();
+
+  useEffect(() => {
+    const editorId = `checklist-item-${item.id}`;
+    if (isEditing) {
+      editorActivity.register(editorId);
+    } else {
+      editorActivity.unregister(editorId);
+    }
+    return () => {
+      editorActivity.unregister(editorId);
+    };
+  }, [isEditing, item.id]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -231,7 +246,7 @@ const NestedChecklistItemComponent = ({
   useEffect(() => {
     if (hasChildren && item.children) {
       const allChildrenCompleted = item.children.every(
-        (child) => child.completed
+        (child) => child.completed,
       );
       if (allChildrenCompleted) {
         setIsExpanded(false);
@@ -263,19 +278,19 @@ const NestedChecklistItemComponent = ({
           className={cn(
             "relative my-1",
             hasChildren &&
-            !isChild &&
-            "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+              !isChild &&
+              "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
             !hasChildren &&
-            !isChild &&
-            "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
+              !isChild &&
+              "border-l-2 bg-muted/30 border-l-primary/70 rounded-jotty border-dashed border-t",
             isChild &&
-            "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
+              "ml-4 rounded-jotty border-dashed border-l border-border border-l-primary/70",
             "first:mt-0 transition-colors duration-150",
             isActive && "bg-muted/20",
             isDragging && "opacity-50 z-50",
             isSubtask && "bg-muted/30 border-l-0 !ml-0 !pl-0",
             isDropdownOpen && "z-50",
-            isOverDroppable && "ring-2 ring-primary/30 ring-inset"
+            isOverDroppable && "ring-2 ring-primary/30 ring-inset",
           )}
         >
           {isOver && overPosition === "before" && (
@@ -288,7 +303,7 @@ const NestedChecklistItemComponent = ({
               isChild ? "px-2.5 py-1.5 lg:py-2" : "p-1.5 lg:p-2",
               completed && "opacity-80",
               !permissions?.canEdit &&
-              "opacity-50 cursor-not-allowed pointer-events-none"
+                "opacity-50 cursor-not-allowed pointer-events-none",
             )}
           >
             {!isPublicView && !isDragDisabled && permissions?.canEdit && (
@@ -313,7 +328,7 @@ const NestedChecklistItemComponent = ({
                 className={cn(
                   "h-5 w-5 rounded border-input focus:ring-none focus:ring-offset-2 focus:ring-ring",
                   "transition-all duration-150",
-                  (item.completed || completed) && "bg-primary border-primary"
+                  (item.completed || completed) && "bg-primary border-primary",
                 )}
               />
             </div>
@@ -352,16 +367,16 @@ const NestedChecklistItemComponent = ({
                 )}
               </div>
             ) : (
-              <div className="flex-1 flex items-center justify-between gap-2">
-                <div className="flex-1 flex gap-1.5">
+              <div className="flex-1 flex items-center justify-between gap-2 max-w-[85%] lg:max-w-full">
+                <div className="flex-1 flex gap-1.5 max-w-full">
                   <label
                     htmlFor={item.id}
                     className={cn(
-                      "text-md lg:text-sm transition-all duration-200 cursor-pointer items-center flex",
+                      "text-md lg:text-sm transition-all duration-200 cursor-pointer items-center flex max-w-full",
                       isActive && "scale-95",
                       item.completed || completed
                         ? "line-through text-muted-foreground"
-                        : "text-foreground"
+                        : "text-foreground",
                     )}
                     onMouseDown={() => setIsActive(true)}
                     onMouseUp={() => setIsActive(false)}
@@ -377,7 +392,9 @@ const NestedChecklistItemComponent = ({
                       <RecurrenceIndicator recurrence={item.recurrence} />
                     )}
 
-                    <span>{displayText}</span>
+                    <span className="break-words max-w-[85%] lg:max-w-full">
+                      {displayText}
+                    </span>
                   </label>
                 </div>
 
@@ -452,7 +469,7 @@ const NestedChecklistItemComponent = ({
                           "absolute right-0 z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
                           dropdownOpenUpward
                             ? "bottom-full mb-1 top-auto"
-                            : "top-full mt-1"
+                            : "top-full mt-1",
                         )}
                       >
                         <div className="py-1">
@@ -481,7 +498,11 @@ const NestedChecklistItemComponent = ({
                     size="sm"
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="h-6 w-6 p-0"
-                    aria-label={isExpanded ? t("common.collapseAll") : t("common.expandAll")}
+                    aria-label={
+                      isExpanded
+                        ? t("common.collapseAll")
+                        : t("common.expandAll")
+                    }
                   >
                     {isExpanded ? (
                       <ArrowDown01Icon className="h-4 w-4" />
@@ -542,8 +563,9 @@ const NestedChecklistItemComponent = ({
             <div className={cn("pt-1")}>
               {draggedItemId !== item.id && (
                 <DropIndicator
-                  id={`drop-before-child::${item.children![0]?.id || `${item.id}-start`
-                    }`}
+                  id={`drop-before-child::${
+                    item.children![0]?.id || `${item.id}-start`
+                  }`}
                   data={{
                     type: "drop-indicator",
                     position: "before",

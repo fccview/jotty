@@ -71,6 +71,9 @@ export const generalSettingsSchema = z.object({
   handedness: z.enum(["right-handed", "left-handed"], {
     message: "Handedness must be either 'right-handed' or 'left-handed'",
   }).optional(),
+  hideConnectionIndicator: z.enum(["enable", "disable"], {
+    message: "Hide connection indicator must be either 'enable' or 'disable'",
+  }).optional(),
 });
 
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;

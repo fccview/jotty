@@ -70,7 +70,7 @@ export const ShortcutProvider = ({
       if (user?.quickCreateNotes === "enable") {
         const title = generateDateTimeTitle();
         const defaultCategory =
-          user?.quickCreateNotesCategory || category || "";
+          category || user?.quickCreateNotesCategory || "";
 
         const formData = new FormData();
         formData.append("title", title);

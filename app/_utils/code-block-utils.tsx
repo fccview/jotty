@@ -29,6 +29,8 @@ import {
   TypescriptIcon,
 } from "@hugeicons/core-free-icons";
 
+import type { JSX } from "react";
+
 export interface CodeBlockLanguage {
   value: string;
   label: string;

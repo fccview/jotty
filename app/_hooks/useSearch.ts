@@ -1,10 +1,11 @@
-import { useCallback, useRef, useState, useEffect, useMemo } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AppMode, Checklist, ItemType, Note } from "@/app/_types";
+import { AppMode, ItemType } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
 import { ItemTypes } from "@/app/_types/enums";
 import { encodeCategoryPath, encodeId } from "@/app/_utils/global-utils";
+import { search } from "@/app/_server/actions/search";
 
 interface useSearchProps {
   mode: AppMode;
@@ -16,7 +17,6 @@ interface SearchResult {
   id: string;
   title: string;
   type: ItemType;
-  content?: string;
   category?: string;
 }
 
@@ -26,11 +26,12 @@ export const useSearch = ({
   onResultSelect,
 }: useSearchProps) => {
   const router = useRouter();
-  const { checklists, notes, appSettings } = useAppMode();
+  const { appSettings } = useAppMode();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,58 +56,39 @@ export const useSearch = ({
     [mode, onModeChange, router, onResultSelect]
   );
 
-  const processedItems = useMemo(
-    () => [
-      ...checklists.map((c) => ({
-        id: c.id || "",
-        uuid: c.uuid || "",
-        title:
-          appSettings?.parseContent === "yes"
-            ? c.title
-            : capitalize(c.title?.replace(/-/g, " ")),
-        type: ItemTypes.CHECKLIST,
-        content: c?.items?.map((i) => i.text).join(" ") || "".toLowerCase(),
-        category: c.category || "Uncategorized",
-      })),
-      ...notes.map((n) => ({
-        id: n.id || "",
-        uuid: n.uuid || "",
-        title:
-          appSettings?.parseContent === "yes"
-            ? n.title
-            : capitalize(n.title?.replace(/-/g, " ")),
-        type: ItemTypes.NOTE,
-        content: n.content?.toLowerCase() || "",
-        category: n.category || "Uncategorized",
-      })),
-    ],
-    [checklists, notes]
-  );
-
   useEffect(() => {
-    const performSearch = (searchQuery: string) => {
-      if (!searchQuery.trim()) {
+    const performSearch = async (searchQuery: string) => {
+      if (!searchQuery.trim() || searchQuery.length < 2) {
         setResults([]);
         return;
       }
-      const lowerCaseQuery = searchQuery.toLowerCase();
 
-      const searchResults = processedItems
-        .filter(
-          (item) =>
-            item.title?.toLowerCase().includes(lowerCaseQuery) ||
-            item.content.includes(lowerCaseQuery) ||
-            item.uuid?.toLowerCase().includes(lowerCaseQuery)
-        )
-        .slice(0, 8);
-
-      setResults(searchResults as SearchResult[]);
-      setSelectedIndex(0);
+      setIsSearching(true);
+      try {
+        const result = await search(searchQuery);
+        if (result.success && result.data) {
+          const formatted = result.data.map((item) => ({
+            id: item.id,
+            title:
+              appSettings?.parseContent === "yes"
+                ? item.title
+                : capitalize(item.title?.replace(/-/g, " ")),
+            type: item.type === "note" ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
+            category: item.category || "Uncategorized",
+          }));
+          setResults(formatted as SearchResult[]);
+          setSelectedIndex(0);
+        }
+      } catch (error) {
+        console.error("Search failed:", error);
+      } finally {
+        setIsSearching(false);
+      }
     };
 
-    const debounceTimeout = setTimeout(() => performSearch(query), 100);
+    const debounceTimeout = setTimeout(() => performSearch(query), 300);
     return () => clearTimeout(debounceTimeout);
-  }, [query, processedItems]);
+  }, [query, appSettings]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -168,5 +150,6 @@ export const useSearch = ({
     handleSelectResult,
     inputRef,
     containerRef,
+    isSearching,
   };
 };

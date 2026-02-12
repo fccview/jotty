@@ -5,10 +5,8 @@ import { EXPORT_TEMP_DIR } from "@/app/_consts/files";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { filename: string } }
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ filename: string }> }) {
+  const params = await props.params;
   const filename = params.filename;
   const filePath = path.join(process.cwd(), EXPORT_TEMP_DIR, filename);
 

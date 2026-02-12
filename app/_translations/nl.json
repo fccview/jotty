@@ -236,7 +236,10 @@
     "openSearch": "Zoeken openen",
     "closeSearch": "Zoeken sluiten",
     "moreOptions": "Meer opties",
-    "copiedToClipboard": "Gekopieerd naar klembord"
+    "copiedToClipboard": "Gekopieerd naar klembord",
+    "offline": "Offline",
+    "connected": "Aangesloten",
+    "reconnecting": "Opnieuw verbinding maken..."
   },
   "auth": {
     "loginTitle": "Inloggen",
@@ -745,7 +748,12 @@
       "calendarDay": "Kalenderdag",
       "sampleInputLabel": "Voorbeeldinvoer",
       "sampleInputPlaceholder": "Voer wat tekst in..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "Verberg de websocket-verbindingsindicator in het logo. \nJe ziet nog steeds een rode stip als je offline bent, ongeacht deze instelling.",
+    "selectConnectionIndicator": "Selecteer de status van de verbindingsindicator",
+    "showIndicator": "Toon indicator",
+    "hideIndicator": "Indicator verbergen",
+    "hideConnectionIndicator": "Verbindingsindicator verbergen in logo"
   },
   "admin": {
     "title": "Beheer",
@@ -873,8 +881,6 @@
     "totalSharing": "Totaal aantal deelacties",
     "topContributors": "Topbijdragers",
     "itemsShared": "Gedeelde items",
-    "activityLevel": "Activiteitsniveau",
-    "sharedCMS": "Gedeeld inhoudsbeheer",
     "totalPublicItems": "{count} publieke items",
     "userContent": "{checklistsLength} checklists • {notesLength} notities",
     "rebuildIndexes": "Indexen herbouwen",
@@ -1121,7 +1127,9 @@
     "mermaidDescription": "Op tekst gebaseerde stroomdiagrammen & diagrammen",
     "drawioDescription": "Visuele diagrameditor",
     "excalidrawDescription": "Schets-stijl diagrameditor",
-    "noLanguagesFound": "Geen talen gevonden"
+    "noLanguagesFound": "Geen talen gevonden",
+    "ruler": "Liniaal",
+    "lineNumbers": "Lijnnummers"
   },
   "sharing": {
     "share": "Delen",

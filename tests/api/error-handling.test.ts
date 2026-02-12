@@ -73,7 +73,7 @@ describe("Error Handling", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {})
-      const response = await POST_ITEM(request, { params: { listId: "uuid-1" } })
+      const response = await POST_ITEM(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -109,7 +109,7 @@ describe("Error Handling", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/nonexistent/items/0/check")
-      const response = await CHECK_ITEM(request, { params: { listId: "nonexistent", itemIndex: "0" } })
+      const response = await CHECK_ITEM(request, { params: Promise.resolve({ listId: "nonexistent", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -133,7 +133,7 @@ describe("Error Handling", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/999/check")
-      const response = await CHECK_ITEM(request, { params: { listId: "uuid-1", itemIndex: "999" } })
+      const response = await CHECK_ITEM(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "999" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -155,7 +155,7 @@ describe("Error Handling", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/-1/check")
-      const response = await CHECK_ITEM(request, { params: { listId: "uuid-1", itemIndex: "-1" } })
+      const response = await CHECK_ITEM(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)

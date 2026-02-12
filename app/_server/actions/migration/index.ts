@@ -15,7 +15,7 @@ import {
   extractYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { readPackageVersion } from "../config";
-import { LinkIndex } from "../link";
+import { LinkIndex } from "@/app/_types";
 
 /**
  * Creates a migration completion file to prevent future migration triggers

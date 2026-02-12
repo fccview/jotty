@@ -79,6 +79,7 @@ A self-hosted app for your checklists and notes.
 - **Customisable:** 14 built-in themes plus custom theme support with custom emojis and icons.
 - **Encryption:** Full on PGP encryption, read more about it in [howto/ENCRYPTION.md](howto/ENCRYPTION.md)
 - **API Access:** Programmatic access to your checklists and notes via REST API with authentication.
+- **PWA** Jotty doesn't have a native app, but it's built mobile first. Once installed the PWA on your device it will feel like you installed it from the app store. There's also partial offline caching, as long as you visited a page while online Jotty will allow you to re-visit it while offline. At the moment there's no current support for offline CRUD operation.
 
 <a id="getting-started"></a>
 

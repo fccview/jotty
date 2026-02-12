@@ -238,7 +238,10 @@
     "moreOptions": "Więcej opcji",
     "retry": "Spróbować ponownie",
     "restoring": "Przywracam...",
-    "copiedToClipboard": "Skopiowano do schowka"
+    "copiedToClipboard": "Skopiowano do schowka",
+    "offline": "Nieaktywny",
+    "connected": "Połączony",
+    "reconnecting": "Ponowne łączenie..."
   },
   "auth": {
     "loginTitle": "Logowanie",
@@ -746,7 +749,12 @@
       "calendarDay": "Dzień kalendarza",
       "sampleInputLabel": "Przykładowy etykieta wejściowa",
       "sampleInputPlaceholder": "Wprowadź tekst…"
-    }
+    },
+    "hideConnectionIndicatorDescription": "Ukryj wskaźnik połączenia websocket przed logo. \nNiezależnie od tego ustawienia, jeśli jesteś offline, nadal będziesz widzieć czerwoną kropkę.",
+    "selectConnectionIndicator": "Wybierz stan wskaźnika połączenia",
+    "showIndicator": "Pokaż wskaźnik",
+    "hideIndicator": "Ukryj wskaźnik",
+    "hideConnectionIndicator": "Ukryj wskaźnik połączenia przed logo"
   },
   "admin": {
     "title": "Admin",
@@ -874,8 +882,6 @@
     "totalSharing": "Całkowita liczba udostępnień",
     "topContributors": "Najbardziej aktywni użytkownicy",
     "itemsShared": "Udostępnione elementy",
-    "activityLevel": "Poziom aktywności",
-    "sharedCMS": "Zarządzanie treścią współdzieloną",
     "totalPublicItems": "{count} publicznych elementów",
     "userContent": "{checklistsLength} list kontrolnych • {notesLength} notatek",
     "rebuildIndexes": "Przebuduj indeksy",
@@ -1122,7 +1128,9 @@
     "mermaidDescription": "Tekstowe diagramy i wykresy",
     "drawioDescription": "Edytor diagramów wizualnych",
     "excalidrawDescription": "Edytor szkicowy",
-    "noLanguagesFound": "Nie znaleziono języków"
+    "noLanguagesFound": "Nie znaleziono języków",
+    "ruler": "Linijka",
+    "lineNumbers": "Numery linii"
   },
   "sharing": {
     "share": "Udostępnij",

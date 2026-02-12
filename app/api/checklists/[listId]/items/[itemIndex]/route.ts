@@ -11,8 +11,9 @@ export const dynamic = "force-dynamic";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { listId: string; itemIndex: string } }
+  props: { params: Promise<{ listId: string; itemIndex: string }> }
 ) {
+  const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
       const list = await getListById(params.listId, user.username);

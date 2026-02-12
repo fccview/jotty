@@ -240,7 +240,10 @@
     "disable": "禁用",
     "restoring": "恢复中...",
     "retry": "重试",
-    "copiedToClipboard": "已复制到剪贴板"
+    "copiedToClipboard": "已复制到剪贴板",
+    "offline": "离线",
+    "connected": "已连接",
+    "reconnecting": "正在重新连接..."
   },
   "history": {
     "noteHistory": "笔记历史",
@@ -774,7 +777,12 @@
       "calendarDay": "日历日",
       "sampleInputLabel": "示例输入",
       "sampleInputPlaceholder": "输入一些文本..."
-    }
+    },
+    "hideConnectionIndicatorDescription": "从徽标中隐藏 websocket 连接指示器。\n无论此设置如何，如果您处于离线状态，您仍然会看到一个红点。",
+    "selectConnectionIndicator": "选择连接指示灯状态",
+    "showIndicator": "显示指标",
+    "hideIndicator": "隐藏指示器",
+    "hideConnectionIndicator": "隐藏徽标中的连接指示符"
   },
   "admin": {
     "title": "管理",
@@ -908,8 +916,6 @@
     "totalSharing": "总共享操作",
     "topContributors": "主要贡献者",
     "itemsShared": "已共享项目",
-    "activityLevel": "活跃度",
-    "sharedCMS": "共享内容管理",
     "totalPublicItems": "{count} 个公开项目",
     "userContent": "{checklistsLength} 个清单 • {notesLength} 条笔记",
     "rebuildIndexes": "重建索引",
@@ -1163,7 +1169,9 @@
     "calloutInfo": "信息",
     "calloutWarning": "警告",
     "calloutSuccess": "成功",
-    "calloutDanger": "危险"
+    "calloutDanger": "危险",
+    "ruler": "统治者",
+    "lineNumbers": "行号"
   },
   "sharing": {
     "share": "共享",

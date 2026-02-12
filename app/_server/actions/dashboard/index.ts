@@ -1,7 +1,7 @@
 import { AppMode, Checklist, ItemType, Note, Result, User } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { updateList } from "../checklist";
-import { updateNote } from "../note";
+import { updateNote, getNoteById } from "../note";
 import { getCurrentUser } from "../users";
 import { readJsonFile, writeJsonFile } from "../file";
 import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
@@ -110,7 +110,17 @@ export const toggleArchive = async (
   }
 
   if (mode === Modes.NOTES) {
-    formData.append("content", (item as Note).content);
+    const noteItem = item as Note;
+    let content = noteItem.content;
+    if (content === undefined || content === null) {
+      const fullNote = await getNoteById(
+        noteItem.uuid || noteItem.id,
+        noteItem.category || "Uncategorized",
+        noteItem.owner
+      );
+      content = fullNote?.content || "";
+    }
+    formData.append("content", content);
   }
 
   if (isOwner) {

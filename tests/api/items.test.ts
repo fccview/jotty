@@ -66,7 +66,7 @@ describe("Checklist Items API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {
         text: "Test Item - Regular",
       })
-      const response = await POST(request, { params: { listId: "uuid-1" } })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -83,7 +83,7 @@ describe("Checklist Items API", () => {
         status: "in_progress",
         time: 0,
       })
-      const response = await POST(request, { params: { listId: "uuid-1" } })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -97,7 +97,7 @@ describe("Checklist Items API", () => {
         text: "Nested Item - Child of Item 0",
         parentIndex: "0",
       })
-      const response = await POST(request, { params: { listId: "uuid-1" } })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -111,7 +111,7 @@ describe("Checklist Items API", () => {
         text: "Deeply Nested Item - Grandchild",
         parentIndex: "0.0",
       })
-      const response = await POST(request, { params: { listId: "uuid-1" } })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -122,7 +122,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {})
-      const response = await POST(request, { params: { listId: "uuid-1" } })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -135,7 +135,7 @@ describe("Checklist Items API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/checklists/nonexistent/items", {
         text: "Test Item",
       })
-      const response = await POST(request, { params: { listId: "nonexistent" } })
+      const response = await POST(request, { params: Promise.resolve({ listId: "nonexistent" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -149,7 +149,7 @@ describe("Checklist Items API", () => {
         text: "Nested Item",
         parentIndex: "999",
       })
-      const response = await POST(request, { params: { listId: "uuid-1" } })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -162,7 +162,7 @@ describe("Checklist Items API", () => {
       const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {
         text: "Test Item",
       })
-      const response = await POST(request, { params: { listId: "uuid-1" } })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -176,7 +176,7 @@ describe("Checklist Items API", () => {
       mockUpdateItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0/check")
-      const response = await CHECK(request, { params: { listId: "uuid-1", itemIndex: "0" } })
+      const response = await CHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -188,7 +188,7 @@ describe("Checklist Items API", () => {
       mockUpdateItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0.0/check")
-      const response = await CHECK(request, { params: { listId: "uuid-1", itemIndex: "0.0" } })
+      const response = await CHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0.0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -199,7 +199,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/nonexistent/items/0/check")
-      const response = await CHECK(request, { params: { listId: "nonexistent", itemIndex: "0" } })
+      const response = await CHECK(request, { params: Promise.resolve({ listId: "nonexistent", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -210,7 +210,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/999/check")
-      const response = await CHECK(request, { params: { listId: "uuid-1", itemIndex: "999" } })
+      const response = await CHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "999" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -221,7 +221,7 @@ describe("Checklist Items API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0/check")
-      const response = await CHECK(request, { params: { listId: "uuid-1", itemIndex: "0" } })
+      const response = await CHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -235,7 +235,7 @@ describe("Checklist Items API", () => {
       mockUpdateItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0/uncheck")
-      const response = await UNCHECK(request, { params: { listId: "uuid-1", itemIndex: "0" } })
+      const response = await UNCHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -247,7 +247,7 @@ describe("Checklist Items API", () => {
       mockUpdateItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0.0/uncheck")
-      const response = await UNCHECK(request, { params: { listId: "uuid-1", itemIndex: "0.0" } })
+      const response = await UNCHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0.0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -258,7 +258,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/nonexistent/items/0/uncheck")
-      const response = await UNCHECK(request, { params: { listId: "nonexistent", itemIndex: "0" } })
+      const response = await UNCHECK(request, { params: Promise.resolve({ listId: "nonexistent", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -269,7 +269,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/999/uncheck")
-      const response = await UNCHECK(request, { params: { listId: "uuid-1", itemIndex: "999" } })
+      const response = await UNCHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "999" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -280,7 +280,7 @@ describe("Checklist Items API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0/uncheck")
-      const response = await UNCHECK(request, { params: { listId: "uuid-1", itemIndex: "0" } })
+      const response = await UNCHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)
@@ -293,7 +293,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/uuid-1/items/1")
-      const response = await DELETE(request, { params: { listId: "uuid-1", itemIndex: "1" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -304,7 +304,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/uuid-1/items/0.0")
-      const response = await DELETE(request, { params: { listId: "uuid-1", itemIndex: "0.0" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0.0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -315,7 +315,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/uuid-1/items/0.0.0")
-      const response = await DELETE(request, { params: { listId: "uuid-1", itemIndex: "0.0.0" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0.0.0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
@@ -326,7 +326,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/nonexistent/items/0")
-      const response = await DELETE(request, { params: { listId: "nonexistent", itemIndex: "0" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "nonexistent", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(404)
@@ -337,7 +337,7 @@ describe("Checklist Items API", () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/uuid-1/items/999")
-      const response = await DELETE(request, { params: { listId: "uuid-1", itemIndex: "999" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "999" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(400)
@@ -348,7 +348,7 @@ describe("Checklist Items API", () => {
       mockAuthenticateApiKey.mockResolvedValue(null)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/checklists/uuid-1/items/0")
-      const response = await DELETE(request, { params: { listId: "uuid-1", itemIndex: "0" } })
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)

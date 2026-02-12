@@ -1,6 +1,8 @@
 import { Clock01Icon, TimeQuarterIcon } from "hugeicons-react";
 import { TaskStatus } from "@/app/_types/enums";
 
+import type { JSX } from "react";
+
 export const formatTimerTime = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);

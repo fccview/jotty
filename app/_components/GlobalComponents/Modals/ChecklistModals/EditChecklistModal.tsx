@@ -9,7 +9,6 @@ import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Category, Checklist } from "@/app/_types";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
 
@@ -40,22 +39,25 @@ export const EditChecklistModal = ({
 
   useEffect(() => {
     const fetchChecklist = async () => {
-      const checklist = await getListById(
-        initialChecklist.id,
-        user?.username || "",
+      if (!user?.username) return;
+
+      const fetchedChecklist = await getListById(
+        initialChecklist.uuid || initialChecklist.id,
+        user.username,
         initialChecklist.category || "Uncategorized"
       );
-      const parsedChecklist = parseChecklistContent(
-        checklist?.rawContent || "",
-        checklist?.id || ""
-      );
 
-      setChecklist(checklist || null);
-      setTitle(parsedChecklist?.title || "");
-      setIsOwner(user?.username === checklist?.owner);
+      if (!fetchedChecklist) {
+        setChecklist(null);
+        return;
+      }
+
+      setChecklist(fetchedChecklist);
+      setTitle(fetchedChecklist.title || initialChecklist.title || "");
+      setIsOwner(user.username === fetchedChecklist.owner);
     };
     fetchChecklist();
-  }, [initialChecklist]);
+  }, [initialChecklist, user?.username]);
 
   if (!checklist) {
     return (
@@ -71,13 +73,16 @@ export const EditChecklistModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", initialChecklist.id);
+    formData.append("id", checklist.id);
     formData.append("title", title.trim());
     formData.append(
       "originalCategory",
-      initialChecklist.category || "Uncategorized"
+      checklist.category || "Uncategorized"
     );
     formData.append("unarchive", unarchive ? "true" : "false");
+    if (checklist.uuid) {
+      formData.append("uuid", checklist.uuid);
+    }
 
     if (isOwner) {
       formData.append("category", category || "");
