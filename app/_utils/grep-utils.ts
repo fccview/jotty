@@ -1,3 +1,16 @@
+/**
+ * @fccview here!
+ * Hi all, welcome to the grep-utils.ts file.
+ *
+ * I was hitting a wall on how to fetch files without a database and performance was going down, massively.
+ * And then it struck me, why am I not using grep?!?
+ *
+ * This is so much more performant, so let me leave you with a beautiful video on
+ * the genesis of grep: https://www.youtube.com/watch?v=NTfOnGZUZDk
+ *
+ * Enjoy it <3
+ */
+
 import { exec } from "child_process";
 import { promisify } from "util";
 import path from "path";
