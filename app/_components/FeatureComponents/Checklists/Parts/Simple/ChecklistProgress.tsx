@@ -11,23 +11,20 @@ interface ChecklistProgressProps {
 }
 
 const countItems = (items: Item[]): { total: number; completed: number } => {
-  let total = 0;
-  let completed = 0;
-
-  items.forEach((item) => {
-    total++;
-    if (item.completed) {
-      completed++;
-    }
-
+  return items.reduce((acc, item) => {
     if (item.children && item.children.length > 0) {
       const childCounts = countItems(item.children);
-      total += childCounts.total;
-      completed += childCounts.completed;
+      return {
+        total: acc.total + childCounts.total,
+        completed: acc.completed + childCounts.completed,
+      };
     }
-  });
 
-  return { total, completed };
+    return {
+      total: acc.total + 1,
+      completed: item.completed ? acc.completed + 1 : acc.completed,
+    };
+  }, { total: 0, completed: 0 });
 };
 
 export const ChecklistProgress = ({ checklist }: ChecklistProgressProps) => {
