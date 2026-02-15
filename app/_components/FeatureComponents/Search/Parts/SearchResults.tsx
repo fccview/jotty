@@ -31,18 +31,33 @@ export const SearchResults = ({
 }: SearchResultsProps) => {
   const t = useTranslations();
 
-  const getSnippet = (content: string | undefined, query: string) => {
-    if (!content) return "";
+  const renderSnippet = (content: string | undefined, query: string) => {
+    if (!content) return null;
 
-    const index = content.toLowerCase().indexOf(query.toLowerCase());
-    if (index === -1) return content.slice(0, 100) + "...";
+    const lowerContent = content.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    const index = lowerContent.indexOf(lowerQuery);
+
+    if (index === -1) {
+      const truncated = content.length > 120 ? content.slice(0, 120) + "..." : content;
+      return <>{truncated}</>;
+    }
 
     const start = Math.max(0, index - 50);
-    const end = Math.min(content.length, index + 100);
-    const snippet = content.slice(start, end);
+    const end = Math.min(content.length, index + query.length + 70);
+
+    const before = content.slice(start, index);
+    const match = content.slice(index, index + query.length);
+    const after = content.slice(index + query.length, end);
 
     return (
-      (start > 0 ? "..." : "") + snippet + (end < content.length ? "..." : "")
+      <>
+        {start > 0 && "..."}
+        {before}
+        <mark className="bg-primary/20 text-foreground rounded-sm px-0.5">{match}</mark>
+        {after}
+        {end < content.length && "..."}
+      </>
     );
   };
 
@@ -85,8 +100,8 @@ export const SearchResults = ({
               </div>
 
               {result.content && (
-                <p className="line-clamp-2 text-sm">
-                  {getSnippet(result.content, query)}
+                <p className="line-clamp-2 text-sm text-muted-foreground">
+                  {renderSnippet(result.content, query)}
                 </p>
               )}
 

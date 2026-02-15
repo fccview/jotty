@@ -198,24 +198,42 @@ export const grepExtractField = async (
   }
 };
 
+export interface GrepSearchResult extends GrepFileResult {
+  matchLine: string;
+}
+
 export const grepSearchContent = async (
   dir: string,
   pattern: string,
-): Promise<GrepFileResult[]> => {
+): Promise<GrepSearchResult[]> => {
   try {
     const { stdout } = await execAsync(
       `grep -rli "${pattern}" "${dir}" --include="*.md" 2>/dev/null || true`,
     );
 
     const files = stdout.trim().split("\n").filter(Boolean);
-    return files.map((filePath) => {
-      const relativePath = path.relative(dir, filePath);
-      const parts = relativePath.split(path.sep);
-      const filename = parts.pop() || "";
-      const id = path.basename(filename, ".md");
-      const category = parts.join("/");
-      return { filePath, id, category };
-    });
+
+    const results = await Promise.all(
+      files.map(async (filePath) => {
+        const relativePath = path.relative(dir, filePath);
+        const parts = relativePath.split(path.sep);
+        const filename = parts.pop() || "";
+        const id = path.basename(filename, ".md");
+        const category = parts.join("/");
+
+        let matchLine = "";
+        try {
+          const { stdout: matchOut } = await execAsync(
+            `grep -im1 "${pattern}" "${filePath}" 2>/dev/null || true`,
+          );
+          matchLine = matchOut.trim();
+        } catch {}
+
+        return { filePath, id, category, matchLine };
+      }),
+    );
+
+    return results;
   } catch {
     return [];
   }

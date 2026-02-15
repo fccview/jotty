@@ -13,6 +13,7 @@ export interface SearchResult {
   title: string;
   type: "note" | "checklist";
   category: string;
+  content?: string;
 }
 
 export const search = async (query: string): Promise<{ success: boolean; data: SearchResult[] }> => {
@@ -35,19 +36,35 @@ export const search = async (query: string): Promise<{ success: boolean; data: S
     grepSearchContent(checklistsDir, escapedQuery).catch(() => []),
   ]);
 
+  const cleanMatchLine = (line: string): string => {
+    let cleaned = line
+      .replace(/^---$/, "")
+      .replace(/^- \[[x ]\]\s*/i, "")
+      .replace(/\s*\|.*$/, "")
+      .replace(/^#+\s*/, "")
+      .trim();
+    return cleaned;
+  };
+
   const processResults = async (
-    results: { filePath: string; id: string; category: string }[],
+    results: { filePath: string; id: string; category: string; matchLine: string }[],
     type: "note" | "checklist"
   ): Promise<SearchResult[]> => {
     return Promise.all(
       results.slice(0, 20).map(async (result) => {
         const metadata = await grepExtractFrontmatter(result.filePath);
+        const title = (metadata?.title as string) || result.id;
+        const cleaned = cleanMatchLine(result.matchLine);
+        const content = cleaned && cleaned.toLowerCase() !== title.toLowerCase()
+          ? cleaned
+          : undefined;
         return {
           id: result.id,
           uuid: metadata?.uuid as string | undefined,
-          title: (metadata?.title as string) || result.id,
+          title,
           type,
           category: result.category || "Uncategorized",
+          content,
         };
       })
     );

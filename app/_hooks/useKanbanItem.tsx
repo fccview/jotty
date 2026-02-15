@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Item, Checklist } from "@/app/_types";
-import { TaskStatus } from "@/app/_types/enums";
 import {
   updateItem,
   deleteItem,
