@@ -64,10 +64,9 @@ export const createSubItem = async (
     ): boolean => {
       for (let item of items) {
         if (item.id === parentId) {
-          if (!item.children) {
-            item.children = [];
-          }
+          item.children = item.children || [];
           item.children.push(newSubItem);
+          item.completed = false;
           return true;
         }
 
@@ -75,6 +74,7 @@ export const createSubItem = async (
           item.children &&
           addSubItemToParent(item.children, parentId, newSubItem)
         ) {
+          item.completed = false;
           return true;
         }
       }

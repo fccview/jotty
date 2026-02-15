@@ -21,6 +21,15 @@ export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   return !!item.completed;
 };
 
+export const areAllItemsCompleted = (items: any[]): boolean => {
+  if (items.length === 0) return true;
+
+  return items.every((item) => {
+    if ((item.children || []).length < 1) return item.completed;
+    return item.completed && areAllItemsCompleted(item.children);
+  });
+};
+
 export const formatTime = (seconds: number): string => {
   if (seconds < 60) return `${seconds}s`;
   const hours = Math.floor(seconds / 3600);
