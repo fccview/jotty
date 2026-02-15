@@ -32,27 +32,23 @@ export const formatTime = (seconds: number): string => {
 export const countItems = (
   items: Item[],
   checklistType?: string
-): { total: number; completed: number } => {
-  let total = 0;
-  let completed = 0;
-
-  items.forEach((item) => {
-    if (item.isArchived) return;
-
-    total++;
-    if (isItemCompleted(item, checklistType || "")) {
-      completed++;
-    }
+): { total: number; completed: number } =>
+  items.reduce((acc, item) => {
+    if (item.isArchived) return acc;
 
     if (item.children && item.children.length > 0) {
       const childCounts = countItems(item.children, checklistType);
-      total += childCounts.total;
-      completed += childCounts.completed;
+      return {
+        total: acc.total + childCounts.total,
+        completed: acc.completed + childCounts.completed,
+      };
     }
-  });
 
-  return { total, completed };
-};
+    return {
+      total: acc.total + 1,
+      completed: isItemCompleted(item, checklistType || "") ? acc.completed + 1 : acc.completed,
+    };
+  }, { total: 0, completed: 0 });
 
 export const getCompletionRate = (
   items: Item[],
