@@ -159,7 +159,10 @@ export const useSidebar = (props: SidebarProps) => {
       }
     } else {
       setSelectedFilter({ type: 'tag', value: tagName });
+
       if (!isHomePage) {
+        checkNavigation(() => router.push(`/?tag=${encodeURIComponent(tagName)}`));
+      } else {
         checkNavigation(() => router.push("/"));
       }
     }
@@ -174,9 +177,8 @@ export const useSidebar = (props: SidebarProps) => {
 
     return (
       pathname?.toLowerCase() ===
-      `/${
-        mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
-      }/${expectedPath}`.toLowerCase()
+      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
+        }/${expectedPath}`.toLowerCase()
     );
   };
 

@@ -8,6 +8,7 @@ import {
   useEffect,
   useMemo,
 } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   AppMode,
   AppSettings,
@@ -80,7 +81,12 @@ export const AppModeProvider = ({
 
   const [mode, setMode] = useState<AppMode>(modeToSet);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
-  const [selectedFilter, setSelectedFilter] = useState<{ type: 'category' | 'tag'; value: string } | null>(null);
+  const searchParams = useSearchParams();
+  const tagParam = searchParams.get("tag");
+
+  const [selectedFilter, setSelectedFilter] = useState<{ type: 'category' | 'tag'; value: string } | null>(
+    tagParam ? { type: 'tag', value: tagParam } : null
+  );
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 
