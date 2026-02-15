@@ -467,6 +467,7 @@ export const reorderItems = async (formData: FormData) => {
     const overItemId = formData.get("overItemId") as string;
     const category = formData.get("category") as string;
     const isDropInto = formData.get("isDropInto") === "true";
+    const position = (formData.get("position") as string) || "before";
 
     const isAdminUser = await isAdmin();
     const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
@@ -558,6 +559,9 @@ export const reorderItems = async (formData: FormData) => {
     } else {
       const targetSiblings = overInfo.siblings;
       let newIndex = targetSiblings.findIndex((item) => item.id === overItemId);
+      if (position === "after") {
+        newIndex = newIndex + 1;
+      }
       targetSiblings.splice(newIndex, 0, activeInfo.item);
     }
 

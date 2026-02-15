@@ -29,15 +29,37 @@ export const formatTime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
+export const countItems = (
+  items: Item[],
+  checklistType?: string
+): { total: number; completed: number } => {
+  let total = 0;
+  let completed = 0;
+
+  items.forEach((item) => {
+    if (item.isArchived) return;
+
+    total++;
+    if (isItemCompleted(item, checklistType || "")) {
+      completed++;
+    }
+
+    if (item.children && item.children.length > 0) {
+      const childCounts = countItems(item.children, checklistType);
+      total += childCounts.total;
+      completed += childCounts.completed;
+    }
+  });
+
+  return { total, completed };
+};
+
 export const getCompletionRate = (
   items: Item[],
   checklistType?: string
 ): number => {
-  const total = items.length;
+  const { total, completed } = countItems(items, checklistType);
   if (total === 0) return 0;
-  const completed = items.filter((item) =>
-    isItemCompleted(item, checklistType || "")
-  ).length;
   return Math.round((completed / total) * 100);
 };
 

@@ -131,7 +131,6 @@ export const Sidebar = (props: SidebarProps) => {
               toggleTag={sidebar.toggleTag}
               onTagSelect={sidebar.handleTagSelect}
               onClose={onClose}
-              isItemSelected={sidebar.isItemSelected}
             />
           ) : null
         }

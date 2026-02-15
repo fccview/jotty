@@ -557,10 +557,23 @@ export const useChecklist = ({
     });
 
     const formData = new FormData();
+    const isDraggingDown =
+      activeInfo.parent?.id === overInfo.parent?.id &&
+      activeInfo.index < overInfo.index;
+
+    const reorderPosition = isDropIndicator
+      ? overId.startsWith("drop-after::")
+        ? "after"
+        : "before"
+      : isDraggingDown
+      ? "after"
+      : "before";
+
     formData.append("listId", localList.id);
     formData.append("activeItemId", activeId);
     formData.append("overItemId", targetItemId);
     formData.append("isDropInto", String(isDropInto));
+    formData.append("position", reorderPosition);
     formData.append("category", localList.category || "Uncategorized");
 
     const result = await reorderItems(formData);

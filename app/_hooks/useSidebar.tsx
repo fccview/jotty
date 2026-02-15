@@ -152,14 +152,16 @@ export const useSidebar = (props: SidebarProps) => {
   };
 
   const handleTagSelect = (tagName: string) => {
-    if (!isHomePage) {
-      toggleTag(tagName);
-      return;
-    }
     if (selectedFilter?.type === 'tag' && selectedFilter.value === tagName) {
       setSelectedFilter(null);
+      if (!isHomePage) {
+        checkNavigation(() => router.push("/"));
+      }
     } else {
       setSelectedFilter({ type: 'tag', value: tagName });
+      if (!isHomePage) {
+        checkNavigation(() => router.push("/"));
+      }
     }
     onClose();
   };
