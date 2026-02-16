@@ -46,3 +46,7 @@ I'll try and keep this updated too, but ideally this is community driven just li
 **Russian** - `app/_translations/ru.json`
 
 <a href="https://github.com/vovochka404"><img alt="vovochka404" width="80" height="80" src="https://avatars.githubusercontent.com/u/1563204?v=4"></a>
+
+**Turkish** - `app/_translations/tr.json`
+
+<a href="https://github.com/ozancanb"><img alt="ozancanb" width="80" height="80" src="https://avatars.githubusercontent.com/u/11030801?v=4"></a>

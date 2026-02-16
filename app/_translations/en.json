@@ -782,7 +782,11 @@
     "selectConnectionIndicator": "Select connection indicator status",
     "showIndicator": "Show indicator",
     "hideIndicator": "Hide indicator",
-    "hideConnectionIndicator": "Hide connection indicator from logo"
+    "hideConnectionIndicator": "Hide connection indicator from logo",
+    "codeBlockChoice": "Choose the code block style",
+    "defaultCodeBlock": "Codepen (default)",
+    "themedCodeBlock": "Themed codeblock",
+    "codeBlockChoiceDescription": "Choose between the codepen-like default code block style or a themed codeblock style."
   },
   "admin": {
     "title": "Admin",

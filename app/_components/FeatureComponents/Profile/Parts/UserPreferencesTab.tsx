@@ -26,6 +26,7 @@ import {
   DefaultNoteFilter,
   QuickCreateNotes,
   HideConnectionIndicator,
+  CodeBlockStyle,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -67,6 +68,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   quickCreateNotes: user?.quickCreateNotes || "disable",
   quickCreateNotesCategory: user?.quickCreateNotesCategory || "",
   hideConnectionIndicator: user?.hideConnectionIndicator || "disable",
+  codeBlockStyle: user?.codeBlockStyle || "default",
 });
 
 const pick = <T extends object, K extends keyof T>(
@@ -149,6 +151,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     "disableRichEditor",
     "defaultNoteFilter",
     "markdownTheme",
+    "codeBlockStyle",
     "quickCreateNotes",
     "quickCreateNotesCategory",
   ]);
@@ -560,6 +563,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                   "disableRichEditor",
                   "defaultNoteFilter",
                   "markdownTheme",
+                  "codeBlockStyle",
                   "quickCreateNotes",
                   "quickCreateNotesCategory",
                 ],
@@ -690,6 +694,30 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           )}
           <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseSyntaxTheme')}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="code-block-style">{t('settings.codeBlockChoice')}</Label>
+          <Dropdown
+            value={currentSettings.codeBlockStyle || "default"}
+            onChange={(value) =>
+              handleSettingChange("codeBlockStyle", value as CodeBlockStyle)
+            }
+            options={[
+              { id: "default", name: t('settings.defaultCodeBlock') },
+              { id: "themed", name: t('settings.themedCodeBlock') },
+            ]}
+            placeholder={t('settings.codeBlockChoice')}
+            className="w-full"
+          />
+          {validationErrors.codeBlockStyle && (
+            <p className="text-md lg:text-sm text-destructive">
+              {validationErrors.codeBlockStyle}
+            </p>
+          )}
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.codeBlockChoiceDescription')}
           </p>
         </div>
 

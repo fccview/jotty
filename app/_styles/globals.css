@@ -1,5 +1,6 @@
 @import './codeblock/languages-colors.css';
 @import './codeblock/prism-dark-theme.css';
+@import './codeblock/themed-code-block.css';
 @import './themes/colors.css';
 
 @tailwind base;

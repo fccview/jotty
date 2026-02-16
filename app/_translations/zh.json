@@ -782,7 +782,11 @@
     "selectConnectionIndicator": "选择连接指示灯状态",
     "showIndicator": "显示指标",
     "hideIndicator": "隐藏指示器",
-    "hideConnectionIndicator": "隐藏徽标中的连接指示符"
+    "hideConnectionIndicator": "隐藏徽标中的连接指示符",
+    "codeBlockChoice": "选择代码块样式",
+    "themedCodeBlock": "主题代码块",
+    "defaultCodeBlock": "Codepen（默认）",
+    "codeBlockChoiceDescription": "在类似 codepen 的默认代码块样式或主题代码块样式之间进行选择。"
   },
   "admin": {
     "title": "管理",

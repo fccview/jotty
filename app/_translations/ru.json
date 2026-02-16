@@ -782,7 +782,11 @@
     "selectConnectionIndicator": "Выберите статус индикатора подключения",
     "showIndicator": "Показать индикатор",
     "hideIndicator": "Скрыть индикатор",
-    "hideConnectionIndicator": "Скрыть индикатор подключения из логотипа"
+    "hideConnectionIndicator": "Скрыть индикатор подключения из логотипа",
+    "codeBlockChoice": "Выберите стиль блока кода",
+    "themedCodeBlock": "Тематический кодовый блок",
+    "defaultCodeBlock": "Коден (по умолчанию)",
+    "codeBlockChoiceDescription": "Выбирайте между стилем блока кода по умолчанию, похожим на кодовое перо, или стилем тематического блока кода."
   },
   "admin": {
     "title": "Админ",

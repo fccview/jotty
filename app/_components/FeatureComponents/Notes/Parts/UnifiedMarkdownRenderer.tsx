@@ -12,6 +12,7 @@ import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import rehypeRaw from "rehype-raw";
 import { CodeBlockRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockRenderer";
+import { ThemedCodeBlockRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/ThemedCodeBlockRenderer";
 import { MermaidRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/MermaidRenderer";
 import { DrawioRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/DrawioRenderer";
 import { ExcalidrawRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/ExcalidrawRenderer";
@@ -21,6 +22,7 @@ import { QUOTES } from "@/app/_consts/notes";
 import { ImageAttachment } from "@/app/_components/GlobalComponents/FormElements/ImageAttachment";
 import { VideoAttachment } from "@/app/_components/GlobalComponents/FormElements/VideoAttachment";
 import { prism } from "@/app/_utils/prism-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
@@ -64,6 +66,11 @@ export const UnifiedMarkdownRenderer = ({
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
   const t = useTranslations();
+  const { user } = useAppMode();
+  const ActiveCodeBlockRenderer =
+    user?.codeBlockStyle === "themed"
+      ? ThemedCodeBlockRenderer
+      : CodeBlockRenderer;
   const { contentWithoutMetadata } = extractYamlMetadata(content);
 
   let processedContent = contentWithoutMetadata.replace(
@@ -179,9 +186,9 @@ export const UnifiedMarkdownRenderer = ({
         };
 
         return (
-          <CodeBlockRenderer code={rawCode} language={language}>
+          <ActiveCodeBlockRenderer code={rawCode} language={language}>
             {prism.registered(language) ? (newCodeElement as any) : children}
-          </CodeBlockRenderer>
+          </ActiveCodeBlockRenderer>
         );
       }
       return <pre {...props}>{children}</pre>;

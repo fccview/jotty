@@ -774,7 +774,11 @@
       "calendarDay": "Takvim günü",
       "sampleInputLabel": "Örnek Giriş",
       "sampleInputPlaceholder": "Bir metin girin..."
-      }
+    },
+    "codeBlockChoice": "Kod bloğu stilini seçin",
+    "themedCodeBlock": "Temalı kod bloğu",
+    "defaultCodeBlock": "Kodlayıcı (varsayılan)",
+    "codeBlockChoiceDescription": "Codepen benzeri varsayılan kod bloğu stili veya temalı kod bloğu stili arasında seçim yapın."
   },
   "admin": {
     "title": "Yönetici",

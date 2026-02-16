@@ -754,7 +754,11 @@
     "selectConnectionIndicator": "Wybierz stan wskaźnika połączenia",
     "showIndicator": "Pokaż wskaźnik",
     "hideIndicator": "Ukryj wskaźnik",
-    "hideConnectionIndicator": "Ukryj wskaźnik połączenia przed logo"
+    "hideConnectionIndicator": "Ukryj wskaźnik połączenia przed logo",
+    "codeBlockChoice": "Wybierz styl bloku kodu",
+    "themedCodeBlock": "Tematyczny blok kodu",
+    "defaultCodeBlock": "Codepen (domyślnie)",
+    "codeBlockChoiceDescription": "Wybierz pomiędzy domyślnym stylem bloków kodu podobnym do codepen lub tematycznym stylem bloków kodu."
   },
   "admin": {
     "title": "Admin",

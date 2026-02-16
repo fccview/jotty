@@ -33,6 +33,7 @@ export type DefaultChecklistFilter =
 export type DefaultNoteFilter = "all" | "recent" | "pinned";
 export type QuickCreateNotes = "enable" | "disable";
 export type HideConnectionIndicator = "enable" | "disable";
+export type CodeBlockStyle = "default" | "themed";
 
 export interface User {
   username: string;
@@ -66,6 +67,7 @@ export interface User {
   quickCreateNotes?: QuickCreateNotes;
   quickCreateNotesCategory?: string;
   hideConnectionIndicator?: HideConnectionIndicator;
+  codeBlockStyle?: CodeBlockStyle;
   mfaEnabled?: boolean;
   mfaSecret?: string;
   mfaRecoveryCode?: string;

@@ -740,7 +740,11 @@
     "selectConnectionIndicator": "Wählen Sie den Status der Verbindungsanzeige aus",
     "showIndicator": "Indikator anzeigen",
     "hideIndicator": "Anzeige ausblenden",
-    "hideConnectionIndicator": "Verbindungsanzeige im Logo ausblenden"
+    "hideConnectionIndicator": "Verbindungsanzeige im Logo ausblenden",
+    "codeBlockChoice": "Wählen Sie den Codeblockstil",
+    "themedCodeBlock": "Themenbezogener Codeblock",
+    "defaultCodeBlock": "Codepen (Standard)",
+    "codeBlockChoiceDescription": "Wählen Sie zwischen dem Codepen-ähnlichen Standard-Codeblockstil oder einem thematischen Codeblockstil."
   },
   "admin": {
     "title": "Administration",

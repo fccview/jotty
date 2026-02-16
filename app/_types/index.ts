@@ -35,6 +35,7 @@ export type {
   DefaultNoteFilter,
   QuickCreateNotes,
   HideConnectionIndicator,
+  CodeBlockStyle,
 } from "./user";
 
 export type {

@@ -1,0 +1,14 @@
+.themed-code-block pre[class*="language-"],
+.themed-code-block code[class*="language-"] {
+	color: rgba(var(--foreground) / 0.7);
+	text-shadow: none;
+	background: none;
+}
+
+.themed-code-block .token.operator,
+.themed-code-block .token.entity,
+.themed-code-block .token.url,
+.themed-code-block .language-css .token.string,
+.themed-code-block .style .token.string {
+	background: none;
+}

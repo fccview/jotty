@@ -753,7 +753,11 @@
     "selectConnectionIndicator": "Seleccionar el estado del indicador de conexión",
     "showIndicator": "Mostrar indicador",
     "hideIndicator": "Ocultar indicador",
-    "hideConnectionIndicator": "Ocultar indicador de conexión del logotipo"
+    "hideConnectionIndicator": "Ocultar indicador de conexión del logotipo",
+    "codeBlockChoice": "Elija el estilo del bloque de código",
+    "themedCodeBlock": "Bloque de código temático",
+    "defaultCodeBlock": "Codepen (predeterminado)",
+    "codeBlockChoiceDescription": "Elija entre el estilo de bloque de código predeterminado similar a un codepen o un estilo de bloque de código temático."
   },
   "admin": {
     "title": "Administrador",
