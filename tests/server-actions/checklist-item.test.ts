@@ -11,6 +11,7 @@ const mockCheckUserPermission = vi.fn();
 const mockGetUserChecklists = vi.fn();
 const mockGetListById = vi.fn();
 const mockGetAllLists = vi.fn();
+const mockAreAllItemsCompleted = vi.fn();
 
 vi.mock("@/app/_server/actions/file", () => ({
   getUserModeDir: (...args: any[]) => mockGetUserModeDir(...args),
@@ -36,6 +37,7 @@ vi.mock("@/app/_server/actions/checklist", () => ({
 
 vi.mock("@/app/_utils/checklist-utils", () => ({
   listToMarkdown: vi.fn().mockReturnValue("# Test List\n- [ ] Item"),
+  areAllItemsCompleted: (...args: any[]) => mockAreAllItemsCompleted(...args),
 }));
 
 import {
@@ -111,10 +113,13 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     mockCheckUserPermission.mockResolvedValue(true);
     mockGetUserChecklists.mockResolvedValue({
       success: true,
-      data: [mockChecklist],
+      data: [structuredClone(mockChecklist)],
     });
-    mockGetListById.mockResolvedValue(mockChecklist);
-    mockGetAllLists.mockResolvedValue({ success: true, data: [mockChecklist] });
+    mockGetListById.mockResolvedValue(structuredClone(mockChecklist));
+    mockGetAllLists.mockResolvedValue({
+      success: true,
+      data: [structuredClone(mockChecklist)],
+    });
   });
 
   describe("updateItem", () => {

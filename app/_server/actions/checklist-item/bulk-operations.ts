@@ -10,7 +10,10 @@ import {
   getUserChecklists,
   getListById,
 } from "@/app/_server/actions/checklist";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
+import {
+  listToMarkdown,
+  areAllItemsCompleted
+} from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { Checklist, Result } from "@/app/_types";
@@ -176,25 +179,6 @@ export const bulkToggleItems = async (
 
     const now = new Date().toISOString();
 
-    const areAllItemsCompleted = (items: any[]): boolean => {
-      if (items.length === 0) return true;
-      return items.every((item) => {
-        if (item.children && item.children.length > 0) {
-          return item.completed && areAllItemsCompleted(item.children);
-        }
-        return item.completed;
-      });
-    };
-
-    const areAnyItemsCompleted = (items: any[]): boolean => {
-      return items.some((item) => {
-        if (item.children && item.children.length > 0) {
-          return item.completed || areAnyItemsCompleted(item.children);
-        }
-        return item.completed;
-      });
-    };
-
     const updateAllChildren = (
       items: any[],
       completed: boolean,
@@ -213,22 +197,14 @@ export const bulkToggleItems = async (
     };
 
     const updateParentBasedOnChildren = (parent: any): any => {
-      if (!parent || !parent.children || parent.children.length === 0) {
+      if (!parent || (parent.children || []).length < 1) {
         return parent;
       }
 
-      const allChildrenCompleted = areAllItemsCompleted(parent.children);
-      const anyChildrenCompleted = areAnyItemsCompleted(parent.children);
-
-      let updatedParent = { ...parent };
-
-      if (allChildrenCompleted) {
-        updatedParent.completed = true;
-      } else if (!anyChildrenCompleted) {
-        updatedParent.completed = false;
-      }
-
-      return updatedParent;
+      return {
+        ...parent,
+        completed: areAllItemsCompleted(parent.children),
+      };
     };
 
     const bulkUpdateItems = (
@@ -380,12 +356,16 @@ export const bulkDeleteItems = async (
     const filterOutItems = (items: any[], itemIds: Set<string>): any[] => {
       return items
         .filter((item) => !itemIds.has(item.id))
-        .map((item) => ({
-          ...item,
-          children: item.children
+        .map((item) => {
+          const children = item.children
             ? filterOutItems(item.children, itemIds)
-            : undefined,
-        }))
+            : undefined;
+          const completed = (
+            children && children.length > 0 && areAllItemsCompleted(children)
+          ) ? true : item.completed;
+
+          return {...item, children, completed};
+        })
         .filter((item) => item.children?.length > 0 || item.id !== undefined);
     };
 
