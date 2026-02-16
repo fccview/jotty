@@ -90,6 +90,34 @@ This tells the app to use `localhost` for internal API calls instead of going th
 
 **Why this happens**: When `APP_URL` is set to your external domain (e.g., `https://jotty.domain.com`), the middleware tries to validate sessions by making a fetch request to `https://jotty.domain.com/api/auth/check-session`. This request goes through your reverse proxy, which may block it with a 403 Forbidden response due to security policies or misconfigurations.
 
+### My Super Admin/System Owner User Is Not Using SSO
+
+The first user to register in the system is the "Super Admin", referred to as "System Owner" in the web interface.
+
+If this user is not an SSO user, or if you need to change the super admin to a different user, you can update their
+super admin status using the `update-super-admin.sh` script below.
+
+> Run from the server **outside** of the Docker container, if using Docker.
+> You need write permissions to the `users.json` file. You will if running this as `root`.
+
+1. Locate your `data` volume location on the server filesystem and the `users.json` file. e.g. if using the example `docker-compose.yml`, under
+   `volumes` you will see `./data:/app/data:rw`. The `data` volume is under the location of your compose file, making
+   the full path to `users.json`:
+   `<compose_location>/data/users.json`
+
+2. Run the `update-super-admin.sh` script with the appropriate arguments to update the super admin user:
+
+   ```bash
+   wget -qO- https://raw.githubusercontent.com/fccview/jotty/main/scripts/update-super-admin.sh | bash -s -- <new super admin> <users.json location>
+   ```
+
+   Alternatively download the script and run it directly.
+
+   Omit the arguments (`wget -qO- ... | bash`) for help text.
+
+   The old Super Admin user will be left as an Admin. The new Super Admin has the ability to delete the old user if
+   you choose to do so.
+
 ## Advanced: Using Docker Secrets
 
 <details>
