@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import path from "path";
 import fs from "fs/promises";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { isEnvEnabled } from "@/app/_utils/env-utils";
+import { hasSharedContentFrom } from "@/app/_server/actions/sharing";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,19 @@ export async function GET(
 
     const { username } = params;
     const filename = decodeURIComponent(params.filename);
+
+    if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {
+      return new NextResponse("Invalid filename", { status: 400 });
+    }
+
+    if (user && username !== user.username) {
+      const hasAdminAccess = await canAccessAllContent();
+      const hasSharedAccess = await hasSharedContentFrom(username, user.username);
+
+      if (!hasAdminAccess && !hasSharedAccess) {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+    }
 
     const filePath = path.join(
       process.cwd(),

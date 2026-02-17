@@ -24,3 +24,7 @@ export {
   updateSharingData,
   updateReceiverUsername,
 } from "./updates";
+
+export {
+  hasSharedContentFrom,
+} from "./helpers";

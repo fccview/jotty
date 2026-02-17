@@ -14,6 +14,7 @@ import { getUsername } from "@/app/_server/actions/users";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/ws/broadcast";
+import { isPathSafe } from "@/app/_utils/path-utils";
 
 const _sanitisedFileOrder = async (
   dirPath: string,
@@ -95,6 +96,19 @@ export const moveNode = async (formData: FormData) => {
       activeParentPath = formData.get("activeItemCategory") as string;
     } else {
       const catPath = formData.get("activeCategoryPath") as string;
+      
+      if (catPath && !isPathSafe(baseDir, catPath)) {
+        await logAudit({
+          level: "WARNING",
+          action: "category_moved",
+          category: mode === Modes.NOTES ? "note" : "checklist",
+          success: false,
+          errorMessage: "Invalid active category path",
+          metadata: { activeCategoryPath: catPath, mode },
+        });
+        return { error: "Invalid category path" };
+      }
+      
       activeName = catPath.split("/").pop()!;
       activeParentPath = catPath.includes("/")
         ? catPath.substring(0, catPath.lastIndexOf("/"))
@@ -125,6 +139,30 @@ export const moveNode = async (formData: FormData) => {
 
     if (activeType === "item" && !destParentPath) {
       destParentPath = "Uncategorized";
+    }
+
+    if (destParentPath && !isPathSafe(baseDir, destParentPath)) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_moved",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Invalid destination category path",
+        metadata: { destParentPath, mode },
+      });
+      return { error: "Invalid category path" };
+    }
+
+    if (activeParentPath && !isPathSafe(baseDir, activeParentPath)) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_moved",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Invalid active parent category path",
+        metadata: { activeParentPath, mode },
+      });
+      return { error: "Invalid category path" };
     }
 
     if (activeType === "category") {

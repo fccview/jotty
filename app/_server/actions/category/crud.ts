@@ -12,6 +12,7 @@ import { Modes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/ws/broadcast";
+import { isPathSafe } from "@/app/_utils/path-utils";
 
 export const createCategory = async (formData: FormData) => {
   try {
@@ -21,6 +22,19 @@ export const createCategory = async (formData: FormData) => {
 
     const userDir = await getUserModeDir(mode);
     const categoryPath = parent ? path.join(parent, name) : name;
+
+    if (!isPathSafe(userDir, categoryPath)) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_created",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Invalid category path",
+        metadata: { categoryName: name, parentCategory: parent, mode },
+      });
+      return { error: "Invalid category path" };
+    }
+
     const categoryDir = path.join(userDir, categoryPath);
     await ensureDir(categoryDir);
 
@@ -61,6 +75,19 @@ export const deleteCategory = async (formData: FormData) => {
     const mode = formData.get("mode") as Modes;
 
     const userDir = await getUserModeDir(mode);
+
+    if (!isPathSafe(userDir, categoryPath)) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_deleted",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Invalid category path",
+        metadata: { categoryPath, mode },
+      });
+      return { error: "Invalid category path" };
+    }
+
     const categoryDir = path.join(userDir, categoryPath);
     await serverDeleteDir(categoryDir);
 
@@ -122,11 +149,37 @@ export const renameCategory = async (formData: FormData) => {
     }
 
     const userDir = await getUserModeDir(mode);
+
+    if (!isPathSafe(userDir, oldPath)) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_renamed",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Invalid old category path",
+        metadata: { oldPath, newName, mode },
+      });
+      return { error: "Invalid category path" };
+    }
+
     const oldCategoryDir = path.join(userDir, oldPath);
 
     const pathParts = oldPath.split("/");
     pathParts[pathParts.length - 1] = newName;
     const newPath = pathParts.join("/");
+
+    if (!isPathSafe(userDir, newPath)) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_renamed",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Invalid new category path",
+        metadata: { oldPath, newName, newPath, mode },
+      });
+      return { error: "Invalid category path" };
+    }
+
     const newCategoryDir = path.join(userDir, newPath);
 
     if (
