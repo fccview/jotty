@@ -44,6 +44,9 @@ const cachedGetLayoutNotes = unstable_cache(
   ["layout-notes"],
   { tags: ["layout-notes"] },
 );
+
+console.log(cachedGetLayoutNotes);
+
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
   getAllSharedItems,

@@ -65,7 +65,7 @@ export const SidebarNavigation = ({
 
               mode === modeOption.id
                 ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-accent-foreground"
+                : "text-muted-foreground hover:text-accent-foreground",
             )}
           >
             <Icon className="h-5 w-5 lg:h-4 lg:w-4" />
@@ -82,7 +82,7 @@ export const SidebarNavigation = ({
             "flex-none justify-center w-[48px] h-14 lg:h-9 py-6 text-md lg:text-sm px-3 font-bold",
             mode === Modes.TAGS
               ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-accent-foreground"
+              : "text-muted-foreground hover:text-accent-foreground",
           )}
         >
           #

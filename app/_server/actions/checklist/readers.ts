@@ -47,7 +47,7 @@ export const readListsRecursively = async (
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
       const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType):" "${dir}"`;
+      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType):|^[[:space:]]+- " "${dir}"`;
       const [statsOut, metaOut] = await Promise.all([
         execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
           stdout: "",
@@ -64,22 +64,49 @@ export const readListsRecursively = async (
             mtime: new Date(parseFloat(m) * 1000),
           });
       });
-      metaOut.stdout.split("\n").forEach((line) => {
-        const parts = line.split(":", 3);
-        if (parts.length >= 3) {
-          const [filePath, key, val] = parts;
-          if (!metadataCache!.has(filePath)) metadataCache!.set(filePath, {});
-          const entry = metadataCache!.get(filePath)!;
-          if (key === "tags")
-            entry.tags = val
-              .trim()
+      let inTagsFile = "";
+      for (const line of metaOut.stdout.split("\n")) {
+        if (!line) continue;
+        const colonIdx = line.indexOf(":");
+        if (colonIdx === -1) continue;
+        const filePath = line.slice(0, colonIdx);
+        const rest = line.slice(colonIdx + 1);
+        if (/^\s+-\s/.test(rest)) {
+          if (inTagsFile === filePath) {
+            const tag = rest.replace(/^\s+-\s+/, "").trim();
+            if (tag) {
+              if (!metadataCache!.has(filePath))
+                metadataCache!.set(filePath, {});
+              const entry = metadataCache!.get(filePath)!;
+              if (!Array.isArray(entry.tags)) entry.tags = [];
+              (entry.tags as string[]).push(tag);
+            }
+          }
+          continue;
+        }
+        inTagsFile = "";
+        const innerColon = rest.indexOf(":");
+        if (innerColon === -1) continue;
+        const key = rest.slice(0, innerColon);
+        const val = rest.slice(innerColon + 1);
+        if (!metadataCache!.has(filePath)) metadataCache!.set(filePath, {});
+        const entry = metadataCache!.get(filePath)!;
+        if (key === "tags") {
+          const trimmed = val.trim();
+          if (trimmed === "") {
+            entry.tags = [];
+            inTagsFile = filePath;
+          } else {
+            entry.tags = trimmed
               .replace(/^\[|\]$/g, "")
               .split(",")
-              .map((t) => t.trim())
+              .map((t: string) => t.trim())
               .filter(Boolean);
-          else entry[key] = val.trim().replace(/^["']|["']$/g, "");
+          }
+        } else {
+          entry[key] = val.trim().replace(/^["']|["']$/g, "");
         }
-      });
+      }
     } catch (e) {
       console.warn("Optimization failed, falling back to standard mode", e);
     }
@@ -120,85 +147,87 @@ export const readListsRecursively = async (
         ]
       : ids.sort((a, b) => a.localeCompare(b));
 
-    const filePromises = orderedIds.map(async (id): Promise<ChecklistReadResult | null> => {
-      const fileName = `${id}.md`;
-      const filePath = path.join(categoryDir, fileName);
-      try {
-        const cachedStats = statsCache?.get(filePath);
-        const stats = cachedStats
-          ? {
-              birthtime: cachedStats.birthtime,
-              mtime: cachedStats.mtime,
-            }
-          : await fs.stat(filePath);
+    const filePromises = orderedIds.map(
+      async (id): Promise<ChecklistReadResult | null> => {
+        const fileName = `${id}.md`;
+        const filePath = path.join(categoryDir, fileName);
+        try {
+          const cachedStats = statsCache?.get(filePath);
+          const stats = cachedStats
+            ? {
+                birthtime: cachedStats.birthtime,
+                mtime: cachedStats.mtime,
+              }
+            : await fs.stat(filePath);
 
-        if (metadataOnly) {
-          const metadata =
-            metadataCache?.get(filePath) ??
-            (await grepExtractFrontmatter(filePath));
-          const tags = Array.isArray(metadata?.tags)
-            ? (metadata.tags as string[])
-            : [];
-          return {
-            id,
-            uuid:
-              typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
-            title: typeof metadata?.title === "string" ? metadata.title : id,
-            type:
-              metadata?.checklistType === "task" ||
-              metadata?.checklistType === "simple"
-                ? metadata.checklistType
-                : "simple",
-            category: categoryPath,
-            items: [],
-            createdAt: stats.birthtime.toISOString(),
-            updatedAt: stats.mtime.toISOString(),
-            owner,
-            isShared: false,
-            tags,
-          };
-        }
-        const content = await serverReadFile(filePath);
-        if (isRaw) {
-          const { metadata } = extractYamlMetadata(content);
-          const type = getChecklistType(content);
-          let uuid = metadata.uuid;
-          if (!uuid) {
-            uuid = generateUuid();
-            try {
-              const updatedContent = updateYamlMetadata(content, { uuid });
-              await serverWriteFile(filePath, updatedContent);
-            } catch (error) {
-              console.warn("Failed to save UUID to checklist file:", error);
-            }
+          if (metadataOnly) {
+            const metadata =
+              metadataCache?.get(filePath) ??
+              (await grepExtractFrontmatter(filePath));
+            const tags = Array.isArray(metadata?.tags)
+              ? (metadata.tags as string[])
+              : [];
+            return {
+              id,
+              uuid:
+                typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
+              title: typeof metadata?.title === "string" ? metadata.title : id,
+              type:
+                metadata?.checklistType === "task" ||
+                metadata?.checklistType === "simple"
+                  ? metadata.checklistType
+                  : "simple",
+              category: categoryPath,
+              items: [],
+              createdAt: stats.birthtime.toISOString(),
+              updatedAt: stats.mtime.toISOString(),
+              owner,
+              isShared: false,
+              tags,
+            };
           }
-          return {
+          const content = await serverReadFile(filePath);
+          if (isRaw) {
+            const { metadata } = extractYamlMetadata(content);
+            const type = getChecklistType(content);
+            let uuid = metadata.uuid;
+            if (!uuid) {
+              uuid = generateUuid();
+              try {
+                const updatedContent = updateYamlMetadata(content, { uuid });
+                await serverWriteFile(filePath, updatedContent);
+              } catch (error) {
+                console.warn("Failed to save UUID to checklist file:", error);
+              }
+            }
+            return {
+              id,
+              title: id,
+              uuid,
+              type,
+              category: categoryPath,
+              items: [],
+              createdAt: stats.birthtime.toISOString(),
+              updatedAt: stats.mtime.toISOString(),
+              owner,
+              isShared: false,
+              rawContent: content,
+            };
+          }
+          return parseMarkdown(
+            content,
             id,
-            title: id,
-            uuid,
-            type,
-            category: categoryPath,
-            items: [],
-            createdAt: stats.birthtime.toISOString(),
-            updatedAt: stats.mtime.toISOString(),
+            categoryPath,
             owner,
-            isShared: false,
-            rawContent: content,
-          };
+            false,
+            stats,
+            fileName,
+          );
+        } catch {
+          return null;
         }
-        return parseMarkdown(
-          content,
-          id,
-          categoryPath,
-          owner,
-          false,
-          stats,
-          fileName,
-        );
-      } catch {
-        return null;
-      }
-    });
+      },
+    );
 
     const [currentFiles, subLists] = await Promise.all([
       Promise.all(filePromises),
@@ -213,7 +242,10 @@ export const readListsRecursively = async (
         statsCache,
       ),
     ]);
-    return [...currentFiles.filter((n): n is ChecklistReadResult => n != null), ...subLists];
+    return [
+      ...currentFiles.filter((n): n is ChecklistReadResult => n != null),
+      ...subLists,
+    ];
   });
 
   const results = await Promise.all(categoryPromises);

@@ -45,8 +45,11 @@ export const buildTagsIndex = (
   checklists?: Partial<Checklist>[],
 ): TagsIndex => {
   const index: TagsIndex = {};
+  const notesList = Array.isArray(notes) ? notes : [];
+  const checklistsList =
+    checklists !== undefined && Array.isArray(checklists) ? checklists : [];
 
-  for (const note of notes) {
+  for (const note of notesList) {
     if (!note.tags || !note.uuid) continue;
 
     for (const tag of note.tags) {
@@ -66,24 +69,22 @@ export const buildTagsIndex = (
     }
   }
 
-  if (checklists) {
-    for (const checklist of checklists) {
-      if (!checklist.tags || !checklist.uuid) continue;
+  for (const checklist of checklistsList) {
+    if (!checklist.tags || !checklist.uuid) continue;
 
-      for (const tag of checklist.tags) {
-        const normalizedTag = normalizeTag(tag);
-        if (!normalizedTag) continue;
+    for (const tag of checklist.tags) {
+      const normalizedTag = normalizeTag(tag);
+      if (!normalizedTag) continue;
 
-        ensureTagEntry(index, normalizedTag);
+      ensureTagEntry(index, normalizedTag);
 
-        if (!index[normalizedTag].checklistUuids.includes(checklist.uuid)) {
-          index[normalizedTag].checklistUuids.push(checklist.uuid);
-        }
+      if (!index[normalizedTag].checklistUuids.includes(checklist.uuid)) {
+        index[normalizedTag].checklistUuids.push(checklist.uuid);
+      }
 
-        const ancestors = getAncestorTags(normalizedTag);
-        for (const ancestor of ancestors) {
-          ensureTagEntry(index, ancestor);
-        }
+      const ancestors = getAncestorTags(normalizedTag);
+      for (const ancestor of ancestors) {
+        ensureTagEntry(index, ancestor);
       }
     }
   }
@@ -124,7 +125,8 @@ export const extractHashtagsFromContent = (content: string): string[] => {
     }
   }
 
-  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>/gi;
+  const codeBlockRegex =
+    /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>/gi;
   const contentWithoutCode = content.replace(codeBlockRegex, "");
 
   const hashtagRegex = /(?:^|[\s(])#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
@@ -138,7 +140,10 @@ export const extractHashtagsFromContent = (content: string): string[] => {
   return Array.from(tags);
 };
 
-export const tagMatchesFilter = (noteTag: string, filterTag: string): boolean => {
+export const tagMatchesFilter = (
+  noteTag: string,
+  filterTag: string,
+): boolean => {
   const normalizedNoteTag = normalizeTag(noteTag);
   const normalizedFilterTag = normalizeTag(filterTag);
 
@@ -172,7 +177,10 @@ export const buildTagTree = (tagsIndex: TagsIndex): TagInfo[] => {
   return rootTags.sort((a, b) => a.name.localeCompare(b.name));
 };
 
-export const getChildTags = (tagsIndex: TagsIndex, parentTag: string): TagInfo[] => {
+export const getChildTags = (
+  tagsIndex: TagsIndex,
+  parentTag: string,
+): TagInfo[] => {
   const children: TagInfo[] = [];
 
   for (const tag of Object.values(tagsIndex)) {

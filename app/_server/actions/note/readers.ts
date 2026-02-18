@@ -44,7 +44,7 @@ export const readNotesRecursively = async (
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
       const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|encrypted):" "${dir}"`;
+      const metaCmd = `grep -rE "^(title|uuid|tags|encrypted):|^[[:space:]]+- " "${dir}"`;
       const [statsOut, metaOut] = await Promise.all([
         execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
           stdout: "",
@@ -61,23 +61,51 @@ export const readNotesRecursively = async (
             mtime: new Date(parseFloat(m) * 1000),
           });
       });
-      metaOut.stdout.split("\n").forEach((line) => {
-        const parts = line.split(":", 3);
-        if (parts.length >= 3) {
-          const [filePath, key, val] = parts;
-          if (!metadataCache!.has(filePath)) metadataCache!.set(filePath, {});
-          const entry = metadataCache!.get(filePath)!;
-          if (key === "tags")
-            entry.tags = val
-              .trim()
+      let inTagsFile = "";
+      for (const line of metaOut.stdout.split("\n")) {
+        if (!line) continue;
+        const colonIdx = line.indexOf(":");
+        if (colonIdx === -1) continue;
+        const filePath = line.slice(0, colonIdx);
+        const rest = line.slice(colonIdx + 1);
+        if (/^\s+-\s/.test(rest)) {
+          if (inTagsFile === filePath) {
+            const tag = rest.replace(/^\s+-\s+/, "").trim();
+            if (tag) {
+              if (!metadataCache!.has(filePath))
+                metadataCache!.set(filePath, {});
+              const entry = metadataCache!.get(filePath)!;
+              if (!Array.isArray(entry.tags)) entry.tags = [];
+              (entry.tags as string[]).push(tag);
+            }
+          }
+          continue;
+        }
+        inTagsFile = "";
+        const innerColon = rest.indexOf(":");
+        if (innerColon === -1) continue;
+        const key = rest.slice(0, innerColon);
+        const val = rest.slice(innerColon + 1);
+        if (!metadataCache!.has(filePath)) metadataCache!.set(filePath, {});
+        const entry = metadataCache!.get(filePath)!;
+        if (key === "tags") {
+          const trimmed = val.trim();
+          if (trimmed === "") {
+            entry.tags = [];
+            inTagsFile = filePath;
+          } else {
+            entry.tags = trimmed
               .replace(/^\[|\]$/g, "")
               .split(",")
-              .map((t) => t.trim())
+              .map((t: string) => t.trim())
               .filter(Boolean);
-          else if (key === "encrypted") entry.encrypted = val.trim() === "true";
-          else entry[key] = val.trim().replace(/^["']|["']$/g, "");
+          }
+        } else if (key === "encrypted") {
+          entry.encrypted = val.trim() === "true";
+        } else {
+          entry[key] = val.trim().replace(/^["']|["']$/g, "");
         }
-      });
+      }
     } catch (e) {
       console.warn("Optimization failed, falling back to standard mode", e);
     }

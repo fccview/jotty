@@ -61,7 +61,7 @@ export const AppModeProvider = ({
   availableLocales?: { code: string; countryCode: string; name: string }[];
 }) => {
   const [appSettings, _] = useState<AppSettings | null>(
-    initialSettings || null
+    initialSettings || null,
   );
   const isNoteOrChecklistPage =
     pathname?.includes("/checklist") || pathname?.includes("/note");
@@ -94,9 +94,10 @@ export const AppModeProvider = ({
   const [mode, setMode] = useState<AppMode>(modeToSet);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
 
-  const [selectedFilter, setSelectedFilter] = useState<{ type: 'category' | 'tag'; value: string } | null>(
-    tagParam ? { type: 'tag', value: tagParam } : null
-  );
+  const [selectedFilter, setSelectedFilter] = useState<{
+    type: "category" | "tag";
+    value: string;
+  } | null>(tagParam ? { type: "tag", value: tagParam } : null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 
@@ -123,8 +124,10 @@ export const AppModeProvider = ({
   const tagsEnabled = appSettings?.editor?.enableTags !== false;
 
   const tagsIndex = useMemo(() => {
-    if (!tagsEnabled || !notes) return {};
-    return buildTagsIndex(notes, checklists);
+    if (!tagsEnabled) return {};
+    const notesList = Array.isArray(notes) ? notes : [];
+    const checklistsList = Array.isArray(checklists) ? checklists : [];
+    return buildTagsIndex(notesList, checklistsList);
   }, [notes, checklists, tagsEnabled]);
 
   const contextValue = useMemo(
@@ -175,7 +178,7 @@ export const AppModeProvider = ({
       availableLocales,
       tagsIndex,
       tagsEnabled,
-    ]
+    ],
   );
 
   return (
