@@ -1,4 +1,4 @@
-export const NUM_FILES = 50;
+export const NUM_FILES = 2000;
 export const TAG_POOL_SIZE = 80;
 export const SEED = 42;
 

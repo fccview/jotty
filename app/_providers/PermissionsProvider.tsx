@@ -22,7 +22,7 @@ interface PermissionsContextType {
 }
 
 const PermissionsContext = createContext<PermissionsContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const PermissionsProvider = ({
@@ -35,8 +35,27 @@ export const PermissionsProvider = ({
   const { globalSharing, user } = useAppMode();
 
   const permissionsResult = useMemo(() => {
-    const isOwner = (user?.username && user.username === item.owner) || false;
     const isAdmin = user?.isAdmin || false;
+    const isOwner =
+      (!item.isShared && user?.username && user.username === item.owner) ||
+      false;
+
+    if (item.isShared) {
+      const itemType = "items" in item ? "checklists" : "notes";
+      const permissions = getPermissions(
+        globalSharing,
+        user?.username || "",
+        item.uuid || item.id,
+        encodeCategoryPath(item.category || "Uncategorized"),
+        itemType,
+      );
+      return {
+        canEdit: permissions?.canEdit === true,
+        canDelete: permissions?.canDelete === true,
+        canRead: permissions?.canRead === true,
+        isOwner: false,
+      };
+    }
 
     if (isOwner || isAdmin) {
       return {
@@ -48,7 +67,7 @@ export const PermissionsProvider = ({
     }
 
     const cacheKey = `${user?.username || ""}-${item.uuid || item.id}-${encodeCategoryPath(
-      item.category || "Uncategorized"
+      item.category || "Uncategorized",
     )}-${JSON.stringify(globalSharing || {})}`;
     const now = Date.now();
 
@@ -57,17 +76,19 @@ export const PermissionsProvider = ({
       return cached.permissions;
     }
 
+    const itemType = "items" in item ? "checklists" : "notes";
     const permissions = getPermissions(
       globalSharing,
       user?.username || "",
       item.uuid || item.id,
-      encodeCategoryPath(item.category || "Uncategorized")
+      encodeCategoryPath(item.category || "Uncategorized"),
+      itemType,
     );
 
     const result = {
-      canEdit: permissions?.canEdit || false,
-      canDelete: permissions?.canDelete || false,
-      canRead: permissions?.canRead || false,
+      canEdit: permissions?.canEdit === true,
+      canDelete: permissions?.canDelete === true,
+      canRead: permissions?.canRead === true,
       isOwner: false,
     };
 
@@ -82,6 +103,7 @@ export const PermissionsProvider = ({
     item.uuid,
     item.category,
     item.owner,
+    item.isShared,
   ]);
 
   return (

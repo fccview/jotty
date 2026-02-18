@@ -6,7 +6,7 @@ import { LinkIndex } from "./links";
 import { AllSharedItems, UserSharedItems } from "./sharing";
 import { TagsIndex } from "./tags";
 
-export type AppMode = "checklists" | "notes";
+export type AppMode = "checklists" | "notes" | "tags";
 
 export interface ContentFilter {
   type: 'category' | 'tag';

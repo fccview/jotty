@@ -11,7 +11,7 @@ import {
   serverWriteFile,
   serverDeleteFile,
 } from "@/app/_server/actions/file";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { generateUniqueFilename, sanitizeFilename } from "@/app/_utils/filename-utils";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { buildCategoryPath, getFormData } from "@/app/_utils/global-utils";
@@ -104,6 +104,7 @@ export const createList = async (formData: FormData) => {
       { category: newList.category }
     );
 
+    revalidateTag("layout-checklists", { expire: 0 });
     await broadcast({ type: "checklist", action: "created", entityId: newList.uuid, username: currentUser?.username || "" });
 
     return { success: true, data: newList };
@@ -124,10 +125,10 @@ export const createList = async (formData: FormData) => {
 export const updateList = async (formData: FormData) => {
   try {
     const id = formData.get("id") as string;
+    const uuid = formData.get("uuid") as string | null;
     const title = formData.get("title") as string;
     const category = formData.get("category") as string;
     const originalCategory = formData.get("originalCategory") as string;
-    const ownerUsername = formData.get("user") as string | null;
     const unarchive = formData.get("unarchive") as string;
     const apiUser = formData.get("apiUser") as string | null;
 
@@ -145,8 +146,8 @@ export const updateList = async (formData: FormData) => {
     }
 
     const currentList = await getListById(
-      id,
-      ownerUsername || undefined,
+      uuid || id,
+      undefined,
       originalCategory,
       unarchive === "true"
     );
@@ -156,7 +157,7 @@ export const updateList = async (formData: FormData) => {
     }
 
     const canEdit = await checkUserPermission(
-      id,
+      currentList.uuid || id,
       originalCategory,
       ItemTypes.CHECKLIST,
       actingUser.username,
@@ -283,6 +284,7 @@ export const updateList = async (formData: FormData) => {
     }
 
     try {
+      revalidateTag("layout-checklists", { expire: 0 });
       revalidatePath("/");
       const oldCategoryPath = buildCategoryPath(
         currentList.category || "UncategorCgorized",
@@ -355,7 +357,7 @@ export const deleteList = async (formData: FormData) => {
 
     const list = await getListById(
       itemIdentifier,
-      currentUser.username,
+      undefined,
       category
     );
 
@@ -364,7 +366,7 @@ export const deleteList = async (formData: FormData) => {
     }
 
     const canDelete = await checkUserPermission(
-      itemIdentifier,
+      list.uuid || itemIdentifier,
       category,
       ItemTypes.CHECKLIST,
       currentUser.username,
@@ -417,6 +419,7 @@ export const deleteList = async (formData: FormData) => {
     }
 
     try {
+      revalidateTag("layout-checklists", { expire: 0 });
       revalidatePath("/");
       const categoryPath = buildCategoryPath(
         list.category || "Uncategorized",
@@ -511,6 +514,7 @@ export const cloneChecklist = async (formData: FormData) => {
     );
 
     try {
+      revalidateTag("layout-checklists", { expire: 0 });
       revalidatePath("/");
     } catch (error) {
       console.warn(

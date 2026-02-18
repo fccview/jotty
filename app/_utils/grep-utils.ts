@@ -105,6 +105,47 @@ export const grepFindFilesByField = async (
   }
 };
 
+export const grepExtractAllFrontmatters = async (
+  dir: string,
+): Promise<Map<string, Record<string, unknown>>> => {
+  try {
+    const { stdout } = await execAsync(
+      `find "${dir}" -name "*.md" -type f -print0 | sort -z | xargs -0 awk '` +
+        `FNR==1{if(NR>1)print "ENDFILE";print "FILE:"FILENAME;in_fm=($0=="---");next}` +
+        `in_fm&&/^---$/{in_fm=0;next}in_fm{print}END{print "ENDFILE"}' 2>/dev/null || true`,
+      { maxBuffer: 50 * 1024 * 1024 },
+    );
+
+    const result = new Map<string, Record<string, unknown>>();
+    let currentFile = "";
+    let currentLines: string[] = [];
+
+    for (const line of stdout.split("\n")) {
+      if (line.startsWith("FILE:")) {
+        currentFile = line.slice(5);
+        currentLines = [];
+      } else if (line === "ENDFILE") {
+        if (currentFile && currentLines.length > 0) {
+          try {
+            const parsed = yaml.load(currentLines.join("\n"));
+            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+              result.set(currentFile, parsed as Record<string, unknown>);
+            }
+          } catch {}
+        }
+        currentFile = "";
+        currentLines = [];
+      } else if (currentFile) {
+        currentLines.push(line);
+      }
+    }
+
+    return result;
+  } catch {
+    return new Map();
+  }
+};
+
 export const grepExtractFrontmatter = async (
   filePath: string,
 ): Promise<Record<string, unknown> | null> => {

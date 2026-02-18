@@ -38,7 +38,10 @@ const TagRenderer = ({
   level?: number;
 }) => {
   const children = getChildTags(tagsIndex, tag.name);
-  const hasContent = tag.noteUuids.length > 0 || children.length > 0;
+  const hasContent =
+    tag.noteUuids.length > 0 ||
+    tag.checklistUuids.length > 0 ||
+    children.length > 0;
   const isCollapsed = collapsedTags.has(tag.name);
 
   return (
@@ -47,9 +50,7 @@ const TagRenderer = ({
         <div
           className={cn(
             "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
-            hasContent
-              ? "hover:bg-muted/50"
-              : "text-muted-foreground"
+            hasContent ? "hover:bg-muted/50" : "text-muted-foreground",
           )}
         >
           <button
@@ -59,7 +60,7 @@ const TagRenderer = ({
             }}
             className={cn(
               "flex items-center shrink-0",
-              hasContent ? "cursor-pointer" : "cursor-default"
+              hasContent ? "cursor-pointer" : "cursor-default",
             )}
           >
             {hasContent ? (
@@ -135,7 +136,9 @@ export const TagsList = ({
     return null;
   }
 
-  const areAnyTagsCollapsed = rootTags.some((tag) => collapsedTags.has(tag.name));
+  const areAnyTagsCollapsed = rootTags.some((tag) =>
+    collapsedTags.has(tag.name),
+  );
   const handleToggleAllTags = () => {
     if (areAnyTagsCollapsed) {
       rootTags.forEach((tag) => {
@@ -172,7 +175,9 @@ export const TagsList = ({
               onClick={handleToggleAllTags}
               className="jotty-sidebar-tags-toggle-all text-sm lg:text-xs font-medium text-primary hover:underline focus:outline-none"
             >
-              {areAnyTagsCollapsed ? t("common.expandAll") : t("common.collapseAll")}
+              {areAnyTagsCollapsed
+                ? t("common.expandAll")
+                : t("common.collapseAll")}
             </button>
           </div>
 

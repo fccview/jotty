@@ -19,18 +19,19 @@ import { useToast } from "@/app/_providers/ToastProvider";
 
 const ResponsiveNetwork = dynamic(
   () => import("@nivo/network").then((mod) => mod.ResponsiveNetwork),
-  { ssr: false }
+  { ssr: false },
 );
 
 const NOTES_COLOR = "#3b82f6";
 const CHECKLISTS_COLOR = "#10b981";
 const TEXT_COLOR = "rgb(var(--foreground))";
 const BORDER_COLOR = "rgb(var(--muted-foreground))";
+const MAX_GRAPH_NODES = 600;
 
 const getLabel = (
   node: any,
   notes: Partial<Note>[],
-  checklists: Partial<Checklist>[]
+  checklists: Partial<Checklist>[],
 ) => {
   const fullItem =
     (notes.find((n) => n.uuid === node.data.id) as Note | undefined) ||
@@ -48,7 +49,7 @@ const CustomNode = ({ node, onHover, onLeave, notes, checklists }: any) => {
 
   const indicatorRadius = Math.max(
     3,
-    Math.min(12, 3 + (node.data.connectionCount || 0) * 0.8)
+    Math.min(12, 3 + (node.data.connectionCount || 0) * 0.8),
   );
   const textOffset = indicatorRadius * 2 + 4;
 
@@ -126,16 +127,16 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
       await rebuildLinkIndex(username);
       showToast({
         type: "success",
-        title: t('common.success'),
-        message: t('profile.successfullyRebuiltIndexReload'),
+        title: t("common.success"),
+        message: t("profile.successfullyRebuiltIndexReload"),
       });
       window.location.reload();
     } catch (error) {
       console.error("Failed to rebuild index:", error);
       showToast({
         type: "error",
-        title: t('common.error'),
-        message: t('profile.failedToRebuildIndex'),
+        title: t("common.error"),
+        message: t("profile.failedToRebuildIndex"),
       });
     } finally {
       setRebuildingIndex(false);
@@ -147,15 +148,15 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
     const links: NetworkLink[] = [];
 
     Object.entries(linkIndex.notes).forEach(([uuid, itemLinks]) => {
+      const connectionCount =
+        itemLinks.isLinkedTo.notes.length +
+        itemLinks.isLinkedTo.checklists.length +
+        itemLinks.isReferencedIn.notes.length +
+        itemLinks.isReferencedIn.checklists.length;
+      if (connectionCount === 0) return;
       if (!nodes.has(uuid)) {
         const item = notes.find((n) => n.uuid === uuid);
         const label = item?.title || `Note ${uuid.slice(0, 8)}`;
-
-        const connectionCount =
-          itemLinks.isLinkedTo.notes.length +
-          itemLinks.isLinkedTo.checklists.length +
-          itemLinks.isReferencedIn.notes.length +
-          itemLinks.isReferencedIn.checklists.length;
         const size = Math.max(5, Math.min(25, 5 + connectionCount * 2));
         nodes.set(uuid, {
           id: uuid,
@@ -169,15 +170,15 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
     });
 
     Object.entries(linkIndex.checklists).forEach(([uuid, itemLinks]) => {
+      const connectionCount =
+        itemLinks.isLinkedTo.notes.length +
+        itemLinks.isLinkedTo.checklists.length +
+        itemLinks.isReferencedIn.notes.length +
+        itemLinks.isReferencedIn.checklists.length;
+      if (connectionCount === 0) return;
       if (!nodes.has(uuid)) {
         const item = checklists.find((c) => c.uuid === uuid);
         const label = item?.title || `Checklist ${uuid.slice(0, 8)}`;
-
-        const connectionCount =
-          itemLinks.isLinkedTo.notes.length +
-          itemLinks.isLinkedTo.checklists.length +
-          itemLinks.isReferencedIn.notes.length +
-          itemLinks.isReferencedIn.checklists.length;
         const size = Math.max(5, Math.min(25, 5 + connectionCount * 2));
         nodes.set(uuid, {
           id: uuid,
@@ -252,22 +253,43 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
       });
     });
 
+    const nodeList = Array.from(nodes.values());
+    if (nodeList.length > MAX_GRAPH_NODES) {
+      nodeList.sort((a, b) => b.connectionCount - a.connectionCount);
+      const keptIds = new Set(
+        nodeList.slice(0, MAX_GRAPH_NODES).map((n) => n.id),
+      );
+      const keptNodes = nodeList.slice(0, MAX_GRAPH_NODES);
+      const keptLinks = links.filter(
+        (l) => keptIds.has(l.source) && keptIds.has(l.target),
+      );
+      return {
+        nodes: keptNodes,
+        links: keptLinks,
+        truncated: nodeList.length,
+      };
+    }
     return {
-      nodes: Array.from(nodes.values()),
+      nodes: nodeList,
       links: links,
+      truncated: 0,
     };
   }, [linkIndex, notes, checklists]);
 
   const totalNodes = networkData.nodes.length;
   const totalLinks = networkData.links.length;
+  const truncatedTotal =
+    "truncated" in networkData && networkData.truncated > 0
+      ? networkData.truncated
+      : 0;
 
   if (totalNodes === 0) {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold">{t('profile.contentLinks')}</h2>
+          <h2 className="text-2xl font-bold">{t("profile.contentLinks")}</h2>
           <p className="text-muted-foreground">
-            {t('profile.visualizeRelationships')}
+            {t("profile.visualizeRelationships")}
           </p>
         </div>
 
@@ -281,7 +303,9 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalNodes}
                 </div>
-                <div className="text-md lg:text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
+                <div className="text-md lg:text-xs text-muted-foreground">
+                  {t("checklists.totalItems")}
+                </div>
               </div>
             </div>
 
@@ -293,7 +317,9 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
                 <div className="text-xl sm:text-2xl font-bold text-foreground">
                   {totalLinks}
                 </div>
-                <div className="text-md lg:text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
+                <div className="text-md lg:text-xs text-muted-foreground">
+                  {t("profile.connectionsTab")}
+                </div>
               </div>
             </div>
 
@@ -309,7 +335,7 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
                   }
                 </div>
                 <div className="text-md lg:text-xs text-muted-foreground">
-                  {t('profile.connectedItems')}
+                  {t("profile.connectedItems")}
                 </div>
               </div>
             </div>
@@ -318,19 +344,23 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
 
         <div className="bg-card border border-border rounded-md p-8">
           <div className="text-center space-y-4">
-            <div className="text-6xl"><Link04Icon className="h-12 w-12" /></div>
+            <div className="text-6xl flex items-center justify-center">
+              <Link04Icon className="h-12 w-12" />
+            </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">{t('profile.noLinksFound')}</h3>
+              <h3 className="text-lg font-semibold">
+                {t("profile.noLinksFound")}
+              </h3>
               <p className="text-muted-foreground max-w-md mx-auto">
-                {t('profile.startCreatingInternalLinks')}{" "}
+                {t("profile.startCreatingInternalLinks")}{" "}
                 <code className="bg-muted px-1 py-0.5 rounded text-sm">
                   /note/your-note
                 </code>{" "}
-                {t('profile.orFormat')}{" "}
+                {t("profile.orFormat")}{" "}
                 <code className="bg-muted px-1 py-0.5 rounded text-sm">
                   /checklist/your-list
                 </code>{" "}
-                {t('profile.inYourContent')}
+                {t("profile.inYourContent")}
               </p>
             </div>
           </div>
@@ -342,9 +372,9 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold">{t('profile.contentLinks')}</h2>
+        <h2 className="text-2xl font-bold">{t("profile.contentLinks")}</h2>
         <p className="text-muted-foreground">
-          {t('profile.visualizeRelationships')}
+          {t("profile.visualizeRelationships")}
         </p>
       </div>
 
@@ -358,7 +388,9 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalNodes}
               </div>
-              <div className="text-md lg:text-xs text-muted-foreground">{t('checklists.totalItems')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">
+                {t("checklists.totalItems")}
+              </div>
             </div>
           </div>
 
@@ -370,7 +402,9 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {totalLinks}
               </div>
-              <div className="text-md lg:text-xs text-muted-foreground">{t('profile.connectionsTab')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">
+                {t("profile.connectionsTab")}
+              </div>
             </div>
           </div>
 
@@ -383,7 +417,7 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
                 {networkData.nodes.filter((n) => n.connectionCount > 0).length}
               </div>
               <div className="text-md lg:text-xs text-muted-foreground">
-                {t('profile.connectedItems')}
+                {t("profile.connectedItems")}
               </div>
             </div>
           </div>
@@ -393,16 +427,18 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
       <div className="bg-card border border-border rounded-md p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">{t('profile.linkNetwork')}</h3>
+            <h3 className="text-lg font-semibold">
+              {t("profile.linkNetwork")}
+            </h3>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>{t('notes.title')}</span>
+                  <span>{t("notes.title")}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>{t('checklists.title')}</span>
+                  <span>{t("checklists.title")}</span>
                 </div>
               </div>
               <Button
@@ -416,14 +452,22 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
                 <RefreshIcon
                   className={`h-3 w-3 ${rebuildingIndex ? "animate-spin" : ""}`}
                 />
-                {rebuildingIndex ? t('admin.rebuilding') : t('admin.rebuildIndexes')}
+                {rebuildingIndex
+                  ? t("admin.rebuilding")
+                  : t("admin.rebuildIndexes")}
               </Button>
             </div>
           </div>
 
+          {truncatedTotal > 0 && (
+            <p className="text-sm text-muted-foreground mb-2">
+              Only showing partial content due to performance reasons.
+            </p>
+          )}
+
           <div className="h-[600px] w-full">
             <ResponsiveNetwork
-              data={networkData}
+              data={{ nodes: networkData.nodes, links: networkData.links }}
               margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
               linkDistance={(e: any) => e.distance}
               centeringStrength={0.3}
@@ -463,13 +507,15 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
               </div>
               <div className="text-md lg:text-xs text-muted-foreground capitalize mt-1">
                 {hoveredNode.data.type} • {hoveredNode.data.connectionCount}{" "}
-                {t('profile.connection', { count: hoveredNode.data.connectionCount })}
+                {t("profile.connection", {
+                  count: hoveredNode.data.connectionCount,
+                })}
                 {hoveredNode.data.connectionCount >= 5
-                  ? ` (${t('profile.highlyConnected')})`
+                  ? ` (${t("profile.highlyConnected")})`
                   : hoveredNode.data.connectionCount >= 2
-                    ? ` (${t('profile.moderatelyConnected')})`
+                    ? ` (${t("profile.moderatelyConnected")})`
                     : hoveredNode.data.connectionCount === 0
-                      ? ` (${t('profile.isolated')})`
+                      ? ` (${t("profile.isolated")})`
                       : ""}
               </div>
               <div className="text-md lg:text-xs text-muted-foreground mt-1 font-mono line-clamp-1">

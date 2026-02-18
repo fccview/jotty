@@ -14,7 +14,7 @@ import {
   serverDeleteFile,
   serverWriteFile,
 } from "@/app/_server/actions/file";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NOTES_DIR } from "@/app/_consts/files";
 import { PermissionTypes, Modes } from "@/app/_types/enums";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
@@ -121,6 +121,7 @@ export const createNote = async (formData: FormData) => {
       { category: newDoc.category }
     );
 
+    revalidateTag("layout-notes", { expire: 0 });
     await broadcast({ type: "note", action: "created", entityId: newDoc.uuid, username: currentUser.username });
 
     return { success: true, data: newDoc };
@@ -158,6 +159,15 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       currentUser = await getUsername();
     }
 
+    const actingUsername =
+      typeof currentUser === "string"
+        ? currentUser
+        : (currentUser as { username?: string })?.username;
+
+    if (!actingUsername) {
+      return { error: "Not authenticated" };
+    }
+
     const sanitizedContent = sanitizeMarkdown(content);
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
     const processedContent = settings?.editor?.enableBilateralLinks
@@ -170,19 +180,19 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     const convertedContent = processedContent;
 
-    const note = await getNoteById(uuid || id, originalCategory, currentUser);
-
-    const canEdit = await checkUserPermission(
-      id,
-      originalCategory,
-      "note",
-      currentUser,
-      PermissionTypes.EDIT
-    );
+    const note = await getNoteById(uuid || id, originalCategory, undefined);
 
     if (!note) {
       throw new Error("Note not found");
     }
+
+    const canEdit = await checkUserPermission(
+      note.uuid || id,
+      originalCategory,
+      "note",
+      actingUsername,
+      PermissionTypes.EDIT
+    );
 
     if (!canEdit) {
       return { error: "Permission denied" };
@@ -329,6 +339,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     try {
       if (!autosaveNotes) {
+        revalidateTag("layout-notes", { expire: 0 });
         revalidatePath("/");
         const oldCategoryPath = buildCategoryPath(
           note.category || "Uncategorized",
@@ -405,18 +416,14 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       return { error: "Not authenticated" };
     }
 
-    const note = await getNoteById(
-      itemIdentifier,
-      category,
-      username ? currentUser.username : undefined
-    );
+    const note = await getNoteById(itemIdentifier, category, undefined);
 
     if (!note) {
       return { error: "Document not found" };
     }
 
     const canDelete = await checkUserPermission(
-      itemIdentifier,
+      note.uuid || itemIdentifier,
       category,
       "note",
       currentUser.username,
@@ -473,6 +480,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     }
 
     try {
+      revalidateTag("layout-notes", { expire: 0 });
       revalidatePath("/");
       const categoryPath = buildCategoryPath(
         note.category || "Uncategorized",
@@ -569,6 +577,7 @@ export const cloneNote = async (formData: FormData) => {
     );
 
     try {
+      revalidateTag("layout-notes", { expire: 0 });
       revalidatePath("/");
     } catch (error) {
       console.warn(

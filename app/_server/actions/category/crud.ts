@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import path from "path";
 import {
   ensureDir,
@@ -46,6 +46,9 @@ export const createCategory = async (formData: FormData) => {
       metadata: { categoryName: name, parentCategory: parent, mode },
     });
 
+    revalidateTag(mode === Modes.NOTES ? "layout-notes" : "layout-checklists", {
+      expire: 0,
+    });
     await broadcast({
       type: "category",
       action: "created",
@@ -100,6 +103,10 @@ export const deleteCategory = async (formData: FormData) => {
     });
 
     try {
+      revalidateTag(
+        mode === Modes.NOTES ? "layout-notes" : "layout-checklists",
+        { expire: 0 },
+      );
       revalidatePath("/");
     } catch (error) {
       console.warn(
@@ -218,55 +225,11 @@ export const renameCategory = async (formData: FormData) => {
 
     await fs.rename(oldCategoryDir, newCategoryDir);
 
-    if (mode === Modes.NOTES) {
-      try {
-        const username = await getUsername();
-        if (username) {
-          const { commitNote } = await import("@/app/_server/actions/history");
-          const { getUserNotes } = await import("@/app/_server/actions/note");
-
-          const notesResult = await getUserNotes({ username, isRaw: true });
-          if (notesResult.success && notesResult.data) {
-            const notesInCategory = notesResult.data.filter((note) => {
-              const category = note.category || "Uncategorized";
-              return category === newPath || category.startsWith(`${newPath}/`);
-            });
-
-            for (const note of notesInCategory) {
-              try {
-                const oldCategory = (note.category || "Uncategorized").replace(
-                  newPath,
-                  oldPath,
-                );
-                const newCategory = note.category || "Uncategorized";
-                const filePath = path.join(newCategoryDir, `${note.id}.md`);
-                const fileContent = await fs.readFile(filePath, "utf-8");
-                const titleMatch = fileContent.match(/^title:\s*(.+)$/m);
-                const title = titleMatch ? titleMatch[1] : note.id!;
-
-                await commitNote(
-                  username,
-                  path.join(newCategory, `${note.id}.md`),
-                  "move",
-                  title,
-                  {
-                    oldCategory,
-                    newCategory,
-                    oldPath: path.join(oldCategory, `${note.id}.md`),
-                  },
-                );
-              } catch (error) {
-                console.warn(
-                  `Failed to commit git mv for note ${note.id}:`,
-                  error,
-                );
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.warn("Failed to commit category rename to git history:", error);
-      }
+    const username = await getUsername();
+    if (mode === Modes.NOTES && username) {
+      const { commitCategoryRename } =
+        await import("@/app/_server/actions/history");
+      await commitCategoryRename(username, oldPath, newPath);
     }
 
     await logAudit({
@@ -278,6 +241,10 @@ export const renameCategory = async (formData: FormData) => {
     });
 
     try {
+      revalidateTag(
+        mode === Modes.NOTES ? "layout-notes" : "layout-checklists",
+        { expire: 0 },
+      );
       revalidatePath("/");
     } catch (error) {
       console.warn(

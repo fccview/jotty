@@ -19,7 +19,6 @@ interface SidebarWrapperProps {
   navigation?: ReactNode;
   headerActions?: ReactNode;
   scrollRef?: Ref<HTMLDivElement>;
-  tagsSection?: ReactNode;
 }
 
 export const SidebarWrapper = ({
@@ -31,11 +30,15 @@ export const SidebarWrapper = ({
   navigation,
   headerActions,
   scrollRef,
-  tagsSection,
 }: SidebarWrapperProps) => {
-  const { isDemoMode, isRwMarkable } = useAppMode();
+  const { isDemoMode, isRwMarkable, tagsEnabled, tagsIndex } = useAppMode();
   const { sidebarWidth, isResizing, startResizing } = useResizing();
   const { scrollTop, setScrollTop } = useSidebarStore();
+  const totalTags = Object.keys(tagsIndex).length;
+  const needsTagsSpace = tagsEnabled && totalTags > 0;
+  const effectiveWidth = needsTagsSpace && sidebarWidth <= 320
+    ? sidebarWidth + 52
+    : sidebarWidth;
   const internalScrollRef = useRef<HTMLDivElement>(null);
   const isRestoringScroll = useRef(false);
   const pathname = usePathname();
@@ -71,7 +74,7 @@ export const SidebarWrapper = ({
       <aside
         style={
           {
-            "--sidebar-desktop-width": `${sidebarWidth}px`,
+            "--sidebar-desktop-width": `${effectiveWidth}px`,
             transition: isResizing ? "none" : undefined,
           } as React.CSSProperties
         }
@@ -113,11 +116,6 @@ export const SidebarWrapper = ({
           </div>
           {navigation}
           <div ref={internalScrollRef} onScroll={handleScroll} className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-2">
-            {tagsSection && (
-              <div className="pt-2">
-                {tagsSection}
-              </div>
-            )}
             <div className="pt-2">
               <div className="flex items-center justify-between">
                 {typeof title === 'string' ? (

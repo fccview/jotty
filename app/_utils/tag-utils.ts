@@ -1,4 +1,4 @@
-import { Note, TagsIndex, TagInfo } from "@/app/_types";
+import { Note, Checklist, TagsIndex, TagInfo } from "@/app/_types";
 
 export type { TagsIndex, TagInfo };
 
@@ -27,7 +27,23 @@ export const getDisplayName = (tag: string): string => {
   return tag.substring(lastSlash + 1);
 };
 
-export const buildTagsIndex = (notes: Partial<Note>[]): TagsIndex => {
+const ensureTagEntry = (index: TagsIndex, normalizedTag: string) => {
+  if (!index[normalizedTag]) {
+    index[normalizedTag] = {
+      name: normalizedTag,
+      displayName: getDisplayName(normalizedTag),
+      parent: getParentTag(normalizedTag),
+      noteUuids: [],
+      checklistUuids: [],
+      totalCount: 0,
+    };
+  }
+};
+
+export const buildTagsIndex = (
+  notes: Partial<Note>[],
+  checklists?: Partial<Checklist>[],
+): TagsIndex => {
   const index: TagsIndex = {};
 
   for (const note of notes) {
@@ -37,15 +53,7 @@ export const buildTagsIndex = (notes: Partial<Note>[]): TagsIndex => {
       const normalizedTag = normalizeTag(tag);
       if (!normalizedTag) continue;
 
-      if (!index[normalizedTag]) {
-        index[normalizedTag] = {
-          name: normalizedTag,
-          displayName: getDisplayName(normalizedTag),
-          parent: getParentTag(normalizedTag),
-          noteUuids: [],
-          totalCount: 0,
-        };
-      }
+      ensureTagEntry(index, normalizedTag);
 
       if (!index[normalizedTag].noteUuids.includes(note.uuid)) {
         index[normalizedTag].noteUuids.push(note.uuid);
@@ -53,14 +61,28 @@ export const buildTagsIndex = (notes: Partial<Note>[]): TagsIndex => {
 
       const ancestors = getAncestorTags(normalizedTag);
       for (const ancestor of ancestors) {
-        if (!index[ancestor]) {
-          index[ancestor] = {
-            name: ancestor,
-            displayName: getDisplayName(ancestor),
-            parent: getParentTag(ancestor),
-            noteUuids: [],
-            totalCount: 0,
-          };
+        ensureTagEntry(index, ancestor);
+      }
+    }
+  }
+
+  if (checklists) {
+    for (const checklist of checklists) {
+      if (!checklist.tags || !checklist.uuid) continue;
+
+      for (const tag of checklist.tags) {
+        const normalizedTag = normalizeTag(tag);
+        if (!normalizedTag) continue;
+
+        ensureTagEntry(index, normalizedTag);
+
+        if (!index[normalizedTag].checklistUuids.includes(checklist.uuid)) {
+          index[normalizedTag].checklistUuids.push(checklist.uuid);
+        }
+
+        const ancestors = getAncestorTags(normalizedTag);
+        for (const ancestor of ancestors) {
+          ensureTagEntry(index, ancestor);
         }
       }
     }
@@ -68,11 +90,17 @@ export const buildTagsIndex = (notes: Partial<Note>[]): TagsIndex => {
 
   for (const tagName of Object.keys(index)) {
     const tag = index[tagName];
-    const descendantUuids = new Set<string>(tag.noteUuids);
+    const descendantUuids = new Set<string>([
+      ...tag.noteUuids,
+      ...tag.checklistUuids,
+    ]);
 
     for (const otherTagName of Object.keys(index)) {
       if (otherTagName.startsWith(tagName + "/")) {
         for (const uuid of index[otherTagName].noteUuids) {
+          descendantUuids.add(uuid);
+        }
+        for (const uuid of index[otherTagName].checklistUuids) {
           descendantUuids.add(uuid);
         }
       }

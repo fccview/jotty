@@ -174,6 +174,29 @@ export const serverReadDir = async (dirPath: string) => {
   }
 };
 
+export const listMdFilesUnderPath = async (
+  baseDir: string,
+  relativePrefix: string,
+): Promise<string[]> => {
+  const out: string[] = [];
+  const dirPath = path.join(baseDir, relativePrefix);
+  let entries: { name: string; isFile: () => boolean; isDirectory: () => boolean }[];
+  try {
+    entries = await fs.readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  for (const e of entries) {
+    const rel = relativePrefix ? `${relativePrefix}/${e.name}` : e.name;
+    if (e.isFile() && e.name.endsWith(".md")) {
+      out.push(rel);
+    } else if (e.isDirectory() && !e.name.startsWith(".")) {
+      out.push(...(await listMdFilesUnderPath(baseDir, rel)));
+    }
+  }
+  return out;
+};
+
 export const serverDeleteDir = async (dirPath: string) => {
   try {
     await fs.rm(dirPath, { recursive: true });
@@ -226,4 +249,69 @@ export const writeOrderFile = async (
   } catch {
     return { success: false };
   }
+};
+
+const STAT_BATCH_SIZE = 4000;
+
+export interface FileStatsEntry {
+  birthtime: Date;
+  mtime: Date;
+}
+
+export const getAllFileStats = async (
+  dir: string,
+): Promise<Map<string, FileStatsEntry>> => {
+  const result = new Map<string, FileStatsEntry>();
+  try {
+    const { spawn } = await import("child_process");
+    const paths = await new Promise<string[]>((resolve, reject) => {
+      const child = spawn("find", [dir, "-name", "*.md", "-type", "f"], {
+        stdio: ["ignore", "pipe", "ignore"],
+      });
+      const chunks: Buffer[] = [];
+      child.stdout?.on("data", (chunk: Buffer) => chunks.push(chunk));
+      child.on("error", reject);
+      child.on("close", (code) => {
+        if (code !== 0 && code !== null) {
+          resolve([]);
+          return;
+        }
+        const lines = Buffer.concat(chunks)
+          .toString("utf-8")
+          .trim()
+          .split("\n")
+          .filter(Boolean);
+        resolve(lines);
+      });
+    });
+
+    for (let i = 0; i < paths.length; i += STAT_BATCH_SIZE) {
+      const batch = paths.slice(i, i + STAT_BATCH_SIZE);
+      const entries = await Promise.all(
+        batch.map(
+          async (
+            filePath,
+          ): Promise<{ filePath: string; entry: FileStatsEntry } | null> => {
+            try {
+              const s = await fs.stat(filePath);
+              const birthtime =
+                s.birthtime.getTime() === 0 ? s.mtime : s.birthtime;
+              return {
+                filePath,
+                entry: { birthtime, mtime: s.mtime },
+              };
+            } catch {
+              return null;
+            }
+          },
+        ),
+      );
+      for (const e of entries) {
+        if (e) result.set(e.filePath, e.entry);
+      }
+    }
+  } catch {
+    return result;
+  }
+  return result;
 };

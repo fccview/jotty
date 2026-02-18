@@ -8,6 +8,7 @@ import { logAudit } from "@/app/_server/actions/log";
 import { getItemUuid } from "./helpers";
 import { readShareFile, writeShareFile } from "./io";
 import { SharedItemEntry } from "./types";
+import { revalidateTag } from "next/cache";
 
 export const shareWith = async (
   item: string,
@@ -57,6 +58,8 @@ export const shareWith = async (
     sharingData[receiverUsername].push(newEntry);
 
     await writeShareFile(itemType, sharingData);
+
+    revalidateTag(itemType === ItemTypes.CHECKLIST ? "layout-checklists" : "layout-notes", { expire: 0 });
 
     await logAudit({
       level: "INFO",
@@ -123,6 +126,9 @@ export const unshareWith = async (
   }
   try {
     await writeShareFile(itemType, sharingData);
+
+    revalidateTag(itemType === ItemTypes.CHECKLIST ? "layout-checklists" : "layout-notes", { expire: 0 });
+
     await logAudit({
       level: "INFO",
       action: "item_unshared",
@@ -205,6 +211,9 @@ export const updateItemPermissions = async (
 
   try {
     await writeShareFile(itemType, sharingData);
+
+    revalidateTag(itemType === ItemTypes.CHECKLIST ? "layout-checklists" : "layout-notes", { expire: 0 });
+
     await logAudit({
       level: "INFO",
       action: "share_permissions_updated",

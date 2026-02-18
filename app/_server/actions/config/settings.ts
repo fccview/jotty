@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import { Result, AppSettings } from "@/app/_types";
 import { getCurrentUser, isAdmin } from "../users";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
 
@@ -12,7 +12,7 @@ const DATA_SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
 const CONFIG_SETTINGS_PATH = path.join(
   process.cwd(),
   "config",
-  "settings.json"
+  "settings.json",
 );
 
 export const getSettings = async () => {
@@ -49,7 +49,7 @@ export const getSettings = async () => {
       const configSettingsPath = path.join(
         process.cwd(),
         "config",
-        "settings.json"
+        "settings.json",
       );
       const content = await fs.readFile(configSettingsPath, "utf-8");
       settings = JSON.parse(content);
@@ -85,7 +85,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
       try {
         const settingsContent = await fs.readFile(
           CONFIG_SETTINGS_PATH,
-          "utf-8"
+          "utf-8",
         );
         settings = JSON.parse(settingsContent);
       } catch {
@@ -135,7 +135,7 @@ export const getAppSettings = async (): Promise<Result<AppSettings>> => {
 };
 
 export const updateAppSettings = async (
-  formData: FormData
+  formData: FormData,
 ): Promise<Result<null>> => {
   try {
     const currentUser = await getCurrentUser();
@@ -158,7 +158,10 @@ export const updateAppSettings = async (
         success: false,
         errorMessage: "Unauthorized: Super admin access required",
       });
-      return { success: false, error: "Unauthorized: Only the system owner can modify app settings" };
+      return {
+        success: false,
+        error: "Unauthorized: Only the system owner can modify app settings",
+      };
     }
 
     const appName = (formData.get("appName") as string) || "";
@@ -238,6 +241,8 @@ export const updateAppSettings = async (
 
     revalidatePath("/admin");
     revalidatePath("/");
+    revalidateTag("layout-notes", { expire: 0 });
+    revalidateTag("layout-checklists", { expire: 0 });
 
     return { success: true, data: null };
   } catch (error) {

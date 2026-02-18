@@ -155,15 +155,13 @@ export const useSidebar = (props: SidebarProps) => {
     if (selectedFilter?.type === 'tag' && selectedFilter.value === tagName) {
       setSelectedFilter(null);
       if (!isHomePage) {
-        checkNavigation(() => router.push("/"));
+        checkNavigation(() => router.push("/?mode=tags"));
       }
     } else {
       setSelectedFilter({ type: 'tag', value: tagName });
 
       if (!isHomePage) {
-        checkNavigation(() => router.push(`/?tag=${encodeURIComponent(tagName)}`));
-      } else {
-        checkNavigation(() => router.push("/"));
+        checkNavigation(() => router.push(`/?mode=tags&tag=${encodeURIComponent(tagName)}`));
       }
     }
     onClose();

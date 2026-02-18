@@ -9,6 +9,8 @@ export interface GetNotesOptions {
   excerptLength?: number;
   filter?: ContentFilter;
   limit?: number;
+  offset?: number;
+  pinnedPaths?: string[];
   preserveOrder?: boolean;
 }
 
@@ -20,5 +22,7 @@ export interface GetChecklistsOptions {
   metadataOnly?: boolean;
   filter?: ContentFilter;
   limit?: number;
+  offset?: number;
+  pinnedPaths?: string[];
   preserveOrder?: boolean;
 }

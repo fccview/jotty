@@ -77,4 +77,5 @@ export interface Checklist {
   isDeleted?: boolean;
   rawContent?: string;
   statuses?: KanbanStatus[];
+  tags?: string[];
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import path from "path";
 import {
   ensureDir,
@@ -291,6 +291,7 @@ export const moveNode = async (formData: FormData) => {
       },
     });
 
+    revalidateTag(mode === Modes.NOTES ? "layout-notes" : "layout-checklists", { expire: 0 });
     revalidatePath("/");
 
     await broadcast({

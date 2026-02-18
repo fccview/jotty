@@ -29,6 +29,21 @@ import {
 import { loadCustomThemes } from "./_server/actions/config";
 import { getUserChecklists } from "./_server/actions/checklist";
 import { getUserNotes } from "./_server/actions/note";
+import { unstable_cache } from "next/cache";
+
+const cachedGetLayoutChecklists = unstable_cache(
+  async (username: string) =>
+    getUserChecklists({ username, metadataOnly: true, preserveOrder: true }),
+  ["layout-checklists"],
+  { tags: ["layout-checklists"] },
+);
+
+const cachedGetLayoutNotes = unstable_cache(
+  async (username: string) =>
+    getUserNotes({ username, metadataOnly: true, preserveOrder: true }),
+  ["layout-notes"],
+  { tags: ["layout-notes"] },
+);
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
   getAllSharedItems,
@@ -179,10 +194,10 @@ export default async function RootLayout({
     availableLocales,
   ] = await Promise.all([
     user && !isPublicRoute
-      ? getUserNotes({ metadataOnly: true, preserveOrder: true })
+      ? cachedGetLayoutNotes(user.username)
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
-      ? getUserChecklists({ metadataOnly: true, preserveOrder: true })
+      ? cachedGetLayoutChecklists(user.username)
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
       ? getAllSharedItems()

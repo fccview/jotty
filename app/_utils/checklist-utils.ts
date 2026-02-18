@@ -13,6 +13,7 @@ import {
   generateYamlFrontmatter,
   generateUuid,
 } from "./yaml-metadata-utils";
+import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (checklistType === ChecklistsTypes.TASK) {
@@ -282,6 +283,27 @@ export const parseMarkdown = (
     statuses = metadata.statuses;
   }
 
+  const frontmatterTags: string[] = Array.isArray(metadata.tags)
+    ? (metadata.tags as string[]).map(normalizeTag).filter(Boolean)
+    : [];
+
+  const collectItemTexts = (itemList: Item[]): string => {
+    return itemList
+      .map((item) => {
+        let text = item.text;
+        if (item.children && item.children.length > 0) {
+          text += " " + collectItemTexts(item.children);
+        }
+        return text;
+      })
+      .join(" ");
+  };
+  const allItemText = collectItemTexts(items);
+  const inlineTags = extractHashtagsFromContent(allItemText);
+
+  const tagsSet = new Set([...frontmatterTags, ...inlineTags]);
+  const tags = Array.from(tagsSet).filter(Boolean);
+
   return {
     id,
     uuid: metadata.uuid || generateUuid(),
@@ -298,6 +320,7 @@ export const parseMarkdown = (
     owner,
     isShared,
     ...(statuses && { statuses }),
+    ...(tags.length > 0 && { tags }),
   };
 };
 
@@ -445,6 +468,10 @@ export const listToMarkdown = (list: Checklist): string => {
 
   if (list.statuses && list.statuses.length > 0) {
     metadata.statuses = list.statuses;
+  }
+
+  if (list.tags && list.tags.length > 0) {
+    metadata.tags = list.tags;
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);

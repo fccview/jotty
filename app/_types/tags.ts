@@ -3,6 +3,7 @@ export interface TagInfo {
   displayName: string;
   parent: string | null;
   noteUuids: string[];
+  checklistUuids: string[];
   totalCount: number;
 }
 

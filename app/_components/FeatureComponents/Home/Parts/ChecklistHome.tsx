@@ -22,8 +22,11 @@ import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
-import { useMemo, useState, useEffect, useTransition } from "react";
+import { useMemo, useState, useEffect, useTransition, useCallback } from "react";
 import { getChecklistsForDisplay } from "@/app/_server/actions/checklist";
+import { useInfiniteScroll } from "@/app/_hooks/useInfiniteScroll";
+import { FILTER_PAGE_SIZE } from "@/app/_consts/files";
+import { JottyIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/JottyIcon";
 
 interface ChecklistHomeProps {
   lists: Checklist[];
@@ -49,24 +52,44 @@ export const ChecklistHome = ({
     selectedFilter?.type === "category" ? selectedFilter.value : null;
   const { viewMode } = useSettings();
   const [isPending, startTransition] = useTransition();
-  const [displayLists, setDisplayLists] = useState<Checklist[]>(initialLists);
+  const [firstPage, setFirstPage] = useState<Checklist[]>([]);
 
   useEffect(() => {
     if (!selectedFilter || selectedFilter.type !== "category") {
-      setDisplayLists(initialLists);
+      setFirstPage([]);
       return;
     }
 
     startTransition(async () => {
-      const result = await getChecklistsForDisplay({
-        type: "category",
-        value: selectedFilter.value,
-      });
+      const result = await getChecklistsForDisplay(
+        selectedFilter,
+        FILTER_PAGE_SIZE,
+        0
+      );
       if (result.success && result.data) {
-        setDisplayLists(result.data as Checklist[]);
+        setFirstPage(result.data as Checklist[]);
       }
     });
-  }, [selectedFilter, initialLists]);
+  }, [selectedFilter]);
+
+  const fetchPage = useCallback(
+    (offset: number) =>
+      getChecklistsForDisplay(selectedFilter!, FILTER_PAGE_SIZE, offset).then(
+        (res) => ({
+          data: (res.success && res.data ? res.data : []) as Checklist[],
+        })
+      ),
+    [selectedFilter]
+  );
+
+  const { items: infiniteItems, sentinelRef, isLoading: isLoadingMore, hasMore } = useInfiniteScroll({
+    initialItems: firstPage,
+    fetchPage,
+    pageSize: FILTER_PAGE_SIZE,
+    resetKey: selectedCategory ?? null,
+  });
+
+  const displayLists = selectedCategory ? infiniteItems : initialLists;
 
   const {
     sensors,
@@ -172,6 +195,15 @@ export const ChecklistHome = ({
             </Button>
           </div>
         </div>
+
+        {selectedCategory && firstPage.length === 0 && isPending && (
+          <div className="flex items-center justify-center min-h-[240px]">
+            <JottyIcon
+              className="h-16 w-16 text-primary"
+              animated={true}
+            />
+          </div>
+        )}
 
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
@@ -413,6 +445,18 @@ export const ChecklistHome = ({
                         sharer={getListSharer(list)}
                       />
                     ))}
+                  </div>
+                )}
+
+                {selectedCategory && hasMore && (
+                  <div ref={sentinelRef} className="h-4 min-h-4" aria-hidden />
+                )}
+                {selectedCategory && isLoadingMore && (
+                  <div className="py-4 flex justify-center">
+                    <JottyIcon
+                      className="h-10 w-10 text-primary"
+                      animated={true}
+                    />
                   </div>
                 )}
               </div>

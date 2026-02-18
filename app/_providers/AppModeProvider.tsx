@@ -79,10 +79,20 @@ export const AppModeProvider = ({
         : Modes.NOTES || Modes.CHECKLISTS;
   }
 
-  const [mode, setMode] = useState<AppMode>(modeToSet);
-  const [selectedNote, setSelectedNote] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const tagParam = searchParams.get("tag");
+  const modeParam = searchParams.get("mode");
+
+  if (modeParam === Modes.TAGS || tagParam) {
+    modeToSet = Modes.TAGS;
+  } else if (modeParam === Modes.NOTES) {
+    modeToSet = Modes.NOTES;
+  } else if (modeParam === Modes.CHECKLISTS) {
+    modeToSet = Modes.CHECKLISTS;
+  }
+
+  const [mode, setMode] = useState<AppMode>(modeToSet);
+  const [selectedNote, setSelectedNote] = useState<string | null>(null);
 
   const [selectedFilter, setSelectedFilter] = useState<{ type: 'category' | 'tag'; value: string } | null>(
     tagParam ? { type: 'tag', value: tagParam } : null
@@ -104,7 +114,9 @@ export const AppModeProvider = ({
 
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);
-    setSelectedFilter(null);
+    if (newMode !== Modes.TAGS) {
+      setSelectedFilter(null);
+    }
     setStoredMode(newMode);
   };
 
@@ -112,8 +124,8 @@ export const AppModeProvider = ({
 
   const tagsIndex = useMemo(() => {
     if (!tagsEnabled || !notes) return {};
-    return buildTagsIndex(notes);
-  }, [notes, tagsEnabled]);
+    return buildTagsIndex(notes, checklists);
+  }, [notes, checklists, tagsEnabled]);
 
   const contextValue = useMemo(
     () => ({

@@ -17,7 +17,7 @@ export const isItemSharedWith = async (
   item: string,
   categoryPath: string,
   itemType: ItemType,
-  username: string
+  username: string,
 ): Promise<boolean> => {
   const sharingData = await readShareFile(itemType);
 
@@ -28,7 +28,7 @@ export const isItemSharedWith = async (
   if (!found && categoryPath) {
     const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
     found = userShares.some(
-      (entry) => entry.id === item && entry.category === encodedCategory
+      (entry) => entry.id === item && entry.category === encodedCategory,
     );
   }
 
@@ -39,7 +39,7 @@ export const getItemPermissions = async (
   item: string,
   categoryPath: string,
   itemType: ItemType,
-  username: string
+  username: string,
 ): Promise<SharingPermissions | null> => {
   const sharingData = await readShareFile(itemType);
 
@@ -50,7 +50,7 @@ export const getItemPermissions = async (
   if (!entry && categoryPath) {
     const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
     entry = userShares.find(
-      (entry) => entry.id === item && entry.category === encodedCategory
+      (entry) => entry.id === item && entry.category === encodedCategory,
     );
   }
 
@@ -61,45 +61,45 @@ export const canUserReadItem = async (
   item: string,
   categoryPath: string,
   itemType: ItemType,
-  username: string
+  username: string,
 ): Promise<boolean> => {
   const permissions = await getItemPermissions(
     item,
     categoryPath,
     itemType,
-    username
+    username,
   );
-  return permissions ? permissions.canRead : false;
+  return permissions?.canRead === true;
 };
 
 export const canUserWriteItem = async (
   item: string,
   categoryPath: string,
   itemType: ItemType,
-  username: string
+  username: string,
 ): Promise<boolean> => {
   const permissions = await getItemPermissions(
     item,
     categoryPath,
     itemType,
-    username
+    username,
   );
-  return permissions ? permissions.canEdit : false;
+  return permissions?.canEdit === true;
 };
 
 export const canUserDeleteItem = async (
   item: string,
   categoryPath: string,
   itemType: ItemType,
-  username: string
+  username: string,
 ): Promise<boolean> => {
   const permissions = await getItemPermissions(
     item,
     categoryPath,
     itemType,
-    username
+    username,
   );
-  return permissions ? permissions.canDelete : false;
+  return permissions?.canDelete === true;
 };
 
 export const checkUserPermission = async (
@@ -107,29 +107,34 @@ export const checkUserPermission = async (
   itemCategory: string,
   itemType: ItemType,
   currentUsername: string,
-  permission: PermissionTypes
+  permission: PermissionTypes,
 ): Promise<boolean> => {
   try {
+    const username =
+      typeof currentUsername === "string"
+        ? currentUsername
+        : (currentUsername as { username?: string })?.username;
+    if (!username) return false;
+
     const isAdminUser = await isAdmin();
     if (isAdminUser) return true;
 
     const userDir =
       itemType === ItemTypes.CHECKLIST
-        ? CHECKLISTS_DIR(currentUsername)
-        : NOTES_DIR(currentUsername);
+        ? CHECKLISTS_DIR(username)
+        : NOTES_DIR(username);
     const categoryDir = path.join(userDir, itemCategory);
     const filePath = path.join(categoryDir, `${itemId}.md`);
 
     try {
       await fs.access(filePath);
       return true;
-    } catch { }
+    } catch {}
 
     let owner = null;
     if (itemType === ItemTypes.CHECKLIST) {
-      const { getUserByChecklistUuid } = await import(
-        "@/app/_server/actions/users"
-      );
+      const { getUserByChecklistUuid } =
+        await import("@/app/_server/actions/users");
       const ownerResult = await getUserByChecklistUuid(itemId);
       if (ownerResult.success) {
         owner = ownerResult.data;
@@ -152,29 +157,19 @@ export const checkUserPermission = async (
       owner = ownerResult.data;
     }
 
-    if (owner?.username === currentUsername) return true;
+    if (owner?.username === username) return true;
 
     switch (permission) {
       case PermissionTypes.READ:
-        return await canUserReadItem(
-          itemId,
-          itemCategory,
-          itemType,
-          currentUsername
-        );
+        return await canUserReadItem(itemId, itemCategory, itemType, username);
       case PermissionTypes.EDIT:
-        return await canUserWriteItem(
-          itemId,
-          itemCategory,
-          itemType,
-          currentUsername
-        );
+        return await canUserWriteItem(itemId, itemCategory, itemType, username);
       case PermissionTypes.DELETE:
         return await canUserDeleteItem(
           itemId,
           itemCategory,
           itemType,
-          currentUsername
+          username,
         );
       default:
         return false;
