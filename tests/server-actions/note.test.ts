@@ -27,6 +27,11 @@ const mockExtractYamlMetadata = vi.fn();
 const mockExtractTitle = vi.fn();
 const mockGetUserByNote = vi.fn();
 const mockGetUserByNoteUuid = vi.fn();
+const mockGetNoteById = vi.fn();
+
+vi.mock("@/app/_server/actions/note/queries", () => ({
+  getNoteById: (...args: unknown[]) => mockGetNoteById(...args),
+}));
 
 vi.mock("@/app/_server/actions/file", () => ({
   getUserModeDir: (...args: any[]) => mockGetUserModeDir(...args),
@@ -404,6 +409,15 @@ describe("Note Actions", () => {
 
     describe("updateNote with tags", () => {
       const setupUpdateNoteMocks = () => {
+        mockGetNoteById.mockResolvedValue({
+          id: "test-note",
+          uuid: "test-uuid-123",
+          title: "Test Note",
+          category: "TestCategory",
+          owner: "testuser",
+          content: "Existing content",
+        });
+
         mockGetUserByNoteUuid.mockResolvedValue({
           success: true,
           data: { username: "testuser" },
