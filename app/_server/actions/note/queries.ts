@@ -12,14 +12,12 @@ import { USERS_FILE } from "@/app/_consts/files";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import {
   generateUuid,
+  toIso,
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { readNotesRecursively } from "./readers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import {
-  getOrCompute,
-  metaCacheKey,
-} from "@/app/_server/lib/metadata-cache";
+import { getOrCompute, metaCacheKey } from "@/app/_server/lib/metadata-cache";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
@@ -179,8 +177,8 @@ export const getNoteById = async (
     title: parsedData.title,
     content: parsedData.content,
     category: noteCategory,
-    createdAt: stats.birthtime.toISOString(),
-    updatedAt: stats.mtime.toISOString(),
+    createdAt: toIso(stats.birthtime),
+    updatedAt: toIso(stats.mtime),
     owner: ownerUsername,
     isShared,
     encrypted: parsedData.encrypted || false,
@@ -228,9 +226,10 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     const t1 = layoutTiming ? performance.now() : 0;
 
     const canCache = metadataOnly && !allowArchived && !isRaw && !excerptLength;
+
     const ownCacheKey = canCache ? metaCacheKey("notes", resolvedDir) : null;
 
-    const notes: any[] = ownCacheKey
+    const notes: Note[] = ownCacheKey
       ? await getOrCompute(ownCacheKey, resolvedDir, () =>
           readNotesRecursively(
             resolvedDir,

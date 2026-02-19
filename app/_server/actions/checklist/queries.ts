@@ -13,15 +13,13 @@ import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import {
   extractChecklistType,
   generateUuid,
+  toIso,
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { readListsRecursively, type ChecklistReadResult } from "./readers";
 import { checkAndRefreshRecurringItems } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import {
-  getOrCompute,
-  metaCacheKey,
-} from "@/app/_server/lib/metadata-cache";
+import { getOrCompute, metaCacheKey } from "@/app/_server/lib/metadata-cache";
 
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
   const {
@@ -393,8 +391,8 @@ export const getListById = async (
     type: checklistType as Checklist["type"],
     items: parsedData.items,
     category: listCategory,
-    createdAt: stats.birthtime.toISOString(),
-    updatedAt: stats.mtime.toISOString(),
+    createdAt: toIso(stats.birthtime),
+    updatedAt: toIso(stats.mtime),
     owner: ownerUsername,
     isShared,
     ...(parsedData.statuses && { statuses: parsedData.statuses }),

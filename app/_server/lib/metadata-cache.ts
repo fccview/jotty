@@ -31,8 +31,7 @@ function startWatcher(dir: string) {
     });
 
     watchers.set(dir, watcher);
-  } catch {
-  }
+  } catch {}
 }
 
 function registerKey(key: string, dir: string) {

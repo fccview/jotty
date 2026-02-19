@@ -180,10 +180,18 @@ export default async function RootLayout({
     availableLocales,
   ] = await Promise.all([
     user && !isPublicRoute
-      ? getUserNotes({ username: user.username, metadataOnly: true, preserveOrder: true })
+      ? getUserNotes({
+          username: user.username,
+          metadataOnly: true,
+          preserveOrder: true,
+        })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
-      ? getUserChecklists({ username: user.username, metadataOnly: true, preserveOrder: true })
+      ? getUserChecklists({
+          username: user.username,
+          metadataOnly: true,
+          preserveOrder: true,
+        })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
       ? getAllSharedItems()

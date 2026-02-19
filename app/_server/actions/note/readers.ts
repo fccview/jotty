@@ -11,6 +11,7 @@ import {
 import {
   extractYamlMetadata,
   generateUuid,
+  toIso,
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import {
@@ -39,6 +40,7 @@ export const readNotesRecursively = async (
   if (basePath === "") {
     statsCache = statsCache || new Map();
     metadataCache = metadataCache || new Map();
+
     try {
       const excludeStr = allowArchived
         ? ""
@@ -53,6 +55,7 @@ export const readNotesRecursively = async (
           stdout: "",
         })),
       ]);
+
       statsOut.stdout.split("\n").forEach((line) => {
         const [p, b, m] = line.split("|");
         if (p && b && m)
@@ -61,7 +64,9 @@ export const readNotesRecursively = async (
             mtime: new Date(parseFloat(m) * 1000),
           });
       });
+
       const inFrontmatter = new Map<string, boolean>();
+
       let inTagsFile = "";
       for (const line of metaOut.stdout.split("\n")) {
         if (!line) continue;
@@ -182,6 +187,7 @@ export const readNotesRecursively = async (
         const metadata =
           metadataCache?.get(filePath) ??
           (await grepExtractFrontmatter(filePath));
+
         const tags = Array.isArray(metadata?.tags)
           ? (metadata.tags as string[])
           : [];
@@ -191,8 +197,8 @@ export const readNotesRecursively = async (
           uuid: typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
           title: typeof metadata?.title === "string" ? metadata.title : id,
           category: categoryPath,
-          createdAt: stats.birthtime.toISOString(),
-          updatedAt: stats.mtime.toISOString(),
+          createdAt: toIso(stats.birthtime),
+          updatedAt: toIso(stats.mtime),
           owner,
           isShared: false,
           encrypted: metadata?.encrypted === true,
@@ -213,8 +219,8 @@ export const readNotesRecursively = async (
           title: typeof metadata?.title === "string" ? metadata.title : id,
           content: excerpt,
           category: categoryPath,
-          createdAt: stats.birthtime.toISOString(),
-          updatedAt: stats.mtime.toISOString(),
+          createdAt: toIso(stats.birthtime),
+          updatedAt: toIso(stats.mtime),
           owner,
           isShared: false,
           encrypted: metadata?.encrypted === true,
@@ -235,8 +241,8 @@ export const readNotesRecursively = async (
             title: id,
             content: "",
             category: categoryPath,
-            createdAt: stats.birthtime.toISOString(),
-            updatedAt: stats.mtime.toISOString(),
+            createdAt: toIso(stats.birthtime),
+            updatedAt: toIso(stats.mtime),
             owner,
             isShared: false,
             rawContent: content,
@@ -248,7 +254,10 @@ export const readNotesRecursively = async (
             categoryPath,
             owner,
             false,
-            stats,
+            {
+              birthtime: new Date(toIso(stats.birthtime)),
+              mtime: new Date(toIso(stats.mtime)),
+            },
             fileName,
           );
         }
@@ -262,6 +271,7 @@ export const readNotesRecursively = async (
     Promise.all(subDirPromises),
     Promise.all(filePromises),
   ]);
+
   notes.push(...currentDirNotes.filter((n): n is Note => n != null));
   subDirNotes.forEach((sub) => notes.push(...sub));
 

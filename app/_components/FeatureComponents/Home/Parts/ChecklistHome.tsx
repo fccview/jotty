@@ -22,7 +22,13 @@ import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
-import { useMemo, useState, useEffect, useTransition, useCallback } from "react";
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useTransition,
+  useCallback,
+} from "react";
 import { getChecklistsForDisplay } from "@/app/_server/actions/checklist";
 import { useInfiniteScroll } from "@/app/_hooks/useInfiniteScroll";
 import { FILTER_PAGE_SIZE } from "@/app/_consts/files";
@@ -64,7 +70,7 @@ export const ChecklistHome = ({
       const result = await getChecklistsForDisplay(
         selectedFilter,
         FILTER_PAGE_SIZE,
-        0
+        0,
       );
       if (result.success && result.data) {
         setFirstPage(result.data as Checklist[]);
@@ -77,12 +83,17 @@ export const ChecklistHome = ({
       getChecklistsForDisplay(selectedFilter!, FILTER_PAGE_SIZE, offset).then(
         (res) => ({
           data: (res.success && res.data ? res.data : []) as Checklist[],
-        })
+        }),
       ),
-    [selectedFilter]
+    [selectedFilter],
   );
 
-  const { items: infiniteItems, sentinelRef, isLoading: isLoadingMore, hasMore } = useInfiniteScroll({
+  const {
+    items: infiniteItems,
+    sentinelRef,
+    isLoading: isLoadingMore,
+    hasMore,
+  } = useInfiniteScroll({
     initialItems: firstPage,
     fetchPage,
     pageSize: FILTER_PAGE_SIZE,
@@ -198,10 +209,7 @@ export const ChecklistHome = ({
 
         {selectedCategory && firstPage.length === 0 && isPending && (
           <div className="flex items-center justify-center min-h-[240px]">
-            <JottyIcon
-              className="h-16 w-16 text-primary"
-              animated={true}
-            />
+            <JottyIcon className="h-16 w-16 text-primary" animated={true} />
           </div>
         )}
 

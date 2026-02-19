@@ -12,7 +12,10 @@ import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/Chec
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import Masonry from "react-masonry-css";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { encodeCategoryPath, buildCategoryPath } from "@/app/_utils/global-utils";
+import {
+  encodeCategoryPath,
+  buildCategoryPath,
+} from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useMemo, useState, useEffect, useTransition } from "react";
@@ -47,24 +50,21 @@ export const TagsHome = ({
 }: TagsHomeProps) => {
   const t = useTranslations();
   const router = useRouter();
-  const {
-    selectedFilter,
-    setSelectedFilter,
-    tagsIndex,
-    userSharedItems,
-  } = useAppMode();
+  const { selectedFilter, setSelectedFilter, tagsIndex, userSharedItems } =
+    useAppMode();
   const { viewMode } = useSettings();
   const [, startTransition] = useTransition();
   const [displayNotes, setDisplayNotes] = useState<Note[]>(initialNotes);
-  const [displayChecklists, setDisplayChecklists] = useState<Checklist[]>(initialChecklists);
+  const [displayChecklists, setDisplayChecklists] =
+    useState<Checklist[]>(initialChecklists);
 
   const taggedNotes = useMemo(
     () => initialNotes.filter((n) => n.tags && n.tags.length > 0),
-    [initialNotes]
+    [initialNotes],
   );
   const taggedChecklists = useMemo(
     () => initialChecklists.filter((c) => c.tags && c.tags.length > 0),
-    [initialChecklists]
+    [initialChecklists],
   );
 
   useEffect(() => {
@@ -90,7 +90,10 @@ export const TagsHome = ({
 
   const combinedItems: TaggedItem[] = useMemo(() => {
     const items: TaggedItem[] = [
-      ...displayNotes.map((note) => ({ itemType: "note" as const, item: note })),
+      ...displayNotes.map((note) => ({
+        itemType: "note" as const,
+        item: note,
+      })),
       ...displayChecklists.map((checklist) => ({
         itemType: "checklist" as const,
         item: checklist,
@@ -99,12 +102,16 @@ export const TagsHome = ({
     items.sort(
       (a, b) =>
         new Date(b.item.updatedAt).getTime() -
-        new Date(a.item.updatedAt).getTime()
+        new Date(a.item.updatedAt).getTime(),
     );
     return items;
   }, [displayNotes, displayChecklists]);
 
-  const { visibleItems: windowedItems, sentinelRef, hasMore } = useWindowedList({
+  const {
+    visibleItems: windowedItems,
+    sentinelRef,
+    hasMore,
+  } = useWindowedList({
     items: combinedItems,
     pageSize: FILTER_PAGE_SIZE,
     resetKey: selectedFilter?.type === "tag" ? selectedFilter.value : null,
@@ -112,27 +119,25 @@ export const TagsHome = ({
 
   const filterDisplayName = useMemo(() => {
     if (!selectedFilter || selectedFilter.type !== "tag") return null;
-    return (
-      tagsIndex[selectedFilter.value]?.displayName || selectedFilter.value
-    );
+    return tagsIndex[selectedFilter.value]?.displayName || selectedFilter.value;
   }, [selectedFilter, tagsIndex]);
 
   const getNoteSharer = (note: Note) => {
     const encodedCategory = encodeCategoryPath(
-      note.category || "Uncategorized"
+      note.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.id === note.id && item.category === encodedCategory
+      (item) => item.id === note.id && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
 
   const getListSharer = (list: Checklist) => {
     const encodedCategory = encodeCategoryPath(
-      list.category || "Uncategorized"
+      list.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.id === list.id && item.category === encodedCategory
+      (item) => item.id === list.id && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
@@ -140,7 +145,7 @@ export const TagsHome = ({
   const handleSelectNote = (note: Note) => {
     const categoryPath = buildCategoryPath(
       note.category || "Uncategorized",
-      note.id
+      note.id,
     );
     router.push(`/note/${categoryPath}`);
   };
@@ -148,7 +153,7 @@ export const TagsHome = ({
   const handleSelectChecklist = (list: Checklist) => {
     const categoryPath = buildCategoryPath(
       list.category || "Uncategorized",
-      list.id
+      list.id,
     );
     router.push(`/checklist/${categoryPath}`);
   };
@@ -172,7 +177,10 @@ export const TagsHome = ({
       const note = tagged.item as Note;
       if (viewMode === "card") {
         return (
-          <div key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`} className="mb-6">
+          <div
+            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+            className="mb-6"
+          >
             <NoteCard
               note={note}
               onSelect={handleSelectNote}
@@ -207,7 +215,10 @@ export const TagsHome = ({
     const list = tagged.item as Checklist;
     if (viewMode === "card") {
       return (
-        <div key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`} className="mb-6">
+        <div
+          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+          className="mb-6"
+        >
           <ChecklistCard
             list={list}
             onSelect={handleSelectChecklist}

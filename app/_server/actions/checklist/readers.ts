@@ -16,6 +16,7 @@ import { parseMarkdown } from "@/app/_utils/checklist-utils";
 import {
   extractYamlMetadata,
   generateUuid,
+  toIso,
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
@@ -193,8 +194,8 @@ export const readListsRecursively = async (
                   : "simple",
               category: categoryPath,
               items: [],
-              createdAt: stats.birthtime.toISOString(),
-              updatedAt: stats.mtime.toISOString(),
+              createdAt: toIso(stats.birthtime),
+              updatedAt: toIso(stats.mtime),
               owner,
               isShared: false,
               tags,
@@ -221,8 +222,8 @@ export const readListsRecursively = async (
               type,
               category: categoryPath,
               items: [],
-              createdAt: stats.birthtime.toISOString(),
-              updatedAt: stats.mtime.toISOString(),
+              createdAt: toIso(stats.birthtime),
+              updatedAt: toIso(stats.mtime),
               owner,
               isShared: false,
               rawContent: content,
@@ -234,7 +235,10 @@ export const readListsRecursively = async (
             categoryPath,
             owner,
             false,
-            stats,
+            {
+              birthtime: new Date(toIso(stats.birthtime)),
+              mtime: new Date(toIso(stats.mtime)),
+            },
             fileName,
           );
         } catch {

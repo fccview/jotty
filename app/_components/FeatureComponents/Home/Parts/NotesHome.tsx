@@ -393,10 +393,7 @@ export const NotesHome = ({
             )}
             {selectedFilter && isLoadingMore && (
               <div className="py-4 flex justify-center">
-                <JottyIcon
-                  className="h-10 w-10 text-primary"
-                  animated={true}
-                />
+                <JottyIcon className="h-10 w-10 text-primary" animated={true} />
               </div>
             )}
           </div>
