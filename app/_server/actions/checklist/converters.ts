@@ -11,7 +11,7 @@ import {
 } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { buildCategoryPath, getFormData } from "@/app/_utils/global-utils";
 import {
@@ -105,7 +105,6 @@ export const convertChecklistType = async (formData: FormData) => {
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
-      revalidateTag("layout-checklists", { expire: 0 });
       revalidatePath("/");
     } catch (error) {
       console.warn(

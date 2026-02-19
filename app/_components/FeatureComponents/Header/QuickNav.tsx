@@ -3,6 +3,7 @@
 import {
   CheckmarkSquare04Icon,
   File02Icon,
+  GridIcon,
   Logout01Icon,
   SidebarLeftIcon,
 } from "hugeicons-react";
@@ -79,7 +80,7 @@ export const QuickNav = ({
           mobileClasses,
           desktopClasses,
           isScrolled && !isEditorInEditMode ? "bottom-10" : "-bottom-20",
-          isEditorInEditMode && "lg:relative lg:bottom-auto"
+          isEditorInEditMode && "lg:relative lg:bottom-auto",
         )}
       >
         {showSidebarToggle && onSidebarToggle && (
@@ -131,7 +132,7 @@ export const QuickNav = ({
                       "h-10 w-10 p-2 rounded-jotty",
                       mode === Modes.CHECKLISTS
                         ? "bg-primary text-primary-foreground"
-                        : ""
+                        : "",
                     )}
                   />
                 ) : (
@@ -140,7 +141,7 @@ export const QuickNav = ({
                       "h-10 w-10 p-2 rounded-jotty",
                       mode === Modes.NOTES
                         ? "bg-primary text-primary-foreground"
-                        : ""
+                        : "",
                     )}
                   />
                 )
@@ -157,16 +158,14 @@ export const QuickNav = ({
           {showTagsTab && (
             <NavigationGlobalIcon
               icon={
-                <span
+                <GridIcon
                   className={cn(
-                    "h-10 w-10 p-2 rounded-jotty flex items-center justify-center text-lg font-bold",
+                    "h-10 w-10 p-2 rounded-jotty",
                     mode === Modes.TAGS
                       ? "bg-primary text-primary-foreground"
-                      : ""
+                      : "",
                   )}
-                >
-                  #
-                </span>
+                />
               }
               onClick={() =>
                 checkNavigation(() => {

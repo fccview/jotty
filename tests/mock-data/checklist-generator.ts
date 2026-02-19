@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { NUM_FILES, CHECKLIST_CATEGORIES, LOREM_WORDS } from "./constants";
+import { faker } from "@faker-js/faker";
+import { NUM_FILES, SEED } from "./constants";
 import {
   resetSeed,
   random,
@@ -8,14 +9,32 @@ import {
   randomChoice,
   randomSample,
   generateTagPool,
-  getLoremText,
+  getChecklistCategories,
   getTimestamp,
   getUniqueId,
 } from "./utils";
 
 resetSeed();
+faker.seed(SEED);
 
+const CHECKLIST_CATEGORIES = getChecklistCategories();
 const TAG_POOL = generateTagPool();
+
+const getPhrase = (minWords: number, maxWords: number): string => {
+  const count = randomInt(minWords, maxWords);
+  const sources = [
+    () => faker.company.catchPhrase(),
+    () => faker.commerce.productName(),
+    () => faker.company.buzzPhrase(),
+  ];
+  let words: string[] = [];
+  while (words.length < count) {
+    const phrase = faker.helpers.arrayElement(sources)();
+    words = words.concat(phrase.split(/\s+/));
+  }
+  const text = words.slice(0, count).join(" ");
+  return text.replace(/^\w/, (c) => c.toUpperCase());
+};
 
 const _generateMetadata = (
   itemId: string,
@@ -46,7 +65,10 @@ const _generateMetadata = (
   return JSON.stringify(meta);
 };
 
-const _generateSimpleChecklistContent = (title: string): string => {
+const _generateSimpleChecklistContent = (
+  title: string,
+  tags?: string[]
+): string => {
   const fileUuid = getUniqueId();
   const now = getTimestamp();
 
@@ -57,16 +79,30 @@ const _generateSimpleChecklistContent = (title: string): string => {
     "checklistType: simple",
     `createdAt: '${now}'`,
     `updatedAt: '${now}'`,
-    "---",
   ];
 
+  if (tags && tags.length > 0) {
+    content.push("tags:");
+    for (const tag of tags) {
+      content.push(`  - ${tag}`);
+    }
+  }
+
+  content.push("---");
+
   const numItems = randomInt(3, 15);
+  const inlineTags = tags ? [...tags] : [];
+
   for (let i = 0; i < numItems; i++) {
     const isChecked = random() < 0.3 ? "x" : " ";
-    let text = getLoremText(2, 5);
+    let text = getPhrase(2, 5);
 
     if (random() < 0.1) {
-      text += ` (${getLoremText(1, 2)})`;
+      text += ` (${getPhrase(1, 2)})`;
+    }
+
+    if (inlineTags.length > 0 && random() < 0.2) {
+      text += ` #${randomChoice(inlineTags)}`;
     }
 
     const itemId = getUniqueId();
@@ -78,7 +114,10 @@ const _generateSimpleChecklistContent = (title: string): string => {
   return content.join("\n");
 };
 
-const _generateTaskListContent = (title: string): string => {
+const _generateTaskListContent = (
+  title: string,
+  tags?: string[]
+): string => {
   const fileUuid = getUniqueId();
 
   const statusTodo = getUniqueId();
@@ -106,17 +145,31 @@ const _generateTaskListContent = (title: string): string => {
     "    label: Completed",
     "    order: 3",
     "    color: '#10b981'",
-    "---",
   ];
+
+  if (tags && tags.length > 0) {
+    content.push("tags:");
+    for (const tag of tags) {
+      content.push(`  - ${tag}`);
+    }
+  }
+
+  content.push("---");
 
   const statuses = [statusTodo, "paused", statusProg, statusDone];
   const numItems = randomInt(5, 20);
+  const inlineTags = tags ? [...tags] : [];
 
   for (let i = 0; i < numItems; i++) {
     const currentStatus = randomChoice(statuses);
     const isChecked = currentStatus === statusDone ? "x" : " ";
 
-    const text = getLoremText(2, 5);
+    let text = getPhrase(2, 5);
+
+    if (inlineTags.length > 0 && random() < 0.2) {
+      text += ` #${randomChoice(inlineTags)}`;
+    }
+
     const itemId = getUniqueId();
 
     const history = [
@@ -134,7 +187,7 @@ const _generateTaskListContent = (title: string): string => {
       const subId = getUniqueId();
       const subMeta = _generateMetadata(subId);
       content.push(
-        `  - [ ] ${getLoremText(2, 3)} | time:0 | metadata:${subMeta}`
+        `  - [ ] ${getPhrase(2, 3)} | time:0 | metadata:${subMeta}`
       );
     }
   }
@@ -152,15 +205,7 @@ const main = async () => {
   const outputDir = path.join("data", "checklists", username);
 
   try {
-    await fs.readdir(outputDir);
-
-    for (const cat of CHECKLIST_CATEGORIES) {
-      const catDir = path.join(outputDir, cat);
-      try {
-        await fs.rm(catDir, { recursive: true, force: true });
-      } catch {
-      }
-    }
+    await fs.rm(outputDir, { recursive: true, force: true });
   } catch {
   }
 
@@ -174,19 +219,20 @@ const main = async () => {
     const category = randomChoice(CHECKLIST_CATEGORIES);
 
     const isTaskType = random() > 0.5;
-    const title = `${isTaskType ? "Task" : "List"} ${i + 1} - ${getLoremText(1, 2)}`;
+    const title = getPhrase(2, 4);
     const filename = `${isTaskType ? "task" : "check"}_${String(i + 1).padStart(3, "0")}.md`;
     const filepath = path.join(outputDir, category, filename);
 
-    let content = isTaskType
-      ? _generateTaskListContent(title)
-      : _generateSimpleChecklistContent(title);
-
+    let fileTags: string[] | undefined;
     if (random() > 0.1) {
       const numTags = randomInt(1, 10);
-      const fileTags = randomSample(TAG_POOL, numTags);
-      content += "\n\n" + fileTags.join(" ");
+      const rawTags = randomSample(TAG_POOL, numTags);
+      fileTags = rawTags.map((t) => t.replace(/^#/, ""));
     }
+
+    const content = isTaskType
+      ? _generateTaskListContent(title, fileTags)
+      : _generateSimpleChecklistContent(title, fileTags);
 
     await fs.writeFile(filepath, content, "utf-8");
   }

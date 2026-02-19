@@ -37,6 +37,56 @@ const findMarkdownFiles = async (dirPath: string): Promise<string[]> => {
   return markdownFiles;
 };
 
+const processDirectory = async (
+  dirPath: string,
+  changes: string[]
+): Promise<{ processed: number; updated: number }> => {
+  try {
+    await fs.access(dirPath);
+  } catch {
+    return { processed: 0, updated: 0 };
+  }
+
+  const markdownFiles = await findMarkdownFiles(dirPath);
+  changes.push(`Found ${markdownFiles.length} markdown files in ${dirPath}`);
+
+  let processed = 0;
+  let updated = 0;
+
+  for (const filePath of markdownFiles) {
+    try {
+      const content = await fs.readFile(filePath, "utf-8");
+      const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
+
+      const existingTags = metadata.tags || [];
+      const contentTags = extractHashtagsFromContent(contentWithoutMetadata);
+
+      const mergedTags = Array.from(new Set([...existingTags, ...contentTags]));
+      mergedTags.sort();
+
+      const tagsChanged =
+        mergedTags.length !== existingTags.length ||
+        !mergedTags.every((tag, i) => tag === existingTags.sort()[i]);
+
+      if (tagsChanged && mergedTags.length > 0) {
+        const updatedContent = updateYamlMetadata(
+          content,
+          { tags: mergedTags },
+          true
+        );
+        await fs.writeFile(filePath, updatedContent, "utf-8");
+        updated++;
+      }
+
+      processed++;
+    } catch {
+      changes.push(`Failed to process: ${filePath}`);
+    }
+  }
+
+  return { processed, updated };
+};
+
 export const updateTagsFromContent = async (): Promise<
   Result<{
     processed: number;
@@ -58,61 +108,22 @@ export const updateTagsFromContent = async (): Promise<
     changes.push("Data backup completed successfully");
 
     const notesDir = join(process.cwd(), "data", "notes");
+    const checklistsDir = join(process.cwd(), "data", "checklists");
 
-    try {
-      await fs.access(notesDir);
-    } catch {
-      return {
-        success: false,
-        error: "Notes directory not found",
-      };
-    }
+    const notesResult = await processDirectory(notesDir, changes);
+    const checklistsResult = await processDirectory(checklistsDir, changes);
 
-    const markdownFiles = await findMarkdownFiles(notesDir);
-    changes.push(`Found ${markdownFiles.length} markdown files to process`);
+    const totalProcessed = notesResult.processed + checklistsResult.processed;
+    const totalUpdated = notesResult.updated + checklistsResult.updated;
 
-    let processedCount = 0;
-    let updatedCount = 0;
-
-    for (const filePath of markdownFiles) {
-      try {
-        const content = await fs.readFile(filePath, "utf-8");
-        const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
-
-        const existingTags = metadata.tags || [];
-        const contentTags = extractHashtagsFromContent(contentWithoutMetadata);
-
-        const mergedTags = Array.from(new Set([...existingTags, ...contentTags]));
-        mergedTags.sort();
-
-        const tagsChanged =
-          mergedTags.length !== existingTags.length ||
-          !mergedTags.every((tag, i) => tag === existingTags.sort()[i]);
-
-        if (tagsChanged && mergedTags.length > 0) {
-          const updatedContent = updateYamlMetadata(
-            content,
-            { tags: mergedTags },
-            true
-          );
-          await fs.writeFile(filePath, updatedContent, "utf-8");
-          updatedCount++;
-        }
-
-        processedCount++;
-      } catch (error) {
-        changes.push(`Failed to process: ${filePath}`);
-      }
-    }
-
-    changes.push(`Processed ${processedCount} files`);
-    changes.push(`Updated ${updatedCount} files with new tags`);
+    changes.push(`Processed ${totalProcessed} files`);
+    changes.push(`Updated ${totalUpdated} files with new tags`);
 
     return {
       success: true,
       data: {
-        processed: processedCount,
-        updated: updatedCount,
+        processed: totalProcessed,
+        updated: totalUpdated,
         changes,
       },
     };

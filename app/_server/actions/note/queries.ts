@@ -15,6 +15,11 @@ import {
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { readNotesRecursively } from "./readers";
+import { isDebugFlag } from "@/app/_utils/env-utils";
+import {
+  getOrCompute,
+  metaCacheKey,
+} from "@/app/_server/lib/metadata-cache";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
@@ -222,18 +227,36 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     const layoutTiming = metadataOnly;
     const t1 = layoutTiming ? performance.now() : 0;
 
-    const notes: any[] = await readNotesRecursively(
-      resolvedDir,
-      "",
-      currentUser.username,
-      allowArchived,
-      isRaw,
-      metadataOnly,
-      excerptLength,
-      undefined,
-      undefined,
-    );
-    if (layoutTiming) {
+    const canCache = metadataOnly && !allowArchived && !isRaw && !excerptLength;
+    const ownCacheKey = canCache ? metaCacheKey("notes", resolvedDir) : null;
+
+    const notes: any[] = ownCacheKey
+      ? await getOrCompute(ownCacheKey, resolvedDir, () =>
+          readNotesRecursively(
+            resolvedDir,
+            "",
+            currentUser.username,
+            allowArchived,
+            isRaw,
+            metadataOnly,
+            excerptLength,
+            undefined,
+            undefined,
+          ),
+        )
+      : await readNotesRecursively(
+          resolvedDir,
+          "",
+          currentUser.username,
+          allowArchived,
+          isRaw,
+          metadataOnly,
+          excerptLength,
+          undefined,
+          undefined,
+        );
+
+    if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
         `[layout notes] readNotesRecursively: ${(performance.now() - t1).toFixed(0)}ms`,
       );
@@ -243,7 +266,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     const { getAllSharedItemsForUser } =
       await import("@/app/_server/actions/sharing");
     const sharedData = await getAllSharedItemsForUser(currentUser.username);
-    if (layoutTiming) {
+    if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
         `[layout notes] sharedItems: ${(performance.now() - t2).toFixed(0)}ms`,
       );
@@ -256,15 +279,36 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
 
         const sharerDir = NOTES_DIR(sharedItem.sharer);
         await ensureDir(sharerDir);
-        const sharerNotes = await readNotesRecursively(
-          sharerDir,
-          "",
-          sharedItem.sharer,
-          allowArchived,
-          isRaw,
-          metadataOnly,
-          excerptLength,
-        );
+
+        const sharerAbsDir = path.isAbsolute(sharerDir)
+          ? sharerDir
+          : path.join(process.cwd(), sharerDir);
+        const sharerCacheKey = canCache
+          ? metaCacheKey("notes", sharerAbsDir)
+          : null;
+
+        const sharerNotes = sharerCacheKey
+          ? await getOrCompute(sharerCacheKey, sharerAbsDir, () =>
+              readNotesRecursively(
+                sharerDir,
+                "",
+                sharedItem.sharer,
+                allowArchived,
+                isRaw,
+                metadataOnly,
+                excerptLength,
+              ),
+            )
+          : await readNotesRecursively(
+              sharerDir,
+              "",
+              sharedItem.sharer,
+              allowArchived,
+              isRaw,
+              metadataOnly,
+              excerptLength,
+            );
+
         const sharedNote = sharerNotes.find(
           (note) => note.uuid === itemIdentifier || note.id === itemIdentifier,
         );
@@ -313,18 +357,33 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     }
 
     const offsetNum = typeof offset === "number" && offset >= 0 ? offset : 0;
-    if (!filter && pinnedPaths && pinnedPaths.length > 0 && limit && limit > 0) {
-      const pathMatches = (note: { category?: string; uuid?: string; id: string }, p: string) => {
+    if (
+      !filter &&
+      pinnedPaths &&
+      pinnedPaths.length > 0 &&
+      limit &&
+      limit > 0
+    ) {
+      const pathMatches = (
+        note: { category?: string; uuid?: string; id: string },
+        p: string,
+      ) => {
         const c = note.category || "Uncategorized";
         const u = note.uuid || note.id;
         return `${c}/${u}` === p || `${c}/${note.id}` === p;
       };
       const pinned: typeof filteredNotes = [];
       for (const p of pinnedPaths) {
-        const found = filteredNotes.find((n: { category?: string; uuid?: string; id: string }) => pathMatches(n, p));
+        const found = filteredNotes.find(
+          (n: { category?: string; uuid?: string; id: string }) =>
+            pathMatches(n, p),
+        );
         if (found) pinned.push(found);
       }
-      const rest = filteredNotes.filter((n: { category?: string; uuid?: string; id: string }) => !pinnedPaths.some((p) => pathMatches(n, p)));
+      const rest = filteredNotes.filter(
+        (n: { category?: string; uuid?: string; id: string }) =>
+          !pinnedPaths.some((p) => pathMatches(n, p)),
+      );
       filteredNotes = [...pinned, ...rest].slice(0, limit);
     } else if (limit && limit > 0) {
       filteredNotes = filteredNotes.slice(offsetNum, offsetNum + limit);

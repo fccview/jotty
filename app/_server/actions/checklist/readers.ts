@@ -21,8 +21,11 @@ import {
 import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
 import type { FileStatsEntry } from "@/app/_server/actions/file";
 import { getChecklistType } from "./parsers";
+import { isDebugFlag } from "@/app/_utils/env-utils";
 
 const execAsync = promisify(exec);
+
+const debugCrud = isDebugFlag("crud");
 
 export type ChecklistReadResult =
   | Partial<Checklist>
@@ -47,7 +50,7 @@ export const readListsRecursively = async (
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
       const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType):|^[[:space:]]+- " "${dir}"`;
+      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType):|^[[:space:]]+- |^---$" "${dir}"`;
       const [statsOut, metaOut] = await Promise.all([
         execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
           stdout: "",
@@ -64,17 +67,28 @@ export const readListsRecursively = async (
             mtime: new Date(parseFloat(m) * 1000),
           });
       });
+      const metaLines = metaOut.stdout.split("\n").filter(Boolean);
+      if (debugCrud && metaLines.length) {
+        console.warn("[tags grep] sample (first 40 lines):", metaLines.slice(0, 40));
+      }
+      const inFrontmatter = new Map<string, boolean>();
       let inTagsFile = "";
-      for (const line of metaOut.stdout.split("\n")) {
-        if (!line) continue;
+      for (const line of metaLines) {
         const colonIdx = line.indexOf(":");
         if (colonIdx === -1) continue;
         const filePath = line.slice(0, colonIdx);
         const rest = line.slice(colonIdx + 1);
+        if (rest.trim() === "---") {
+          inFrontmatter.set(filePath, !inFrontmatter.get(filePath));
+          if (debugCrud) console.warn("[tags grep] --- seen, filePath:", filePath, "inFrontmatter:", inFrontmatter.get(filePath));
+          continue;
+        }
+        if (!inFrontmatter.get(filePath)) continue;
         if (/^\s+-\s/.test(rest)) {
           if (inTagsFile === filePath) {
             const tag = rest.replace(/^\s+-\s+/, "").trim();
             if (tag) {
+              if (debugCrud) console.warn("[tags grep] adding tag:", JSON.stringify(tag.slice(0, 50)), "filePath:", filePath);
               if (!metadataCache!.has(filePath))
                 metadataCache!.set(filePath, {});
               const entry = metadataCache!.get(filePath)!;

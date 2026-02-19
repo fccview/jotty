@@ -44,7 +44,7 @@ export const readNotesRecursively = async (
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
       const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|encrypted):|^[[:space:]]+- " "${dir}"`;
+      const metaCmd = `grep -rE "^(title|uuid|tags|encrypted):|^[[:space:]]+- |^---$" "${dir}"`;
       const [statsOut, metaOut] = await Promise.all([
         execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
           stdout: "",
@@ -61,6 +61,7 @@ export const readNotesRecursively = async (
             mtime: new Date(parseFloat(m) * 1000),
           });
       });
+      const inFrontmatter = new Map<string, boolean>();
       let inTagsFile = "";
       for (const line of metaOut.stdout.split("\n")) {
         if (!line) continue;
@@ -68,6 +69,11 @@ export const readNotesRecursively = async (
         if (colonIdx === -1) continue;
         const filePath = line.slice(0, colonIdx);
         const rest = line.slice(colonIdx + 1);
+        if (rest.trim() === "---") {
+          inFrontmatter.set(filePath, !inFrontmatter.get(filePath));
+          continue;
+        }
+        if (!inFrontmatter.get(filePath)) continue;
         if (/^\s+-\s/.test(rest)) {
           if (inTagsFile === filePath) {
             const tag = rest.replace(/^\s+-\s+/, "").trim();

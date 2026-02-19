@@ -58,3 +58,7 @@ OIDC_ADMIN_GROUPS=admins
 - `OIDC_USER_ROLES=user,member` Optional. Comma-separated list of OIDC roles allowed to access the application. If set, only users with these roles (or admins) can log in.
 - `OIDC_GROUPS_SCOPE=groups` Optional. Scope to request for groups. Defaults to "groups". Set to empty string or "no" to disable for providers like Entra ID that don't support the groups scope.
 - `OIDC_LOGOUT_URL=https://authprovider.local/realms/master/logout` Optional. Custom logout URL for global logout. Full URL to redirect to when logging out.
+
+### Debugger
+
+- `DEBUGGER=<value>` Optional. Helps you debug a variety of issues. For now you can use `proxy` to debug oidc/login/routing issues and `crud` to debug timing of crud operations. Setting it to `*` allows you to debug all available flags at once.

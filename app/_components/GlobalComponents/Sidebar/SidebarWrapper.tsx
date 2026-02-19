@@ -31,14 +31,9 @@ export const SidebarWrapper = ({
   headerActions,
   scrollRef,
 }: SidebarWrapperProps) => {
-  const { isDemoMode, isRwMarkable, tagsEnabled, tagsIndex } = useAppMode();
+  const { isDemoMode, isRwMarkable } = useAppMode();
   const { sidebarWidth, isResizing, startResizing } = useResizing();
   const { scrollTop, setScrollTop } = useSidebarStore();
-  const totalTags = Object.keys(tagsIndex).length;
-  const needsTagsSpace = tagsEnabled && totalTags > 0;
-  const effectiveWidth = needsTagsSpace && sidebarWidth <= 320
-    ? sidebarWidth + 52
-    : sidebarWidth;
   const internalScrollRef = useRef<HTMLDivElement>(null);
   const isRestoringScroll = useRef(false);
   const pathname = usePathname();
@@ -67,14 +62,14 @@ export const SidebarWrapper = ({
       <div
         className={cn(
           "jotty-sidebar-overlay fixed inset-0 z-40 bg-black/50 lg:hidden",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
       />
       <aside
         style={
           {
-            "--sidebar-desktop-width": `${effectiveWidth}px`,
+            "--sidebar-desktop-width": `${sidebarWidth}px`,
             transition: isResizing ? "none" : undefined,
           } as React.CSSProperties
         }
@@ -84,7 +79,7 @@ export const SidebarWrapper = ({
           "w-[88vw]",
           "lg:w-[var(--sidebar-desktop-width)] lg:min-w-[var(--sidebar-desktop-width)] lg:max-w-[var(--sidebar-desktop-width)]",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          "flex-none"
+          "flex-none",
         )}
       >
         <div
@@ -97,7 +92,10 @@ export const SidebarWrapper = ({
             <div className="flex items-center justify-between">
               <a href="/" className="flex items-center gap-3">
                 <div className="relative">
-                  <DynamicLogo className="h-10 w-10 lg:h-8 lg:w-8" size="32x32" />
+                  <DynamicLogo
+                    className="h-10 w-10 lg:h-8 lg:w-8"
+                    size="32x32"
+                  />
                   <ConnectionIndicator borderColor="border-background" />
                 </div>
                 <div className="flex items-center gap-2">
@@ -115,10 +113,14 @@ export const SidebarWrapper = ({
             </div>
           </div>
           {navigation}
-          <div ref={internalScrollRef} onScroll={handleScroll} className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-2">
+          <div
+            ref={internalScrollRef}
+            onScroll={handleScroll}
+            className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-2"
+          >
             <div className="pt-2">
               <div className="flex items-center justify-between">
-                {typeof title === 'string' ? (
+                {typeof title === "string" ? (
                   <h3 className="jotty-sidebar-categories-title text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider">
                     {title}
                   </h3>

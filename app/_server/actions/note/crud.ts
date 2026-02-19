@@ -14,7 +14,7 @@ import {
   serverDeleteFile,
   serverWriteFile,
 } from "@/app/_server/actions/file";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { NOTES_DIR } from "@/app/_consts/files";
 import { PermissionTypes, Modes } from "@/app/_types/enums";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
@@ -121,7 +121,6 @@ export const createNote = async (formData: FormData) => {
       { category: newDoc.category }
     );
 
-    revalidateTag("layout-notes", { expire: 0 });
     await broadcast({ type: "note", action: "created", entityId: newDoc.uuid, username: currentUser.username });
 
     return { success: true, data: newDoc };
@@ -339,7 +338,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     try {
       if (!autosaveNotes) {
-        revalidateTag("layout-notes", { expire: 0 });
         revalidatePath("/");
         const oldCategoryPath = buildCategoryPath(
           note.category || "Uncategorized",
@@ -480,7 +478,6 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     }
 
     try {
-      revalidateTag("layout-notes", { expire: 0 });
       revalidatePath("/");
       const categoryPath = buildCategoryPath(
         note.category || "Uncategorized",
@@ -577,7 +574,6 @@ export const cloneNote = async (formData: FormData) => {
     );
 
     try {
-      revalidateTag("layout-notes", { expire: 0 });
       revalidatePath("/");
     } catch (error) {
       console.warn(

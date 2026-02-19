@@ -17,6 +17,11 @@ import {
 } from "@/app/_utils/yaml-metadata-utils";
 import { readListsRecursively, type ChecklistReadResult } from "./readers";
 import { checkAndRefreshRecurringItems } from "./parsers";
+import { isDebugFlag } from "@/app/_utils/env-utils";
+import {
+  getOrCompute,
+  metaCacheKey,
+} from "@/app/_server/lib/metadata-cache";
 
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
   const {
@@ -51,17 +56,37 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     const layoutTiming = metadataOnly;
     const t1 = layoutTiming ? performance.now() : 0;
 
-    let lists: ChecklistReadResult[] = await readListsRecursively(
-      userDir,
-      "",
-      currentUser.username,
-      allowArchived,
-      isRaw,
-      metadataOnly,
-      undefined,
-      undefined,
-    );
-    if (layoutTiming) {
+    const canCache = metadataOnly && !allowArchived && !isRaw;
+    const absUserDir = path.isAbsolute(userDir)
+      ? userDir
+      : path.join(process.cwd(), userDir);
+    const ownCacheKey = canCache ? metaCacheKey("lists", absUserDir) : null;
+
+    let lists: ChecklistReadResult[] = ownCacheKey
+      ? await getOrCompute(ownCacheKey, absUserDir, () =>
+          readListsRecursively(
+            userDir,
+            "",
+            currentUser.username,
+            allowArchived,
+            isRaw,
+            metadataOnly,
+            undefined,
+            undefined,
+          ),
+        )
+      : await readListsRecursively(
+          userDir,
+          "",
+          currentUser.username,
+          allowArchived,
+          isRaw,
+          metadataOnly,
+          undefined,
+          undefined,
+        );
+
+    if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
         `[layout checklists] readListsRecursively: ${(performance.now() - t1).toFixed(0)}ms`,
       );
@@ -71,7 +96,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     const { getAllSharedItemsForUser } =
       await import("@/app/_server/actions/sharing");
     const sharedData = await getAllSharedItemsForUser(currentUser.username);
-    if (layoutTiming) {
+    if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
         `[layout checklists] sharedItems: ${(performance.now() - t2).toFixed(0)}ms`,
       );
@@ -89,14 +114,31 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
           sharedItem.sharer,
         );
         await ensureDir(sharerDir);
-        const sharerLists = await readListsRecursively(
-          sharerDir,
-          "",
-          sharedItem.sharer,
-          allowArchived,
-          isRaw,
-          metadataOnly,
-        );
+
+        const sharerCacheKey = canCache
+          ? metaCacheKey("lists", sharerDir)
+          : null;
+
+        const sharerLists = sharerCacheKey
+          ? await getOrCompute(sharerCacheKey, sharerDir, () =>
+              readListsRecursively(
+                sharerDir,
+                "",
+                sharedItem.sharer,
+                allowArchived,
+                isRaw,
+                metadataOnly,
+              ),
+            )
+          : await readListsRecursively(
+              sharerDir,
+              "",
+              sharedItem.sharer,
+              allowArchived,
+              isRaw,
+              metadataOnly,
+            );
+
         const sharedChecklist = sharerLists.find(
           (list) => list.uuid === itemIdentifier || list.id === itemIdentifier,
         );
@@ -146,7 +188,12 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     const limitNum = typeof limit === "number" && limit > 0 ? limit : undefined;
     const offsetNum = typeof offset === "number" && offset >= 0 ? offset : 0;
 
-    if (!filter && pinnedPaths && pinnedPaths.length > 0 && limitNum !== undefined) {
+    if (
+      !filter &&
+      pinnedPaths &&
+      pinnedPaths.length > 0 &&
+      limitNum !== undefined
+    ) {
       const pathMatches = (list: ChecklistReadResult, p: string) => {
         const c = list.category || "Uncategorized";
         const u = (list as { uuid?: string }).uuid || list.id;
@@ -157,7 +204,9 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         const found = lists.find((l) => pathMatches(l, p));
         if (found) pinned.push(found);
       }
-      const rest = lists.filter((l) => !pinnedPaths.some((p) => pathMatches(l, p)));
+      const rest = lists.filter(
+        (l) => !pinnedPaths.some((p) => pathMatches(l, p)),
+      );
       lists = [...pinned, ...rest].slice(0, limitNum);
     } else if (limitNum !== undefined) {
       lists = lists.slice(offsetNum, offsetNum + limitNum);

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckmarkSquare04Icon, File02Icon } from "hugeicons-react";
+import { CheckmarkSquare04Icon, File02Icon, GridIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { AppMode } from "@/app/_types";
@@ -79,13 +79,13 @@ export const SidebarNavigation = ({
           size="sm"
           onClick={() => onModeChange(Modes.TAGS)}
           className={cn(
-            "flex-none justify-center w-[48px] h-14 lg:h-9 py-6 text-md lg:text-sm px-3 font-bold",
+            "justify-center gap-2 h-14 lg:h-9 py-6 text-md lg:text-sm w-[48px]",
             mode === Modes.TAGS
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-accent-foreground",
           )}
         >
-          #
+          <GridIcon className="h-5 w-5 lg:h-4 lg:w-4" />
         </Button>
       )}
     </div>

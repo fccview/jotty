@@ -113,6 +113,24 @@ export const AppModeProvider = ({
 
   const { setMode: setStoredMode } = useSidebarStore();
 
+  useEffect(() => {
+    if (modeParam === Modes.TAGS || tagParam) {
+      setMode(Modes.TAGS);
+      setStoredMode(Modes.TAGS);
+      setSelectedFilter(
+        tagParam ? { type: "tag", value: tagParam } : null
+      );
+    } else if (modeParam === Modes.NOTES) {
+      setMode(Modes.NOTES);
+      setStoredMode(Modes.NOTES);
+      setSelectedFilter(null);
+    } else if (modeParam === Modes.CHECKLISTS) {
+      setMode(Modes.CHECKLISTS);
+      setStoredMode(Modes.CHECKLISTS);
+      setSelectedFilter(null);
+    }
+  }, [modeParam, tagParam, setStoredMode]);
+
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);
     if (newMode !== Modes.TAGS) {

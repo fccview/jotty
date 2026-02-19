@@ -670,6 +670,11 @@
   resolved "https://registry.yarnpkg.com/@excalidraw/random-username/-/random-username-1.1.0.tgz#6f388d6a9708cf655b8c9c6aa3fa569ee71ecf0f"
   integrity sha512-nULYsQxkWHnbmHvcs+efMkJ4/9TtvNyFeLyHdeGxW0zHs6P+jYVqcRff9A6Vq9w9JXeDRnRh2VKvTtS19GW2qA==
 
+"@faker-js/faker@^9.3.0":
+  version "9.9.0"
+  resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-9.9.0.tgz#3ad015fbbaaae7af3149555e0f22b4b30134c69d"
+  integrity sha512-OEl393iCOoo/z8bMezRlJu+GlRGlsKbUAN7jKB6LhnKoqKve5DXRpalbItIIcwnCjs1k/FOPjFzcA6Qn+H+YbA==
+
 "@floating-ui/core@^1.7.3":
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.7.3.tgz#462d722f001e23e46d86fd2bd0d21b7693ccb8b7"

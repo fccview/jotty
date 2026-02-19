@@ -1,6 +1,6 @@
 {
   "name": "jotty.page",
-  "version": "1.20.1",
+  "version": "1.21.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -104,6 +104,7 @@
     "@isaacs/brace-expansion": "^5.0.1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.3.0",
     "@serwist/turbopack": "^9.5.4",
     "@types/archiver": "^6.0.3",
     "@types/diff": "^5.2.0",

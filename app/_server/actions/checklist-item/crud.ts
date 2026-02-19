@@ -16,6 +16,7 @@ import {
   listToMarkdown,
   areAllItemsCompleted
 } from "@/app/_utils/checklist-utils";
+import { extractHashtagsFromContent, normalizeTag } from "@/app/_utils/tag-utils";
 import { isAdmin, getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { Checklist, Result } from "@/app/_types";
@@ -118,6 +119,12 @@ export const updateItem = async (
 
     const now = new Date().toISOString();
 
+    const textInlineTags = text ? extractHashtagsFromContent(text) : [];
+    const existingTags = checklist.tags || [];
+    const mergedTags = text
+      ? Array.from(new Set([...existingTags.map(normalizeTag), ...textInlineTags])).filter(Boolean)
+      : existingTags;
+
     const updatedList = {
       ...checklist,
       items: findAndUpdateItem(checklist.items, itemId, {
@@ -128,6 +135,7 @@ export const updateItem = async (
         lastModifiedBy: currentUser,
         lastModifiedAt: now,
       }),
+      tags: mergedTags,
       updatedAt: now,
     };
 
@@ -280,9 +288,16 @@ export const createItem = async (
       ...(recurrence && { recurrence }),
     };
 
+    const inlineTags = extractHashtagsFromContent(text);
+    const existingTags = list.tags || [];
+    const mergedTags = Array.from(
+      new Set([...existingTags.map(normalizeTag), ...inlineTags])
+    ).filter(Boolean);
+
     const updatedList = {
       ...list,
       items: [newItem, ...shiftedItems],
+      tags: mergedTags,
       updatedAt: new Date().toISOString(),
     };
 

@@ -29,23 +29,6 @@ import {
 import { loadCustomThemes } from "./_server/actions/config";
 import { getUserChecklists } from "./_server/actions/checklist";
 import { getUserNotes } from "./_server/actions/note";
-import { unstable_cache } from "next/cache";
-
-const cachedGetLayoutChecklists = unstable_cache(
-  async (username: string) =>
-    getUserChecklists({ username, metadataOnly: true, preserveOrder: true }),
-  ["layout-checklists"],
-  { tags: ["layout-checklists"] },
-);
-
-const cachedGetLayoutNotes = unstable_cache(
-  async (username: string) =>
-    getUserNotes({ username, metadataOnly: true, preserveOrder: true }),
-  ["layout-notes"],
-  { tags: ["layout-notes"] },
-);
-
-console.log(cachedGetLayoutNotes);
 
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
@@ -54,8 +37,8 @@ import {
   readShareFile,
 } from "./_server/actions/sharing";
 import { generateWebManifest } from "./_utils/global-utils";
-import path from "path";
 import { writeJsonFile } from "./_server/actions/file";
+import path from "path";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
@@ -197,10 +180,10 @@ export default async function RootLayout({
     availableLocales,
   ] = await Promise.all([
     user && !isPublicRoute
-      ? cachedGetLayoutNotes(user.username)
+      ? getUserNotes({ username: user.username, metadataOnly: true, preserveOrder: true })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
-      ? cachedGetLayoutChecklists(user.username)
+      ? getUserChecklists({ username: user.username, metadataOnly: true, preserveOrder: true })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
       ? getAllSharedItems()
