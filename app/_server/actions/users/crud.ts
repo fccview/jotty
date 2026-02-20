@@ -162,10 +162,10 @@ export const createUser = async (
       };
     }
 
-    if (username.length < 3) {
+    if (username.length < 2) {
       return {
         success: false,
-        error: "Username must be at least 3 characters long",
+        error: "Username must be at least 2 characters long",
       };
     }
 
@@ -307,10 +307,10 @@ export const updateProfile = async (
       ]);
     const updates: UserUpdatePayload = {};
 
-    if (!newUsername || newUsername.length < 3) {
+    if (!newUsername || newUsername.length < 2) {
       return {
         success: false,
-        error: "Username must be at least 3 characters long",
+        error: "Username must be at least 2 characters long",
       };
     }
     if (newUsername !== currentUser.username) {
@@ -328,20 +328,24 @@ export const updateProfile = async (
           error: "New password must be at least 6 characters long",
         };
       }
-      if (!currentPassword) {
-        return {
-          success: false,
-          error: "Current password is required to change password",
-        };
-      }
 
       const userRecord = await getUserByUsername(currentUser.username);
-      const currentPasswordHash = createHash("sha256")
-        .update(currentPassword)
-        .digest("hex");
 
-      if (userRecord?.passwordHash !== currentPasswordHash) {
-        return { success: false, error: "Current password is incorrect" };
+      if (userRecord?.passwordHash) {
+        if (!currentPassword) {
+          return {
+            success: false,
+            error: "Current password is required to change password",
+          };
+        }
+
+        const currentPasswordHash = createHash("sha256")
+          .update(currentPassword)
+          .digest("hex");
+
+        if (userRecord.passwordHash !== currentPasswordHash) {
+          return { success: false, error: "Current password is incorrect" };
+        }
       }
 
       updates.passwordHash = createHash("sha256")
@@ -384,7 +388,7 @@ export const updateUser = async (
     const isAdmin = adminStr === "true";
     const updates: UserUpdatePayload = {};
 
-    if (!targetUsername || !newUsername || newUsername.length < 3) {
+    if (!targetUsername || !newUsername || newUsername.length < 2) {
       return {
         success: false,
         error: "Valid current and new username are required",
