@@ -35,7 +35,10 @@ export const proxy = async (request: NextRequest) => {
     );
   }
 
-  const loginUrl = new URL("/auth/login", request.url);
+  const appUrlBase = process.env.APP_URL
+    ? process.env.APP_URL.replace(/\/$/, "")
+    : request.nextUrl.origin;
+  const loginUrl = new URL(`${appUrlBase}/auth/login`);
 
   if (!sessionId) {
     return NextResponse.redirect(loginUrl);
@@ -44,7 +47,7 @@ export const proxy = async (request: NextRequest) => {
   try {
     const internalApiUrl =
       process.env.INTERNAL_API_URL ||
-      process.env.APP_URL ||
+      (process.env.APP_URL ? new URL(process.env.APP_URL).origin : null) ||
       request.nextUrl.origin;
 
     if (debugProxy) {
