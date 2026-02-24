@@ -1,4 +1,4 @@
-import { ChangeEvent, forwardRef, useState } from "react";
+import React, { ChangeEvent, forwardRef, useState } from "react";
 import { Label } from "./label";
 import { ViewIcon, ViewOffSlashIcon } from "hugeicons-react";
 
@@ -24,6 +24,8 @@ interface InputProps {
   max?: string;
   hideEye?: boolean;
   maxLength?: number;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  pattern?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -50,6 +52,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       max,
       hideEye,
       maxLength,
+      inputMode,
+      pattern,
       ...props
     },
     ref
@@ -81,6 +85,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             min={min}
             max={max}
             maxLength={maxLength}
+            inputMode={inputMode}
+            pattern={pattern}
             {...props}
             className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-md lg:text-sm focus:outline-none focus:ring-none ${isPasswordType ? "pr-11" : ""} ${className}`}
           />

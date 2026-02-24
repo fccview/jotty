@@ -71,6 +71,8 @@ export const CodeInput = ({
                     <Input
                         id={`code-${index}`}
                         type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         value={value}
                         onChange={(e) => handleChange(index, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(index, e)}
