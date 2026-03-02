@@ -35,7 +35,8 @@ OIDC_ADMIN_GROUPS=admins
 - `SERVE_PUBLIC_VIDEOS=yes` Optional. Allows public access to uploaded files via direct URLs.
 - `STOP_CHECK_UPDATES=yes` Optional. If set to yes stops the github api call and won't give you a toast when a new update is available.
 - `DEFAULT_LOCALE=en` Optional. Sets the default language for the application (e.g., on the login page) when no user is logged in or a user hasn't set a preference. Defaults to `en`.
-- `DISABLE_BRUTEFORCE_PROTECTION=true` Optional. Disables brute force protection for local login authentication. By default, accounts are temporarily locked after 3 failed login attempts with exponential delays (10s, 30s, 60s, etc.). Set to `true` to completely disable this security feature.
+- `DISABLE_BRUTEFORCE_PROTECTION=yes` Optional. Disables brute force protection for local login authentication. By default, accounts are temporarily locked after 3 failed login attempts with exponential delays (10s, 30s, 60s, etc.). Set to `yes` to completely disable this security feature.
+- `ENABLE_PWA_ZOOM=yes` Optional. Enables zoomming on the PWA for accessibility reasons.
 
 ## SSO Configuration (Optional)
 

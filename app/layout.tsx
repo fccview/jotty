@@ -139,12 +139,14 @@ export async function generateViewport(): Promise<Viewport> {
   const settings = await getSettings();
   const defaultTheme = settings?.isRwMarkable ? "rwmarkable-dark" : "dark";
   const themeColor = getThemeBackgroundColor(defaultTheme);
+  const pwaZoomEnabled = isEnvEnabled(process.env.ENABLE_PWA_ZOOM);
 
   return {
     width: "device-width",
     initialScale: 1,
     themeColor,
     viewportFit: "cover",
+    ...(!pwaZoomEnabled && { maximumScale: 1, userScalable: false }),
   };
 }
 
