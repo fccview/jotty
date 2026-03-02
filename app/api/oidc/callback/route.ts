@@ -14,7 +14,9 @@ import {
 } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
-import { isEnvEnabled } from "@/app/_utils/env-utils";
+import { isEnvEnabled, isDebugFlag } from "@/app/_utils/env-utils";
+
+const debugProxy = isDebugFlag("proxy");
 
 function base64UrlEncode(buffer: Buffer) {
   return buffer
@@ -69,7 +71,7 @@ async function ensureUser(username: string, isAdmin: boolean) {
         isSuperAdmin: true,
         createdAt: new Date().toISOString(),
       });
-      if (isEnvEnabled(process.env.DEBUGGER)) {
+      if (debugProxy) {
         console.log(
           "SSO CALLBACK - Created first user as super admin:",
           username,
@@ -84,7 +86,7 @@ async function ensureUser(username: string, isAdmin: boolean) {
           isAdmin,
           createdAt: new Date().toISOString(),
         });
-        if (isEnvEnabled(process.env.DEBUGGER)) {
+        if (debugProxy) {
           console.log("SSO CALLBACK - Created new user:", {
             username,
             isAdmin,
@@ -94,14 +96,14 @@ async function ensureUser(username: string, isAdmin: boolean) {
         const wasAdmin = existing.isAdmin;
         if (isAdmin && !existing.isAdmin) {
           existing.isAdmin = true;
-          if (isEnvEnabled(process.env.DEBUGGER)) {
+          if (debugProxy) {
             console.log("SSO CALLBACK - Updated existing user to admin:", {
               username,
               wasAdmin,
               nowAdmin: true,
             });
           }
-        } else if (isEnvEnabled(process.env.DEBUGGER)) {
+        } else if (debugProxy) {
           console.log("SSO CALLBACK - User already exists:", {
             username,
             currentIsAdmin: existing.isAdmin,
@@ -208,7 +210,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${appUrl}/auth/login`);
   }
 
-  if (isEnvEnabled(process.env.DEBUGGER)) {
+  if (debugProxy) {
     console.log("ID_TOKEN_DEBUG:", {
       tokenLength: idToken.length,
       tokenStart: idToken.substring(0, 50),
@@ -229,7 +231,7 @@ export async function GET(request: NextRequest) {
     claims = payload;
   } catch (error) {
     console.error("ID Token validation failed:", error);
-    if (isEnvEnabled(process.env.DEBUGGER)) {
+    if (debugProxy) {
       console.error("ID_TOKEN_ERROR_DEBUG:", {
         tokenLength: idToken?.length,
         tokenStructure: idToken?.split(".").length,
@@ -252,7 +254,7 @@ export async function GET(request: NextRequest) {
 
   if (needsUserinfo) {
     try {
-      if (isEnvEnabled(process.env.DEBUGGER)) {
+      if (debugProxy) {
         console.log(
           "OIDC USERINFO FALLBACK - Critical claims missing from ID token, fetching from userinfo endpoint:",
           {
@@ -282,7 +284,7 @@ export async function GET(request: NextRequest) {
           const jwtString = await userinfoResponse.text();
           userinfoClaims = decodeJwt(jwtString);
 
-          if (isEnvEnabled(process.env.DEBUGGER)) {
+          if (debugProxy) {
             console.log(
               "OIDC USERINFO FALLBACK - Received JWT response from userinfo endpoint, decoded claims:",
               userinfoClaims,
@@ -291,7 +293,7 @@ export async function GET(request: NextRequest) {
         } else {
           userinfoClaims = await userinfoResponse.json();
 
-          if (isEnvEnabled(process.env.DEBUGGER)) {
+          if (debugProxy) {
             console.log(
               "OIDC USERINFO FALLBACK - Successfully fetched claims from userinfo endpoint:",
               userinfoClaims,
@@ -314,7 +316,7 @@ export async function GET(request: NextRequest) {
           },
         });
       } else {
-        if (isEnvEnabled(process.env.DEBUGGER)) {
+        if (debugProxy) {
           console.warn(
             "OIDC USERINFO FALLBACK - Userinfo endpoint request failed, continuing with ID token claims:",
             {
@@ -325,7 +327,7 @@ export async function GET(request: NextRequest) {
         }
       }
     } catch (error) {
-      if (isEnvEnabled(process.env.DEBUGGER)) {
+      if (debugProxy) {
         console.warn(
           "OIDC USERINFO FALLBACK - Error fetching from userinfo endpoint, continuing with ID token claims:",
           error,
@@ -340,7 +342,7 @@ export async function GET(request: NextRequest) {
   let username =
     preferred || (email ? email.split("@")[0] : undefined) || sub || "";
 
-  if (isEnvEnabled(process.env.DEBUGGER)) {
+  if (debugProxy) {
     console.log("SSO CALLBACK - claims", claims);
   }
 
@@ -356,7 +358,7 @@ export async function GET(request: NextRequest) {
 
   const isAdmin = isInAdminGroup || isInAdminRole;
 
-  if (isEnvEnabled(process.env.DEBUGGER)) {
+  if (debugProxy) {
     console.log("SSO CALLBACK - groups processing:", {
       envOidcAdminGroups: process.env.OIDC_ADMIN_GROUPS,
       envOidcAdminRoles: process.env.OIDC_ADMIN_ROLES,
@@ -377,7 +379,7 @@ export async function GET(request: NextRequest) {
       claims.roles,
     );
 
-    if (isEnvEnabled(process.env.DEBUGGER)) {
+    if (debugProxy) {
       console.log("SSO CALLBACK - user authorization check:", {
         envOidcUserGroups: process.env.OIDC_USER_GROUPS,
         envOidcUserRoles: process.env.OIDC_USER_ROLES,
@@ -390,7 +392,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!isInAllowedGroup && !isInAllowedRole && !isAdmin) {
-      if (isEnvEnabled(process.env.DEBUGGER)) {
+      if (debugProxy) {
         console.log("SSO CALLBACK - user not authorized:", {
           username,
           requiredGroups: process.env.OIDC_USER_GROUPS,

@@ -8,6 +8,7 @@ import {
   useEffect,
   useMemo,
 } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   AppMode,
   AppSettings,
@@ -60,7 +61,7 @@ export const AppModeProvider = ({
   availableLocales?: { code: string; countryCode: string; name: string }[];
 }) => {
   const [appSettings, _] = useState<AppSettings | null>(
-    initialSettings || null
+    initialSettings || null,
   );
   const isNoteOrChecklistPage =
     pathname?.includes("/checklist") || pathname?.includes("/note");
@@ -78,9 +79,25 @@ export const AppModeProvider = ({
         : Modes.NOTES || Modes.CHECKLISTS;
   }
 
+  const searchParams = useSearchParams();
+  const tagParam = searchParams.get("tag");
+  const modeParam = searchParams.get("mode");
+
+  if (modeParam === Modes.TAGS || tagParam) {
+    modeToSet = Modes.TAGS;
+  } else if (modeParam === Modes.NOTES) {
+    modeToSet = Modes.NOTES;
+  } else if (modeParam === Modes.CHECKLISTS) {
+    modeToSet = Modes.CHECKLISTS;
+  }
+
   const [mode, setMode] = useState<AppMode>(modeToSet);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
-  const [selectedFilter, setSelectedFilter] = useState<{ type: 'category' | 'tag'; value: string } | null>(null);
+
+  const [selectedFilter, setSelectedFilter] = useState<{
+    type: "category" | "tag";
+    value: string;
+  } | null>(tagParam ? { type: "tag", value: tagParam } : null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 
@@ -96,18 +113,40 @@ export const AppModeProvider = ({
 
   const { setMode: setStoredMode } = useSidebarStore();
 
+  useEffect(() => {
+    if (modeParam === Modes.TAGS || tagParam) {
+      setMode(Modes.TAGS);
+      setStoredMode(Modes.TAGS);
+      setSelectedFilter(
+        tagParam ? { type: "tag", value: tagParam } : null
+      );
+    } else if (modeParam === Modes.NOTES) {
+      setMode(Modes.NOTES);
+      setStoredMode(Modes.NOTES);
+      setSelectedFilter(null);
+    } else if (modeParam === Modes.CHECKLISTS) {
+      setMode(Modes.CHECKLISTS);
+      setStoredMode(Modes.CHECKLISTS);
+      setSelectedFilter(null);
+    }
+  }, [modeParam, tagParam, setStoredMode]);
+
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);
-    setSelectedFilter(null);
+    if (newMode !== Modes.TAGS) {
+      setSelectedFilter(null);
+    }
     setStoredMode(newMode);
   };
 
   const tagsEnabled = appSettings?.editor?.enableTags !== false;
 
   const tagsIndex = useMemo(() => {
-    if (!tagsEnabled || !notes) return {};
-    return buildTagsIndex(notes);
-  }, [notes, tagsEnabled]);
+    if (!tagsEnabled) return {};
+    const notesList = Array.isArray(notes) ? notes : [];
+    const checklistsList = Array.isArray(checklists) ? checklists : [];
+    return buildTagsIndex(notesList, checklistsList);
+  }, [notes, checklists, tagsEnabled]);
 
   const contextValue = useMemo(
     () => ({
@@ -157,7 +196,7 @@ export const AppModeProvider = ({
       availableLocales,
       tagsIndex,
       tagsEnabled,
-    ]
+    ],
   );
 
   return (

@@ -58,13 +58,14 @@ describe("Tags Server Actions", () => {
       expect(result.error).toContain("Failed to backup data");
     });
 
-    it("should return error if notes directory not found", async () => {
+    it("should succeed with zero processed when notes and checklists directories are missing", async () => {
       mockFs.access.mockRejectedValue(new Error("ENOENT"));
 
       const result = await updateTagsFromContent();
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Notes directory not found");
+      expect(result.success).toBe(true);
+      expect(result.data?.processed).toBe(0);
+      expect(result.data?.updated).toBe(0);
     });
 
     it("should process markdown files recursively", async () => {

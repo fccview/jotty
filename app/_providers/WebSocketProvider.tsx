@@ -65,7 +65,7 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
         debouncedRefresh();
       } catch {}
     },
-    [isEditorActive, debouncedRefresh]
+    [isEditorActive, debouncedRefresh],
   );
 
   const connect = useCallback(() => {
@@ -102,7 +102,7 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
 
       reconnectDelayRef.current = Math.min(
         reconnectDelayRef.current * 2,
-        MAX_RECONNECT_DELAY
+        MAX_RECONNECT_DELAY,
       );
     };
 

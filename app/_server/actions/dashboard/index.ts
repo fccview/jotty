@@ -2,14 +2,9 @@ import { AppMode, Checklist, ItemType, Note, Result, User } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { updateList } from "../checklist";
 import { updateNote, getNoteById } from "../note";
-import { getCurrentUser } from "../users";
+import { getCurrentUser, getUserIndex } from "../users";
 import { readJsonFile, writeJsonFile } from "../file";
 import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
-
-const _getUserIndex = async (username: string): Promise<number> => {
-  const allUsers = await readJsonFile(USERS_FILE);
-  return allUsers.findIndex((user: User) => user.username === username);
-};
 
 export const togglePin = async (
   itemId: string,
@@ -23,7 +18,7 @@ export const togglePin = async (
     }
 
     const allUsers = await readJsonFile(USERS_FILE);
-    const userIndex = await _getUserIndex(currentUser.username);
+    const userIndex = await getUserIndex(currentUser.username);
 
     const user = allUsers[userIndex];
     const itemPath = `${category}/${itemId}`;
@@ -73,7 +68,7 @@ export const updatePinnedOrder = async (
     }
 
     const allUsers = await readJsonFile(USERS_FILE);
-    const userIndex = await _getUserIndex(currentUser.username);
+    const userIndex = await getUserIndex(currentUser.username);
 
     const user = allUsers[userIndex];
 

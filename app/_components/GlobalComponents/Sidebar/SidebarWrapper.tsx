@@ -19,7 +19,6 @@ interface SidebarWrapperProps {
   navigation?: ReactNode;
   headerActions?: ReactNode;
   scrollRef?: Ref<HTMLDivElement>;
-  tagsSection?: ReactNode;
 }
 
 export const SidebarWrapper = ({
@@ -31,7 +30,6 @@ export const SidebarWrapper = ({
   navigation,
   headerActions,
   scrollRef,
-  tagsSection,
 }: SidebarWrapperProps) => {
   const { isDemoMode, isRwMarkable } = useAppMode();
   const { sidebarWidth, isResizing, startResizing } = useResizing();
@@ -64,7 +62,7 @@ export const SidebarWrapper = ({
       <div
         className={cn(
           "jotty-sidebar-overlay fixed inset-0 z-40 bg-black/50 lg:hidden",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
       />
@@ -81,7 +79,7 @@ export const SidebarWrapper = ({
           "w-[88vw]",
           "lg:w-[var(--sidebar-desktop-width)] lg:min-w-[var(--sidebar-desktop-width)] lg:max-w-[var(--sidebar-desktop-width)]",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          "flex-none"
+          "flex-none",
         )}
       >
         <div
@@ -94,7 +92,10 @@ export const SidebarWrapper = ({
             <div className="flex items-center justify-between">
               <a href="/" className="flex items-center gap-3">
                 <div className="relative">
-                  <DynamicLogo className="h-10 w-10 lg:h-8 lg:w-8" size="32x32" />
+                  <DynamicLogo
+                    className="h-10 w-10 lg:h-8 lg:w-8"
+                    size="32x32"
+                  />
                   <ConnectionIndicator borderColor="border-background" />
                 </div>
                 <div className="flex items-center gap-2">
@@ -112,15 +113,14 @@ export const SidebarWrapper = ({
             </div>
           </div>
           {navigation}
-          <div ref={internalScrollRef} onScroll={handleScroll} className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-2">
-            {tagsSection && (
-              <div className="pt-2">
-                {tagsSection}
-              </div>
-            )}
+          <div
+            ref={internalScrollRef}
+            onScroll={handleScroll}
+            className="jotty-sidebar-categories flex-1 overflow-y-auto hide-scrollbar p-2 space-y-2"
+          >
             <div className="pt-2">
               <div className="flex items-center justify-between">
-                {typeof title === 'string' ? (
+                {typeof title === "string" ? (
                   <h3 className="jotty-sidebar-categories-title text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider">
                     {title}
                   </h3>

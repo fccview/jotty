@@ -18,6 +18,7 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
+import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import {
   ArrowLeftIcon,
   ArrowRight01FreeIcons,
@@ -50,10 +51,14 @@ export const ChecklistHeading = ({
   const [newItemText, setNewItemText] = useState("");
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  const [tagPopupPos, setTagPopupPos] = useState({ top: 0, left: 0 });
   const [inputToggled, setInputToggled] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const { user } = useAppMode();
+  const tagSuggestionsWrapperRef = useRef<HTMLDivElement>(null);
+  const tagMentionsRef = useRef<{ onKeyDown: (event: KeyboardEvent) => boolean; focusSearch: () => void }>(null);
+  const { user, tagsIndex, tagsEnabled } = useAppMode();
   const { showCompletedSuggestions: sessionShowCompletedSuggestions } =
     useSettings();
 
@@ -91,6 +96,29 @@ export const ChecklistHeading = ({
     item.text.toLowerCase().includes(newItemText.toLowerCase().trim())
   );
 
+  const getHashtagQuery = (text: string): string | null => {
+    const full = text.match(/#([a-zA-Z][a-zA-Z0-9_/-]*)$/);
+    if (full) return full[1];
+    const bare = text.match(/#$/);
+    return bare ? "" : null;
+  };
+
+  const tagItems = (() => {
+    if (!tagsEnabled) return [];
+    const query = getHashtagQuery(newItemText);
+    if (query === null) return [];
+    const lowerQuery = query.toLowerCase();
+    const allTags = Object.keys(tagsIndex);
+    const filtered = allTags
+      .filter((k) => k.includes(lowerQuery))
+      .slice(0, 9)
+      .map((k) => ({ tag: k, display: k }));
+    if (lowerQuery && !allTags.some((t) => t === lowerQuery)) {
+      filtered.unshift({ tag: lowerQuery, display: lowerQuery });
+    }
+    return filtered;
+  })();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItemText.trim()) return;
@@ -98,13 +126,49 @@ export const ChecklistHeading = ({
     onSubmit(newItemText.trim());
     setNewItemText("");
     setShowSuggestions(false);
+    setShowTagSuggestions(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewItemText(e.target.value);
+    const value = e.target.value;
+    setNewItemText(value);
+    if (tagsEnabled) {
+      const query = getHashtagQuery(value);
+      if (query !== null) {
+        if (inputRef.current) {
+          const rect = inputRef.current.getBoundingClientRect();
+          setTagPopupPos({ top: rect.bottom + 4, left: rect.left });
+        }
+        setShowTagSuggestions(true);
+        setShowSuggestions(false);
+        return;
+      }
+      setShowTagSuggestions(false);
+    }
     if (shouldShowSuggestions && completedItems.length > 0) {
       setShowSuggestions(true);
     }
+  };
+
+  const handleTagCommand = (item: { tag: string; display: string }) => {
+    const query = getHashtagQuery(newItemText);
+    if (query !== null) {
+      const prefix = newItemText.slice(0, newItemText.length - (query.length + 1));
+      setNewItemText(`${prefix}#${item.tag} `);
+    }
+    setShowTagSuggestions(false);
+    inputRef.current?.focus();
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showTagSuggestions || !tagMentionsRef.current) return;
+    if (e.key === "Escape") {
+      setShowTagSuggestions(false);
+      e.preventDefault();
+      return;
+    }
+    const handled = tagMentionsRef.current.onKeyDown(e.nativeEvent);
+    if (handled) e.preventDefault();
   };
 
   const handleInputFocus = () => {
@@ -153,6 +217,25 @@ export const ChecklistHeading = ({
     }
   }, [showSuggestions]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tagSuggestionsWrapperRef.current &&
+        !tagSuggestionsWrapperRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setShowTagSuggestions(false);
+      }
+    };
+
+    if (showTagSuggestions) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showTagSuggestions]);
+
   return (
     <>
       <div className="lg:p-6 lg:border-b border-border bg-gradient-to-r from-background to-muted/20">
@@ -199,10 +282,24 @@ export const ChecklistHeading = ({
                 value={newItemText}
                 onChange={handleInputChange}
                 onFocus={handleInputFocus}
+                onKeyDown={handleInputKeyDown}
                 placeholder={placeholder}
                 className="w-full px-4 py-3 border border-input bg-background rounded-jotty text-base focus:outline-none focus:ring-none focus:ring-ring focus:ring-offset-2 focus:border-ring transition-all duration-200 shadow-sm"
                 disabled={isLoading}
               />
+              {showTagSuggestions && tagItems.length > 0 && (
+                <div
+                  ref={tagSuggestionsWrapperRef}
+                  style={{ position: "fixed", top: tagPopupPos.top, left: tagPopupPos.left }}
+                  className="z-[9999]"
+                >
+                  <TagMentionsList
+                    ref={tagMentionsRef}
+                    items={tagItems}
+                    command={handleTagCommand}
+                  />
+                </div>
+              )}
               {showSuggestions &&
                 filteredSuggestions.length > 0 &&
                 newItemText.trim() !== "" && (

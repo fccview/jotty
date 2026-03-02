@@ -18,6 +18,7 @@ interface SearchResult {
   title: string;
   type: ItemType;
   category?: string;
+  content?: string;
 }
 
 export const useSearch = ({
@@ -75,6 +76,7 @@ export const useSearch = ({
                 : capitalize(item.title?.replace(/-/g, " ")),
             type: item.type === "note" ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
             category: item.category || "Uncategorized",
+            content: item.content,
           }));
           setResults(formatted as SearchResult[]);
           setSelectedIndex(0);

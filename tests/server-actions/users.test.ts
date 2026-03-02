@@ -62,7 +62,7 @@ describe('Users Actions', () => {
 
     it('should return error when username is too short', async () => {
       const formData = createFormData({
-        username: 'ab',
+        username: 'a',
         password: 'password123',
         confirmPassword: 'password123',
       })
@@ -70,7 +70,7 @@ describe('Users Actions', () => {
       const result = await createUser(formData)
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Username must be at least 3 characters long')
+      expect(result.error).toBe('Username must be at least 2 characters long')
     })
 
     it('should return error when password is too short', async () => {

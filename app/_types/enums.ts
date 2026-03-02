@@ -1,6 +1,7 @@
 export enum Modes {
   CHECKLISTS = "checklists",
   NOTES = "notes",
+  TAGS = "tags",
   DEPRECATED_DOCS = "docs",
 }
 

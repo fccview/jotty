@@ -1,3 +1,16 @@
+/**
+ * @fccview here!
+ * Hi all, welcome to the grep-utils.ts file.
+ *
+ * I was hitting a wall on how to fetch files without a database and performance was going down, massively.
+ * And then it struck me, why am I not using grep?!?
+ *
+ * This is so much more performant, so let me leave you with a beautiful video on
+ * the genesis of grep: https://www.youtube.com/watch?v=NTfOnGZUZDk
+ *
+ * Enjoy it <3
+ */
+
 import { exec } from "child_process";
 import { promisify } from "util";
 import path from "path";
@@ -89,6 +102,47 @@ export const grepFindFilesByField = async (
     });
   } catch {
     return [];
+  }
+};
+
+export const grepExtractAllFrontmatters = async (
+  dir: string,
+): Promise<Map<string, Record<string, unknown>>> => {
+  try {
+    const { stdout } = await execAsync(
+      `find "${dir}" -name "*.md" -type f -print0 | sort -z | xargs -0 awk '` +
+        `FNR==1{if(NR>1)print "ENDFILE";print "FILE:"FILENAME;in_fm=($0=="---");next}` +
+        `in_fm&&/^---$/{in_fm=0;next}in_fm{print}END{print "ENDFILE"}' 2>/dev/null || true`,
+      { maxBuffer: 50 * 1024 * 1024 },
+    );
+
+    const result = new Map<string, Record<string, unknown>>();
+    let currentFile = "";
+    let currentLines: string[] = [];
+
+    for (const line of stdout.split("\n")) {
+      if (line.startsWith("FILE:")) {
+        currentFile = line.slice(5);
+        currentLines = [];
+      } else if (line === "ENDFILE") {
+        if (currentFile && currentLines.length > 0) {
+          try {
+            const parsed = yaml.load(currentLines.join("\n"));
+            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+              result.set(currentFile, parsed as Record<string, unknown>);
+            }
+          } catch {}
+        }
+        currentFile = "";
+        currentLines = [];
+      } else if (currentFile) {
+        currentLines.push(line);
+      }
+    }
+
+    return result;
+  } catch {
+    return new Map();
   }
 };
 
@@ -185,24 +239,42 @@ export const grepExtractField = async (
   }
 };
 
+export interface GrepSearchResult extends GrepFileResult {
+  matchLine: string;
+}
+
 export const grepSearchContent = async (
   dir: string,
   pattern: string,
-): Promise<GrepFileResult[]> => {
+): Promise<GrepSearchResult[]> => {
   try {
     const { stdout } = await execAsync(
       `grep -rli "${pattern}" "${dir}" --include="*.md" 2>/dev/null || true`,
     );
 
     const files = stdout.trim().split("\n").filter(Boolean);
-    return files.map((filePath) => {
-      const relativePath = path.relative(dir, filePath);
-      const parts = relativePath.split(path.sep);
-      const filename = parts.pop() || "";
-      const id = path.basename(filename, ".md");
-      const category = parts.join("/");
-      return { filePath, id, category };
-    });
+
+    const results = await Promise.all(
+      files.map(async (filePath) => {
+        const relativePath = path.relative(dir, filePath);
+        const parts = relativePath.split(path.sep);
+        const filename = parts.pop() || "";
+        const id = path.basename(filename, ".md");
+        const category = parts.join("/");
+
+        let matchLine = "";
+        try {
+          const { stdout: matchOut } = await execAsync(
+            `grep -im1 "${pattern}" "${filePath}" 2>/dev/null || true`,
+          );
+          matchLine = matchOut.trim();
+        } catch {}
+
+        return { filePath, id, category, matchLine };
+      }),
+    );
+
+    return results;
   } catch {
     return [];
   }

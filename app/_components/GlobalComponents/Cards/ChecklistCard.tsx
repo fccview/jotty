@@ -6,7 +6,7 @@ import {
 } from "hugeicons-react";
 import { Checklist } from "@/app/_types";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
-import { isItemCompleted } from "@/app/_utils/checklist-utils";
+import { countItems } from "@/app/_utils/checklist-utils";
 import { TaskSpecificDetails } from "@/app/_components/GlobalComponents/Cards/TaskSpecificDetails";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -58,11 +58,7 @@ export const ChecklistCard = ({
   const displayItems = parsedData?.items || list.items;
 
   const activeItems = displayItems?.filter((item) => !item.isArchived);
-
-  const totalItems = activeItems?.length || 0;
-  const completedItems = activeItems?.filter((item) =>
-    isItemCompleted(item, list.type)
-  ).length;
+  const { total: totalItems, completed: completedItems } = countItems(displayItems || [], list.type);
   const completionRate =
     totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 

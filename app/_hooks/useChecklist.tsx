@@ -32,6 +32,7 @@ import {
 } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
 import { encodeCategoryPath } from "../_utils/global-utils";
+import { areAllItemsCompleted } from "../_utils/checklist-utils";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseChecklistProps {
@@ -166,12 +167,16 @@ export const useChecklist = ({
       const filterNestedItem = (items: any[]): any[] => {
         return items
           .filter((item) => item.id !== itemId)
-          .map((item) => ({
-            ...item,
-            children: item.children
+          .map((item) => {
+            const children = item.children
               ? filterNestedItem(item.children)
-              : undefined,
-          }))
+              : undefined;
+            const completed = (
+              children && children.length > 0 && areAllItemsCompleted(children)
+            ) ? true : item.completed;
+
+            return {...item, completed, children};
+          })
           .filter((item) => item.children?.length > 0 || item.id !== undefined);
       };
 
@@ -245,26 +250,6 @@ export const useChecklist = ({
     return null;
   };
 
-  const areAllItemsCompleted = (items: any[]): boolean => {
-    if (items.length === 0) return true;
-
-    return items.every((item) => {
-      if (item.children && item.children.length > 0) {
-        return item.completed && areAllItemsCompleted(item.children);
-      }
-      return item.completed;
-    });
-  };
-
-  const areAnyItemsCompleted = (items: any[]): boolean => {
-    return items.some((item) => {
-      if (item.children && item.children.length > 0) {
-        return item.completed || areAnyItemsCompleted(item.children);
-      }
-      return item.completed;
-    });
-  };
-
   const updateAllChildren = (items: any[], completed: boolean): any[] => {
     return items.map((item) => ({
       ...item,
@@ -276,22 +261,14 @@ export const useChecklist = ({
   };
 
   const updateParentBasedOnChildren = (parent: any): any => {
-    if (!parent || !parent.children || parent.children.length === 0) {
+    if (!parent || (parent.children || []).length < 1) {
       return parent;
     }
 
-    const allChildrenCompleted = areAllItemsCompleted(parent.children);
-    const anyChildrenCompleted = areAnyItemsCompleted(parent.children);
-
-    let updatedParent = { ...parent };
-
-    if (allChildrenCompleted) {
-      updatedParent.completed = true;
-    } else if (!anyChildrenCompleted) {
-      updatedParent.completed = false;
-    }
-
-    return updatedParent;
+    return {
+      ...parent,
+      completed: areAllItemsCompleted(parent.children),
+    };
   };
 
   const handleToggleItem = async (itemId: string, completed: boolean) => {
@@ -557,10 +534,23 @@ export const useChecklist = ({
     });
 
     const formData = new FormData();
+    const isDraggingDown =
+      activeInfo.parent?.id === overInfo.parent?.id &&
+      activeInfo.index < overInfo.index;
+
+    const reorderPosition = isDropIndicator
+      ? overId.startsWith("drop-after::")
+        ? "after"
+        : "before"
+      : isDraggingDown
+      ? "after"
+      : "before";
+
     formData.append("listId", localList.id);
     formData.append("activeItemId", activeId);
     formData.append("overItemId", targetItemId);
     formData.append("isDropInto", String(isDropInto));
+    formData.append("position", reorderPosition);
     formData.append("category", localList.category || "Uncategorized");
 
     const result = await reorderItems(formData);

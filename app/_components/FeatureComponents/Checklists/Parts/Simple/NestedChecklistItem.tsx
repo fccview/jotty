@@ -22,7 +22,10 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
 import { Checklist, Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { useTagSuggestions } from "@/app/_hooks/useTagSuggestions";
+import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
 import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
@@ -73,7 +76,7 @@ const NestedChecklistItemComponent = ({
   draggedItemId,
 }: NestedChecklistItemProps) => {
   const t = useTranslations();
-  const { usersPublicData, user } = useAppMode();
+  const { usersPublicData, user, tagsEnabled, tagsIndex } = useAppMode();
   const { permissions } = usePermissions();
   const getUserAvatarUrl = (username: string) => {
     if (!usersPublicData) return "";
@@ -105,10 +108,22 @@ const NestedChecklistItemComponent = ({
   const [dropdownOpenUpward, setDropdownOpenUpward] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const addSubItemInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownButtonRef = useRef<HTMLButtonElement>(null);
 
   const editorActivity = useEditorActivityStore();
+
+  const editTagSuggestions = useTagSuggestions(editText, setEditText, inputRef, {
+    tagsIndex,
+    tagsEnabled: !!tagsEnabled,
+  });
+  const subItemTagSuggestions = useTagSuggestions(
+    newSubItemText,
+    setNewSubItemText,
+    addSubItemInputRef,
+    { tagsIndex, tagsEnabled: !!tagsEnabled }
+  );
 
   useEffect(() => {
     const editorId = `checklist-item-${item.id}`;
@@ -163,7 +178,18 @@ const NestedChecklistItemComponent = ({
     setIsEditing(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      editTagSuggestions.showTagSuggestions &&
+      editTagSuggestions.tagMentionsRef.current
+    ) {
+      const handled =
+        editTagSuggestions.tagMentionsRef.current.onKeyDown(e.nativeEvent);
+      if (handled) {
+        e.preventDefault();
+        return;
+      }
+    }
     if (e.key === "Enter") {
       e.preventDefault();
       handleSave();
@@ -178,6 +204,7 @@ const NestedChecklistItemComponent = ({
     if (newSubItemText.trim() && onAddSubItem) {
       onAddSubItem(item.id, newSubItemText.trim());
       setNewSubItemText("");
+      subItemTagSuggestions.setShowTagSuggestions(false);
     }
   };
 
@@ -231,6 +258,28 @@ const NestedChecklistItemComponent = ({
   const cleanText = item.text.split(" | metadata:")[0].trim();
   const displayText = showEmojis ? `${emoji}  ${cleanText}` : cleanText;
   const hasChildren = item.children && item.children.length > 0;
+
+  const renderTextWithHashtags = (text: string): React.ReactNode[] => {
+    const hashtagPattern = /#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+    while ((match = hashtagPattern.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      parts.push(
+        <span key={match.index} onMouseDown={(e) => e.stopPropagation()}>
+          <TagLinkViewComponent tag={match[1]} />
+        </span>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+    return parts;
+  };
   const isChild = level > 0;
 
   const dropdownOptions = [
@@ -334,17 +383,35 @@ const NestedChecklistItemComponent = ({
             </div>
 
             {isEditing ? (
-              <div className="flex-1 flex items-center gap-2 w-full">
+              <div className="flex-1 flex items-center gap-2 w-full relative">
                 {permissions?.canEdit && (
                   <>
                     <Input
                       id={item.id}
                       ref={inputRef}
                       type="text"
-                      defaultValue={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      onKeyDown={handleKeyDown}
+                      value={editText}
+                      onChange={editTagSuggestions.handleChange}
+                      onKeyDown={handleEditKeyDown}
                     />
+                    {editTagSuggestions.showTagSuggestions &&
+                      editTagSuggestions.tagItems.length > 0 && (
+                        <div
+                          ref={editTagSuggestions.tagSuggestionsWrapperRef}
+                          style={{
+                            position: "fixed",
+                            top: editTagSuggestions.tagPopupPos.top,
+                            left: editTagSuggestions.tagPopupPos.left,
+                          }}
+                          className="z-[9999]"
+                        >
+                          <TagMentionsList
+                            ref={editTagSuggestions.tagMentionsRef}
+                            items={editTagSuggestions.tagItems}
+                            command={editTagSuggestions.handleTagCommand}
+                          />
+                        </div>
+                      )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -393,7 +460,7 @@ const NestedChecklistItemComponent = ({
                     )}
 
                     <span className="break-words max-w-[85%] lg:max-w-full">
-                      {displayText}
+                      {tagsEnabled ? renderTextWithHashtags(displayText) : displayText}
                     </span>
                   </label>
                 </div>
@@ -519,16 +586,36 @@ const NestedChecklistItemComponent = ({
           )}
 
           {showAddSubItem && !isPublicView && (
-            <div className="mt-2 mb-2" style={{ paddingLeft: "32px" }}>
+            <div className="mt-2 mb-2 relative" style={{ paddingLeft: "32px" }}>
+              {subItemTagSuggestions.showTagSuggestions &&
+                subItemTagSuggestions.tagItems.length > 0 && (
+                  <div
+                    ref={subItemTagSuggestions.tagSuggestionsWrapperRef}
+                    style={{
+                      position: "fixed",
+                      top: subItemTagSuggestions.tagPopupPos.top,
+                      left: subItemTagSuggestions.tagPopupPos.left,
+                    }}
+                    className="z-[9999]"
+                  >
+                    <TagMentionsList
+                      ref={subItemTagSuggestions.tagMentionsRef}
+                      items={subItemTagSuggestions.tagItems}
+                      command={subItemTagSuggestions.handleTagCommand}
+                    />
+                  </div>
+                )}
               <form
                 onSubmit={handleAddSubItem}
                 className="flex gap-2 items-center pr-4"
               >
                 <Input
                   id={`add-subitem-${item.id}`}
+                  ref={addSubItemInputRef}
                   type="text"
                   value={newSubItemText}
-                  onChange={(e) => setNewSubItemText(e.target.value)}
+                  onChange={subItemTagSuggestions.handleChange}
+                  onKeyDown={subItemTagSuggestions.handleKeyDown}
                   placeholder={t("checklists.addSubItemPlaceholder")}
                   autoFocus
                 />
@@ -549,6 +636,7 @@ const NestedChecklistItemComponent = ({
                   onClick={() => {
                     setShowAddSubItem(false);
                     setNewSubItemText("");
+                    subItemTagSuggestions.setShowTagSuggestions(false);
                   }}
                   className="h-8 w-8 p-0"
                   aria-label={t("common.close")}

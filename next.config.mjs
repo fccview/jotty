@@ -7,6 +7,9 @@ const withNextIntl = createNextIntlPlugin("./i18n.ts");
 const nextConfig = {
   output: "standalone",
   serverExternalPackages: ["ws"],
+  serverActions: {
+    bodySizeLimit: "100mb",
+  },
   images: {
     unoptimized: true,
   },

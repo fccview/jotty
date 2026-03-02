@@ -46,3 +46,4 @@ export const getUserLogsDir = (username: string) =>
   path.join(LOGS_DIR, username);
 
 export const HOMEPAGE_ITEMS_LIMIT = 12;
+export const FILTER_PAGE_SIZE = 20;

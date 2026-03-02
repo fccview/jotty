@@ -1,6 +1,11 @@
 "use client";
 
-import { Add01Icon, File02Icon, ArrowRight04Icon, Cancel01Icon } from "hugeicons-react";
+import {
+  Add01Icon,
+  File02Icon,
+  ArrowRight04Icon,
+  Cancel01Icon,
+} from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Note, Category, SanitisedUser } from "@/app/_types";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
@@ -18,8 +23,17 @@ import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
 import { NoteGridItem } from "@/app/_components/GlobalComponents/Cards/NoteGridItem";
-import { useMemo, useState, useEffect, useTransition } from "react";
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useTransition,
+  useCallback,
+} from "react";
 import { getNotesForDisplay } from "@/app/_server/actions/note";
+import { useInfiniteScroll } from "@/app/_hooks/useInfiniteScroll";
+import { FILTER_PAGE_SIZE } from "@/app/_consts/files";
+import { JottyIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/JottyIcon";
 
 interface NotesHomeProps {
   notes: Note[];
@@ -37,24 +51,60 @@ export const NotesHome = ({
   onSelectNote,
 }: NotesHomeProps) => {
   const t = useTranslations();
-  const { userSharedItems, selectedFilter, setSelectedFilter, tagsIndex, notes: allNotesMetadata } = useAppMode();
+  const {
+    userSharedItems,
+    selectedFilter,
+    setSelectedFilter,
+    tagsIndex,
+    notes: allNotesMetadata,
+  } = useAppMode();
   const { viewMode } = useSettings();
   const [isPending, startTransition] = useTransition();
-  const [displayNotes, setDisplayNotes] = useState<Note[]>(initialNotes);
+  const [firstPage, setFirstPage] = useState<Note[]>([]);
 
   useEffect(() => {
     if (!selectedFilter) {
-      setDisplayNotes(initialNotes);
+      setFirstPage([]);
       return;
     }
 
     startTransition(async () => {
-      const result = await getNotesForDisplay(selectedFilter);
+      const result = await getNotesForDisplay(
+        selectedFilter,
+        FILTER_PAGE_SIZE,
+        0,
+      );
       if (result.success && result.data) {
-        setDisplayNotes(result.data as Note[]);
+        setFirstPage(result.data as Note[]);
       }
     });
-  }, [selectedFilter, initialNotes]);
+  }, [selectedFilter]);
+
+  const fetchPage = useCallback(
+    (offset: number) =>
+      getNotesForDisplay(selectedFilter!, FILTER_PAGE_SIZE, offset).then(
+        (res) => ({
+          data: (res.success && res.data ? res.data : []) as Note[],
+        }),
+      ),
+    [selectedFilter],
+  );
+
+  const {
+    items: infiniteItems,
+    sentinelRef,
+    isLoading: isLoadingMore,
+    hasMore,
+  } = useInfiniteScroll({
+    initialItems: firstPage,
+    fetchPage,
+    pageSize: FILTER_PAGE_SIZE,
+    resetKey: selectedFilter
+      ? `${selectedFilter.type}-${selectedFilter.value}`
+      : null,
+  });
+
+  const displayNotes = selectedFilter ? infiniteItems : initialNotes;
 
   const {
     sensors,
@@ -76,7 +126,7 @@ export const NotesHome = ({
 
   const filterDisplayName = useMemo(() => {
     if (!selectedFilter) return null;
-    if (selectedFilter.type === 'category') {
+    if (selectedFilter.type === "category") {
       return selectedFilter.value.split("/").pop() || selectedFilter.value;
     }
     return tagsIndex[selectedFilter.value]?.displayName || selectedFilter.value;
@@ -84,10 +134,10 @@ export const NotesHome = ({
 
   const getNoteSharer = (note: Note) => {
     const encodedCategory = encodeCategoryPath(
-      note.category || "Uncategorized"
+      note.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.id === note.id && item.category === encodedCategory
+      (item) => item.id === note.id && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
@@ -148,6 +198,12 @@ export const NotesHome = ({
             </Button>
           </div>
         </div>
+
+        {selectedFilter && firstPage.length === 0 && isPending && (
+          <div className="flex items-center justify-center min-h-[240px]">
+            <JottyIcon className="h-16 w-16 text-primary" animated={true} />
+          </div>
+        )}
 
         {pinned.length > 0 && (
           <div className="mb-8 lg:mb-12 overflow-hidden">
@@ -230,7 +286,7 @@ export const NotesHome = ({
                     {viewMode === "card" && (
                       <NoteCard
                         note={activeNote}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         isDraggable={false}
                         sharer={getNoteSharer(activeNote)}
@@ -240,7 +296,7 @@ export const NotesHome = ({
                     {viewMode === "list" && (
                       <NoteListItem
                         note={activeNote}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         sharer={getNoteSharer(activeNote)}
                       />
@@ -248,7 +304,7 @@ export const NotesHome = ({
                     {viewMode === "grid" && (
                       <NoteGridItem
                         note={activeNote}
-                        onSelect={() => { }}
+                        onSelect={() => {}}
                         isPinned={true}
                         sharer={getNoteSharer(activeNote)}
                       />
@@ -329,6 +385,15 @@ export const NotesHome = ({
                     sharer={getNoteSharer(note)}
                   />
                 ))}
+              </div>
+            )}
+
+            {selectedFilter && hasMore && (
+              <div ref={sentinelRef} className="h-4 min-h-4" aria-hidden />
+            )}
+            {selectedFilter && isLoadingMore && (
+              <div className="py-4 flex justify-center">
+                <JottyIcon className="h-10 w-10 text-primary" animated={true} />
               </div>
             )}
           </div>

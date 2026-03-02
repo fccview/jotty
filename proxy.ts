@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { isEnvEnabled } from "./app/_utils/env-utils";
+import { isEnvEnabled, isDebugFlag } from "./app/_utils/env-utils";
+
+const debugProxy = isDebugFlag("proxy");
 
 export const proxy = async (request: NextRequest) => {
   const { pathname } = request.nextUrl;
@@ -26,12 +28,17 @@ export const proxy = async (request: NextRequest) => {
       : "session";
   const sessionId = request.cookies.get(cookieName)?.value;
 
-  if (isEnvEnabled(process.env.DEBUGGER)) {
-    console.log("MIDDLEWARE - sessionId:", sessionId);
-    console.log("MIDDLEWARE - cookies:", request.cookies.getAll());
+  if (debugProxy) {
+    console.log(
+      "MIDDLEWARE - session cookie:",
+      sessionId ? "present" : "absent",
+    );
   }
 
-  const loginUrl = new URL("/auth/login", request.url);
+  const appUrlBase = process.env.APP_URL
+    ? process.env.APP_URL.replace(/\/$/, "")
+    : request.nextUrl.origin;
+  const loginUrl = new URL(`${appUrlBase}/auth/login`);
 
   if (!sessionId) {
     return NextResponse.redirect(loginUrl);
@@ -40,10 +47,10 @@ export const proxy = async (request: NextRequest) => {
   try {
     const internalApiUrl =
       process.env.INTERNAL_API_URL ||
-      process.env.APP_URL ||
+      (process.env.APP_URL ? new URL(process.env.APP_URL).origin : null) ||
       request.nextUrl.origin;
 
-    if (isEnvEnabled(process.env.DEBUGGER)) {
+    if (debugProxy) {
       console.log("MIDDLEWARE - URL Resolution:");
       console.log(
         "  INTERNAL_API_URL:",
@@ -56,7 +63,7 @@ export const proxy = async (request: NextRequest) => {
 
     const sessionCheckUrl = new URL(`${internalApiUrl}/api/auth/check-session`);
 
-    if (isEnvEnabled(process.env.DEBUGGER)) {
+    if (debugProxy) {
       console.log("MIDDLEWARE - Session Check URL:", sessionCheckUrl.href);
     }
 
@@ -67,7 +74,7 @@ export const proxy = async (request: NextRequest) => {
       cache: "no-store",
     });
 
-    if (isEnvEnabled(process.env.DEBUGGER)) {
+    if (debugProxy) {
       console.log("MIDDLEWARE - Session Check Response:");
       console.log("  status:", sessionCheck.status);
       console.log("  statusText:", sessionCheck.statusText);
@@ -78,7 +85,7 @@ export const proxy = async (request: NextRequest) => {
       const redirectResponse = NextResponse.redirect(loginUrl);
       redirectResponse.cookies.delete(cookieName);
 
-      if (isEnvEnabled(process.env.DEBUGGER)) {
+      if (debugProxy) {
         console.log("MIDDLEWARE - session is not ok");
       }
 

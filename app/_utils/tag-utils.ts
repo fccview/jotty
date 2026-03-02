@@ -1,4 +1,4 @@
-import { Note, TagsIndex, TagInfo } from "@/app/_types";
+import { Note, Checklist, TagsIndex, TagInfo } from "@/app/_types";
 
 export type { TagsIndex, TagInfo };
 
@@ -27,25 +27,36 @@ export const getDisplayName = (tag: string): string => {
   return tag.substring(lastSlash + 1);
 };
 
-export const buildTagsIndex = (notes: Partial<Note>[]): TagsIndex => {
-  const index: TagsIndex = {};
+const ensureTagEntry = (index: TagsIndex, normalizedTag: string) => {
+  if (!index[normalizedTag]) {
+    index[normalizedTag] = {
+      name: normalizedTag,
+      displayName: getDisplayName(normalizedTag),
+      parent: getParentTag(normalizedTag),
+      noteUuids: [],
+      checklistUuids: [],
+      totalCount: 0,
+    };
+  }
+};
 
-  for (const note of notes) {
+export const buildTagsIndex = (
+  notes: Partial<Note>[],
+  checklists?: Partial<Checklist>[],
+): TagsIndex => {
+  const index: TagsIndex = {};
+  const notesList = Array.isArray(notes) ? notes : [];
+  const checklistsList =
+    checklists !== undefined && Array.isArray(checklists) ? checklists : [];
+
+  for (const note of notesList) {
     if (!note.tags || !note.uuid) continue;
 
     for (const tag of note.tags) {
       const normalizedTag = normalizeTag(tag);
       if (!normalizedTag) continue;
 
-      if (!index[normalizedTag]) {
-        index[normalizedTag] = {
-          name: normalizedTag,
-          displayName: getDisplayName(normalizedTag),
-          parent: getParentTag(normalizedTag),
-          noteUuids: [],
-          totalCount: 0,
-        };
-      }
+      ensureTagEntry(index, normalizedTag);
 
       if (!index[normalizedTag].noteUuids.includes(note.uuid)) {
         index[normalizedTag].noteUuids.push(note.uuid);
@@ -53,26 +64,44 @@ export const buildTagsIndex = (notes: Partial<Note>[]): TagsIndex => {
 
       const ancestors = getAncestorTags(normalizedTag);
       for (const ancestor of ancestors) {
-        if (!index[ancestor]) {
-          index[ancestor] = {
-            name: ancestor,
-            displayName: getDisplayName(ancestor),
-            parent: getParentTag(ancestor),
-            noteUuids: [],
-            totalCount: 0,
-          };
-        }
+        ensureTagEntry(index, ancestor);
+      }
+    }
+  }
+
+  for (const checklist of checklistsList) {
+    if (!checklist.tags || !checklist.uuid) continue;
+
+    for (const tag of checklist.tags) {
+      const normalizedTag = normalizeTag(tag);
+      if (!normalizedTag) continue;
+
+      ensureTagEntry(index, normalizedTag);
+
+      if (!index[normalizedTag].checklistUuids.includes(checklist.uuid)) {
+        index[normalizedTag].checklistUuids.push(checklist.uuid);
+      }
+
+      const ancestors = getAncestorTags(normalizedTag);
+      for (const ancestor of ancestors) {
+        ensureTagEntry(index, ancestor);
       }
     }
   }
 
   for (const tagName of Object.keys(index)) {
     const tag = index[tagName];
-    const descendantUuids = new Set<string>(tag.noteUuids);
+    const descendantUuids = new Set<string>([
+      ...tag.noteUuids,
+      ...tag.checklistUuids,
+    ]);
 
     for (const otherTagName of Object.keys(index)) {
       if (otherTagName.startsWith(tagName + "/")) {
         for (const uuid of index[otherTagName].noteUuids) {
+          descendantUuids.add(uuid);
+        }
+        for (const uuid of index[otherTagName].checklistUuids) {
           descendantUuids.add(uuid);
         }
       }
@@ -96,7 +125,8 @@ export const extractHashtagsFromContent = (content: string): string[] => {
     }
   }
 
-  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>/gi;
+  const codeBlockRegex =
+    /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>/gi;
   const contentWithoutCode = content.replace(codeBlockRegex, "");
 
   const hashtagRegex = /(?:^|[\s(])#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
@@ -110,7 +140,10 @@ export const extractHashtagsFromContent = (content: string): string[] => {
   return Array.from(tags);
 };
 
-export const tagMatchesFilter = (noteTag: string, filterTag: string): boolean => {
+export const tagMatchesFilter = (
+  noteTag: string,
+  filterTag: string,
+): boolean => {
   const normalizedNoteTag = normalizeTag(noteTag);
   const normalizedFilterTag = normalizeTag(filterTag);
 
@@ -144,7 +177,10 @@ export const buildTagTree = (tagsIndex: TagsIndex): TagInfo[] => {
   return rootTags.sort((a, b) => a.name.localeCompare(b.name));
 };
 
-export const getChildTags = (tagsIndex: TagsIndex, parentTag: string): TagInfo[] => {
+export const getChildTags = (
+  tagsIndex: TagsIndex,
+  parentTag: string,
+): TagInfo[] => {
   const children: TagInfo[] = [];
 
   for (const tag of Object.values(tagsIndex)) {

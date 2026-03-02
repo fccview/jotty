@@ -774,7 +774,11 @@
     "selectConnectionIndicator": "연결 표시기 상태 선택",
     "showIndicator": "표시기 표시",
     "hideIndicator": "표시 숨기기",
-    "hideConnectionIndicator": "로고에서 연결 표시 숨기기"
+    "hideConnectionIndicator": "로고에서 연결 표시 숨기기",
+    "codeBlockChoice": "코드 블록 스타일을 선택하세요",
+    "themedCodeBlock": "테마 코드블록",
+    "defaultCodeBlock": "코드펜(기본값)",
+    "codeBlockChoiceDescription": "codepen과 유사한 기본 코드 블록 스타일 또는 테마 코드 블록 스타일 중에서 선택하세요."
   },
   "admin": {
     "title": "관리자",

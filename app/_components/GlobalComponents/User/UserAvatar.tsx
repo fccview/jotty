@@ -22,7 +22,11 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   const cachedAvatar = parsedAvatars[username];
 
   const [avatar, setAvatar] = useState<string | null>(
-    avatarUrl !== undefined && avatarUrl !== null ? avatarUrl : cachedAvatar !== undefined ? cachedAvatar : null
+    avatarUrl !== undefined && avatarUrl !== null
+      ? avatarUrl
+      : cachedAvatar !== undefined
+        ? cachedAvatar
+        : null,
   );
   const sizeClasses = {
     xs: "h-4 w-4 text-xs",
@@ -43,7 +47,12 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   const backgroundColor = getDeterministicColor(username);
 
   useEffect(() => {
-    if ((avatarUrl === undefined || avatarUrl === null) && cachedAvatar === undefined) {
+    console.log("avatarUrl", avatar);
+
+    if (
+      (avatarUrl === undefined || avatarUrl === null) &&
+      cachedAvatar === undefined
+    ) {
       const fetchAvatarUrl = async () => {
         const user = await getUserByUsername(username);
         return user?.avatarUrl || "";
@@ -57,7 +66,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
           JSON.stringify({
             ...parsedAvatars,
             [username]: url || "",
-          })
+          }),
         );
       });
     }
@@ -68,7 +77,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
       className={cn(
         "relative rounded-full flex items-center justify-center font-medium text-white flex-shrink-0",
         sizeClasses[size],
-        className
+        className,
       )}
       style={{ backgroundColor }}
     >
@@ -80,8 +89,9 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
         />
       ) : (
         <span
-          className={`${sizeClasses[size]}${size === "xs" ? " !text-[8px]" : ""
-            } flex items-center justify-center`}
+          className={`${sizeClasses[size]}${
+            size === "xs" ? " !text-[8px]" : ""
+          } flex items-center justify-center`}
         >
           {initials}
         </span>

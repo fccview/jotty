@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { getEnvOrFile } from "@/app/_server/actions/file";
-import { isEnvEnabled } from "@/app/_utils/env-utils";
+import { isEnvEnabled, isDebugFlag } from "@/app/_utils/env-utils";
+
+const debugProxy = isDebugFlag("proxy");
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
   const appUrl = process.env.APP_URL || request.nextUrl.origin;
 
   if (ssoMode && ssoMode?.toLowerCase() !== "oidc") {
-    if (isEnvEnabled(process.env.DEBUGGER)) {
+    if (debugProxy) {
       console.log("SSO LOGIN - ssoMode is not oidc");
     }
 
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
   const clientId = await getEnvOrFile("OIDC_CLIENT_ID", "OIDC_CLIENT_ID_FILE");
 
   if (!issuer || !clientId) {
-    if (isEnvEnabled(process.env.DEBUGGER)) {
+    if (debugProxy) {
       console.log("SSO LOGIN - issuer or clientId is not set");
     }
 
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
 
   const discoveryRes = await fetch(discoveryUrl, { cache: "no-store" });
   if (!discoveryRes.ok) {
-    if (isEnvEnabled(process.env.DEBUGGER)) {
+    if (debugProxy) {
       console.log("SSO LOGIN - discoveryUrl is not ok", discoveryRes);
     }
 
@@ -94,7 +96,7 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("state", state);
   url.searchParams.set("nonce", nonce);
 
-  if (isEnvEnabled(process.env.DEBUGGER)) {
+  if (debugProxy) {
     console.log("SSO LOGIN - url", url);
   }
 

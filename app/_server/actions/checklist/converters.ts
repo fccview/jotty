@@ -3,14 +3,23 @@
 import path from "path";
 import { Checklist, Item, ChecklistType } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { ItemTypes, Modes, PermissionTypes, TaskStatus } from "@/app/_types/enums";
+import {
+  ItemTypes,
+  Modes,
+  PermissionTypes,
+  TaskStatus,
+} from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
 import { revalidatePath } from "next/cache";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { buildCategoryPath, getFormData } from "@/app/_utils/global-utils";
-import { updateIndexForItem, parseInternalLinks } from "@/app/_server/actions/link";
+import {
+  updateIndexForItem,
+  parseInternalLinks,
+} from "@/app/_server/actions/link";
 import { checkUserPermission } from "@/app/_server/actions/sharing";
+import { broadcast } from "@/app/_server/ws/broadcast";
 import { getListById, getUserChecklists } from "./queries";
 
 export const convertChecklistType = async (formData: FormData) => {
@@ -47,26 +56,20 @@ export const convertChecklistType = async (formData: FormData) => {
     }
 
     let filePath: string;
+    const categoryDir = list.category || "Uncategorized";
+    const filename = `${list.id}.md`;
 
-    if (list.isShared) {
+    if (list.owner) {
       const ownerDir = path.join(
         process.cwd(),
         "data",
         CHECKLISTS_FOLDER,
-        list.owner!
+        list.owner,
       );
-      filePath = path.join(
-        ownerDir,
-        list.category || "Uncategorized",
-        `${listId}.md`
-      );
+      filePath = path.join(ownerDir, categoryDir, filename);
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
-      filePath = path.join(
-        userDir,
-        list.category || "Uncategorized",
-        `${listId}.md`
-      );
+      filePath = path.join(userDir, categoryDir, filename);
     }
 
     let convertedItems: any[];
@@ -106,9 +109,16 @@ export const convertChecklistType = async (formData: FormData) => {
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
+    const currentUser = await getCurrentUser();
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: updatedList.uuid || updatedList.id,
+      username: currentUser?.username || "",
+    });
     return { success: true, data: updatedList };
   } catch (error) {
     console.error("Error converting checklist type:", error);
@@ -146,11 +156,11 @@ export const updateChecklistStatuses = async (formData: FormData) => {
     const oldStatusIds = (list.statuses || []).map((s) => s.id);
     const newStatusIds = statuses.map((s: any) => s.id);
     const removedStatusIds = oldStatusIds.filter(
-      (id) => !newStatusIds.includes(id)
+      (id) => !newStatusIds.includes(id),
     );
 
     const sortedStatuses = [...statuses].sort(
-      (a: any, b: any) => a.order - b.order
+      (a: any, b: any) => a.order - b.order,
     );
     const firstStatus = sortedStatuses[0];
     const defaultStatusId = firstStatus?.id || "todo";
@@ -189,19 +199,19 @@ export const updateChecklistStatuses = async (formData: FormData) => {
         process.cwd(),
         "data",
         CHECKLISTS_FOLDER,
-        list.owner!
+        list.owner!,
       );
       filePath = path.join(
         ownerDir,
         list.category || "Uncategorized",
-        `${list.id}.md`
+        `${list.id}.md`,
       );
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(
         userDir,
         list.category || "Uncategorized",
-        `${list.id}.md`
+        `${list.id}.md`,
       );
     }
 
@@ -224,7 +234,7 @@ export const updateChecklistStatuses = async (formData: FormData) => {
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
     return { success: true, data: updatedList };
@@ -258,7 +268,7 @@ export const clearAllChecklistItems = async (formData: FormData) => {
     const checklist = await getListById(
       id,
       ownerUsername || undefined,
-      category
+      category,
     );
 
     if (!checklist) {
@@ -270,7 +280,7 @@ export const clearAllChecklistItems = async (formData: FormData) => {
       category,
       ItemTypes.CHECKLIST,
       actingUser.username,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
     );
 
     if (!canEdit) {
@@ -295,11 +305,11 @@ export const clearAllChecklistItems = async (formData: FormData) => {
       process.cwd(),
       "data",
       CHECKLISTS_FOLDER,
-      checklist.owner!
+      checklist.owner!,
     );
     const categoryDir = path.join(
       ownerDir,
-      checklist.category || "Uncategorized"
+      checklist.category || "Uncategorized",
     );
     const filePath = path.join(categoryDir, `${checklist.id}.md`);
 
@@ -312,13 +322,13 @@ export const clearAllChecklistItems = async (formData: FormData) => {
         checklist.owner!,
         ItemTypes.CHECKLIST,
         updatedChecklist.uuid!,
-        links
+        links,
       );
     } catch (error) {
       console.warn(
         "Failed to update link index for checklist:",
         updatedChecklist.id,
-        error
+        error,
       );
     }
 
@@ -326,13 +336,13 @@ export const clearAllChecklistItems = async (formData: FormData) => {
       revalidatePath("/");
       const categoryPath = buildCategoryPath(
         checklist.category || "Uncategorized",
-        checklist.id
+        checklist.id,
       );
       revalidatePath(`/checklist/${categoryPath}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
 

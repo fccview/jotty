@@ -16,10 +16,19 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   await CheckForNeedsMigration();
 
+  const user = await getCurrentUser();
+  const sanitisedUser = sanitizeUserForClient(user);
+
   const [listsResult, notesResult, categoriesResult, notesCategoriesResult] =
     await Promise.all([
-      getUserChecklists({ limit: HOMEPAGE_ITEMS_LIMIT }),
-      getUserNotes({ limit: HOMEPAGE_ITEMS_LIMIT }),
+      getUserChecklists({
+        limit: HOMEPAGE_ITEMS_LIMIT,
+        pinnedPaths: sanitisedUser?.pinnedLists,
+      }),
+      getUserNotes({
+        limit: HOMEPAGE_ITEMS_LIMIT,
+        pinnedPaths: sanitisedUser?.pinnedNotes,
+      }),
       getCategories(Modes.CHECKLISTS),
       getCategories(Modes.NOTES),
     ]);
@@ -37,7 +46,7 @@ export default async function HomePage() {
       ? notesCategoriesResult.data
       : [];
 
-  const user = sanitizeUserForClient(await getCurrentUser());
+  const userForClient = sanitisedUser;
 
   return (
     <HomeClient
@@ -45,7 +54,7 @@ export default async function HomePage() {
       initialCategories={categories}
       initialDocs={notes as Note[]}
       initialDocsCategories={notesCategories}
-      user={user}
+      user={userForClient}
     />
   );
 }

@@ -1,22 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import {
   ArrowDown01Icon,
   ArrowRight01Icon,
   GridIcon,
-  File02Icon,
   GridOffIcon,
 } from "hugeicons-react";
-import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
-import { Note } from "@/app/_types";
+import { cn } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { capitalize } from "lodash";
 import { TagInfo, getChildTags, buildTagTree } from "@/app/_utils/tag-utils";
 import { useTranslations } from "next-intl";
-import { ItemTypes } from "@/app/_types/enums";
-import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
-import { useRouter } from "next/navigation";
 
 interface TagsListProps {
   collapsed: boolean;
@@ -25,7 +18,6 @@ interface TagsListProps {
   toggleTag: (tagPath: string) => void;
   onTagSelect: (tagName: string) => void;
   onClose?: () => void;
-  isItemSelected: (item: Note) => boolean;
 }
 
 const TagRenderer = ({
@@ -35,9 +27,6 @@ const TagRenderer = ({
   toggleTag,
   onTagSelect,
   onClose,
-  isItemSelected,
-  notes,
-  appSettings,
   level = 0,
 }: {
   tag: TagInfo;
@@ -46,36 +35,14 @@ const TagRenderer = ({
   toggleTag: (tagPath: string) => void;
   onTagSelect: (tagName: string) => void;
   onClose?: () => void;
-  isItemSelected: (item: Note) => boolean;
-  notes: Partial<Note>[];
-  appSettings: any;
   level?: number;
 }) => {
-  const { checkNavigation, checkWouldBlock } = useNavigationGuard();
-  const router = useRouter();
-
   const children = getChildTags(tagsIndex, tag.name);
-  const notesForTag = tag.noteUuids
-    .map((uuid) => notes.find((n) => n.uuid === uuid))
-    .filter((n): n is Partial<Note> => n !== undefined && n.id !== undefined);
-  const hasContent = notesForTag.length > 0 || children.length > 0;
+  const hasContent =
+    tag.noteUuids.length > 0 ||
+    tag.checklistUuids.length > 0 ||
+    children.length > 0;
   const isCollapsed = collapsedTags.has(tag.name);
-
-  const getNoteHref = (note: Partial<Note>) => {
-    return `/${ItemTypes.NOTE}/${buildCategoryPath(note.category || 'Uncategorized', note.id!)}`;
-  };
-
-  const handleNoteClick = (e: React.MouseEvent, note: Partial<Note>) => {
-    if (checkWouldBlock()) {
-      e.preventDefault();
-      checkNavigation(() => {
-        router.push(getNoteHref(note));
-        onClose?.();
-      });
-    } else {
-      onClose?.();
-    }
-  };
 
   return (
     <div className="space-y-1">
@@ -83,9 +50,7 @@ const TagRenderer = ({
         <div
           className={cn(
             "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
-            hasContent
-              ? "hover:bg-muted/50"
-              : "text-muted-foreground"
+            hasContent ? "hover:bg-muted/50" : "text-muted-foreground",
           )}
         >
           <button
@@ -95,7 +60,7 @@ const TagRenderer = ({
             }}
             className={cn(
               "flex items-center shrink-0",
-              hasContent ? "cursor-pointer" : "cursor-default"
+              hasContent ? "cursor-pointer" : "cursor-default",
             )}
           >
             {hasContent ? (
@@ -129,39 +94,8 @@ const TagRenderer = ({
         </div>
       </div>
 
-      {!isCollapsed && (
+      {!isCollapsed && children.length > 0 && (
         <div className="ml-2 border-l border-border/30 pl-2">
-          {notesForTag.length > 0 && (
-            <div className="space-y-1 mb-2">
-              {notesForTag.map((note) => {
-                if (!note.id || !note.title) return null;
-                const noteIsSelected = isItemSelected(note as Note);
-
-                return (
-                  <Link
-                    key={note.uuid || note.id}
-                    href={getNoteHref(note)}
-                    onClick={(e) => handleNoteClick(e, note)}
-                    data-sidebar-item-selected={noteIsSelected}
-                    className={cn(
-                      "flex items-center gap-2 py-2 px-3 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
-                      noteIsSelected
-                        ? "bg-primary/60 text-primary-foreground"
-                        : "hover:bg-muted/50 text-foreground"
-                    )}
-                  >
-                    <File02Icon className="h-4 w-4" />
-                    <span className="truncate flex-1">
-                      {appSettings?.parseContent === "yes"
-                        ? note.title
-                        : capitalize((note.title || "").replace(/-/g, " "))}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-
           {children.map((childTag) => (
             <TagRenderer
               key={childTag.name}
@@ -171,9 +105,6 @@ const TagRenderer = ({
               toggleTag={toggleTag}
               onTagSelect={onTagSelect}
               onClose={onClose}
-              isItemSelected={isItemSelected}
-              notes={notes}
-              appSettings={appSettings}
               level={level + 1}
             />
           ))}
@@ -190,10 +121,9 @@ export const TagsList = ({
   toggleTag,
   onTagSelect,
   onClose,
-  isItemSelected,
 }: TagsListProps) => {
   const t = useTranslations();
-  const { tagsIndex, tagsEnabled, notes, appSettings } = useAppMode();
+  const { tagsIndex, tagsEnabled } = useAppMode();
 
   if (!tagsEnabled) {
     return null;
@@ -206,7 +136,9 @@ export const TagsList = ({
     return null;
   }
 
-  const areAnyTagsCollapsed = rootTags.some((tag) => collapsedTags.has(tag.name));
+  const areAnyTagsCollapsed = rootTags.some((tag) =>
+    collapsedTags.has(tag.name),
+  );
   const handleToggleAllTags = () => {
     if (areAnyTagsCollapsed) {
       rootTags.forEach((tag) => {
@@ -243,7 +175,9 @@ export const TagsList = ({
               onClick={handleToggleAllTags}
               className="jotty-sidebar-tags-toggle-all text-sm lg:text-xs font-medium text-primary hover:underline focus:outline-none"
             >
-              {areAnyTagsCollapsed ? t("common.expandAll") : t("common.collapseAll")}
+              {areAnyTagsCollapsed
+                ? t("common.expandAll")
+                : t("common.collapseAll")}
             </button>
           </div>
 
@@ -258,9 +192,6 @@ export const TagsList = ({
                   toggleTag={toggleTag}
                   onTagSelect={onTagSelect}
                   onClose={onClose}
-                  isItemSelected={isItemSelected}
-                  notes={notes}
-                  appSettings={appSettings}
                 />
               ))}
             </div>

@@ -89,7 +89,7 @@ export async function OPTIONS(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  if (isEnvEnabled(process.env.ENABLE_API_DOCS)) {
+  if (!isEnvEnabled(process.env.ENABLE_API_DOCS)) {
     return NextResponse.json(
       { error: "API docs not enabled" },
       { status: 404 },

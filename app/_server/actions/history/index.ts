@@ -118,6 +118,50 @@ export const ensureRepo = async (username: string): Promise<void> => {
   }
 };
 
+export const commitCategoryRename = async (
+  username: string,
+  oldPath: string,
+  newPath: string,
+): Promise<HistoryResult<string>> => {
+  const enabled = await _isHistoryEnabled();
+  if (!enabled) {
+    return { success: false };
+  }
+  const userDir = USER_NOTES_DIR(username);
+  const lockPath = path.join(userDir, ".historylock");
+  try {
+    await fs.access(userDir);
+  } catch {
+    return { success: false, error: "User directory not found" };
+  }
+  await ensureRepo(username);
+  try {
+    await fs.writeFile(lockPath, "", { flag: "a" });
+  } catch {
+    return { success: false, error: "Failed to create lock file" };
+  }
+  try {
+    await lock(lockPath, {
+      stale: 30000,
+      retries: { retries: 5, factor: 2, minTimeout: 100, maxTimeout: 2000 },
+    });
+    const git = _getGitInstance(userDir);
+    const oldPathNorm = oldPath.replace(/\\/g, "/");
+    const newPathNorm = newPath.replace(/\\/g, "/");
+    await git.add(["-u", oldPathNorm]);
+    await git.add(newPathNorm);
+    await git.commit(`[move] Category: ${oldPathNorm} -> ${newPathNorm}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Git category rename error:", error);
+    return { success: false, error: String(error) };
+  } finally {
+    try {
+      await unlock(lockPath);
+    } catch {}
+  }
+};
+
 export const commitNote = async (
   username: string,
   relativePath: string,

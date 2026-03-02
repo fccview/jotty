@@ -519,6 +519,7 @@ export const ProfileTab = ({
                 id="confirm-password"
                 label={t('settings.confirmPassword')}
                 type="password"
+                value={confirmPassword}
                 disabled={isConfirmPasswordDisabled}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder={t('profile.confirmNewPassword')}

@@ -1,6 +1,16 @@
 import yaml from "js-yaml";
 import { v4 as uuidv4 } from "uuid";
 
+export const toIso = (
+  d: Date | string | number | undefined | null,
+): string => {
+  if (d == null) return new Date(0).toISOString();
+  const date = d instanceof Date ? d : new Date(d as string | number);
+  return Number.isFinite(date.getTime())
+    ? date.toISOString()
+    : new Date(0).toISOString();
+};
+
 export interface DocumentMetadata {
   uuid?: string;
   title?: string;

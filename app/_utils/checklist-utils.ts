@@ -13,12 +13,22 @@ import {
   generateYamlFrontmatter,
   generateUuid,
 } from "./yaml-metadata-utils";
+import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (checklistType === ChecklistsTypes.TASK) {
     return item.status === TaskStatus.COMPLETED || !!item.completed;
   }
   return !!item.completed;
+};
+
+export const areAllItemsCompleted = (items: any[]): boolean => {
+  if (items.length === 0) return true;
+
+  return items.every((item) => {
+    if ((item.children || []).length < 1) return item.completed;
+    return item.completed && areAllItemsCompleted(item.children);
+  });
 };
 
 export const formatTime = (seconds: number): string => {
@@ -29,15 +39,33 @@ export const formatTime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
+export const countItems = (
+  items: Item[],
+  checklistType?: string
+): { total: number; completed: number } =>
+  items.reduce((acc, item) => {
+    if (item.isArchived) return acc;
+
+    if (item.children && item.children.length > 0) {
+      const childCounts = countItems(item.children, checklistType);
+      return {
+        total: acc.total + childCounts.total,
+        completed: acc.completed + childCounts.completed,
+      };
+    }
+
+    return {
+      total: acc.total + 1,
+      completed: isItemCompleted(item, checklistType || "") ? acc.completed + 1 : acc.completed,
+    };
+  }, { total: 0, completed: 0 });
+
 export const getCompletionRate = (
   items: Item[],
   checklistType?: string
 ): number => {
-  const total = items.length;
+  const { total, completed } = countItems(items, checklistType);
   if (total === 0) return 0;
-  const completed = items.filter((item) =>
-    isItemCompleted(item, checklistType || "")
-  ).length;
   return Math.round((completed / total) * 100);
 };
 
@@ -255,6 +283,27 @@ export const parseMarkdown = (
     statuses = metadata.statuses;
   }
 
+  const frontmatterTags: string[] = Array.isArray(metadata.tags)
+    ? (metadata.tags as string[]).map(normalizeTag).filter(Boolean)
+    : [];
+
+  const collectItemTexts = (itemList: Item[]): string => {
+    return itemList
+      .map((item) => {
+        let text = item.text;
+        if (item.children && item.children.length > 0) {
+          text += " " + collectItemTexts(item.children);
+        }
+        return text;
+      })
+      .join(" ");
+  };
+  const allItemText = collectItemTexts(items);
+  const inlineTags = extractHashtagsFromContent(allItemText);
+
+  const tagsSet = new Set([...frontmatterTags, ...inlineTags]);
+  const tags = Array.from(tagsSet).filter(Boolean);
+
   return {
     id,
     uuid: metadata.uuid || generateUuid(),
@@ -271,6 +320,7 @@ export const parseMarkdown = (
     owner,
     isShared,
     ...(statuses && { statuses }),
+    ...(tags.length > 0 && { tags }),
   };
 };
 
@@ -418,6 +468,10 @@ export const listToMarkdown = (list: Checklist): string => {
 
   if (list.statuses && list.statuses.length > 0) {
     metadata.statuses = list.statuses;
+  }
+
+  if (list.tags && list.tags.length > 0) {
+    metadata.tags = list.tags;
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);

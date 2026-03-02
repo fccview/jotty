@@ -47,13 +47,19 @@ export const getPermissions = (
   data: any,
   username: string,
   targetId: string,
-  targetCategory: string
+  targetCategory: string,
+  itemType?: "checklists" | "notes"
 ) => {
   const isMatch = (item: { id?: string; uuid?: string; category?: string }) =>
-    item.uuid === targetId || (item.id === targetId && item.category?.toLowerCase() === targetCategory?.toLowerCase());
+    item.uuid === targetId || (item.id === targetId && (!targetCategory || !item.category || item.category?.toLowerCase() === targetCategory?.toLowerCase()));
 
-  for (const categoryKey in data) {
-    const categoryObject = data[categoryKey];
+  const categoriesToSearch =
+    itemType !== undefined
+      ? [itemType]
+      : (Object.keys(data || {}) as string[]);
+
+  for (const categoryKey of categoriesToSearch) {
+    const categoryObject = data?.[categoryKey];
 
     if (typeof categoryObject !== "object" || categoryObject === null) {
       continue;

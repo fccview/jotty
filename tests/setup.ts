@@ -43,6 +43,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("next/cache", () => ({
   revalidatePath: mockRevalidatePath,
+  revalidateTag: vi.fn(),
 }));
 
 export const mockFs = {

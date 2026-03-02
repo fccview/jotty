@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ChecklistHome } from "@/app/_components/FeatureComponents/Home/Parts/ChecklistHome";
 import { NotesHome } from "@/app/_components/FeatureComponents/Home/Parts/NotesHome";
+import { TagsHome } from "@/app/_components/FeatureComponents/Home/Parts/TagsHome";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { Checklist, Category, Note, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -52,7 +53,7 @@ export const HomeClient = ({
   return (
     <Layout
       categories={
-        mode === Modes.NOTES ? initialDocsCategories : initialCategories
+        mode === Modes.TAGS ? [] : mode === Modes.NOTES ? initialDocsCategories : initialCategories
       }
       onOpenSettings={openSettings}
       onOpenCreateModal={handleOpenCreateModal}
@@ -91,6 +92,15 @@ export const HomeClient = ({
             );
             router.push(`/note/${categoryPath}`);
           }}
+        />
+      )}
+
+      {mode === Modes.TAGS && (
+        <TagsHome
+          notes={initialDocs}
+          checklists={initialLists}
+          user={user}
+          onCreateModal={handleOpenCreateModal}
         />
       )}
     </Layout>

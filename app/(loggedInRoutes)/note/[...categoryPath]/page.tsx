@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import {
-  getAllNotes,
   CheckForNeedsMigration,
   getNoteById,
-  getUserNotes,
 } from "@/app/_server/actions/note";
 import {
   getCurrentUser,
@@ -54,24 +52,12 @@ export default async function NotePage(props: NotePageProps) {
 
   await CheckForNeedsMigration();
 
-  const [docsResult, categoriesResult] = await Promise.all([
-    getUserNotes({ isRaw: true, metadataOnly: true }),
-    getCategories(Modes.NOTES),
-  ]);
-
-  if (!docsResult.success || !docsResult.data) {
-    redirect("/");
-  }
+  const categoriesResult = await getCategories(Modes.NOTES);
 
   let note = await getNoteById(id, category, username);
 
   if (!note && hasContentAccess) {
-    const allDocsResult = await getAllNotes();
-    if (allDocsResult.success && allDocsResult.data) {
-      note = allDocsResult.data.find(
-        (doc) => doc.id === id && doc.category === category,
-      );
-    }
+    note = await getNoteById(id, category);
   }
 
   if (!note) {

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { resetAllMocks } from "../setup";
 
 const mockGetCurrentUser = vi.fn();
+const mockGetUserIndex = vi.fn();
 const mockReadJsonFile = vi.fn();
 const mockWriteJsonFile = vi.fn();
 const mockUpdateList = vi.fn();
@@ -9,6 +10,7 @@ const mockUpdateNote = vi.fn();
 
 vi.mock("@/app/_server/actions/users", () => ({
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
+  getUserIndex: (...args: any[]) => mockGetUserIndex(...args),
 }));
 
 vi.mock("@/app/_server/actions/file", () => ({
@@ -35,6 +37,7 @@ describe("Dashboard Actions", () => {
   beforeEach(() => {
     resetAllMocks();
     mockGetCurrentUser.mockResolvedValue({ username: "testuser" });
+    mockGetUserIndex.mockResolvedValue(0);
     mockReadJsonFile.mockResolvedValue([
       { username: "testuser", pinnedLists: [], pinnedNotes: [] },
     ]);

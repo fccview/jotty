@@ -753,7 +753,11 @@
     "selectConnectionIndicator": "Selecteer de status van de verbindingsindicator",
     "showIndicator": "Toon indicator",
     "hideIndicator": "Indicator verbergen",
-    "hideConnectionIndicator": "Verbindingsindicator verbergen in logo"
+    "hideConnectionIndicator": "Verbindingsindicator verbergen in logo",
+    "codeBlockChoice": "Kies de codeblokstijl",
+    "themedCodeBlock": "Thema-codeblok",
+    "defaultCodeBlock": "Codepen (standaard)",
+    "codeBlockChoiceDescription": "Kies tussen de codepen-achtige standaardcodeblokstijl of een thematische codeblokstijl."
   },
   "admin": {
     "title": "Beheer",

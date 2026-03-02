@@ -1,10 +1,6 @@
 import { redirect } from "next/navigation";
-import {
-  getListById,
-  getUserChecklists,
-} from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist";
 import { getCategories } from "@/app/_server/actions/category";
-import { getAllLists } from "@/app/_server/actions/checklist";
 import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { ChecklistClient } from "@/app/_components/FeatureComponents/Checklists/Parts/ChecklistClient";
 import { Modes } from "@/app/_types/enums";
@@ -49,24 +45,12 @@ export default async function ChecklistPage(props: ChecklistPageProps) {
   const username = userRecord?.username || "";
   const hasContentAccess = await canAccessAllContent();
 
-  const [listsResult, categoriesResult] = await Promise.all([
-    getUserChecklists({ username }),
-    getCategories(Modes.CHECKLISTS),
-  ]);
-
-  if (!listsResult.success || !listsResult.data) {
-    redirect("/");
-  }
+  const categoriesResult = await getCategories(Modes.CHECKLISTS);
 
   let checklist = await getListById(id, username, category);
 
   if (!checklist && hasContentAccess) {
-    const allListsResult = await getAllLists();
-    if (allListsResult.success && allListsResult.data) {
-      checklist = allListsResult.data.find(
-        (list) => list.id === id && list.category === category
-      );
-    }
+    checklist = await getListById(id, undefined, category);
   }
 
   if (!checklist) {

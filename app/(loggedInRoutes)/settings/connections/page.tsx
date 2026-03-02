@@ -11,8 +11,8 @@ export default async function ConnectionsPage() {
     const [linkIndex, archivedResult, notesResult, checklistsResult] = await Promise.all([
         readLinkIndex(username),
         getArchivedItems(),
-        getUserNotes({ username }),
-        getUserChecklists({ username }),
+        getUserNotes({ username, metadataOnly: true }),
+        getUserChecklists({ username, metadataOnly: true }),
     ]);
 
     const archivedItems = archivedResult.success ? archivedResult.data : [];

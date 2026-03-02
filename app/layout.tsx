@@ -29,6 +29,7 @@ import {
 import { loadCustomThemes } from "./_server/actions/config";
 import { getUserChecklists } from "./_server/actions/checklist";
 import { getUserNotes } from "./_server/actions/note";
+
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
   getAllSharedItems,
@@ -36,8 +37,8 @@ import {
   readShareFile,
 } from "./_server/actions/sharing";
 import { generateWebManifest } from "./_utils/global-utils";
-import path from "path";
 import { writeJsonFile } from "./_server/actions/file";
+import path from "path";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
@@ -138,12 +139,14 @@ export async function generateViewport(): Promise<Viewport> {
   const settings = await getSettings();
   const defaultTheme = settings?.isRwMarkable ? "rwmarkable-dark" : "dark";
   const themeColor = getThemeBackgroundColor(defaultTheme);
+  const pwaZoomEnabled = isEnvEnabled(process.env.ENABLE_PWA_ZOOM);
 
   return {
     width: "device-width",
     initialScale: 1,
     themeColor,
     viewportFit: "cover",
+    ...(!pwaZoomEnabled && { maximumScale: 1, userScalable: false }),
   };
 }
 
@@ -179,10 +182,18 @@ export default async function RootLayout({
     availableLocales,
   ] = await Promise.all([
     user && !isPublicRoute
-      ? getUserNotes({ metadataOnly: true, preserveOrder: true })
+      ? getUserNotes({
+          username: user.username,
+          metadataOnly: true,
+          preserveOrder: true,
+        })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
-      ? getUserChecklists({ metadataOnly: true, preserveOrder: true })
+      ? getUserChecklists({
+          username: user.username,
+          metadataOnly: true,
+          preserveOrder: true,
+        })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
       ? getAllSharedItems()
