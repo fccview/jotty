@@ -102,6 +102,6 @@ export const proxy = async (request: NextRequest) => {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|site.webmanifest|sw.js|app-icons).*)",
+    "/((?!_next/static|_next/image|favicon.ico|site.webmanifest|sw.js|app-icons|app-screenshots|flags|fonts|images|repo-images|themes|openapi.yaml|~offline).*)",
   ],
 };
