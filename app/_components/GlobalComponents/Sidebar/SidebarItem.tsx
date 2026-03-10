@@ -21,6 +21,7 @@ export const SidebarItem = ({
   return (
     <Link
       href={href}
+      prefetch={false}
       onClick={onClick}
       className={cn(
         "w-full flex items-center gap-3 px-3 py-2.5 text-md lg:text-sm rounded-jotty transition-colors",

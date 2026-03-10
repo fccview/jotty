@@ -202,6 +202,7 @@ export const SidebarItem = ({
     <div className="flex items-center group/item" style={style}>
       <Link
         href={itemHref}
+        prefetch={false}
         onClick={handleClick}
         data-sidebar-item-selected={isSelected}
         className={cn(
