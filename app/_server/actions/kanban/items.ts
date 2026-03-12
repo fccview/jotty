@@ -13,6 +13,7 @@ import { checkUserPermission } from "@/app/_server/actions/sharing";
 import { broadcast } from "@/app/_server/ws/broadcast";
 import { getListById } from "@/app/_server/actions/checklist";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
+import { _findItem, _updateItem } from "@/app/_utils/item-tree-utils";
 
 const _getFilePath = async (list: Checklist): Promise<string> => {
   const categoryDir = list.category || "Uncategorized";
@@ -27,26 +28,6 @@ const _getFilePath = async (list: Checklist): Promise<string> => {
   const userDir = await getUserModeDir(Modes.CHECKLISTS);
   return path.join(userDir, categoryDir, filename);
 };
-
-const _findItem = (items: Item[], itemId: string): Item | null => {
-  for (const item of items) {
-    if (item.id === itemId) return item;
-    if (item.children) {
-      const found = _findItem(item.children, itemId);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-
-const _updateItemInList = (items: Item[], itemId: string, updater: (item: Item) => Item): Item[] =>
-  items.map((item) => {
-    if (item.id === itemId) return updater(item);
-    if (item.children) {
-      return { ...item, children: _updateItemInList(item.children, itemId, updater) };
-    }
-    return item;
-  });
 
 const _saveAndBroadcast = async (list: Checklist) => {
   const filePath = await _getFilePath(list);
@@ -85,7 +66,7 @@ export const updateKanbanItemPriority = async (formData: FormData) => {
     const now = new Date().toISOString();
     const updatedList: Checklist = {
       ...list,
-      items: _updateItemInList(list.items, itemId, (item) => ({
+      items: _updateItem(list.items, itemId, (item) => ({
         ...item,
         priority: priority as KanbanPriority,
         lastModifiedBy: currentUser.username,
@@ -122,7 +103,7 @@ export const updateKanbanItemScore = async (formData: FormData) => {
     const now = new Date().toISOString();
     const updatedList: Checklist = {
       ...list,
-      items: _updateItemInList(list.items, itemId, (item) => ({
+      items: _updateItem(list.items, itemId, (item) => ({
         ...item,
         score: parseInt(score),
         lastModifiedBy: currentUser.username,
@@ -159,7 +140,7 @@ export const assignKanbanItem = async (formData: FormData) => {
     const now = new Date().toISOString();
     const updatedList: Checklist = {
       ...list,
-      items: _updateItemInList(list.items, itemId, (item) => ({
+      items: _updateItem(list.items, itemId, (item) => ({
         ...item,
         assignee: assignee || undefined,
         lastModifiedBy: currentUser.username,
@@ -216,7 +197,7 @@ export const setKanbanItemReminder = async (formData: FormData) => {
     const now = new Date().toISOString();
     const updatedList: Checklist = {
       ...list,
-      items: _updateItemInList(list.items, itemId, (item) => ({
+      items: _updateItem(list.items, itemId, (item) => ({
         ...item,
         reminder,
         lastModifiedBy: currentUser.username,
@@ -244,7 +225,7 @@ export const markReminderNotified = async (formData: FormData) => {
 
     const updatedList: Checklist = {
       ...list,
-      items: _updateItemInList(list.items, itemId, (item) => ({
+      items: _updateItem(list.items, itemId, (item) => ({
         ...item,
         reminder: item.reminder
           ? { ...item.reminder, notified: true }
