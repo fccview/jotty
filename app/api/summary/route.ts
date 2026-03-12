@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
             completedItems++;
           }
 
-          if (list.type === "task" && item.status) {
+          if ((list.type === "kanban" || list.type === "task") && item.status) {
             totalTasks++;
             switch (item.status) {
               case TaskStatus.COMPLETED:

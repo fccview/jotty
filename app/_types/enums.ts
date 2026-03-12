@@ -13,6 +13,15 @@ export enum ItemTypes {
 export enum ChecklistsTypes {
   SIMPLE = "simple",
   TASK = "task",
+  KANBAN = "kanban",
+}
+
+export enum KanbanPriorityLevel {
+  CRITICAL = "critical",
+  HIGH = "high",
+  MEDIUM = "medium",
+  LOW = "low",
+  NONE = "none",
 }
 
 export enum TaskStatus {

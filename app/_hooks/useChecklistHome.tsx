@@ -195,7 +195,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
         items?.filter((item) => isItemCompleted(item, list.type)).length || 0;
     });
 
-    const taskLists = lists.filter((list) => list.type === "task").length;
+    const taskLists = lists.filter((list) => list.type === "kanban" || list.type === "task").length;
 
     return { totalLists, totalItems, completedItems, taskLists };
   }, [lists]);
@@ -207,7 +207,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
 
   const pinned = getPinnedLists();
   const recent = getRecentLists();
-  const taskLists = recent.filter((list) => list.type === "task");
+  const taskLists = recent.filter((list) => list.type === "kanban" || list.type === "task");
   const simpleLists = recent.filter((list) => list.type === "simple");
 
   const filterOptions = [

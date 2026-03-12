@@ -128,12 +128,12 @@ export const ChecklistHeader = ({
                 }}
                 className="h-10 w-10 p-0"
                 title={
-                  checklist.type === ChecklistsTypes.TASK
+                  checklist.type === ChecklistsTypes.KANBAN || checklist.type === ChecklistsTypes.TASK
                     ? t('checklists.convertToSimpleChecklist')
                     : t('checklists.convertToTaskProject')
                 }
               >
-                {checklist.type === ChecklistsTypes.TASK ? (
+                {checklist.type === ChecklistsTypes.KANBAN || checklist.type === ChecklistsTypes.TASK ? (
                   <CheckmarkSquare04Icon className="h-4 w-4 lg:h-5 lg:w-5" />
                 ) : (
                   <TaskDaily01Icon className="h-4 w-4 lg:h-5 lg:w-5" />
@@ -174,11 +174,11 @@ export const ChecklistHeader = ({
                       {
                         type: "item" as const,
                         label:
-                          checklist.type === ChecklistsTypes.TASK
-                            ? "Convert to Simple Checklist"
-                            : "Convert to Task Project",
+                          checklist.type === ChecklistsTypes.KANBAN || checklist.type === ChecklistsTypes.TASK
+                            ? t("checklists.convertToSimpleChecklist")
+                            : t("checklists.convertToKanbanBoard"),
                         icon:
-                          checklist.type === ChecklistsTypes.TASK ? (
+                          checklist.type === ChecklistsTypes.KANBAN || checklist.type === ChecklistsTypes.TASK ? (
                             <CheckmarkSquare04Icon className="h-4 w-4" />
                           ) : (
                             <TaskDaily01Icon className="h-4 w-4" />

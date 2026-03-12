@@ -21,7 +21,7 @@ export const PublicChecklistBody = ({
   }, [checklist.items]);
 
   const taskItemsByStatus = useMemo(() => {
-    if (checklist.type !== "task") return null;
+    if (checklist.type !== "kanban" && checklist.type !== "task") return null;
     const initialAcc: Record<string, Item[]> = {
       todo: [],
       in_progress: [],
@@ -47,7 +47,7 @@ export const PublicChecklistBody = ({
     );
   }
 
-  if (checklist.type === "task" && taskItemsByStatus) {
+  if ((checklist.type === "kanban" || checklist.type === "task") && taskItemsByStatus) {
     return Object.entries(taskItemsByStatus).map(([status, items]) => (
       <TaskStatusSection key={status} status={status} items={items} checklist={checklist} />
     ));

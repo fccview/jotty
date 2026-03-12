@@ -16,6 +16,29 @@ export const getAllSharedItemsForUser = async (
   };
 };
 
+export const getUsersWithAccess = async (
+  checklistId: string,
+  checklistUuid?: string
+): Promise<string[]> => {
+  const sharingData = await readShareFile(ItemTypes.CHECKLIST);
+  const users: string[] = [];
+
+  for (const [username, entries] of Object.entries(sharingData)) {
+    if (username === "public") continue;
+    for (const entry of entries) {
+      if (
+        (checklistUuid && entry.uuid === checklistUuid) ||
+        (entry.id === checklistId)
+      ) {
+        users.push(username);
+        break;
+      }
+    }
+  }
+
+  return users;
+};
+
 export const getAllSharedItems = async (): Promise<{
   notes: Array<{ id: string; category: string }>;
   checklists: Array<{ id: string; category: string }>;

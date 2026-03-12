@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ taskI
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      if (task.type !== "task") {
+      if (task.type !== "kanban" && task.type !== "task") {
         return NextResponse.json(
           { error: "Not a task checklist" },
           { status: 400 }
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest, props: { params: Promise<{ task
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      if (task.type !== "task") {
+      if (task.type !== "kanban" && task.type !== "task") {
         return NextResponse.json(
           { error: "Not a task checklist" },
           { status: 400 }

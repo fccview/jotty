@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
 import { ChecklistView } from "@/app/_components/FeatureComponents/Checklists/Checklist";
-import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
+import { Kanban } from "@/app/_components/FeatureComponents/Kanban/Kanban";
 import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeader";
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
@@ -131,7 +131,7 @@ export const ChecklistClient = ({
   });
 
   const renderContent = () => {
-    if (localChecklist.type === "task") {
+    if (localChecklist.type === "kanban" || localChecklist.type === "task") {
       return (
         <div className="h-full flex flex-col bg-background">
           <ChecklistHeader
@@ -144,7 +144,7 @@ export const ChecklistClient = ({
             onArchive={handleArchive}
             onClone={handleClone}
           />
-          <KanbanBoard checklist={localChecklist} onUpdate={handleUpdate} />
+          <Kanban checklist={localChecklist} onUpdate={handleUpdate} />
         </div>
       );
     }
@@ -193,11 +193,11 @@ export const ChecklistClient = ({
             currentType:
               localChecklist.type === "simple"
                 ? t("checklists.simpleChecklist")
-                : t("checklists.taskProject"),
+                : t("checklists.kanbanBoard"),
             newType:
               getNewType(localChecklist.type) === "simple"
                 ? t("checklists.simpleChecklist")
-                : t("checklists.taskProject"),
+                : t("checklists.kanbanBoard"),
           })}
           confirmText={t("checklists.convert")}
         />

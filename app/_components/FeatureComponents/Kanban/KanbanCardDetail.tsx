@@ -3,25 +3,33 @@
 import { useState, useEffect, useMemo } from "react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Item, Checklist } from "@/app/_types";
+import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { Item, Checklist, KanbanPriority } from "@/app/_types";
 import {
   createSubItem,
   updateItem,
   deleteItem,
   bulkToggleItems,
 } from "@/app/_server/actions/checklist-item";
+import { getUsersWithAccess } from "@/app/_server/actions/sharing";
+import { getUsers } from "@/app/_server/actions/users";
 import {
   Add01Icon,
   FloppyDiskIcon,
   MultiplicationSignIcon,
+  UserIcon,
 } from "hugeicons-react";
 import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
+import { getPriorityColor, getPriorityLabel } from "@/app/_utils/kanban/index";
+import { KanbanPriorityLevel } from "@/app/_types/enums";
+import { Router } from "next/router";
 
-interface SubtaskModalProps {
+interface KanbanCardDetailProps {
   checklist: Checklist;
   item: Item;
   isOpen: boolean;
@@ -32,15 +40,29 @@ interface SubtaskModalProps {
   isShared: boolean;
 }
 
-const sanitizeDescription = (text: string): string => {
-  return text.replace(/\n/g, "\\n");
+const _sanitizeDescription = (text: string): string =>
+  text.replace(/\n/g, "\\n");
+
+const _unsanitizeDescription = (text: string): string =>
+  text.replace(/\\n/g, "\n");
+
+const _toLocalDateTimeValue = (isoStr: string): string => {
+  if (!isoStr) return "";
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
-const unsanitizeDescription = (text: string): string => {
-  return text.replace(/\\n/g, "\n");
+const _toLocalDateValue = (isoStr: string): string => {
+  if (!isoStr) return "";
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
-export const SubtaskModal = ({
+export const KanbanCardDetail = ({
   checklist,
   item: initialItem,
   isOpen,
@@ -49,38 +71,92 @@ export const SubtaskModal = ({
   checklistId,
   category,
   isShared,
-}: SubtaskModalProps) => {
+}: KanbanCardDetailProps) => {
   const t = useTranslations();
   const { permissions } = usePermissions();
   const { formatDateTimeString } = usePreferredDateTime();
-
+  console.log(initialItem);
   const [item, setItem] = useState(initialItem);
   const [isEditing, setIsEditing] = useState(false);
-  const [editText, setEditText] = useState(item.text);
+  const [editText, setEditText] = useState(initialItem.text);
   const [editDescription, setEditDescription] = useState(
-    unsanitizeDescription(item.description || "")
+    _unsanitizeDescription(initialItem.description || ""),
   );
   const [newSubtaskText, setNewSubtaskText] = useState("");
+  const [scoreInput, setScoreInput] = useState(
+    initialItem.score?.toString() || "",
+  );
+  const [reminderInput, setReminderInput] = useState(
+    initialItem.reminder?.datetime || "",
+  );
+  const [targetDateInput, setTargetDateInput] = useState(
+    initialItem.targetDate || "",
+  );
+  const [priorityInput, setPriorityInput] = useState<KanbanPriority>(
+    initialItem.priority || KanbanPriorityLevel.NONE,
+  );
+  const [assigneeInput, setAssigneeInput] = useState(
+    initialItem.assignee || "",
+  );
+  const [availableUsers, setAvailableUsers] = useState<
+    { username: string; avatarUrl?: string }[]
+  >([]);
 
   useEffect(() => {
     setItem(initialItem);
     setEditText(initialItem.text);
-    setEditDescription(unsanitizeDescription(initialItem.description || ""));
+    setEditDescription(_unsanitizeDescription(initialItem.description || ""));
+    setScoreInput(initialItem.score?.toString() || "");
+    setReminderInput(initialItem.reminder?.datetime || "");
+    setTargetDateInput(initialItem.targetDate || "");
+    setPriorityInput(initialItem.priority || KanbanPriorityLevel.NONE);
+    setAssigneeInput(initialItem.assignee || "");
   }, [initialItem]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const _loadUsers = async () => {
+      const allUsers = await getUsers();
+      const sharedWithUsers = await getUsersWithAccess(
+        checklistId,
+        checklist.uuid,
+      );
+      const userMap = new Map<
+        string,
+        { username: string; avatarUrl?: string }
+      >();
+      allUsers.forEach((u: { username: string; avatarUrl?: string }) => {
+        userMap.set(u.username, {
+          username: u.username,
+          avatarUrl: u.avatarUrl,
+        });
+      });
+      sharedWithUsers.forEach((username: string) => {
+        if (!userMap.has(username)) {
+          userMap.set(username, { username });
+        }
+      });
+      if (checklist.owner && !userMap.has(checklist.owner)) {
+        userMap.set(checklist.owner, { username: checklist.owner });
+      }
+      setAvailableUsers(Array.from(userMap.values()));
+    };
+    _loadUsers();
+  }, [isOpen, checklistId, checklist.uuid, checklist.owner]);
 
   const descriptionHtml = useMemo(() => {
     const noDescText = `<p class="text-muted-foreground text-md lg:text-sm opacity-50">${t(
-      "checklists.noDescription"
+      "checklists.noDescription",
     )}</p>`;
     if (!item.description) return noDescText;
-    const unsanitized = unsanitizeDescription(item.description);
+    const unsanitized = _unsanitizeDescription(item.description);
     const withLineBreaks = unsanitized.replace(/\n/g, "  \n");
     return convertMarkdownToHtml(withLineBreaks) || noDescText;
   }, [item.description, t]);
 
-  const findItemInChecklist = (
+  const _findItemInChecklist = (
     checklist: Checklist,
-    itemId: string
+    itemId: string,
   ): Item | null => {
     const searchItems = (items: Item[]): Item | null => {
       for (const item of items) {
@@ -95,9 +171,25 @@ export const SubtaskModal = ({
     return searchItems(checklist.items);
   };
 
+  const _saveField = async (fields: Record<string, string>) => {
+    const formData = new FormData();
+    formData.append("listId", checklistId);
+    formData.append("itemId", item.id);
+    formData.append("category", category);
+    Object.entries(fields).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    const result = await updateItem(checklist, formData);
+    if (result.success && result.data) {
+      onUpdate(result.data);
+      const updatedItem = _findItemInChecklist(result.data, item.id);
+      if (updatedItem) setItem(updatedItem);
+    }
+  };
+
   const handleSave = async () => {
-    const sanitizedDescription = sanitizeDescription(editDescription.trim());
-    const currentUnsanitized = unsanitizeDescription(item.description || "");
+    const sanitizedDescription = _sanitizeDescription(editDescription.trim());
+    const currentUnsanitized = _unsanitizeDescription(item.description || "");
 
     if (
       editText.trim() !== item.text ||
@@ -113,12 +205,12 @@ export const SubtaskModal = ({
       const result = await updateItem(checklist, formData);
       if (result.success && result.data) {
         onUpdate(result.data);
-        const updatedItem = findItemInChecklist(result.data, item.id);
+        const updatedItem = _findItemInChecklist(result.data, item.id);
         if (updatedItem) {
           setItem(updatedItem);
           setEditText(updatedItem.text);
           setEditDescription(
-            unsanitizeDescription(updatedItem.description || "")
+            _unsanitizeDescription(updatedItem.description || ""),
           );
         }
       }
@@ -138,10 +230,8 @@ export const SubtaskModal = ({
     const result = await createSubItem(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
-      const updatedItem = findItemInChecklist(result.data, item.id);
-      if (updatedItem) {
-        setItem(updatedItem);
-      }
+      const updatedItem = _findItemInChecklist(result.data, item.id);
+      if (updatedItem) setItem(updatedItem);
       setNewSubtaskText("");
     }
   };
@@ -156,10 +246,8 @@ export const SubtaskModal = ({
     const result = await createSubItem(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
-      const updatedItem = findItemInChecklist(result.data, item.id);
-      if (updatedItem) {
-        setItem(updatedItem);
-      }
+      const updatedItem = _findItemInChecklist(result.data, item.id);
+      if (updatedItem) setItem(updatedItem);
     }
   };
 
@@ -173,10 +261,8 @@ export const SubtaskModal = ({
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data);
-      const updatedItem = findItemInChecklist(result.data, item.id);
-      if (updatedItem) {
-        setItem(updatedItem);
-      }
+      const updatedItem = _findItemInChecklist(result.data, item.id);
+      if (updatedItem) setItem(updatedItem);
     }
   };
 
@@ -190,10 +276,8 @@ export const SubtaskModal = ({
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data);
-      const updatedItem = findItemInChecklist(result.data, item.id);
-      if (updatedItem) {
-        setItem(updatedItem);
-      }
+      const updatedItem = _findItemInChecklist(result.data, item.id);
+      if (updatedItem) setItem(updatedItem);
     }
   };
 
@@ -206,34 +290,27 @@ export const SubtaskModal = ({
     const result = await deleteItem(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
-      const updatedItem = findItemInChecklist(result.data, item.id);
-      if (updatedItem) {
-        setItem(updatedItem);
-      }
+      const updatedItem = _findItemInChecklist(result.data, item.id);
+      if (updatedItem) setItem(updatedItem);
     }
   };
 
   const handleToggleAll = async (completed: boolean) => {
     if (!item.children?.length) return;
 
-    const findTargetItems = (items: Item[]): Item[] => {
+    const _findTargetItems = (items: Item[]): Item[] => {
       const targets: Item[] = [];
-
       items.forEach((subtask) => {
         const shouldToggle = completed ? !subtask.completed : subtask.completed;
-        if (shouldToggle) {
-          targets.push(subtask);
-        }
-
+        if (shouldToggle) targets.push(subtask);
         if (subtask.children && subtask.children.length > 0) {
-          targets.push(...findTargetItems(subtask.children));
+          targets.push(..._findTargetItems(subtask.children));
         }
       });
-
       return targets;
     };
 
-    const targetItems = findTargetItems(item.children);
+    const targetItems = _findTargetItems(item.children);
     if (targetItems.length === 0) return;
 
     const formData = new FormData();
@@ -245,12 +322,77 @@ export const SubtaskModal = ({
     const result = await bulkToggleItems(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
-      const updatedItem = findItemInChecklist(result.data, item.id);
-      if (updatedItem) {
-        setItem(updatedItem);
-      }
+      const updatedItem = _findItemInChecklist(result.data, item.id);
+      if (updatedItem) setItem(updatedItem);
     }
   };
+
+  const handlePriorityChange = async (priority: KanbanPriority) => {
+    setPriorityInput(priority);
+    await _saveField({ priority });
+  };
+
+  const handleScoreSave = async () => {
+    const score = parseInt(scoreInput);
+    if (isNaN(score)) return;
+    await _saveField({ score: score.toString() });
+  };
+
+  const handleAssigneeChange = async (username: string) => {
+    setAssigneeInput(username);
+    await _saveField({ assignee: username });
+  };
+
+  const handleReminderSave = async () => {
+    await _saveField({
+      reminder: reminderInput
+        ? JSON.stringify({ datetime: new Date(reminderInput).toISOString() })
+        : "",
+    });
+  };
+
+  const handleTargetDateChange = async (value: string) => {
+    setTargetDateInput(value);
+    await _saveField({
+      targetDate: value ? new Date(value).toISOString() : "",
+    });
+  };
+
+  const priorities: KanbanPriority[] = [
+    KanbanPriorityLevel.CRITICAL,
+    KanbanPriorityLevel.HIGH,
+    KanbanPriorityLevel.MEDIUM,
+    KanbanPriorityLevel.LOW,
+    KanbanPriorityLevel.NONE,
+  ];
+
+  const assigneeOptions = useMemo(
+    () => [
+      {
+        id: "",
+        name: (
+          <span className="flex items-center gap-2 text-muted-foreground">
+            <UserIcon className="h-4 w-4" />
+            {t("kanban.unassigned")}
+          </span>
+        ),
+      },
+      ...availableUsers.map((user) => ({
+        id: user.username,
+        name: (
+          <span className="flex items-center gap-2">
+            <UserAvatar
+              username={user.username}
+              avatarUrl={user.avatarUrl}
+              size="xs"
+            />
+            {user.username}
+          </span>
+        ),
+      })),
+    ],
+    [availableUsers, t],
+  );
 
   const renderMetadata = () => {
     const metadata = [];
@@ -260,7 +402,7 @@ export const SubtaskModal = ({
         t("common.createdByOn", {
           user: item.createdBy,
           date: formatDateTimeString(item.createdAt!),
-        })
+        }),
       );
     }
 
@@ -269,7 +411,7 @@ export const SubtaskModal = ({
         t("common.lastModifiedByOn", {
           user: item.lastModifiedBy,
           date: formatDateTimeString(item.lastModifiedAt!),
-        })
+        }),
       );
     }
 
@@ -289,7 +431,7 @@ export const SubtaskModal = ({
                 key={i}
                 className="text-md lg:text-xs text-muted-foreground flex items-start gap-2"
               >
-                <span className="text-muted-foreground/40">•</span>
+                <span className="text-muted-foreground/40">&bull;</span>
                 <span>{text}</span>
               </p>
             ))}
@@ -311,7 +453,7 @@ export const SubtaskModal = ({
           <div className="space-y-4">
             <div>
               <label className="block text-md lg:text-sm font-medium text-foreground mb-2">
-                {t("tasks.taskTitle")}
+                {t("kanban.itemTitle")}
               </label>
               <input
                 type="text"
@@ -327,7 +469,7 @@ export const SubtaskModal = ({
                     e.preventDefault();
                     setEditText(item.text);
                     setEditDescription(
-                      unsanitizeDescription(item.description || "")
+                      _unsanitizeDescription(item.description || ""),
                     );
                     setIsEditing(false);
                   }
@@ -351,27 +493,12 @@ export const SubtaskModal = ({
                     e.preventDefault();
                     setEditText(item.text);
                     setEditDescription(
-                      unsanitizeDescription(item.description || "")
+                      _unsanitizeDescription(item.description || ""),
                     );
                     setIsEditing(false);
                   }
                 }}
               />
-              <p className="text-md lg:text-xs text-muted-foreground mt-2">
-                Press{" "}
-                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] border border-border">
-                  Enter
-                </kbd>{" "}
-                to save title,
-                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] border border-border mx-1">
-                  Ctrl+Enter
-                </kbd>{" "}
-                to save description,
-                <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] border border-border ml-1">
-                  Esc
-                </kbd>{" "}
-                to cancel
-              </p>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button
@@ -379,7 +506,7 @@ export const SubtaskModal = ({
                 onClick={() => {
                   setEditText(item.text);
                   setEditDescription(
-                    unsanitizeDescription(item.description || "")
+                    _unsanitizeDescription(item.description || ""),
                   );
                   setIsEditing(false);
                 }}
@@ -396,14 +523,96 @@ export const SubtaskModal = ({
         ) : (
           <div className="space-y-4">
             <div
-              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""
-                }`}
+              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""}`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
               <div
                 className="text-card-foreground prose leading-relaxed prose prose-sm dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: descriptionHtml }}
               />
+            </div>
+          </div>
+        )}
+
+        {!isEditing && permissions?.canEdit && (
+          <div className="border-t border-border pt-4 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-md lg:text-xs font-medium text-muted-foreground mb-1.5">
+                  {t("kanban.priority")}
+                </label>
+                <div className="flex flex-wrap gap-1">
+                  {priorities.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => handlePriorityChange(p)}
+                      className={`text-[11px] px-2 py-1 rounded-full border transition-all ${
+                        priorityInput === p
+                          ? `${getPriorityColor(p)} border-current font-semibold`
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {getPriorityLabel(p, t)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-md lg:text-xs font-medium text-muted-foreground mb-1.5">
+                  {t("kanban.score")}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={scoreInput}
+                  onChange={(e) => setScoreInput(e.target.value)}
+                  onBlur={handleScoreSave}
+                  onKeyDown={(e) => e.key === "Enter" && handleScoreSave()}
+                  className="w-20 px-2 py-1 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring"
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <label className="block text-md lg:text-xs font-medium text-muted-foreground mb-1.5">
+                  {t("kanban.assignee")}
+                </label>
+                <Dropdown
+                  value={assigneeInput}
+                  options={assigneeOptions}
+                  onChange={(value) => handleAssigneeChange(value)}
+                  placeholder={t("kanban.unassigned")}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-md lg:text-xs font-medium text-muted-foreground mb-1.5">
+                  {t("kanban.reminder")}
+                </label>
+                <input
+                  type="datetime-local"
+                  value={_toLocalDateTimeValue(reminderInput)}
+                  onChange={(e) => setReminderInput(e.target.value)}
+                  onBlur={handleReminderSave}
+                  className="w-full px-2 py-1.5 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring"
+                />
+              </div>
+
+              <div>
+                <label className="block text-md lg:text-xs font-medium text-muted-foreground mb-1.5">
+                  {t("kanban.targetDate")}
+                </label>
+                <input
+                  type="date"
+                  value={_toLocalDateValue(targetDateInput)}
+                  onChange={(e) => handleTargetDateChange(e.target.value)}
+                  className="w-full px-2 py-1.5 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring"
+                />
+              </div>
             </div>
           </div>
         )}

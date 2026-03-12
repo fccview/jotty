@@ -11,7 +11,10 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "mock:data:lists": "tsx tests/mock-data/checklist-generator.ts",
-    "mock:data:notes": "tsx tests/mock-data/note-generator.ts"
+    "mock:data:notes": "tsx tests/mock-data/note-generator.ts",
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml build && docker compose -f docker-compose.test.yml up -d",
+    "docker:test:logs": "docker compose -f docker-compose.test.yml logs -f",
+    "docker:test:restart": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up -d"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

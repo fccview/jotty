@@ -285,7 +285,7 @@ export const InternalLinkComponent = ({
       <span className="flex-shrink-0">
         {fullItem && "type" in fullItem && fullItem.type ? (
           <>
-            {fullItem.type === "task" ? (
+            {(fullItem.type === "kanban" || fullItem.type === "task") ? (
               <TaskDaily01Icon className="h-5 w-5" />
             ) : (
               <CheckmarkSquare04Icon className="h-5 w-5" />

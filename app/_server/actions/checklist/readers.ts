@@ -188,9 +188,8 @@ export const readListsRecursively = async (
                 typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
               title: typeof metadata?.title === "string" ? metadata.title : id,
               type:
-                metadata?.checklistType === "task" ||
-                metadata?.checklistType === "simple"
-                  ? metadata.checklistType
+                metadata?.checklistType === "task" || metadata?.checklistType === "kanban"
+                  ? "kanban"
                   : "simple",
               category: categoryPath,
               items: [],

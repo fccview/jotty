@@ -94,7 +94,7 @@ export const createSubItem = async (
       lastModifiedAt: now,
     };
 
-    if (list.type === "task") {
+    if (list.type === "kanban" || list.type === "task") {
       newSubItem.status = TaskStatus.TODO;
       newSubItem.timeEntries = [];
       newSubItem.history = [

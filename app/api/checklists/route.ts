@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
           completed: item.completed,
         };
 
-        if (listType === "task") {
+        if (listType === "task" || listType === "kanban") {
           baseItem.status = item.status || TaskStatus.TODO;
           baseItem.time =
             item.timeEntries && item.timeEntries.length > 0
@@ -101,9 +101,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (type !== "simple" && type !== "task") {
+      if (type !== "simple" && type !== "task" && type !== "kanban") {
         return NextResponse.json(
-          { error: "Type must be 'simple' or 'task'" },
+          { error: "Type must be 'simple', 'task' or 'kanban'" },
           { status: 400 }
         );
       }

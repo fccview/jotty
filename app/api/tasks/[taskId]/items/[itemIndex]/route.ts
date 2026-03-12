@@ -21,7 +21,7 @@ export async function DELETE(
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      if (task.type !== "task") {
+      if (task.type !== "kanban" && task.type !== "task") {
         return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
       }
 

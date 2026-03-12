@@ -1,5 +1,5 @@
 import path from "path";
-import { Item } from "@/app/_types";
+import { Item, KanbanPriority, KanbanReminder } from "@/app/_types";
 import { Checklist, ChecklistType } from "@/app/_types";
 import { ChecklistsTypes, TaskStatus } from "@/app/_types/enums";
 import {
@@ -16,7 +16,7 @@ import {
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
-  if (checklistType === ChecklistsTypes.TASK) {
+  if (checklistType === ChecklistsTypes.KANBAN || checklistType === ChecklistsTypes.TASK) {
     return item.status === TaskStatus.COMPLETED || !!item.completed;
   }
   return !!item.completed;
@@ -88,7 +88,7 @@ export const parseMarkdown = (
   const type = extractChecklistType(content);
 
   const checklistType =
-    type === "task" ? ChecklistsTypes.TASK : ChecklistsTypes.SIMPLE;
+    type === "kanban" ? ChecklistsTypes.KANBAN : ChecklistsTypes.SIMPLE;
 
   const lines = contentWithoutMetadata.split("\n");
   const itemLines = lines.filter(
@@ -158,7 +158,7 @@ export const parseMarkdown = (
         let item: Item;
         let recurrence = undefined;
 
-        if (type === "task" && text.includes(" | ")) {
+        if (type === "kanban" && text.includes(" | ")) {
           const parts = text.split(" | ");
           const itemText = parts[0].replace(/∣/g, "|");
           const metadata = parts.slice(1);
@@ -169,6 +169,10 @@ export const parseMarkdown = (
           let targetDate: string | undefined;
           let description: string | undefined;
           let itemMetadata: Record<string, any> = {};
+          let priority: KanbanPriority | undefined;
+          let score: number | undefined;
+          let assignee: string | undefined;
+          let reminder: KanbanReminder | undefined;
 
           metadata.forEach((meta) => {
             if (meta.startsWith("status:")) {
@@ -196,6 +200,18 @@ export const parseMarkdown = (
               }
             } else if (meta.startsWith("recurrence:")) {
               recurrence = parseRecurrenceFromMarkdown([meta]);
+            } else if (meta.startsWith("priority:")) {
+              priority = meta.substring(9) as KanbanPriority;
+            } else if (meta.startsWith("score:")) {
+              score = parseInt(meta.substring(6));
+            } else if (meta.startsWith("assignee:")) {
+              assignee = meta.substring(9);
+            } else if (meta.startsWith("reminder:")) {
+              try {
+                reminder = JSON.parse(meta.substring(9));
+              } catch {
+                reminder = { datetime: meta.substring(9) };
+              }
             }
           });
 
@@ -211,6 +227,10 @@ export const parseMarkdown = (
             description,
             ...itemMetadata,
             ...(recurrence ? { recurrence } : {}),
+            ...(priority ? { priority } : {}),
+            ...(score !== undefined ? { score } : {}),
+            ...(assignee ? { assignee } : {}),
+            ...(reminder ? { reminder } : {}),
           };
         } else {
           let itemText = text.replace(/∣/g, "|");
@@ -333,7 +353,7 @@ const generateItemMarkdown = (
   const escapedText = item.text.replace(/\|/g, "∣");
 
   let itemLine: string;
-  if (type === "task") {
+  if (type === "kanban" || type === "task") {
     const metadata: string[] = [];
 
     if (item.status && item.status !== TaskStatus.TODO) {
@@ -387,6 +407,22 @@ const generateItemMarkdown = (
       metadata.push(...recurrenceParts);
     }
 
+    if (item.priority && item.priority !== "none") {
+      metadata.push(`priority:${item.priority}`);
+    }
+
+    if (item.score !== undefined) {
+      metadata.push(`score:${item.score}`);
+    }
+
+    if (item.assignee) {
+      metadata.push(`assignee:${item.assignee}`);
+    }
+
+    if (item.reminder) {
+      metadata.push(`reminder:${JSON.stringify(item.reminder)}`);
+    }
+
     if (Object.keys(itemMetadata).length > 0) {
       metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
     }
@@ -427,6 +463,18 @@ const generateItemMarkdown = (
     if (item.targetDate) {
       itemMetadata.targetDate = item.targetDate;
     }
+    if (item.priority && item.priority !== "none") {
+      itemMetadata.priority = item.priority;
+    }
+    if (item.score !== undefined) {
+      itemMetadata.score = item.score;
+    }
+    if (item.assignee) {
+      itemMetadata.assignee = item.assignee;
+    }
+    if (item.reminder) {
+      itemMetadata.reminder = item.reminder;
+    }
 
     const metadata: string[] = [];
 
@@ -462,7 +510,8 @@ export const listToMarkdown = (list: Checklist): string => {
   const metadata: any = {};
   metadata.uuid = list.uuid || generateUuid();
   metadata.title = list.title || "Untitled Checklist";
-  if (list.type === ChecklistsTypes.TASK) metadata.checklistType = "task";
+  if (list.type === ChecklistsTypes.KANBAN) metadata.checklistType = "kanban";
+  else if (list.type === ChecklistsTypes.TASK) metadata.checklistType = "kanban";
   else if (list.type === ChecklistsTypes.SIMPLE)
     metadata.checklistType = "simple";
 

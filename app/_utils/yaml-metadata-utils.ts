@@ -14,7 +14,7 @@ export const toIso = (
 export interface DocumentMetadata {
   uuid?: string;
   title?: string;
-  checklistType?: "task" | "simple";
+  checklistType?: "task" | "simple" | "kanban";
   [key: string]: any;
 }
 
@@ -112,15 +112,18 @@ export const extractTitle = (content: string, filename?: string): string => {
   return "Untitled";
 };
 
-export const extractChecklistType = (content: string): "task" | "simple" => {
+export const extractChecklistType = (content: string): "kanban" | "simple" => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
   if (metadata.checklistType) {
-    return metadata.checklistType;
+    if (metadata.checklistType === "task" || metadata.checklistType === "kanban") {
+      return "kanban";
+    }
+    return "simple";
   }
 
   if (contentWithoutMetadata.includes("<!-- type:task -->")) {
-    return "task";
+    return "kanban";
   }
 
   return "simple";

@@ -7,7 +7,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
-import { KanbanItem } from "./KanbanItem";
+import { KanbanCard } from "./KanbanCard";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
@@ -57,7 +57,7 @@ const KanbanColumnComponent = ({
   const color = statusColor || defaultColors[status] || "#6b7280";
 
   const { borderColor, bgColor } = useMemo(() => {
-    const hexToRgb = (hex: string) => {
+    const _hexToRgb = (hex: string) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
       return result
         ? {
@@ -68,7 +68,7 @@ const KanbanColumnComponent = ({
         : null;
     };
 
-    const rgb = hexToRgb(color);
+    const rgb = _hexToRgb(color);
     return {
       borderColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` : color,
       bgColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)` : color,
@@ -93,7 +93,7 @@ const KanbanColumnComponent = ({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex-1 rounded-jotty border-2 border-dashed p-3 min-h-[200px] transition-colors",
+          "flex-1 rounded-jotty border-2 border-dashed p-3 min-h-[200px] transition-colors duration-200",
           isOver && "border-primary bg-primary/5"
         )}
         style={{
@@ -107,7 +107,7 @@ const KanbanColumnComponent = ({
         >
           <div className="space-y-2">
             {items.map((item) => (
-              <KanbanItem
+              <KanbanCard
                 checklist={checklist}
                 key={item.id}
                 item={item}

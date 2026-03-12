@@ -25,7 +25,7 @@ export const ChecklistTypeSelector = ({
       </label>
 
       <div className="grid grid-cols-2 gap-3">
-        {([ChecklistsTypes.SIMPLE, ChecklistsTypes.TASK] as const).map((type) => (
+        {([ChecklistsTypes.SIMPLE, ChecklistsTypes.KANBAN] as const).map((type) => (
           <button
             key={type}
             type="button"
@@ -45,7 +45,7 @@ export const ChecklistTypeSelector = ({
               <div className="font-medium text-sm">
                 {type === ChecklistsTypes.SIMPLE
                   ? t("checklists.simpleChecklist")
-                  : t("checklists.taskProject")}
+                  : t("checklists.kanbanBoard")}
               </div>
               <div className="text-md lg:text-xs text-muted-foreground">
                 {type === ChecklistsTypes.SIMPLE

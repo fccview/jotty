@@ -2,6 +2,8 @@ export type { ItemType, Result, SharingPermissions } from "./core";
 
 export type {
   ChecklistType,
+  KanbanPriority,
+  KanbanReminder,
   TimeEntry,
   RecurrenceRule,
   StatusChange,

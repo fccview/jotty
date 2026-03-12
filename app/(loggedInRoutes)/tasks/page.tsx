@@ -13,7 +13,7 @@ export default async function TasksPage() {
   ]);
 
   const lists = listsResult.success && listsResult.data ? listsResult.data : [];
-  const taskLists = lists.filter((list) => list.type === "task") as Checklist[];
+  const taskLists = lists.filter((list) => list.type === "kanban" || list.type === "task") as Checklist[];
   const user = sanitizeUserForClient(userRecord);
 
   return (

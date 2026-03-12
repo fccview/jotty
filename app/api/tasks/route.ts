@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       }
 
       let userTasks = lists.data.filter(
-        (list) => list.owner === user.username && list.type === "task"
+        (list) => list.owner === user.username && (list.type === "kanban" || list.type === "task")
       );
 
       if (category) {
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("category", category);
-      formData.append("type", "task");
+      formData.append("type", "kanban");
       formData.append("user", JSON.stringify(user));
 
       if (statuses) {

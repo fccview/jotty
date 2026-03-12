@@ -75,7 +75,7 @@ export const createBulkItems = async (
       createdAt: now,
       lastModifiedBy: currentUser,
       lastModifiedAt: now,
-      ...(list.type === "task" && {
+      ...((list.type === "kanban" || list.type === "task") && {
         status: TaskStatus.TODO,
         timeEntries: [],
         history: [

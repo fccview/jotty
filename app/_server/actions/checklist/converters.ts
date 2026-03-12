@@ -74,14 +74,27 @@ export const convertChecklistType = async (formData: FormData) => {
 
     let convertedItems: any[];
 
-    if (newType === "task") {
-      convertedItems = (list.items || []).map((item) => ({
-        ...item,
-        status:
-          item.status ||
-          (item.completed ? TaskStatus.COMPLETED : TaskStatus.TODO),
-        timeEntries: item.timeEntries || [],
-      }));
+    if (newType === "kanban" || newType === "task") {
+      const statuses = list.statuses || [];
+      const completionStatus = statuses.find((s) => s.autoComplete) || statuses.find((s) => s.id === TaskStatus.COMPLETED);
+      const completionStatusId = completionStatus?.id || TaskStatus.COMPLETED;
+      const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
+      const firstStatusId = sortedStatuses[0]?.id || TaskStatus.TODO;
+
+      convertedItems = (list.items || []).map((item) => {
+        let status = item.status;
+        if (!status) {
+          status = item.completed ? completionStatusId : firstStatusId;
+        } else if (statuses.length > 0 && !statuses.some((s) => s.id === status)) {
+          status = item.completed ? completionStatusId : firstStatusId;
+        }
+        return {
+          ...item,
+          status,
+          completed: item.completed || (completionStatus?.autoComplete && status === completionStatusId) || false,
+          timeEntries: item.timeEntries || [],
+        };
+      });
     } else {
       convertedItems = (list.items || []).map((item) => ({
         ...item,
@@ -100,6 +113,8 @@ export const convertChecklistType = async (formData: FormData) => {
       type: newType,
       items: convertedItems as Item[],
       updatedAt: new Date().toISOString(),
+      ...(list.statuses && { statuses: list.statuses }),
+      ...(list.tags && { tags: list.tags }),
     };
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));

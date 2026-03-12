@@ -23,7 +23,7 @@ export const PublicChecklistHeader = ({
 }: PublicChecklistHeaderProps) => (
   <header className="mb-8">
     <div className="flex items-center gap-3 mb-4">
-      {checklist.type === "task" ? (
+      {(checklist.type === "kanban" || checklist.type === "task") ? (
         <TaskDaily01Icon className="h-8 w-8 text-primary" />
       ) : (
         <CheckmarkSquare04Icon className="h-8 w-8 text-primary" />

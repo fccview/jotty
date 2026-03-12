@@ -221,7 +221,7 @@ export const SidebarItem = ({
           />
         ) : (
           <>
-            {"type" in item && item.type === "task" ? (
+            {"type" in item && (item.type === "kanban" || item.type === "task") ? (
               <TaskDaily01Icon
                 className={cn(
                   "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",

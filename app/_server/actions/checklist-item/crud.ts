@@ -38,7 +38,7 @@ export const updateItem = async (
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
-    const completed = formData.get("completed") === "true";
+    const completedRaw = formData.get("completed");
     const text = formData.get("text") as string;
     const description = formData.get("description") as string;
     const category = formData.get("category") as string;
@@ -125,13 +125,26 @@ export const updateItem = async (
       ? Array.from(new Set([...existingTags.map(normalizeTag), ...textInlineTags])).filter(Boolean)
       : existingTags;
 
+    const priority = formData.get("priority") as string | null;
+    const score = formData.get("score") as string | null;
+    const assignee = formData.get("assignee") as string | null;
+    const reminder = formData.get("reminder") as string | null;
+    const targetDate = formData.get("targetDate") as string | null;
+
     const updatedList = {
       ...checklist,
       items: findAndUpdateItem(checklist.items, itemId, {
-        completed,
+        ...(completedRaw !== null && { completed: completedRaw === "true" }),
         ...(text && { text }),
         ...(description !== null &&
           description !== undefined && { description }),
+        ...(priority !== null && { priority: priority || undefined }),
+        ...(score !== null && { score: score ? parseInt(score) : undefined }),
+        ...(assignee !== null && { assignee: assignee || undefined }),
+        ...(reminder !== null && {
+          reminder: reminder ? JSON.parse(reminder) : undefined,
+        }),
+        ...(targetDate !== null && { targetDate: targetDate || undefined }),
         lastModifiedBy: currentUser,
         lastModifiedAt: now,
       }),
@@ -256,7 +269,7 @@ export const createItem = async (
       return TaskStatus.TODO;
     };
 
-    const defaultStatus = list.type === "task" ? getDefaultStatus() : undefined;
+    const defaultStatus = (list.type === "kanban" || list.type === "task") ? getDefaultStatus() : undefined;
 
     const shiftedItems = list.items.map((item) => ({
       ...item,
@@ -273,7 +286,7 @@ export const createItem = async (
       createdAt: now,
       lastModifiedBy: currentUser,
       lastModifiedAt: now,
-      ...(list.type === "task" &&
+      ...((list.type === "kanban" || list.type === "task") &&
         defaultStatus && {
         status: defaultStatus,
         timeEntries,

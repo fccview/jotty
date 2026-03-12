@@ -72,7 +72,7 @@ export const ChecklistsPageClient = ({
           !list.items.every((item) => isItemCompleted(item, list.type))
       );
     } else if (checklistFilter === "task") {
-      filtered = filtered.filter((list) => list.type === "task");
+      filtered = filtered.filter((list) => list.type === "kanban" || list.type === "task");
     } else if (checklistFilter === "simple") {
       filtered = filtered.filter((list) => list.type === "simple");
     }

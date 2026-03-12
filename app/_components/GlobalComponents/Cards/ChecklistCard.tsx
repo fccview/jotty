@@ -135,7 +135,7 @@ export const ChecklistCard = ({
         </div>
       </div>
 
-      {list.type === "task" && <TaskSpecificDetails items={activeItems} />}
+      {(list.type === "kanban" || list.type === "task") && <TaskSpecificDetails items={activeItems} />}
 
       <div className="flex items-center justify-between text-sm lg:text-xs text-muted-foreground">
         <div className="flex items-center gap-2">

@@ -65,7 +65,7 @@ export const ChecklistListItem = ({
     return list?.category ? list?.category.split("/").pop() : null;
   }, [list?.category]);
 
-  const isTask = list.type === "task";
+  const isTask = list.type === "kanban" || list.type === "task";
 
   const style = isDragging
     ? { opacity: 0.4 }

@@ -119,14 +119,14 @@ export const ChecklistHome = ({
   const filteredTaskLists = useMemo(() => {
     if (!selectedCategory) return taskLists;
     return displayLists
-      .filter((list) => list.type === "task")
+      .filter((list) => list.type === "kanban" || list.type === "task")
       .filter((list) => !pinned.some((p) => p.id === list.id));
   }, [taskLists, displayLists, selectedCategory, pinned]);
 
   const filteredSimpleLists = useMemo(() => {
     if (!selectedCategory) return simpleLists;
     return displayLists
-      .filter((list) => list.type !== "task")
+      .filter((list) => list.type !== "kanban" && list.type !== "task")
       .filter((list) => !pinned.some((p) => p.id === list.id));
   }, [simpleLists, displayLists, selectedCategory, pinned]);
 
@@ -325,18 +325,18 @@ export const ChecklistHome = ({
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-foreground">
                     {selectedCategory
-                      ? t("tasks.title")
-                      : t("tasks.recentTasks")}
+                      ? t("kanban.title")
+                      : t("kanban.recentBoards")}
                   </h2>
                   <div className="flex-1 h-px bg-border"></div>
                   <Button
                     variant="outline"
-                    onClick={() => (window.location.href = "/tasks")}
+                    onClick={() => (window.location.href = "/kanban")}
                     size="sm"
                     className="ml-2"
                   >
                     <span className="hidden sm:inline">
-                      {t("tasks.showAllTasks")}
+                      {t("kanban.showAllBoards")}
                     </span>
                     <span className="sm:hidden">{t("common.all")}</span>
                     <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />

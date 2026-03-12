@@ -6,24 +6,28 @@ import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
-import { TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
-import { SubtaskModal } from "./SubtaskModal";
+import { TaskStatus } from "@/app/_types/enums";
+import { KanbanCardDetail } from "./KanbanCardDetail";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useKanbanItem } from "@/app/_hooks/useKanbanItem";
+import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
 import {
   formatTimerTime,
   getStatusColor,
   getStatusIcon,
-} from "@/app/_utils/kanban-utils";
+  getPriorityColor,
+  getPriorityLabel,
+} from "@/app/_utils/kanban/index";
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { KanbanItemContent } from "./KanbanItemContent";
 import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { CircleIcon } from "hugeicons-react";
+import { formatReminderTime } from "@/app/_utils/kanban/reminder-utils";
+import { CircleIcon, Notification03Icon, UserIcon } from "hugeicons-react";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
+import { useTranslations } from "next-intl";
 
-interface KanbanItemProps {
+interface KanbanCardProps {
   checklist: Checklist;
   item: Item;
   isDragging?: boolean;
@@ -34,7 +38,7 @@ interface KanbanItemProps {
   statuses: KanbanStatus[];
 }
 
-const KanbanItemComponent = ({
+const KanbanCardComponent = ({
   checklist,
   item,
   isDragging,
@@ -43,7 +47,8 @@ const KanbanItemComponent = ({
   onUpdate,
   isShared,
   statuses,
-}: KanbanItemProps) => {
+}: KanbanCardProps) => {
+  const t = useTranslations();
   const { usersPublicData } = useAppMode();
   const { permissions } = usePermissions();
   const { formatDateString, formatDateTimeString, formatTimeString } =
@@ -52,17 +57,16 @@ const KanbanItemComponent = ({
   const getUserAvatarUrl = useCallback(
     (username: string) => {
       if (!usersPublicData) return "";
-
       return (
         usersPublicData.find(
-          (user) => user.username?.toLowerCase() === username?.toLowerCase()
+          (user) => user.username?.toLowerCase() === username?.toLowerCase(),
         )?.avatarUrl || ""
       );
     },
-    [usersPublicData]
+    [usersPublicData],
   );
 
-  const [showSubtaskModal, setShowSubtaskModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   const kanbanItemHook = useKanbanItem({
     checklist,
@@ -108,13 +112,13 @@ const KanbanItemComponent = ({
 
   return (
     <>
-      {showSubtaskModal && (
-        <SubtaskModal
+      {showDetailModal && (
+        <KanbanCardDetail
           checklist={checklist}
           item={item}
           isShared={isShared}
-          isOpen={showSubtaskModal}
-          onClose={() => setShowSubtaskModal(false)}
+          isOpen={showDetailModal}
+          onClose={() => setShowDetailModal(false)}
           onUpdate={onUpdate}
           checklistId={checklistId}
           category={category}
@@ -127,12 +131,12 @@ const KanbanItemComponent = ({
           style={style}
           {...attributes}
           {...listeners}
-          onDoubleClick={() => setShowSubtaskModal(true)}
+          onDoubleClick={() => setShowDetailModal(true)}
           className={cn(
             "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
             getStatusColor(item.status),
             (isDragging || isSortableDragging) &&
-            "opacity-50 scale-95 rotate-[4deg] shadow-lg z-50 transition-all duration-200"
+              "opacity-50 scale-95 rotate-[4deg] shadow-lg z-50 transition-all duration-200",
           )}
         >
           <div className="space-y-2">
@@ -148,13 +152,46 @@ const KanbanItemComponent = ({
               onEditTextChange={kanbanItemHook.setEditText}
               onEditSave={kanbanItemHook.handleSave}
               onEditKeyDown={kanbanItemHook.handleKeyDown}
-              onShowSubtaskModal={() => setShowSubtaskModal(true)}
+              onShowSubtaskModal={() => setShowDetailModal(true)}
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
               onArchive={kanbanItemHook.handleArchive}
               formatDateString={formatDateString}
               formatDateTimeString={formatDateTimeString}
             />
+
+            <div className="flex flex-wrap gap-1.5">
+              {item.priority && item.priority !== "none" && (
+                <span
+                  className={cn(
+                    "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
+                    getPriorityColor(item.priority),
+                  )}
+                >
+                  {getPriorityLabel(item.priority, t)}
+                </span>
+              )}
+
+              {item.score !== undefined && (
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                  {t("kanban.scoreLabel", { score: item.score })}
+                </span>
+              )}
+
+              {item.assignee && (
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary flex items-center gap-0.5">
+                  <UserIcon className="h-2.5 w-2.5" />
+                  {item.assignee}
+                </span>
+              )}
+
+              {item.reminder && !item.reminder.notified && (
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 flex items-center gap-0.5">
+                  <Notification03Icon className="h-2.5 w-2.5" />
+                  {formatReminderTime(item.reminder.datetime)}
+                </span>
+              )}
+            </div>
 
             <KanbanItemTimer
               totalTime={kanbanItemHook.totalTime}
@@ -211,4 +248,4 @@ const KanbanItemComponent = ({
   );
 };
 
-export const KanbanItem = memo(KanbanItemComponent);
+export const KanbanCard = memo(KanbanCardComponent);
