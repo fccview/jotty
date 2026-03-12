@@ -191,8 +191,10 @@ const KanbanCardComponent = ({
               )}
 
               {item.reminder && !item.reminder.notified && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 flex items-center gap-0.5">
-                  <Notification03Icon className="h-2.5 w-2.5" />
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground flex items-center gap-0.5">
+                  <span className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center text-muted-foreground">
+                    <Notification03Icon className="h-2 w-2" />
+                  </span>
                   {formatReminderTime(item.reminder.datetime)}
                 </span>
               )}

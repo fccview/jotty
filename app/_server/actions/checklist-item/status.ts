@@ -104,14 +104,6 @@ export const updateItemStatus = async (
               }
             } else if (item.completed && status !== item.status) {
               updates.completed = false;
-              if (item.children && item.children.length > 0) {
-                updates.children = updateAllChildren(
-                  item.children,
-                  false,
-                  username,
-                  now
-                );
-              }
             }
 
             if (status !== item.status) {
