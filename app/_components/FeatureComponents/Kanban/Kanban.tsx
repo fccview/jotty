@@ -257,20 +257,21 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           >
             <div
               className={
-                columns.length <= 4
-                  ? "h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4"
-                  : "h-full lg:flex lg:gap-4 p-2 sm:p-4 overflow-x-auto"
+                columns.length <= 6
+                  ? "h-full kanban-grid gap-4 p-2 sm:p-4"
+                  : "h-full flex gap-4 p-2 sm:p-4 overflow-x-auto"
               }
+              style={columns.length <= 6 ? {
+                "--kanban-col-count": columns.length,
+              } as React.CSSProperties : undefined}
             >
               {columns.map((column) => {
                 const items = getItemsByStatus(column.status);
                 return (
                   <div
                     key={column.id}
-                    className={`${columns.length > 4
-                      ? "flex-shrink-0 min-w-[20%]"
-                      : "min-w-[24%] "
-                      }`}
+                    className={columns.length > 6 ? "flex-shrink-0" : ""}
+                    style={columns.length > 6 ? { width: "280px" } : undefined}
                   >
                     <KanbanColumn
                       checklist={localChecklist}
@@ -310,18 +311,21 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
         ) : (
           <div
             className={
-              columns.length <= 4
-                ? "h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4"
+              columns.length <= 6
+                ? "h-full kanban-grid gap-4 p-2 sm:p-4"
                 : "h-full flex gap-4 p-2 sm:p-4 overflow-x-auto"
             }
+            style={columns.length <= 6 ? {
+              "--kanban-col-count": columns.length,
+            } as React.CSSProperties : undefined}
           >
             {columns.map((column) => {
               const items = getItemsByStatus(column.status);
               return (
                 <div
                   key={column.id}
-                  className={columns.length > 4 ? "flex-shrink-0" : ""}
-                  style={columns.length > 4 ? { width: "320px" } : undefined}
+                  className={columns.length > 6 ? "flex-shrink-0" : ""}
+                  style={columns.length > 6 ? { width: "280px" } : undefined}
                 >
                   <KanbanColumn
                     checklist={localChecklist}

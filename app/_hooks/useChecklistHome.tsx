@@ -16,7 +16,7 @@ import { Checklist, SanitisedUser } from "@/app/_types";
 import { isItemCompleted } from "@/app/_utils/checklist-utils";
 import { useHomeFilter } from "@/app/_utils/home-filter-store";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
-import { ItemTypes } from "../_types/enums";
+import { isKanbanType, ItemTypes } from "../_types/enums";
 import { useTranslations } from "next-intl";
 import { HOMEPAGE_ITEMS_LIMIT } from "@/app/_consts/files";
 
@@ -195,7 +195,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
         items?.filter((item) => isItemCompleted(item, list.type)).length || 0;
     });
 
-    const taskLists = lists.filter((list) => list.type === "kanban" || list.type === "task").length;
+    const taskLists = lists.filter((list) => isKanbanType(list.type)).length;
 
     return { totalLists, totalItems, completedItems, taskLists };
   }, [lists]);
@@ -207,7 +207,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
 
   const pinned = getPinnedLists();
   const recent = getRecentLists();
-  const taskLists = recent.filter((list) => list.type === "kanban" || list.type === "task");
+  const taskLists = recent.filter((list) => isKanbanType(list.type));
   const simpleLists = recent.filter((list) => list.type === "simple");
 
   const filterOptions = [

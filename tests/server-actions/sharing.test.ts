@@ -10,6 +10,21 @@ const mockGetUserByChecklist = vi.fn()
 const mockGetUserByNote = vi.fn()
 const mockGetUserByChecklistUuid = vi.fn()
 const mockGetUserByNoteUuid = vi.fn()
+const mockGetTranslations = vi.fn()
+const mockCreateNotificationForUser = vi.fn()
+const mockBroadcast = vi.fn()
+
+vi.mock('next-intl/server', () => ({
+  getTranslations: (...args: unknown[]) => mockGetTranslations(...args),
+}))
+
+vi.mock('@/app/_server/actions/notifications', () => ({
+  createNotificationForUser: (...args: unknown[]) => mockCreateNotificationForUser(...args),
+}))
+
+vi.mock('@/app/_server/ws/broadcast', () => ({
+  broadcast: (...args: unknown[]) => mockBroadcast(...args),
+}))
 
 vi.mock('@/app/_server/actions/file', () => ({
   readJsonFile: (...args: any[]) => mockReadJsonFile(...args),
@@ -67,6 +82,9 @@ describe('Sharing Actions', () => {
     mockGetUserByNote.mockResolvedValue({ success: false })
     mockGetUserByChecklistUuid.mockResolvedValue({ success: false })
     mockGetUserByNoteUuid.mockResolvedValue({ success: false })
+    mockGetTranslations.mockResolvedValue((key: string) => key)
+    mockCreateNotificationForUser.mockResolvedValue(undefined)
+    mockBroadcast.mockResolvedValue(undefined)
     mockFs.readFile.mockResolvedValue('---\nuuid: test-uuid-123\n---\nContent')
     mockFs.access.mockRejectedValue(new Error('ENOENT'))
   })

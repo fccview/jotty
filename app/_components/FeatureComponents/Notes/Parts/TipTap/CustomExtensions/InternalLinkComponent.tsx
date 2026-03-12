@@ -22,7 +22,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { Checklist, Note } from "@/app/_types";
-import { ItemTypes } from "@/app/_types/enums";
+import { isKanbanType, ItemTypes } from "@/app/_types/enums";
 import { encodeId } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 
@@ -49,8 +49,8 @@ const _returnNote = async (uuid: string, router: any, note?: Note) => {
     router.push(
       `/note/${buildCategoryPath(
         finalNote.category || "Uncategorized",
-        finalNote.id
-      )}`
+        finalNote.id,
+      )}`,
     );
     return;
   }
@@ -61,7 +61,7 @@ const _returnNote = async (uuid: string, router: any, note?: Note) => {
 const _returnChecklist = async (
   uuid: string,
   router: any,
-  checklist?: Checklist
+  checklist?: Checklist,
 ) => {
   const finalChecklist = checklist || (await getListById(uuid));
 
@@ -69,8 +69,8 @@ const _returnChecklist = async (
     router.push(
       `/checklist/${buildCategoryPath(
         finalChecklist.category || "Uncategorized",
-        finalChecklist.id
-      )}`
+        finalChecklist.id,
+      )}`,
     );
     return;
   }
@@ -87,7 +87,9 @@ export const InternalLinkComponent = ({
   const { href, title, uuid, itemId, type, category, convertToBidirectional } =
     node.attrs;
   const [showPopup, setShowPopup] = useState(false);
-  const [loadedFullItem, setLoadedFullItem] = useState<Note | Checklist | null>(null);
+  const [loadedFullItem, setLoadedFullItem] = useState<Note | Checklist | null>(
+    null,
+  );
   const [isLoadingItem, setIsLoadingItem] = useState(false);
   const potentialCategory = href
     ?.replace("/jotty/", "")
@@ -116,7 +118,8 @@ export const InternalLinkComponent = ({
 
     setIsLoadingItem(true);
     try {
-      const isChecklist = metadataItem && "type" in metadataItem && metadataItem.type;
+      const isChecklist =
+        metadataItem && "type" in metadataItem && metadataItem.type;
       if (isChecklist) {
         const checklist = await getListById(uuid);
         if (checklist) setLoadedFullItem(checklist);
@@ -146,13 +149,14 @@ export const InternalLinkComponent = ({
 
       if (fullItem && fullItem.id) {
         router.push(
-          `/${fullItem && "type" in fullItem && fullItem.type
-            ? ItemTypes.CHECKLIST
-            : ItemTypes.NOTE
+          `/${
+            fullItem && "type" in fullItem && fullItem.type
+              ? ItemTypes.CHECKLIST
+              : ItemTypes.NOTE
           }/${buildCategoryPath(
             fullItem.category || "Uncategorized",
-            fullItem.id
-          )}`
+            fullItem.id,
+          )}`,
         );
         return;
       }
@@ -187,7 +191,7 @@ export const InternalLinkComponent = ({
             : "/note/";
         const newHref = `${pathPrefix}${buildCategoryPath(
           fullItem.category || "Uncategorized",
-          fullItem.id
+          fullItem.id,
         )}`;
         updateAttributes({
           href: newHref,
@@ -221,13 +225,13 @@ export const InternalLinkComponent = ({
             (n) =>
               encodeId(n.id || "") === encodeId(itemId) &&
               encodeCategoryPath(n?.category || "") ===
-              encodeCategoryPath(category)
+                encodeCategoryPath(category),
           ) ||
           checklists.find(
             (c) =>
               encodeId(c.id || "") === encodeId(itemId) &&
               encodeCategoryPath(c?.category || "") ===
-              encodeCategoryPath(category)
+                encodeCategoryPath(category),
           );
 
         if (foundItem?.uuid) {
@@ -267,12 +271,17 @@ export const InternalLinkComponent = ({
               <div className="bg-card border border-border rounded-jotty p-4 text-muted-foreground text-sm">
                 Loading...
               </div>
-            ) : loadedFullItem && "type" in loadedFullItem && loadedFullItem.type ? (
-              <ChecklistCard list={loadedFullItem as Checklist} onSelect={() => { }} />
+            ) : loadedFullItem &&
+              "type" in loadedFullItem &&
+              loadedFullItem.type ? (
+              <ChecklistCard
+                list={loadedFullItem as Checklist}
+                onSelect={() => {}}
+              />
             ) : loadedFullItem ? (
               <NoteCard
                 note={loadedFullItem as Note}
-                onSelect={() => { }}
+                onSelect={() => {}}
                 fullScrollableContent
               />
             ) : (
@@ -285,7 +294,7 @@ export const InternalLinkComponent = ({
       <span className="flex-shrink-0">
         {fullItem && "type" in fullItem && fullItem.type ? (
           <>
-            {(fullItem.type === "kanban" || fullItem.type === "task") ? (
+            {isKanbanType(fullItem.type) ? (
               <TaskDaily01Icon className="h-5 w-5" />
             ) : (
               <CheckmarkSquare04Icon className="h-5 w-5" />
@@ -308,15 +317,18 @@ export const InternalLinkComponent = ({
       </span>
       {isEditable && (isPathBasedLink || canToggle) && (
         <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-border">
-          <span className="text-md lg:text-xs text-muted-foreground">{t('editor.linkType')}</span>
+          <span className="text-md lg:text-xs text-muted-foreground">
+            {t("editor.linkType")}
+          </span>
           <button
             onClick={handleToggleConversion}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-sm lg:text-xs font-medium transition-all ${isJottyLink
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-sm lg:text-xs font-medium transition-all ${
+              isJottyLink
                 ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
                 : convertToBidirectional
                   ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
                   : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
-              }`}
+            }`}
             title={
               isJottyLink
                 ? "Click to convert to path-based link (cross-platform compatible)"
@@ -328,12 +340,12 @@ export const InternalLinkComponent = ({
             {isJottyLink || convertToBidirectional ? (
               <>
                 <FileLinkIcon className="h-3.5 w-3.5" />
-                <span>{t('editor.bidirectional')}</span>
+                <span>{t("editor.bidirectional")}</span>
               </>
             ) : (
               <>
                 <Attachment01Icon className="h-3.5 w-3.5" />
-                <span>{t('editor.pathBased')}</span>
+                <span>{t("editor.pathBased")}</span>
               </>
             )}
           </button>

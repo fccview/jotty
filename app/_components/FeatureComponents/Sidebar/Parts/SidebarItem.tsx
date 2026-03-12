@@ -20,7 +20,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
-import { ItemTypes, Modes } from "@/app/_types/enums";
+import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
 import { togglePin } from "@/app/_server/actions/dashboard";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -64,7 +64,11 @@ export const SidebarItem = ({
   const [showShareModal, setShowShareModal] = useState(false);
   const { globalSharing, appSettings } = useAppMode();
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
-  const itemDetails = sharingInfo(globalSharing, item.uuid || item.id, encodedCategory);
+  const itemDetails = sharingInfo(
+    globalSharing,
+    item.uuid || item.id,
+    encodedCategory,
+  );
 
   const isPubliclyShared = itemDetails.isPublic;
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
@@ -74,7 +78,7 @@ export const SidebarItem = ({
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
-  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || 'Uncategorized', item.id)}`;
+  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || "Uncategorized", item.id)}`;
 
   const handleDeleteItem = async () => {
     const formData = new FormData();
@@ -107,7 +111,7 @@ export const SidebarItem = ({
       const result = await togglePin(
         item.uuid || item.id,
         item.category || "Uncategorized",
-        mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE
+        mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
       );
       if (result.success) {
         router.refresh();
@@ -150,9 +154,7 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(onEditItem || isShareable
-      ? [{ type: "divider" as const }]
-      : []),
+    ...(onEditItem || isShareable ? [{ type: "divider" as const }] : []),
     {
       label: isItemPinned() ? t("common.unpinFromHome") : t("common.pinToHome"),
       onClick: handleTogglePin,
@@ -209,30 +211,30 @@ export const SidebarItem = ({
           "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors flex-1 text-left truncate",
           isSelected
             ? "bg-primary/60 text-primary-foreground"
-            : "hover:bg-muted/50 text-foreground"
+            : "hover:bg-muted/50 text-foreground",
         )}
       >
         {mode === Modes.NOTES ? (
           <File02Icon
             className={cn(
               "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
-              isSelected ? "text-primary-foreground" : "text-foreground"
+              isSelected ? "text-primary-foreground" : "text-foreground",
             )}
           />
         ) : (
           <>
-            {"type" in item && (item.type === "kanban" || item.type === "task") ? (
+            {"type" in item && isKanbanType(item.type) ? (
               <TaskDaily01Icon
                 className={cn(
                   "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
-                  isSelected ? "text-primary-foreground" : "text-foreground"
+                  isSelected ? "text-primary-foreground" : "text-foreground",
                 )}
               />
             ) : (
               <CheckmarkSquare04Icon
                 className={cn(
                   "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
-                  isSelected ? "text-primary-foreground" : "text-foreground"
+                  isSelected ? "text-primary-foreground" : "text-foreground",
                 )}
               />
             )}
@@ -246,7 +248,7 @@ export const SidebarItem = ({
 
         <div className="flex items-center gap-1 flex-shrink-0">
           {mode === Modes.NOTES && "encrypted" in item && item.encrypted && (
-            <span title={t('editor.encryptedNote')}>
+            <span title={t("editor.encryptedNote")}>
               <LockKeyIcon className="h-4 w-4 text-primary" />
             </span>
           )}
@@ -256,7 +258,7 @@ export const SidebarItem = ({
             </span>
           )}
           {isPubliclyShared && (
-            <span title={t('checklists.publiclyShared')}>
+            <span title={t("checklists.publiclyShared")}>
               <Globe02Icon className="h-4 w-4 text-primary" />
             </span>
           )}
@@ -301,7 +303,10 @@ export const SidebarItem = ({
         >
           <ShareModal
             isOpen={showShareModal}
-            onClose={() => { setShowShareModal(false); router.refresh() }}
+            onClose={() => {
+              setShowShareModal(false);
+              router.refresh();
+            }}
           />
         </MetadataProvider>
       )}

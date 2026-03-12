@@ -33,6 +33,7 @@ import { getChecklistsForDisplay } from "@/app/_server/actions/checklist";
 import { useInfiniteScroll } from "@/app/_hooks/useInfiniteScroll";
 import { FILTER_PAGE_SIZE } from "@/app/_consts/files";
 import { JottyIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/JottyIcon";
+import { isKanbanType } from "@/app/_types/enums";
 
 interface ChecklistHomeProps {
   lists: Checklist[];
@@ -119,14 +120,14 @@ export const ChecklistHome = ({
   const filteredTaskLists = useMemo(() => {
     if (!selectedCategory) return taskLists;
     return displayLists
-      .filter((list) => list.type === "kanban" || list.type === "task")
+      .filter((list) => isKanbanType(list.type))
       .filter((list) => !pinned.some((p) => p.id === list.id));
   }, [taskLists, displayLists, selectedCategory, pinned]);
 
   const filteredSimpleLists = useMemo(() => {
     if (!selectedCategory) return simpleLists;
     return displayLists
-      .filter((list) => list.type !== "kanban" && list.type !== "task")
+      .filter((list) => !isKanbanType(list.type))
       .filter((list) => !pinned.some((p) => p.id === list.id));
   }, [simpleLists, displayLists, selectedCategory, pinned]);
 

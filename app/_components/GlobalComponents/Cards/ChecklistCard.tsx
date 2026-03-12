@@ -14,6 +14,7 @@ import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { useMemo } from "react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useTranslations } from "next-intl";
+import { isKanbanType } from "@/app/_types/enums";
 
 interface ChecklistCardProps {
   list: Checklist;
@@ -58,16 +59,19 @@ export const ChecklistCard = ({
   const displayItems = parsedData?.items || list.items;
 
   const activeItems = displayItems?.filter((item) => !item.isArchived);
-  const { total: totalItems, completed: completedItems } = countItems(displayItems || [], list.type);
+  const { total: totalItems, completed: completedItems } = countItems(
+    displayItems || [],
+    list.type,
+  );
   const completionRate =
     totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
 
   const cardStyle = {
     ...style,
@@ -82,8 +86,9 @@ export const ChecklistCard = ({
       ref={setNodeRef}
       style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-checklist-card bg-card border border-border rounded-jotty p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${isDragging ? "border-primary/30" : ""
-        }`}
+      className={`jotty-checklist-card bg-card border border-border rounded-jotty p-4 hover:shadow-md hover:border-primary/50 transition-shadow duration-200 group ${
+        isDragging ? "border-primary/30" : ""
+      }`}
     >
       <div className="flex items-start justify-between mb-3">
         <div
@@ -103,8 +108,9 @@ export const ChecklistCard = ({
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"
-                } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded`}
               title={isPinned ? t("common.unpin") : t("common.pin")}
             >
               {isPinned ? (
@@ -124,7 +130,7 @@ export const ChecklistCard = ({
 
       <div className="mb-3">
         <div className="flex justify-between text-sm lg:text-xs text-muted-foreground mb-1">
-          <span>{t('checklists.progress')}</span>
+          <span>{t("checklists.progress")}</span>
           <span>{completionRate}%</span>
         </div>
         <div className="w-full bg-muted rounded-full h-2">
@@ -135,7 +141,7 @@ export const ChecklistCard = ({
         </div>
       </div>
 
-      {(list.type === "kanban" || list.type === "task") && <TaskSpecificDetails items={activeItems} />}
+      {isKanbanType(list.type) && <TaskSpecificDetails items={activeItems} />}
 
       <div className="flex items-center justify-between text-sm lg:text-xs text-muted-foreground">
         <div className="flex items-center gap-2">

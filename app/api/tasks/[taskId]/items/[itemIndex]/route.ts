@@ -4,6 +4,7 @@ import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import path from "path";
+import { isKanbanType } from "@/app/_types/enums";
 
 const CHECKLISTS_FOLDER = "checklists";
 
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export async function DELETE(
   request: NextRequest,
-  props: { params: Promise<{ taskId: string; itemIndex: string }> }
+  props: { params: Promise<{ taskId: string; itemIndex: string }> },
 ) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
@@ -21,17 +22,20 @@ export async function DELETE(
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      if (task.type !== "kanban" && task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+      if (!isKanbanType(task.type)) {
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 },
+        );
       }
 
-      const indexPath = params.itemIndex.split('.').map(i => parseInt(i));
+      const indexPath = params.itemIndex.split(".").map((i) => parseInt(i));
 
       for (const idx of indexPath) {
         if (isNaN(idx) || idx < 0) {
           return NextResponse.json(
             { error: "Invalid item index" },
-            { status: 400 }
+            { status: 400 },
           );
         }
       }
@@ -43,7 +47,7 @@ export async function DELETE(
         if (idx >= currentItems.length) {
           return NextResponse.json(
             { error: "Item index out of range" },
-            { status: 400 }
+            { status: 400 },
           );
         }
         item = currentItems[idx];
@@ -51,20 +55,22 @@ export async function DELETE(
       }
 
       if (!item) {
-        return NextResponse.json(
-          { error: "Item not found" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "Item not found" }, { status: 404 });
       }
 
       const filterOutItem = (items: any[], itemId: string): any[] => {
         return items
           .filter((item) => item.id !== itemId)
           .map((item) => {
-            const filteredChildren = item.children ? filterOutItem(item.children, itemId) : undefined;
+            const filteredChildren = item.children
+              ? filterOutItem(item.children, itemId)
+              : undefined;
             return {
               ...item,
-              children: filteredChildren && filteredChildren.length > 0 ? filteredChildren : undefined,
+              children:
+                filteredChildren && filteredChildren.length > 0
+                  ? filteredChildren
+                  : undefined,
             };
           });
       };
@@ -79,12 +85,12 @@ export async function DELETE(
         process.cwd(),
         "data",
         CHECKLISTS_FOLDER,
-        task.owner!
+        task.owner!,
       );
       const filePath = path.join(
         ownerDir,
         task.category || "Uncategorized",
-        `${task.id}.md`
+        `${task.id}.md`,
       );
 
       await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
@@ -94,7 +100,7 @@ export async function DELETE(
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

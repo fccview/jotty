@@ -3,7 +3,7 @@ import { withApiAuth } from "@/app/_utils/api-utils";
 import { getUserNotes } from "@/app/_server/actions/note";
 import { getUserChecklists } from "@/app/_server/actions/checklist";
 import { Checklist, Result } from "@/app/_types";
-import { TaskStatus } from "@/app/_types/enums";
+import { isKanbanType, TaskStatus } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
             {
               error: "Only administrators can query other users' summary data",
             },
-            { status: 403 }
+            { status: 403 },
           );
         }
       }
@@ -30,24 +30,26 @@ export async function GET(request: NextRequest) {
       if (!notesResult.success || !notesResult.data) {
         return NextResponse.json(
           { error: notesResult.error || "Failed to fetch notes" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
       const userNotes = notesResult.data.filter(
-        (note) => note.owner === username
+        (note) => note.owner === username,
       );
 
-      const listsResult = await getUserChecklists({ username }) as Result<Checklist[]>;
+      const listsResult = (await getUserChecklists({ username })) as Result<
+        Checklist[]
+      >;
       if (!listsResult.success || !listsResult.data) {
         return NextResponse.json(
           { error: listsResult.error || "Failed to fetch checklists" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
       const userLists = listsResult.data.filter(
-        (list) => list.owner === username
+        (list) => list.owner === username,
       );
 
       let totalItems = 0;
@@ -65,7 +67,7 @@ export async function GET(request: NextRequest) {
             completedItems++;
           }
 
-          if ((list.type === "kanban" || list.type === "task") && item.status) {
+          if (isKanbanType(list.type) && item.status) {
             totalTasks++;
             switch (item.status) {
               case TaskStatus.COMPLETED:
@@ -86,24 +88,33 @@ export async function GET(request: NextRequest) {
         username,
         notes: {
           total: userNotes.length,
-          categories: userNotes.reduce((acc, note) => {
-            const category = note.category || "Uncategorized";
-            acc[category] = (acc[category] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>),
+          categories: userNotes.reduce(
+            (acc, note) => {
+              const category = note.category || "Uncategorized";
+              acc[category] = (acc[category] || 0) + 1;
+              return acc;
+            },
+            {} as Record<string, number>,
+          ),
         },
         checklists: {
           total: userLists.length,
-          categories: userLists.reduce((acc, list) => {
-            const category = list.category || "Uncategorized";
-            acc[category] = (acc[category] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>),
-          types: userLists.reduce((acc, list) => {
-            const type = list.type || "simple";
-            acc[type] = (acc[type] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>),
+          categories: userLists.reduce(
+            (acc, list) => {
+              const category = list.category || "Uncategorized";
+              acc[category] = (acc[category] || 0) + 1;
+              return acc;
+            },
+            {} as Record<string, number>,
+          ),
+          types: userLists.reduce(
+            (acc, list) => {
+              const type = list.type || "simple";
+              acc[type] = (acc[type] || 0) + 1;
+              return acc;
+            },
+            {} as Record<string, number>,
+          ),
         },
         items: {
           total: totalItems,
@@ -131,7 +142,7 @@ export async function GET(request: NextRequest) {
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

@@ -4,6 +4,7 @@ import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import path from "path";
+import { isKanbanType } from "@/app/_types/enums";
 
 const CHECKLISTS_FOLDER = "checklists";
 
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export async function PUT(
   request: NextRequest,
-  props: { params: Promise<{ taskId: string; statusId: string }> }
+  props: { params: Promise<{ taskId: string; statusId: string }> },
 ) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
@@ -24,8 +25,11 @@ export async function PUT(
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      if (task.type !== "kanban" && task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+      if (!isKanbanType(task.type)) {
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 },
+        );
       }
 
       const currentStatuses = task.statuses || [
@@ -34,20 +38,25 @@ export async function PUT(
         { id: "completed", label: "Completed", order: 2 },
       ];
 
-      const statusIndex = currentStatuses.findIndex((s) => s.id === params.statusId);
+      const statusIndex = currentStatuses.findIndex(
+        (s) => s.id === params.statusId,
+      );
       if (statusIndex === -1) {
-        return NextResponse.json({ error: "Status not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Status not found" },
+          { status: 404 },
+        );
       }
 
       const updatedStatuses = currentStatuses.map((s) =>
         s.id === params.statusId
           ? {
-            ...s,
-            label: label ?? s.label,
-            color: color !== undefined ? color : s.color,
-            order: order !== undefined ? order : s.order,
-          }
-          : s
+              ...s,
+              label: label ?? s.label,
+              color: color !== undefined ? color : s.color,
+              order: order !== undefined ? order : s.order,
+            }
+          : s,
       );
 
       const updatedTask = {
@@ -60,22 +69,25 @@ export async function PUT(
         process.cwd(),
         "data",
         CHECKLISTS_FOLDER,
-        task.owner!
+        task.owner!,
       );
       const filePath = path.join(
         ownerDir,
         task.category || "Uncategorized",
-        `${task.id}.md`
+        `${task.id}.md`,
       );
 
       await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
 
-      return NextResponse.json({ success: true, data: updatedStatuses.find((s) => s.id === params.statusId) });
+      return NextResponse.json({
+        success: true,
+        data: updatedStatuses.find((s) => s.id === params.statusId),
+      });
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });
@@ -83,7 +95,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  props: { params: Promise<{ taskId: string; statusId: string }> }
+  props: { params: Promise<{ taskId: string; statusId: string }> },
 ) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
@@ -94,7 +106,10 @@ export async function DELETE(
       }
 
       if (task.type !== "kanban" && task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 },
+        );
       }
 
       const currentStatuses = task.statuses || [
@@ -103,15 +118,24 @@ export async function DELETE(
         { id: "completed", label: "Completed", order: 2 },
       ];
 
-      const statusIndex = currentStatuses.findIndex((s) => s.id === params.statusId);
+      const statusIndex = currentStatuses.findIndex(
+        (s) => s.id === params.statusId,
+      );
       if (statusIndex === -1) {
-        return NextResponse.json({ error: "Status not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Status not found" },
+          { status: 404 },
+        );
       }
 
-      const updatedStatuses = currentStatuses.filter((s) => s.id !== params.statusId);
+      const updatedStatuses = currentStatuses.filter(
+        (s) => s.id !== params.statusId,
+      );
 
-      const sortedStatuses = [...updatedStatuses].sort((a, b) => a.order - b.order);
-      const defaultStatusId = sortedStatuses[0]?.id || 'todo';
+      const sortedStatuses = [...updatedStatuses].sort(
+        (a, b) => a.order - b.order,
+      );
+      const defaultStatusId = sortedStatuses[0]?.id || "todo";
 
       const updateItemStatus = (items: any[]): any[] => {
         return items.map((item) => {
@@ -137,12 +161,12 @@ export async function DELETE(
         process.cwd(),
         "data",
         CHECKLISTS_FOLDER,
-        task.owner!
+        task.owner!,
       );
       const filePath = path.join(
         ownerDir,
         task.category || "Uncategorized",
-        `${task.id}.md`
+        `${task.id}.md`,
       );
 
       await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
@@ -152,7 +176,7 @@ export async function DELETE(
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

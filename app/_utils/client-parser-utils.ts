@@ -8,7 +8,7 @@ import {
   KanbanReminder,
 } from "@/app/_types";
 
-import { TaskStatus } from "@/app/_types/enums";
+import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { parseRecurrenceFromMarkdown } from "@/app/_utils/recurrence-utils";
 import { extractYamlMetadata } from "./yaml-metadata-utils";
 
@@ -33,7 +33,9 @@ export const parseChecklistContent = (
 
   const checklistType =
     metadata?.checklistType ||
-    (rawContent.includes("<!-- type:task -->") ? "task" : "simple");
+    (rawContent.includes("<!-- type:task -->")
+      ? ChecklistsTypes.TASK
+      : ChecklistsTypes.SIMPLE);
 
   const lines = contentWithoutMetadata.split("\n");
   const itemLines = lines.filter(
@@ -98,7 +100,7 @@ export const parseChecklistContent = (
         let item: Item;
         let recurrence = undefined;
 
-        const isTask = checklistType === "task" || checklistType === "kanban";
+        const isTask = isKanbanType(checklistType);
 
         if (isTask && text.includes(" | ")) {
           const parts = text.split(" | ");

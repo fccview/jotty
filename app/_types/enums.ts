@@ -16,7 +16,7 @@ export enum ChecklistsTypes {
   KANBAN = "kanban",
 }
 
-export const isKanbanType = (type: string): boolean => type === "kanban" || type === "task";
+export const isKanbanType = (type?: string): boolean => type === "kanban" || type === "task";
 
 export enum KanbanPriorityLevel {
   CRITICAL = "critical",

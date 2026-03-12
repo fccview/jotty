@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getUserChecklists, createList } from "@/app/_server/actions/checklist";
-import { TaskStatus } from "@/app/_types/enums";
+import { isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";
 
 export const dynamic = "force-dynamic";
@@ -10,20 +10,22 @@ export async function GET(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {
       const { searchParams } = new URL(request.url);
-      const category = searchParams.get('category');
-      const status = searchParams.get('status');
-      const search = searchParams.get('q');
+      const category = searchParams.get("category");
+      const status = searchParams.get("status");
+      const search = searchParams.get("q");
 
-      const lists = await getUserChecklists({ username: user.username }) as Result<Checklist[]>;
+      const lists = (await getUserChecklists({
+        username: user.username,
+      })) as Result<Checklist[]>;
       if (!lists.success || !lists.data) {
         return NextResponse.json(
           { error: lists.error || "Failed to fetch boards" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
       let boards = lists.data.filter(
-        (list) => list.owner === user.username && (list.type === "kanban" || list.type === "task")
+        (list) => list.owner === user.username && isKanbanType(list.type),
       );
 
       if (category) {
@@ -31,14 +33,17 @@ export async function GET(request: NextRequest) {
       }
       if (status) {
         boards = boards.filter((list) =>
-          list.items.some(item => item.status === status)
+          list.items.some((item) => item.status === status),
         );
       }
       if (search) {
         const searchLower = search.toLowerCase();
-        boards = boards.filter((list) =>
-          list.title?.toLowerCase().includes(searchLower) ||
-          list.items.some(item => item.text.toLowerCase().includes(searchLower))
+        boards = boards.filter(
+          (list) =>
+            list.title?.toLowerCase().includes(searchLower) ||
+            list.items.some((item) =>
+              item.text.toLowerCase().includes(searchLower),
+            ),
         );
       }
 
@@ -56,8 +61,9 @@ export async function GET(request: NextRequest) {
         };
 
         if (item.children && item.children.length > 0) {
-          baseItem.children = item.children.map((child: any, childIndex: number) =>
-            transformItem(child, childIndex)
+          baseItem.children = item.children.map(
+            (child: any, childIndex: number) =>
+              transformItem(child, childIndex),
           );
         }
 
@@ -83,11 +89,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            error instanceof Error
-              ? error.message
-              : "Failed to fetch boards",
+            error instanceof Error ? error.message : "Failed to fetch boards",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });
@@ -102,7 +106,7 @@ export async function POST(request: NextRequest) {
       if (!title) {
         return NextResponse.json(
           { error: "Title is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -120,7 +124,10 @@ export async function POST(request: NextRequest) {
 
       if (result.error || !result.data) {
         console.error("Create board error:", result.error);
-        return NextResponse.json({ error: result.error || "Failed to create board" }, { status: 400 });
+        return NextResponse.json(
+          { error: result.error || "Failed to create board" },
+          { status: 400 },
+        );
       }
 
       const transformedBoard = {
@@ -141,8 +148,11 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Internal server error" },
-        { status: 500 }
+        {
+          error:
+            error instanceof Error ? error.message : "Internal server error",
+        },
+        { status: 500 },
       );
     }
   });

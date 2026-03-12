@@ -27,9 +27,21 @@ export const editorSettingsSchema = z.object({
   disableRichEditor: z.enum(["enable", "disable"], {
     message: "Disable rich editor must be either 'enable' or 'disable'",
   }),
-  markdownTheme: z.enum(["prism", "prism-dark", "prism-funky", "prism-okaidia", "prism-tomorrow", "prism-twilight", "prism-coy", "prism-solarizedlight"], {
-    message: "Markdown theme must be a valid Prism theme",
-  }),
+  markdownTheme: z.enum(
+    [
+      "prism",
+      "prism-dark",
+      "prism-funky",
+      "prism-okaidia",
+      "prism-tomorrow",
+      "prism-twilight",
+      "prism-coy",
+      "prism-solarizedlight",
+    ],
+    {
+      message: "Markdown theme must be a valid Prism theme",
+    },
+  ),
   defaultNoteFilter: z.enum(["all", "recent", "pinned"], {
     message: "Default note filter must be 'all', 'recent', or 'pinned'",
   }),
@@ -49,9 +61,13 @@ export const checklistSettingsSchema = z.object({
   showCompletedSuggestions: z.enum(["enable", "disable"], {
     message: "Show completed suggestions must be either 'enable' or 'disable'",
   }),
-  defaultChecklistFilter: z.enum(["all", "completed", "incomplete", "pinned", "task", "simple"], {
-    message: "Default checklist filter must be 'all', 'completed', 'incomplete', 'pinned', 'task', or 'simple'",
-  }),
+  defaultChecklistFilter: z.enum(
+    ["all", "completed", "incomplete", "pinned", "task", "simple"],
+    {
+      message:
+        "Default checklist filter must be 'all', 'completed', 'incomplete', 'pinned', 'kanban', or 'simple'",
+    },
+  ),
 });
 
 export const fileSettingsSchema = z.object({
@@ -71,12 +87,16 @@ export const generalSettingsSchema = z.object({
   }),
   preferredDateFormat: z.enum(["dd/mm/yyyy", "mm/dd/yyyy", "yyyy/mm/dd"]),
   preferredTimeFormat: z.enum(["12-hours", "24-hours"]),
-  handedness: z.enum(["right-handed", "left-handed"], {
-    message: "Handedness must be either 'right-handed' or 'left-handed'",
-  }).optional(),
-  hideConnectionIndicator: z.enum(["enable", "disable"], {
-    message: "Hide connection indicator must be either 'enable' or 'disable'",
-  }).optional(),
+  handedness: z
+    .enum(["right-handed", "left-handed"], {
+      message: "Handedness must be either 'right-handed' or 'left-handed'",
+    })
+    .optional(),
+  hideConnectionIndicator: z
+    .enum(["enable", "disable"], {
+      message: "Hide connection indicator must be either 'enable' or 'disable'",
+    })
+    .optional(),
 });
 
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;

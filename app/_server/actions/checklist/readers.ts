@@ -23,6 +23,7 @@ import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
 import type { FileStatsEntry } from "@/app/_server/actions/file";
 import { getChecklistType } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
+import { isKanbanType } from "@/app/_types/enums";
 
 const execAsync = promisify(exec);
 
@@ -70,7 +71,10 @@ export const readListsRecursively = async (
       });
       const metaLines = metaOut.stdout.split("\n").filter(Boolean);
       if (debugCrud && metaLines.length) {
-        console.warn("[tags grep] sample (first 40 lines):", metaLines.slice(0, 40));
+        console.warn(
+          "[tags grep] sample (first 40 lines):",
+          metaLines.slice(0, 40),
+        );
       }
       const inFrontmatter = new Map<string, boolean>();
       let inTagsFile = "";
@@ -81,7 +85,13 @@ export const readListsRecursively = async (
         const rest = line.slice(colonIdx + 1);
         if (rest.trim() === "---") {
           inFrontmatter.set(filePath, !inFrontmatter.get(filePath));
-          if (debugCrud) console.warn("[tags grep] --- seen, filePath:", filePath, "inFrontmatter:", inFrontmatter.get(filePath));
+          if (debugCrud)
+            console.warn(
+              "[tags grep] --- seen, filePath:",
+              filePath,
+              "inFrontmatter:",
+              inFrontmatter.get(filePath),
+            );
           continue;
         }
         if (!inFrontmatter.get(filePath)) continue;
@@ -89,7 +99,13 @@ export const readListsRecursively = async (
           if (inTagsFile === filePath) {
             const tag = rest.replace(/^\s+-\s+/, "").trim();
             if (tag) {
-              if (debugCrud) console.warn("[tags grep] adding tag:", JSON.stringify(tag.slice(0, 50)), "filePath:", filePath);
+              if (debugCrud)
+                console.warn(
+                  "[tags grep] adding tag:",
+                  JSON.stringify(tag.slice(0, 50)),
+                  "filePath:",
+                  filePath,
+                );
               if (!metadataCache!.has(filePath))
                 metadataCache!.set(filePath, {});
               const entry = metadataCache!.get(filePath)!;
@@ -187,10 +203,9 @@ export const readListsRecursively = async (
               uuid:
                 typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
               title: typeof metadata?.title === "string" ? metadata.title : id,
-              type:
-                metadata?.checklistType === "task" || metadata?.checklistType === "kanban"
-                  ? "kanban"
-                  : "simple",
+              type: isKanbanType(metadata?.checklistType as string)
+                ? "kanban"
+                : "simple",
               category: categoryPath,
               items: [],
               createdAt: toIso(stats.birthtime),

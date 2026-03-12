@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
-import { generateICS, parseItemsForCalendar } from "@/app/_utils/kanban/calendar-utils";
+import {
+  generateICS,
+  parseItemsForCalendar,
+} from "@/app/_utils/kanban/calendar-utils";
+import { isKanbanType } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest, props: { params: Promise<{ boardId: string }> }) {
+export async function GET(
+  request: NextRequest,
+  props: { params: Promise<{ boardId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -14,8 +21,11 @@ export async function GET(request: NextRequest, props: { params: Promise<{ board
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
 
-      if (board.type !== "kanban" && board.type !== "task") {
-        return NextResponse.json({ error: "Not a kanban board" }, { status: 400 });
+      if (!isKanbanType(board.type)) {
+        return NextResponse.json(
+          { error: "Not a kanban board" },
+          { status: 400 },
+        );
       }
 
       const accept = request.headers.get("accept") || "";
@@ -36,7 +46,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ board
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

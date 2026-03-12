@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getListById, updateList, deleteList } from "@/app/_server/actions/checklist";
-import { TaskStatus } from "@/app/_types/enums";
+import {
+  getListById,
+  updateList,
+  deleteList,
+} from "@/app/_server/actions/checklist";
+import { isKanbanType, TaskStatus } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest, props: { params: Promise<{ boardId: string }> }) {
+export async function GET(
+  request: NextRequest,
+  props: { params: Promise<{ boardId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -14,8 +21,11 @@ export async function GET(request: NextRequest, props: { params: Promise<{ board
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
 
-      if (board.type !== "kanban" && board.type !== "task") {
-        return NextResponse.json({ error: "Not a kanban board" }, { status: 400 });
+      if (!isKanbanType(board.type)) {
+        return NextResponse.json(
+          { error: "Not a kanban board" },
+          { status: 400 },
+        );
       }
 
       const transformItem = (item: any, index: number): any => {
@@ -32,8 +42,9 @@ export async function GET(request: NextRequest, props: { params: Promise<{ board
         };
 
         if (item.children && item.children.length > 0) {
-          baseItem.children = item.children.map((child: any, childIndex: number) =>
-            transformItem(child, childIndex)
+          baseItem.children = item.children.map(
+            (child: any, childIndex: number) =>
+              transformItem(child, childIndex),
           );
         }
 
@@ -59,13 +70,16 @@ export async function GET(request: NextRequest, props: { params: Promise<{ board
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });
 }
 
-export async function PUT(request: NextRequest, props: { params: Promise<{ boardId: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  props: { params: Promise<{ boardId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -77,14 +91,20 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ board
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
 
-      if (board.type !== "kanban" && board.type !== "task") {
-        return NextResponse.json({ error: "Not a kanban board" }, { status: 400 });
+      if (!isKanbanType(board.type)) {
+        return NextResponse.json(
+          { error: "Not a kanban board" },
+          { status: 400 },
+        );
       }
 
       const formData = new FormData();
       formData.append("id", board.id);
       formData.append("title", title ?? board.title);
-      formData.append("category", category ?? board.category ?? "Uncategorized");
+      formData.append(
+        "category",
+        category ?? board.category ?? "Uncategorized",
+      );
       formData.append("originalCategory", board.category || "Uncategorized");
       formData.append("apiUser", JSON.stringify(user));
 
@@ -111,13 +131,16 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ board
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });
 }
 
-export async function DELETE(request: NextRequest, props: { params: Promise<{ boardId: string }> }) {
+export async function DELETE(
+  request: NextRequest,
+  props: { params: Promise<{ boardId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -126,8 +149,11 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ bo
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
 
-      if (board.type !== "kanban" && board.type !== "task") {
-        return NextResponse.json({ error: "Not a kanban board" }, { status: 400 });
+      if (!isKanbanType(board.type)) {
+        return NextResponse.json(
+          { error: "Not a kanban board" },
+          { status: 400 },
+        );
       }
 
       const formData = new FormData();
@@ -145,7 +171,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ bo
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

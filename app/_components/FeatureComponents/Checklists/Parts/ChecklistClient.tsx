@@ -15,7 +15,7 @@ import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/Co
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { useChecklist } from "@/app/_hooks/useChecklist";
-import { Modes } from "@/app/_types/enums";
+import { isKanbanType, Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
@@ -131,7 +131,7 @@ export const ChecklistClient = ({
   });
 
   const renderContent = () => {
-    if (localChecklist.type === "kanban" || localChecklist.type === "task") {
+    if (isKanbanType(localChecklist.type)) {
       return (
         <div className="h-full flex flex-col bg-background">
           <ChecklistHeader

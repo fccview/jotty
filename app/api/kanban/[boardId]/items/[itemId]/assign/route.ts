@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { assignKanbanItem } from "@/app/_server/actions/kanban/items";
+import { isKanbanType } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
 export async function PUT(
   request: NextRequest,
-  props: { params: Promise<{ boardId: string; itemId: string }> }
+  props: { params: Promise<{ boardId: string; itemId: string }> },
 ) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
@@ -20,8 +21,11 @@ export async function PUT(
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
 
-      if (board.type !== "kanban" && board.type !== "task") {
-        return NextResponse.json({ error: "Not a kanban board" }, { status: 400 });
+      if (!isKanbanType(board.type)) {
+        return NextResponse.json(
+          { error: "Not a kanban board" },
+          { status: 400 },
+        );
       }
 
       const formData = new FormData();
@@ -33,10 +37,7 @@ export async function PUT(
       const result = await assignKanbanItem(formData);
 
       if (result.error) {
-        return NextResponse.json(
-          { error: result.error },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: result.error }, { status: 400 });
       }
 
       return NextResponse.json({ success: true, data: result.data });
@@ -44,7 +45,7 @@ export async function PUT(
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

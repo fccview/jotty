@@ -22,6 +22,7 @@ import {
   Modes,
   PermissionTypes,
   TaskStatus,
+  isKanbanType,
 } from "@/app/_types/enums";
 import { checkUserPermission } from "../sharing";
 import { broadcast } from "@/app/_server/ws/broadcast";
@@ -75,7 +76,7 @@ export const createBulkItems = async (
       createdAt: now,
       lastModifiedBy: currentUser,
       lastModifiedAt: now,
-      ...((list.type === "kanban" || list.type === "task") && {
+      ...(isKanbanType(list.type) && {
         status: TaskStatus.TODO,
         timeEntries: [],
         history: [

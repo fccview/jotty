@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getListById, updateChecklistStatuses } from "@/app/_server/actions/checklist";
+import {
+  getListById,
+  updateChecklistStatuses,
+} from "@/app/_server/actions/checklist";
+import { isKanbanType } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(request: NextRequest, props: { params: Promise<{ boardId: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  props: { params: Promise<{ boardId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -14,7 +21,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ board
       if (!statuses || !Array.isArray(statuses)) {
         return NextResponse.json(
           { error: "Statuses array is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -23,8 +30,11 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ board
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
 
-      if (board.type !== "kanban" && board.type !== "task") {
-        return NextResponse.json({ error: "Not a kanban board" }, { status: 400 });
+      if (!isKanbanType(board.type)) {
+        return NextResponse.json(
+          { error: "Not a kanban board" },
+          { status: 400 },
+        );
       }
 
       const formData = new FormData();
@@ -36,10 +46,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ board
       const result = await updateChecklistStatuses(formData);
 
       if (result.error) {
-        return NextResponse.json(
-          { error: result.error },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: result.error }, { status: 400 });
       }
 
       return NextResponse.json({ success: true, data: result.data });
@@ -47,7 +54,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ board
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

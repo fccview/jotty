@@ -22,7 +22,7 @@ import {
 } from "@/app/_utils/tag-utils";
 import { isAdmin, getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { Checklist, Result } from "@/app/_types";
+import { Checklist, Item, KanbanPriority, Result } from "@/app/_types";
 import {
   ItemTypes,
   Modes,
@@ -31,6 +31,8 @@ import {
 } from "@/app/_types/enums";
 import { checkUserPermission } from "../sharing";
 import { broadcast } from "@/app/_server/ws/broadcast";
+import { updateAllChildren } from "@/app/_utils/item-tree-utils";
+import { isKanbanType } from "@/app/_types/enums";
 
 export const updateItem = async (
   checklist: Checklist,
@@ -60,65 +62,30 @@ export const updateItem = async (
       throw new Error("Permission denied");
     }
 
-    const updateAllChildren = (items: any[], completed: boolean): any[] => {
-      return items.map((item) => ({
-        ...item,
-        completed,
-        children: item.children
-          ? updateAllChildren(item.children, completed)
-          : undefined,
-      }));
+    const _updateParentBasedOnChildren = (parent: Item): Item => {
+      if ((parent.children || []).length < 1) return parent;
+      return { ...parent, completed: areAllItemsCompleted(parent.children!) };
     };
 
-    const updateParentBasedOnChildren = (parent: any): any => {
-      if (!parent || (parent.children || []).length < 1) {
-        return parent;
-      }
-
-      return {
-        ...parent,
-        completed: areAllItemsCompleted(parent.children),
-      };
-    };
-
-    const findAndUpdateItem = (
-      items: any[],
-      itemId: string,
-      updates: any,
-    ): any[] => {
-      return items.map((item) => {
+    const _findAndUpdateItem = (items: Item[], itemId: string, updates: Partial<Item>): Item[] =>
+      items.map((item) => {
         if (item.id === itemId) {
           let updatedItem = { ...item, ...updates };
-
           if (updates.completed && item.children && item.children.length > 0) {
             updatedItem.children = updateAllChildren(item.children, true);
-          } else if (
-            updates.completed === false &&
-            item.children &&
-            item.children.length > 0
-          ) {
+          } else if (updates.completed === false && item.children && item.children.length > 0) {
             updatedItem.children = updateAllChildren(item.children, false);
           }
-
           return updatedItem;
         }
-
         if (item.children && item.children.length > 0) {
-          const updatedChildren = findAndUpdateItem(
-            item.children,
-            itemId,
-            updates,
-          );
-          const updatedItem = updateParentBasedOnChildren({
+          return _updateParentBasedOnChildren({
             ...item,
-            children: updatedChildren,
+            children: _findAndUpdateItem(item.children, itemId, updates),
           });
-          return updatedItem;
         }
-
         return item;
       });
-    };
 
     const now = new Date().toISOString();
 
@@ -138,12 +105,12 @@ export const updateItem = async (
 
     const updatedList = {
       ...checklist,
-      items: findAndUpdateItem(checklist.items, itemId, {
+      items: _findAndUpdateItem(checklist.items, itemId, {
         ...(completedRaw !== null && { completed: completedRaw === "true" }),
         ...(text && { text }),
         ...(description !== null &&
           description !== undefined && { description }),
-        ...(priority !== null && { priority: priority || undefined }),
+        ...(priority !== null && { priority: (priority || undefined) as KanbanPriority | undefined }),
         ...(score !== null && { score: score ? parseInt(score) : undefined }),
         ...(assignee !== null && { assignee: assignee || undefined }),
         ...(reminder !== null && {
@@ -278,12 +245,10 @@ export const createItem = async (
       return TaskStatus.TODO;
     };
 
-    const defaultStatus =
-      list.type === "kanban" || list.type === "task"
-        ? getDefaultStatus()
-        : undefined;
-    const isSharedBoard =
-      (list.type === "kanban" || list.type === "task") && list.isShared;
+    const defaultStatus = isKanbanType(list.type)
+      ? getDefaultStatus()
+      : undefined;
+    const isSharedBoard = isKanbanType(list.type) && list.isShared;
 
     const shiftedItems = list.items.map((item) => ({
       ...item,
@@ -300,7 +265,7 @@ export const createItem = async (
       createdAt: now,
       lastModifiedBy: currentUser,
       lastModifiedAt: now,
-      ...((list.type === "kanban" || list.type === "task") &&
+      ...(isKanbanType(list.type) &&
         defaultStatus && {
           status: defaultStatus,
           timeEntries,

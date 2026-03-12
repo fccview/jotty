@@ -7,6 +7,7 @@ import { ChecklistProgress } from "../../Checklists/Parts/Simple/ChecklistProgre
 import { Checklist, User } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { PublicUser } from "@/app/_utils/user-sanitize-utils";
+import { isKanbanType } from "@/app/_types/enums";
 
 interface PublicChecklistHeaderProps {
   checklist: Checklist;
@@ -23,7 +24,7 @@ export const PublicChecklistHeader = ({
 }: PublicChecklistHeaderProps) => (
   <header className="mb-8">
     <div className="flex items-center gap-3 mb-4">
-      {(checklist.type === "kanban" || checklist.type === "task") ? (
+      {isKanbanType(checklist.type) ? (
         <TaskDaily01Icon className="h-8 w-8 text-primary" />
       ) : (
         <CheckmarkSquare04Icon className="h-8 w-8 text-primary" />

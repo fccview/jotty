@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { createItem } from "@/app/_server/actions/checklist-item";
+import { isKanbanType } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: NextRequest, props: { params: Promise<{ boardId: string }> }) {
+export async function POST(
+  request: NextRequest,
+  props: { params: Promise<{ boardId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -15,7 +19,7 @@ export async function POST(request: NextRequest, props: { params: Promise<{ boar
       if (!text) {
         return NextResponse.json(
           { error: "Text is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -24,8 +28,11 @@ export async function POST(request: NextRequest, props: { params: Promise<{ boar
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
 
-      if (board.type !== "kanban" && board.type !== "task") {
-        return NextResponse.json({ error: "Not a kanban board" }, { status: 400 });
+      if (!isKanbanType(board.type)) {
+        return NextResponse.json(
+          { error: "Not a kanban board" },
+          { status: 400 },
+        );
       }
 
       const formData = new FormData();
@@ -40,7 +47,7 @@ export async function POST(request: NextRequest, props: { params: Promise<{ boar
       if (!result.success || !result.data) {
         return NextResponse.json(
           { error: result.error || "Failed to create item" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -48,8 +55,11 @@ export async function POST(request: NextRequest, props: { params: Promise<{ boar
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Internal server error" },
-        { status: 500 }
+        {
+          error:
+            error instanceof Error ? error.message : "Internal server error",
+        },
+        { status: 500 },
       );
     }
   });

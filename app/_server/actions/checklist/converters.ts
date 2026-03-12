@@ -8,6 +8,7 @@ import {
   Modes,
   PermissionTypes,
   TaskStatus,
+  isKanbanType,
 } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
@@ -74,9 +75,11 @@ export const convertChecklistType = async (formData: FormData) => {
 
     let convertedItems: any[];
 
-    if (newType === "kanban" || newType === "task") {
+    if (isKanbanType(newType)) {
       const statuses = list.statuses || [];
-      const completionStatus = statuses.find((s) => s.autoComplete) || statuses.find((s) => s.id === TaskStatus.COMPLETED);
+      const completionStatus =
+        statuses.find((s) => s.autoComplete) ||
+        statuses.find((s) => s.id === TaskStatus.COMPLETED);
       const completionStatusId = completionStatus?.id || TaskStatus.COMPLETED;
       const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
       const firstStatusId = sortedStatuses[0]?.id || TaskStatus.TODO;
@@ -85,13 +88,19 @@ export const convertChecklistType = async (formData: FormData) => {
         let status = item.status;
         if (!status) {
           status = item.completed ? completionStatusId : firstStatusId;
-        } else if (statuses.length > 0 && !statuses.some((s) => s.id === status)) {
+        } else if (
+          statuses.length > 0 &&
+          !statuses.some((s) => s.id === status)
+        ) {
           status = item.completed ? completionStatusId : firstStatusId;
         }
         return {
           ...item,
           status,
-          completed: item.completed || (completionStatus?.autoComplete && status === completionStatusId) || false,
+          completed:
+            item.completed ||
+            (completionStatus?.autoComplete && status === completionStatusId) ||
+            false,
           timeEntries: item.timeEntries || [],
         };
       });
