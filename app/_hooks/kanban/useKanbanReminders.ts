@@ -3,49 +3,61 @@
 import { useEffect, useRef, useCallback } from "react";
 import { Checklist } from "@/app/_types";
 import { getDueReminders } from "@/app/_utils/kanban/reminder-utils";
+import { createNotification } from "@/app/_server/actions/notifications";
+import { markReminderNotified } from "@/app/_server/actions/kanban";
+import { useTranslations } from "next-intl";
 
 const REMINDER_CHECK_INTERVAL = 60000;
 
-export const useKanbanReminders = (checklist: Checklist) => {
+interface UseKanbanRemindersParams {
+  checklist: Checklist;
+  checklistId: string;
+  category: string;
+  onUpdate: (updatedChecklist: Checklist) => void;
+}
+
+export const useKanbanReminders = ({
+  checklist,
+  checklistId,
+  category,
+  onUpdate,
+}: UseKanbanRemindersParams) => {
+  const t = useTranslations();
   const notifiedRef = useRef<Set<string>>(new Set());
 
-  const _sendNotification = useCallback((title: string, body: string) => {
-    if (!("Notification" in window)) return;
-    if (Notification.permission !== "granted") return;
-
-    new Notification(title, {
-      body,
-      icon: "/icons/icon-192x192.png",
-      tag: `jotty-reminder-${Date.now()}`,
-    });
-  }, []);
-
-  const checkReminders = useCallback(() => {
+  const checkReminders = useCallback(async () => {
     const dueItems = getDueReminders(checklist.items);
 
-    dueItems.forEach((item) => {
-      if (notifiedRef.current.has(item.id)) return;
+    for (const item of dueItems) {
+      if (notifiedRef.current.has(item.id)) continue;
       notifiedRef.current.add(item.id);
 
-      _sendNotification(
-        "Jotty Reminder",
-        `${item.text} - ${checklist.title}`
-      );
-    });
-  }, [checklist.items, checklist.title, _sendNotification]);
+      await createNotification({
+        type: "reminder",
+        title: t("notifications.reminderTitle"),
+        message: t("notifications.reminderMessage", {
+          task: item.text,
+          board: checklist.title,
+        }),
+        data: {
+          itemId: checklist.uuid || checklistId,
+          itemType: "checklist",
+          taskId: item.id,
+        },
+      });
+
+      const formData = new FormData();
+      formData.append("listId", checklistId);
+      formData.append("itemId", item.id);
+      formData.append("category", category);
+      const result = await markReminderNotified(formData);
+      if (result.success && result.data) onUpdate(result.data);
+    }
+  }, [checklist.items, checklist.title, checklistId, category, onUpdate]);
 
   useEffect(() => {
     checkReminders();
     const interval = setInterval(checkReminders, REMINDER_CHECK_INTERVAL);
     return () => clearInterval(interval);
   }, [checkReminders]);
-
-  const requestPermission = useCallback(async () => {
-    if (!("Notification" in window)) return false;
-    if (Notification.permission === "granted") return true;
-    const permission = await Notification.requestPermission();
-    return permission === "granted";
-  }, []);
-
-  return { requestPermission, checkReminders };
 };

@@ -10,7 +10,7 @@ import {
   Download04Icon,
 } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
-import { getPriorityColor } from "@/app/_utils/kanban/index";
+import { getPriorityDotColor } from "@/app/_utils/kanban/index";
 import { useTranslations } from "next-intl";
 
 interface CalendarViewProps {
@@ -109,13 +109,13 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
                   key={dateStr}
                   className={cn(
                     "min-h-[100px] p-1 border-b border-r border-border transition-colors",
-                    isToday && "bg-primary/5"
+                    isToday && "bg-primary/5",
                   )}
                 >
                   <div
                     className={cn(
                       "text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full",
-                      isToday && "bg-primary text-primary-foreground"
+                      isToday && "bg-primary text-primary-foreground",
                     )}
                   >
                     {day.getDate()}
@@ -125,24 +125,33 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
                       <div
                         key={event.id}
                         onClick={() => {
-                          const item = checklist.items.find((i) => i.id === event.itemId);
+                          const item = checklist.items.find(
+                            (i) => i.id === event.itemId,
+                          );
                           if (item && onItemClick) onItemClick(item);
                         }}
                         className={cn(
-                          "text-[10px] px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity",
-                          event.completed
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 line-through"
-                            : event.priority
-                              ? getPriorityColor(event.priority as any)
-                              : "bg-primary/10 text-primary"
+                          "text-[10px] px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1 bg-muted text-muted-foreground border-l-2",
+                          event.completed && "line-through opacity-60",
                         )}
+                        style={{
+                          borderLeftColor: event.completed
+                            ? "#22c55e"
+                            : getPriorityDotColor(
+                                event.priority as Parameters<
+                                  typeof getPriorityDotColor
+                                >[0],
+                              ),
+                        }}
                       >
                         {event.title}
                       </div>
                     ))}
                     {dayEvents.length > 3 && (
                       <div className="text-[10px] text-muted-foreground px-1">
-                        {t("kanban.moreEvents", { count: dayEvents.length - 3 })}
+                        {t("kanban.moreEvents", {
+                          count: dayEvents.length - 3,
+                        })}
                       </div>
                     )}
                   </div>
@@ -164,7 +173,7 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
               <div
                 key={item.id}
                 onClick={() => onItemClick?.(item)}
-                className="text-xs px-2 py-1 rounded-full border border-border bg-muted/30 text-foreground cursor-pointer hover:bg-muted/50 transition-colors"
+                className="text-xs px-2 py-1 rounded-jotty border border-border bg-muted/30 text-foreground cursor-pointer hover:bg-muted/50 transition-colors"
               >
                 {item.text}
               </div>

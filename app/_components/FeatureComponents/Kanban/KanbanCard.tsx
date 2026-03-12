@@ -14,7 +14,7 @@ import {
   formatTimerTime,
   getStatusColor,
   getStatusIcon,
-  getPriorityColor,
+  getPriorityDotColor,
   getPriorityLabel,
 } from "@/app/_utils/kanban/index";
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
@@ -26,6 +26,7 @@ import { formatReminderTime } from "@/app/_utils/kanban/reminder-utils";
 import { CircleIcon, Notification03Icon, UserIcon } from "hugeicons-react";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
+import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
 
 interface KanbanCardProps {
   checklist: Checklist;
@@ -116,7 +117,6 @@ const KanbanCardComponent = ({
         <KanbanCardDetail
           checklist={checklist}
           item={item}
-          isShared={isShared}
           isOpen={showDetailModal}
           onClose={() => setShowDetailModal(false)}
           onUpdate={onUpdate}
@@ -162,31 +162,36 @@ const KanbanCardComponent = ({
 
             <div className="flex flex-wrap gap-1.5">
               {item.priority && item.priority !== "none" && (
-                <span
-                  className={cn(
-                    "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
-                    getPriorityColor(item.priority),
-                  )}
-                >
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground flex items-center gap-1">
+                  <span
+                    className="w-2 h-2 rounded-jotty flex-shrink-0"
+                    style={{
+                      backgroundColor: getPriorityDotColor(item.priority),
+                    }}
+                  />
                   {getPriorityLabel(item.priority, t)}
                 </span>
               )}
 
               {item.score !== undefined && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground">
                   {t("kanban.scoreLabel", { score: item.score })}
                 </span>
               )}
 
               {item.assignee && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary flex items-center gap-0.5">
-                  <UserIcon className="h-2.5 w-2.5" />
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground flex items-center gap-0.5">
+                  <UserAvatar
+                    username={item.assignee}
+                    size="xs"
+                    avatarUrl={getUserAvatarUrl(item.assignee) || ""}
+                  />
                   {item.assignee}
                 </span>
               )}
 
               {item.reminder && !item.reminder.notified && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 flex items-center gap-0.5">
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 flex items-center gap-0.5">
                   <Notification03Icon className="h-2.5 w-2.5" />
                   {formatReminderTime(item.reminder.datetime)}
                 </span>

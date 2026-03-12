@@ -148,12 +148,21 @@ export const useKanbanBoard = ({
       (item) => item.status === targetStatus && !item.isArchived && item.id !== activeIdStr
     );
 
+    const isDraggingDown = !isCrossColumn && (() => {
+      const allColumnItems = localChecklist.items.filter(
+        (item) => item.status === targetStatus && !item.isArchived
+      );
+      const activeOrigIdx = allColumnItems.findIndex((item) => item.id === activeIdStr);
+      const overOrigIdx = allColumnItems.findIndex((item) => item.id === overIdStr);
+      return activeOrigIdx < overOrigIdx;
+    })();
+
     let insertIndex: number;
     if (droppedOnColumn) {
       insertIndex = columnItems.length;
     } else {
       const overIndex = columnItems.findIndex((item) => item.id === overIdStr);
-      insertIndex = overIndex === -1 ? columnItems.length : overIndex;
+      insertIndex = overIndex === -1 ? columnItems.length : isDraggingDown ? overIndex + 1 : overIndex;
     }
 
     const activeItem = localChecklist.items.find((item) => item.id === activeIdStr);
@@ -176,6 +185,18 @@ export const useKanbanBoard = ({
 
     if (isCrossColumn) {
       await _handleItemStatusUpdate(activeIdStr, targetStatus);
+
+      if (!droppedOnColumn) {
+        const reorderFormData = new FormData();
+        reorderFormData.append("listId", localChecklist.id);
+        reorderFormData.append("activeItemId", activeIdStr);
+        reorderFormData.append("overItemId", overIdStr);
+        reorderFormData.append("category", localChecklist.category || "Uncategorized");
+
+        await reorderItems(reorderFormData);
+      }
+
+      await refreshChecklist();
     } else {
       if (droppedOnColumn || activeIdStr === overIdStr) return;
 
@@ -184,6 +205,9 @@ export const useKanbanBoard = ({
       formData.append("activeItemId", activeIdStr);
       formData.append("overItemId", overIdStr);
       formData.append("category", localChecklist.category || "Uncategorized");
+      if (isDraggingDown) {
+        formData.append("position", "after");
+      }
 
       const result = await reorderItems(formData);
       if (result.success) {

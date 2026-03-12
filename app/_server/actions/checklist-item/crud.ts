@@ -14,9 +14,12 @@ import {
 } from "@/app/_server/actions/checklist";
 import {
   listToMarkdown,
-  areAllItemsCompleted
+  areAllItemsCompleted,
 } from "@/app/_utils/checklist-utils";
-import { extractHashtagsFromContent, normalizeTag } from "@/app/_utils/tag-utils";
+import {
+  extractHashtagsFromContent,
+  normalizeTag,
+} from "@/app/_utils/tag-utils";
 import { isAdmin, getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { Checklist, Result } from "@/app/_types";
@@ -33,7 +36,7 @@ export const updateItem = async (
   checklist: Checklist,
   formData: FormData,
   username?: string,
-  skipRevalidation = false
+  skipRevalidation = false,
 ): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
@@ -50,7 +53,7 @@ export const updateItem = async (
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
       currentUser,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
     );
 
     if (!canEdit) {
@@ -74,14 +77,14 @@ export const updateItem = async (
 
       return {
         ...parent,
-        completed: areAllItemsCompleted(parent.children)
+        completed: areAllItemsCompleted(parent.children),
       };
     };
 
     const findAndUpdateItem = (
       items: any[],
       itemId: string,
-      updates: any
+      updates: any,
     ): any[] => {
       return items.map((item) => {
         if (item.id === itemId) {
@@ -104,7 +107,7 @@ export const updateItem = async (
           const updatedChildren = findAndUpdateItem(
             item.children,
             itemId,
-            updates
+            updates,
           );
           const updatedItem = updateParentBasedOnChildren({
             ...item,
@@ -122,7 +125,9 @@ export const updateItem = async (
     const textInlineTags = text ? extractHashtagsFromContent(text) : [];
     const existingTags = checklist.tags || [];
     const mergedTags = text
-      ? Array.from(new Set([...existingTags.map(normalizeTag), ...textInlineTags])).filter(Boolean)
+      ? Array.from(
+          new Set([...existingTags.map(normalizeTag), ...textInlineTags]),
+        ).filter(Boolean)
       : existingTags;
 
     const priority = formData.get("priority") as string | null;
@@ -156,11 +161,11 @@ export const updateItem = async (
       process.cwd(),
       "data",
       CHECKLISTS_FOLDER,
-      checklist.owner!
+      checklist.owner!,
     );
     const categoryDir = path.join(
       ownerDir,
-      checklist.category || "Uncategorized"
+      checklist.category || "Uncategorized",
     );
     await ensureDir(categoryDir);
 
@@ -175,22 +180,27 @@ export const updateItem = async (
       } catch (error) {
         console.warn(
           "Cache revalidation failed, but data was saved successfully:",
-          error
+          error,
         );
       }
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: listId,
+      username: currentUser,
+    });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
     console.error(
       "Error updating item:",
-      error instanceof Error ? error.stack : "No stack trace"
+      error instanceof Error ? error.stack : "No stack trace",
     );
     console.error(
       "Error updating item:",
-      error instanceof Error ? error.message : String(error)
+      error instanceof Error ? error.message : String(error),
     );
     return { success: false, error: "Failed to update item" };
   }
@@ -200,7 +210,7 @@ export const createItem = async (
   list: Checklist,
   formData: FormData,
   username?: string,
-  skipRevalidation = false
+  skipRevalidation = false,
 ) => {
   try {
     const listId = formData.get("listId") as string;
@@ -217,7 +227,7 @@ export const createItem = async (
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
       currentUser,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
     );
 
     if (!canEdit) {
@@ -242,12 +252,11 @@ export const createItem = async (
         recurrence = JSON.parse(recurrenceStr);
 
         if (recurrence && !recurrence.nextDue) {
-          const { calculateNextOccurrence } = await import(
-            "@/app/_utils/recurrence-utils"
-          );
+          const { calculateNextOccurrence } =
+            await import("@/app/_utils/recurrence-utils");
           recurrence.nextDue = calculateNextOccurrence(
             recurrence.rrule,
-            recurrence.dtstart
+            recurrence.dtstart,
           );
         }
       } catch (e) {
@@ -261,7 +270,7 @@ export const createItem = async (
 
       if (list.statuses && list.statuses.length > 0) {
         const sortedStatuses = [...list.statuses].sort(
-          (a, b) => a.order - b.order
+          (a, b) => a.order - b.order,
         );
         return sortedStatuses[0].id as TaskStatus;
       }
@@ -269,7 +278,12 @@ export const createItem = async (
       return TaskStatus.TODO;
     };
 
-    const defaultStatus = (list.type === "kanban" || list.type === "task") ? getDefaultStatus() : undefined;
+    const defaultStatus =
+      list.type === "kanban" || list.type === "task"
+        ? getDefaultStatus()
+        : undefined;
+    const isSharedBoard =
+      (list.type === "kanban" || list.type === "task") && list.isShared;
 
     const shiftedItems = list.items.map((item) => ({
       ...item,
@@ -288,23 +302,24 @@ export const createItem = async (
       lastModifiedAt: now,
       ...((list.type === "kanban" || list.type === "task") &&
         defaultStatus && {
-        status: defaultStatus,
-        timeEntries,
-        history: [
-          {
-            status: defaultStatus,
-            timestamp: now,
-            user: currentUser,
-          },
-        ],
-      }),
+          status: defaultStatus,
+          timeEntries,
+          history: [
+            {
+              status: defaultStatus,
+              timestamp: now,
+              user: currentUser,
+            },
+          ],
+        }),
+      ...(isSharedBoard && { assignee: currentUser }),
       ...(recurrence && { recurrence }),
     };
 
     const inlineTags = extractHashtagsFromContent(text);
     const existingTags = list.tags || [];
     const mergedTags = Array.from(
-      new Set([...existingTags.map(normalizeTag), ...inlineTags])
+      new Set([...existingTags.map(normalizeTag), ...inlineTags]),
     ).filter(Boolean);
 
     const updatedList = {
@@ -318,7 +333,7 @@ export const createItem = async (
       process.cwd(),
       "data",
       CHECKLISTS_FOLDER,
-      list.owner!
+      list.owner!,
     );
     const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
 
@@ -335,25 +350,30 @@ export const createItem = async (
       } catch (error) {
         console.warn(
           "Cache revalidation failed, but data was saved successfully:",
-          error
+          error,
         );
       }
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: listId,
+      username: currentUser,
+    });
 
     return { success: true, data: newItem };
   } catch (error) {
     console.error(
       "Error creating item:",
-      error instanceof Error ? error.stack : "No stack trace"
+      error instanceof Error ? error.stack : "No stack trace",
     );
     return { success: false, error: "Failed to create item" };
   }
 };
 
 export const deleteItem = async (
-  formData: FormData
+  formData: FormData,
 ): Promise<Result<Checklist>> => {
   try {
     const listId = formData.get("listId") as string;
@@ -366,7 +386,7 @@ export const deleteItem = async (
     }
 
     const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
+      (l) => l.id === listId && (!category || l.category === category),
     );
     if (!list) {
       throw new Error("List not found");
@@ -378,7 +398,7 @@ export const deleteItem = async (
       category || "Uncategorized",
       ItemTypes.CHECKLIST,
       currentUser,
-      PermissionTypes.DELETE
+      PermissionTypes.DELETE,
     );
 
     if (!canDelete) {
@@ -404,11 +424,12 @@ export const deleteItem = async (
           const children = item.children
             ? filterOutItem(item.children, itemId)
             : undefined;
-          const completed = (
+          const completed =
             children && children.length > 0 && areAllItemsCompleted(children)
-          ) ? true : item.completed;
+              ? true
+              : item.completed;
 
-          return {...item, children, completed};
+          return { ...item, children, completed };
         })
         .filter((item) => item.children?.length > 0 || item.id !== undefined);
     };
@@ -431,19 +452,19 @@ export const deleteItem = async (
         process.cwd(),
         "data",
         CHECKLISTS_FOLDER,
-        list.owner!
+        list.owner!,
       );
       filePath = path.join(
         ownerDir,
         list.category || "Uncategorized",
-        `${listId}.md`
+        `${listId}.md`,
       );
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(
         userDir,
         list.category || "Uncategorized",
-        `${listId}.md`
+        `${listId}.md`,
       );
     }
 
@@ -455,11 +476,16 @@ export const deleteItem = async (
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: listId,
+      username: currentUser,
+    });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {

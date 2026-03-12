@@ -1568,5 +1568,18 @@
     "goHome": "Go Home",
     "seenCount": "You've seen {count} {count, plural, one {haiku} other {haikus}}",
     "imNoPoet": "I am no poet, and nor is Jotty. These are random words in sequence."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unread": "unread",
+    "markAllRead": "Mark all read",
+    "clearAll": "Clear all",
+    "empty": "No notifications",
+    "assignmentTitle": "Task assigned to you",
+    "assignmentMessage": "\"{task}\" in \"{board}\"",
+    "reminderTitle": "Task overdue",
+    "reminderMessage": "\"{task}\" in \"{board}\" is past its reminder",
+    "sharingTitle": "{user} shared a {type} with you",
+    "sharingMessage": "Open to view the shared {type}"
   }
 }

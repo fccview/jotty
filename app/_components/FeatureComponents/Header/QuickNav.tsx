@@ -17,6 +17,7 @@ import { cn, handleScroll } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
 import { UserDropdown } from "../Navigation/Parts/UserDropdown";
+import { NotificationBell } from "./NotificationBell";
 import { logout } from "@/app/_server/actions/auth";
 import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
@@ -97,6 +98,7 @@ export const QuickNav = ({
 
         <div className="hidden lg:flex lg:items-center lg:gap-2">
           <NavigationSearchIcon onModeChange={onModeChange} />
+          {user && <NotificationBell />}
 
           {user && onOpenSettings ? (
             <UserDropdown
@@ -177,6 +179,7 @@ export const QuickNav = ({
           )}
 
           <NavigationSearchIcon onModeChange={onModeChange} />
+          {user && <NotificationBell />}
         </div>
       </nav>
     </header>

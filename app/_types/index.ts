@@ -90,3 +90,5 @@ export type { AppMode, ContentFilter, AppModeContextType } from "./context";
 export type { WsEvent } from "./websocket";
 
 export type { GetNotesOptions, GetChecklistsOptions } from "./options";
+
+export type { AppNotification, AppNotificationData, NotificationType } from "./notifications";

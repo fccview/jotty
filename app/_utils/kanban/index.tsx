@@ -53,16 +53,16 @@ export const getStatusIcon = (status?: string): JSX.Element | null => {
   }
 };
 
-const PRIORITY_CONFIG: Record<KanbanPriority, { color: string; translationKey: string; sortOrder: number }> = {
-  critical: { color: "text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400", translationKey: "kanban.critical", sortOrder: 0 },
-  high: { color: "text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400", translationKey: "kanban.high", sortOrder: 1 },
-  medium: { color: "text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400", translationKey: "kanban.medium", sortOrder: 2 },
-  low: { color: "text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400", translationKey: "kanban.low", sortOrder: 3 },
-  none: { color: "text-muted-foreground bg-muted", translationKey: "kanban.none", sortOrder: 4 },
+const PRIORITY_CONFIG: Record<KanbanPriority, { dotColor: string; translationKey: string; sortOrder: number }> = {
+  critical: { dotColor: "#ef4444", translationKey: "kanban.critical", sortOrder: 0 },
+  high: { dotColor: "#f97316", translationKey: "kanban.high", sortOrder: 1 },
+  medium: { dotColor: "#eab308", translationKey: "kanban.medium", sortOrder: 2 },
+  low: { dotColor: "#3b82f6", translationKey: "kanban.low", sortOrder: 3 },
+  none: { dotColor: "transparent", translationKey: "kanban.none", sortOrder: 4 },
 };
 
-export const getPriorityColor = (priority?: KanbanPriority): string =>
-  PRIORITY_CONFIG[priority || "none"].color;
+export const getPriorityDotColor = (priority?: KanbanPriority): string =>
+  PRIORITY_CONFIG[priority || "none"].dotColor;
 
 export const getPriorityLabel = (priority: KanbanPriority | undefined, t: (key: string) => string): string =>
   t(PRIORITY_CONFIG[priority || "none"].translationKey);

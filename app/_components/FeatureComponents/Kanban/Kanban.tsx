@@ -77,7 +77,12 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
-  useKanbanReminders(localChecklist);
+  useKanbanReminders({
+    checklist: localChecklist,
+    checklistId: localChecklist.id,
+    category: localChecklist.category || "Uncategorized",
+    onUpdate: handleItemUpdate,
+  });
 
   const statuses = useMemo(() => {
     const currentStatuses = localChecklist.statuses || DEFAULT_KANBAN_STATUSES;
@@ -356,7 +361,6 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           onUpdate={handleItemUpdate}
           checklistId={localChecklist.id}
           category={localChecklist.category || "Uncategorized"}
-          isShared={isShared}
         />
       )}
 

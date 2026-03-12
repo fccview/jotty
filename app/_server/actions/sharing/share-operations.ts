@@ -9,6 +9,8 @@ import { getItemUuid } from "./helpers";
 import { readShareFile, writeShareFile } from "./io";
 import { SharedItemEntry } from "./types";
 import { revalidateTag } from "next/cache";
+import { getTranslations } from "next-intl/server";
+import { createNotificationForUser } from "@/app/_server/actions/notifications";
 
 export const shareWith = async (
   item: string,
@@ -73,6 +75,15 @@ export const shareWith = async (
     });
 
     await broadcast({ type: "sharing", action: "updated", entityId: item, username: sharerUsername });
+
+    const itemTypeLabel = itemType === ItemTypes.CHECKLIST ? "checklist" : "note";
+    const t = await getTranslations("notifications");
+    await createNotificationForUser(receiverUsername, {
+      type: "sharing",
+      title: t("sharingTitle", { user: sharerUsername, type: itemTypeLabel }),
+      message: t("sharingMessage", { type: itemTypeLabel }),
+      data: { itemId: itemUuid, itemType: itemTypeLabel },
+    });
 
     return { success: true, data: null };
   } catch (error) {

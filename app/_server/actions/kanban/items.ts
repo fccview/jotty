@@ -12,6 +12,7 @@ import { getFormData } from "@/app/_utils/global-utils";
 import { checkUserPermission } from "@/app/_server/actions/sharing";
 import { broadcast } from "@/app/_server/ws/broadcast";
 import { getListById } from "@/app/_server/actions/checklist";
+import { createNotificationForUser } from "@/app/_server/actions/notifications";
 
 const _getFilePath = async (list: Checklist): Promise<string> => {
   const categoryDir = list.category || "Uncategorized";
@@ -73,13 +74,13 @@ export const updateKanbanItemPriority = async (formData: FormData) => {
     const currentUser = await getCurrentUser();
     if (!currentUser) return { error: "Not authenticated" };
 
-    const canEdit = await checkUserPermission(
-      listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
-    );
-    if (!canEdit) return { error: "Permission denied" };
-
     const list = await getListById(listId, undefined, category);
     if (!list) return { error: "List not found" };
+
+    const canEdit = await checkUserPermission(
+      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+    );
+    if (!canEdit) return { error: "Permission denied" };
 
     const now = new Date().toISOString();
     const updatedList: Checklist = {
@@ -110,13 +111,13 @@ export const updateKanbanItemScore = async (formData: FormData) => {
     const currentUser = await getCurrentUser();
     if (!currentUser) return { error: "Not authenticated" };
 
-    const canEdit = await checkUserPermission(
-      listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
-    );
-    if (!canEdit) return { error: "Permission denied" };
-
     const list = await getListById(listId, undefined, category);
     if (!list) return { error: "List not found" };
+
+    const canEdit = await checkUserPermission(
+      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+    );
+    if (!canEdit) return { error: "Permission denied" };
 
     const now = new Date().toISOString();
     const updatedList: Checklist = {
@@ -147,20 +148,13 @@ export const assignKanbanItem = async (formData: FormData) => {
     const currentUser = await getCurrentUser();
     if (!currentUser) return { error: "Not authenticated" };
 
-    const canEdit = await checkUserPermission(
-      listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
-    );
-    if (!canEdit) return { error: "Permission denied" };
-
-    if (assignee) {
-      const assigneeCanRead = await checkUserPermission(
-        listId, category, ItemTypes.CHECKLIST, assignee, PermissionTypes.READ
-      );
-      if (!assigneeCanRead) return { error: "Assignee does not have access to this board" };
-    }
-
     const list = await getListById(listId, undefined, category);
     if (!list) return { error: "List not found" };
+
+    const canEdit = await checkUserPermission(
+      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+    );
+    if (!canEdit) return { error: "Permission denied" };
 
     const now = new Date().toISOString();
     const updatedList: Checklist = {
@@ -175,6 +169,17 @@ export const assignKanbanItem = async (formData: FormData) => {
     };
 
     await _saveAndBroadcast(updatedList);
+
+    if (assignee && assignee !== currentUser.username) {
+      const assignedItem = _findItem(updatedList.items, itemId);
+      await createNotificationForUser(assignee, {
+        type: "assignment",
+        title: assignedItem?.text || "New task assigned",
+        message: `${currentUser.username} assigned you to a task in "${updatedList.title}"`,
+        data: { itemId: updatedList.uuid || listId, itemType: "checklist", taskId: itemId },
+      });
+    }
+
     return { success: true, data: updatedList };
   } catch (error) {
     console.error("Error assigning item:", error);
@@ -191,13 +196,13 @@ export const setKanbanItemReminder = async (formData: FormData) => {
     const currentUser = await getCurrentUser();
     if (!currentUser) return { error: "Not authenticated" };
 
-    const canEdit = await checkUserPermission(
-      listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
-    );
-    if (!canEdit) return { error: "Permission denied" };
-
     const list = await getListById(listId, undefined, category);
     if (!list) return { error: "List not found" };
+
+    const canEdit = await checkUserPermission(
+      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+    );
+    if (!canEdit) return { error: "Permission denied" };
 
     let reminder: KanbanReminder | undefined;
     if (reminderStr) {
