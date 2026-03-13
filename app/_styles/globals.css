@@ -56,6 +56,7 @@ svg {
 .kanban-grid {
     display: grid;
     grid-template-columns: 1fr;
+    min-width: 0;
 }
 
 @media (min-width: 640px) {

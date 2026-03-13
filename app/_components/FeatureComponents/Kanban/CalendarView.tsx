@@ -54,30 +54,30 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
   });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={goToPreviousMonth}>
+    <div className="space-y-4 min-w-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          <Button variant="outline" size="sm" onClick={goToPreviousMonth} className="shrink-0">
             <ArrowLeft01Icon className="h-4 w-4" />
           </Button>
-          <h3 className="text-lg font-semibold min-w-[200px] text-center">
+          <h3 className="text-base sm:text-lg font-semibold min-w-0 flex-1 text-center truncate px-1">
             {monthLabel}
           </h3>
-          <Button variant="outline" size="sm" onClick={goToNextMonth}>
+          <Button variant="outline" size="sm" onClick={goToNextMonth} className="shrink-0">
             <ArrowRight01Icon className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={goToToday}>
+          <Button variant="outline" size="sm" onClick={goToToday} className="shrink-0">
             {t("kanban.today")}
           </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={exportICS}>
+        <Button variant="outline" size="sm" onClick={exportICS} className="shrink-0 w-full sm:w-auto">
           <Download04Icon className="h-4 w-4 mr-1" />
           {t("kanban.exportIcs")}
         </Button>
       </div>
 
-      <div className="border border-border rounded-jotty overflow-hidden">
-        <div className="grid grid-cols-7">
+      <div className="border border-border rounded-jotty overflow-hidden min-w-0">
+        <div className="grid grid-cols-7 min-w-0">
           {weekdays.map((day) => (
             <div
               key={day}

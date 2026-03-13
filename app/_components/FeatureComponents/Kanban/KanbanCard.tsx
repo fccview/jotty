@@ -125,7 +125,7 @@ const KanbanCardComponent = ({
         />
       )}
 
-      <div>
+      <div className="min-w-0">
         <div
           ref={setNodeRef}
           style={style}
@@ -133,7 +133,7 @@ const KanbanCardComponent = ({
           {...listeners}
           onDoubleClick={() => setShowDetailModal(true)}
           className={cn(
-            "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing",
+            "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing min-w-0",
             getStatusColor(item.status),
             (isDragging || isSortableDragging) &&
               "opacity-50 scale-95 rotate-[4deg] shadow-lg z-50 transition-all duration-200",

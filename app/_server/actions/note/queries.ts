@@ -57,6 +57,8 @@ export const getNoteById = async (
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
   const { serverReadFile } = await import("@/app/_server/actions/file");
 
+  console.log("getNoteById", id, category, username);
+
   if (!username) {
     const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
     const userByUuid = await getUserByNoteUuid(id);
@@ -92,6 +94,11 @@ export const getNoteById = async (
     }
   }
 
+  console.log("filePath", filePath);
+  console.log("category", category);
+  console.log("id", id);
+  console.log("absUserDir", absUserDir);
+
   if (!filePath && category) {
     const directPath = path.join(absUserDir, category, `${id}.md`);
     try {
@@ -121,6 +128,7 @@ export const getNoteById = async (
     for (const sharedItem of sharedData.notes) {
       const itemIdentifier = sharedItem.uuid || sharedItem.id;
       if (!itemIdentifier) continue;
+      if (itemIdentifier !== id) continue;
 
       const sharerDir = path.join(process.cwd(), NOTES_DIR(sharedItem.sharer));
       const found = isUuid && (await grepFindFileByUuid(sharerDir, id));
@@ -147,6 +155,8 @@ export const getNoteById = async (
     }
   }
 
+  console.log("filePath", filePath);
+
   if (!filePath) {
     return undefined;
   }
@@ -170,6 +180,15 @@ export const getNoteById = async (
       console.warn("Failed to save UUID to note file:", error);
     }
   }
+
+  console.log("finalUuid", finalUuid);
+  console.log("ownerUsername", ownerUsername);
+  console.log("isShared", isShared);
+  console.log("parsedData", parsedData);
+  console.log("noteCategory", noteCategory);
+  console.log("stats", stats);
+  console.log("toIso(stats.birthtime)", toIso(stats.birthtime));
+  console.log("toIso(stats.mtime)", toIso(stats.mtime));
 
   return {
     id: noteId,

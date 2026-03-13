@@ -248,7 +248,13 @@ export const createItem = async (
     const defaultStatus = isKanbanType(list.type)
       ? getDefaultStatus()
       : undefined;
-    const isSharedBoard = isKanbanType(list.type) && list.isShared;
+
+    let isSharedBoard = false;
+    if (isKanbanType(list.type)) {
+      const { getUsersWithAccess } = await import("@/app/_server/actions/sharing");
+      const sharedUsers = await getUsersWithAccess(listId, list.uuid);
+      isSharedBoard = sharedUsers.length > 0;
+    }
 
     const shiftedItems = list.items.map((item) => ({
       ...item,

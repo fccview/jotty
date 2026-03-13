@@ -58,8 +58,8 @@ const KanbanItemContentComponent = ({
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
+    <div className="space-y-2 min-w-0 overflow-hidden">
+      <div className="flex items-center gap-2 min-w-0">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {item.createdBy && isShared && (
             <div

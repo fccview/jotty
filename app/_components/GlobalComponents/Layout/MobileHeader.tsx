@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn, handleScroll } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 import { ConnectionIndicator } from "@/app/_components/GlobalComponents/Indicators/ConnectionIndicator";
+import { NotificationBell } from "../../FeatureComponents/Notifications/NotificationBell";
 
 interface MobileHeaderProps {
   user: SanitisedUser | null;
@@ -62,7 +63,9 @@ export const MobileHeader = ({
       <a href="/" className="flex items-center gap-3">
         <div className="relative">
           <DynamicLogo className="h-10 w-10" size="32x32" />
-          <ConnectionIndicator borderColor={scrollPos < 150 ? "border-background" : "border-muted"} />
+          <ConnectionIndicator
+            borderColor={scrollPos < 150 ? "border-background" : "border-muted"}
+          />
         </div>
         <div className="flex items-center gap-2">
           <AppName
@@ -73,12 +76,15 @@ export const MobileHeader = ({
       </a>
 
       {user ? (
-        <UserDropdown
-          username={user.username}
-          avatarUrl={user.avatarUrl}
-          onOpenSettings={onOpenSettings}
-          currentLocale={currentLocale}
-        />
+        <div className="flex items-center gap-2">
+          <UserDropdown
+            username={user.username}
+            avatarUrl={user.avatarUrl}
+            onOpenSettings={onOpenSettings}
+            currentLocale={currentLocale}
+          />
+          <NotificationBell />
+        </div>
       ) : (
         <Button
           variant="destructive"

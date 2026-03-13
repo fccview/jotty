@@ -76,16 +76,16 @@ const KanbanColumnComponent = ({
   }, [color]);
 
   return (
-    <div className="flex flex-col h-full my-4 lg:my-0">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col h-full my-4 lg:my-0 min-w-0">
+      <div className="flex items-center justify-between mb-3 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
           <div
-            className="w-3 h-3 rounded-full"
+            className="w-3 h-3 rounded-full shrink-0"
             style={{ backgroundColor: color }}
           />
-          <h3 className="font-medium text-md lg:text-sm text-foreground">{title}</h3>
+          <h3 className="font-medium text-md lg:text-sm text-foreground truncate">{title}</h3>
         </div>
-        <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+        <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full shrink-0">
           {items.length}
         </span>
       </div>
@@ -93,7 +93,7 @@ const KanbanColumnComponent = ({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex-1 rounded-jotty border-2 border-dashed p-3 min-h-[200px] transition-colors duration-200",
+          "flex-1 min-w-0 rounded-jotty border-2 border-dashed p-3 min-h-[200px] transition-colors duration-200",
           isOver && "border-primary bg-primary/5"
         )}
         style={{

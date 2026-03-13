@@ -88,6 +88,7 @@ export const KanbanCardDetail = ({
   const [priorityInput, setPriorityInput] = useState<KanbanPriority>(initialItem.priority || KanbanPriorityLevel.NONE);
   const [assigneeInput, setAssigneeInput] = useState(initialItem.assignee || "");
   const [availableUsers, setAvailableUsers] = useState<{ username: string; avatarUrl?: string }[]>([]);
+  const [boardIsShared, setBoardIsShared] = useState(false);
 
   useEffect(() => {
     setItem(initialItem);
@@ -103,18 +104,24 @@ export const KanbanCardDetail = ({
   useEffect(() => {
     if (!isOpen) return;
     const _loadUsers = async () => {
-      const allUsers = await getUsers();
       const sharedWithUsers = await getUsersWithAccess(checklistId, checklist.uuid);
+      if (sharedWithUsers.length === 0) {
+        setBoardIsShared(false);
+        return;
+      }
+      setBoardIsShared(true);
+      const allUsers = await getUsers();
+      const allowedUsernames = new Set(sharedWithUsers);
+      if (checklist.owner) allowedUsernames.add(checklist.owner);
       const userMap = new Map<string, { username: string; avatarUrl?: string }>();
-      allUsers.forEach((u: { username: string; avatarUrl?: string }) => {
-        userMap.set(u.username, { username: u.username, avatarUrl: u.avatarUrl });
-      });
-      sharedWithUsers.forEach((username: string) => {
+      allUsers
+        .filter((u: { username: string }) => allowedUsernames.has(u.username))
+        .forEach((u: { username: string; avatarUrl?: string }) => {
+          userMap.set(u.username, { username: u.username, avatarUrl: u.avatarUrl });
+        });
+      allowedUsernames.forEach((username) => {
         if (!userMap.has(username)) userMap.set(username, { username });
       });
-      if (checklist.owner && !userMap.has(checklist.owner)) {
-        userMap.set(checklist.owner, { username: checklist.owner });
-      }
       setAvailableUsers(Array.from(userMap.values()));
     };
     _loadUsers();
@@ -374,6 +381,7 @@ export const KanbanCardDetail = ({
             targetDateInput={targetDateInput}
             availableUsers={availableUsers}
             canEdit={!!permissions?.canEdit}
+            isShared={boardIsShared}
             toLocalDateTimeValue={_toLocalDateTimeValue}
             toLocalDateValue={_toLocalDateValue}
             onPriorityChange={handlePriorityChange}

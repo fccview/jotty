@@ -133,7 +133,7 @@ export const ChecklistClient = ({
   const renderContent = () => {
     if (isKanbanType(localChecklist.type)) {
       return (
-        <div className="h-full flex flex-col bg-background">
+        <div className="h-full flex flex-col bg-background min-w-0">
           <ChecklistHeader
             checklist={localChecklist}
             onBack={handleBack}

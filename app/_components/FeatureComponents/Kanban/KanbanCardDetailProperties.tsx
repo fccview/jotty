@@ -21,6 +21,7 @@ interface KanbanCardDetailPropertiesProps {
   targetDateInput: string;
   availableUsers: { username: string; avatarUrl?: string }[];
   canEdit: boolean;
+  isShared: boolean;
   toLocalDateTimeValue: (iso: string) => string;
   toLocalDateValue: (iso: string) => string;
   onPriorityChange: (p: KanbanPriority) => void;
@@ -42,6 +43,7 @@ export const KanbanCardDetailProperties = ({
   targetDateInput,
   availableUsers,
   canEdit,
+  isShared,
   toLocalDateTimeValue,
   toLocalDateValue,
   onPriorityChange,
@@ -158,17 +160,19 @@ export const KanbanCardDetailProperties = ({
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-              {t("kanban.assignee")}
-            </label>
-            <Dropdown
-              value={assigneeInput}
-              options={assigneeOptions}
-              onChange={onAssigneeChange}
-              placeholder={t("kanban.unassigned")}
-            />
-          </div>
+          {isShared && (
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                {t("kanban.assignee")}
+              </label>
+              <Dropdown
+                value={assigneeInput}
+                options={assigneeOptions}
+                onChange={onAssigneeChange}
+                placeholder={t("kanban.unassigned")}
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">

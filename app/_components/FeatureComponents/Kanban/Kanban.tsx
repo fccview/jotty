@@ -180,7 +180,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   ]);
 
   return (
-    <div className="h-full flex flex-col bg-background overflow-y-auto jotty-scrollable-content">
+    <div className="h-full flex flex-col bg-background overflow-y-auto overflow-x-hidden min-w-0 max-w-full jotty-scrollable-content">
       {permissions?.canEdit && (
         <ChecklistHeading
           key={focusKey}
@@ -195,51 +195,55 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           submitButtonText={t("kanban.addItem")}
         />
       )}
-      <div className="flex gap-2 px-4 pt-4 pb-2 w-full justify-end">
-        <div className="flex gap-1 border border-border rounded-jotty p-0.5 mr-auto">
+      <div className="flex flex-wrap gap-2 items-center w-full min-w-0 px-2 sm:px-4 pt-4 pb-2">
+        <div className="flex gap-1 border border-border rounded-jotty p-0.5 shrink-0">
           <Button
             variant={viewMode === "board" ? "default" : "ghost"}
             size="sm"
             onClick={() => setViewMode("board")}
-            className="text-md lg:text-xs h-7"
+            className="text-xs sm:text-md lg:text-xs h-7"
           >
-            <TaskDaily01Icon className="h-3 w-3 mr-1" />
-            {t("kanban.title")}
+            <TaskDaily01Icon className="h-3 w-3 mr-1 shrink-0" />
+            <span className="truncate">{t("kanban.title")}</span>
           </Button>
           <Button
             variant={viewMode === "calendar" ? "default" : "ghost"}
             size="sm"
             onClick={() => setViewMode("calendar")}
-            className="text-md lg:text-xs h-7"
+            className="text-xs sm:text-md lg:text-xs h-7"
           >
-            <Calendar03Icon className="h-3 w-3 mr-1" />
-            {t("kanban.calendar")}
+            <Calendar03Icon className="h-3 w-3 mr-1 shrink-0" />
+            <span className="truncate">{t("kanban.calendar")}</span>
           </Button>
         </div>
-        {permissions?.canEdit && viewMode === "board" && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowStatusModal(true)}
-            className="text-md lg:text-xs"
-          >
-            <Settings01Icon className="h-3 w-3 mr-1" />
-            {t("kanban.manageStatuses")}
-          </Button>
-        )}
-        {viewMode === "board" && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowArchivedModal(true)}
-            className="text-md lg:text-xs"
-          >
-            <Archive02Icon className="h-3 w-3 mr-1" />
-            {t("kanban.viewArchived")}
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2 justify-end min-w-0 flex-1">
+          {permissions?.canEdit && viewMode === "board" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowStatusModal(true)}
+              className="text-xs sm:text-md lg:text-xs shrink-0"
+              aria-label={t("kanban.manageStatuses")}
+            >
+              <Settings01Icon className="h-3 w-3 mr-1 shrink-0" />
+              <span className="hidden sm:inline">{t("kanban.manageStatuses")}</span>
+            </Button>
+          )}
+          {viewMode === "board" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowArchivedModal(true)}
+              className="text-xs sm:text-md lg:text-xs shrink-0"
+              aria-label={t("kanban.viewArchived")}
+            >
+              <Archive02Icon className="h-3 w-3 mr-1 shrink-0" />
+              <span className="hidden sm:inline">{t("kanban.viewArchived")}</span>
+            </Button>
+          )}
+        </div>
       </div>
-      <div className="flex-1 pb-[8.5em]">
+      <div className="flex-1 min-w-0 w-full max-w-full overflow-auto pb-[8.5em]">
         {viewMode === "calendar" ? (
           <div className="p-4">
             <CalendarView
@@ -258,8 +262,8 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
             <div
               className={
                 columns.length <= 6
-                  ? "h-full kanban-grid gap-4 p-2 sm:p-4"
-                  : "h-full flex gap-4 p-2 sm:p-4 overflow-x-auto"
+                  ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
+                  : "h-full min-w-0 flex gap-4 p-2 sm:p-4"
               }
               style={columns.length <= 6 ? {
                 "--kanban-col-count": columns.length,
@@ -270,7 +274,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 return (
                   <div
                     key={column.id}
-                    className={columns.length > 6 ? "flex-shrink-0" : ""}
+                    className={columns.length > 6 ? "flex-shrink-0" : "min-w-0"}
                     style={columns.length > 6 ? { width: "280px" } : undefined}
                   >
                     <KanbanColumn
@@ -309,11 +313,11 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
             </DragOverlay>
           </DndContext>
         ) : (
-          <div
+            <div
             className={
               columns.length <= 6
-                ? "h-full kanban-grid gap-4 p-2 sm:p-4"
-                : "h-full flex gap-4 p-2 sm:p-4 overflow-x-auto"
+                ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
+                : "h-full min-w-0 flex gap-4 p-2 sm:p-4"
             }
             style={columns.length <= 6 ? {
               "--kanban-col-count": columns.length,
@@ -324,7 +328,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
               return (
                 <div
                   key={column.id}
-                  className={columns.length > 6 ? "flex-shrink-0" : ""}
+                  className={columns.length > 6 ? "flex-shrink-0" : "min-w-0"}
                   style={columns.length > 6 ? { width: "280px" } : undefined}
                 >
                   <KanbanColumn

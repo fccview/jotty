@@ -4,6 +4,39 @@ import { updateNote, deleteNote } from "@/app/_server/actions/note";
 
 export const dynamic = "force-dynamic";
 
+export async function GET(request: NextRequest, props: { params: Promise<{ noteId: string }> }) {
+    const params = await props.params;
+    return withApiAuth(request, async (user) => {
+        try {
+            const { getNoteById } = await import("@/app/_server/actions/note");
+            const note = await getNoteById(params.noteId, undefined, user.username);
+
+            if (!note) {
+                return NextResponse.json({ error: "Note not found" }, { status: 404 });
+            }
+
+            return NextResponse.json({
+                success: true,
+                data: {
+                    id: note.uuid || note.id,
+                    title: note.title,
+                    category: note.category || "Uncategorized",
+                    content: note.content,
+                    createdAt: note.createdAt,
+                    updatedAt: note.updatedAt,
+                    owner: note.owner,
+                },
+            });
+        } catch (error) {
+            console.error("API Error:", error);
+            return NextResponse.json(
+                { error: "Internal server error" },
+                { status: 500 }
+            );
+        }
+    });
+}
+
 export async function PUT(request: NextRequest, props: { params: Promise<{ noteId: string }> }) {
     const params = await props.params;
     return withApiAuth(request, async (user) => {
