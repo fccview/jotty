@@ -182,3 +182,25 @@ platform: linux/arm64
 ```
 
 Optional. Specifies the target platform. Uncomment this line if running on ARM64 systems (like Apple Silicon Macs or Raspberry Pi).
+
+## Podman Rootless via Quadlet
+
+If you are running via [podman-quadlet](https://docs.podman.io/en/latest/markdown/podman-quadlet.1.html) you will need to set the options above for
+ - PUID & PGID
+ - userns_mode
+
+A complete Container unit looks like
+```
+[Container]
+AutoUpdate=registry
+Image=ghcr.io/fccview/jotty:latest
+PublishPort=3000:3000
+Volume=/srv/jotty/data:/app/data:rw
+Volume=/srv/jotty/config:/app/config:rw
+Volume=/srv/jotty/cache:/app/cache:rw
+Environment=NODE_ENV=production
+Environment=PUID=1000
+Environment=PGID=1000
+Environment=APP_URL=https://EXTERNAL_URL
+UserNS=keep-id
+```
