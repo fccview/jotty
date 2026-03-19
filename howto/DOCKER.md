@@ -201,8 +201,6 @@ Volume=/srv/jotty/cache:/app/cache:rw
 Environment=NODE_ENV=production
 Environment=PUID=1000
 Environment=PGID=1000
-Environment=SERVE_PUBLIC_IMAGES=yes
-Environment=SERVE_PUBLIC_FILES=yes
 Environment=APP_URL=https://EXTERNAL_URL
 UserNS=keep-id
 ```
