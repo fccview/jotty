@@ -1,7 +1,7 @@
 import path from "path";
-import { Item } from "@/app/_types";
+import { Item, KanbanPriority, KanbanReminder } from "@/app/_types";
 import { Checklist, ChecklistType } from "@/app/_types";
-import { ChecklistsTypes, TaskStatus } from "@/app/_types/enums";
+import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
 import {
   parseRecurrenceFromMarkdown,
   recurrenceToMarkdown,
@@ -16,7 +16,10 @@ import {
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
-  if (checklistType === ChecklistsTypes.TASK) {
+  if (
+    checklistType === ChecklistsTypes.KANBAN ||
+    checklistType === ChecklistsTypes.TASK
+  ) {
     return item.status === TaskStatus.COMPLETED || !!item.completed;
   }
   return !!item.completed;
@@ -41,28 +44,33 @@ export const formatTime = (seconds: number): string => {
 
 export const countItems = (
   items: Item[],
-  checklistType?: string
+  checklistType?: string,
 ): { total: number; completed: number } =>
-  items.reduce((acc, item) => {
-    if (item.isArchived) return acc;
+  items.reduce(
+    (acc, item) => {
+      if (item.isArchived) return acc;
 
-    if (item.children && item.children.length > 0) {
-      const childCounts = countItems(item.children, checklistType);
+      if (item.children && item.children.length > 0) {
+        const childCounts = countItems(item.children, checklistType);
+        return {
+          total: acc.total + childCounts.total,
+          completed: acc.completed + childCounts.completed,
+        };
+      }
+
       return {
-        total: acc.total + childCounts.total,
-        completed: acc.completed + childCounts.completed,
+        total: acc.total + 1,
+        completed: isItemCompleted(item, checklistType || "")
+          ? acc.completed + 1
+          : acc.completed,
       };
-    }
-
-    return {
-      total: acc.total + 1,
-      completed: isItemCompleted(item, checklistType || "") ? acc.completed + 1 : acc.completed,
-    };
-  }, { total: 0, completed: 0 });
+    },
+    { total: 0, completed: 0 },
+  );
 
 export const getCompletionRate = (
   items: Item[],
-  checklistType?: string
+  checklistType?: string,
 ): number => {
   const { total, completed } = countItems(items, checklistType);
   if (total === 0) return 0;
@@ -76,23 +84,23 @@ export const parseMarkdown = (
   owner?: string,
   isShared?: boolean,
   fileStats?: { birthtime: Date; mtime: Date },
-  fileName?: string
+  fileName?: string,
 ): Checklist => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
   let title = extractTitle(
     content,
-    fileName ? path.basename(fileName, ".md") : undefined
+    fileName ? path.basename(fileName, ".md") : undefined,
   );
 
   const type = extractChecklistType(content);
 
   const checklistType =
-    type === "task" ? ChecklistsTypes.TASK : ChecklistsTypes.SIMPLE;
+    type === "kanban" ? ChecklistsTypes.KANBAN : ChecklistsTypes.SIMPLE;
 
   const lines = contentWithoutMetadata.split("\n");
   const itemLines = lines.filter(
-    (line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line)
+    (line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line),
   );
 
   let globalItemCounter = 0;
@@ -104,7 +112,7 @@ export const parseMarkdown = (
     lines: string[],
     startIndex: number = 0,
     parentLevel: number = 0,
-    itemIndex: number = 0
+    itemIndex: number = 0,
   ): { items: Item[]; nextIndex: number } => {
     const items: Item[] = [];
     let currentIndex = startIndex;
@@ -158,7 +166,7 @@ export const parseMarkdown = (
         let item: Item;
         let recurrence = undefined;
 
-        if (type === "task" && text.includes(" | ")) {
+        if (type === "kanban" && text.includes(" | ")) {
           const parts = text.split(" | ");
           const itemText = parts[0].replace(/∣/g, "|");
           const metadata = parts.slice(1);
@@ -169,6 +177,10 @@ export const parseMarkdown = (
           let targetDate: string | undefined;
           let description: string | undefined;
           let itemMetadata: Record<string, any> = {};
+          let priority: KanbanPriority | undefined;
+          let score: number | undefined;
+          let assignee: string | undefined;
+          let reminder: KanbanReminder | undefined;
 
           metadata.forEach((meta) => {
             if (meta.startsWith("status:")) {
@@ -196,6 +208,18 @@ export const parseMarkdown = (
               }
             } else if (meta.startsWith("recurrence:")) {
               recurrence = parseRecurrenceFromMarkdown([meta]);
+            } else if (meta.startsWith("priority:")) {
+              priority = meta.substring(9) as KanbanPriority;
+            } else if (meta.startsWith("score:")) {
+              score = parseInt(meta.substring(6));
+            } else if (meta.startsWith("assignee:")) {
+              assignee = meta.substring(9);
+            } else if (meta.startsWith("reminder:")) {
+              try {
+                reminder = JSON.parse(meta.substring(9));
+              } catch {
+                reminder = { datetime: meta.substring(9) };
+              }
             }
           });
 
@@ -211,6 +235,10 @@ export const parseMarkdown = (
             description,
             ...itemMetadata,
             ...(recurrence ? { recurrence } : {}),
+            ...(priority ? { priority } : {}),
+            ...(score !== undefined ? { score } : {}),
+            ...(assignee ? { assignee } : {}),
+            ...(reminder ? { reminder } : {}),
           };
         } else {
           let itemText = text.replace(/∣/g, "|");
@@ -253,7 +281,7 @@ export const parseMarkdown = (
           lines,
           currentIndex + 1,
           parentLevel + 1,
-          0
+          0,
         );
         if (nestedResult.items.length > 0) {
           item.children = nestedResult.items;
@@ -327,13 +355,13 @@ export const parseMarkdown = (
 const generateItemMarkdown = (
   item: Item,
   type: ChecklistType,
-  indentLevel: number = 0
+  indentLevel: number = 0,
 ): string => {
   const indent = "  ".repeat(indentLevel);
   const escapedText = item.text.replace(/\|/g, "∣");
 
   let itemLine: string;
-  if (type === "task") {
+  if (isKanbanType(type)) {
     const metadata: string[] = [];
 
     if (item.status && item.status !== TaskStatus.TODO) {
@@ -387,12 +415,29 @@ const generateItemMarkdown = (
       metadata.push(...recurrenceParts);
     }
 
+    if (item.priority && item.priority !== "none") {
+      metadata.push(`priority:${item.priority}`);
+    }
+
+    if (item.score !== undefined) {
+      metadata.push(`score:${item.score}`);
+    }
+
+    if (item.assignee) {
+      metadata.push(`assignee:${item.assignee}`);
+    }
+
+    if (item.reminder) {
+      metadata.push(`reminder:${JSON.stringify(item.reminder)}`);
+    }
+
     if (Object.keys(itemMetadata).length > 0) {
       metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
     }
 
-    itemLine = `${indent}- [${item.completed ? "x" : " "
-      }] ${escapedText} | ${metadata.join(" | ")}`;
+    itemLine = `${indent}- [${
+      item.completed ? "x" : " "
+    }] ${escapedText} | ${metadata.join(" | ")}`;
   } else {
     const itemMetadata: Record<string, any> = {};
     if (item.id) {
@@ -427,6 +472,18 @@ const generateItemMarkdown = (
     if (item.targetDate) {
       itemMetadata.targetDate = item.targetDate;
     }
+    if (item.priority && item.priority !== "none") {
+      itemMetadata.priority = item.priority;
+    }
+    if (item.score !== undefined) {
+      itemMetadata.score = item.score;
+    }
+    if (item.assignee) {
+      itemMetadata.assignee = item.assignee;
+    }
+    if (item.reminder) {
+      itemMetadata.reminder = item.reminder;
+    }
 
     const metadata: string[] = [];
 
@@ -443,8 +500,9 @@ const generateItemMarkdown = (
       metadata.push(...recurrenceParts);
     }
 
-    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${metadata.length ? ` | ${metadata.join(" | ")}` : ""
-      }`;
+    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${
+      metadata.length ? ` | ${metadata.join(" | ")}` : ""
+    }`;
   }
 
   if (item.children && item.children.length > 0) {
@@ -462,7 +520,9 @@ export const listToMarkdown = (list: Checklist): string => {
   const metadata: any = {};
   metadata.uuid = list.uuid || generateUuid();
   metadata.title = list.title || "Untitled Checklist";
-  if (list.type === ChecklistsTypes.TASK) metadata.checklistType = "task";
+  if (list.type === ChecklistsTypes.KANBAN) metadata.checklistType = "kanban";
+  else if (list.type === ChecklistsTypes.TASK)
+    metadata.checklistType = "kanban";
   else if (list.type === ChecklistsTypes.SIMPLE)
     metadata.checklistType = "simple";
 

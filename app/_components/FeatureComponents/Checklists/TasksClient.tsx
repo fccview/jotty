@@ -120,7 +120,7 @@ export const TasksClient = ({
             >
                 <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
                 
-                <div className="w-full px-4 py-6 h-full overflow-y-auto jotty-scrollable-content">
+                <div className="w-full min-w-0 px-4 py-6 h-full overflow-y-auto jotty-scrollable-content">
                     {children}
                 </div>
             </Layout>

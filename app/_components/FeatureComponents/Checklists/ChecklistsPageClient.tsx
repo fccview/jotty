@@ -24,6 +24,7 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
 import { useChecklistsFilter } from "@/app/_components/FeatureComponents/Checklists/ChecklistsClient";
+import { isKanbanType } from "@/app/_types/enums";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -34,7 +35,7 @@ export const ChecklistsPageClient = ({
   initialLists,
   user,
 }: ChecklistsPageClientProps) => {
-  const t = useTranslations('checklists');
+  const t = useTranslations("checklists");
   const router = useRouter();
   const { openCreateChecklistModal } = useShortcut();
   const { isInitialized } = useAppMode();
@@ -63,16 +64,16 @@ export const ChecklistsPageClient = ({
       filtered = filtered.filter(
         (list) =>
           list.items.length > 0 &&
-          list.items.every((item) => isItemCompleted(item, list.type))
+          list.items.every((item) => isItemCompleted(item, list.type)),
       );
     } else if (checklistFilter === "incomplete") {
       filtered = filtered.filter(
         (list) =>
           list.items.length === 0 ||
-          !list.items.every((item) => isItemCompleted(item, list.type))
+          !list.items.every((item) => isItemCompleted(item, list.type)),
       );
     } else if (checklistFilter === "task") {
-      filtered = filtered.filter((list) => list.type === "task");
+      filtered = filtered.filter((list) => isKanbanType(list.type));
     } else if (checklistFilter === "simple") {
       filtered = filtered.filter((list) => list.type === "simple");
     }
@@ -84,7 +85,7 @@ export const ChecklistsPageClient = ({
           return selectedCategories.some(
             (selected) =>
               listCategory === selected ||
-              listCategory.startsWith(selected + "/")
+              listCategory.startsWith(selected + "/"),
           );
         }
         return selectedCategories.includes(listCategory);
@@ -93,7 +94,7 @@ export const ChecklistsPageClient = ({
 
     return filtered.sort(
       (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     );
   }, [
     initialLists,
@@ -103,7 +104,14 @@ export const ChecklistsPageClient = ({
     user?.pinnedLists,
   ]);
 
-  const { currentPage, totalPages, paginatedItems, goToPage, totalItems, handleItemsPerPageChange } = usePagination({
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems,
+    goToPage,
+    totalItems,
+    handleItemsPerPageChange,
+  } = usePagination({
     items: filteredLists,
     itemsPerPage,
     onItemsPerPageChange: setItemsPerPage,
@@ -117,7 +125,14 @@ export const ChecklistsPageClient = ({
       onPageChange: goToPage,
       onItemsPerPageChange: handleItemsPerPageChange,
     });
-  }, [currentPage, totalPages, totalItems, goToPage, handleItemsPerPageChange, setPaginationInfo]);
+  }, [
+    currentPage,
+    totalPages,
+    totalItems,
+    goToPage,
+    handleItemsPerPageChange,
+    setPaginationInfo,
+  ]);
 
   const handleTogglePin = async (list: Checklist) => {
     if (!user || isTogglingPin === list.id) return;
@@ -127,7 +142,7 @@ export const ChecklistsPageClient = ({
       const result = await togglePin(
         list.id,
         list.category || "Uncategorized",
-        ItemTypes.CHECKLIST
+        ItemTypes.CHECKLIST,
       );
       if (result.success) {
         router.refresh();
@@ -149,7 +164,7 @@ export const ChecklistsPageClient = ({
     }, 0);
     const totalItems = initialLists.reduce(
       (acc, list) => acc + list.items.length,
-      0
+      0,
     );
     const completionRate =
       totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
@@ -167,9 +182,9 @@ export const ChecklistsPageClient = ({
         icon={
           <CheckmarkSquare04Icon className="h-10 w-10 text-muted-foreground" />
         }
-        title={t('noChecklistsYet')}
-        description={t('createFirstChecklist')}
-        buttonText={t('newChecklist')}
+        title={t("noChecklistsYet")}
+        description={t("createFirstChecklist")}
+        buttonText={t("newChecklist")}
         onButtonClick={() => openCreateChecklistModal()}
       />
     );
@@ -187,7 +202,9 @@ export const ChecklistsPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.totalLists}
               </div>
-              <div className="text-md lg:text-xs text-muted-foreground">{t('lists')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">
+                {t("lists")}
+              </div>
             </div>
           </div>
 
@@ -199,7 +216,9 @@ export const ChecklistsPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.completedItems}
               </div>
-              <div className="text-md lg:text-xs text-muted-foreground">{t('completed')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">
+                {t("completed")}
+              </div>
             </div>
           </div>
 
@@ -211,7 +230,9 @@ export const ChecklistsPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.completionRate}%
               </div>
-              <div className="text-md lg:text-xs text-muted-foreground">{t('progress')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">
+                {t("progress")}
+              </div>
             </div>
           </div>
 
@@ -223,7 +244,9 @@ export const ChecklistsPageClient = ({
               <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.totalItems}
               </div>
-              <div className="text-md lg:text-xs text-muted-foreground">{t('totalItems')}</div>
+              <div className="text-md lg:text-xs text-muted-foreground">
+                {t("totalItems")}
+              </div>
             </div>
           </div>
         </div>
@@ -233,15 +256,15 @@ export const ChecklistsPageClient = ({
         <div className="text-center py-12">
           <Folder01Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium text-foreground mb-2">
-            {t('noChecklistsFound')}
+            {t("noChecklistsFound")}
           </h3>
           <p className="text-muted-foreground">
-            {t('tryAdjustingFiltersChecklist')}
+            {t("tryAdjustingFiltersChecklist")}
           </p>
         </div>
       ) : (
         <div className="mt-6">
-          {viewMode === 'card' && (
+          {viewMode === "card" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {paginatedItems.map((list) => (
                 <ChecklistCard
@@ -252,7 +275,7 @@ export const ChecklistsPageClient = ({
                     router.push(`/checklist/${categoryPath}`);
                   }}
                   isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`
+                    `${list.category || "Uncategorized"}/${list.id}`,
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />
@@ -260,7 +283,7 @@ export const ChecklistsPageClient = ({
             </div>
           )}
 
-          {viewMode === 'list' && (
+          {viewMode === "list" && (
             <div className="space-y-3">
               {paginatedItems.map((list) => (
                 <ChecklistListItem
@@ -271,7 +294,7 @@ export const ChecklistsPageClient = ({
                     router.push(`/checklist/${categoryPath}`);
                   }}
                   isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`
+                    `${list.category || "Uncategorized"}/${list.id}`,
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />
@@ -279,7 +302,7 @@ export const ChecklistsPageClient = ({
             </div>
           )}
 
-          {viewMode === 'grid' && (
+          {viewMode === "grid" && (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {paginatedItems.map((list) => (
                 <ChecklistGridItem
@@ -290,7 +313,7 @@ export const ChecklistsPageClient = ({
                     router.push(`/checklist/${categoryPath}`);
                   }}
                   isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`
+                    `${list.category || "Uncategorized"}/${list.id}`,
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />

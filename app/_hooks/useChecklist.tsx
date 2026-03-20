@@ -10,7 +10,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { Checklist, Item, RecurrenceRule } from "@/app/_types";
+import { Checklist, ChecklistType, Item, RecurrenceRule } from "@/app/_types";
 import {
   deleteList,
   convertChecklistType,
@@ -577,8 +577,8 @@ export const useChecklist = ({
     setShowConversionModal(true);
   };
 
-  const getNewType = (currentType: "simple" | "task"): "simple" | "task" => {
-    return currentType === "simple" ? "task" : "simple";
+  const getNewType = (currentType: ChecklistType): ChecklistType => {
+    return currentType === "simple" ? "kanban" : "simple";
   };
 
   const handleConfirmConversion = async () => {

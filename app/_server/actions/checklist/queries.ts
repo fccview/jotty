@@ -327,6 +327,7 @@ export const getListById = async (
     for (const sharedItem of sharedData.checklists) {
       const itemIdentifier = sharedItem.uuid || sharedItem.id;
       if (!itemIdentifier) continue;
+      if (itemIdentifier !== id) continue;
 
       const sharerDir = path.join(
         process.cwd(),

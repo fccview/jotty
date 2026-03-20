@@ -2,7 +2,7 @@ import { Checklist, Item } from "@/app/_types";
 import { CheckmarkSquare04Icon } from "hugeicons-react";
 import { TaskStatusSection } from "./TaskStatusSection";
 import { useMemo } from "react";
-import { TaskStatus } from "@/app/_types/enums";
+import { isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { NestedChecklistItem } from "../../Checklists/Parts/Simple/NestedChecklistItem";
 import { useTranslations } from "next-intl";
 
@@ -21,7 +21,7 @@ export const PublicChecklistBody = ({
   }, [checklist.items]);
 
   const taskItemsByStatus = useMemo(() => {
-    if (checklist.type !== "task") return null;
+    if (!isKanbanType(checklist.type)) return null;
     const initialAcc: Record<string, Item[]> = {
       todo: [],
       in_progress: [],
@@ -42,14 +42,21 @@ export const PublicChecklistBody = ({
         <h3 className="text-lg font-medium text-foreground mb-2">
           {t("checklists.noItemsYet")}
         </h3>
-        <p className="text-muted-foreground">{t("checklists.emptyChecklist")}</p>
+        <p className="text-muted-foreground">
+          {t("checklists.emptyChecklist")}
+        </p>
       </div>
     );
   }
 
-  if (checklist.type === "task" && taskItemsByStatus) {
+  if (isKanbanType(checklist.type) && taskItemsByStatus) {
     return Object.entries(taskItemsByStatus).map(([status, items]) => (
-      <TaskStatusSection key={status} status={status} items={items} checklist={checklist} />
+      <TaskStatusSection
+        key={status}
+        status={status}
+        items={items}
+        checklist={checklist}
+      />
     ));
   }
 
@@ -61,8 +68,8 @@ export const PublicChecklistBody = ({
           item={item}
           index={index.toString()}
           level={0}
-          onToggle={() => { }}
-          onDelete={() => { }}
+          onToggle={() => {}}
+          onDelete={() => {}}
           isPublicView={true}
           isDeletingItem={false}
           isDragDisabled={true}

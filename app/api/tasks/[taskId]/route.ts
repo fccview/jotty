@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getListById, updateList, deleteList } from "@/app/_server/actions/checklist";
-import { TaskStatus } from "@/app/_types/enums";
+import {
+  getListById,
+  updateList,
+  deleteList,
+} from "@/app/_server/actions/checklist";
+import { isKanbanType, TaskStatus } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest, props: { params: Promise<{ taskId: string }> }) {
+export async function GET(
+  request: NextRequest,
+  props: { params: Promise<{ taskId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -14,8 +21,11 @@ export async function GET(request: NextRequest, props: { params: Promise<{ taskI
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      if (task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+      if (!isKanbanType(task.type)) {
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 },
+        );
       }
 
       const transformItem = (item: any, index: number): any => {
@@ -28,8 +38,9 @@ export async function GET(request: NextRequest, props: { params: Promise<{ taskI
         };
 
         if (item.children && item.children.length > 0) {
-          baseItem.children = item.children.map((child: any, childIndex: number) =>
-            transformItem(child, childIndex)
+          baseItem.children = item.children.map(
+            (child: any, childIndex: number) =>
+              transformItem(child, childIndex),
           );
         }
 
@@ -55,13 +66,16 @@ export async function GET(request: NextRequest, props: { params: Promise<{ taskI
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });
 }
 
-export async function PUT(request: NextRequest, props: { params: Promise<{ taskId: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  props: { params: Promise<{ taskId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -73,8 +87,11 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ taskI
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      if (task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+      if (!isKanbanType(task.type)) {
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 },
+        );
       }
 
       const formData = new FormData();
@@ -107,13 +124,16 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ taskI
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });
 }
 
-export async function DELETE(request: NextRequest, props: { params: Promise<{ taskId: string }> }) {
+export async function DELETE(
+  request: NextRequest,
+  props: { params: Promise<{ taskId: string }> },
+) {
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
@@ -122,8 +142,11 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ ta
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
 
-      if (task.type !== "task") {
-        return NextResponse.json({ error: "Not a task checklist" }, { status: 400 });
+      if (!isKanbanType(task.type)) {
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 },
+        );
       }
 
       const formData = new FormData();
@@ -141,7 +164,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ ta
       console.error("API Error:", error);
       return NextResponse.json(
         { error: "Internal server error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

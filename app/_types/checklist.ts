@@ -1,6 +1,13 @@
 import { ItemTypes } from "./enums";
 
-export type ChecklistType = "simple" | "task";
+export type ChecklistType = "simple" | "task" | "kanban";
+
+export type KanbanPriority = "critical" | "high" | "medium" | "low" | "none";
+
+export interface KanbanReminder {
+  datetime: string;
+  notified?: boolean;
+}
 
 export interface TimeEntry {
   id: string;
@@ -53,6 +60,10 @@ export interface Item {
   archivedAt?: string;
   archivedBy?: string;
   previousStatus?: string;
+  priority?: KanbanPriority;
+  score?: number;
+  assignee?: string;
+  reminder?: KanbanReminder;
 }
 
 export interface List {

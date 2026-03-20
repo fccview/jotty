@@ -18,6 +18,7 @@ import {
   ItemTypes,
   PermissionTypes,
   TaskStatus,
+  isKanbanType,
 } from "@/app/_types/enums";
 import { checkUserPermission } from "../sharing";
 import { broadcast } from "@/app/_server/ws/broadcast";
@@ -94,7 +95,7 @@ export const createSubItem = async (
       lastModifiedAt: now,
     };
 
-    if (list.type === "task") {
+    if (isKanbanType(list.type)) {
       newSubItem.status = TaskStatus.TODO;
       newSubItem.timeEntries = [];
       newSubItem.history = [

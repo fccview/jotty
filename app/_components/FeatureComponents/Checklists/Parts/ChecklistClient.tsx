@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
 import { ChecklistView } from "@/app/_components/FeatureComponents/Checklists/Checklist";
-import { KanbanBoard } from "@/app/_components/FeatureComponents/Checklists/Parts/Kanban/KanbanBoard";
+import { Kanban } from "@/app/_components/FeatureComponents/Kanban/Kanban";
 import { ChecklistHeader } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistHeader";
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
@@ -15,7 +15,7 @@ import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/Co
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { useChecklist } from "@/app/_hooks/useChecklist";
-import { Modes } from "@/app/_types/enums";
+import { isKanbanType, Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
@@ -131,9 +131,9 @@ export const ChecklistClient = ({
   });
 
   const renderContent = () => {
-    if (localChecklist.type === "task") {
+    if (isKanbanType(localChecklist.type)) {
       return (
-        <div className="h-full flex flex-col bg-background">
+        <div className="h-full flex flex-col bg-background min-w-0">
           <ChecklistHeader
             checklist={localChecklist}
             onBack={handleBack}
@@ -144,7 +144,7 @@ export const ChecklistClient = ({
             onArchive={handleArchive}
             onClone={handleClone}
           />
-          <KanbanBoard checklist={localChecklist} onUpdate={handleUpdate} />
+          <Kanban checklist={localChecklist} onUpdate={handleUpdate} />
         </div>
       );
     }
@@ -193,11 +193,11 @@ export const ChecklistClient = ({
             currentType:
               localChecklist.type === "simple"
                 ? t("checklists.simpleChecklist")
-                : t("checklists.taskProject"),
+                : t("checklists.kanbanBoard"),
             newType:
               getNewType(localChecklist.type) === "simple"
                 ? t("checklists.simpleChecklist")
-                : t("checklists.taskProject"),
+                : t("checklists.kanbanBoard"),
           })}
           confirmText={t("checklists.convert")}
         />

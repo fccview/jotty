@@ -1,7 +1,7 @@
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
-import { Checklist } from "@/app/_types";
+import { Checklist, ChecklistType } from "@/app/_types";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -16,7 +16,7 @@ interface ChecklistModalsProps {
   showBulkPasteModal: boolean;
   setShowBulkPasteModal: (show: boolean) => void;
   handleConfirmConversion: () => void;
-  getNewType: (type: "simple" | "task") => "simple" | "task";
+  getNewType: (type: ChecklistType) => ChecklistType;
   handleBulkPaste: (itemsText: string) => void;
   isLoading: boolean;
   DeleteModal: () => JSX.Element;
@@ -39,8 +39,8 @@ export const ChecklistModals = ({
   const router = useRouter();
   const t = useTranslations();
 
-  const currentType = localList.type === "simple" ? t("checklists.simpleChecklist") : t("checklists.taskProject");
-  const newType = getNewType(localList.type) === "simple" ? t("checklists.simpleChecklist") : t("checklists.taskProject");
+  const currentType = localList.type === "simple" ? t("checklists.simpleChecklist") : t("checklists.kanbanBoard");
+  const newType = getNewType(localList.type) === "simple" ? t("checklists.simpleChecklist") : t("checklists.kanbanBoard");
 
   return (
     <>

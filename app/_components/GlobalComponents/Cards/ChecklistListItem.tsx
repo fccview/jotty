@@ -12,6 +12,7 @@ import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import { useMemo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { isKanbanType } from "@/app/_types/enums";
 
 interface ChecklistListItemProps {
   list: Checklist;
@@ -56,7 +57,7 @@ export const ChecklistListItem = ({
 
   const totalItems = activeItems?.length || 0;
   const completedItems = activeItems?.filter((item) =>
-    isItemCompleted(item, list.type)
+    isItemCompleted(item, list.type),
   ).length;
   const completionRate =
     totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
@@ -65,14 +66,14 @@ export const ChecklistListItem = ({
     return list?.category ? list?.category.split("/").pop() : null;
   }, [list?.category]);
 
-  const isTask = list.type === "task";
+  const isTask = isKanbanType(list.type);
 
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
 
   const itemStyle = {
     ...style,
@@ -103,11 +104,11 @@ export const ChecklistListItem = ({
             {displayTitle}
           </h3>
           <div className="flex items-center gap-2 text-sm lg:text-xs text-muted-foreground">
-            {categoryName && (
-              <span className="truncate">{categoryName}</span>
-            )}
+            {categoryName && <span className="truncate">{categoryName}</span>}
             {categoryName && <span>•</span>}
-            <span>{completedItems}/{totalItems} items</span>
+            <span>
+              {completedItems}/{totalItems} items
+            </span>
           </div>
         </div>
 
@@ -124,8 +125,9 @@ export const ChecklistListItem = ({
                 e.stopPropagation();
                 onTogglePin(list);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"
-                } group-hover:opacity-100 transition-opacity p-1.5 rounded-jotty flex-shrink-0`}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1.5 rounded-jotty flex-shrink-0`}
             >
               {isPinned ? (
                 <PinOffIcon className="h-4 w-4 text-muted-foreground" />

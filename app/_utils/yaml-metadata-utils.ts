@@ -1,9 +1,8 @@
 import yaml from "js-yaml";
 import { v4 as uuidv4 } from "uuid";
+import { ChecklistsTypes, isKanbanType } from "../_types/enums";
 
-export const toIso = (
-  d: Date | string | number | undefined | null,
-): string => {
+export const toIso = (d: Date | string | number | undefined | null): string => {
   if (d == null) return new Date(0).toISOString();
   const date = d instanceof Date ? d : new Date(d as string | number);
   return Number.isFinite(date.getTime())
@@ -14,14 +13,14 @@ export const toIso = (
 export interface DocumentMetadata {
   uuid?: string;
   title?: string;
-  checklistType?: "task" | "simple";
+  checklistType?: "task" | "simple" | "kanban";
   [key: string]: any;
 }
 
 const YAML_FRONTMATTER_REGEX = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---(?:\r?\n)?/;
 
 export const extractYamlMetadata = (
-  content: string
+  content: string,
 ): {
   metadata: DocumentMetadata;
   contentWithoutMetadata: string;
@@ -78,7 +77,7 @@ export const generateYamlFrontmatter = (metadata: DocumentMetadata): string => {
 export const updateYamlMetadata = (
   content: string,
   metadata: Partial<DocumentMetadata>,
-  preserveExisting: boolean = true
+  preserveExisting: boolean = true,
 ): string => {
   const { metadata: existingMetadata, contentWithoutMetadata } =
     extractYamlMetadata(content);
@@ -112,18 +111,22 @@ export const extractTitle = (content: string, filename?: string): string => {
   return "Untitled";
 };
 
-export const extractChecklistType = (content: string): "task" | "simple" => {
+export const extractChecklistType = (content: string): "kanban" | "simple" => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
   if (metadata.checklistType) {
-    return metadata.checklistType;
+    if (isKanbanType(metadata.checklistType)) {
+      return ChecklistsTypes.KANBAN;
+    }
+
+    return ChecklistsTypes.SIMPLE;
   }
 
   if (contentWithoutMetadata.includes("<!-- type:task -->")) {
-    return "task";
+    return ChecklistsTypes.KANBAN;
   }
 
-  return "simple";
+  return ChecklistsTypes.SIMPLE;
 };
 
 /**
@@ -143,7 +146,7 @@ export const generateUuid = (): string => {
 export const migrateToYamlMetadata = (
   content: string,
   generateNewUuid: boolean = true,
-  isChecklist: boolean = false
+  isChecklist: boolean = false,
 ): string => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 

@@ -18,6 +18,7 @@ export {
 export {
   getAllSharedItemsForUser,
   getAllSharedItems,
+  getUsersWithAccess,
 } from "./queries";
 
 export {

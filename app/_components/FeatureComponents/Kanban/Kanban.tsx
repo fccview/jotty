@@ -6,66 +6,47 @@ import {
   DragOverlay,
   PointerSensor,
   KeyboardSensor,
+  TouchSensor,
   useSensor,
   useSensors,
+  closestCorners,
 } from "@dnd-kit/core";
 import { Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
-import { KanbanItem } from "./KanbanItem";
-import { ChecklistHeading } from "../Common/ChecklistHeading";
+import { KanbanCard } from "./KanbanCard";
+import { ChecklistHeading } from "../Checklists/Parts/Common/ChecklistHeading";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
-import { StatusManagementModal } from "./StatusManagementModal";
-import { ArchivedItemsModal } from "./ArchivedItemsModal";
-import { useKanbanBoard } from "../../../../../_hooks/useKanbanBoard";
+import { StatusManager } from "./StatusManager";
+import { ArchivedItems } from "./ArchivedItems";
+import { useKanbanBoard } from "@/app/_hooks/kanban/useKanban";
+import { useKanbanReminders } from "@/app/_hooks/kanban/useKanbanReminders";
 import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
-import { ReferencedBySection } from "../../../Notes/Parts/ReferencedBySection";
+import { ReferencedBySection } from "../Notes/Parts/ReferencedBySection";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { Settings01Icon, Archive02Icon } from "hugeicons-react";
+import { Settings01Icon, Archive02Icon, Calendar03Icon, TaskDaily01Icon } from "hugeicons-react";
+import { CalendarView } from "./CalendarView";
+import { KanbanCardDetail } from "./KanbanCardDetail";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { updateChecklistStatuses } from "@/app/_server/actions/checklist";
 import { unarchiveItem } from "@/app/_server/actions/checklist-item";
 import { useTranslations } from "next-intl";
+import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 
 interface KanbanBoardProps {
   checklist: Checklist;
   onUpdate: (updatedChecklist: Checklist) => void;
 }
 
-const defaultStatuses: KanbanStatus[] = [
-  {
-    id: TaskStatus.TODO,
-    label: TaskStatusLabels.TODO,
-    order: 0,
-    autoComplete: false,
-  },
-  {
-    id: TaskStatus.IN_PROGRESS,
-    label: TaskStatusLabels.IN_PROGRESS,
-    order: 1,
-    autoComplete: false,
-  },
-  {
-    id: TaskStatus.COMPLETED,
-    label: TaskStatusLabels.COMPLETED,
-    order: 2,
-    autoComplete: true,
-  },
-  {
-    id: TaskStatus.PAUSED,
-    label: TaskStatusLabels.PAUSED,
-    order: 3,
-    autoComplete: false,
-  },
-];
-
-export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
+export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
+  const [viewMode, setViewMode] = useState<"board" | "calendar">("board");
+  const [calendarSelectedItem, setCalendarSelectedItem] = useState<import("@/app/_types").Item | null>(null);
   const { linkIndex, notes, checklists, appSettings, allSharedItems } =
     useAppMode();
   const encodedCategory = encodeCategoryPath(
@@ -85,8 +66,10 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
     setShowBulkPasteModal,
     focusKey,
     refreshChecklist,
+    handleItemUpdate,
     getItemsByStatus,
     handleDragStart,
+    handleDragOver,
     handleDragEnd,
     handleAddItem,
     handleBulkPaste,
@@ -94,8 +77,15 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
     activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
+  useKanbanReminders({
+    checklist: localChecklist,
+    checklistId: localChecklist.id,
+    category: localChecklist.category || "Uncategorized",
+    onUpdate: handleItemUpdate,
+  });
+
   const statuses = useMemo(() => {
-    const currentStatuses = localChecklist.statuses || defaultStatuses;
+    const currentStatuses = localChecklist.statuses || DEFAULT_KANBAN_STATUSES;
     return currentStatuses.map(status => {
       if (status.id === TaskStatus.COMPLETED && status.autoComplete === undefined) {
         return { ...status, autoComplete: true };
@@ -159,6 +149,12 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
         tolerance: 5,
       },
     }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor)
   );
 
@@ -184,7 +180,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
   ]);
 
   return (
-    <div className="h-full flex flex-col bg-background overflow-y-auto jotty-scrollable-content">
+    <div className="h-full flex flex-col bg-background overflow-y-auto overflow-x-hidden min-w-0 max-w-full jotty-scrollable-content">
       {permissions?.canEdit && (
         <ChecklistHeading
           key={focusKey}
@@ -196,54 +192,90 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
           autoFocus={true}
           focusKey={focusKey}
           placeholder={t("checklists.addNewTask")}
-          submitButtonText={t("tasks.addTask")}
+          submitButtonText={t("kanban.addItem")}
         />
       )}
-      <div className="flex gap-2 px-4 pt-4 pb-2 w-full justify-end">
-        {permissions?.canEdit && (
+      <div className="flex flex-wrap gap-2 items-center w-full min-w-0 px-2 sm:px-4 pt-4 pb-2">
+        <div className="flex gap-1 border border-border rounded-jotty p-0.5 shrink-0">
           <Button
-            variant="outline"
+            variant={viewMode === "board" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setShowStatusModal(true)}
-            className="text-md lg:text-xs"
+            onClick={() => setViewMode("board")}
+            className="text-xs sm:text-md lg:text-xs h-7"
           >
-            <Settings01Icon className="h-3 w-3 mr-1" />
-            {t("tasks.manageStatuses")}
+            <TaskDaily01Icon className="h-3 w-3 mr-1 shrink-0" />
+            <span className="truncate">{t("kanban.title")}</span>
           </Button>
-        )}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowArchivedModal(true)}
-          className="text-md lg:text-xs"
-        >
-          <Archive02Icon className="h-3 w-3 mr-1" />
-          {t("tasks.viewArchived")}
-        </Button>
+          <Button
+            variant={viewMode === "calendar" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setViewMode("calendar")}
+            className="text-xs sm:text-md lg:text-xs h-7"
+          >
+            <Calendar03Icon className="h-3 w-3 mr-1 shrink-0" />
+            <span className="truncate">{t("kanban.calendar")}</span>
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2 justify-end min-w-0 flex-1">
+          {permissions?.canEdit && viewMode === "board" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowStatusModal(true)}
+              className="text-xs sm:text-md lg:text-xs shrink-0"
+              aria-label={t("kanban.manageStatuses")}
+            >
+              <Settings01Icon className="h-3 w-3 mr-1 shrink-0" />
+              <span className="hidden sm:inline">{t("kanban.manageStatuses")}</span>
+            </Button>
+          )}
+          {viewMode === "board" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowArchivedModal(true)}
+              className="text-xs sm:text-md lg:text-xs shrink-0"
+              aria-label={t("kanban.viewArchived")}
+            >
+              <Archive02Icon className="h-3 w-3 mr-1 shrink-0" />
+              <span className="hidden sm:inline">{t("kanban.viewArchived")}</span>
+            </Button>
+          )}
+        </div>
       </div>
-      <div className="flex-1 pb-[8.5em]">
-        {isClient ? (
+      <div className="flex-1 min-w-0 w-full max-w-full overflow-auto pb-[8.5em]">
+        {viewMode === "calendar" ? (
+          <div className="p-4">
+            <CalendarView
+              checklist={localChecklist}
+              onItemClick={(item) => setCalendarSelectedItem(item)}
+            />
+          </div>
+        ) : isClient ? (
           <DndContext
             sensors={sensors}
+            collisionDetection={closestCorners}
             onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
           >
             <div
               className={
-                columns.length <= 4
-                  ? "h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4"
-                  : "h-full lg:flex lg:gap-4 p-2 sm:p-4 overflow-x-auto"
+                columns.length <= 6
+                  ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
+                  : "h-full min-w-0 flex gap-4 p-2 sm:p-4"
               }
+              style={columns.length <= 6 ? {
+                "--kanban-col-count": columns.length,
+              } as React.CSSProperties : undefined}
             >
               {columns.map((column) => {
                 const items = getItemsByStatus(column.status);
                 return (
                   <div
                     key={column.id}
-                    className={`${columns.length > 4
-                        ? "flex-shrink-0 min-w-[20%]"
-                        : "min-w-[24%] "
-                      }`}
+                    className={columns.length > 6 ? "flex-shrink-0" : "min-w-0"}
+                    style={columns.length > 6 ? { width: "280px" } : undefined}
                   >
                     <KanbanColumn
                       checklist={localChecklist}
@@ -253,7 +285,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                       status={column.status}
                       checklistId={localChecklist.id}
                       category={localChecklist.category || "Uncategorized"}
-                      onUpdate={refreshChecklist}
+                      onUpdate={handleItemUpdate}
                       isShared={isShared}
                       statusColor={
                         statuses.find((s) => s.id === column.id)?.color
@@ -267,7 +299,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
             <DragOverlay>
               {activeItem ? (
-                <KanbanItem
+                <KanbanCard
                   checklist={localChecklist}
                   item={activeItem}
                   isDragging
@@ -281,20 +313,23 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
             </DragOverlay>
           </DndContext>
         ) : (
-          <div
+            <div
             className={
-              columns.length <= 4
-                ? "h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-2 sm:p-4"
-                : "h-full flex gap-4 p-2 sm:p-4 overflow-x-auto"
+              columns.length <= 6
+                ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
+                : "h-full min-w-0 flex gap-4 p-2 sm:p-4"
             }
+            style={columns.length <= 6 ? {
+              "--kanban-col-count": columns.length,
+            } as React.CSSProperties : undefined}
           >
             {columns.map((column) => {
               const items = getItemsByStatus(column.status);
               return (
                 <div
                   key={column.id}
-                  className={columns.length > 4 ? "flex-shrink-0" : ""}
-                  style={columns.length > 4 ? { width: "320px" } : undefined}
+                  className={columns.length > 6 ? "flex-shrink-0" : "min-w-0"}
+                  style={columns.length > 6 ? { width: "280px" } : undefined}
                 >
                   <KanbanColumn
                     checklist={localChecklist}
@@ -304,7 +339,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
                     status={column.status}
                     checklistId={localChecklist.id}
                     category={localChecklist.category || "Uncategorized"}
-                    onUpdate={refreshChecklist}
+                    onUpdate={handleItemUpdate}
                     isShared={isShared}
                     statusColor={
                       statuses.find((s) => s.id === column.id)?.color
@@ -325,6 +360,18 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
         </div>
       </div>
 
+      {calendarSelectedItem && (
+        <KanbanCardDetail
+          checklist={localChecklist}
+          item={calendarSelectedItem}
+          isOpen={!!calendarSelectedItem}
+          onClose={() => setCalendarSelectedItem(null)}
+          onUpdate={handleItemUpdate}
+          checklistId={localChecklist.id}
+          category={localChecklist.category || "Uncategorized"}
+        />
+      )}
+
       {showBulkPasteModal && (
         <BulkPasteModal
           isOpen={showBulkPasteModal}
@@ -335,7 +382,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
       )}
 
       {showStatusModal && (
-        <StatusManagementModal
+        <StatusManager
           isOpen={showStatusModal}
           onClose={() => setShowStatusModal(false)}
           currentStatuses={statuses}
@@ -345,7 +392,7 @@ export const KanbanBoard = ({ checklist, onUpdate }: KanbanBoardProps) => {
       )}
 
       {showArchivedModal && (
-        <ArchivedItemsModal
+        <ArchivedItems
           isOpen={showArchivedModal}
           onClose={() => setShowArchivedModal(false)}
           archivedItems={archivedItems}

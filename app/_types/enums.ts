@@ -13,6 +13,22 @@ export enum ItemTypes {
 export enum ChecklistsTypes {
   SIMPLE = "simple",
   TASK = "task",
+  KANBAN = "kanban",
+}
+
+/**
+ * @fccview here, we need to @deprecate "task" eventually, it's unused in all create/edit operations but it's still used
+ * in read operation for backward compatibility with old kanban data.
+ */
+export const isKanbanType = (type?: string): boolean =>
+  type === "kanban" || type === "task";
+
+export enum KanbanPriorityLevel {
+  CRITICAL = "critical",
+  HIGH = "high",
+  MEDIUM = "medium",
+  LOW = "low",
+  NONE = "none",
 }
 
 export enum TaskStatus {

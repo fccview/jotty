@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getUserChecklists, createList } from "@/app/_server/actions/checklist";
-import { TaskStatus } from "@/app/_types/enums";
+import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";
 
 export const dynamic = "force-dynamic";
@@ -10,15 +10,17 @@ export async function GET(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {
       const { searchParams } = new URL(request.url);
-      const category = searchParams.get('category');
-      const type = searchParams.get('type');
-      const search = searchParams.get('q');
+      const category = searchParams.get("category");
+      const type = searchParams.get("type");
+      const search = searchParams.get("q");
 
-      const lists = await getUserChecklists({ username: user.username }) as Result<Checklist[]>;
+      const lists = (await getUserChecklists({
+        username: user.username,
+      })) as Result<Checklist[]>;
       if (!lists.success || !lists.data) {
         return NextResponse.json(
           { error: lists.error || "Failed to fetch checklists" },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
@@ -32,13 +34,20 @@ export async function GET(request: NextRequest) {
       }
       if (search) {
         const searchLower = search.toLowerCase();
-        userLists = userLists.filter((list) =>
-          list.title?.toLowerCase().includes(searchLower) ||
-          list.items.some(item => item.text.toLowerCase().includes(searchLower))
+        userLists = userLists.filter(
+          (list) =>
+            list.title?.toLowerCase().includes(searchLower) ||
+            list.items.some((item) =>
+              item.text.toLowerCase().includes(searchLower),
+            ),
         );
       }
 
-      const transformItem = (item: any, index: number, listType: string): any => {
+      const transformItem = (
+        item: any,
+        index: number,
+        listType: string,
+      ): any => {
         const baseItem: any = {
           id: item.id,
           index,
@@ -46,7 +55,7 @@ export async function GET(request: NextRequest) {
           completed: item.completed,
         };
 
-        if (listType === "task") {
+        if (isKanbanType(listType)) {
           baseItem.status = item.status || TaskStatus.TODO;
           baseItem.time =
             item.timeEntries && item.timeEntries.length > 0
@@ -55,8 +64,9 @@ export async function GET(request: NextRequest) {
         }
 
         if (item.children && item.children.length > 0) {
-          baseItem.children = item.children.map((child: any, childIndex: number) =>
-            transformItem(child, childIndex, listType)
+          baseItem.children = item.children.map(
+            (child: any, childIndex: number) =>
+              transformItem(child, childIndex, listType),
           );
         }
 
@@ -68,7 +78,9 @@ export async function GET(request: NextRequest) {
         title: list.title,
         category: list.category || "Uncategorized",
         type: list.type || "simple",
-        items: list.items.map((item, index) => transformItem(item, index, list.type)),
+        items: list.items.map((item, index) =>
+          transformItem(item, index, list.type),
+        ),
         createdAt: list.createdAt,
         updatedAt: list.updatedAt,
       }));
@@ -82,7 +94,7 @@ export async function GET(request: NextRequest) {
               ? error.message
               : "Failed to fetch checklists",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });
@@ -97,14 +109,14 @@ export async function POST(request: NextRequest) {
       if (!title) {
         return NextResponse.json(
           { error: "Title is required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
-      if (type !== "simple" && type !== "task") {
+      if (type !== ChecklistsTypes.SIMPLE && !isKanbanType(type)) {
         return NextResponse.json(
-          { error: "Type must be 'simple' or 'task'" },
-          { status: 400 }
+          { error: "Type must be 'simple' or 'kanban'" },
+          { status: 400 },
         );
       }
 
@@ -118,7 +130,10 @@ export async function POST(request: NextRequest) {
 
       if (result.error || !result.data) {
         console.error("Create list error:", result.error);
-        return NextResponse.json({ error: result.error || "Failed to create checklist" }, { status: 400 });
+        return NextResponse.json(
+          { error: result.error || "Failed to create checklist" },
+          { status: 400 },
+        );
       }
 
       const transformedChecklist = {
@@ -135,8 +150,11 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Internal server error" },
-        { status: 500 }
+        {
+          error:
+            error instanceof Error ? error.message : "Internal server error",
+        },
+        { status: 500 },
       );
     }
   });
