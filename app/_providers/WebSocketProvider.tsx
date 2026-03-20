@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 import type { WsEvent } from "@/app/_types";
 
 interface WebSocketContextType {
@@ -29,6 +30,7 @@ const REFRESH_DEBOUNCE = 500;
 
 export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
+  const { user } = useAppMode();
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const connectionIdRef = useRef<string | null>(null);
@@ -70,6 +72,7 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
 
   const connect = useCallback(() => {
     if (!mountedRef.current) return;
+    if (!user) return;
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     const isDev = process.env.NODE_ENV === "development";
@@ -111,7 +114,7 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
     };
 
     wsRef.current = ws;
-  }, [handleMessage]);
+  }, [handleMessage, user]);
 
   useEffect(() => {
     mountedRef.current = true;

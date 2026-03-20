@@ -167,6 +167,7 @@ export const SharedItemsList = ({
                         <Link
                           key={`${sharedItem.id}-${sharedItem.category}`}
                           href={getItemHref(fullItem)}
+                          prefetch={false}
                           onClick={(e) => handleItemClick(e, fullItem)}
                           data-sidebar-item-selected={isSelected}
                           className={cn(
