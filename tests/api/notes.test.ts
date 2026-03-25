@@ -3,6 +3,7 @@ import {
   mockUser,
   mockAuthenticateApiKey,
   mockGetUserNotes,
+  mockGetNoteById,
   mockCreateNote,
   mockUpdateNote,
   mockDeleteNote,
@@ -12,7 +13,7 @@ import {
 } from "./setup"
 
 import { GET, POST } from "@/app/api/notes/route"
-import { PUT, DELETE } from "@/app/api/notes/[noteId]/route"
+import { GET as GET_NOTE, PUT, DELETE } from "@/app/api/notes/[noteId]/route"
 
 describe("Notes API", () => {
   beforeEach(() => {
@@ -119,6 +120,53 @@ describe("Notes API", () => {
         title: "Test Note",
       })
       const response = await POST(request)
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(401)
+      expect(data.error).toBe("Unauthorized")
+    })
+  })
+
+  describe("GET /api/notes/:id", () => {
+    it("should return a single note", async () => {
+      const mockNote = {
+        id: "note-1",
+        uuid: "uuid-1",
+        title: "Test Note",
+        content: "Test content",
+        category: "Work",
+        owner: "testuser",
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
+      }
+      mockGetNoteById.mockResolvedValue(mockNote)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/notes/uuid-1")
+      const response = await GET_NOTE(request, { params: Promise.resolve({ noteId: "uuid-1" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.id).toBe("uuid-1")
+      expect(data.title).toBe("Test Note")
+      expect(data.category).toBe("Work")
+    })
+
+    it("should return 404 for non-existent note", async () => {
+      mockGetNoteById.mockResolvedValue(undefined)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/notes/nonexistent")
+      const response = await GET_NOTE(request, { params: Promise.resolve({ noteId: "nonexistent" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(404)
+      expect(data.error).toBe("Note not found")
+    })
+
+    it("should return 401 for unauthorized requests", async () => {
+      mockAuthenticateApiKey.mockResolvedValue(null)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/notes/uuid-1")
+      const response = await GET_NOTE(request, { params: Promise.resolve({ noteId: "uuid-1" }) })
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(401)

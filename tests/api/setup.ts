@@ -9,6 +9,7 @@ export const mockUser = {
 
 export const mockAuthenticateApiKey = vi.fn();
 export const mockGetUserNotes = vi.fn();
+export const mockGetNoteById = vi.fn();
 export const mockCreateNote = vi.fn();
 export const mockUpdateNote = vi.fn();
 export const mockDeleteNote = vi.fn();
@@ -38,6 +39,7 @@ vi.mock("@/app/_server/actions/api", () => ({
 
 vi.mock("@/app/_server/actions/note", () => ({
   getUserNotes: (...args: any[]) => mockGetUserNotes(...args),
+  getNoteById: (...args: any[]) => mockGetNoteById(...args),
   createNote: (...args: any[]) => mockCreateNote(...args),
   updateNote: (...args: any[]) => mockUpdateNote(...args),
   deleteNote: (...args: any[]) => mockDeleteNote(...args),
@@ -89,6 +91,7 @@ export function resetApiMocks() {
   vi.clearAllMocks();
   mockAuthenticateApiKey.mockReset();
   mockGetUserNotes.mockReset();
+  mockGetNoteById.mockReset();
   mockCreateNote.mockReset();
   mockUpdateNote.mockReset();
   mockDeleteNote.mockReset();

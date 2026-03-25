@@ -506,7 +506,26 @@ Retrieves all notes/documents for the authenticated user.
 
 **Note**: All notes include a `category` field for organization. If no category is specified when creating a note, it defaults to "Uncategorized".
 
-### 10. Create Note
+### 11. Get Note by ID
+
+**GET** `/api/notes/{noteId}`
+
+Retrieves a single note by its UUID.
+
+**Response:**
+
+```json
+{
+  "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+  "title": "My Note",
+  "category": "Personal",
+  "content": "Note content here...",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+### 12. Create Note
 
 **POST** `/api/notes`
 
@@ -545,7 +564,7 @@ Creates a new note for the authenticated user.
 }
 ```
 
-### 11. Update Note
+### 13. Update Note
 
 **PUT** `/api/notes/{noteId}`
 
@@ -586,7 +605,7 @@ Updates an existing note for the authenticated user.
 }
 ```
 
-### 12. Delete Note
+### 14. Delete Note
 
 **DELETE** `/api/notes/{noteId}`
 
