@@ -136,6 +136,14 @@ vi.mock("speakeasy", () => ({
   },
 }));
 
+vi.mock("ldapts", () => ({
+  Client: vi.fn().mockImplementation(() => ({
+    bind: vi.fn().mockResolvedValue(undefined),
+    search: vi.fn().mockResolvedValue({ searchEntries: [] }),
+    unbind: vi.fn().mockResolvedValue(undefined),
+  })),
+}))
+
 vi.mock("qrcode", () => ({
   default: {
     toDataURL: vi.fn().mockResolvedValue("data:image/png;base64,mock"),
