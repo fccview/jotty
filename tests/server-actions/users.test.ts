@@ -32,6 +32,7 @@ import {
   deleteUser,
   getUsers,
   updateUserSettings,
+  ensureUser,
 } from '@/app/_server/actions/users'
 
 describe('Users Actions', () => {
@@ -282,6 +283,83 @@ describe('Users Actions', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Cannot delete the super admin (system owner)')
+    })
+  })
+
+  describe('ensureUser()', () => {
+    beforeEach(() => {
+      mockFs.mkdir.mockResolvedValue(undefined)
+      mockFs.writeFile.mockResolvedValue(undefined)
+      mockLock.mockResolvedValue(undefined)
+      mockUnlock.mockResolvedValue(undefined)
+    })
+
+    it('creates the first user as both admin and superAdmin', async () => {
+      mockFs.readFile.mockResolvedValue('[]')
+      await ensureUser('alice', false)
+      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      expect(written).toHaveLength(1)
+      expect(written[0]).toMatchObject({ username: 'alice', isAdmin: true, isSuperAdmin: true })
+    })
+
+    it('creates a subsequent user with isAdmin=false when false is passed', async () => {
+      mockFs.readFile.mockResolvedValue(JSON.stringify([
+        { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
+      ]))
+      await ensureUser('bob', false)
+      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const bob = written.find((u: any) => u.username === 'bob')
+      expect(bob).toBeDefined()
+      expect(bob.isAdmin).toBe(false)
+      expect(bob.isSuperAdmin).toBeUndefined()
+    })
+
+    it('creates a subsequent user with isAdmin=true when true is passed', async () => {
+      mockFs.readFile.mockResolvedValue(JSON.stringify([
+        { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
+      ]))
+      await ensureUser('bob', true)
+      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const bob = written.find((u: any) => u.username === 'bob')
+      expect(bob.isAdmin).toBe(true)
+    })
+
+    it('promotes an existing non-admin user to admin when isAdmin=true', async () => {
+      mockFs.readFile.mockResolvedValue(JSON.stringify([
+        { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
+        { username: 'alice', passwordHash: '', isAdmin: false },
+      ]))
+      await ensureUser('alice', true)
+      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const alice = written.find((u: any) => u.username === 'alice')
+      expect(alice.isAdmin).toBe(true)
+    })
+
+    it('does NOT demote an existing admin user when isAdmin=false', async () => {
+      mockFs.readFile.mockResolvedValue(JSON.stringify([
+        { username: 'alice', passwordHash: '', isAdmin: true },
+      ]))
+      await ensureUser('alice', false)
+      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const alice = written.find((u: any) => u.username === 'alice')
+      expect(alice.isAdmin).toBe(true)
+    })
+
+    it('does not create a duplicate entry if called with an existing username', async () => {
+      mockFs.readFile.mockResolvedValue(JSON.stringify([
+        { username: 'alice', passwordHash: '', isAdmin: false },
+      ]))
+      await ensureUser('alice', false)
+      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      expect(written.filter((u: any) => u.username === 'alice')).toHaveLength(1)
+    })
+
+    it('creates the checklist and notes directories for the user', async () => {
+      mockFs.readFile.mockResolvedValue('[]')
+      await ensureUser('alice', false)
+      const mkdirPaths = mockFs.mkdir.mock.calls.map((c: any[]) => c[0] as string)
+      expect(mkdirPaths.some((p) => p.includes('checklists') && p.includes('alice'))).toBe(true)
+      expect(mkdirPaths.some((p) => p.includes('notes') && p.includes('alice'))).toBe(true)
     })
   })
 

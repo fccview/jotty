@@ -16,6 +16,7 @@ import {
 import fs from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";
+import { lock, unlock } from "proper-lockfile";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { getFormData } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
@@ -218,6 +219,67 @@ async function _deleteUserCore(username: string): Promise<Result<null>> {
   await writeJsonFile(allUsers, USERS_FILE);
 
   return { success: true, data: null };
+}
+
+export async function ensureUser(username: string, isAdmin: boolean): Promise<void> {
+  const usersFilePath = path.join(process.cwd(), USERS_FILE);
+  await fs.mkdir(path.dirname(usersFilePath), { recursive: true });
+
+  await lock(usersFilePath);
+  try {
+    let users: any[] = [];
+    try {
+      const content = await fs.readFile(usersFilePath, "utf-8");
+      if (content) {
+        users = JSON.parse(content);
+      }
+    } catch {}
+
+    if (users.length === 0) {
+      users.push({
+        username,
+        passwordHash: "",
+        isAdmin: true,
+        isSuperAdmin: true,
+        createdAt: new Date().toISOString(),
+      });
+      if (process.env.DEBUGGER) {
+        console.log("ENSURE USER - Created first user as super admin:", username);
+      }
+    } else {
+      const existing = users.find((u: any) => u.username === username);
+      if (!existing) {
+        users.push({
+          username,
+          passwordHash: "",
+          isAdmin,
+          createdAt: new Date().toISOString(),
+        });
+        if (process.env.DEBUGGER) {
+          console.log("ENSURE USER - Created new user:", { username, isAdmin });
+        }
+      } else {
+        if (isAdmin && !existing.isAdmin) {
+          existing.isAdmin = true;
+          if (process.env.DEBUGGER) {
+            console.log("ENSURE USER - Updated existing user to admin:", { username });
+          }
+        } else if (process.env.DEBUGGER) {
+          console.log("ENSURE USER - User already exists:", {
+            username,
+            currentIsAdmin: existing.isAdmin,
+            requestedAdmin: isAdmin,
+          });
+        }
+      }
+    }
+    await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2));
+  } finally {
+    await unlock(usersFilePath);
+  }
+
+  await fs.mkdir(path.join(process.cwd(), CHECKLISTS_DIR(username)), { recursive: true });
+  await fs.mkdir(path.join(process.cwd(), NOTES_DIR(username)), { recursive: true });
 }
 
 export const getUserByUsername = async (
