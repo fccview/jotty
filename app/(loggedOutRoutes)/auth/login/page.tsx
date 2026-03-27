@@ -9,25 +9,25 @@ export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
   const t = await getTranslations("auth");
-  const ssoEnabled = process.env.SSO_MODE === "oidc";
+  const ssoIsOidc = process.env.SSO_MODE === "oidc";
   const allowLocal =
     process.env.SSO_FALLBACK_LOCAL &&
     process.env.SSO_FALLBACK_LOCAL !== "no" &&
     process.env.SSO_FALLBACK_LOCAL !== "false";
 
   const hasExistingUsers = await hasUsers();
-  if (!hasExistingUsers && !ssoEnabled || !hasExistingUsers && allowLocal) {
+  if (!hasExistingUsers && (!process.env.SSO_MODE || allowLocal)) {
     redirect("/auth/setup");
   }
 
-  if (ssoEnabled && !allowLocal) {
+  if (ssoIsOidc && !allowLocal) {
     return <SsoOnlyLogin />;
   }
 
   return (
     <AuthShell>
       <div className="space-y-6">
-        <LoginForm ssoEnabled={ssoEnabled} />
+        <LoginForm ssoEnabled={ssoIsOidc} />
       </div>
     </AuthShell>
   );
