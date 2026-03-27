@@ -31,16 +31,26 @@ vi.mock('@/app/_server/actions/log', () => ({
 
 vi.mock('@/app/_server/actions/users', () => ({
   getUsername: vi.fn().mockResolvedValue('testuser'),
+  ensureUser: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('@/app/_server/actions/auth/ldap', () => ({
+  ldapLogin: vi.fn(),
 }))
 
 import { register, login, logout } from '@/app/_server/actions/auth'
 import { readJsonFile, writeJsonFile } from '@/app/_server/actions/file'
-import { readSessions, writeSessions } from '@/app/_server/actions/session'
+import { readSessions, writeSessions, createSession } from '@/app/_server/actions/session'
+import { ensureUser } from '@/app/_server/actions/users'
+import { ldapLogin } from '@/app/_server/actions/auth/ldap'
 
 const mockReadJsonFile = readJsonFile as ReturnType<typeof vi.fn>
 const mockWriteJsonFile = writeJsonFile as ReturnType<typeof vi.fn>
 const mockReadSessions = readSessions as ReturnType<typeof vi.fn>
 const mockWriteSessions = writeSessions as ReturnType<typeof vi.fn>
+const mockCreateSession = createSession as ReturnType<typeof vi.fn>
+const mockEnsureUser = ensureUser as ReturnType<typeof vi.fn>
+const mockLdapLogin = ldapLogin as ReturnType<typeof vi.fn>
 
 describe('Auth Actions', () => {
   beforeEach(() => {
@@ -239,6 +249,145 @@ describe('Auth Actions', () => {
 
       expect(mockLock).toHaveBeenCalled()
       expect(mockUnlock).toHaveBeenCalled()
+    })
+  })
+
+  describe('login() with SSO_MODE=ldap', () => {
+    const ldapUser = {
+      username: 'alice',
+      passwordHash: '',
+      isAdmin: false,
+      failedLoginAttempts: 0,
+    }
+
+    beforeEach(() => {
+      process.env.SSO_MODE = 'ldap'
+      process.env.DISABLE_BRUTEFORCE_PROTECTION = 'true'
+      mockReadJsonFile.mockResolvedValue([ldapUser])
+    })
+
+    afterEach(() => {
+      delete process.env.SSO_MODE
+      delete process.env.DISABLE_BRUTEFORCE_PROTECTION
+    })
+
+    it('delegates to ldapLogin instead of checking the local password hash', async () => {
+      mockLdapLogin.mockResolvedValue({ ok: true, username: 'alice', isAdmin: false })
+
+      const formData = createFormData({ username: 'alice', password: 'secret' })
+      try { await login(formData) } catch {}
+
+      expect(mockLdapLogin).toHaveBeenCalledWith('alice', 'secret')
+    })
+
+    it('returns an error and does NOT call createSession on invalid_credentials', async () => {
+      mockLdapLogin.mockResolvedValue({ ok: false, kind: 'invalid_credentials' })
+
+      const formData = createFormData({ username: 'alice', password: 'wrong' })
+      const result = await login(formData)
+
+      expect(result).toMatchObject({ error: 'Invalid username or password' })
+      expect(mockCreateSession).not.toHaveBeenCalled()
+    })
+
+    it('increments the brute-force counter on invalid_credentials when user exists', async () => {
+      delete process.env.DISABLE_BRUTEFORCE_PROTECTION
+      mockLdapLogin.mockResolvedValue({ ok: false, kind: 'invalid_credentials' })
+      mockReadJsonFile.mockResolvedValue([{ ...ldapUser, failedLoginAttempts: 0 }])
+
+      const formData = createFormData({ username: 'alice', password: 'wrong' })
+      await login(formData)
+
+      expect(mockWriteJsonFile).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ failedLoginAttempts: 1 }),
+        ]),
+        expect.any(String)
+      )
+    })
+
+    it('returns a generic error and does NOT increment the brute-force counter on connection_error', async () => {
+      delete process.env.DISABLE_BRUTEFORCE_PROTECTION
+      mockLdapLogin.mockResolvedValue({ ok: false, kind: 'connection_error' })
+
+      const formData = createFormData({ username: 'alice', password: 'secret' })
+      const result = await login(formData)
+
+      expect(result).toMatchObject({ error: 'Authentication service unavailable' })
+      expect(mockWriteJsonFile).not.toHaveBeenCalled()
+    })
+
+    it('redirects to /auth/login?error=unauthorized on unauthorized result', async () => {
+      mockLdapLogin.mockResolvedValue({ ok: false, kind: 'unauthorized' })
+
+      const formData = createFormData({ username: 'alice', password: 'secret' })
+      try {
+        await login(formData)
+      } catch (e: any) {
+        expect(e.message).toContain('REDIRECT:/auth/login?error=unauthorized')
+      }
+    })
+
+    it('calls ensureUser with the username and isAdmin flag on success', async () => {
+      mockLdapLogin.mockResolvedValue({ ok: true, username: 'alice', isAdmin: true })
+
+      const formData = createFormData({ username: 'alice', password: 'secret' })
+      try { await login(formData) } catch {}
+
+      expect(mockEnsureUser).toHaveBeenCalledWith('alice', true)
+    })
+
+    it('calls createSession with loginType "ldap" on success', async () => {
+      mockLdapLogin.mockResolvedValue({ ok: true, username: 'alice', isAdmin: false })
+
+      const formData = createFormData({ username: 'alice', password: 'secret' })
+      try { await login(formData) } catch {}
+
+      expect(mockCreateSession).toHaveBeenCalledWith(
+        expect.any(String),
+        'alice',
+        'ldap'
+      )
+    })
+
+    it('sets the session cookie on success', async () => {
+      mockLdapLogin.mockResolvedValue({ ok: true, username: 'alice', isAdmin: false })
+
+      const formData = createFormData({ username: 'alice', password: 'secret' })
+      try { await login(formData) } catch {}
+
+      expect(mockCookies.set).toHaveBeenCalledWith(
+        'session',
+        expect.any(String),
+        expect.objectContaining({ httpOnly: true, path: '/' })
+      )
+    })
+
+    it('redirects to / on success', async () => {
+      mockLdapLogin.mockResolvedValue({ ok: true, username: 'alice', isAdmin: false })
+
+      const formData = createFormData({ username: 'alice', password: 'secret' })
+      try {
+        await login(formData)
+      } catch (e: any) {
+        expect(e.message).toContain('REDIRECT:/')
+      }
+    })
+
+    it('still applies the brute-force lockout check before contacting LDAP', async () => {
+      delete process.env.DISABLE_BRUTEFORCE_PROTECTION
+      const lockedUser = {
+        ...ldapUser,
+        failedLoginAttempts: 10,
+        nextAllowedLoginAttempt: new Date(Date.now() + 60_000).toISOString(),
+      }
+      mockReadJsonFile.mockResolvedValue([lockedUser])
+
+      const formData = createFormData({ username: 'alice', password: 'secret' })
+      const result = await login(formData)
+
+      expect(result).toMatchObject({ error: 'Too many failed attempts' })
+      expect(mockLdapLogin).not.toHaveBeenCalled()
     })
   })
 

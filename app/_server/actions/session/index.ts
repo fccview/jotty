@@ -15,7 +15,7 @@ export interface SessionData {
   ipAddress: string;
   createdAt: string;
   lastActivity: string;
-  loginType?: "local" | "sso" | "pending-mfa";
+  loginType?: "local" | "sso" | "ldap" | "pending-mfa";
 }
 
 export interface Session {

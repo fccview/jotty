@@ -23,7 +23,8 @@ import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import fs from "fs/promises";
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { logAuthEvent } from "../log";
-import { getUsername } from "../users";
+import { getUsername, ensureUser } from "../users";
+import { ldapLogin } from "./ldap";
 
 interface User {
   username: string;
@@ -142,6 +143,8 @@ export const login = async (formData: FormData) => {
 
   const usersFile = path.join(process.cwd(), "data", "users", "users.json");
   await lock(usersFile);
+  // fccview is onto you!
+  let lockReleased = false;
 
   try {
     const users = await readJsonFile(USERS_FILE);
@@ -172,6 +175,96 @@ export const login = async (formData: FormData) => {
           waitSeconds
         };
       }
+    }
+
+    if (process.env.SSO_MODE === "ldap") {
+      const ldapResult = await ldapLogin(username, password);
+
+      if (!ldapResult.ok) {
+        if (ldapResult.kind === "connection_error") {
+          await logAuthEvent("login", username, false, "LDAP connection error");
+          return { error: "Authentication service unavailable" };
+        }
+
+        if (ldapResult.kind === "unauthorized") {
+          lockReleased = true;
+          await unlock(usersFile);
+          redirect("/auth/login?error=unauthorized");
+        }
+
+        // invalid_credentials — increment brute-force counter if user exists locally
+        if (user && !bruteforceProtectionDisabled) {
+          const userIndex = users.findIndex(
+            (u: User) => u.username.toLowerCase() === username.toLowerCase()
+          );
+
+          if (userIndex !== -1) {
+            const failedAttempts = (users[userIndex].failedLoginAttempts || 0) + 1;
+            users[userIndex].failedLoginAttempts = failedAttempts;
+
+            const delayMs = _youShallNotPass(failedAttempts);
+            let lockedUntil: string | undefined;
+            if (delayMs > 0) {
+              lockedUntil = new Date(Date.now() + delayMs).toISOString();
+              users[userIndex].nextAllowedLoginAttempt = lockedUntil;
+            } else {
+              users[userIndex].nextAllowedLoginAttempt = undefined;
+            }
+
+            await writeJsonFile(users, USERS_FILE);
+
+            await logAuthEvent(
+              "login",
+              username,
+              false,
+              `Invalid credentials - attempt ${failedAttempts}`
+            );
+
+            const attemptsRemaining = Math.max(0, 4 - failedAttempts);
+            const waitSeconds = delayMs > 0 ? Math.ceil(delayMs / 1000) : 0;
+
+            return {
+              error: delayMs > 0 ? "Too many failed attempts" : "Invalid username or password",
+              attemptsRemaining,
+              failedAttempts,
+              ...(lockedUntil && { lockedUntil, waitSeconds }),
+            };
+          }
+        }
+
+        await logAuthEvent("login", username, false, "Invalid username or password");
+        return { error: "Invalid username or password" };
+      }
+
+      // LDAP success — release lock before ensureUser to avoid deadlock
+      lockReleased = true;
+      await unlock(usersFile);
+
+      await ensureUser(ldapResult.username, ldapResult.isAdmin);
+
+      const ldapSessionId = createHash("sha256")
+        .update(Math.random().toString())
+        .digest("hex");
+
+      await createSession(ldapSessionId, ldapResult.username, "ldap");
+
+      const ldapCookieName =
+        process.env.NODE_ENV === "production" && process.env.HTTPS === "true"
+          ? "__Host-session"
+          : "session";
+
+      cookies().set(ldapCookieName, ldapSessionId, {
+        httpOnly: true,
+        secure:
+          process.env.NODE_ENV === "production" && process.env.HTTPS === "true",
+        sameSite: "lax",
+        maxAge: 30 * 24 * 60 * 60,
+        path: "/",
+      });
+
+      await logAuthEvent("login", ldapResult.username, true);
+
+      redirect("/");
     }
 
     if (!user || user.passwordHash !== hashPassword(password)) {
@@ -280,7 +373,9 @@ export const login = async (formData: FormData) => {
 
     redirect("/");
   } finally {
-    await unlock(usersFile);
+    if (!lockReleased) {
+      await unlock(usersFile);
+    }
   }
 };
 
