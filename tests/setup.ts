@@ -137,11 +137,13 @@ vi.mock("speakeasy", () => ({
 }));
 
 vi.mock("ldapts", () => ({
-  Client: vi.fn().mockImplementation(() => ({
-    bind: vi.fn().mockResolvedValue(undefined),
-    search: vi.fn().mockResolvedValue({ searchEntries: [] }),
-    unbind: vi.fn().mockResolvedValue(undefined),
-  })),
+  Client: vi.fn().mockImplementation(function () {
+    return {
+      bind: vi.fn().mockResolvedValue(undefined),
+      search: vi.fn().mockResolvedValue({ searchEntries: [] }),
+      unbind: vi.fn().mockResolvedValue(undefined),
+    };
+  }),
 }))
 
 vi.mock("qrcode", () => ({
