@@ -9,7 +9,7 @@ import {
 
 export const parseMarkdownNote = (
   content: string,
-  id: string,
+  slug: string,
   category: string,
   owner?: string,
   isShared?: boolean,
@@ -24,7 +24,7 @@ export const parseMarkdownNote = (
   );
 
   return {
-    id,
+    slug,
     uuid: metadata.uuid || generateUuid(),
     title,
     content: contentWithoutMetadata,
@@ -75,15 +75,15 @@ export const convertInternalLinksToNewFormat = async (
     if (href.startsWith("/note/")) {
       const parts = href.split("/");
       if (parts.length >= 3) {
-        const categoryAndId = parts.slice(2).join("/");
-        const lastSlashIndex = categoryAndId.lastIndexOf("/");
-        const id = categoryAndId.substring(lastSlashIndex + 1);
+        const categoryAndSlug = parts.slice(2).join("/");
+        const lastSlashIndex = categoryAndSlug.lastIndexOf("/");
+        const slug = categoryAndSlug.substring(lastSlashIndex + 1);
 
         try {
           const { getUserNotes } = await import("./queries");
           const notes = await getUserNotes({ username, allowArchived: true });
           if (notes.success && notes.data) {
-            const note = notes.data.find((n) => n.id === id);
+            const note = notes.data.find((n) => n.slug === slug);
             if (note?.uuid) {
               let updatedSpan = fullMatch
                 .replace(/data-href="[^"]*"/, `data-href="/jotty/${note.uuid}"`)
@@ -116,9 +116,9 @@ export const convertInternalLinksToNewFormat = async (
     } else if (href.startsWith("/checklist/")) {
       const parts = href.split("/");
       if (parts.length >= 3) {
-        const categoryAndId = parts.slice(2).join("/");
-        const lastSlashIndex = categoryAndId.lastIndexOf("/");
-        const id = categoryAndId.substring(lastSlashIndex + 1);
+        const categoryAndSlug = parts.slice(2).join("/");
+        const lastSlashIndex = categoryAndSlug.lastIndexOf("/");
+        const slug = categoryAndSlug.substring(lastSlashIndex + 1);
 
         try {
           const { getUserChecklists } = await import("../checklist");
@@ -128,7 +128,7 @@ export const convertInternalLinksToNewFormat = async (
             allowArchived: true,
           });
           if (checklists.success && checklists.data) {
-            const checklist = checklists.data.find((c) => c.id === id);
+            const checklist = checklists.data.find((c) => c.slug === slug);
             if (checklist?.uuid) {
               let updatedSpan = fullMatch
                 .replace(

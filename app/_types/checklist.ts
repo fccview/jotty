@@ -75,8 +75,8 @@ export interface List {
 }
 
 export interface Checklist {
-  id: string;
-  uuid?: string;
+  slug: string;
+  uuid: string;
   title: string;
   type: ChecklistType;
   category?: string;
