@@ -112,7 +112,7 @@ export const exportAllChecklistsNotes = async (): Promise<ExportResult> => {
       );
       await ensureDir(userDir);
       await fsp.writeFile(
-        path.join(userDir, `${list.id}.json`),
+        path.join(userDir, `${list.slug}.json`),
         JSON.stringify(list, null, 2),
         "utf-8"
       );
@@ -127,7 +127,7 @@ export const exportAllChecklistsNotes = async (): Promise<ExportResult> => {
       );
       await ensureDir(userDir);
       await fsp.writeFile(
-        path.join(userDir, `${note.id}.json`),
+        path.join(userDir, `${note.slug}.json`),
         JSON.stringify(note, null, 2),
         "utf-8"
       );
@@ -206,7 +206,7 @@ export const exportUserChecklistsNotes = async (
       );
       await ensureDir(userDir);
       await fsp.writeFile(
-        path.join(userDir, `${list.id}.json`),
+        path.join(userDir, `${list.slug}.json`),
         JSON.stringify(list, null, 2),
         "utf-8"
       );
@@ -220,7 +220,7 @@ export const exportUserChecklistsNotes = async (
       );
       await ensureDir(userDir);
       await fsp.writeFile(
-        path.join(userDir, `${note.id}.json`),
+        path.join(userDir, `${note.slug}.json`),
         JSON.stringify(note, null, 2),
         "utf-8"
       );

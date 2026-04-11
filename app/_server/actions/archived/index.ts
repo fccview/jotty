@@ -34,7 +34,7 @@ export const getArchivedItems = async () => {
       );
       archivedItems.push(
         ...archivedLists.map((list) => ({
-          id: list.id,
+          id: list.slug,
           title: list.title,
           type: ItemTypes.CHECKLIST,
           category: list.category || ARCHIVED_DIR_NAME,
@@ -53,7 +53,7 @@ export const getArchivedItems = async () => {
       );
       archivedItems.push(
         ...archivedNotes.map((note) => ({
-          id: note.id,
+          id: note.slug,
           title: note.title,
           type: "note" as ItemType,
           category: note.category || ARCHIVED_DIR_NAME,

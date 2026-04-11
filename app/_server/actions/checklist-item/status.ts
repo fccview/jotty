@@ -64,18 +64,17 @@ export const updateItemStatus = async (
   usernameOverride?: string
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
     const status = formData.get("status") as string;
     const timeEntriesStr = formData.get("timeEntries") as string;
-    const category = formData.get("category") as string;
     const formDataUsername = formData.get("username") as string;
 
     const username =
       usernameOverride || formDataUsername || (await getUsername());
 
-    if (!listId || !itemId) {
-      return { success: false, error: "List ID and item ID are required" };
+    if (!uuid || !itemId) {
+      return { success: false, error: "UUID and item ID are required" };
     }
 
     if (!status && !timeEntriesStr) {
@@ -85,17 +84,17 @@ export const updateItemStatus = async (
       };
     }
 
-    const list = await getListById(listId, username, category);
+    const list = await getListById(uuid, undefined, username);
     if (!list) {
       return { success: false, error: "List not found" };
     }
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category,
+      list.uuid,
       ItemTypes.CHECKLIST,
       username,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
+      list.owner,
     );
 
     if (!canEdit) {
@@ -163,20 +162,20 @@ export const updateItemStatus = async (
     const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${list.slug}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.owner}/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
         error
       );
     }
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {

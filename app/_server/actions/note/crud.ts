@@ -68,15 +68,15 @@ export const createNote = async (formData: FormData) => {
       categoryDir,
       title,
       ".md",
-      fileRenameMode
+      fileRenameMode,
     );
-    const id = path.basename(filename, ".md");
+    const slug = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 
     const extractedTags = extractHashtagsFromContent(content);
 
     const newDoc: Note = {
-      id,
+      slug,
       uuid: generateUuid(),
       title,
       content,
@@ -89,10 +89,10 @@ export const createNote = async (formData: FormData) => {
 
     await serverWriteFile(filePath, noteToMarkdown(newDoc));
 
-    const relativePath = path.join(category, `${id}.md`);
+    const relativePath = path.join(category, `${slug}.md`);
     if (!isEncrypted(content)) {
       commitNote(currentUser.username, relativePath, "create", title).catch(
-        () => {}
+        () => {},
       );
     }
 
@@ -102,13 +102,13 @@ export const createNote = async (formData: FormData) => {
         currentUser.username,
         "note",
         newDoc.uuid!,
-        links
+        links,
       );
     } catch (error) {
       console.warn(
         "Failed to update link index for new note:",
-        newDoc.id,
-        error
+        newDoc.slug,
+        error,
       );
     }
 
@@ -118,10 +118,15 @@ export const createNote = async (formData: FormData) => {
       newDoc.uuid!,
       newDoc.title,
       true,
-      { category: newDoc.category }
+      { category: newDoc.category },
     );
 
-    await broadcast({ type: "note", action: "created", entityId: newDoc.uuid, username: currentUser.username });
+    await broadcast({
+      type: "note",
+      action: "created",
+      entityId: newDoc.uuid,
+      username: currentUser.username,
+    });
 
     return { success: true, data: newDoc };
   } catch (error) {
@@ -132,7 +137,7 @@ export const createNote = async (formData: FormData) => {
       "note",
       "",
       title || "unknown",
-      false
+      false,
     );
     return { error: "Failed to create note" };
   }
@@ -140,9 +145,9 @@ export const createNote = async (formData: FormData) => {
 
 export const updateNote = async (formData: FormData, autosaveNotes = false) => {
   try {
-    const { id, title, content, category, originalCategory, user, uuid } =
+    const { slug, title, content, category, originalCategory, user, uuid } =
       getFormData(formData, [
-        "id",
+        "slug",
         "title",
         "content",
         "category",
@@ -173,24 +178,24 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       ? await convertInternalLinksToNewFormat(
           contentWithoutMetadata,
           currentUser,
-          originalCategory
+          originalCategory,
         )
       : contentWithoutMetadata;
 
     const convertedContent = processedContent;
 
-    const note = await getNoteById(uuid || id, originalCategory, undefined);
+    const note = await getNoteById(uuid || slug, originalCategory, undefined);
 
     if (!note) {
       throw new Error("Note not found");
     }
 
     const canEdit = await checkUserPermission(
-      note.uuid || id,
-      originalCategory,
+      note.uuid,
       "note",
       actingUsername,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
+      note.owner,
     );
 
     if (!canEdit) {
@@ -217,12 +222,12 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const ownerDir = NOTES_DIR(note.owner!);
     const categoryDir = path.join(
       ownerDir,
-      updatedDoc.category || "Uncategorized"
+      updatedDoc.category || "Uncategorized",
     );
     await ensureDir(categoryDir);
 
     let newFilename: string;
-    let newId = id;
+    let newSlug = slug;
 
     if (title !== note.title) {
       const ownerUser = await getCurrentUser();
@@ -231,15 +236,15 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         categoryDir,
         title,
         ".md",
-        fileRenameMode
+        fileRenameMode,
       );
-      newId = path.basename(newFilename, ".md");
+      newSlug = path.basename(newFilename, ".md");
     } else {
-      newFilename = `${id}.md`;
+      newFilename = `${slug}.md`;
     }
 
-    if (newId !== id) {
-      updatedDoc.id = newId;
+    if (newSlug !== slug) {
+      updatedDoc.slug = newSlug;
     }
 
     const filePath = path.join(categoryDir, newFilename);
@@ -249,13 +254,13 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       oldFilePath = path.join(
         ownerDir,
         note.category || "Uncategorized",
-        `${id}.md`
+        `${slug}.md`,
       );
-    } else if (newId !== id) {
+    } else if (newSlug !== slug) {
       oldFilePath = path.join(
         ownerDir,
         note.category || "Uncategorized",
-        `${id}.md`
+        `${slug}.md`,
       );
     }
 
@@ -264,7 +269,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     if (!autosaveNotes && !updatedDoc.encrypted) {
       const historyRelativePath = path.join(
         updatedDoc.category || "Uncategorized",
-        `${newId}.md`
+        `${newSlug}.md`,
       );
 
       const isCategoryChange = category && category !== note.category;
@@ -274,7 +279,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         ? {
             oldCategory: note.category || "Uncategorized",
             newCategory: updatedDoc.category || "Uncategorized",
-            oldPath: path.join(note.category || "Uncategorized", `${id}.md`),
+            oldPath: path.join(note.category || "Uncategorized", `${slug}.md`),
           }
         : undefined;
 
@@ -283,7 +288,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         historyRelativePath,
         historyAction,
         title,
-        historyMetadata
+        historyMetadata,
       ).catch(() => {});
     }
 
@@ -291,10 +296,10 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       try {
         const links = (await parseInternalLinks(updatedDoc.content)) || [];
         const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
-          updatedDoc.id
+          updatedDoc.slug
         }`;
 
-        const oldItemKey = `${note.category || "Uncategorized"}/${id}`;
+        const oldItemKey = `${note.category || "Uncategorized"}/${slug}`;
 
         if (oldItemKey !== newItemKey) {
           await rebuildLinkIndex(note.owner!);
@@ -305,30 +310,29 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       } catch (error) {
         console.warn(
           "Failed to update link index for note:",
-          updatedDoc.id,
-          error
+          updatedDoc.slug,
+          error,
         );
       }
     }
 
-    if (newId !== id || (category && category !== note.category)) {
-      const { updateSharingData } = await import(
-        "@/app/_server/actions/sharing"
-      );
+    if (newSlug !== slug || (category && category !== note.category)) {
+      const { updateSharingData } =
+        await import("@/app/_server/actions/sharing");
 
       await updateSharingData(
         {
-          id,
+          id: slug,
           category: note.category || "Uncategorized",
           itemType: "note",
           sharer: note.owner!,
         },
         {
-          id: newId,
+          id: newSlug,
           category: updatedDoc.category || "Uncategorized",
           itemType: "note",
           sharer: note.owner!,
-        }
+        },
       );
     }
 
@@ -339,25 +343,16 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     try {
       if (!autosaveNotes) {
         revalidatePath("/");
-        const oldCategoryPath = buildCategoryPath(
-          note.category || "Uncategorized",
-          id
-        );
-        const newCategoryPath = buildCategoryPath(
-          updatedDoc.category || "Uncategorized",
-          newId !== id ? newId : id
-        );
+        revalidatePath(`/note/${note.owner}/${note.uuid}`);
 
-        revalidatePath(`/note/${oldCategoryPath}`);
-
-        if (newId !== id || note.category !== updatedDoc.category) {
-          revalidatePath(`/note/${newCategoryPath}`);
+        if (newSlug !== slug || note.category !== updatedDoc.category) {
+          revalidatePath(`/note/${note.owner}/${note.uuid}`);
         }
       }
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
 
@@ -368,11 +363,16 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         note.uuid!,
         updatedDoc.title,
         true,
-        { category: updatedDoc.category }
+        { category: updatedDoc.category },
       );
     }
 
-    await broadcast({ type: "note", action: "updated", entityId: updatedDoc.uuid, username: currentUser });
+    await broadcast({
+      type: "note",
+      action: "updated",
+      entityId: updatedDoc.uuid,
+      username: currentUser,
+    });
 
     return { success: true, data: updatedDoc };
   } catch (error) {
@@ -382,7 +382,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       "note",
       uuid!,
       title || "unknown",
-      false
+      false,
     );
     return { error: "Failed to update note" };
   }
@@ -390,12 +390,12 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
 export const deleteNote = async (formData: FormData, username?: string) => {
   try {
-    const { id, category, uuid } = getFormData(formData, [
-      "id",
+    const { slug, category, uuid } = getFormData(formData, [
+      "slug",
       "category",
       "uuid",
     ]);
-    const itemIdentifier = uuid || id;
+    const itemIdentifier = uuid || slug;
 
     let currentUser: any = null;
     if (username) {
@@ -421,11 +421,11 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     }
 
     const canDelete = await checkUserPermission(
-      note.uuid || itemIdentifier,
-      category,
+      note.uuid,
       "note",
       currentUser.username,
-      PermissionTypes.DELETE
+      PermissionTypes.DELETE,
+      note.owner,
     );
 
     if (!canDelete) {
@@ -437,7 +437,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     const filePath = path.join(
       ownerDir,
       note.category || "Uncategorized",
-      `${note.id}.md`
+      `${note.slug}.md`,
     );
 
     await serverDeleteFile(filePath);
@@ -445,49 +445,44 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     if (!note.encrypted) {
       const deleteRelativePath = path.join(
         note.category || "Uncategorized",
-        `${note.id}.md`
+        `${note.slug}.md`,
       );
       commitNote(
         ownerUsername,
         deleteRelativePath,
         "delete",
-        note.title || note.id
+        note.title || note.slug,
       ).catch(() => {});
     }
 
     try {
       await removeItemFromIndex(note.owner!, "note", note.uuid!);
     } catch (error) {
-      console.warn("Failed to remove note from link index:", note.id, error);
+      console.warn("Failed to remove note from link index:", note.slug, error);
     }
 
     if (note.owner) {
-      const { updateSharingData } = await import(
-        "@/app/_server/actions/sharing"
-      );
+      const { updateSharingData } =
+        await import("@/app/_server/actions/sharing");
       await updateSharingData(
         {
           uuid: note.uuid,
-          id: note.id,
+          id: note.slug,
           category: note.category || "Uncategorized",
           itemType: "note",
           sharer: note.owner,
         },
-        null
+        null,
       );
     }
 
     try {
       revalidatePath("/");
-      const categoryPath = buildCategoryPath(
-        note.category || "Uncategorized",
-        note.id
-      );
-      revalidatePath(`/note/${categoryPath}`);
+      revalidatePath(`/note/${note.owner}/${note.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
 
@@ -497,10 +492,15 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       note.uuid!,
       note.title!,
       true,
-      { category: note.category }
+      { category: note.category },
     );
 
-    await broadcast({ type: "note", action: "deleted", entityId: note.uuid || note.id, username: currentUser.username });
+    await broadcast({
+      type: "note",
+      action: "deleted",
+      entityId: note.uuid,
+      username: currentUser.username,
+    });
 
     return { success: true };
   } catch (error) {
@@ -511,7 +511,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       "note",
       uuid!,
       note?.title || "unknown",
-      false
+      false,
     );
     return { error: "Failed to delete note" };
   }
@@ -519,16 +519,16 @@ export const deleteNote = async (formData: FormData, username?: string) => {
 
 export const cloneNote = async (formData: FormData) => {
   try {
-    const id = formData.get("id") as string;
+    const slug = formData.get("slug") as string;
     const uuid = formData.get("uuid") as string;
     const originalCategory = formData.get("originalCategory") as string | null;
     const targetCategory = formData.get("category") as string;
     const ownerUsername = formData.get("user") as string | null;
 
     const note = await getNoteById(
-      uuid || id,
+      uuid || slug,
       originalCategory || undefined,
-      ownerUsername || undefined
+      ownerUsername || undefined,
     );
     if (!note) {
       return { error: "Note not found" };
@@ -552,7 +552,7 @@ export const cloneNote = async (formData: FormData) => {
       categoryDir,
       cloneTitle,
       ".md",
-      fileRenameMode
+      fileRenameMode,
     );
     const filePath = path.join(categoryDir, filename);
 
@@ -566,11 +566,11 @@ export const cloneNote = async (formData: FormData) => {
 
     await serverWriteFile(filePath, updatedContent);
 
-    const newId = path.basename(filename, ".md");
+    const newSlug = path.basename(filename, ".md");
     const clonedNote = await getNoteById(
-      newId,
+      newSlug,
       finalTargetCategory,
-      currentUser?.username
+      currentUser?.username,
     );
 
     try {
@@ -578,11 +578,16 @@ export const cloneNote = async (formData: FormData) => {
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but note was cloned successfully:",
-        error
+        error,
       );
     }
 
-    await broadcast({ type: "note", action: "created", entityId: newId, username: currentUser?.username || "" });
+    await broadcast({
+      type: "note",
+      action: "created",
+      entityId: clonedNote?.uuid || newSlug,
+      username: currentUser?.username || "",
+    });
 
     return { success: true, data: clonedNote };
   } catch (error) {

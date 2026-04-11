@@ -2,49 +2,40 @@
 
 import { revalidatePath } from "next/cache";
 import path from "path";
-import {
-  serverWriteFile,
-  ensureDir,
-} from "@/app/_server/actions/file";
-import {
-  getListById,
-} from "@/app/_server/actions/checklist";
+import { serverWriteFile, ensureDir } from "@/app/_server/actions/file";
+import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { Checklist, Result } from "@/app/_types";
-import {
-  ItemTypes,
-  PermissionTypes,
-} from "@/app/_types/enums";
+import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import { checkUserPermission } from "../sharing";
 import { broadcast } from "@/app/_server/ws/broadcast";
 
 export const archiveItem = async (
-  formData: FormData
+  formData: FormData,
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
-    const category = formData.get("category") as string;
 
     const currentUser = await getUsername();
 
-    if (!listId || !itemId) {
-      return { success: false, error: "List ID and item ID are required" };
+    if (!uuid || !itemId) {
+      return { success: false, error: "UUID and item ID are required" };
     }
 
-    const list = await getListById(listId, currentUser, category);
+    const list = await getListById(uuid, undefined, currentUser);
     if (!list) {
       return { success: false, error: "List not found" };
     }
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category,
+      list.uuid,
       ItemTypes.CHECKLIST,
       currentUser,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
+      list.owner,
     );
 
     if (!canEdit) {
@@ -84,26 +75,31 @@ export const archiveItem = async (
       process.cwd(),
       "data",
       CHECKLISTS_FOLDER,
-      list.owner!
+      list.owner!,
     );
     const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${list.slug}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.owner}/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: list.uuid,
+      username: currentUser,
+    });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -113,30 +109,29 @@ export const archiveItem = async (
 };
 
 export const unarchiveItem = async (
-  formData: FormData
+  formData: FormData,
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
-    const category = formData.get("category") as string;
 
     const currentUser = await getUsername();
 
-    if (!listId || !itemId) {
-      return { success: false, error: "List ID and item ID are required" };
+    if (!uuid || !itemId) {
+      return { success: false, error: "UUID and item ID are required" };
     }
 
-    const list = await getListById(listId, currentUser, category);
+    const list = await getListById(uuid, undefined, currentUser);
     if (!list) {
       return { success: false, error: "List not found" };
     }
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category,
+      list.uuid,
       ItemTypes.CHECKLIST,
       currentUser,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
+      list.owner,
     );
 
     if (!canEdit) {
@@ -180,26 +175,31 @@ export const unarchiveItem = async (
       process.cwd(),
       "data",
       CHECKLISTS_FOLDER,
-      list.owner!
+      list.owner!,
     );
     const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${list.slug}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.owner}/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: list.uuid,
+      username: currentUser,
+    });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {

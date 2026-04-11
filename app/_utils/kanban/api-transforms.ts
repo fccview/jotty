@@ -39,7 +39,7 @@ export const transformItem = (item: Item, index: number): TransformedItem => {
 };
 
 export const transformBoard = (list: Checklist) => ({
-  id: list.uuid || list.id,
+  id: list.uuid,
   title: list.title,
   category: list.category || "Uncategorized",
   statuses: list.statuses || DEFAULT_KANBAN_STATUSES,

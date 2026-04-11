@@ -3,9 +3,9 @@
 import path from "path";
 import { Checklist, KanbanPriority, KanbanReminder } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
+import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
+import { serverWriteFile } from "@/app/_server/actions/file";
 import { revalidatePath } from "next/cache";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getFormData } from "@/app/_utils/global-utils";
@@ -15,28 +15,23 @@ import { getListById } from "@/app/_server/actions/checklist";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
 import { findItem, updateItem } from "@/app/_utils/item-tree-utils";
 
-const _getFilePath = async (list: Checklist): Promise<string> => {
+const _getFilePath = (list: Checklist): string => {
   const categoryDir = list.category || "Uncategorized";
-  const filename = `${list.id}.md`;
+  const filename = `${list.slug}.md`;
 
-  if (list.owner) {
-    return path.join(
-      process.cwd(), "data", CHECKLISTS_FOLDER, list.owner, categoryDir, filename
-    );
-  }
-
-  const userDir = await getUserModeDir(Modes.CHECKLISTS);
-  return path.join(userDir, categoryDir, filename);
+  return path.join(
+    process.cwd(), "data", CHECKLISTS_FOLDER, list.owner!, categoryDir, filename
+  );
 };
 
 async function _saveAndBroadcast(list: Checklist, username: string) {
-  const filePath = await _getFilePath(list);
+  const filePath = _getFilePath(list);
   await serverWriteFile(filePath, listToMarkdown(list));
 
   await broadcast({
     type: "checklist",
     action: "updated",
-    entityId: list.uuid || list.id,
+    entityId: list.uuid,
     username,
   });
 
@@ -47,19 +42,19 @@ async function _saveAndBroadcast(list: Checklist, username: string) {
 
 export const updateKanbanItemPriority = async (formData: FormData) => {
   try {
-    const { listId, itemId, priority, category } = getFormData(formData, [
-      "listId", "itemId", "priority", "category",
+    const { uuid, itemId, priority } = getFormData(formData, [
+      "uuid", "itemId", "priority",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId, undefined, category),
+      getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+      list.uuid, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT, list.owner
     );
     if (!canEdit) return { error: "Permission denied" };
 
@@ -85,19 +80,19 @@ export const updateKanbanItemPriority = async (formData: FormData) => {
 
 export const updateKanbanItemScore = async (formData: FormData) => {
   try {
-    const { listId, itemId, score, category } = getFormData(formData, [
-      "listId", "itemId", "score", "category",
+    const { uuid, itemId, score } = getFormData(formData, [
+      "uuid", "itemId", "score",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId, undefined, category),
+      getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+      list.uuid, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT, list.owner
     );
     if (!canEdit) return { error: "Permission denied" };
 
@@ -123,19 +118,19 @@ export const updateKanbanItemScore = async (formData: FormData) => {
 
 export const assignKanbanItem = async (formData: FormData) => {
   try {
-    const { listId, itemId, assignee, category } = getFormData(formData, [
-      "listId", "itemId", "assignee", "category",
+    const { uuid, itemId, assignee } = getFormData(formData, [
+      "uuid", "itemId", "assignee",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId, undefined, category),
+      getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+      list.uuid, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT, list.owner
     );
     if (!canEdit) return { error: "Permission denied" };
 
@@ -159,7 +154,7 @@ export const assignKanbanItem = async (formData: FormData) => {
         type: "assignment",
         title: assignedItem?.text || "New task assigned",
         message: `${currentUser.username} assigned you to a task in "${updatedList.title}"`,
-        data: { itemId: updatedList.uuid || listId, itemType: "checklist", taskId: itemId },
+        data: { itemId: updatedList.uuid, itemType: "checklist", taskId: itemId },
       });
     }
 
@@ -172,19 +167,19 @@ export const assignKanbanItem = async (formData: FormData) => {
 
 export const setKanbanItemReminder = async (formData: FormData) => {
   try {
-    const { listId, itemId, reminder: reminderStr, category } = getFormData(formData, [
-      "listId", "itemId", "reminder", "category",
+    const { uuid, itemId, reminder: reminderStr } = getFormData(formData, [
+      "uuid", "itemId", "reminder",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId, undefined, category),
+      getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+      list.uuid, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT, list.owner
     );
     if (!canEdit) return { error: "Permission denied" };
 
@@ -219,11 +214,11 @@ export const setKanbanItemReminder = async (formData: FormData) => {
 
 export const markReminderNotified = async (formData: FormData) => {
   try {
-    const { listId, itemId, category } = getFormData(formData, [
-      "listId", "itemId", "category",
+    const { uuid, itemId } = getFormData(formData, [
+      "uuid", "itemId",
     ]);
 
-    const list = await getListById(listId, undefined, category);
+    const list = await getListById(uuid);
     if (!list) return { error: "List not found" };
 
     const updatedList: Checklist = {

@@ -100,9 +100,8 @@ export const useChecklist = ({
       const idsToProcess = [...itemsToDelete];
 
       const formData = new FormData();
-      formData.append("listId", localList.id);
+      formData.append("uuid", localList.uuid);
       formData.append("itemIds", JSON.stringify(idsToProcess));
-      formData.append("category", localList.category || "Uncategorized");
 
       try {
         const result = await bulkDeleteItems(formData);
@@ -118,7 +117,7 @@ export const useChecklist = ({
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [itemsToDelete, localList.id, localList.category, router]);
+  }, [itemsToDelete, localList.uuid, localList.category, router]);
 
   useEffect(() => {
     if (pendingToggles.size === 0) {
@@ -133,7 +132,7 @@ export const useChecklist = ({
         async ([itemId, completed]) => {
           try {
             const formData = new FormData();
-            formData.append("listId", localList.id);
+            formData.append("listId", localList.slug);
             formData.append("itemId", itemId);
             formData.append("completed", String(completed));
             formData.append("category", localList.category || "Uncategorized");
@@ -160,7 +159,7 @@ export const useChecklist = ({
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [pendingToggles, localList.id, localList.category, localList]);
+  }, [pendingToggles, localList.slug, localList.category, localList]);
 
   const handleDeleteItem = (itemId: string) => {
     setLocalList((currentList) => {
@@ -198,11 +197,11 @@ export const useChecklist = ({
 
   const confirmDeleteList = async () => {
     const formData = new FormData();
-    formData.append("id", localList.id);
+    formData.append("slug", localList.slug);
     formData.append("category", localList.category || "Uncategorized");
-    if (localList.uuid) formData.append("uuid", localList.uuid);
+    formData.append("uuid", localList.uuid);
     await deleteList(formData);
-    onDelete?.(localList.id);
+    onDelete?.(localList.slug);
     setShowDeleteModal(false);
   };
 
@@ -340,7 +339,7 @@ export const useChecklist = ({
   const handleEditItem = async (itemId: string, text: string) => {
     const formData = new FormData();
     const currentUser = await getCurrentUser();
-    formData.append("listId", localList.id);
+    formData.append("listId", localList.slug);
     formData.append("itemId", itemId);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
@@ -546,7 +545,7 @@ export const useChecklist = ({
       ? "after"
       : "before";
 
-    formData.append("listId", localList.id);
+    formData.append("uuid", localList.uuid);
     formData.append("activeItemId", activeId);
     formData.append("overItemId", targetItemId);
     formData.append("isDropInto", String(isDropInto));
@@ -562,7 +561,7 @@ export const useChecklist = ({
   const handleBulkPaste = async (itemsText: string) => {
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("listId", localList.id);
+    formData.append("uuid", localList.uuid);
     formData.append("itemsText", itemsText);
     formData.append("category", localList.category || "Uncategorized");
     const result = await createBulkItems(formData);
@@ -585,7 +584,7 @@ export const useChecklist = ({
     setIsLoading(true);
     const newType = getNewType(localList.type);
     const formData = new FormData();
-    formData.append("listId", localList.id);
+    formData.append("uuid", localList.uuid);
     formData.append("newType", newType);
     formData.append("category", localList.category || "Uncategorized");
     formData.append("uuid", localList.uuid || "");
@@ -620,7 +619,7 @@ export const useChecklist = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("listId", localList.id);
+    formData.append("uuid", localList.uuid);
     formData.append("completed", String(completed));
     formData.append(
       "itemIds",
@@ -640,7 +639,7 @@ export const useChecklist = ({
   const handleClearAll = async (type: "completed" | "incomplete") => {
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", localList.id);
+    formData.append("uuid", localList.uuid);
     formData.append("category", localList.category || "Uncategorized");
     formData.append("type", type);
     if (localList.owner) {
@@ -668,7 +667,7 @@ export const useChecklist = ({
     setIsLoading(true);
     const formData = new FormData();
 
-    formData.append("listId", localList.id);
+    formData.append("listId", localList.slug);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
 
@@ -679,9 +678,9 @@ export const useChecklist = ({
     const result = await createItem(localList, formData, currentUser?.username);
 
     const updatedList = await getListById(
-      localList.id,
-      localList.owner || currentUser?.username,
-      localList.category
+      localList.uuid,
+      undefined,
+      localList.owner || currentUser?.username
     );
 
     if (updatedList) {
@@ -700,7 +699,7 @@ export const useChecklist = ({
   const handleAddSubItem = async (parentId: string, text: string) => {
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("listId", localList.id);
+    formData.append("uuid", localList.uuid);
     formData.append("parentId", parentId);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
@@ -742,7 +741,7 @@ export const useChecklist = ({
         setLocalList((currentList) => ({
           ...currentList,
           items: updateItemWithSubItem(currentList.items, parentId, {
-            id: `${localList.id}-sub-${Date.now()}`,
+            id: `${localList.slug}-sub-${Date.now()}`,
             text,
             completed: false,
             order: 0,
@@ -755,13 +754,7 @@ export const useChecklist = ({
 
   const handleCopyId = async () => {
     const success = await copyTextToClipboard(
-      `${
-        localList.uuid
-          ? localList.uuid
-          : `${encodeCategoryPath(localList.category || "Uncategorized")}/${
-              localList.id
-            }`
-      }`
+      localList.uuid
     );
     if (success) {
       setCopied(true);
