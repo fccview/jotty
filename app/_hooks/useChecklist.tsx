@@ -58,7 +58,7 @@ export const useChecklist = ({
   const [copied, setCopied] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<string[]>([]);
   const [pendingToggles, setPendingToggles] = useState<Map<string, boolean>>(
-    new Map()
+    new Map(),
   );
   const isInitialMount = useRef(true);
 
@@ -76,7 +76,7 @@ export const useChecklist = ({
         tolerance: 5,
       },
     }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   useEffect(() => {
@@ -132,7 +132,7 @@ export const useChecklist = ({
         async ([itemId, completed]) => {
           try {
             const formData = new FormData();
-            formData.append("listId", localList.slug);
+            formData.append("slug", localList.slug);
             formData.append("itemId", itemId);
             formData.append("completed", String(completed));
             formData.append("category", localList.category || "Uncategorized");
@@ -141,7 +141,7 @@ export const useChecklist = ({
               localList,
               formData,
               undefined,
-              true
+              true,
             );
             if (!result.success) {
               throw new Error("Server action failed");
@@ -150,7 +150,7 @@ export const useChecklist = ({
             console.error(`Failed to sync toggle for ${itemId}:`, error);
             setPendingToggles((prev) => new Map(prev).set(itemId, completed));
           }
-        }
+        },
       );
 
       await Promise.all(syncPromises);
@@ -170,11 +170,12 @@ export const useChecklist = ({
             const children = item.children
               ? filterNestedItem(item.children)
               : undefined;
-            const completed = (
+            const completed =
               children && children.length > 0 && areAllItemsCompleted(children)
-            ) ? true : item.completed;
+                ? true
+                : item.completed;
 
-            return {...item, completed, children};
+            return { ...item, completed, children };
           })
           .filter((item) => item.children?.length > 0 || item.id !== undefined);
       };
@@ -225,7 +226,7 @@ export const useChecklist = ({
     items: any[],
     itemId: string,
     parent: any = null,
-    siblings: any[] = []
+    siblings: any[] = [],
   ): { parent: any | null; siblings: any[] } | null => {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -239,7 +240,7 @@ export const useChecklist = ({
           item.children,
           itemId,
           item,
-          item.children
+          item.children,
         );
         if (result) {
           return result;
@@ -278,7 +279,7 @@ export const useChecklist = ({
       const findAndUpdateItem = (
         items: any[],
         itemId: string,
-        updates: any
+        updates: any,
       ): any[] => {
         return items.map((item) => {
           if (item.id === itemId) {
@@ -305,7 +306,7 @@ export const useChecklist = ({
             const updatedChildren = findAndUpdateItem(
               item.children,
               itemId,
-              updates
+              updates,
             );
             const updatedItem = updateParentBasedOnChildren({
               ...item,
@@ -339,7 +340,7 @@ export const useChecklist = ({
   const handleEditItem = async (itemId: string, text: string) => {
     const formData = new FormData();
     const currentUser = await getCurrentUser();
-    formData.append("listId", localList.slug);
+    formData.append("slug", localList.slug);
     formData.append("itemId", itemId);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
@@ -414,7 +415,7 @@ export const useChecklist = ({
     const isDescendantOf = (
       ancestorId: string,
       descendantId: string,
-      items: Item[]
+      items: Item[],
     ): boolean => {
       const findItem = (items: Item[], id: string): Item | null => {
         for (const item of items) {
@@ -447,7 +448,7 @@ export const useChecklist = ({
     const findItemWithParent = (
       items: Item[],
       targetId: string,
-      parent: Item | null = null
+      parent: Item | null = null,
     ): {
       item: Item;
       parent: Item | null;
@@ -499,7 +500,7 @@ export const useChecklist = ({
         const targetParent = overInNew.parent;
 
         let newIndex = targetSiblings.findIndex(
-          (item) => item.id === targetItemId
+          (item) => item.id === targetItemId,
         );
 
         const isDraggingDown =
@@ -511,8 +512,8 @@ export const useChecklist = ({
             ? "after"
             : "before"
           : isDraggingDown
-          ? "after"
-          : "before";
+            ? "after"
+            : "before";
 
         if (position === "after") {
           newIndex = newIndex + 1;
@@ -542,8 +543,8 @@ export const useChecklist = ({
         ? "after"
         : "before"
       : isDraggingDown
-      ? "after"
-      : "before";
+        ? "after"
+        : "before";
 
     formData.append("uuid", localList.uuid);
     formData.append("activeItemId", activeId);
@@ -623,7 +624,7 @@ export const useChecklist = ({
     formData.append("completed", String(completed));
     formData.append(
       "itemIds",
-      JSON.stringify(targetItems.map((item) => item.id))
+      JSON.stringify(targetItems.map((item) => item.id)),
     );
     formData.append("category", localList.category || "Uncategorized");
 
@@ -646,9 +647,8 @@ export const useChecklist = ({
       formData.append("user", localList.owner);
     }
 
-    const { clearAllChecklistItems } = await import(
-      "@/app/_server/actions/checklist"
-    );
+    const { clearAllChecklistItems } =
+      await import("@/app/_server/actions/checklist");
 
     const result = await clearAllChecklistItems(formData);
     setIsLoading(false);
@@ -662,12 +662,12 @@ export const useChecklist = ({
 
   const handleCreateItem = async (
     text: string,
-    recurrence?: RecurrenceRule
+    recurrence?: RecurrenceRule,
   ) => {
     setIsLoading(true);
     const formData = new FormData();
 
-    formData.append("listId", localList.slug);
+    formData.append("slug", localList.slug);
     formData.append("text", text);
     formData.append("category", localList.category || "Uncategorized");
 
@@ -680,7 +680,7 @@ export const useChecklist = ({
     const updatedList = await getListById(
       localList.uuid,
       undefined,
-      localList.owner || currentUser?.username
+      localList.owner || currentUser?.username,
     );
 
     if (updatedList) {
@@ -713,7 +713,7 @@ export const useChecklist = ({
         const updateItemWithSubItem = (
           items: any[],
           parentId: string,
-          newSubItem: any
+          newSubItem: any,
         ): any[] => {
           return items.map((item) => {
             if (item.id === parentId) {
@@ -729,7 +729,7 @@ export const useChecklist = ({
                 children: updateItemWithSubItem(
                   item.children,
                   parentId,
-                  newSubItem
+                  newSubItem,
                 ),
               };
             }
@@ -753,9 +753,7 @@ export const useChecklist = ({
   };
 
   const handleCopyId = async () => {
-    const success = await copyTextToClipboard(
-      localList.uuid
-    );
+    const success = await copyTextToClipboard(localList.uuid);
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -783,10 +781,10 @@ export const useChecklist = ({
   };
 
   const incompleteItems = localList.items.filter(
-    (item) => !isItemFullyCompleted(item)
+    (item) => !isItemFullyCompleted(item),
   );
   const completedItems = localList.items.filter((item) =>
-    isItemFullyCompleted(item)
+    isItemFullyCompleted(item),
   );
 
   return {
