@@ -74,7 +74,7 @@ export const EditNoteModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", note.slug);
+    formData.append("slug", note.slug);
     formData.append("title", title.trim());
     formData.append("content", note.content || "");
     formData.append("unarchive", unarchive ? "true" : "false");
@@ -98,13 +98,8 @@ export const EditNoteModal = ({
     if (result.success && result.data) {
       const updatedNote = result.data;
 
-      const categoryPath = buildCategoryPath(
-        updatedNote.category || t("notes.uncategorized"),
-        updatedNote.id
-      );
-
       if (!unarchive) {
-        router.push(`/note/${categoryPath}`);
+        router.push(`/note/${updatedNote.owner}/${updatedNote.uuid}`);
       }
       onUpdated();
     }

@@ -220,7 +220,7 @@ export const useNoteEditor = ({
       }
 
       const formData = new FormData();
-      formData.append("id", note.slug);
+      formData.append("slug", note.slug);
       formData.append("title", useAutosave ? note.title : title);
       formData.append("content", contentToSave);
       formData.append("category", useAutosave ? (note.category || "Uncategorized") : category);
@@ -242,11 +242,7 @@ export const useNoteEditor = ({
         setIsEditingEncrypted(false);
         setContentIsDirty(false);
 
-        const categoryPath = buildCategoryPath(
-          category || "Uncategorized",
-          result.data.id
-        );
-        router.push(`/note/${categoryPath}`);
+        router.push(`/note/${note.owner}/${result.data.uuid || note.uuid}`);
       }
     },
     [
@@ -333,7 +329,7 @@ export const useNoteEditor = ({
 
   const confirmDelete = async () => {
     const formData = new FormData();
-    formData.append("id", note.slug);
+    formData.append("slug", note.slug);
     formData.append("category", note.category || "");
     if (note.uuid) formData.append("uuid", note.uuid);
     await deleteNote(formData);

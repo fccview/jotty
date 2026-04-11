@@ -108,7 +108,7 @@ export const KanbanCardDetail = ({
   useEffect(() => {
     if (!isOpen) return;
     const _loadUsers = async () => {
-      const sharedWithUsers = await getUsersWithAccess(checklistId, checklist.uuid);
+      const sharedWithUsers = await getUsersWithAccess(checklist.uuid);
       if (sharedWithUsers.length === 0) {
         setBoardIsShared(false);
         return;

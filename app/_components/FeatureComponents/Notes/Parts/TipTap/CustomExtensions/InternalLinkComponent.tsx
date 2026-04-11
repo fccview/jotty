@@ -147,7 +147,7 @@ export const InternalLinkComponent = ({
     if (href.startsWith("/jotty/")) {
       const uuidFromPath = href.replace("/jotty/", "");
 
-      if (fullItem && fullItem.id) {
+      if (fullItem && fullItem.uuid) {
         router.push(
           `/${
             fullItem && "type" in fullItem && fullItem.type
@@ -155,7 +155,7 @@ export const InternalLinkComponent = ({
               : ItemTypes.NOTE
           }/${buildCategoryPath(
             fullItem.category || "Uncategorized",
-            fullItem.id,
+            fullItem.slug || "",
           )}`,
         );
         return;
@@ -184,14 +184,14 @@ export const InternalLinkComponent = ({
     e.stopPropagation();
 
     if (isJottyLink) {
-      if (fullItem && fullItem.id) {
+      if (fullItem && fullItem.slug) {
         const pathPrefix =
           fullItem && "type" in fullItem && fullItem.type
             ? "/checklist/"
             : "/note/";
         const newHref = `${pathPrefix}${buildCategoryPath(
           fullItem.category || "Uncategorized",
-          fullItem.id,
+          fullItem.uuid || "",
         )}`;
         updateAttributes({
           href: newHref,
@@ -200,7 +200,7 @@ export const InternalLinkComponent = ({
               ? "checklist"
               : "note",
           category: fullItem.category || "Uncategorized",
-          itemId: fullItem.id,
+          itemId: fullItem.slug,
           convertToBidirectional: false,
         });
       } else if (itemId && category) {

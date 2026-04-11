@@ -36,7 +36,7 @@ const getLabel = (
   const fullItem =
     (notes.find((n) => n.uuid === node.data.id) as Note | undefined) ||
     (checklists.find((c) => c.uuid === node.data.id) as Checklist | undefined);
-  return `${fullItem?.id}.md`;
+  return `${fullItem?.slug}.md`;
 };
 
 const CustomNode = ({ node, onHover, onLeave, notes, checklists }: any) => {

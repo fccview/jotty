@@ -28,7 +28,7 @@ export const AdminContentColumn = ({
         <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
           {items.map((item) => (
             <Link
-              key={`${item.category}-${item.id}`}
+              key={`${item.category}-${item.slug}`}
               href={item.link}
               className="block p-3 bg-muted/50 rounded-jotty hover:bg-muted/70 transition-colors"
             >

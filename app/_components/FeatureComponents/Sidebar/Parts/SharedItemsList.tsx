@@ -82,7 +82,7 @@ export const SharedItemsList = ({
   };
 
   const getItemHref = (item: Checklist | Note) => {
-    return `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || 'Uncategorized', item.id)}`;
+    return `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || 'Uncategorized', item.slug)}`;
   };
 
   const handleItemClick = (e: React.MouseEvent, item: Checklist | Note) => {
@@ -155,11 +155,11 @@ export const SharedItemsList = ({
                     {sharerItems.map((sharedItem) => {
                       const fullItem = fullItems.find(
                         (item) =>
-                          (item.uuid === sharedItem.uuid || item.id === sharedItem.id) &&
+                          (item.uuid === sharedItem.uuid || item.slug === sharedItem.id) &&
                           item.isShared
                       ) as (Checklist | Note) | undefined;
 
-                      if (!fullItem || !fullItem.id || !fullItem.title) return null;
+                      if (!fullItem || !fullItem.slug || !fullItem.title) return null;
 
                       const isSelected = isItemSelected(fullItem);
 
