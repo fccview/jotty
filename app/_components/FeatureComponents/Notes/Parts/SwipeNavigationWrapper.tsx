@@ -16,8 +16,8 @@ interface SwipeNavigationWrapperProps {
 }
 
 const getNoteUrl = (note: Partial<Note> | null, embed = false): string | null => {
-  if (!note?.id) return null;
-  const base = `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`;
+  if (!note?.uuid) return null;
+  const base = `/note/${buildCategoryPath(note.category || "Uncategorized", note.uuid)}`;
   return embed ? `${base}?embed=true` : base;
 };
 

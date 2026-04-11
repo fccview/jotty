@@ -27,7 +27,7 @@ export const useAdjacentNotes = (currentId: string): AdjacentNotesResult => {
       );
     }
 
-    const currentIndex = filteredNotes.findIndex((n) => n.id === currentId);
+    const currentIndex = filteredNotes.findIndex((n) => n.slug === currentId);
 
     if (currentIndex === -1) {
       return { prev: null, next: null, currentIndex: -1, total: filteredNotes.length };

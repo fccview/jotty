@@ -220,7 +220,7 @@ export const useNoteEditor = ({
       }
 
       const formData = new FormData();
-      formData.append("id", note.id);
+      formData.append("id", note.slug);
       formData.append("title", useAutosave ? note.title : title);
       formData.append("content", contentToSave);
       formData.append("category", useAutosave ? (note.category || "Uncategorized") : category);
@@ -250,7 +250,7 @@ export const useNoteEditor = ({
       }
     },
     [
-      note.id,
+      note.slug,
       note.encryptionMethod,
       title,
       derivedMarkdownContent,
@@ -333,11 +333,11 @@ export const useNoteEditor = ({
 
   const confirmDelete = async () => {
     const formData = new FormData();
-    formData.append("id", note.id);
+    formData.append("id", note.slug);
     formData.append("category", note.category || "");
     if (note.uuid) formData.append("uuid", note.uuid);
     await deleteNote(formData);
-    onDelete?.(note.id);
+    onDelete?.(note.slug);
     router.refresh();
     onBack();
     setShowDeleteModal(false);
@@ -365,7 +365,7 @@ export const useNoteEditor = ({
         : "";
 
     const printUrl = `/public/note/${categoryUrlPath}${encodeId(
-      note.id
+      note.uuid
     )}?view_mode=print`;
 
     const iframe = document.createElement("iframe");

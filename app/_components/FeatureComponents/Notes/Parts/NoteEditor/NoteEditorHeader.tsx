@@ -116,7 +116,7 @@ export const NoteEditorHeader = ({
 
   useEffect(() => {
     setHasPromptedForDecryption(false);
-  }, [note?.id]);
+  }, [note?.slug]);
 
   useEffect(() => {
     if (onOpenDecryptModal) {
@@ -166,7 +166,7 @@ export const NoteEditorHeader = ({
     const success = await copyTextToClipboard(
       `${note?.uuid
         ? note?.uuid
-        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id
+        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.slug
         }`
       }`
     );
@@ -206,7 +206,7 @@ export const NoteEditorHeader = ({
 
   const handlePermanentDecryption = async (newContent: string) => {
     const formData = new FormData();
-    formData.append("id", note.id);
+    formData.append("id", note.slug);
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
@@ -235,7 +235,7 @@ export const NoteEditorHeader = ({
 
   const handleEncryptionSuccess = async (newContent: string) => {
     const formData = new FormData();
-    formData.append("id", note.id);
+    formData.append("id", note.slug);
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
@@ -321,7 +321,7 @@ export const NoteEditorHeader = ({
                         ? note?.uuid
                         : `${encodeCategoryPath(
                           note?.category || t("notes.uncategorized")
-                        )}/${note?.id}`
+                        )}/${note?.slug}`
                         }`}
                     >
                       {copied ? (
@@ -736,7 +736,7 @@ export const NoteEditorHeader = ({
           isOpen={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
           noteUuid={note.uuid || ""}
-          noteId={note.id}
+          noteId={note.slug}
           noteCategory={note.category || "Uncategorized"}
           noteOwner={note.owner || ""}
           noteTitle={note.title}

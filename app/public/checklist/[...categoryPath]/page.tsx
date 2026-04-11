@@ -62,16 +62,16 @@ export default async function PublicChecklistPage(
     }
 
     checklist = listsResult.data.find(
-      (list) => list.id === id && list.category === category,
+      (list) => list.slug === id && list.category === category,
     );
 
     if (!checklist && categoryPath.length === 1) {
       checklist = listsResult.data.find(
-        (list) => list.id === id && list.category === "Uncategorized",
+        (list) => list.slug === id && list.category === "Uncategorized",
       );
 
       if (!checklist) {
-        checklist = listsResult.data.find((list) => list.id === id);
+        checklist = listsResult.data.find((list) => list.slug === id);
       }
     }
   }
@@ -98,7 +98,7 @@ export default async function PublicChecklistPage(
 
   if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
     const metadata = {
-      id: checklist.id,
+      id: checklist.slug,
       uuid: checklist.uuid,
       title: checklist.title,
       category: checklist.category || "Uncategorized",

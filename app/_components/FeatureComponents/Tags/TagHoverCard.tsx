@@ -22,7 +22,7 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
     e.preventDefault();
     e.stopPropagation();
     router.push(
-      `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`,
+      `/note/${buildCategoryPath(note.category || "Uncategorized", note.uuid)}`,
     );
   };
 
@@ -33,7 +33,7 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
     e.preventDefault();
     e.stopPropagation();
     router.push(
-      `/checklist/${buildCategoryPath(list.category || "Uncategorized", list.id!)}`,
+      `/checklist/${buildCategoryPath(list.category || "Uncategorized", list.uuid!)}`,
     );
   };
 
@@ -76,7 +76,7 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
         )}
         {checklists.map((list) => (
           <button
-            key={list.uuid ?? list.id}
+            key={list.uuid ?? list.slug}
             onClick={(e) => handleChecklistClick(e, list)}
             className="inline-flex items-center justify-between gap-1.5 w-full px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/15 transition-colors cursor-pointer"
           >

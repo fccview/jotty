@@ -17,7 +17,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ listI
       }
 
       const formData = new FormData();
-      formData.append("id", list.id);
+      formData.append("id", list.slug);
       formData.append("title", title ?? list.title);
       formData.append("category", category ?? list.category ?? "Uncategorized");
       formData.append("originalCategory", list.category || "Uncategorized");
@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ listI
       }
 
       const transformedChecklist = {
-        id: result.data?.uuid || result.data?.id,
+        id: result.data?.uuid || result.data?.slug,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
         type: result.data?.type || "simple",
@@ -58,7 +58,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ li
       }
 
       const formData = new FormData();
-      formData.append("id", list.id);
+      formData.append("id", list.slug);
       if (list.uuid) formData.append("uuid", list.uuid);
       formData.append("category", list.category || "Uncategorized");
       formData.append("apiUser", JSON.stringify(user));

@@ -56,15 +56,15 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
       redirect("/");
     }
 
-    note = notesResult.data.find((n) => n.id === id && n.category === category);
+    note = notesResult.data.find((n) => n.slug === id && n.category === category);
 
     if (!note && isUuidOnly) {
       note = notesResult.data.find(
-        (n) => n.id === id && n.category === "Uncategorized",
+        (n) => n.slug === id && n.category === "Uncategorized",
       );
 
       if (!note) {
-        note = notesResult.data.find((n) => n.id === id);
+        note = notesResult.data.find((n) => n.slug === id);
       }
     }
   }
@@ -92,7 +92,7 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
 
   if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
     const metadata = {
-      id: note.id,
+      id: note.slug,
       uuid: note.uuid,
       title: note.title,
       category: note.category || "Uncategorized",

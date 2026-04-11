@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       };
 
       const tasks = userTasks.map((list) => ({
-        id: list.uuid || list.id,
+        id: list.uuid || list.slug,
         title: list.title,
         category: list.category || "Uncategorized",
         statuses: list.statuses || [
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
       }
 
       const transformedTask = {
-        id: result.data?.uuid || result.data?.id,
+        id: result.data?.uuid || result.data?.slug,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
         statuses: result.data?.statuses || [

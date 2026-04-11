@@ -27,16 +27,16 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const { user } = useAppMode();
   const [localNote, setLocalNote] = useState<Note>(note);
   const [showCloneModal, setShowCloneModal] = useState(false);
-  const prevNoteId = useRef(note.id);
+  const prevNoteId = useRef(note.slug);
   const prevUpdatedAt = useRef(note.updatedAt);
 
   useEffect(() => {
     if (
-      note.id !== prevNoteId.current ||
+      note.slug !== prevNoteId.current ||
       note.updatedAt !== prevUpdatedAt.current
     ) {
       setLocalNote(note);
-      prevNoteId.current = note.id;
+      prevNoteId.current = note.slug;
       prevUpdatedAt.current = note.updatedAt;
     }
   }, [note]);
@@ -57,7 +57,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleCloneConfirm = async (targetCategory: string) => {
     const formData = new FormData();
-    formData.append("id", localNote.id);
+    formData.append("id", localNote.slug);
     formData.append("uuid", localNote.uuid || "");
     formData.append("originalCategory", localNote.category || "Uncategorized");
     formData.append("category", targetCategory || "Uncategorized");
@@ -72,7 +72,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       router.push(
         `/note/${buildCategoryPath(
           result.data.category || "Uncategorized",
-          result.data.id,
+          result.data.uuid,
         )}`,
       );
       router.refresh();
@@ -117,7 +117,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       isEditorInEditMode={viewModel.isEditing}
     >
       <SwipeNavigationWrapper
-        noteId={localNote.id}
+        noteId={localNote.slug}
         noteCategory={localNote.category}
         enabled={!viewModel.isEditing}
       >

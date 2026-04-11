@@ -47,16 +47,16 @@ export const ChecklistClient = ({
     useState<string>("");
   const { openCreateChecklistModal, openCreateCategoryModal, openSettings } =
     useShortcut();
-  const prevChecklistId = useRef(checklist.id);
+  const prevChecklistId = useRef(checklist.slug);
   const prevUpdatedAt = useRef(checklist.updatedAt);
 
   useEffect(() => {
     if (
-      checklist.id !== prevChecklistId.current ||
+      checklist.slug !== prevChecklistId.current ||
       checklist.updatedAt !== prevUpdatedAt.current
     ) {
       setLocalChecklist(checklist);
-      prevChecklistId.current = checklist.id;
+      prevChecklistId.current = checklist.slug;
       prevUpdatedAt.current = checklist.updatedAt;
     }
   }, [checklist]);
@@ -84,7 +84,7 @@ export const ChecklistClient = ({
 
   const handleCloneConfirm = async (targetCategory: string) => {
     const formData = new FormData();
-    formData.append("id", localChecklist.id);
+    formData.append("id", localChecklist.slug);
     formData.append(
       "originalCategory",
       localChecklist.category || "Uncategorized",
@@ -101,7 +101,7 @@ export const ChecklistClient = ({
       router.push(
         `/checklist/${buildCategoryPath(
           result.data.category || "Uncategorized",
-          result.data.id,
+          result.data.uuid,
         )}`,
       );
       router.refresh();
@@ -220,7 +220,7 @@ export const ChecklistClient = ({
           onClose={() => setShowCreateModal(false)}
           onCreated={(newChecklist) => {
             if (newChecklist) {
-              router.push(`/checklist/${newChecklist.id}`);
+              router.push(`/checklist/${newChecklist.uuid}`);
             }
             setShowCreateModal(false);
             router.refresh();

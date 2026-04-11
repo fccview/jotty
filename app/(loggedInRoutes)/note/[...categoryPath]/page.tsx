@@ -70,7 +70,7 @@ export default async function NotePage(props: NotePageProps) {
       : [];
 
   const metadata = {
-    id: note.id,
+    id: note.slug,
     uuid: note.uuid,
     title: note.title,
     category: note.category || "Uncategorized",

@@ -54,8 +54,8 @@ export const TasksPageClient = ({
     if (taskFilter === "pinned") {
       const pinnedPaths = user?.pinnedLists || [];
       filtered = filtered.filter((list) => {
-        const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
-        const idPath = `${list.category || "Uncategorized"}/${list.id}`;
+        const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.slug}`;
+        const idPath = `${list.category || "Uncategorized"}/${list.slug}`;
         return pinnedPaths.includes(uuidPath) || pinnedPaths.includes(idPath);
       });
     } else if (taskFilter === "completed") {
@@ -278,14 +278,14 @@ export const TasksPageClient = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {paginatedItems.map((list) => (
                 <ChecklistCard
-                  key={list.id}
+                  key={list.slug}
                   list={list}
                   onSelect={(list) => {
-                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.uuid}`;
                     router.push(`/checklist/${categoryPath}`);
                   }}
                   isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`
+                    `${list.category || "Uncategorized"}/${list.uuid}`
                   )}
                   onTogglePin={() => { }}
                 />
@@ -297,14 +297,14 @@ export const TasksPageClient = ({
             <div className="space-y-3">
               {paginatedItems.map((list) => (
                 <ChecklistListItem
-                  key={list.id}
+                  key={list.slug}
                   list={list}
                   onSelect={(list) => {
-                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.uuid}`;
                     router.push(`/checklist/${categoryPath}`);
                   }}
                   isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`
+                    `${list.category || "Uncategorized"}/${list.uuid}`
                   )}
                   onTogglePin={() => { }}
                 />
@@ -316,14 +316,14 @@ export const TasksPageClient = ({
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {paginatedItems.map((list) => (
                 <ChecklistGridItem
-                  key={list.id}
+                  key={list.slug}
                   list={list}
                   onSelect={(list) => {
-                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+                    const categoryPath = `${list.category || "Uncategorized"}/${list.uuid}`;
                     router.push(`/checklist/${categoryPath}`);
                   }}
                   isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`
+                    `${list.category || "Uncategorized"}/${list.uuid}`
                   )}
                   onTogglePin={() => { }}
                 />

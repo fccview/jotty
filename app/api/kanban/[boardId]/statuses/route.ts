@@ -38,7 +38,7 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("id", board.id);
+      formData.append("id", board.slug);
       formData.append("statuses", JSON.stringify(statuses));
       formData.append("category", board.category || "Uncategorized");
       formData.append("apiUser", JSON.stringify(user));

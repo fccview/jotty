@@ -121,7 +121,7 @@ export const NotesHome = ({
 
   const filteredRecent = useMemo(() => {
     if (!selectedFilter) return recent;
-    return displayNotes.filter((note) => !pinned.some((p) => p.id === note.id));
+    return displayNotes.filter((note) => !pinned.some((p) => p.slug === note.slug));
   }, [displayNotes, recent, selectedFilter, pinned]);
 
   const filterDisplayName = useMemo(() => {
@@ -137,7 +137,7 @@ export const NotesHome = ({
       note.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.id === note.id && item.category === encodedCategory,
+      (item) => item.id === note.slug && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
@@ -220,7 +220,7 @@ export const NotesHome = ({
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={pinned.map((note) => note.uuid || note.id)}
+                items={pinned.map((note) => note.uuid || note.slug)}
                 strategy={verticalListSortingStrategy}
               >
                 {viewMode === "card" && (
@@ -231,7 +231,7 @@ export const NotesHome = ({
                   >
                     {pinned.map((note) => (
                       <div
-                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        key={`pinned-${note.category}-${note.uuid || note.slug}`}
                         className="mb-6"
                       >
                         <NoteCard
@@ -251,7 +251,7 @@ export const NotesHome = ({
                   <div className="space-y-3">
                     {pinned.map((note) => (
                       <NoteListItem
-                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        key={`pinned-${note.category}-${note.uuid || note.slug}`}
                         note={note}
                         onSelect={onSelectNote}
                         isPinned={true}
@@ -267,7 +267,7 @@ export const NotesHome = ({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {pinned.map((note) => (
                       <NoteGridItem
-                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        key={`pinned-${note.category}-${note.uuid || note.slug}`}
                         note={note}
                         onSelect={onSelectNote}
                         isPinned={true}
@@ -343,7 +343,7 @@ export const NotesHome = ({
               >
                 {filteredRecent.map((note) => (
                   <div
-                    key={`recent-${note.category}-${note.id}`}
+                    key={`recent-${note.category}-${note.slug}`}
                     className="mb-6"
                   >
                     <NoteCard
@@ -362,7 +362,7 @@ export const NotesHome = ({
               <div className="space-y-3">
                 {filteredRecent.map((note) => (
                   <NoteListItem
-                    key={`recent-${note.category}-${note.id}`}
+                    key={`recent-${note.category}-${note.slug}`}
                     note={note}
                     onSelect={onSelectNote}
                     isPinned={isNotePinned(note)}
@@ -377,7 +377,7 @@ export const NotesHome = ({
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {filteredRecent.map((note) => (
                   <NoteGridItem
-                    key={`recent-${note.category}-${note.id}`}
+                    key={`recent-${note.category}-${note.slug}`}
                     note={note}
                     onSelect={onSelectNote}
                     isPinned={isNotePinned(note)}

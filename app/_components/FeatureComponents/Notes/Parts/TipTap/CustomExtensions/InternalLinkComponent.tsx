@@ -49,7 +49,7 @@ const _returnNote = async (uuid: string, router: any, note?: Note) => {
     router.push(
       `/note/${buildCategoryPath(
         finalNote.category || "Uncategorized",
-        finalNote.id,
+        finalNote.uuid,
       )}`,
     );
     return;
@@ -69,7 +69,7 @@ const _returnChecklist = async (
     router.push(
       `/checklist/${buildCategoryPath(
         finalChecklist.category || "Uncategorized",
-        finalChecklist.id,
+        finalChecklist.uuid,
       )}`,
     );
     return;
@@ -223,13 +223,13 @@ export const InternalLinkComponent = ({
         const foundItem =
           notes.find(
             (n) =>
-              encodeId(n.id || "") === encodeId(itemId) &&
+              encodeId(n.slug || "") === encodeId(itemId) &&
               encodeCategoryPath(n?.category || "") ===
                 encodeCategoryPath(category),
           ) ||
           checklists.find(
             (c) =>
-              encodeId(c.id || "") === encodeId(itemId) &&
+              encodeId(c.slug || "") === encodeId(itemId) &&
               encodeCategoryPath(c?.category || "") ===
                 encodeCategoryPath(category),
           );

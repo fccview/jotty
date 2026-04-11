@@ -39,13 +39,13 @@ export const ChecklistListItem = ({
     transition,
     isDragging,
   } = useSortable({
-    id: list?.uuid || list.id,
+    id: list?.uuid || list.slug,
     disabled: !isDraggable,
   });
 
   const parsedData = useMemo(() => {
     if ("rawContent" in list) {
-      return parseChecklistContent((list as any).rawContent, list.id);
+      return parseChecklistContent((list as any).rawContent, list.slug);
     }
     return null;
   }, [list]);

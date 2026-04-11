@@ -43,7 +43,7 @@ export const EditNoteModal = ({
       if (!user?.username) return;
 
       const fetchedNote = await getNoteById(
-        initialNote.uuid || initialNote.id,
+        initialNote.uuid || initialNote.slug,
         initialNote.category || "Uncategorized",
         user.username
       );
@@ -74,7 +74,7 @@ export const EditNoteModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", note.id);
+    formData.append("id", note.slug);
     formData.append("title", title.trim());
     formData.append("content", note.content || "");
     formData.append("unarchive", unarchive ? "true" : "false");

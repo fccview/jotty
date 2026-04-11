@@ -72,7 +72,7 @@ export const HomeClient = ({
           onSelectChecklist={(list) => {
             const categoryPath = buildCategoryPath(
               list.category || "Uncategorized",
-              list.id
+              list.uuid
             );
             router.push(`/checklist/${categoryPath}`);
           }}
@@ -88,7 +88,7 @@ export const HomeClient = ({
           onSelectNote={(note) => {
             const categoryPath = buildCategoryPath(
               note.category || "Uncategorized",
-              note.id
+              note.uuid
             );
             router.push(`/note/${categoryPath}`);
           }}

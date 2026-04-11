@@ -24,7 +24,7 @@ const LastModifiedCreatedInfo = ({
 
   const isShared = allSharedItems?.checklists.some(
     (sharedChecklist) =>
-      sharedChecklist.id === checklist.id &&
+      sharedChecklist.id === checklist.slug &&
       sharedChecklist.category === encodedCategory
   );
   return (

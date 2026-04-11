@@ -82,7 +82,7 @@ export const ShortcutProvider = ({
         if (result.success && result.data) {
           const categoryPath = buildCategoryPath(
             result.data.category || "Uncategorized",
-            result.data.id
+            result.data.uuid
           );
           router.push(`/note/${categoryPath}?editor=true`);
           router.refresh();
@@ -234,7 +234,7 @@ export const ShortcutProvider = ({
             if (newNote) {
               const categoryPath = buildCategoryPath(
                 newNote.category || "Uncategorized",
-                newNote.id
+                newNote.uuid
               );
               router.push(`/note/${categoryPath}?editor=true`);
             }
@@ -252,7 +252,7 @@ export const ShortcutProvider = ({
             if (newChecklist) {
               const categoryPath = buildCategoryPath(
                 newChecklist.category || "Uncategorized",
-                newChecklist.id
+                newChecklist.uuid
               );
               router.push(`/checklist/${categoryPath}`);
             }

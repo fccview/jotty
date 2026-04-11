@@ -127,7 +127,7 @@ export const TagsHome = ({
       note.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.id === note.id && item.category === encodedCategory,
+      (item) => item.id === note.slug && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
@@ -137,7 +137,7 @@ export const TagsHome = ({
       list.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.id === list.id && item.category === encodedCategory,
+      (item) => item.id === list.slug && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
@@ -145,7 +145,7 @@ export const TagsHome = ({
   const handleSelectNote = (note: Note) => {
     const categoryPath = buildCategoryPath(
       note.category || "Uncategorized",
-      note.id,
+      note.uuid,
     );
     router.push(`/note/${categoryPath}`);
   };
@@ -153,7 +153,7 @@ export const TagsHome = ({
   const handleSelectChecklist = (list: Checklist) => {
     const categoryPath = buildCategoryPath(
       list.category || "Uncategorized",
-      list.id,
+      list.uuid,
     );
     router.push(`/checklist/${categoryPath}`);
   };
@@ -178,7 +178,7 @@ export const TagsHome = ({
       if (viewMode === "card") {
         return (
           <div
-            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.slug}`}
             className="mb-6"
           >
             <NoteCard
@@ -193,7 +193,7 @@ export const TagsHome = ({
       if (viewMode === "list") {
         return (
           <NoteListItem
-            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.slug}`}
             note={note}
             onSelect={handleSelectNote}
             isPinned={false}
@@ -203,7 +203,7 @@ export const TagsHome = ({
       }
       return (
         <NoteGridItem
-          key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+          key={`${keyPrefix}-note-${note.category}-${note.uuid || note.slug}`}
           note={note}
           onSelect={handleSelectNote}
           isPinned={false}
@@ -216,7 +216,7 @@ export const TagsHome = ({
     if (viewMode === "card") {
       return (
         <div
-          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.slug}`}
           className="mb-6"
         >
           <ChecklistCard
@@ -231,7 +231,7 @@ export const TagsHome = ({
     if (viewMode === "list") {
       return (
         <ChecklistListItem
-          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.slug}`}
           list={list}
           onSelect={handleSelectChecklist}
           isPinned={false}
@@ -241,7 +241,7 @@ export const TagsHome = ({
     }
     return (
       <ChecklistGridItem
-        key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+        key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.slug}`}
         list={list}
         onSelect={handleSelectChecklist}
         isPinned={false}

@@ -194,9 +194,9 @@ export const useSidebar = (props: SidebarProps) => {
     let currentItem: Partial<Checklist> | Partial<Note> | undefined;
 
     if (mode === Modes.CHECKLISTS) {
-      currentItem = checklists.find((c) => c.id === itemId);
+      currentItem = checklists.find((c) => c.slug === itemId);
     } else {
-      currentItem = notes.find((n) => n.id === itemId);
+      currentItem = notes.find((n) => n.slug === itemId);
     }
 
     if (currentItem && currentItem.category) {

@@ -42,7 +42,7 @@ export const EditChecklistModal = ({
       if (!user?.username) return;
 
       const fetchedChecklist = await getListById(
-        initialChecklist.uuid || initialChecklist.id,
+        initialChecklist.uuid || initialChecklist.slug,
         user.username,
         initialChecklist.category || "Uncategorized"
       );
@@ -73,7 +73,7 @@ export const EditChecklistModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", checklist.id);
+    formData.append("id", checklist.slug);
     formData.append("title", title.trim());
     formData.append(
       "originalCategory",
@@ -98,7 +98,7 @@ export const EditChecklistModal = ({
 
       const categoryPath = buildCategoryPath(
         updatedChecklist.category || "Uncategorized",
-        updatedChecklist.id
+        updatedChecklist.slug
       );
 
       if (!unarchive) {

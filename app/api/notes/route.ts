@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       }
 
       const transformedNotes = filteredNotes.map((note) => ({
-        id: note.uuid || note.id,
+        id: note.uuid || note.slug,
         title: note.title,
         category: note.category || "Uncategorized",
         content: note.content,
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       }
 
       const transformedNote = {
-        id: result.data?.uuid || result.data?.id,
+        id: result.data?.uuid || result.data?.slug,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
         content: result.data?.content || content,

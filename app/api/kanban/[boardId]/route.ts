@@ -63,7 +63,7 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("id", board.id);
+      formData.append("id", board.slug);
       formData.append("title", title ?? board.title);
       formData.append(
         "category",
@@ -108,7 +108,7 @@ export async function DELETE(
       }
 
       const formData = new FormData();
-      formData.append("id", board.id);
+      formData.append("id", board.slug);
       formData.append("category", board.category || "Uncategorized");
       formData.append("apiUser", JSON.stringify(user));
 

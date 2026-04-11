@@ -36,7 +36,7 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("listId", board.uuid || board.id);
+      formData.append("listId", board.uuid || board.slug);
       formData.append("itemId", params.itemId);
       formData.append("reminder", JSON.stringify({ datetime }));
       formData.append("category", board.category || "Uncategorized");
@@ -78,7 +78,7 @@ export async function DELETE(
       }
 
       const formData = new FormData();
-      formData.append("listId", board.uuid || board.id);
+      formData.append("listId", board.uuid || board.slug);
       formData.append("itemId", params.itemId);
       formData.append("reminder", "");
       formData.append("category", board.category || "Uncategorized");
