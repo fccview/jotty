@@ -116,7 +116,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const firstChildId = subCategories[0]
     ? `category::${subCategories[0].path}`
     : categoryItems[0]
-      ? `item::${categoryItems[0].category || "Uncategorized"}::${categoryItems[0].id
+      ? `item::${categoryItems[0].category || "Uncategorized"}::${categoryItems[0].slug
       }`
       : undefined;
 
@@ -242,13 +242,13 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
           ))}
 
           {categoryItems.map((item) => (
-            <div key={`${category.path}-${item.id}`}>
+            <div key={`${category.path}-${item.slug}`}>
               <Draggable
-                id={`item::${item.category || "Uncategorized"}::${item.id}`}
+                id={`item::${item.category || "Uncategorized"}::${item.slug}`}
                 data={{
                   type: "item",
                   category: item.category || "Uncategorized",
-                  id: item.id,
+                  id: item.slug,
                 }}
               >
                 <SidebarItem
@@ -262,13 +262,13 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                 />
               </Draggable>
               <DropIndicator
-                id={`drop-after-item::${item.category || "Uncategorized"}::${item.id
+                id={`drop-after-item::${item.category || "Uncategorized"}::${item.slug
                   }`}
                 data={{
                   type: "drop-indicator",
                   parentPath: category.path,
                   position: "after",
-                  targetDndId: `item::${item.category || "Uncategorized"}::${item.id
+                  targetDndId: `item::${item.category || "Uncategorized"}::${item.slug
                     }`,
                   targetType: "item",
                 }}

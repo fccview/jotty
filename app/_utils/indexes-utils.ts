@@ -25,7 +25,7 @@ export const getReferencingItems = (
       const item = map.get(uuid);
 
       if (item) {
-        const path = `${encodeCategoryPath(item.category || "Uncategorized")}/${item.id
+        const path = `${encodeCategoryPath(item.category || "Uncategorized")}/${item.slug
           }`;
         return {
           type,

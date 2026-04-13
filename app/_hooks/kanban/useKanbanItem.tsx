@@ -283,7 +283,8 @@ export const useKanbanItem = ({
     if (result.success) {
       showToast({ type: "success", title: t("common.success"), message: t("kanban.itemDeleted") });
       onUpdate({
-        id: checklistId,
+        slug: checklistId,
+        uuid: checklist.uuid,
         title: "",
         type: "kanban",
         items: [],

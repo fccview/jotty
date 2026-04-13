@@ -7,28 +7,28 @@ import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllNotes } from "@/app/_server/actions/note";
 
 export default async function AdminOverviewPage() {
-    const admin = await isAdmin();
+  const admin = await isAdmin();
 
-    if (!admin) {
-        return notFound();
-    }
+  if (!admin) {
+    return notFound();
+  }
 
-    const [usersData, listsData, docsData] = await Promise.all([
-        readJsonFile(USERS_FILE),
-        getAllLists(),
-        getAllNotes(),
-    ]);
+  const [usersData, listsData, docsData] = await Promise.all([
+    readJsonFile(USERS_FILE),
+    getAllLists(),
+    getAllNotes(),
+  ]);
 
-    const users = usersData;
-    const allLists = listsData.success && listsData.data ? listsData.data : [];
-    const allDocs = docsData.success && docsData.data ? docsData.data : [];
+  const users = usersData;
+  const allLists = listsData.success && listsData.data ? listsData.data : [];
+  const allNotes = docsData.success && docsData.data ? docsData.data : [];
 
-    const stats = {
-        totalUsers: users.length,
-        totalChecklists: allLists.length,
-        totalNotes: allDocs.length,
-        adminUsers: users.filter((u: any) => u.isAdmin).length,
-    };
+  const stats = {
+    totalUsers: users.length,
+    totalChecklists: allLists.length,
+    totalNotes: allNotes.length,
+    adminUsers: users.filter((u: any) => u.isAdmin).length,
+  };
 
-    return <AdminOverview stats={stats} />;
+  return <AdminOverview stats={stats} />;
 }

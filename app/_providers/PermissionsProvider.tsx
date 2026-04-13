@@ -45,7 +45,7 @@ export const PermissionsProvider = ({
       const permissions = getPermissions(
         globalSharing,
         user?.username || "",
-        item.uuid || item.id,
+        item.uuid || item.slug,
         encodeCategoryPath(item.category || "Uncategorized"),
         itemType,
       );
@@ -66,7 +66,7 @@ export const PermissionsProvider = ({
       };
     }
 
-    const cacheKey = `${user?.username || ""}-${item.uuid || item.id}-${encodeCategoryPath(
+    const cacheKey = `${user?.username || ""}-${item.uuid || item.slug}-${encodeCategoryPath(
       item.category || "Uncategorized",
     )}-${JSON.stringify(globalSharing || {})}`;
     const now = Date.now();
@@ -80,7 +80,7 @@ export const PermissionsProvider = ({
     const permissions = getPermissions(
       globalSharing,
       user?.username || "",
-      item.uuid || item.id,
+      item.uuid || item.slug,
       encodeCategoryPath(item.category || "Uncategorized"),
       itemType,
     );
@@ -99,7 +99,7 @@ export const PermissionsProvider = ({
     globalSharing,
     user?.username,
     user?.isAdmin,
-    item.id,
+    item.slug,
     item.uuid,
     item.category,
     item.owner,

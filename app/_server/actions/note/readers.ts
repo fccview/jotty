@@ -162,20 +162,20 @@ export const readNotesRecursively = async (
   const categoryPath = basePath;
   const files = entries;
   const mdFiles = files.filter((f) => f.isFile() && f.name.endsWith(".md"));
-  const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
+  const slugs = mdFiles.map((f) => path.basename(f.name, ".md"));
   const categoryOrder = order;
 
-  const orderedIds: string[] = categoryOrder?.items
+  const orderedSlugs: string[] = categoryOrder?.items
     ? [
-        ...categoryOrder.items.filter((id) => ids.includes(id)),
-        ...ids
-          .filter((id) => !categoryOrder.items!.includes(id))
+        ...categoryOrder.items.filter((s) => slugs.includes(s)),
+        ...slugs
+          .filter((s) => !categoryOrder.items!.includes(s))
           .sort((a, b) => a.localeCompare(b)),
       ]
-    : ids.sort((a, b) => a.localeCompare(b));
+    : slugs.sort((a, b) => a.localeCompare(b));
 
-  const filePromises = orderedIds.map(async (id) => {
-    const fileName = `${id}.md`;
+  const filePromises = orderedSlugs.map(async (slug) => {
+    const fileName = `${slug}.md`;
     const filePath = path.join(categoryDir, fileName);
     try {
       const cachedStats = statsCache?.get(filePath);
@@ -193,9 +193,11 @@ export const readNotesRecursively = async (
           : [];
 
         return {
-          id,
-          uuid: typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
-          title: typeof metadata?.title === "string" ? metadata.title : id,
+          slug,
+          uuid:
+            typeof metadata?.uuid === "string" ? metadata.uuid : generateUuid(),
+          title: typeof metadata?.title === "string" ? metadata.title : slug,
+          content: "",
           category: categoryPath,
           createdAt: toIso(stats.birthtime),
           updatedAt: toIso(stats.mtime),
@@ -203,6 +205,7 @@ export const readNotesRecursively = async (
           isShared: false,
           encrypted: metadata?.encrypted === true,
           tags,
+          pending: metadata?.uuid ? false : true,
         };
       } else if (excerptLength) {
         const metadata =
@@ -214,9 +217,10 @@ export const readNotesRecursively = async (
         const excerpt = await grepExtractExcerpt(filePath, excerptLength);
 
         return {
-          id,
-          uuid: typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
-          title: typeof metadata?.title === "string" ? metadata.title : id,
+          slug,
+          uuid:
+            typeof metadata?.uuid === "string" ? metadata.uuid : generateUuid(),
+          title: typeof metadata?.title === "string" ? metadata.title : slug,
           content: excerpt,
           category: categoryPath,
           createdAt: toIso(stats.birthtime),
@@ -225,6 +229,7 @@ export const readNotesRecursively = async (
           isShared: false,
           encrypted: metadata?.encrypted === true,
           tags,
+          pending: metadata?.uuid ? false : true,
         };
       } else {
         const content = await serverReadFile(filePath);
@@ -236,9 +241,9 @@ export const readNotesRecursively = async (
             updateYamlMetadata(content, { uuid });
           }
           return {
-            id,
+            slug,
             uuid,
-            title: id,
+            title: slug,
             content: "",
             category: categoryPath,
             createdAt: toIso(stats.birthtime),
@@ -246,11 +251,12 @@ export const readNotesRecursively = async (
             owner,
             isShared: false,
             rawContent: content,
+            pending: metadata?.uuid ? false : true,
           };
         } else {
           return parseMarkdownNote(
             content,
-            id,
+            slug,
             categoryPath,
             owner,
             false,

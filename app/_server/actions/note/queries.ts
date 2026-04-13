@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import { Note, User, GetNotesOptions } from "@/app/_types";
 import { NOTES_DIR } from "@/app/_consts/files";
 import { Modes } from "@/app/_types/enums";
-import { getCurrentUser, getUserByNote } from "@/app/_server/actions/users";
+import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
@@ -21,7 +21,7 @@ import { getOrCompute, metaCacheKey } from "@/app/_server/lib/metadata-cache";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
-    const allDocs: Note[] = [];
+    const allNotes: Note[] = [];
 
     const users: User[] = await readJsonFile(USERS_FILE);
 
@@ -29,20 +29,20 @@ export const getAllNotes = async (allowArchived?: boolean) => {
       const userDir = NOTES_DIR(user.username);
 
       try {
-        const userDocs = await readNotesRecursively(
+        const userNotes = await readNotesRecursively(
           userDir,
           "",
           user.username,
           allowArchived,
           false,
         );
-        allDocs.push(...userDocs);
+        allNotes.push(...userNotes);
       } catch (error) {
         continue;
       }
     }
 
-    return { success: true, data: allDocs };
+    return { success: true, data: allNotes };
   } catch (error) {
     console.error("Error in getAllNotes:", error);
     return { success: false, error: "Failed to fetch all notes" };
@@ -50,122 +50,72 @@ export const getAllNotes = async (allowArchived?: boolean) => {
 };
 
 export const getNoteById = async (
-  id: string,
-  category?: string,
-  username?: string,
+  uuid: string,
+  ownerUsername?: string,
+  actingUsername?: string,
+  unarchive?: boolean,
+  categoryFallback?: string,
 ): Promise<Note | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
   const { serverReadFile } = await import("@/app/_server/actions/file");
 
-  console.log("getNoteById", id, category, username);
-
-  if (!username) {
-    const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
-    const userByUuid = await getUserByNoteUuid(id);
-
-    if (userByUuid.success && userByUuid.data) {
-      username = userByUuid.data.username;
-    } else {
-      const user = await getUserByNote(id, category || "Uncategorized");
-
-      if (user.success && user.data) {
-        username = user.data.username;
-      } else {
-        return undefined;
-      }
-    }
-  }
-
-  let ownerUsername = username;
-  const userDir = NOTES_DIR(username);
-  const absUserDir = path.join(process.cwd(), userDir);
-  let filePath: string | null = null;
-  let noteId = id;
-  let noteCategory = category || "Uncategorized";
-  const isUuid =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-  if (isUuid) {
-    const found = await grepFindFileByUuid(absUserDir, id);
-    if (found) {
-      filePath = found.filePath;
-      noteId = found.id;
-      noteCategory = found.category;
-    }
-  }
-
-  console.log("filePath", filePath);
-  console.log("category", category);
-  console.log("id", id);
-  console.log("absUserDir", absUserDir);
-
-  if (!filePath && category) {
-    const directPath = path.join(absUserDir, category, `${id}.md`);
-    try {
-      await fs.access(directPath);
-      filePath = directPath;
-    } catch {
-      const archivedPath = path.join(
-        absUserDir,
-        ".archive",
-        category,
-        `${id}.md`,
-      );
-      try {
-        await fs.access(archivedPath);
-        filePath = archivedPath;
-        noteCategory = `.archive/${category}`;
-      } catch {}
-    }
+  if (!ownerUsername) {
+    const current = await getCurrentUser();
+    if (!current) return undefined;
+    ownerUsername = current.username;
   }
 
   let isShared = false;
-
-  if (!filePath) {
+  if (actingUsername && actingUsername !== ownerUsername) {
     const { getAllSharedItemsForUser } =
       await import("@/app/_server/actions/sharing");
-    const sharedData = await getAllSharedItemsForUser(username);
-    for (const sharedItem of sharedData.notes) {
-      const itemIdentifier = sharedItem.uuid || sharedItem.id;
-      if (!itemIdentifier) continue;
-      if (itemIdentifier !== id) continue;
+    const sharedData = await getAllSharedItemsForUser(actingUsername);
+    const match = sharedData.notes.find(
+      (s) => s.uuid === uuid && s.sharer === ownerUsername,
+    );
+    if (!match) return undefined;
+    isShared = true;
+  }
 
-      const sharerDir = path.join(process.cwd(), NOTES_DIR(sharedItem.sharer));
-      const found = isUuid && (await grepFindFileByUuid(sharerDir, id));
+  const userDir = NOTES_DIR(ownerUsername);
+  const absUserDir = path.isAbsolute(userDir)
+    ? userDir
+    : path.join(process.cwd(), userDir);
 
-      if (found) {
-        filePath = found.filePath;
-        noteId = found.id;
-        noteCategory = found.category;
-        isShared = true;
-        ownerUsername = sharedItem.sharer;
-        break;
-      }
-
-      if (!isUuid && category) {
-        const sharedPath = path.join(sharerDir, category, `${id}.md`);
-        try {
-          await fs.access(sharedPath);
-          filePath = sharedPath;
-          isShared = true;
-          ownerUsername = sharedItem.sharer;
-          break;
-        } catch {}
-      }
+  let filePath: string | null = null;
+  const found = await grepFindFileByUuid(absUserDir, uuid);
+  if (found) {
+    filePath = found.filePath;
+  } else if (unarchive) {
+    const archived = await grepFindFileByUuid(
+      path.join(absUserDir, ".archive"),
+      uuid,
+    );
+    if (archived) filePath = archived.filePath;
+  } else if (categoryFallback) {
+    const fallbackPath = path.join(absUserDir, categoryFallback, `${uuid}.md`);
+    try {
+      await fs.access(fallbackPath);
+      filePath = fallbackPath;
+    } catch {
+      filePath = null;
     }
   }
 
-  console.log("filePath", filePath);
+  if (!filePath) return undefined;
 
-  if (!filePath) {
-    return undefined;
-  }
+  const noteCategory =
+    path
+      .relative(absUserDir, path.dirname(filePath))
+      .split(path.sep)
+      .join("/") || "Uncategorized";
+  const slug = path.basename(filePath, ".md");
 
   const rawContent = await serverReadFile(filePath);
   if (!rawContent) return undefined;
 
   const stats = await fs.stat(filePath);
-  const parsedData = parseNoteContent(rawContent, noteId);
+  const parsedData = parseNoteContent(rawContent, slug);
 
   let finalUuid = parsedData.uuid;
   if (!finalUuid) {
@@ -173,7 +123,7 @@ export const getNoteById = async (
     try {
       const updatedContent = updateYamlMetadata(rawContent, {
         uuid: finalUuid,
-        title: parsedData.title || noteId.replace(/-/g, " "),
+        title: parsedData.title || slug.replace(/-/g, " "),
       });
       await fs.writeFile(filePath, updatedContent, "utf-8");
     } catch (error) {
@@ -181,17 +131,8 @@ export const getNoteById = async (
     }
   }
 
-  console.log("finalUuid", finalUuid);
-  console.log("ownerUsername", ownerUsername);
-  console.log("isShared", isShared);
-  console.log("parsedData", parsedData);
-  console.log("noteCategory", noteCategory);
-  console.log("stats", stats);
-  console.log("toIso(stats.birthtime)", toIso(stats.birthtime));
-  console.log("toIso(stats.mtime)", toIso(stats.mtime));
-
   return {
-    id: noteId,
+    slug,
     uuid: finalUuid,
     title: parsedData.title,
     content: parsedData.content,
@@ -203,6 +144,7 @@ export const getNoteById = async (
     encrypted: parsedData.encrypted || false,
     encryptionMethod: parsedData.encryptionMethod,
     tags: parsedData.tags || [],
+    pending: parsedData?.uuid ? false : true,
   };
 };
 
@@ -292,8 +234,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
 
     for (const sharedItem of sharedData.notes) {
       try {
-        const itemIdentifier = sharedItem.uuid || sharedItem.id;
-        if (!itemIdentifier) continue;
+        if (!sharedItem.uuid) continue;
 
         const sharerDir = NOTES_DIR(sharedItem.sharer);
         await ensureDir(sharerDir);
@@ -328,7 +269,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
             );
 
         const sharedNote = sharerNotes.find(
-          (note) => note.uuid === itemIdentifier || note.id === itemIdentifier,
+          (note) => note.uuid === sharedItem.uuid,
         );
 
         if (sharedNote) {
@@ -338,10 +279,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
           });
         }
       } catch (error) {
-        console.error(
-          `Error reading shared note ${sharedItem.uuid || sharedItem.id}:`,
-          error,
-        );
+        console.error(`Error reading shared note ${sharedItem.uuid}:`, error);
         continue;
       }
     }
@@ -382,25 +320,17 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       limit &&
       limit > 0
     ) {
-      const pathMatches = (
-        note: { category?: string; uuid?: string; id: string },
-        p: string,
-      ) => {
+      const _pathMatches = (note: Note, p: string) => {
         const c = note.category || "Uncategorized";
-        const u = note.uuid || note.id;
-        return `${c}/${u}` === p || `${c}/${note.id}` === p;
+        return `${c}/${note.uuid}` === p || `${c}/${note.slug}` === p;
       };
       const pinned: typeof filteredNotes = [];
       for (const p of pinnedPaths) {
-        const found = filteredNotes.find(
-          (n: { category?: string; uuid?: string; id: string }) =>
-            pathMatches(n, p),
-        );
+        const found = filteredNotes.find((n) => _pathMatches(n, p));
         if (found) pinned.push(found);
       }
       const rest = filteredNotes.filter(
-        (n: { category?: string; uuid?: string; id: string }) =>
-          !pinnedPaths.some((p) => pathMatches(n, p)),
+        (n) => !pinnedPaths.some((p) => _pathMatches(n, p)),
       );
       filteredNotes = [...pinned, ...rest].slice(0, limit);
     } else if (limit && limit > 0) {

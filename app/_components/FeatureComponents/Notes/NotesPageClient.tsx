@@ -49,8 +49,8 @@ export const NotesPageClient = ({
     if (noteFilter === "pinned") {
       const pinnedPaths = user?.pinnedNotes || [];
       filtered = filtered.filter((note) => {
-        const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.id}`;
-        const idPath = `${note.category || "Uncategorized"}/${note.id}`;
+        const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.slug}`;
+        const idPath = `${note.category || "Uncategorized"}/${note.slug}`;
         return pinnedPaths.includes(uuidPath) || pinnedPaths.includes(idPath);
       });
     } else if (noteFilter === "recent") {
@@ -102,12 +102,12 @@ export const NotesPageClient = ({
   }, [currentPage, totalPages, totalItems, goToPage, handleItemsPerPageChange, setPaginationInfo]);
 
   const handleTogglePin = async (note: Note) => {
-    if (!user || isTogglingPin === note.id) return;
+    if (!user || isTogglingPin === note.slug) return;
 
-    setIsTogglingPin(note.id);
+    setIsTogglingPin(note.slug);
     try {
       const result = await togglePin(
-        note.id,
+        note.slug,
         note.category || "Uncategorized",
         ItemTypes.NOTE
       );
@@ -164,15 +164,15 @@ export const NotesPageClient = ({
               columnClassName="pl-4 bg-clip-padding"
             >
               {paginatedItems.map((note) => (
-                <div key={note.id} className="mb-4">
+                <div key={note.slug} className="mb-4">
                   <NoteCard
                     note={note}
                     onSelect={(note) => {
-                      const categoryPath = `${note.category || "Uncategorized"}/${note.id}`;
+                      const categoryPath = `${note.category || "Uncategorized"}/${note.uuid}`;
                       router.push(`/note/${categoryPath}`);
                     }}
                     isPinned={user?.pinnedNotes?.includes(
-                      `${note.category || "Uncategorized"}/${note.id}`
+                      `${note.category || "Uncategorized"}/${note.uuid}`
                     )}
                     onTogglePin={() => handleTogglePin(note)}
                   />
@@ -185,14 +185,14 @@ export const NotesPageClient = ({
             <div className="space-y-3">
               {paginatedItems.map((note) => (
                 <NoteListItem
-                  key={note.id}
+                  key={note.slug}
                   note={note}
                   onSelect={(note) => {
-                    const categoryPath = `${note.category || "Uncategorized"}/${note.id}`;
+                    const categoryPath = `${note.category || "Uncategorized"}/${note.uuid}`;
                     router.push(`/note/${categoryPath}`);
                   }}
                   isPinned={user?.pinnedNotes?.includes(
-                    `${note.category || "Uncategorized"}/${note.id}`
+                    `${note.category || "Uncategorized"}/${note.uuid}`
                   )}
                   onTogglePin={() => handleTogglePin(note)}
                 />
@@ -204,14 +204,14 @@ export const NotesPageClient = ({
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {paginatedItems.map((note) => (
                 <NoteGridItem
-                  key={note.id}
+                  key={note.slug}
                   note={note}
                   onSelect={(note) => {
-                    const categoryPath = `${note.category || "Uncategorized"}/${note.id}`;
+                    const categoryPath = `${note.category || "Uncategorized"}/${note.uuid}`;
                     router.push(`/note/${categoryPath}`);
                   }}
                   isPinned={user?.pinnedNotes?.includes(
-                    `${note.category || "Uncategorized"}/${note.id}`
+                    `${note.category || "Uncategorized"}/${note.uuid}`
                   )}
                   onTogglePin={() => handleTogglePin(note)}
                 />

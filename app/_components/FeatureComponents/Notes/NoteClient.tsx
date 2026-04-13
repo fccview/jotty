@@ -10,7 +10,7 @@ import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/CloneCategoryModal";
 import { SwipeNavigationWrapper } from "@/app/_components/FeatureComponents/Notes/Parts/SwipeNavigationWrapper";
 
@@ -27,16 +27,16 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const { user } = useAppMode();
   const [localNote, setLocalNote] = useState<Note>(note);
   const [showCloneModal, setShowCloneModal] = useState(false);
-  const prevNoteId = useRef(note.id);
+  const prevNoteId = useRef(note.slug);
   const prevUpdatedAt = useRef(note.updatedAt);
 
   useEffect(() => {
     if (
-      note.id !== prevNoteId.current ||
+      note.slug !== prevNoteId.current ||
       note.updatedAt !== prevUpdatedAt.current
     ) {
       setLocalNote(note);
-      prevNoteId.current = note.id;
+      prevNoteId.current = note.slug;
       prevUpdatedAt.current = note.updatedAt;
     }
   }, [note]);
@@ -57,7 +57,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleCloneConfirm = async (targetCategory: string) => {
     const formData = new FormData();
-    formData.append("id", localNote.id);
+    formData.append("id", localNote.slug);
     formData.append("uuid", localNote.uuid || "");
     formData.append("originalCategory", localNote.category || "Uncategorized");
     formData.append("category", targetCategory || "Uncategorized");
@@ -69,12 +69,18 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
     const result = await cloneNote(formData);
 
     if (result.success && result.data) {
-      router.push(
-        `/note/${buildCategoryPath(
-          result.data.category || "Uncategorized",
-          result.data.id,
-        )}`,
+      const userSegment = encodeURIComponent(
+        result.data.owner || user?.username || "unknown",
       );
+      const uuidSegment = encodeURIComponent(
+        result.data.pending
+          ? result.data.slug || ""
+          : result.data.uuid || result.data.slug || "",
+      );
+      const categoryQuery = result.data.pending
+        ? `?c=${encodeCategoryPath(result.data.category || "Uncategorized")}`
+        : "";
+      router.push(`/note/${userSegment}/${uuidSegment}${categoryQuery}`);
       router.refresh();
     }
   };
@@ -117,7 +123,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       isEditorInEditMode={viewModel.isEditing}
     >
       <SwipeNavigationWrapper
-        noteId={localNote.id}
+        noteId={localNote.slug}
         noteCategory={localNote.category}
         enabled={!viewModel.isEditing}
       >

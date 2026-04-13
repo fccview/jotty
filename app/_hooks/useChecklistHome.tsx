@@ -69,17 +69,17 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
 
     const pinned = getPinnedLists();
     const oldIndex = pinned.findIndex(
-      (list) => (list.uuid || list.id) === active.id,
+      (list) => (list.uuid || list.slug) === active.id,
     );
     const newIndex = pinned.findIndex(
-      (list) => (list.uuid || list.id) === over.id,
+      (list) => (list.uuid || list.slug) === over.id,
     );
 
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newOrder = arrayMove(pinned, oldIndex, newIndex);
     const newPinnedPaths = newOrder.map(
-      (list) => `${list.category || "Uncategorized"}/${list.uuid || list.id}`,
+      (list) => `${list.category || "Uncategorized"}/${list.uuid || list.slug}`,
     );
 
     try {
@@ -99,8 +99,8 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     const pinned = pinnedLists
       .map((path) => {
         return lists.find((list) => {
-          const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
-          const idPath = `${list.category || "Uncategorized"}/${list.id}`;
+          const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.slug}`;
+          const idPath = `${list.category || "Uncategorized"}/${list.slug}`;
           return uuidPath === path || idPath === path;
         });
       })
@@ -146,10 +146,10 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   const getRecentLists = () => {
     const filtered = getFilteredLists();
     const pinned = getPinnedLists();
-    const pinnedIds = new Set(pinned.map((list) => list.id));
+    const pinnedIds = new Set(pinned.map((list) => list.slug));
 
     return filtered
-      .filter((list) => !pinnedIds.has(list.id))
+      .filter((list) => !pinnedIds.has(list.slug))
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -159,10 +159,10 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   const handleTogglePin = async (list: Checklist) => {
     if (isTogglingPin) return;
 
-    setIsTogglingPin(list.id);
+    setIsTogglingPin(list.slug);
     try {
       const result = await togglePin(
-        list.uuid || list.id,
+        list.uuid || list.slug,
         list.category || "Uncategorized",
         ItemTypes.CHECKLIST,
       );
@@ -177,8 +177,8 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   };
 
   const isListPinned = (list: Checklist) => {
-    const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
-    const idPath = `${list.category || "Uncategorized"}/${list.id}`;
+    const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.slug}`;
+    const idPath = `${list.category || "Uncategorized"}/${list.slug}`;
     return pinnedLists.includes(uuidPath) || pinnedLists.includes(idPath);
   };
 
@@ -217,7 +217,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   ];
 
   const activeList = activeId
-    ? pinned.find((list) => (list.uuid || list.id) === activeId)
+    ? pinned.find((list) => (list.uuid || list.slug) === activeId)
     : null;
 
   return {

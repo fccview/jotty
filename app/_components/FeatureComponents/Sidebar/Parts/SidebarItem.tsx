@@ -17,7 +17,7 @@ import {
   Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
+import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
@@ -66,7 +66,7 @@ export const SidebarItem = ({
   const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
   const itemDetails = sharingInfo(
     globalSharing,
-    item.uuid || item.id,
+    item.uuid || item.slug,
     encodedCategory,
   );
 
@@ -78,13 +78,22 @@ export const SidebarItem = ({
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
-  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || "Uncategorized", item.id)}`;
+  const userSegment = encodeURIComponent(
+    item.owner || user?.username || "unknown",
+  ).toLowerCase();
+  const uuidSegment = encodeURIComponent(
+    item.pending ? item.slug : item.uuid || item.slug,
+  ).toLowerCase();
+  const categoryQuery = item.pending
+    ? `?c=${encodeCategoryPath(item.category || "Uncategorized")}`
+    : "";
+  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${userSegment}/${uuidSegment}${categoryQuery}`;
 
   const handleDeleteItem = async () => {
     const formData = new FormData();
 
     if (mode === Modes.CHECKLISTS) {
-      formData.append("id", item.id);
+      formData.append("id", item.slug);
       formData.append("category", item.category || "Uncategorized");
       if (item.uuid) formData.append("uuid", item.uuid);
       const result = await deleteList(formData);
@@ -92,7 +101,7 @@ export const SidebarItem = ({
         router.refresh();
       }
     } else {
-      formData.append("id", item.id);
+      formData.append("id", item.slug);
       formData.append("category", item.category || "Uncategorized");
       if (item.uuid) formData.append("uuid", item.uuid);
       const result = await deleteNote(formData);
@@ -106,10 +115,10 @@ export const SidebarItem = ({
   const handleTogglePin = async () => {
     if (!user || isTogglingPin) return;
 
-    setIsTogglingPin(item.id);
+    setIsTogglingPin(item.slug);
     try {
       const result = await togglePin(
-        item.uuid || item.id,
+        item.uuid || item.slug,
         item.category || "Uncategorized",
         mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
       );
@@ -130,7 +139,7 @@ export const SidebarItem = ({
     if (!pinnedItems) return false;
 
     const itemPath = `${item.category || "Uncategorized"}/${
-      item.uuid || item.id
+      item.uuid || item.slug
     }`;
     return pinnedItems.includes(itemPath);
   };
@@ -163,7 +172,7 @@ export const SidebarItem = ({
       ) : (
         <PinIcon className="h-4 w-4" />
       ),
-      disabled: isTogglingPin === item.id,
+      disabled: isTogglingPin === item.slug,
     },
     ...(item.category !== ARCHIVED_DIR_NAME
       ? [
@@ -293,7 +302,7 @@ export const SidebarItem = ({
       {showShareModal && (
         <MetadataProvider
           metadata={{
-            id: item.id,
+            id: item.slug,
             uuid: item.uuid,
             title: item.title,
             category: item.category || "Uncategorized",

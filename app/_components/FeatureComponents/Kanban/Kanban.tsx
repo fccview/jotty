@@ -61,7 +61,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const isShared =
     allSharedItems?.checklists.some(
       (sharedChecklist) =>
-        sharedChecklist.id === checklist.id &&
+        sharedChecklist.id === checklist.slug &&
         sharedChecklist.category === encodedCategory
     ) || false;
   const { permissions } = usePermissions();
@@ -85,7 +85,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
   useKanbanReminders({
     checklist: localChecklist,
-    checklistId: localChecklist.uuid || localChecklist.id,
+    checklistId: localChecklist.uuid || localChecklist.slug,
     category: localChecklist.category || "Uncategorized",
     onUpdate: handleItemUpdate,
   });
@@ -131,7 +131,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
   const handleUnarchive = async (itemId: string) => {
     const formData = new FormData();
-    formData.append("listId", localChecklist.id);
+    formData.append("listId", localChecklist.slug);
     formData.append("itemId", itemId);
     formData.append("category", localChecklist.category || "Uncategorized");
 
@@ -192,7 +192,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
               title={column.title}
               items={items}
               status={column.status}
-              checklistId={localChecklist.id}
+              checklistId={localChecklist.slug}
               category={localChecklist.category || "Uncategorized"}
               onUpdate={handleItemUpdate}
               isShared={isShared}
@@ -376,7 +376,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   checklist={localChecklist}
                   item={activeItem}
                   isDragging
-                  checklistId={localChecklist.id}
+                  checklistId={localChecklist.slug}
                   category={localChecklist.category || "Uncategorized"}
                   onUpdate={refreshChecklist}
                   isShared={isShared}
@@ -404,7 +404,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           isOpen={!!calendarSelectedItem}
           onClose={() => setCalendarSelectedItem(null)}
           onUpdate={handleItemUpdate}
-          checklistId={localChecklist.id}
+          checklistId={localChecklist.slug}
           category={localChecklist.category || "Uncategorized"}
         />
       )}

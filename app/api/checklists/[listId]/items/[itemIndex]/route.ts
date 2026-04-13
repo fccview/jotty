@@ -80,7 +80,7 @@ export async function DELETE(
       const filePath = path.join(
         ownerDir,
         list.category || "Uncategorized",
-        `${list.id}.md`
+        `${list.slug}.md`
       );
 
       await serverWriteFile(filePath, listToMarkdown(updatedList as any));

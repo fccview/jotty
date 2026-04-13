@@ -3,7 +3,7 @@
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { NOTES_DIR } from "@/app/_consts/files";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { grepSearchContent, grepExtractFrontmatter } from "@/app/_utils/grep-utils";
+import { grepSearchContent, grepExtractFrontmatter, GrepSearchResult } from "@/app/_utils/grep-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import path from "path";
 
@@ -47,19 +47,19 @@ export const search = async (query: string): Promise<{ success: boolean; data: S
   };
 
   const processResults = async (
-    results: { filePath: string; id: string; category: string; matchLine: string }[],
+    results: GrepSearchResult[],
     type: "note" | "checklist"
   ): Promise<SearchResult[]> => {
     return Promise.all(
       results.slice(0, 20).map(async (result) => {
         const metadata = await grepExtractFrontmatter(result.filePath);
-        const title = (metadata?.title as string) || result.id;
+        const title = (metadata?.title as string) || result.slug;
         const cleaned = cleanMatchLine(result.matchLine);
         const content = cleaned && cleaned.toLowerCase() !== title.toLowerCase()
           ? cleaned
           : undefined;
         return {
-          id: result.id,
+          id: result.slug,
           uuid: metadata?.uuid as string | undefined,
           title,
           type,

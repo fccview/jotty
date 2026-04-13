@@ -114,7 +114,7 @@ export async function POST(
       const filePath = path.join(
         ownerDir,
         task.category || "Uncategorized",
-        `${task.id}.md`,
+        `${task.slug}.md`,
       );
 
       await serverWriteFile(filePath, listToMarkdown(updatedTask as any));

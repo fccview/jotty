@@ -262,7 +262,7 @@ export const commitNote = async (
 
 export const getHistory = async (
   noteUuid: string,
-  noteId: string,
+  noteSlug: string,
   noteCategory: string,
   noteOwner: string,
   page: number = 1,
@@ -280,10 +280,10 @@ export const getHistory = async (
 
   const canRead = await checkUserPermission(
     noteUuid,
-    noteCategory || "Uncategorized",
     "note",
     currentUser.username,
-    PermissionTypes.READ
+    PermissionTypes.READ,
+    noteOwner,
   );
 
   if (!canRead) {
@@ -306,7 +306,7 @@ export const getHistory = async (
 
     const filePath = path.join(
       note.category || "Uncategorized",
-      `${note.id}.md`
+      `${note.slug}.md`
     );
 
     const skip = (page - 1) * pageSize;
@@ -356,7 +356,7 @@ export const getHistory = async (
 
 export const getVersion = async (
   noteUuid: string,
-  noteId: string,
+  noteSlug: string,
   noteCategory: string,
   noteOwner: string,
   commitHash: string
@@ -377,10 +377,10 @@ export const getVersion = async (
 
   const canRead = await checkUserPermission(
     noteUuid,
-    noteCategory || "Uncategorized",
     "note",
     currentUser.username,
-    PermissionTypes.READ
+    PermissionTypes.READ,
+    noteOwner,
   );
 
   if (!canRead) {
@@ -446,7 +446,7 @@ export const getVersion = async (
         commitHash,
         date: commitDate,
         content: contentWithoutMetadata,
-        title: metadata.title || noteId,
+        title: metadata.title || noteSlug,
       },
     };
   } catch (error) {
@@ -456,7 +456,7 @@ export const getVersion = async (
 
 export const restoreNoteVersion = async (
   noteUuid: string,
-  noteId: string,
+  noteSlug: string,
   noteCategory: string,
   noteOwner: string,
   commitHash: string
@@ -476,11 +476,11 @@ export const restoreNoteVersion = async (
   }
 
   const canEdit = await checkUserPermission(
-    noteId,
-    noteCategory || "Uncategorized",
+    noteUuid,
     "note",
     currentUser.username,
-    PermissionTypes.EDIT
+    PermissionTypes.EDIT,
+    noteOwner,
   );
 
   if (!canEdit) {
@@ -489,7 +489,7 @@ export const restoreNoteVersion = async (
 
   const versionResult = await getVersion(
     noteUuid,
-    noteId,
+    noteSlug,
     noteCategory,
     noteOwner,
     commitHash
@@ -502,7 +502,7 @@ export const restoreNoteVersion = async (
   const { updateNote } = await import("@/app/_server/actions/note");
 
   const formData = new FormData();
-  formData.append("id", noteId);
+  formData.append("slug", noteSlug);
   formData.append("uuid", noteUuid || "");
   formData.append("title", versionResult.data.title);
   formData.append("content", versionResult.data.content);

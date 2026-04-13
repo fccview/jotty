@@ -58,7 +58,7 @@ export default async function AdminChecklistPage(props: AdminChecklistPageProps)
       : [];
 
   const metadata = {
-    id: checklist.id,
+    id: checklist.slug,
     uuid: checklist.uuid,
     title: checklist.title,
     category: checklist.category || "Uncategorized",

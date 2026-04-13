@@ -20,13 +20,13 @@ const execAsync = promisify(exec);
 
 export interface GrepFileResult {
   filePath: string;
-  id: string;
+  slug: string;
   category: string;
 }
 
 export interface GrepMetadataResult {
   filePath: string;
-  id: string;
+  slug: string;
   category: string;
   metadata: Record<string, any>;
 }
@@ -50,10 +50,10 @@ export const grepFindFileByField = async (
     const relativePath = path.relative(dir, filePath);
     const parts = relativePath.split(path.sep);
     const filename = parts.pop() || "";
-    const id = path.basename(filename, ".md");
+    const slug = path.basename(filename, ".md");
     const category = parts.join("/");
 
-    return { filePath, id, category };
+    return { filePath, slug, category };
   } catch {
     return null;
   }
@@ -96,9 +96,9 @@ export const grepFindFilesByField = async (
       const relativePath = path.relative(dir, filePath);
       const parts = relativePath.split(path.sep);
       const filename = parts.pop() || "";
-      const id = path.basename(filename, ".md");
+      const slug = path.basename(filename, ".md");
       const category = parts.join("/");
-      return { filePath, id, category };
+      return { filePath, slug, category };
     });
   } catch {
     return [];
@@ -182,9 +182,9 @@ export const grepListAllFiles = async (
       const relativePath = path.relative(dir, filePath);
       const parts = relativePath.split(path.sep);
       const filename = parts.pop() || "";
-      const id = path.basename(filename, ".md");
+      const slug = path.basename(filename, ".md");
       const category = parts.join("/");
-      return { filePath, id, category };
+      return { filePath, slug, category };
     });
   } catch {
     return [];
@@ -259,7 +259,7 @@ export const grepSearchContent = async (
         const relativePath = path.relative(dir, filePath);
         const parts = relativePath.split(path.sep);
         const filename = parts.pop() || "";
-        const id = path.basename(filename, ".md");
+        const slug = path.basename(filename, ".md");
         const category = parts.join("/");
 
         let matchLine = "";
@@ -270,7 +270,7 @@ export const grepSearchContent = async (
           matchLine = matchOut.trim();
         } catch {}
 
-        return { filePath, id, category, matchLine };
+        return { filePath, slug, category, matchLine };
       }),
     );
 

@@ -2,8 +2,8 @@ import { ItemTypes } from "./enums";
 import { EncryptionMethod } from "./encryption";
 
 export interface Note {
-  id: string;
-  uuid?: string;
+  slug: string;
+  uuid: string;
   title: string;
   content: string;
   itemType?: ItemTypes;
@@ -17,6 +17,7 @@ export interface Note {
   encryptedContent?: string;
   encryptionMethod?: EncryptionMethod;
   tags?: string[];
+  pending?: boolean;
 }
 
 export interface NoteEditorViewModel {

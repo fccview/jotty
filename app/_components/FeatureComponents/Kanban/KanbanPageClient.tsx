@@ -55,8 +55,8 @@ export const KanbanPageClient = ({
     if (taskFilter === "pinned") {
       const pinnedPaths = user?.pinnedLists || [];
       filtered = filtered.filter((list) => {
-        const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
-        const idPath = `${list.category || "Uncategorized"}/${list.id}`;
+        const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.slug}`;
+        const idPath = `${list.category || "Uncategorized"}/${list.slug}`;
         return pinnedPaths.includes(uuidPath) || pinnedPaths.includes(idPath);
       });
     } else if (taskFilter === "completed") {
@@ -175,13 +175,13 @@ export const KanbanPageClient = ({
   }
 
   const renderList = (list: Checklist) => {
-    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
+    const categoryPath = `${list.category || "Uncategorized"}/${list.slug}`;
     const isPinned = user?.pinnedLists?.includes(categoryPath);
 
     if (viewMode === 'list') {
       return (
         <ChecklistListItem
-          key={list.id}
+          key={list.uuid}
           list={list}
           onSelect={() => router.push(`/checklist/${categoryPath}`)}
           isPinned={isPinned}
@@ -193,7 +193,7 @@ export const KanbanPageClient = ({
     if (viewMode === 'grid') {
       return (
         <ChecklistGridItem
-          key={list.id}
+          key={list.uuid}
           list={list}
           onSelect={() => router.push(`/checklist/${categoryPath}`)}
           isPinned={isPinned}
@@ -204,7 +204,7 @@ export const KanbanPageClient = ({
 
     return (
       <ChecklistCard
-        key={list.id}
+        key={list.uuid}
         list={list}
         onSelect={() => router.push(`/checklist/${categoryPath}`)}
         isPinned={isPinned}

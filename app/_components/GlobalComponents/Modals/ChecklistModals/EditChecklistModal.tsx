@@ -7,7 +7,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Category, Checklist } from "@/app/_types";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
@@ -42,9 +42,9 @@ export const EditChecklistModal = ({
       if (!user?.username) return;
 
       const fetchedChecklist = await getListById(
-        initialChecklist.uuid || initialChecklist.id,
+        initialChecklist.uuid || initialChecklist.slug,
         user.username,
-        initialChecklist.category || "Uncategorized"
+        initialChecklist.category || "Uncategorized",
       );
 
       if (!fetchedChecklist) {
@@ -61,7 +61,11 @@ export const EditChecklistModal = ({
 
   if (!checklist) {
     return (
-      <Modal isOpen={true} onClose={onClose} title={t("checklists.checklistNotFound")}>
+      <Modal
+        isOpen={true}
+        onClose={onClose}
+        title={t("checklists.checklistNotFound")}
+      >
         <p>{t("checklists.checklistNotFound")}</p>
       </Modal>
     );
@@ -73,12 +77,9 @@ export const EditChecklistModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", checklist.id);
+    formData.append("id", checklist.slug);
     formData.append("title", title.trim());
-    formData.append(
-      "originalCategory",
-      checklist.category || "Uncategorized"
-    );
+    formData.append("originalCategory", checklist.category || "Uncategorized");
     formData.append("unarchive", unarchive ? "true" : "false");
     if (checklist.uuid) {
       formData.append("uuid", checklist.uuid);
@@ -96,13 +97,19 @@ export const EditChecklistModal = ({
     if (result.success && result.data) {
       const updatedChecklist = result.data;
 
-      const categoryPath = buildCategoryPath(
-        updatedChecklist.category || "Uncategorized",
-        updatedChecklist.id
-      );
-
       if (!unarchive) {
-        router.push(`/checklist/${categoryPath}`);
+        const userSegment = encodeURIComponent(
+          updatedChecklist.owner || user?.username || "unknown",
+        );
+        const uuidSegment = encodeURIComponent(
+          updatedChecklist.pending
+            ? updatedChecklist.slug || ""
+            : updatedChecklist.uuid || updatedChecklist.slug || "",
+        );
+        const categoryQuery = updatedChecklist.pending
+          ? `?c=${encodeCategoryPath(updatedChecklist.category || "Uncategorized")}`
+          : "";
+        router.push(`/checklist/${userSegment}/${uuidSegment}${categoryQuery}`);
       }
 
       onUpdated();
@@ -113,7 +120,11 @@ export const EditChecklistModal = ({
     <Modal
       isOpen={true}
       onClose={onClose}
-      title={unarchive ? t("checklists.unarchiveChecklist") : t("checklists.editChecklist")}
+      title={
+        unarchive
+          ? t("checklists.unarchiveChecklist")
+          : t("checklists.editChecklist")
+      }
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className={unarchive ? "hidden" : ""}>
@@ -137,13 +148,15 @@ export const EditChecklistModal = ({
 
         {isOwner && (
           <div>
-            <label className="block text-md lg:text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
+            <label className="block text-md lg:text-sm font-medium text-foreground mb-2">
+              {t("notes.category")}
+            </label>
             <CategoryTreeSelector
               categories={categories}
               selectedCategory={category}
               onCategorySelect={setCategory}
               className="w-full"
-              placeholder={t('common.selectCategory')}
+              placeholder={t("common.selectCategory")}
               isInModal={true}
             />
           </div>
@@ -156,7 +169,9 @@ export const EditChecklistModal = ({
             onClick={onClose}
             disabled={isLoading}
             className="flex-1"
-          >{t('common.cancel')}</Button>
+          >
+            {t("common.cancel")}
+          </Button>
           <Button
             type="submit"
             disabled={isLoading || !title.trim()}

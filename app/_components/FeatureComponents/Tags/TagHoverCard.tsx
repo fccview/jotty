@@ -3,7 +3,10 @@
 import { Note, Checklist } from "@/app/_types";
 import { File02Icon, CheckmarkSquare04Icon } from "hugeicons-react";
 import { useRouter } from "next/navigation";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import {
+  buildCategoryPath,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
@@ -21,9 +24,14 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
   const handleNoteClick = (e: React.MouseEvent, note: Note) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(
-      `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`,
+    const userSegment = encodeURIComponent(note.owner || "unknown");
+    const uuidSegment = encodeURIComponent(
+      note.pending ? note.slug : note.uuid || note.slug,
     );
+    const categoryQuery = note.pending
+      ? `?c=${encodeCategoryPath(note.category || "Uncategorized")}`
+      : "";
+    router.push(`/note/${userSegment}/${uuidSegment}${categoryQuery}`);
   };
 
   const handleChecklistClick = (
@@ -32,9 +40,14 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
   ) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(
-      `/checklist/${buildCategoryPath(list.category || "Uncategorized", list.id!)}`,
+    const userSegment = encodeURIComponent(list.owner || "unknown");
+    const uuidSegment = encodeURIComponent(
+      list.pending ? list.slug || "" : list.uuid || list.slug || "",
     );
+    const categoryQuery = list.pending
+      ? `?c=${encodeCategoryPath(list.category || "Uncategorized")}`
+      : "";
+    router.push(`/checklist/${userSegment}/${uuidSegment}${categoryQuery}`);
   };
 
   const showSectionLabels = notes.length > 0 && checklists.length > 0;
@@ -76,7 +89,7 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
         )}
         {checklists.map((list) => (
           <button
-            key={list.uuid ?? list.id}
+            key={list.uuid ?? list.slug}
             onClick={(e) => handleChecklistClick(e, list)}
             className="inline-flex items-center justify-between gap-1.5 w-full px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/15 transition-colors cursor-pointer"
           >

@@ -59,7 +59,7 @@ export default async function AdminNotePage(props: AdminNotePageProps) {
       : [];
 
   const metadata = {
-    id: note.id,
+    id: note.slug,
     uuid: note.uuid,
     title: note.title,
     category: note.category || "Uncategorized",

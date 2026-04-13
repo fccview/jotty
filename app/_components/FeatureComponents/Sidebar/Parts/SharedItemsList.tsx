@@ -9,7 +9,7 @@ import {
   File02Icon,
   CheckmarkSquare04Icon,
 } from "hugeicons-react";
-import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
+import { cn, encodeCategoryPath } from "@/app/_utils/global-utils";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
@@ -58,16 +58,19 @@ export const SharedItemsList = ({
 
   const fullItems = mode === "checklists" ? checklists : notes;
 
-  const groupedBySharer = modeItems.reduce((acc, item) => {
-    const sharer = item.sharer || "Unknown";
-    if (!acc[sharer]) {
-      acc[sharer] = [];
-    }
-    if (item.id) {
-      acc[sharer].push(item as SharedItemEntry);
-    }
-    return acc;
-  }, {} as Record<string, SharedItemEntry[]>);
+  const groupedBySharer = modeItems.reduce(
+    (acc, item) => {
+      const sharer = item.sharer || "Unknown";
+      if (!acc[sharer]) {
+        acc[sharer] = [];
+      }
+      if (item.id) {
+        acc[sharer].push(item as SharedItemEntry);
+      }
+      return acc;
+    },
+    {} as Record<string, SharedItemEntry[]>,
+  );
 
   const toggleUserCollapsed = (sharer: string) => {
     setCollapsedUsers((prev) => {
@@ -82,7 +85,16 @@ export const SharedItemsList = ({
   };
 
   const getItemHref = (item: Checklist | Note) => {
-    return `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || 'Uncategorized', item.id)}`;
+    const userSegment = encodeURIComponent(
+      item.owner || "unknown",
+    ).toLowerCase();
+    const uuidSegment = encodeURIComponent(
+      item.pending ? item.slug : item.uuid || item.slug,
+    ).toLowerCase();
+    const categoryQuery = item.pending
+      ? `?c=${encodeCategoryPath(item.category || "Uncategorized")}`
+      : "";
+    return `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${userSegment}/${uuidSegment}${categoryQuery}`;
   };
 
   const handleItemClick = (e: React.MouseEvent, item: Checklist | Note) => {
@@ -104,7 +116,7 @@ export const SharedItemsList = ({
           onClick={onToggleCollapsed}
           className={cn(
             "flex items-center gap-2 py-2 pr-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
-            "hover:bg-muted/50 cursor-pointer"
+            "hover:bg-muted/50 cursor-pointer",
           )}
         >
           {collapsed ? (
@@ -133,7 +145,7 @@ export const SharedItemsList = ({
                   onClick={() => toggleUserCollapsed(sharer)}
                   className={cn(
                     "flex items-center gap-2 py-2 pr-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
-                    "hover:bg-muted/50 cursor-pointer"
+                    "hover:bg-muted/50 cursor-pointer",
                   )}
                 >
                   {isUserCollapsed ? (
@@ -155,11 +167,13 @@ export const SharedItemsList = ({
                     {sharerItems.map((sharedItem) => {
                       const fullItem = fullItems.find(
                         (item) =>
-                          (item.uuid === sharedItem.uuid || item.id === sharedItem.id) &&
-                          item.isShared
+                          (item.uuid === sharedItem.uuid ||
+                            item.slug === sharedItem.id) &&
+                          item.isShared,
                       ) as (Checklist | Note) | undefined;
 
-                      if (!fullItem || !fullItem.id || !fullItem.title) return null;
+                      if (!fullItem || !fullItem.slug || !fullItem.title)
+                        return null;
 
                       const isSelected = isItemSelected(fullItem);
 
@@ -174,7 +188,7 @@ export const SharedItemsList = ({
                             "flex items-center gap-2 py-2 px-3 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
                             isSelected
                               ? "bg-primary/60 text-primary-foreground"
-                              : "hover:bg-muted/50 text-foreground"
+                              : "hover:bg-muted/50 text-foreground",
                           )}
                         >
                           {mode === "checklists" ? (

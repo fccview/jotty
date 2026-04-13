@@ -50,7 +50,7 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("listId", list.id);
+      formData.append("listId", list.slug);
       formData.append("itemId", item.id);
       formData.append("completed", "false");
       formData.append("category", list.category || "Uncategorized");

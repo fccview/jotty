@@ -9,34 +9,28 @@ import { getFormData } from "@/app/_utils/global-utils";
 import { updateItem, findItem } from "@/app/_utils/item-tree-utils";
 import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
+import { serverWriteFile } from "@/app/_server/actions/file";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { Modes } from "@/app/_types/enums";
 import { revalidatePath } from "next/cache";
 import { broadcast } from "@/app/_server/ws/broadcast";
 
-const _getFilePath = async (list: Checklist): Promise<string> => {
+const _getFilePath = (list: Checklist): string => {
   const categoryDir = list.category || "Uncategorized";
-  const filename = `${list.id}.md`;
+  const filename = `${list.slug}.md`;
 
-  if (list.owner) {
-    return path.join(
-      process.cwd(), "data", CHECKLISTS_FOLDER, list.owner, categoryDir, filename
-    );
-  }
-
-  const userDir = await getUserModeDir(Modes.CHECKLISTS);
-  return path.join(userDir, categoryDir, filename);
+  return path.join(
+    process.cwd(), "data", CHECKLISTS_FOLDER, list.owner!, categoryDir, filename
+  );
 };
 
 async function _saveAndBroadcast(list: Checklist, username: string) {
-  const filePath = await _getFilePath(list);
+  const filePath = _getFilePath(list);
   await serverWriteFile(filePath, listToMarkdown(list));
 
   await broadcast({
     type: "checklist",
     action: "updated",
-    entityId: list.uuid || list.id,
+    entityId: list.uuid,
     username,
   });
 
@@ -47,8 +41,8 @@ async function _saveAndBroadcast(list: Checklist, username: string) {
 
 export const editTimeEntry = async (formData: FormData) => {
   try {
-    const { listId, itemId, entryId, category } = getFormData(formData, [
-      "listId", "itemId", "entryId", "category",
+    const { uuid, itemId, entryId } = getFormData(formData, [
+      "uuid", "itemId", "entryId",
     ]);
 
     const startTime = formData.get("startTime") as string;
@@ -57,14 +51,14 @@ export const editTimeEntry = async (formData: FormData) => {
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId, undefined, category),
+      getListById(uuid),
     ]);
 
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+      list.uuid, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT, list.owner
     );
     if (!canEdit) return { error: "Permission denied" };
 
@@ -103,20 +97,20 @@ export const editTimeEntry = async (formData: FormData) => {
 
 export const deleteTimeEntry = async (formData: FormData) => {
   try {
-    const { listId, itemId, entryId, category } = getFormData(formData, [
-      "listId", "itemId", "entryId", "category",
+    const { uuid, itemId, entryId } = getFormData(formData, [
+      "uuid", "itemId", "entryId",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId, undefined, category),
+      getListById(uuid),
     ]);
 
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId, category, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
+      list.uuid, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT, list.owner
     );
     if (!canEdit) return { error: "Permission denied" };
 

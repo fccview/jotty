@@ -86,7 +86,9 @@ export const YamlMetadataMigrationView = ({
                 <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-jotty">
                   <File02Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
-                    <p className="text-md lg:text-sm font-medium">YAML Metadata Format</p>
+                    <p className="text-md lg:text-sm font-medium">
+                      YAML Metadata Format
+                    </p>
                     <p className="text-md lg:text-xs text-muted-foreground">
                       Documents will now use YAML frontmatter for metadata:
                     </p>
@@ -228,7 +230,7 @@ checklistType: task|simple
                       )
                     </li>
                     <li>
-                      • MkDocs (
+                      • MkNotes (
                       <a
                         href="https://www.mkdocs.org/user-guide/writing-your-docs/#meta-data"
                         target="_blank"
@@ -323,7 +325,7 @@ checklistType: task|simple
                 icon={
                   <InformationCircleIcon className="h-4 w-4 text-destructive" />
                 }
-                title={t('migration.migrationFailed')}
+                title={t("migration.migrationFailed")}
                 variant={InfoCardVariant.DESTRUCTIVE}
               >
                 <p>{error}</p>
@@ -364,7 +366,9 @@ checklistType: task|simple
                 <RefreshIcon
                   className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")}
                 />
-                {isMigrating ? t("migration.migrating") : t("migration.startMigration")}
+                {isMigrating
+                  ? t("migration.migrating")
+                  : t("migration.startMigration")}
               </Button>
             </div>
           </>
@@ -414,7 +418,9 @@ checklistType: task|simple
 
             {migrationResult.migrated && (
               <div className="flex justify-center pt-2">
-                <Button onClick={() => (window.location.href = "/")} size="lg">{t('migration.returnToApp')}</Button>
+                <Button onClick={() => (window.location.href = "/")} size="lg">
+                  {t("migration.returnToApp")}
+                </Button>
               </div>
             )}
           </div>

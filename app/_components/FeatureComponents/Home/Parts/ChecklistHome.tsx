@@ -121,14 +121,14 @@ export const ChecklistHome = ({
     if (!selectedCategory) return taskLists;
     return displayLists
       .filter((list) => isKanbanType(list.type))
-      .filter((list) => !pinned.some((p) => p.id === list.id));
+      .filter((list) => !pinned.some((p) => p.slug === list.slug));
   }, [taskLists, displayLists, selectedCategory, pinned]);
 
   const filteredSimpleLists = useMemo(() => {
     if (!selectedCategory) return simpleLists;
     return displayLists
       .filter((list) => !isKanbanType(list.type))
-      .filter((list) => !pinned.some((p) => p.id === list.id));
+      .filter((list) => !pinned.some((p) => p.slug === list.slug));
   }, [simpleLists, displayLists, selectedCategory, pinned]);
 
   const categoryDisplayName =
@@ -139,7 +139,7 @@ export const ChecklistHome = ({
       list.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.id === list.id && item.category === encodedCategory,
+      (item) => item.id === list.slug && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
@@ -229,14 +229,14 @@ export const ChecklistHome = ({
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={pinned.map((list) => list.uuid || list.id)}
+                items={pinned.map((list) => list.uuid || list.slug)}
                 strategy={verticalListSortingStrategy}
               >
                 {viewMode === "card" && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {pinned.map((list) => (
                       <ChecklistCard
-                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        key={`pinned-${list.category}-${list.uuid || list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={true}
@@ -252,7 +252,7 @@ export const ChecklistHome = ({
                   <div className="space-y-3">
                     {pinned.map((list) => (
                       <ChecklistListItem
-                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        key={`pinned-${list.category}-${list.uuid || list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={true}
@@ -268,7 +268,7 @@ export const ChecklistHome = ({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {pinned.map((list) => (
                       <ChecklistGridItem
-                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        key={`pinned-${list.category}-${list.uuid || list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={true}
@@ -347,7 +347,7 @@ export const ChecklistHome = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {filteredTaskLists.map((list) => (
                       <ChecklistCard
-                        key={`task-${list.category}-${list.id}`}
+                        key={`task-${list.category}-${list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={isListPinned(list)}
@@ -362,7 +362,7 @@ export const ChecklistHome = ({
                   <div className="space-y-3">
                     {filteredTaskLists.map((list) => (
                       <ChecklistListItem
-                        key={`task-${list.category}-${list.id}`}
+                        key={`task-${list.category}-${list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={isListPinned(list)}
@@ -377,7 +377,7 @@ export const ChecklistHome = ({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {filteredTaskLists.map((list) => (
                       <ChecklistGridItem
-                        key={`task-${list.category}-${list.id}`}
+                        key={`task-${list.category}-${list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={isListPinned(list)}
@@ -416,7 +416,7 @@ export const ChecklistHome = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {filteredSimpleLists.map((list) => (
                       <ChecklistCard
-                        key={`simple-${list.category}-${list.id}`}
+                        key={`simple-${list.category}-${list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={isListPinned(list)}
@@ -431,7 +431,7 @@ export const ChecklistHome = ({
                   <div className="space-y-3">
                     {filteredSimpleLists.map((list) => (
                       <ChecklistListItem
-                        key={`simple-${list.category}-${list.id}`}
+                        key={`simple-${list.category}-${list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={isListPinned(list)}
@@ -446,7 +446,7 @@ export const ChecklistHome = ({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {filteredSimpleLists.map((list) => (
                       <ChecklistGridItem
-                        key={`simple-${list.category}-${list.id}`}
+                        key={`simple-${list.category}-${list.slug}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={isListPinned(list)}

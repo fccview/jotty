@@ -167,20 +167,20 @@ export const readListsRecursively = async (
     const categoryDir = path.join(dir, dirName);
     const files = await serverReadDir(categoryDir);
     const mdFiles = files.filter((f) => f.isFile() && f.name.endsWith(".md"));
-    const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
+    const slugs = mdFiles.map((f) => path.basename(f.name, ".md"));
     const categoryOrder = await readOrderFile(categoryDir);
-    const orderedIds: string[] = categoryOrder?.items
+    const orderedSlugs: string[] = categoryOrder?.items
       ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
+          ...categoryOrder.items.filter((s) => slugs.includes(s)),
+          ...slugs
+            .filter((s) => !categoryOrder.items!.includes(s))
             .sort((a, b) => a.localeCompare(b)),
         ]
-      : ids.sort((a, b) => a.localeCompare(b));
+      : slugs.sort((a, b) => a.localeCompare(b));
 
-    const filePromises = orderedIds.map(
-      async (id): Promise<ChecklistReadResult | null> => {
-        const fileName = `${id}.md`;
+    const filePromises = orderedSlugs.map(
+      async (slug): Promise<ChecklistReadResult | null> => {
+        const fileName = `${slug}.md`;
         const filePath = path.join(categoryDir, fileName);
         try {
           const cachedStats = statsCache?.get(filePath);
@@ -199,10 +199,13 @@ export const readListsRecursively = async (
               ? (metadata.tags as string[])
               : [];
             return {
-              id,
+              slug,
               uuid:
-                typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
-              title: typeof metadata?.title === "string" ? metadata.title : id,
+                typeof metadata?.uuid === "string"
+                  ? metadata.uuid
+                  : generateUuid(),
+              title:
+                typeof metadata?.title === "string" ? metadata.title : slug,
               type: isKanbanType(metadata?.checklistType as string)
                 ? "kanban"
                 : "simple",
@@ -213,6 +216,7 @@ export const readListsRecursively = async (
               owner,
               isShared: false,
               tags,
+              pending: metadata?.uuid ? false : true,
             };
           }
           const content = await serverReadFile(filePath);
@@ -230,8 +234,8 @@ export const readListsRecursively = async (
               }
             }
             return {
-              id,
-              title: id,
+              slug,
+              title: slug,
               uuid,
               type,
               category: categoryPath,
@@ -241,11 +245,12 @@ export const readListsRecursively = async (
               owner,
               isShared: false,
               rawContent: content,
+              pending: metadata?.uuid ? false : true,
             };
           }
           return parseMarkdown(
             content,
-            id,
+            slug,
             categoryPath,
             owner,
             false,

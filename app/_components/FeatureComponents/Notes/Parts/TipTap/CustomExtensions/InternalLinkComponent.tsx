@@ -46,12 +46,16 @@ const _returnNote = async (uuid: string, router: any, note?: Note) => {
   const finalNote = note || (await getNoteById(uuid));
 
   if (finalNote) {
-    router.push(
-      `/note/${buildCategoryPath(
-        finalNote.category || "Uncategorized",
-        finalNote.id,
-      )}`,
+    const userSegment = encodeURIComponent(finalNote.owner || "unknown");
+    const uuidSegment = encodeURIComponent(
+      finalNote.pending
+        ? finalNote.slug || ""
+        : finalNote.uuid || finalNote.slug || "",
     );
+    const categoryQuery = finalNote.pending
+      ? `?c=${encodeCategoryPath(finalNote.category || "Uncategorized")}`
+      : "";
+    router.push(`/note/${userSegment}/${uuidSegment}${categoryQuery}`);
     return;
   }
 
@@ -66,12 +70,16 @@ const _returnChecklist = async (
   const finalChecklist = checklist || (await getListById(uuid));
 
   if (finalChecklist) {
-    router.push(
-      `/checklist/${buildCategoryPath(
-        finalChecklist.category || "Uncategorized",
-        finalChecklist.id,
-      )}`,
+    const userSegment = encodeURIComponent(finalChecklist.owner || "unknown");
+    const uuidSegment = encodeURIComponent(
+      finalChecklist.pending
+        ? finalChecklist.slug || ""
+        : finalChecklist.uuid || finalChecklist.slug || "",
     );
+    const categoryQuery = finalChecklist.pending
+      ? `?c=${encodeCategoryPath(finalChecklist.category || "Uncategorized")}`
+      : "";
+    router.push(`/checklist/${userSegment}/${uuidSegment}${categoryQuery}`);
     return;
   }
   return undefined;
@@ -147,16 +155,22 @@ export const InternalLinkComponent = ({
     if (href.startsWith("/jotty/")) {
       const uuidFromPath = href.replace("/jotty/", "");
 
-      if (fullItem && fullItem.id) {
+      if (fullItem && fullItem.uuid) {
+        const itemType =
+          fullItem && "type" in fullItem && fullItem.type
+            ? ItemTypes.CHECKLIST
+            : ItemTypes.NOTE;
+        const userSegment = encodeURIComponent(fullItem.owner || "unknown");
+        const uuidSegment = encodeURIComponent(
+          fullItem.pending
+            ? fullItem.slug || ""
+            : fullItem.uuid || fullItem.slug || "",
+        );
+        const categoryQuery = fullItem.pending
+          ? `?c=${encodeCategoryPath(fullItem.category || "Uncategorized")}`
+          : "";
         router.push(
-          `/${
-            fullItem && "type" in fullItem && fullItem.type
-              ? ItemTypes.CHECKLIST
-              : ItemTypes.NOTE
-          }/${buildCategoryPath(
-            fullItem.category || "Uncategorized",
-            fullItem.id,
-          )}`,
+          `/${itemType}/${userSegment}/${uuidSegment}${categoryQuery}`,
         );
         return;
       }
@@ -184,14 +198,14 @@ export const InternalLinkComponent = ({
     e.stopPropagation();
 
     if (isJottyLink) {
-      if (fullItem && fullItem.id) {
+      if (fullItem && fullItem.slug) {
         const pathPrefix =
           fullItem && "type" in fullItem && fullItem.type
             ? "/checklist/"
             : "/note/";
         const newHref = `${pathPrefix}${buildCategoryPath(
           fullItem.category || "Uncategorized",
-          fullItem.id,
+          fullItem.uuid || "",
         )}`;
         updateAttributes({
           href: newHref,
@@ -200,7 +214,7 @@ export const InternalLinkComponent = ({
               ? "checklist"
               : "note",
           category: fullItem.category || "Uncategorized",
-          itemId: fullItem.id,
+          itemId: fullItem.slug,
           convertToBidirectional: false,
         });
       } else if (itemId && category) {
@@ -223,13 +237,13 @@ export const InternalLinkComponent = ({
         const foundItem =
           notes.find(
             (n) =>
-              encodeId(n.id || "") === encodeId(itemId) &&
+              encodeId(n.slug || "") === encodeId(itemId) &&
               encodeCategoryPath(n?.category || "") ===
                 encodeCategoryPath(category),
           ) ||
           checklists.find(
             (c) =>
-              encodeId(c.id || "") === encodeId(itemId) &&
+              encodeId(c.slug || "") === encodeId(itemId) &&
               encodeCategoryPath(c?.category || "") ===
                 encodeCategoryPath(category),
           );

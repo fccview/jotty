@@ -37,7 +37,7 @@ export const NoteGridItem = ({
     transition,
     isDragging,
   } = useSortable({
-    id: note?.uuid || note.id,
+    id: note?.uuid || note.slug,
     disabled: !isDraggable,
   });
 
@@ -47,7 +47,7 @@ export const NoteGridItem = ({
     }
 
     if ("rawContent" in note) {
-      return parseNoteContent((note as any).rawContent, note.id);
+      return parseNoteContent((note as any).rawContent, note.slug);
     }
     return null;
   }, [note]);

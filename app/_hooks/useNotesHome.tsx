@@ -70,17 +70,17 @@ export const useNotesHome = ({
 
     const pinned = getPinnedNotes();
     const oldIndex = pinned.findIndex(
-      (note) => (note.uuid || note.id) === active.id,
+      (note) => (note.uuid || note.slug) === active.id,
     );
     const newIndex = pinned.findIndex(
-      (note) => (note.uuid || note.id) === over.id,
+      (note) => (note.uuid || note.slug) === over.id,
     );
 
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newOrder = arrayMove(pinned, oldIndex, newIndex);
     const newPinnedPaths = newOrder.map(
-      (note) => `${note.category || "Uncategorized"}/${note.uuid || note.id}`,
+      (note) => `${note.category || "Uncategorized"}/${note.uuid || note.slug}`,
     );
 
     try {
@@ -97,8 +97,8 @@ export const useNotesHome = ({
     return pinnedNotes
       .map((path) => {
         return notes.find((note) => {
-          const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.id}`;
-          const idPath = `${note.category || "Uncategorized"}/${note.id}`;
+          const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.slug}`;
+          const idPath = `${note.category || "Uncategorized"}/${note.slug}`;
           return uuidPath === path || idPath === path;
         });
       })
@@ -107,9 +107,9 @@ export const useNotesHome = ({
 
   const getRecentNotes = () => {
     const pinned = getPinnedNotes();
-    const pinnedIds = new Set(pinned.map((note) => note.id));
+    const pinnedIds = new Set(pinned.map((note) => note.slug));
     return notes
-      .filter((note) => !pinnedIds.has(note.id))
+      .filter((note) => !pinnedIds.has(note.slug))
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -119,10 +119,10 @@ export const useNotesHome = ({
   const handleTogglePin = async (note: Note) => {
     if (isTogglingPin) return;
 
-    setIsTogglingPin(note.id);
+    setIsTogglingPin(note.slug);
     try {
       const result = await togglePin(
-        note.uuid || note.id,
+        note.uuid || note.slug,
         note.category || "Uncategorized",
         ItemTypes.NOTE,
       );
@@ -137,8 +137,8 @@ export const useNotesHome = ({
   };
 
   const isNotePinned = (note: Note) => {
-    const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.id}`;
-    const idPath = `${note.category || "Uncategorized"}/${note.id}`;
+    const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.slug}`;
+    const idPath = `${note.category || "Uncategorized"}/${note.slug}`;
     return pinnedNotes.includes(uuidPath) || pinnedNotes.includes(idPath);
   };
 
@@ -162,7 +162,7 @@ export const useNotesHome = ({
   const recent = getRecentNotes();
 
   const activeNote = activeId
-    ? pinned.find((note) => (note.uuid || note.id) === activeId)
+    ? pinned.find((note) => (note.uuid || note.slug) === activeId)
     : null;
 
   return {

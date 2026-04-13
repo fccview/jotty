@@ -13,44 +13,42 @@ import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 interface ChecklistPageProps {
   params: Promise<{
-    categoryPath: string[];
+    user: string;
+    uuid: string;
   }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: ChecklistPageProps): Promise<Metadata> {
   const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
-
-  return getMedatadaTitle(Modes.CHECKLISTS, id, category);
+  const { user, uuid } = params;
+  return getMedatadaTitle(Modes.CHECKLISTS, decodeId(uuid), decodeURIComponent(user));
 }
 
 export default async function ChecklistPage(props: ChecklistPageProps) {
   const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
+  const searchParams = await props.searchParams;
+  const { user: ownerUsername, uuid } = params;
+  const id = decodeId(uuid);
+  const owner = decodeURIComponent(ownerUsername);
+
+  const categoryFallbackRaw = searchParams?.c;
+  const categoryFallback = Array.isArray(categoryFallbackRaw) 
+    ? categoryFallbackRaw[0] 
+    : categoryFallbackRaw;
+
   const userRecord = await getCurrentUser();
   const username = userRecord?.username || "";
   const hasContentAccess = await canAccessAllContent();
 
   const categoriesResult = await getCategories(Modes.CHECKLISTS);
 
-  let checklist = await getListById(id, username, category);
+  let checklist = await getListById(id, owner, username, false, categoryFallback);
 
   if (!checklist && hasContentAccess) {
-    checklist = await getListById(id, undefined, category);
+    checklist = await getListById(id, owner, undefined, false, categoryFallback);
   }
 
   if (!checklist) {
@@ -63,7 +61,7 @@ export default async function ChecklistPage(props: ChecklistPageProps) {
       : [];
 
   const metadata = {
-    id: checklist.id,
+    id: checklist.slug,
     uuid: checklist.uuid,
     title: checklist.title,
     category: checklist.category || "Uncategorized",

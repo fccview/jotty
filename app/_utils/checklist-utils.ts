@@ -79,7 +79,7 @@ export const getCompletionRate = (
 
 export const parseMarkdown = (
   content: string,
-  id: string,
+  slug: string,
   category: string,
   owner?: string,
   isShared?: boolean,
@@ -104,8 +104,8 @@ export const parseMarkdown = (
   );
 
   let globalItemCounter = 0;
-  const generateItemId = (level: number): string => {
-    return `${id}-${level}-${globalItemCounter++}`;
+  const _generateItemId = (level: number): string => {
+    return `${slug}-${level}-${globalItemCounter++}`;
   };
 
   const buildNestedItems = (
@@ -224,7 +224,7 @@ export const parseMarkdown = (
           });
 
           item = {
-            id: itemMetadata.id || generateItemId(parentLevel),
+            id: itemMetadata.id || _generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -266,7 +266,7 @@ export const parseMarkdown = (
           }
 
           item = {
-            id: itemMetadata.id || generateItemId(parentLevel),
+            id: itemMetadata.id || _generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -333,7 +333,7 @@ export const parseMarkdown = (
   const tags = Array.from(tagsSet).filter(Boolean);
 
   return {
-    id,
+    slug,
     uuid: metadata.uuid || generateUuid(),
     title,
     type: checklistType,

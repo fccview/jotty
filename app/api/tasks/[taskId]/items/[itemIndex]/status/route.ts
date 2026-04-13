@@ -65,7 +65,7 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("listId", task.id);
+      formData.append("listId", task.slug);
       formData.append("itemId", item.id);
       formData.append("status", status);
       formData.append("category", task.category || "Uncategorized");

@@ -12,10 +12,7 @@ import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/Chec
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import Masonry from "react-masonry-css";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import {
-  encodeCategoryPath,
-  buildCategoryPath,
-} from "@/app/_utils/global-utils";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useMemo, useState, useEffect, useTransition } from "react";
@@ -46,6 +43,7 @@ const breakpointColumnsObj = {
 export const TagsHome = ({
   notes: initialNotes,
   checklists: initialChecklists,
+  user,
   onCreateModal,
 }: TagsHomeProps) => {
   const t = useTranslations();
@@ -127,7 +125,7 @@ export const TagsHome = ({
       note.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.id === note.id && item.category === encodedCategory,
+      (item) => item.id === note.slug && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
@@ -137,25 +135,35 @@ export const TagsHome = ({
       list.category || "Uncategorized",
     );
     const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.id === list.id && item.category === encodedCategory,
+      (item) => item.id === list.slug && item.category === encodedCategory,
     );
     return sharedItem?.sharer;
   };
 
   const handleSelectNote = (note: Note) => {
-    const categoryPath = buildCategoryPath(
-      note.category || "Uncategorized",
-      note.id,
+    const userSegment = encodeURIComponent(
+      note.owner || user?.username || "unknown",
     );
-    router.push(`/note/${categoryPath}`);
+    const uuidSegment = encodeURIComponent(
+      note.pending ? note.slug || "" : note.uuid || note.slug || "",
+    );
+    const categoryQuery = note.pending
+      ? `?c=${encodeCategoryPath(note.category || "Uncategorized")}`
+      : "";
+    router.push(`/note/${userSegment}/${uuidSegment}${categoryQuery}`);
   };
 
   const handleSelectChecklist = (list: Checklist) => {
-    const categoryPath = buildCategoryPath(
-      list.category || "Uncategorized",
-      list.id,
+    const userSegment = encodeURIComponent(
+      list.owner || user?.username || "unknown",
     );
-    router.push(`/checklist/${categoryPath}`);
+    const uuidSegment = encodeURIComponent(
+      list.pending ? list.slug || "" : list.uuid || list.slug || "",
+    );
+    const categoryQuery = list.pending
+      ? `?c=${encodeCategoryPath(list.category || "Uncategorized")}`
+      : "";
+    router.push(`/checklist/${userSegment}/${uuidSegment}${categoryQuery}`);
   };
 
   if (combinedItems.length === 0 && !selectedFilter) {
@@ -178,7 +186,7 @@ export const TagsHome = ({
       if (viewMode === "card") {
         return (
           <div
-            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.slug}`}
             className="mb-6"
           >
             <NoteCard
@@ -193,7 +201,7 @@ export const TagsHome = ({
       if (viewMode === "list") {
         return (
           <NoteListItem
-            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.slug}`}
             note={note}
             onSelect={handleSelectNote}
             isPinned={false}
@@ -203,7 +211,7 @@ export const TagsHome = ({
       }
       return (
         <NoteGridItem
-          key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+          key={`${keyPrefix}-note-${note.category}-${note.uuid || note.slug}`}
           note={note}
           onSelect={handleSelectNote}
           isPinned={false}
@@ -216,7 +224,7 @@ export const TagsHome = ({
     if (viewMode === "card") {
       return (
         <div
-          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.slug}`}
           className="mb-6"
         >
           <ChecklistCard
@@ -231,7 +239,7 @@ export const TagsHome = ({
     if (viewMode === "list") {
       return (
         <ChecklistListItem
-          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.slug}`}
           list={list}
           onSelect={handleSelectChecklist}
           isPinned={false}
@@ -241,7 +249,7 @@ export const TagsHome = ({
     }
     return (
       <ChecklistGridItem
-        key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+        key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.slug}`}
         list={list}
         onSelect={handleSelectChecklist}
         isPinned={false}

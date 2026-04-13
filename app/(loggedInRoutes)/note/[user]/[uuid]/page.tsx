@@ -18,34 +18,32 @@ import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
 interface NotePageProps {
   params: Promise<{
-    categoryPath: string[];
+    user: string;
+    uuid: string;
   }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: NotePageProps): Promise<Metadata> {
   const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
-
-  return getMedatadaTitle(Modes.NOTES, id, category);
+  const { user, uuid } = params;
+  return getMedatadaTitle(Modes.NOTES, decodeId(uuid), decodeURIComponent(user));
 }
 
 export default async function NotePage(props: NotePageProps) {
   const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
+  const searchParams = await props.searchParams;
+  const { user: ownerUsername, uuid } = params;
+  const id = decodeId(uuid);
+  const owner = decodeURIComponent(ownerUsername);
+  
+  const categoryFallbackRaw = searchParams?.c;
+  const categoryFallback = Array.isArray(categoryFallbackRaw) 
+    ? categoryFallbackRaw[0] 
+    : categoryFallbackRaw;
+
   const user = await getCurrentUser();
   const username = user?.username || "";
   const hasContentAccess = await canAccessAllContent();
@@ -54,10 +52,10 @@ export default async function NotePage(props: NotePageProps) {
 
   const categoriesResult = await getCategories(Modes.NOTES);
 
-  let note = await getNoteById(id, category, username);
+  let note = await getNoteById(id, owner, username, false, categoryFallback);
 
   if (!note && hasContentAccess) {
-    note = await getNoteById(id, category);
+    note = await getNoteById(id, owner, undefined, false, categoryFallback);
   }
 
   if (!note) {
@@ -70,7 +68,7 @@ export default async function NotePage(props: NotePageProps) {
       : [];
 
   const metadata = {
-    id: note.id,
+    id: note.slug,
     uuid: note.uuid,
     title: note.title,
     category: note.category || "Uncategorized",

@@ -52,8 +52,8 @@ export default async function HomePage() {
     <HomeClient
       initialLists={lists as Checklist[]}
       initialCategories={categories}
-      initialDocs={notes as Note[]}
-      initialDocsCategories={notesCategories}
+      initialNotes={notes as Note[]}
+      initialNotesCategories={notesCategories}
       user={userForClient}
     />
   );

@@ -15,7 +15,7 @@ import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/C
 import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/SettingsModals/Settings";
 import { Category, SanitisedUser, User } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "./AppModeProvider";
 import { useNavigationGuard } from "./NavigationGuardProvider";
@@ -36,7 +36,7 @@ interface ShortcutContextType {
 }
 
 const ShortcutContext = createContext<ShortcutContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const ShortcutProvider = ({
@@ -80,11 +80,18 @@ export const ShortcutProvider = ({
         const result = await createNote(formData);
 
         if (result.success && result.data) {
-          const categoryPath = buildCategoryPath(
-            result.data.category || "Uncategorized",
-            result.data.id
+          const userSegment = encodeURIComponent(
+            result.data.owner || user?.username || "unknown",
           );
-          router.push(`/note/${categoryPath}?editor=true`);
+          const uuidSegment = encodeURIComponent(
+            result.data.uuid || result.data.slug,
+          );
+          const categoryQuery = !result.data.uuid
+            ? `&c=${encodeURIComponent(result.data.category || "Uncategorized")}`
+            : "";
+          router.push(
+            `/note/${userSegment}/${uuidSegment}?editor=true${categoryQuery}`,
+          );
           router.refresh();
         }
       } else {
@@ -92,7 +99,7 @@ export const ShortcutProvider = ({
         setShowCreateNoteModal(true);
       }
     },
-    [user?.quickCreateNotes, user?.quickCreateNotesCategory, router]
+    [user?.quickCreateNotes, user?.quickCreateNotesCategory, router],
   );
 
   const openCreateChecklistModal = useCallback((category?: string) => {
@@ -197,7 +204,7 @@ export const ShortcutProvider = ({
       closeAllModals,
       user?.isAdmin,
       router,
-    ]
+    ],
   );
 
   useShortcuts(shortcuts);
@@ -221,7 +228,7 @@ export const ShortcutProvider = ({
       openCreateChecklistModal,
       isSearchOpen,
       isSettingsOpen,
-    ]
+    ],
   );
 
   return (
@@ -232,11 +239,20 @@ export const ShortcutProvider = ({
           onClose={() => setShowCreateNoteModal(false)}
           onCreated={(newNote) => {
             if (newNote) {
-              const categoryPath = buildCategoryPath(
-                newNote.category || "Uncategorized",
-                newNote.id
+              const userSegment = encodeURIComponent(
+                newNote.owner || user?.username || "unknown",
               );
-              router.push(`/note/${categoryPath}?editor=true`);
+              const uuidSegment = encodeURIComponent(
+                newNote.pending
+                  ? newNote.slug || ""
+                  : newNote.uuid || newNote.slug || "",
+              );
+              const categoryQuery = newNote.pending
+                ? `&c=${encodeCategoryPath(newNote.category || "Uncategorized")}`
+                : "";
+              router.push(
+                `/note/${userSegment}/${uuidSegment}?editor=true${categoryQuery}`,
+              );
             }
             setShowCreateNoteModal(false);
             router.refresh();
@@ -250,11 +266,20 @@ export const ShortcutProvider = ({
           onClose={() => setShowCreateChecklistModal(false)}
           onCreated={(newChecklist) => {
             if (newChecklist) {
-              const categoryPath = buildCategoryPath(
-                newChecklist.category || "Uncategorized",
-                newChecklist.id
+              const userSegment = encodeURIComponent(
+                newChecklist.owner || user?.username || "unknown",
               );
-              router.push(`/checklist/${categoryPath}`);
+              const uuidSegment = encodeURIComponent(
+                newChecklist.pending
+                  ? newChecklist.slug || ""
+                  : newChecklist.uuid || newChecklist.slug || "",
+              );
+              const categoryQuery = newChecklist.pending
+                ? `?c=${encodeCategoryPath(newChecklist.category || "Uncategorized")}`
+                : "";
+              router.push(
+                `/checklist/${userSegment}/${uuidSegment}${categoryQuery}`,
+              );
             }
             setShowCreateChecklistModal(false);
             router.refresh();

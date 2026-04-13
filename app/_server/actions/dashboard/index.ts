@@ -97,7 +97,8 @@ export const toggleArchive = async (
   const isOwner = currentUser?.username === item.owner;
   const formData = new FormData();
 
-  formData.append("id", item.id);
+  formData.append("uuid", item.uuid);
+  formData.append("slug", item.slug);
   formData.append("title", item.title);
 
   if (!formData.get("user") && item.owner) {
@@ -109,7 +110,7 @@ export const toggleArchive = async (
     let content = noteItem.content;
     if (content === undefined || content === null) {
       const fullNote = await getNoteById(
-        noteItem.uuid || noteItem.id,
+        noteItem.uuid,
         noteItem.category || "Uncategorized",
         noteItem.owner
       );

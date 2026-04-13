@@ -201,7 +201,7 @@ export default async function RootLayout({
           notes: [],
           checklists: [],
           public: { notes: [], checklists: [] },
-        }),
+        } as import("./_types").AllSharedItems),
     user && !isPublicRoute
       ? getAllSharedItemsForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
@@ -255,7 +255,7 @@ export default async function RootLayout({
             linkIndex={linkIndex}
             notes={notes}
             checklists={checklists}
-            allSharedItems={allSharedItems}
+            allSharedItems={allSharedItems as any}
             userSharedItems={userSharedItems}
             globalSharing={globalSharing}
             availableLocales={availableLocales}

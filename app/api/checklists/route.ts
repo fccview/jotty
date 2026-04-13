@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       };
 
       const checklists = userLists.map((list) => ({
-        id: list.uuid || list.id,
+        id: list.uuid || list.slug,
         title: list.title,
         category: list.category || "Uncategorized",
         type: list.type || "simple",
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
       }
 
       const transformedChecklist = {
-        id: result.data?.uuid || result.data?.id,
+        id: result.data?.uuid || result.data?.slug,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
         type: result.data?.type || "simple",

@@ -168,15 +168,12 @@ export const useSidebar = (props: SidebarProps) => {
   };
 
   const isItemSelected = (item: Checklist | Note) => {
-    const expectedPath = buildCategoryPath(
-      item.category || "Uncategorized",
-      item.id
-    )?.toLowerCase();
-
+    const userSegment = encodeURIComponent(item.owner || props.user?.username || "unknown").toLowerCase();
+    const uuidSegment = encodeURIComponent(item.uuid || item.slug).toLowerCase();
+    
     return (
       pathname?.toLowerCase() ===
-      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
-        }/${expectedPath}`.toLowerCase()
+      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${userSegment}/${uuidSegment}`.toLowerCase()
     );
   };
 
@@ -194,9 +191,9 @@ export const useSidebar = (props: SidebarProps) => {
     let currentItem: Partial<Checklist> | Partial<Note> | undefined;
 
     if (mode === Modes.CHECKLISTS) {
-      currentItem = checklists.find((c) => c.id === itemId);
+      currentItem = checklists.find((c) => c.slug === itemId);
     } else {
-      currentItem = notes.find((n) => n.id === itemId);
+      currentItem = notes.find((n) => n.slug === itemId);
     }
 
     if (currentItem && currentItem.category) {

@@ -102,8 +102,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
 
     for (const sharedItem of sharedData.checklists) {
       try {
-        const itemIdentifier = sharedItem.uuid || sharedItem.id;
-        if (!itemIdentifier) continue;
+        if (!sharedItem.uuid) continue;
 
         const sharerDir = path.join(
           process.cwd(),
@@ -138,7 +137,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
             );
 
         const sharedChecklist = sharerLists.find(
-          (list) => list.uuid === itemIdentifier || list.id === itemIdentifier,
+          (list) => list.uuid === sharedItem.uuid,
         );
 
         if (sharedChecklist) {
@@ -149,7 +148,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         }
       } catch (error) {
         console.error(
-          `Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`,
+          `Error reading shared checklist ${sharedItem.uuid}:`,
           error,
         );
         continue;
@@ -192,18 +191,17 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       pinnedPaths.length > 0 &&
       limitNum !== undefined
     ) {
-      const pathMatches = (list: ChecklistReadResult, p: string) => {
+      const _pathMatches = (list: ChecklistReadResult, p: string) => {
         const c = list.category || "Uncategorized";
-        const u = (list as { uuid?: string }).uuid || list.id;
-        return `${c}/${u}` === p || `${c}/${list.id}` === p;
+        return `${c}/${list.uuid}` === p || `${c}/${list.slug}` === p;
       };
       const pinned: ChecklistReadResult[] = [];
       for (const p of pinnedPaths) {
-        const found = lists.find((l) => pathMatches(l, p));
+        const found = lists.find((l) => _pathMatches(l, p));
         if (found) pinned.push(found);
       }
       const rest = lists.filter(
-        (l) => !pinnedPaths.some((p) => pathMatches(l, p)),
+        (l) => !pinnedPaths.some((p) => _pathMatches(l, p)),
       );
       lists = [...pinned, ...rest].slice(0, limitNum);
     } else if (limitNum !== undefined) {
@@ -255,119 +253,75 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
 };
 
 export const getListById = async (
-  id: string,
-  username?: string,
-  category?: string,
+  uuid: string,
+  ownerUsername?: string,
+  actingUsername?: string,
   unarchive?: boolean,
+  categoryFallback?: string,
 ): Promise<Checklist | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
   const { serverReadFile } = await import("@/app/_server/actions/file");
 
-  if (!username) {
-    const { getUserByChecklistUuid } =
-      await import("@/app/_server/actions/users");
-    const userByUuid = await getUserByChecklistUuid(id);
-    if (userByUuid.success && userByUuid.data) {
-      username = userByUuid.data.username;
-    } else {
-      return undefined;
-    }
-  }
-
-  let ownerUsername = username;
-  const absUserDir = path.join(
-    process.cwd(),
-    "data",
-    CHECKLISTS_FOLDER,
-    username,
-  );
-  let filePath: string | null = null;
-  let listId = id;
-  let listCategory = category || "Uncategorized";
-  const isUuid =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-  if (isUuid) {
-    const found = await grepFindFileByUuid(absUserDir, id);
-    if (found) {
-      filePath = found.filePath;
-      listId = found.id;
-      listCategory = found.category;
-    }
-  }
-
-  if (!filePath && category) {
-    const directPath = path.join(absUserDir, category, `${id}.md`);
-    try {
-      await fs.access(directPath);
-      filePath = directPath;
-    } catch {
-      if (unarchive) {
-        const archivedPath = path.join(
-          absUserDir,
-          ".archive",
-          category,
-          `${id}.md`,
-        );
-        try {
-          await fs.access(archivedPath);
-          filePath = archivedPath;
-          listCategory = `.archive/${category}`;
-        } catch {}
-      }
-    }
+  if (!ownerUsername) {
+    const current = await getCurrentUser();
+    if (!current) return undefined;
+    ownerUsername = current.username;
   }
 
   let isShared = false;
+  if (actingUsername && actingUsername !== ownerUsername) {
+    const { getAllSharedItemsForUser } = await import(
+      "@/app/_server/actions/sharing"
+    );
+    const sharedData = await getAllSharedItemsForUser(actingUsername);
+    const match = sharedData.checklists.find(
+      (s) => s.uuid === uuid && s.sharer === ownerUsername,
+    );
+    if (!match) return undefined;
+    isShared = true;
+  }
 
-  if (!filePath) {
-    const { getAllSharedItemsForUser } =
-      await import("@/app/_server/actions/sharing");
-    const sharedData = await getAllSharedItemsForUser(username);
-    for (const sharedItem of sharedData.checklists) {
-      const itemIdentifier = sharedItem.uuid || sharedItem.id;
-      if (!itemIdentifier) continue;
-      if (itemIdentifier !== id) continue;
+  const ownerDir = path.join(
+    process.cwd(),
+    "data",
+    CHECKLISTS_FOLDER,
+    ownerUsername,
+  );
 
-      const sharerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        sharedItem.sharer,
-      );
-      const found = isUuid && (await grepFindFileByUuid(sharerDir, id));
-
-      if (found) {
-        filePath = found.filePath;
-        listId = found.id;
-        listCategory = found.category;
-        isShared = true;
-        ownerUsername = sharedItem.sharer;
-        break;
-      }
-
-      if (!isUuid && category) {
-        const sharedPath = path.join(sharerDir, category, `${id}.md`);
-        try {
-          await fs.access(sharedPath);
-          filePath = sharedPath;
-          isShared = true;
-          ownerUsername = sharedItem.sharer;
-          break;
-        } catch {}
-      }
+  let filePath: string | null = null;
+  const found = await grepFindFileByUuid(ownerDir, uuid);
+  if (found) {
+    filePath = found.filePath;
+  } else if (unarchive) {
+    const archived = await grepFindFileByUuid(
+      path.join(ownerDir, ".archive"),
+      uuid,
+    );
+    if (archived) filePath = archived.filePath;
+  } else if (categoryFallback) {
+    const fallbackPath = path.join(ownerDir, categoryFallback, `${uuid}.md`);
+    try {
+      await fs.access(fallbackPath);
+      filePath = fallbackPath;
+    } catch {
+      filePath = null;
     }
   }
 
-  if (!filePath) {
-    return undefined;
-  }
+  if (!filePath) return undefined;
+
+  const listCategory =
+    path
+      .relative(ownerDir, path.dirname(filePath))
+      .split(path.sep)
+      .join("/") || "Uncategorized";
+  const slug = path.basename(filePath, ".md");
 
   const rawContent = await serverReadFile(filePath);
   if (!rawContent) return undefined;
 
   const stats = await fs.stat(filePath);
-  const parsedData = parseChecklistContent(rawContent, listId);
+  const parsedData = parseChecklistContent(rawContent, slug);
   const checklistType = extractChecklistType(rawContent) || "task";
 
   let finalUuid = parsedData.uuid;
@@ -376,7 +330,7 @@ export const getListById = async (
     try {
       const updatedContent = updateYamlMetadata(rawContent, {
         uuid: finalUuid,
-        title: parsedData.title || listId.replace(/-/g, " "),
+        title: parsedData.title || slug.replace(/-/g, " "),
         checklistType: checklistType,
       });
       await fs.writeFile(filePath, updatedContent, "utf-8");
@@ -386,7 +340,7 @@ export const getListById = async (
   }
 
   return {
-    id: listId,
+    slug,
     uuid: finalUuid,
     title: parsedData.title,
     type: checklistType as Checklist["type"],

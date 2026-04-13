@@ -7,29 +7,29 @@ import { isAdmin, getUsername } from "@/app/_server/actions/users";
 import { notFound } from "next/navigation";
 
 export default async function AdminUsersPage() {
-    const admin = await isAdmin();
-    const username = await getUsername();
+  const admin = await isAdmin();
+  const username = await getUsername();
 
-    if (!admin) {
-        return notFound();
-    }
+  if (!admin) {
+    return notFound();
+  }
 
-    const [usersData, listsData, docsData] = await Promise.all([
-        readJsonFile(USERS_FILE),
-        getAllLists(),
-        getAllNotes(),
-    ]);
+  const [usersData, listsData, docsData] = await Promise.all([
+    readJsonFile(USERS_FILE),
+    getAllLists(),
+    getAllNotes(),
+  ]);
 
-    const users = usersData;
-    const allLists = listsData.success && listsData.data ? listsData.data : [];
-    const allDocs = docsData.success && docsData.data ? docsData.data : [];
+  const users = usersData;
+  const allLists = listsData.success && listsData.data ? listsData.data : [];
+  const allNotes = docsData.success && docsData.data ? docsData.data : [];
 
-    return (
-        <AdminUsersClient
-            initialUsers={users}
-            initialLists={allLists}
-            initialDocs={allDocs}
-            username={username}
-        />
-    );
+  return (
+    <AdminUsersClient
+      initialUsers={users}
+      initialLists={allLists}
+      initialNotes={allNotes}
+      username={username}
+    />
+  );
 }

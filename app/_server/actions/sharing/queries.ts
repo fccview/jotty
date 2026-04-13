@@ -17,34 +17,32 @@ export const getAllSharedItemsForUser = async (
 };
 
 export const getUsersWithAccess = async (
-  checklistId: string,
-  checklistUuid?: string
+  checklistUuid: string
 ): Promise<string[]> => {
   const sharingData = await readShareFile(ItemTypes.CHECKLIST);
   const users: string[] = [];
 
   for (const [username, entries] of Object.entries(sharingData)) {
     if (username === "public") continue;
-    for (const entry of entries) {
-      if (
-        (checklistUuid && entry.uuid === checklistUuid) ||
-        (entry.id === checklistId)
-      ) {
-        users.push(username);
-        break;
-      }
+    if (entries.some((entry) => entry.uuid === checklistUuid)) {
+      users.push(username);
     }
   }
 
   return users;
 };
 
+interface SharedItemSummary {
+  uuid: string;
+  sharer: string;
+}
+
 export const getAllSharedItems = async (): Promise<{
-  notes: Array<{ id: string; category: string }>;
-  checklists: Array<{ id: string; category: string }>;
+  notes: SharedItemSummary[];
+  checklists: SharedItemSummary[];
   public: {
-    notes: Array<{ id: string; category: string }>;
-    checklists: Array<{ id: string; category: string }>;
+    notes: SharedItemSummary[];
+    checklists: SharedItemSummary[];
   };
 }> => {
   const [notesSharing, checklistsSharing] = await Promise.all([
@@ -52,75 +50,59 @@ export const getAllSharedItems = async (): Promise<{
     readShareFile(ItemTypes.CHECKLIST),
   ]);
 
-  const allNotes: Array<{ id: string; category: string }> = [];
-  const allChecklists: Array<{ id: string; category: string }> = [];
-  const publicNotes: Array<{ id: string; category: string }> = [];
-  const publicChecklists: Array<{ id: string; category: string }> = [];
+  const allNotes: SharedItemSummary[] = [];
+  const allChecklists: SharedItemSummary[] = [];
+  const publicNotes: SharedItemSummary[] = [];
+  const publicChecklists: SharedItemSummary[] = [];
 
-  Object.values(notesSharing).forEach((userShares) => {
-    userShares.forEach((entry) => {
-      if (entry.id && entry.category) {
-        allNotes.push({ id: entry.id, category: entry.category });
+  for (const [username, userShares] of Object.entries(notesSharing)) {
+    if (username === "public") continue;
+    for (const entry of userShares) {
+      if (entry.uuid) {
+        allNotes.push({ uuid: entry.uuid, sharer: entry.sharer });
       }
-    });
-  });
+    }
+  }
 
-  Object.values(checklistsSharing).forEach((userShares) => {
-    userShares.forEach((entry) => {
-      if (entry.id && entry.category) {
-        allChecklists.push({ id: entry.id, category: entry.category });
+  for (const [username, userShares] of Object.entries(checklistsSharing)) {
+    if (username === "public") continue;
+    for (const entry of userShares) {
+      if (entry.uuid) {
+        allChecklists.push({ uuid: entry.uuid, sharer: entry.sharer });
       }
-    });
-  });
+    }
+  }
 
   if (notesSharing.public) {
     for (const entry of notesSharing.public) {
-      if (entry.id && entry.category) {
-        publicNotes.push({ id: entry.id, category: entry.category });
-      } else if (entry.uuid && entry.id) {
-        const { getNoteById } = await import("@/app/_server/actions/note");
-        const note = await getNoteById(entry.uuid);
-        if (note) {
-          publicNotes.push({
-            id: note.id,
-            category: note.category || "Uncategorized",
-          });
-        }
+      if (entry.uuid) {
+        publicNotes.push({ uuid: entry.uuid, sharer: entry.sharer });
       }
     }
   }
 
   if (checklistsSharing.public) {
     for (const entry of checklistsSharing.public) {
-      if (entry.id && entry.category) {
-        publicChecklists.push({ id: entry.id, category: entry.category });
-      } else if (entry.uuid && entry.id) {
-        const { getListById } = await import("@/app/_server/actions/checklist");
-        const checklist = await getListById(entry.uuid);
-        if (checklist) {
-          publicChecklists.push({
-            id: checklist.id,
-            category: checklist.category || "Uncategorized",
-          });
-        }
+      if (entry.uuid) {
+        publicChecklists.push({ uuid: entry.uuid, sharer: entry.sharer });
       }
     }
   }
 
-  const deduplicate = (items: Array<{ id: string; category: string }>) =>
+  const _deduplicate = (items: SharedItemSummary[]) =>
     items.filter(
       (item, index, array) =>
         array.findIndex(
-          (i) => i.id === item.id && i.category === item.category
+          (i) => i.uuid === item.uuid && i.sharer === item.sharer
         ) === index
     );
 
   return {
-    notes: deduplicate(allNotes),
-    checklists: deduplicate(allChecklists),
+    notes: _deduplicate(allNotes),
+    checklists: _deduplicate(allChecklists),
     public: {
-      notes: deduplicate(publicNotes),
-      checklists: deduplicate(publicChecklists),
+      notes: _deduplicate(publicNotes),
+      checklists: _deduplicate(publicChecklists),
     },
   };
 };

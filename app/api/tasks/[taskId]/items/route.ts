@@ -67,7 +67,7 @@ export async function POST(
         }
 
         const newSubItem: any = {
-          id: `${task.id}-sub-${Date.now()}`,
+          id: `${task.slug}-sub-${Date.now()}`,
           text,
           status: status || TaskStatus.TODO,
           completed: false,
@@ -116,7 +116,7 @@ export async function POST(
         const filePath = path.join(
           ownerDir,
           task.category || "Uncategorized",
-          `${task.id}.md`,
+          `${task.slug}.md`,
         );
 
         await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
@@ -125,7 +125,7 @@ export async function POST(
       }
 
       const formData = new FormData();
-      formData.append("listId", task.id);
+      formData.append("listId", task.slug);
       formData.append("text", text);
       formData.append("category", task.category || "Uncategorized");
       formData.append("status", status || TaskStatus.TODO);

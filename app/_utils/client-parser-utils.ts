@@ -270,6 +270,7 @@ export const parseNoteContent = (
   encrypted?: boolean;
   encryptionMethod?: "pgp" | "xchacha";
   tags?: string[];
+  pending?: boolean;
 } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
 
@@ -283,6 +284,7 @@ export const parseNoteContent = (
       encrypted: metadata.encrypted || false,
       encryptionMethod: metadata.encryptionMethod,
       tags,
+      pending: metadata.uuid ? false : true,
     };
   }
 
@@ -295,5 +297,6 @@ export const parseNoteContent = (
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
     tags,
+    pending: metadata.uuid ? false : true,
   };
 };

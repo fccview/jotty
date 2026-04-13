@@ -36,7 +36,7 @@ export async function POST(
       }
 
       const formData = new FormData();
-      formData.append("listId", board.id);
+      formData.append("listId", board.slug);
       formData.append("text", text);
       formData.append("category", board.category || "Uncategorized");
       if (status) formData.append("status", status);

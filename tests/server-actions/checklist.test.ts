@@ -77,12 +77,10 @@ vi.mock("@/app/_utils/yaml-metadata-utils", () => ({
   generateYamlFrontmatter: vi
     .fn()
     .mockReturnValue("---\nuuid: test-uuid-123\n---\n"),
-  extractYamlMetadata: vi
-    .fn()
-    .mockReturnValue({
-      metadata: { uuid: "test-uuid-123" },
-      contentWithoutMetadata: "",
-    }),
+  extractYamlMetadata: vi.fn().mockReturnValue({
+    metadata: { uuid: "test-uuid-123" },
+    contentWithoutMetadata: "",
+  }),
   updateYamlMetadata: vi
     .fn()
     .mockReturnValue("---\nuuid: test-uuid-123\n---\n"),

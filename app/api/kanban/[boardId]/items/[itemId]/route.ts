@@ -29,7 +29,7 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("listId", board.id);
+      formData.append("listId", board.slug);
       formData.append("itemId", params.itemId);
       formData.append("category", board.category || "Uncategorized");
       if (text !== undefined) formData.append("text", text);
@@ -79,7 +79,7 @@ export async function DELETE(
       }
 
       const formData = new FormData();
-      formData.append("listId", board.id);
+      formData.append("listId", board.slug);
       formData.append("itemId", params.itemId);
       formData.append("category", board.category || "Uncategorized");
 

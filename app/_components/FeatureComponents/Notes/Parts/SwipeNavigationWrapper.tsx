@@ -16,9 +16,12 @@ interface SwipeNavigationWrapperProps {
 }
 
 const getNoteUrl = (note: Partial<Note> | null, embed = false): string | null => {
-  if (!note?.id) return null;
-  const base = `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`;
-  return embed ? `${base}?embed=true` : base;
+  if (!note?.uuid && !note?.slug) return null;
+  const userSegment = encodeURIComponent(note.owner || "unknown");
+  const uuidSegment = encodeURIComponent(note.uuid || note.slug || "");
+  const categoryQuery = !note.uuid ? `&c=${encodeURIComponent(note.category || "Uncategorized")}` : "";
+  const base = `/note/${userSegment}/${uuidSegment}`;
+  return embed ? `${base}?embed=true${categoryQuery}` : `${base}${categoryQuery.replace('&', '?')}`;
 };
 
 export const SwipeNavigationWrapper = ({

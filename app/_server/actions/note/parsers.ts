@@ -9,22 +9,22 @@ import {
 
 export const parseMarkdownNote = (
   content: string,
-  id: string,
+  slug: string,
   category: string,
   owner?: string,
   isShared?: boolean,
   fileStats?: { birthtime: Date; mtime: Date },
-  fileName?: string
+  fileName?: string,
 ): Note => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
   const title = extractTitle(
     content,
-    fileName ? path.basename(fileName, ".md") : undefined
+    fileName ? path.basename(fileName, ".md") : undefined,
   );
 
   return {
-    id,
+    slug,
     uuid: metadata.uuid || generateUuid(),
     title,
     content: contentWithoutMetadata,
@@ -40,13 +40,14 @@ export const parseMarkdownNote = (
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
     tags: Array.isArray(metadata.tags) ? metadata.tags : [],
+    pending: metadata?.uuid ? false : true,
   };
 };
 
 export const convertInternalLinksToNewFormat = async (
   content: string,
   username?: string,
-  category?: string
+  category?: string,
 ): Promise<string> => {
   let convertedContent = content;
 
@@ -58,7 +59,7 @@ export const convertInternalLinksToNewFormat = async (
     const [fullMatch] = match;
     const hrefMatch = fullMatch.match(/data-href="([^"]*)"/);
     const convertMatch = fullMatch.match(
-      /data-convert-to-bidirectional="([^"]*)"/
+      /data-convert-to-bidirectional="([^"]*)"/,
     );
 
     const href = hrefMatch?.[1];
@@ -75,37 +76,37 @@ export const convertInternalLinksToNewFormat = async (
     if (href.startsWith("/note/")) {
       const parts = href.split("/");
       if (parts.length >= 3) {
-        const categoryAndId = parts.slice(2).join("/");
-        const lastSlashIndex = categoryAndId.lastIndexOf("/");
-        const id = categoryAndId.substring(lastSlashIndex + 1);
+        const categoryAndSlug = parts.slice(2).join("/");
+        const lastSlashIndex = categoryAndSlug.lastIndexOf("/");
+        const slug = categoryAndSlug.substring(lastSlashIndex + 1);
 
         try {
           const { getUserNotes } = await import("./queries");
           const notes = await getUserNotes({ username, allowArchived: true });
           if (notes.success && notes.data) {
-            const note = notes.data.find((n) => n.id === id);
+            const note = notes.data.find((n) => n.slug === slug);
             if (note?.uuid) {
               let updatedSpan = fullMatch
                 .replace(/data-href="[^"]*"/, `data-href="/jotty/${note.uuid}"`)
                 .replace(
                   /data-convert-to-bidirectional="true"/,
-                  `data-convert-to-bidirectional="false"`
+                  `data-convert-to-bidirectional="false"`,
                 );
 
               if (fullMatch.includes("data-uuid=")) {
                 updatedSpan = updatedSpan.replace(
                   /data-uuid="[^"]*"/,
-                  `data-uuid="${note.uuid}"`
+                  `data-uuid="${note.uuid}"`,
                 );
               } else {
                 updatedSpan = updatedSpan.replace(
                   "data-internal-link",
-                  `data-internal-link data-uuid="${note.uuid}"`
+                  `data-internal-link data-uuid="${note.uuid}"`,
                 );
               }
               convertedContent = convertedContent.replace(
                 fullMatch,
-                updatedSpan
+                updatedSpan,
               );
             }
           }
@@ -116,9 +117,9 @@ export const convertInternalLinksToNewFormat = async (
     } else if (href.startsWith("/checklist/")) {
       const parts = href.split("/");
       if (parts.length >= 3) {
-        const categoryAndId = parts.slice(2).join("/");
-        const lastSlashIndex = categoryAndId.lastIndexOf("/");
-        const id = categoryAndId.substring(lastSlashIndex + 1);
+        const categoryAndSlug = parts.slice(2).join("/");
+        const lastSlashIndex = categoryAndSlug.lastIndexOf("/");
+        const slug = categoryAndSlug.substring(lastSlashIndex + 1);
 
         try {
           const { getUserChecklists } = await import("../checklist");
@@ -128,32 +129,32 @@ export const convertInternalLinksToNewFormat = async (
             allowArchived: true,
           });
           if (checklists.success && checklists.data) {
-            const checklist = checklists.data.find((c) => c.id === id);
+            const checklist = checklists.data.find((c) => c.slug === slug);
             if (checklist?.uuid) {
               let updatedSpan = fullMatch
                 .replace(
                   /data-href="[^"]*"/,
-                  `data-href="/jotty/${checklist.uuid}"`
+                  `data-href="/jotty/${checklist.uuid}"`,
                 )
                 .replace(
                   /data-convert-to-bidirectional="true"/,
-                  `data-convert-to-bidirectional="false"`
+                  `data-convert-to-bidirectional="false"`,
                 );
 
               if (fullMatch.includes("data-uuid=")) {
                 updatedSpan = updatedSpan.replace(
                   /data-uuid="[^"]*"/,
-                  `data-uuid="${checklist.uuid}"`
+                  `data-uuid="${checklist.uuid}"`,
                 );
               } else {
                 updatedSpan = updatedSpan.replace(
                   "data-internal-link",
-                  `data-internal-link data-uuid="${checklist.uuid}"`
+                  `data-internal-link data-uuid="${checklist.uuid}"`,
                 );
               }
               convertedContent = convertedContent.replace(
                 fullMatch,
-                updatedSpan
+                updatedSpan,
               );
             }
           }

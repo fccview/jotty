@@ -9,7 +9,10 @@ import {
 } from "@/app/_utils/recurrence-utils";
 
 export const getChecklistType = (content: string): ChecklistType => {
-  if (content.includes("checklistType: task") || content.includes("checklistType: kanban")) {
+  if (
+    content.includes("checklistType: task") ||
+    content.includes("checklistType: kanban")
+  ) {
     return "kanban";
   }
 
@@ -49,7 +52,7 @@ export const checkAndRefreshRecurringItems = async (
       ownerDir,
       checklist.category || "Uncategorized",
     );
-    const filePath = path.join(categoryDir, `${checklist.id}.md`);
+    const filePath = path.join(categoryDir, `${checklist.slug}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
   } catch (error) {

@@ -48,7 +48,7 @@ export async function GET(
       };
 
       const transformedTask = {
-        id: task.uuid || task.id,
+        id: task.uuid || task.slug,
         title: task.title,
         category: task.category || "Uncategorized",
         statuses: task.statuses || [
@@ -95,7 +95,7 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("id", task.id);
+      formData.append("id", task.slug);
       formData.append("title", title ?? task.title);
       formData.append("category", category ?? task.category ?? "Uncategorized");
       formData.append("originalCategory", task.category || "Uncategorized");
@@ -107,7 +107,7 @@ export async function PUT(
       }
 
       const transformedTask = {
-        id: result.data?.uuid || result.data?.id,
+        id: result.data?.uuid || result.data?.slug,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
         statuses: result.data?.statuses || [
@@ -150,7 +150,7 @@ export async function DELETE(
       }
 
       const formData = new FormData();
-      formData.append("id", task.id);
+      formData.append("id", task.slug);
       formData.append("category", task.category || "Uncategorized");
       formData.append("apiUser", JSON.stringify(user));
 

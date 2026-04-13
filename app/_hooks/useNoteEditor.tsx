@@ -13,14 +13,9 @@ import { deleteNote, updateNote } from "@/app/_server/actions/note";
 import { encryptNoteContent } from "@/app/_server/actions/pgp";
 import { encryptXChaCha } from "@/app/_server/actions/xchacha";
 import { logContentEvent, logAudit } from "@/app/_server/actions/log";
-import {
-  buildCategoryPath,
-  encodeCategoryPath,
-  encodeId,
-} from "@/app/_utils/global-utils";
+import { encodeCategoryPath, encodeId } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { getUserByNote } from "../_server/actions/users";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
@@ -59,7 +54,7 @@ export const useNoteEditor = ({
     return convertMarkdownToHtml(contentWithoutMetadata);
   });
   const [isMarkdownMode, setIsMarkdownMode] = useState(
-    isMinimalMode || defaultEditorIsMarkdown
+    isMinimalMode || defaultEditorIsMarkdown,
   );
   const [isPrinting, setIsPrinting] = useState(false);
   const notesDefaultMode = user?.notesDefaultMode || "view";
@@ -92,7 +87,7 @@ export const useNoteEditor = ({
       isMarkdownMode
         ? processMarkdownContent(editorContent)
         : convertHtmlToMarkdownUnified(editorContent, user?.tableSyntax),
-    [editorContent, isMarkdownMode, user?.tableSyntax]
+    [editorContent, isMarkdownMode, user?.tableSyntax],
   );
 
   useEffect(() => {
@@ -155,7 +150,7 @@ export const useNoteEditor = ({
       }
 
       const { contentWithoutMetadata: cleanContent } = extractYamlMetadata(
-        derivedMarkdownContent
+        derivedMarkdownContent,
       );
 
       let contentToSave = cleanContent;
@@ -173,8 +168,14 @@ export const useNoteEditor = ({
               const signingData = JSON.parse(passphrase);
               if (signingData.signNote) {
                 encryptFormData.append("signNote", "true");
-                encryptFormData.append("useStoredSigningKey", signingData.useStoredSigningKey.toString());
-                encryptFormData.append("signingPassphrase", signingData.signingPassphrase);
+                encryptFormData.append(
+                  "useStoredSigningKey",
+                  signingData.useStoredSigningKey.toString(),
+                );
+                encryptFormData.append(
+                  "signingPassphrase",
+                  signingData.signingPassphrase,
+                );
               }
             } catch (parseError) {
               await logAudit({
@@ -182,7 +183,10 @@ export const useNoteEditor = ({
                 action: "note_saved_encrypted",
                 category: "note",
                 success: true,
-                metadata: { message: t("encryption.pgpSaveWithoutSigning"), error: String(parseError) }
+                metadata: {
+                  message: t("encryption.pgpSaveWithoutSigning"),
+                  error: String(parseError),
+                },
               });
             }
 
@@ -210,7 +214,7 @@ export const useNoteEditor = ({
             note.uuid!,
             title,
             true,
-            { encryptionMethod: note.encryptionMethod }
+            { encryptionMethod: note.encryptionMethod },
           );
         } catch (error) {
           console.error("Error encrypting note:", error);
@@ -220,10 +224,13 @@ export const useNoteEditor = ({
       }
 
       const formData = new FormData();
-      formData.append("id", note.id);
+      formData.append("slug", note.slug);
       formData.append("title", useAutosave ? note.title : title);
       formData.append("content", contentToSave);
-      formData.append("category", useAutosave ? (note.category || "Uncategorized") : category);
+      formData.append(
+        "category",
+        useAutosave ? note.category || "Uncategorized" : category,
+      );
       formData.append("originalCategory", note.category || "Uncategorized");
       formData.append("user", note.owner || user?.username || "");
       formData.append("uuid", note.uuid || "");
@@ -242,15 +249,22 @@ export const useNoteEditor = ({
         setIsEditingEncrypted(false);
         setContentIsDirty(false);
 
-        const categoryPath = buildCategoryPath(
-          category || "Uncategorized",
-          result.data.id
+        const userSegment = encodeURIComponent(
+          note.owner || user?.username || "unknown",
         );
-        router.push(`/note/${categoryPath}`);
+        const uuidSegment = encodeURIComponent(
+          result.data.pending
+            ? result.data.slug || ""
+            : result.data.uuid || result.data.slug || "",
+        );
+        const categoryQuery = result.data.pending
+          ? `?c=${encodeCategoryPath(result.data.category || "Uncategorized")}`
+          : "";
+        router.push(`/note/${userSegment}/${uuidSegment}${categoryQuery}`);
       }
     },
     [
-      note.id,
+      note.slug,
       note.encryptionMethod,
       title,
       derivedMarkdownContent,
@@ -258,7 +272,7 @@ export const useNoteEditor = ({
       onUpdate,
       router,
       isEditingEncrypted,
-    ]
+    ],
   );
 
   useEffect(() => {
@@ -306,7 +320,11 @@ export const useNoteEditor = ({
     return () => unregisterNavigationGuard();
   }, [hasUnsavedChanges, registerNavigationGuard, unregisterNavigationGuard]);
 
-  const handleEditorContentChange = (content: string, isMarkdown: boolean, isDirty: boolean) => {
+  const handleEditorContentChange = (
+    content: string,
+    isMarkdown: boolean,
+    isDirty: boolean,
+  ) => {
     setEditorContent(content);
     setIsMarkdownMode(isMarkdown);
     setContentIsDirty(isDirty);
@@ -333,11 +351,11 @@ export const useNoteEditor = ({
 
   const confirmDelete = async () => {
     const formData = new FormData();
-    formData.append("id", note.id);
+    formData.append("slug", note.slug);
     formData.append("category", note.category || "");
     if (note.uuid) formData.append("uuid", note.uuid);
     await deleteNote(formData);
-    onDelete?.(note.id);
+    onDelete?.(note.slug);
     router.refresh();
     onBack();
     setShowDeleteModal(false);
@@ -353,20 +371,13 @@ export const useNoteEditor = ({
       setEditorContent(decryptedContent);
       setIsEditing(true);
     },
-    [note.uuid, note.title]
+    [note.uuid, note.title],
   );
 
   const handlePrint = () => {
     setIsPrinting(true);
 
-    const categoryUrlPath =
-      note.category && note.category !== "Uncategorized"
-        ? encodeCategoryPath(note.category) + "/"
-        : "";
-
-    const printUrl = `/public/note/${categoryUrlPath}${encodeId(
-      note.id
-    )}?view_mode=print`;
+    const printUrl = `/public/note/${encodeId(note.uuid || note.slug)}?view_mode=print`;
 
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
