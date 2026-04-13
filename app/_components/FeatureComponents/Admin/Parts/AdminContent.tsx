@@ -23,13 +23,13 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 interface AdminContentProps {
   allLists: Checklist[];
-  allDocs: Note[];
+  allNotes: Note[];
   users: UserType[];
 }
 
 export const AdminContent = ({
   allLists,
-  allDocs,
+  allNotes,
   users,
 }: AdminContentProps) => {
   const t = useTranslations();
@@ -50,11 +50,11 @@ export const AdminContent = ({
     });
 
     const docsByOwner = new Map<string, Note[]>();
-    allDocs.forEach((doc) => {
+    allNotes.forEach((doc) => {
       if (doc.owner) {
-        const ownerDocs = docsByOwner.get(doc.owner) || [];
-        ownerDocs.push(doc);
-        docsByOwner.set(doc.owner, ownerDocs);
+        const ownerNotes = docsByOwner.get(doc.owner) || [];
+        ownerNotes.push(doc);
+        docsByOwner.set(doc.owner, ownerNotes);
       }
     });
 
@@ -70,12 +70,12 @@ export const AdminContent = ({
         };
       })
       .sort((a, b) => b.totalItems - a.totalItems);
-  }, [users, allLists, allDocs]);
+  }, [users, allLists, allNotes]);
 
   useEffect(() => {
     if (expandedUsers === null && sortedUserContent.length > 0) {
       setExpandedUsers(
-        new Set(sortedUserContent.map((uc) => uc.user.username))
+        new Set(sortedUserContent.map((uc) => uc.user.username)),
       );
     }
   }, [sortedUserContent, expandedUsers]);
@@ -97,7 +97,7 @@ export const AdminContent = ({
       setExpandedUsers(new Set());
     } else {
       setExpandedUsers(
-        new Set(sortedUserContent.map((uc) => uc.user.username))
+        new Set(sortedUserContent.map((uc) => uc.user.username)),
       );
     }
   };
@@ -110,15 +110,15 @@ export const AdminContent = ({
       await rebuildLinkIndex(username);
       showToast({
         type: "success",
-        title: t('common.success'),
-        message: t('admin.successfullyRebuiltIndex', { username }),
+        title: t("common.success"),
+        message: t("admin.successfullyRebuiltIndex", { username }),
       });
     } catch (error) {
       console.error("Failed to rebuild index:", error);
       showToast({
         type: "error",
-        title: t('common.error'),
-        message: t('admin.failedToRebuildIndex', { username }),
+        title: t("common.error"),
+        message: t("admin.failedToRebuildIndex", { username }),
       });
     } finally {
       setRebuildingIndex(null);
@@ -133,7 +133,10 @@ export const AdminContent = ({
         showToast({
           type: "success",
           title: t("common.success"),
-          message: t("admin.tagsUpdated", { processed: result.data?.processed || 0, updated: result.data?.updated || 0 }),
+          message: t("admin.tagsUpdated", {
+            processed: result.data?.processed || 0,
+            updated: result.data?.updated || 0,
+          }),
         });
       } else {
         throw new Error(result.error);
@@ -151,20 +154,27 @@ export const AdminContent = ({
 
   return (
     <div className="space-y-6">
-      <Accordion title={t('admin.dataExport')} defaultOpen={false} className="mb-6">
+      <Accordion
+        title={t("admin.dataExport")}
+        defaultOpen={false}
+        className="mb-6"
+      >
         <ExportContent users={users} />
       </Accordion>
 
       <div className="md:flex items-center justify-between">
         <div className="flex items-center gap-4 mt-4 md:mt-0">
           <span className="text-md lg:text-sm text-muted-foreground">
-            {t('admin.totalItems', { items: allLists.length + allDocs.length, userCount: users.length })}
+            {t("admin.totalItems", {
+              items: allLists.length + allNotes.length,
+              userCount: users.length,
+            })}
           </span>
           <button
             onClick={toggleAll}
             className="text-md lg:text-sm text-primary hover:text-primary/80 font-medium"
           >
-            {isAllExpanded ? t('common.collapseAll') : t('common.expandAll')}
+            {isAllExpanded ? t("common.collapseAll") : t("common.expandAll")}
           </button>
         </div>
         {tagsEnabled && (
@@ -212,7 +222,10 @@ export const AdminContent = ({
                       )}
                     </div>
                     <p className="text-md lg:text-sm text-muted-foreground">
-                      {t('admin.userContent', { checklistsLength: checklists.length, notesLength: notes.length })}
+                      {t("admin.userContent", {
+                        checklistsLength: checklists.length,
+                        notesLength: notes.length,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -225,15 +238,15 @@ export const AdminContent = ({
                       handleRebuildIndex(user.username);
                     }}
                     disabled={rebuildingIndex === user.username}
-                    title={t('admin.rebuildLinkIndexesTitle')}
+                    title={t("admin.rebuildLinkIndexesTitle")}
                   >
                     {rebuildingIndex === user.username
-                      ? t('admin.rebuilding')
-                      : t('admin.rebuildIndexes')}
+                      ? t("admin.rebuilding")
+                      : t("admin.rebuildIndexes")}
                   </Button>
                   {hasContent && (
                     <span className="text-md lg:text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-                      {t('common.itemCount', { count: totalItems })}
+                      {t("common.itemCount", { count: totalItems })}
                     </span>
                   )}
                   {isExpanded ? (
@@ -249,21 +262,21 @@ export const AdminContent = ({
                   {hasContent ? (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <AdminContentColumn
-                        title={t('checklists.title')}
+                        title={t("checklists.title")}
                         icon={<CheckmarkSquare04Icon className="h-4 w-4" />}
                         items={checklists.map((list) => ({
                           ...list,
                           link: `/admin/checklist/${list.uuid}`,
-                          details: `${list.owner} • ${list.category} • ${t('common.itemCount', { count: list.items.length })}`,
+                          details: `${list.owner} • ${list.category} • ${t("common.itemCount", { count: list.items.length })}`,
                         }))}
                       />
                       <AdminContentColumn
-                        title={t('notes.title')}
+                        title={t("notes.title")}
                         icon={<File02Icon className="h-4 w-4" />}
                         items={notes.map((doc) => ({
                           ...doc,
                           link: `/admin/note/${doc.uuid}`,
-                          details: `${doc.owner} • ${doc.category} • ${t('common.characterCount', { count: doc.content.length })}`,
+                          details: `${doc.owner} • ${doc.category} • ${t("common.characterCount", { count: doc.content.length })}`,
                         }))}
                       />
                     </div>
@@ -273,10 +286,10 @@ export const AdminContent = ({
                         <File02Icon className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
-                        {t('admin.noContentYet')}
+                        {t("admin.noContentYet")}
                       </h3>
                       <p className="text-muted-foreground">
-                        {t('admin.userHasNoContent')}
+                        {t("admin.userHasNoContent")}
                       </p>
                     </div>
                   )}

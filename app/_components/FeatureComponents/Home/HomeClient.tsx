@@ -9,7 +9,7 @@ import { Checklist, Category, Note, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { Modes } from "@/app/_types/enums";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHeader";
 
 interface SharingStatus {
@@ -21,16 +21,16 @@ interface SharingStatus {
 interface HomeClientProps {
   initialLists: Checklist[];
   initialCategories: Category[];
-  initialDocs: Note[];
-  initialDocsCategories: Category[];
+  initialNotes: Note[];
+  initialNotesCategories: Category[];
   user: SanitisedUser | null;
 }
 
 export const HomeClient = ({
   initialLists,
   initialCategories,
-  initialDocs,
-  initialDocsCategories,
+  initialNotes,
+  initialNotesCategories,
   user,
 }: HomeClientProps) => {
   const router = useRouter();
@@ -53,7 +53,11 @@ export const HomeClient = ({
   return (
     <Layout
       categories={
-        mode === Modes.TAGS ? [] : mode === Modes.NOTES ? initialDocsCategories : initialCategories
+        mode === Modes.TAGS
+          ? []
+          : mode === Modes.NOTES
+            ? initialNotesCategories
+            : initialCategories
       }
       onOpenSettings={openSettings}
       onOpenCreateModal={handleOpenCreateModal}
@@ -62,7 +66,11 @@ export const HomeClient = ({
       onCategoryDeleted={() => router.refresh()}
       onCategoryRenamed={() => router.refresh()}
     >
-      <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
+      <MobileHeader
+        user={user}
+        onOpenSettings={openSettings}
+        currentLocale={user?.preferredLocale || "en"}
+      />
 
       {mode === Modes.CHECKLISTS && (
         <ChecklistHome
@@ -70,34 +78,46 @@ export const HomeClient = ({
           user={user}
           onCreateModal={handleOpenCreateModal}
           onSelectChecklist={(list) => {
-            const categoryPath = buildCategoryPath(
-              list.category || "Uncategorized",
-              list.uuid
+            const userSegment = encodeURIComponent(
+              list.owner || user?.username || "unknown",
             );
-            router.push(`/checklist/${categoryPath}`);
+            const uuidSegment = encodeURIComponent(
+              list.pending ? list.slug || "" : list.uuid || list.slug || "",
+            );
+            const categoryQuery = list.pending
+              ? `?c=${encodeCategoryPath(list.category || "Uncategorized")}`
+              : "";
+            router.push(
+              `/checklist/${userSegment}/${uuidSegment}${categoryQuery}`,
+            );
           }}
         />
       )}
 
       {mode === Modes.NOTES && (
         <NotesHome
-          notes={initialDocs}
-          categories={initialDocsCategories}
+          notes={initialNotes}
+          categories={initialNotesCategories}
           user={user}
           onCreateModal={handleOpenCreateModal}
           onSelectNote={(note) => {
-            const categoryPath = buildCategoryPath(
-              note.category || "Uncategorized",
-              note.uuid
+            const userSegment = encodeURIComponent(
+              note.owner || user?.username || "unknown",
             );
-            router.push(`/note/${categoryPath}`);
+            const uuidSegment = encodeURIComponent(
+              note.pending ? note.slug : note.uuid || note.slug,
+            );
+            const categoryQuery = note.pending
+              ? `?c=${encodeCategoryPath(note.category || "Uncategorized")}`
+              : "";
+            router.push(`/note/${userSegment}/${uuidSegment}${categoryQuery}`);
           }}
         />
       )}
 
       {mode === Modes.TAGS && (
         <TagsHome
-          notes={initialDocs}
+          notes={initialNotes}
           checklists={initialLists}
           user={user}
           onCreateModal={handleOpenCreateModal}

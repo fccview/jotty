@@ -205,6 +205,7 @@ export const readNotesRecursively = async (
           isShared: false,
           encrypted: metadata?.encrypted === true,
           tags,
+          pending: metadata?.uuid ? false : true,
         };
       } else if (excerptLength) {
         const metadata =
@@ -228,6 +229,7 @@ export const readNotesRecursively = async (
           isShared: false,
           encrypted: metadata?.encrypted === true,
           tags,
+          pending: metadata?.uuid ? false : true,
         };
       } else {
         const content = await serverReadFile(filePath);
@@ -249,6 +251,7 @@ export const readNotesRecursively = async (
             owner,
             isShared: false,
             rawContent: content,
+            pending: metadata?.uuid ? false : true,
           };
         } else {
           return parseMarkdownNote(

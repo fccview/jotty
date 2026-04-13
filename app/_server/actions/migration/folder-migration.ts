@@ -7,14 +7,14 @@ import { Result } from "@/app/_types";
 import { DEPRECATED_DOCS_FOLDER, NOTES_FOLDER } from "@/app/_consts/notes";
 import { hasMarkdownFiles } from "./helpers";
 
-export const renameDocsFolder = async (): Promise<Result<null>> => {
+export const renameNotesFolder = async (): Promise<Result<null>> => {
   try {
     const dataDir = join(process.cwd(), "data");
     const docsPath = join(dataDir, DEPRECATED_DOCS_FOLDER);
     const notesPath = join(dataDir, NOTES_FOLDER);
 
     if (!existsSync(docsPath)) {
-      return { success: false, error: "Docs folder not found" };
+      return { success: false, error: "Notes folder not found" };
     }
 
     if (existsSync(notesPath)) {

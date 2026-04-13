@@ -9,7 +9,10 @@ import {
 } from "@/app/_utils/recurrence-utils";
 
 export const getChecklistType = (content: string): ChecklistType => {
-  if (content.includes("checklistType: task") || content.includes("checklistType: kanban")) {
+  if (
+    content.includes("checklistType: task") ||
+    content.includes("checklistType: kanban")
+  ) {
     return "kanban";
   }
 

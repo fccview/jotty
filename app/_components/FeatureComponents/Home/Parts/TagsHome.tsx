@@ -12,10 +12,7 @@ import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/Chec
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import Masonry from "react-masonry-css";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import {
-  encodeCategoryPath,
-  buildCategoryPath,
-} from "@/app/_utils/global-utils";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useMemo, useState, useEffect, useTransition } from "react";
@@ -46,6 +43,7 @@ const breakpointColumnsObj = {
 export const TagsHome = ({
   notes: initialNotes,
   checklists: initialChecklists,
+  user,
   onCreateModal,
 }: TagsHomeProps) => {
   const t = useTranslations();
@@ -143,19 +141,29 @@ export const TagsHome = ({
   };
 
   const handleSelectNote = (note: Note) => {
-    const categoryPath = buildCategoryPath(
-      note.category || "Uncategorized",
-      note.uuid,
+    const userSegment = encodeURIComponent(
+      note.owner || user?.username || "unknown",
     );
-    router.push(`/note/${categoryPath}`);
+    const uuidSegment = encodeURIComponent(
+      note.pending ? note.slug || "" : note.uuid || note.slug || "",
+    );
+    const categoryQuery = note.pending
+      ? `?c=${encodeCategoryPath(note.category || "Uncategorized")}`
+      : "";
+    router.push(`/note/${userSegment}/${uuidSegment}${categoryQuery}`);
   };
 
   const handleSelectChecklist = (list: Checklist) => {
-    const categoryPath = buildCategoryPath(
-      list.category || "Uncategorized",
-      list.uuid,
+    const userSegment = encodeURIComponent(
+      list.owner || user?.username || "unknown",
     );
-    router.push(`/checklist/${categoryPath}`);
+    const uuidSegment = encodeURIComponent(
+      list.pending ? list.slug || "" : list.uuid || list.slug || "",
+    );
+    const categoryQuery = list.pending
+      ? `?c=${encodeCategoryPath(list.category || "Uncategorized")}`
+      : "";
+    router.push(`/checklist/${userSegment}/${uuidSegment}${categoryQuery}`);
   };
 
   if (combinedItems.length === 0 && !selectedFilter) {

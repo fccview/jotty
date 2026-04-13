@@ -117,15 +117,7 @@ export const CategoryList = (props: CategoryListProps) => {
       return;
     }
 
-    let currentItemPath: string | null = null;
-    if (activeNode.type === "item") {
-      const routePrefix = mode === Modes.CHECKLISTS ? "/checklist" : "/note";
-      const currentCategoryPath = buildCategoryPath(
-        activeNode.category,
-        activeNode.id,
-      );
-      currentItemPath = `${routePrefix}/${currentCategoryPath}`;
-    }
+
 
     const formData = new FormData();
     formData.append("mode", mode);
@@ -152,70 +144,7 @@ export const CategoryList = (props: CategoryListProps) => {
 
     await moveNode(formData);
 
-    if (
-      activeNode.type === "item" &&
-      currentItemPath &&
-      pathname === currentItemPath
-    ) {
-      let newCategory = "";
-      if (overNode.type === "category") {
-        newCategory = overNode.categoryPath;
-      } else if (overNode.type === "drop-indicator") {
-        newCategory = overNode.parentPath || "Uncategorized";
-      }
-
-      if (newCategory === "") {
-        newCategory = "Uncategorized";
-      }
-
-      const routePrefix = mode === Modes.CHECKLISTS ? "/checklist" : "/note";
-      const newItemPath = `${routePrefix}/${buildCategoryPath(
-        newCategory,
-        activeNode.id,
-      )}`;
-
-      router.push(newItemPath);
-    } else if (activeNode.type === "category" && pathname) {
-      const routePrefix = mode === Modes.CHECKLISTS ? "/checklist" : "/note";
-      const oldCategoryPath = activeNode.categoryPath;
-      const categoryName = activeNode.categoryPath.split("/").pop() || "";
-
-      let newCategoryPath = "";
-      if (overNode.type === "category") {
-        newCategoryPath = `${overNode.categoryPath}/${categoryName}`;
-      } else if (overNode.type === "drop-indicator") {
-        const parentPath = overNode.parentPath || "";
-        newCategoryPath =
-          parentPath === "" ? categoryName : `${parentPath}/${categoryName}`;
-      }
-
-      const oldCategoryUrl = `${routePrefix}/${encodeCategoryPath(oldCategoryPath)}/`;
-      const pathnameParts = pathname.split("/");
-
-      let itemPart = "";
-      let matched = false;
-
-      if (pathname.startsWith(oldCategoryUrl) && pathnameParts.length > 3) {
-        const categoryPathParts =
-          encodeCategoryPath(oldCategoryPath).split("/");
-        const startIndex =
-          routePrefix.split("/").length + categoryPathParts.length;
-        itemPart = pathnameParts.slice(startIndex).join("/");
-        matched = true;
-      }
-
-      if (matched) {
-        const newPath = `${routePrefix}/${buildCategoryPath(
-          newCategoryPath,
-          decodeURIComponent(itemPart),
-        )}`;
-        router.push(newPath);
-      } else {
-        router.refresh();
-      }
-    } else {
-      router.refresh();
-    }
+    router.refresh();
   };
 
   return (

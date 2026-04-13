@@ -55,7 +55,7 @@ import {
 } from "@/app/_server/actions/checklist-item";
 
 const mockChecklist = {
-  id: "test-list",
+  slug: "test-list",
   uuid: "test-uuid-123",
   title: "Test List",
   category: "TestCategory",

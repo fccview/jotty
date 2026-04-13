@@ -257,6 +257,7 @@ export const getListById = async (
   ownerUsername?: string,
   actingUsername?: string,
   unarchive?: boolean,
+  categoryFallback?: string,
 ): Promise<Checklist | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
   const { serverReadFile } = await import("@/app/_server/actions/file");
@@ -297,6 +298,14 @@ export const getListById = async (
       uuid,
     );
     if (archived) filePath = archived.filePath;
+  } else if (categoryFallback) {
+    const fallbackPath = path.join(ownerDir, categoryFallback, `${uuid}.md`);
+    try {
+      await fs.access(fallbackPath);
+      filePath = fallbackPath;
+    } catch {
+      filePath = null;
+    }
   }
 
   if (!filePath) return undefined;

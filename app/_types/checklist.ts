@@ -90,4 +90,5 @@ export interface Checklist {
   rawContent?: string;
   statuses?: KanbanStatus[];
   tags?: string[];
+  pending?: boolean;
 }

@@ -14,13 +14,13 @@ export const parseMarkdownNote = (
   owner?: string,
   isShared?: boolean,
   fileStats?: { birthtime: Date; mtime: Date },
-  fileName?: string
+  fileName?: string,
 ): Note => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
   const title = extractTitle(
     content,
-    fileName ? path.basename(fileName, ".md") : undefined
+    fileName ? path.basename(fileName, ".md") : undefined,
   );
 
   return {
@@ -40,13 +40,14 @@ export const parseMarkdownNote = (
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
     tags: Array.isArray(metadata.tags) ? metadata.tags : [],
+    pending: metadata?.uuid ? false : true,
   };
 };
 
 export const convertInternalLinksToNewFormat = async (
   content: string,
   username?: string,
-  category?: string
+  category?: string,
 ): Promise<string> => {
   let convertedContent = content;
 
@@ -58,7 +59,7 @@ export const convertInternalLinksToNewFormat = async (
     const [fullMatch] = match;
     const hrefMatch = fullMatch.match(/data-href="([^"]*)"/);
     const convertMatch = fullMatch.match(
-      /data-convert-to-bidirectional="([^"]*)"/
+      /data-convert-to-bidirectional="([^"]*)"/,
     );
 
     const href = hrefMatch?.[1];
@@ -89,23 +90,23 @@ export const convertInternalLinksToNewFormat = async (
                 .replace(/data-href="[^"]*"/, `data-href="/jotty/${note.uuid}"`)
                 .replace(
                   /data-convert-to-bidirectional="true"/,
-                  `data-convert-to-bidirectional="false"`
+                  `data-convert-to-bidirectional="false"`,
                 );
 
               if (fullMatch.includes("data-uuid=")) {
                 updatedSpan = updatedSpan.replace(
                   /data-uuid="[^"]*"/,
-                  `data-uuid="${note.uuid}"`
+                  `data-uuid="${note.uuid}"`,
                 );
               } else {
                 updatedSpan = updatedSpan.replace(
                   "data-internal-link",
-                  `data-internal-link data-uuid="${note.uuid}"`
+                  `data-internal-link data-uuid="${note.uuid}"`,
                 );
               }
               convertedContent = convertedContent.replace(
                 fullMatch,
-                updatedSpan
+                updatedSpan,
               );
             }
           }
@@ -133,27 +134,27 @@ export const convertInternalLinksToNewFormat = async (
               let updatedSpan = fullMatch
                 .replace(
                   /data-href="[^"]*"/,
-                  `data-href="/jotty/${checklist.uuid}"`
+                  `data-href="/jotty/${checklist.uuid}"`,
                 )
                 .replace(
                   /data-convert-to-bidirectional="true"/,
-                  `data-convert-to-bidirectional="false"`
+                  `data-convert-to-bidirectional="false"`,
                 );
 
               if (fullMatch.includes("data-uuid=")) {
                 updatedSpan = updatedSpan.replace(
                   /data-uuid="[^"]*"/,
-                  `data-uuid="${checklist.uuid}"`
+                  `data-uuid="${checklist.uuid}"`,
                 );
               } else {
                 updatedSpan = updatedSpan.replace(
                   "data-internal-link",
-                  `data-internal-link data-uuid="${checklist.uuid}"`
+                  `data-internal-link data-uuid="${checklist.uuid}"`,
                 );
               }
               convertedContent = convertedContent.replace(
                 fullMatch,
-                updatedSpan
+                updatedSpan,
               );
             }
           }

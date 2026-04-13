@@ -168,15 +168,12 @@ export const useSidebar = (props: SidebarProps) => {
   };
 
   const isItemSelected = (item: Checklist | Note) => {
-    const expectedPath = buildCategoryPath(
-      item.category || "Uncategorized",
-      item.slug
-    )?.toLowerCase();
-
+    const userSegment = encodeURIComponent(item.owner || props.user?.username || "unknown").toLowerCase();
+    const uuidSegment = encodeURIComponent(item.uuid || item.slug).toLowerCase();
+    
     return (
       pathname?.toLowerCase() ===
-      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
-        }/${expectedPath}`.toLowerCase()
+      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${userSegment}/${uuidSegment}`.toLowerCase()
     );
   };
 

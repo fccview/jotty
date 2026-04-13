@@ -66,7 +66,7 @@ describe("History Actions", () => {
     describe("getHistory", () => {
         it("should lookup note by UUID to find current category", async () => {
             mockGetNoteById.mockResolvedValue({
-                id: "note-id",
+                slug: "note-id",
                 uuid: "test-uuid",
                 category: "NewCategory",
                 title: "Test Note",
@@ -121,7 +121,7 @@ describe("History Actions", () => {
 
         it("should parse git history entries correctly", async () => {
             mockGetNoteById.mockResolvedValue({
-                id: "note-id",
+                slug: "note-id",
                 uuid: "test-uuid",
                 category: "Category",
                 title: "Test Note",
@@ -149,7 +149,7 @@ describe("History Actions", () => {
 
         it("should handle pagination correctly", async () => {
             mockGetNoteById.mockResolvedValue({
-                id: "note-id",
+                slug: "note-id",
                 uuid: "test-uuid",
                 category: "Category",
                 title: "Test Note",
@@ -192,7 +192,7 @@ describe("History Actions", () => {
         it("should check permissions before returning history", async () => {
             mockCheckUserPermission.mockResolvedValue(false);
             mockGetNoteById.mockResolvedValue({
-                id: "note-id",
+                slug: "note-id",
                 uuid: "test-uuid",
                 category: "Category",
             });

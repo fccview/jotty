@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation";
-import { getAllLists, getListById } from "@/app/_server/actions/checklist";
+import { getAllLists } from "@/app/_server/actions/checklist";
 import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
 import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
 import type { Metadata } from "next";
 import { Modes } from "@/app/_types/enums";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
-import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
-import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { decodeId } from "@/app/_utils/global-utils";
 import { isItemSharedWith } from "@/app/_server/actions/sharing";
+import { ItemTypes } from "@/app/_types/enums";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
@@ -16,7 +16,7 @@ import { isEnvEnabled } from "@/app/_utils/env-utils";
 
 interface PublicChecklistPageProps {
   params: Promise<{
-    categoryPath: string[];
+    uuid: string;
   }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
@@ -27,15 +27,9 @@ export async function generateMetadata(
   props: PublicChecklistPageProps,
 ): Promise<Metadata> {
   const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
+  const { uuid } = params;
 
-  return getMedatadaTitle(Modes.CHECKLISTS, id, category);
+  return getMedatadaTitle(Modes.CHECKLISTS, decodeId(uuid), "Uncategorized");
 }
 
 export default async function PublicChecklistPage(
@@ -43,37 +37,18 @@ export default async function PublicChecklistPage(
 ) {
   const searchParams = await props.searchParams;
   const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
+  const { uuid } = params;
+  const id = decodeId(uuid);
 
   await CheckForNeedsMigration();
 
-  let checklist = await getListById(id, undefined, category);
+  let checklist = undefined;
 
-  if (!checklist) {
-    const listsResult = await getAllLists();
-    if (!listsResult.success || !listsResult.data) {
-      redirect("/");
-    }
-
+  const listsResult = await getAllLists();
+  if (listsResult.success && listsResult.data) {
     checklist = listsResult.data.find(
-      (list) => list.slug === id && list.category === category,
+      (list) => list.uuid === id || list.slug === id,
     );
-
-    if (!checklist && categoryPath.length === 1) {
-      checklist = listsResult.data.find(
-        (list) => list.slug === id && list.category === "Uncategorized",
-      );
-
-      if (!checklist) {
-        checklist = listsResult.data.find((list) => list.slug === id);
-      }
-    }
   }
 
   if (!checklist) {
@@ -88,8 +63,7 @@ export default async function PublicChecklistPage(
 
   const isPubliclyShared = await isItemSharedWith(
     checklist.uuid || id,
-    category,
-    "checklist",
+    ItemTypes.CHECKLIST,
     "public",
   );
   const currentUser = await getCurrentUser();

@@ -1,4 +1,4 @@
-export { renameDocsFolder } from "./folder-migration";
+export { renameNotesFolder } from "./folder-migration";
 
 export {
   migrateToNewSharingFormat,

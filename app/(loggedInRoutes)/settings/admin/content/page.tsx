@@ -7,21 +7,21 @@ import { canAccessAllContent } from "@/app/_server/actions/users";
 import { notFound } from "next/navigation";
 
 export default async function AdminContentPage() {
-    const hasAccess = await canAccessAllContent();
+  const hasAccess = await canAccessAllContent();
 
-    if (!hasAccess) {
-        return notFound();
-    }
+  if (!hasAccess) {
+    return notFound();
+  }
 
-    const [usersData, listsData, docsData] = await Promise.all([
-        readJsonFile(USERS_FILE),
-        getAllLists(),
-        getAllNotes(),
-    ]);
+  const [usersData, listsData, docsData] = await Promise.all([
+    readJsonFile(USERS_FILE),
+    getAllLists(),
+    getAllNotes(),
+  ]);
 
-    const users = usersData;
-    const allLists = listsData.success && listsData.data ? listsData.data : [];
-    const allDocs = docsData.success && docsData.data ? docsData.data : [];
+  const users = usersData;
+  const allLists = listsData.success && listsData.data ? listsData.data : [];
+  const allNotes = docsData.success && docsData.data ? docsData.data : [];
 
-    return <AdminContent allLists={allLists} allDocs={allDocs} users={users} />;
+  return <AdminContent allLists={allLists} allNotes={allNotes} users={users} />;
 }

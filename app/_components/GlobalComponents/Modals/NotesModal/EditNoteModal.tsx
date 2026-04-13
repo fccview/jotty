@@ -8,7 +8,7 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { getNoteById, updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
@@ -45,7 +45,7 @@ export const EditNoteModal = ({
       const fetchedNote = await getNoteById(
         initialNote.uuid || initialNote.slug,
         initialNote.category || "Uncategorized",
-        user.username
+        user.username,
       );
 
       if (!fetchedNote) {
@@ -99,7 +99,18 @@ export const EditNoteModal = ({
       const updatedNote = result.data;
 
       if (!unarchive) {
-        router.push(`/note/${updatedNote.owner}/${updatedNote.uuid}`);
+        const userSegment = encodeURIComponent(
+          updatedNote.owner || user?.username || "unknown",
+        );
+        const uuidSegment = encodeURIComponent(
+          updatedNote.pending
+            ? updatedNote.slug || ""
+            : updatedNote.uuid || updatedNote.slug || "",
+        );
+        const categoryQuery = updatedNote.pending
+          ? `?c=${encodeCategoryPath(updatedNote.category || "Uncategorized")}`
+          : "";
+        router.push(`/note/${userSegment}/${uuidSegment}${categoryQuery}`);
       }
       onUpdated();
     }
@@ -132,14 +143,18 @@ export const EditNoteModal = ({
 
         {isOwner && (
           <div>
-            <label className="block text-md lg:text-sm font-medium text-foreground mb-2">{t('notes.category')}</label>
+            <label className="block text-md lg:text-sm font-medium text-foreground mb-2">
+              {t("notes.category")}
+            </label>
             <CategoryTreeSelector
               categories={categories}
               selectedCategory={
-                category !== ARCHIVED_DIR_NAME ? category : t("notes.uncategorized")
+                category !== ARCHIVED_DIR_NAME
+                  ? category
+                  : t("notes.uncategorized")
               }
               onCategorySelect={setCategory}
-              placeholder={t('common.selectCategory')}
+              placeholder={t("common.selectCategory")}
               className="w-full"
               isInModal={true}
             />
@@ -153,7 +168,9 @@ export const EditNoteModal = ({
             onClick={onClose}
             disabled={isLoading}
             className="flex-1"
-          >{t('common.cancel')}</Button>
+          >
+            {t("common.cancel")}
+          </Button>
           <Button
             type="submit"
             disabled={isLoading || !title.trim()}

@@ -14,11 +14,16 @@ import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/Confirma
 interface AdminUsersClientProps {
   initialUsers: User[];
   initialLists: Checklist[];
-  initialDocs: Note[];
+  initialNotes: Note[];
   username: string;
 }
 
-export function AdminUsersClient({ initialUsers, initialLists, initialDocs, username }: AdminUsersClientProps) {
+export function AdminUsersClient({
+  initialUsers,
+  initialLists,
+  initialNotes,
+  username,
+}: AdminUsersClientProps) {
   const t = useTranslations();
   const { showToast } = useToast();
   const [users, setUsers] = useState<User[]>(initialUsers);
@@ -32,9 +37,7 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
 
   const loadData = async () => {
     try {
-      const [usersData] = await Promise.all([
-        readJsonFile(USERS_FILE),
-      ]);
+      const [usersData] = await Promise.all([readJsonFile(USERS_FILE)]);
 
       setUsers(usersData);
     } catch (error) {
@@ -71,20 +74,22 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
       const result = await deleteUser(formData);
 
       if (result.success) {
-        setUsers((prev) => prev.filter((u) => u.username !== userToDelete.username));
+        setUsers((prev) =>
+          prev.filter((u) => u.username !== userToDelete.username),
+        );
       } else {
         showToast({
           type: "error",
-          title: t('common.error'),
-          message: result.error || t('errors.failedToDeleteUser'),
+          title: t("common.error"),
+          message: result.error || t("errors.failedToDeleteUser"),
         });
       }
     } catch (error) {
       console.error("Error deleting user:", error);
       showToast({
         type: "error",
-        title: t('common.error'),
-        message: t('errors.failedToDeleteUser'),
+        title: t("common.error"),
+        message: t("errors.failedToDeleteUser"),
       });
     } finally {
       setDeletingUser(null);
@@ -102,7 +107,7 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
         onEditUser={handleEditUser}
         onDeleteUser={handleDeleteUser}
         allLists={initialLists}
-        allDocs={initialDocs}
+        allNotes={initialNotes}
         username={username}
         deletingUser={deletingUser}
       />
@@ -122,7 +127,9 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
         }}
         onConfirm={confirmDeleteUser}
         title={t("common.delete")}
-        message={t('admin.deleteUserConfirmation', { username: userToDelete?.username || "" })}
+        message={t("admin.deleteUserConfirmation", {
+          username: userToDelete?.username || "",
+        })}
         confirmText={t("common.delete")}
         variant="destructive"
       />

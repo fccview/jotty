@@ -21,7 +21,7 @@ import { getOrCompute, metaCacheKey } from "@/app/_server/lib/metadata-cache";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
-    const allDocs: Note[] = [];
+    const allNotes: Note[] = [];
 
     const users: User[] = await readJsonFile(USERS_FILE);
 
@@ -29,20 +29,20 @@ export const getAllNotes = async (allowArchived?: boolean) => {
       const userDir = NOTES_DIR(user.username);
 
       try {
-        const userDocs = await readNotesRecursively(
+        const userNotes = await readNotesRecursively(
           userDir,
           "",
           user.username,
           allowArchived,
           false,
         );
-        allDocs.push(...userDocs);
+        allNotes.push(...userNotes);
       } catch (error) {
         continue;
       }
     }
 
-    return { success: true, data: allDocs };
+    return { success: true, data: allNotes };
   } catch (error) {
     console.error("Error in getAllNotes:", error);
     return { success: false, error: "Failed to fetch all notes" };
@@ -54,6 +54,7 @@ export const getNoteById = async (
   ownerUsername?: string,
   actingUsername?: string,
   unarchive?: boolean,
+  categoryFallback?: string,
 ): Promise<Note | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
   const { serverReadFile } = await import("@/app/_server/actions/file");
@@ -66,9 +67,8 @@ export const getNoteById = async (
 
   let isShared = false;
   if (actingUsername && actingUsername !== ownerUsername) {
-    const { getAllSharedItemsForUser } = await import(
-      "@/app/_server/actions/sharing"
-    );
+    const { getAllSharedItemsForUser } =
+      await import("@/app/_server/actions/sharing");
     const sharedData = await getAllSharedItemsForUser(actingUsername);
     const match = sharedData.notes.find(
       (s) => s.uuid === uuid && s.sharer === ownerUsername,
@@ -92,6 +92,14 @@ export const getNoteById = async (
       uuid,
     );
     if (archived) filePath = archived.filePath;
+  } else if (categoryFallback) {
+    const fallbackPath = path.join(absUserDir, categoryFallback, `${uuid}.md`);
+    try {
+      await fs.access(fallbackPath);
+      filePath = fallbackPath;
+    } catch {
+      filePath = null;
+    }
   }
 
   if (!filePath) return undefined;
@@ -136,6 +144,7 @@ export const getNoteById = async (
     encrypted: parsedData.encrypted || false,
     encryptionMethod: parsedData.encryptionMethod,
     tags: parsedData.tags || [],
+    pending: parsedData?.uuid ? false : true,
   };
 };
 
@@ -270,10 +279,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
           });
         }
       } catch (error) {
-        console.error(
-          `Error reading shared note ${sharedItem.uuid}:`,
-          error,
-        );
+        console.error(`Error reading shared note ${sharedItem.uuid}:`, error);
         continue;
       }
     }

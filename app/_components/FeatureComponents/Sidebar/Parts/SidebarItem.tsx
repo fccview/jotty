@@ -17,7 +17,7 @@ import {
   Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
+import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
@@ -78,7 +78,16 @@ export const SidebarItem = ({
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
-  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || "Uncategorized", item.slug)}`;
+  const userSegment = encodeURIComponent(
+    item.owner || user?.username || "unknown",
+  ).toLowerCase();
+  const uuidSegment = encodeURIComponent(
+    item.pending ? item.slug : item.uuid || item.slug,
+  ).toLowerCase();
+  const categoryQuery = item.pending
+    ? `?c=${encodeCategoryPath(item.category || "Uncategorized")}`
+    : "";
+  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${userSegment}/${uuidSegment}${categoryQuery}`;
 
   const handleDeleteItem = async () => {
     const formData = new FormData();

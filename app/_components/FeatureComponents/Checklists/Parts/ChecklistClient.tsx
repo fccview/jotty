@@ -18,7 +18,10 @@ import { useChecklist } from "@/app/_hooks/useChecklist";
 import { isKanbanType, Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import {
+  buildCategoryPath,
+  encodeCategoryPath,
+} from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 
 interface ChecklistClientProps {
@@ -98,12 +101,16 @@ export const ChecklistClient = ({
     const result = await cloneChecklist(formData);
 
     if (result.success && result.data) {
-      router.push(
-        `/checklist/${buildCategoryPath(
-          result.data.category || "Uncategorized",
-          result.data.uuid,
-        )}`,
+      const userSegment = encodeURIComponent(
+        result.data.owner || user?.username || "unknown",
       );
+      const uuidSegment = encodeURIComponent(
+        result.data.pending ? result.data.slug : result.data.uuid,
+      );
+      const categoryQuery = result.data.pending
+        ? `?c=${encodeCategoryPath(result.data.category || "Uncategorized")}`
+        : "";
+      router.push(`/checklist/${userSegment}/${uuidSegment}${categoryQuery}`);
       router.refresh();
     }
   };
@@ -220,7 +227,13 @@ export const ChecklistClient = ({
           onClose={() => setShowCreateModal(false)}
           onCreated={(newChecklist) => {
             if (newChecklist) {
-              router.push(`/checklist/${newChecklist.uuid}`);
+              const userSegment = encodeURIComponent(
+                newChecklist.owner || user?.username || "unknown",
+              );
+              const uuidSegment = encodeURIComponent(
+                newChecklist.uuid || newChecklist.slug,
+              );
+              router.push(`/checklist/${userSegment}/${uuidSegment}`);
             }
             setShowCreateModal(false);
             router.refresh();

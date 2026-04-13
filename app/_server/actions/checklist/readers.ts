@@ -216,6 +216,7 @@ export const readListsRecursively = async (
               owner,
               isShared: false,
               tags,
+              pending: metadata?.uuid ? false : true,
             };
           }
           const content = await serverReadFile(filePath);
@@ -244,6 +245,7 @@ export const readListsRecursively = async (
               owner,
               isShared: false,
               rawContent: content,
+              pending: metadata?.uuid ? false : true,
             };
           }
           return parseMarkdown(

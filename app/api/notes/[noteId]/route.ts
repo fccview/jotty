@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ noteI
             }
 
             const transformedNote = {
-                id: result.data?.uuid || result.data?.id,
+                id: result.data?.uuid || result.data?.slug,
                 title: result.data?.title,
                 category: result.data?.category || "Uncategorized",
                 content: result.data?.content,
