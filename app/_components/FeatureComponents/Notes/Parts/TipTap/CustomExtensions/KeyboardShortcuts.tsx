@@ -53,11 +53,24 @@ export const KeyboardShortcuts = Extension.create<KeyboardShortcutsOptions>({
         if (this.editor.isActive("table")) {
           return this.editor.chain().focus().goToNextCell().run();
         }
+        // fccview is onto you!
+        if (this.editor.isActive("orderedList") || this.editor.isActive("bulletList")) {
+          this.editor.chain().focus().sinkListItem("listItem").run();
+          return true;
+        }
         return false;
       },
       "Shift-Tab": () => {
         if (this.editor.isActive("table")) {
           return this.editor.chain().focus().goToPreviousCell().run();
+        }
+        if (this.editor.isActive("orderedList") || this.editor.isActive("bulletList")) {
+          const { $anchor } = this.editor.state.selection;
+          const isNested = $anchor.node($anchor.depth - 3)?.type.name === "listItem";
+          if (isNested) {
+            return this.editor.chain().focus().liftListItem("listItem").run();
+          }
+          return true;
         }
         return false;
       },
