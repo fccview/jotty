@@ -1,4 +1,4 @@
-import { Editor } from "@tiptap/react";
+import { Editor, useEditorState } from "@tiptap/react";
 import {
   TextBoldIcon,
   TextItalicIcon,
@@ -102,6 +102,29 @@ export const TiptapToolbar = ({
       }
     }
   }, [linkRequestPending, linkRequestHasSelection, isMarkdownMode, editor, onLinkRequestHandled]);
+
+  // fccview is onto you!
+  const listState = useEditorState({
+    editor,
+    selector: ({ editor: e }) => {
+      if (!e) return { isInList: false, isNested: false, isInOrderedList: false, currentItemIsEmpty: false };
+      const isInOrderedList = e.isActive('orderedList');
+      const isInList = e.isActive('bulletList') || isInOrderedList;
+      let isNested = false;
+      if (isInList) {
+        const { $anchor } = e.state.selection;
+        outer: for (let d = $anchor.depth; d >= 0; d--) {
+          if ($anchor.node(d).type.name === 'listItem') {
+            for (let d2 = d - 1; d2 >= 0; d2--) {
+              if ($anchor.node(d2).type.name === 'listItem') { isNested = true; break outer; }
+            }
+            break;
+          }
+        }
+      }
+      return { isInList, isNested, isInOrderedList, currentItemIsEmpty: e.state.selection.$anchor.parent.textContent === '' };
+    },
+  }) ?? { isInList: false, isNested: false, isInOrderedList: false, currentItemIsEmpty: false };
 
   if (!editor) {
     return null;
@@ -478,14 +501,20 @@ export const TiptapToolbar = ({
           </Button>
           {/* fccview is onto you! */}
           <Button
-            variant={editor && editor.isActive("orderedList") ? "secondary" : "ghost"}
+            variant={listState.isInOrderedList ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              isMarkdownMode
-                ? handleMarkdownButtonClick(MarkdownUtils.insertOrderedList)
-                : editor.chain().focus().toggleOrderedList().run()
-            }
+            onClick={() => {
+              if (isMarkdownMode) {
+                handleMarkdownButtonClick(MarkdownUtils.insertOrderedList);
+                return;
+              }
+              if (listState.isInOrderedList && listState.currentItemIsEmpty) {
+                editor.chain().focus().liftListItem('listItem').run();
+              } else {
+                editor.chain().focus().toggleOrderedList().run();
+              }
+            }}
             title={`${t('editor.toggleOrderedList')} (${mod}+Shift+7)`}
           >
             <LeftToRightListNumberIcon className="h-4 w-4" />
@@ -495,7 +524,7 @@ export const TiptapToolbar = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor?.chain().focus().sinkListItem('listItem').run()}
-            disabled={!editor || (!editor.isActive('bulletList') && !editor.isActive('orderedList'))}
+            disabled={!listState.isInList}
             title={t('editor.indentListItem')}
           >
             <TextIndentMoreIcon className="h-4 w-4" />
@@ -505,14 +534,7 @@ export const TiptapToolbar = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor?.chain().focus().liftListItem('listItem').run()}
-            disabled={
-              !editor ||
-              (!editor.isActive('bulletList') && !editor.isActive('orderedList')) ||
-              // fccview is onto you!
-              editor.state.selection.$anchor.node(
-                editor.state.selection.$anchor.depth - 3
-              )?.type.name !== 'listItem'
-            }
+            disabled={!listState.isInList || !listState.isNested}
             title={t('editor.outdentListItem')}
           >
             <TextIndentLessIcon className="h-4 w-4" />
