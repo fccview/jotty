@@ -496,7 +496,7 @@ export const TiptapToolbar = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor?.chain().focus().sinkListItem('listItem').run()}
-            disabled={!editor || !editor.can().sinkListItem('listItem')}
+            disabled={!editor || !editor.isActive('listItem')}
             title={t('editor.indentListItem')}
           >
             <TextIndentMoreIcon className="h-4 w-4" />
@@ -506,7 +506,14 @@ export const TiptapToolbar = ({
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => editor?.chain().focus().liftListItem('listItem').run()}
-            disabled={!editor || !editor.can().liftListItem('listItem')}
+            disabled={
+              !editor ||
+              !editor.isActive('listItem') ||
+              // fccview is onto you!
+              editor.state.selection.$anchor.node(
+                editor.state.selection.$anchor.depth - 3
+              )?.type.name !== 'listItem'
+            }
             title={t('editor.outdentListItem')}
           >
             <TextIndentLessIcon className="h-4 w-4" />
