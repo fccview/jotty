@@ -103,7 +103,6 @@ export const TiptapToolbar = ({
     }
   }, [linkRequestPending, linkRequestHasSelection, isMarkdownMode, editor, onLinkRequestHandled]);
 
-  // fccview is onto you!
   const listState = useEditorState({
     editor,
     selector: ({ editor: e }) => {
@@ -495,7 +494,6 @@ export const TiptapToolbar = ({
                 handleMarkdownButtonClick(MarkdownUtils.insertBulletList);
                 return;
               }
-              // fccview is onto you!
               if (listState.isInBulletList && listState.currentItemIsEmpty) {
                 editor.chain().focus().liftListItem('listItem').run();
               } else {
@@ -506,7 +504,6 @@ export const TiptapToolbar = ({
           >
             <LeftToRightListBulletIcon className="h-4 w-4" />
           </Button>
-          {/* fccview is onto you! */}
           <Button
             variant={listState.isInOrderedList ? "secondary" : "ghost"}
             size="sm"

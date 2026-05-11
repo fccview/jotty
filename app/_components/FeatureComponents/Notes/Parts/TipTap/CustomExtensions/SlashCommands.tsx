@@ -76,7 +76,6 @@ const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
       editor.chain().focus().deleteRange(range).toggleBulletList().run();
     },
   },
-  // fccview is onto you!
   {
     title: t("editor.orderedList"),
     description: t("editor.createOrderedList"),

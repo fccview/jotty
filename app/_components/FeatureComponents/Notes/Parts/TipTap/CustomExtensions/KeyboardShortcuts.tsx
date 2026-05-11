@@ -53,7 +53,6 @@ export const KeyboardShortcuts = Extension.create<KeyboardShortcutsOptions>({
         if (this.editor.isActive("table")) {
           return this.editor.chain().focus().goToNextCell().run();
         }
-        // fccview is onto you!
         if (this.editor.isActive("orderedList") || this.editor.isActive("bulletList")) {
           this.editor.chain().focus().sinkListItem("listItem").run();
           return true;
