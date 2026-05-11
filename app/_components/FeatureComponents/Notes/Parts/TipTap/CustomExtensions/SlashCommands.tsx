@@ -6,6 +6,7 @@ import {
   Heading01Icon,
   Heading02Icon,
   LeftToRightListBulletIcon,
+  LeftToRightListNumberIcon,
   CheckmarkSquare04Icon,
   SourceCodeIcon,
   QuoteUpIcon,
@@ -73,6 +74,15 @@ const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
     icon: <LeftToRightListBulletIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleBulletList().run();
+    },
+  },
+  // fccview is onto you!
+  {
+    title: t("editor.orderedList"),
+    description: t("editor.createOrderedList"),
+    icon: <LeftToRightListNumberIcon className="h-4 w-4" />,
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).toggleOrderedList().run();
     },
   },
   {
