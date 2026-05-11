@@ -107,9 +107,10 @@ export const TiptapToolbar = ({
   const listState = useEditorState({
     editor,
     selector: ({ editor: e }) => {
-      if (!e) return { isInList: false, isNested: false, isInOrderedList: false, currentItemIsEmpty: false };
+      if (!e) return { isInList: false, isNested: false, isInBulletList: false, isInOrderedList: false, currentItemIsEmpty: false };
+      const isInBulletList = e.isActive('bulletList');
       const isInOrderedList = e.isActive('orderedList');
-      const isInList = e.isActive('bulletList') || isInOrderedList;
+      const isInList = isInBulletList || isInOrderedList;
       let isNested = false;
       if (isInList) {
         const { $anchor } = e.state.selection;
@@ -122,9 +123,9 @@ export const TiptapToolbar = ({
           }
         }
       }
-      return { isInList, isNested, isInOrderedList, currentItemIsEmpty: e.state.selection.$anchor.parent.textContent === '' };
+      return { isInList, isNested, isInBulletList, isInOrderedList, currentItemIsEmpty: e.state.selection.$anchor.parent.textContent === '' };
     },
-  }) ?? { isInList: false, isNested: false, isInOrderedList: false, currentItemIsEmpty: false };
+  }) ?? { isInList: false, isNested: false, isInBulletList: false, isInOrderedList: false, currentItemIsEmpty: false };
 
   if (!editor) {
     return null;
@@ -486,15 +487,21 @@ export const TiptapToolbar = ({
             <Heading02Icon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor && editor.isActive("bulletList") ? "secondary" : "ghost"}
+            variant={listState.isInBulletList ? "secondary" : "ghost"}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleBulletList().run(),
-                MarkdownUtils.insertBulletList
-              )
-            }
+            onClick={() => {
+              if (isMarkdownMode) {
+                handleMarkdownButtonClick(MarkdownUtils.insertBulletList);
+                return;
+              }
+              // fccview is onto you!
+              if (listState.isInBulletList && listState.currentItemIsEmpty) {
+                editor.chain().focus().liftListItem('listItem').run();
+              } else {
+                editor.chain().focus().toggleBulletList().run();
+              }
+            }}
             title={`${t('editor.toggleBulletList')} (${mod}+Shift+8)`}
           >
             <LeftToRightListBulletIcon className="h-4 w-4" />
