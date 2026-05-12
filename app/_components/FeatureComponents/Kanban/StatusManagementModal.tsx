@@ -72,59 +72,60 @@ const SortableStatusItem = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-2 p-3 border border-border rounded-jotty bg-muted/30"
+      className="flex flex-col gap-2 p-3 border border-border rounded-jotty bg-muted/30"
     >
-      <div
-        {...attributes}
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing"
-      >
-        <DragDropVerticalIcon className="h-5 w-5 text-muted-foreground" />
-      </div>
+      <div className="flex items-center gap-2">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing shrink-0"
+        >
+          <DragDropVerticalIcon className="h-5 w-5 text-muted-foreground" />
+        </div>
 
-      <div className="flex-1">
-        <Input
-          id={`status-${status.id}`}
-          name={`status-${status.id}`}
-          type="text"
-          value={status.label}
-          onChange={(e) => onUpdateLabel(status.id, e.target.value)}
-          placeholder={t("checklists.statusName")}
-          className="!space-y-0 [&>label]:hidden"
+        <div className="flex-1 min-w-0">
+          <Input
+            id={`status-${status.id}`}
+            name={`status-${status.id}`}
+            type="text"
+            value={status.label}
+            onChange={(e) => onUpdateLabel(status.id, e.target.value)}
+            placeholder={t("checklists.statusName")}
+            className="!space-y-0 [&>label]:hidden"
+          />
+        </div>
+
+        <input
+          type="color"
+          value={status.color || defaultStatusColors[status.id] || "#6b7280"}
+          onChange={(e) => onUpdateColor(status.id, e.target.value)}
+          className="w-10 h-10 border border-input rounded-jotty cursor-pointer shrink-0"
+          title={t("checklists.statusColor")}
         />
+
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => onRemove(status.id)}
+          disabled={!canRemove}
+          className="h-10 w-10 p-0 shrink-0"
+        >
+          <Delete03Icon className="h-4 w-4" />
+        </Button>
       </div>
 
-      <input
-        type="color"
-        value={status.color || defaultStatusColors[status.id] || "#6b7280"}
-        onChange={(e) => onUpdateColor(status.id, e.target.value)}
-        className="w-12 h-10 border border-input rounded-jotty cursor-pointer"
-        title={t("checklists.statusColor")}
-      />
-
-      <div className="flex items-center gap-2 cursor-pointer">
+      <div className="flex items-center gap-2 pl-7">
         <Toggle
           id={`autoComplete-${status.id}`}
           checked={status.autoComplete || false}
           onCheckedChange={(e) => onUpdateAutoComplete(status.id, e)}
         />
-
-        <label htmlFor={`autoComplete-${status.id}`}>
-          <span className="text-sm text-muted-foreground cursor-pointer whitespace-nowrap">
+        <label htmlFor={`autoComplete-${status.id}`} className="cursor-pointer">
+          <span className="text-sm text-muted-foreground">
             {t("tasks.autoComplete")}
           </span>
         </label>
       </div>
-
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={() => onRemove(status.id)}
-        disabled={!canRemove}
-        className="h-10 w-10 p-0"
-      >
-        <Delete03Icon className="h-4 w-4" />
-      </Button>
     </div>
   );
 };
