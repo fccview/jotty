@@ -37,6 +37,7 @@ export type {
   DefaultNoteFilter,
   QuickCreateNotes,
   HideConnectionIndicator,
+  HideStatusOnCards,
   CodeBlockStyle,
   ChecklistItemClickAction,
 } from "./user";
