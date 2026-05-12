@@ -37,6 +37,7 @@ export type DefaultChecklistFilter =
 export type DefaultNoteFilter = "all" | "recent" | "pinned";
 export type QuickCreateNotes = "enable" | "disable";
 export type HideConnectionIndicator = "enable" | "disable";
+export type HideStatusOnCards = "enable" | "disable";
 export type CodeBlockStyle = "default" | "themed";
 export type ChecklistItemClickAction = "toggle" | "edit";
 
@@ -73,6 +74,7 @@ export interface User {
   quickCreateNotes?: QuickCreateNotes;
   quickCreateNotesCategory?: string;
   hideConnectionIndicator?: HideConnectionIndicator;
+  hideStatusOnCards?: HideStatusOnCards;
   codeBlockStyle?: CodeBlockStyle;
   mfaEnabled?: boolean;
   mfaSecret?: string;
