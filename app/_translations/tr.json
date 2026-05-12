@@ -625,7 +625,9 @@
     "session": "oturum",
     "sessions": "oturum",
     "startTime": "Başlangıç",
-    "endTime": "Bitiş"
+    "endTime": "Bitiş",
+    "addItemToColumn": "{column} sütununa öğe ekle",
+    "addItemPlaceholder": "Yeni öğe..."
   },
   "profile": {
     "userProfile": "Kullanıcı Profili",

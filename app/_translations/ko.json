@@ -625,7 +625,9 @@
     "session": "세션",
     "sessions": "세션",
     "startTime": "시작",
-    "endTime": "종료"
+    "endTime": "종료",
+    "addItemToColumn": "{column}에 항목 추가",
+    "addItemPlaceholder": "새 항목..."
   },
   "profile": {
     "userProfile": "사용자",

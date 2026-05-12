@@ -625,7 +625,9 @@
     "session": "watch",
     "sessions": "watches",
     "startTime": "Start o’ bell",
-    "endTime": "End o’ bell"
+    "endTime": "End o’ bell",
+    "addItemToColumn": "Plunder {column} with a new item",
+    "addItemPlaceholder": "New plunder..."
   },
   "profile": {
     "userProfile": "Deckhand",

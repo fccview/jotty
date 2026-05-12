@@ -625,7 +625,9 @@
     "session": "сессия",
     "sessions": "сессии",
     "startTime": "Начало",
-    "endTime": "Конец"
+    "endTime": "Конец",
+    "addItemToColumn": "Добавить элемент в {column}",
+    "addItemPlaceholder": "Новый элемент..."
   },
   "profile": {
     "userProfile": "Пользователь",
