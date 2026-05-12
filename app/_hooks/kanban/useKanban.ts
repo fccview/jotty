@@ -296,7 +296,7 @@ export const useKanbanBoard = ({
     }
   };
 
-  const handleAddItem = async (text: string, recurrence?: RecurrenceRule) => {
+  const handleAddItem = async (text: string, recurrence?: RecurrenceRule, status?: string) => {
     setIsLoading(true);
     const formData = new FormData();
     formData.append("listId", localChecklist.id);
@@ -307,6 +307,10 @@ export const useKanbanBoard = ({
 
     if (recurrence) {
       formData.append("recurrence", JSON.stringify(recurrence));
+    }
+
+    if (status) {
+      formData.append("status", status);
     }
 
     const result = await createItem(

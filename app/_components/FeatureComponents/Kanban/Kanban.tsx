@@ -219,6 +219,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 isShared={isShared}
                 statusColor={statuses.find((s) => s.id === column.id)?.color}
                 statuses={statuses}
+                onAddItem={permissions?.canEdit ? (text) => handleAddItem(text, undefined, column.status) : undefined}
               />
             </div>
           );

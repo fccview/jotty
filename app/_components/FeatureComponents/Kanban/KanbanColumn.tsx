@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, memo } from "react";
+import { useMemo, memo, useState, useRef, useEffect } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -11,7 +11,7 @@ import { KanbanCard } from "./KanbanCard";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
-import { TaskDaily01Icon } from "hugeicons-react";
+import { TaskDaily01Icon, Add01Icon } from "hugeicons-react";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -25,7 +25,48 @@ interface KanbanColumnProps {
   isShared: boolean;
   statusColor?: string;
   statuses: KanbanStatus[];
+  onAddItem?: (status: string) => Promise<void>;
 }
+
+interface InlineAddInputProps {
+  onSubmit: (text: string) => void;
+  onCancel: () => void;
+  placeholder: string;
+  isLoading?: boolean;
+}
+
+const InlineAddInput = ({ onSubmit, onCancel, placeholder, isLoading }: InlineAddInputProps) => {
+  const [text, setText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (text.trim()) onSubmit(text.trim());
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      onCancel();
+    }
+  };
+
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onKeyDown={handleKeyDown}
+      onBlur={() => { if (!text.trim()) onCancel(); }}
+      placeholder={placeholder}
+      disabled={isLoading}
+      className="w-full px-2 py-1.5 text-xs bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-colors"
+    />
+  );
+};
 
 const KanbanColumnComponent = ({
   checklist,
@@ -39,11 +80,15 @@ const KanbanColumnComponent = ({
   onUpdate,
   statusColor,
   statuses,
+  onAddItem,
 }: KanbanColumnProps) => {
   const t = useTranslations();
-  const { setNodeRef, isOver } = useDroppable({
-    id,
-  });
+  const { setNodeRef, isOver } = useDroppable({ id });
+  const [showInlineInput, setShowInlineInput] = useState(false);
+  const [isAddingItem, setIsAddingItem] = useState(false);
+
+  const currentStatus = statuses.find((s) => s.id === status);
+  const isAutoComplete = currentStatus?.autoComplete === true;
 
   const defaultColors: Record<string, string> = useMemo(
     () => ({
@@ -76,6 +121,14 @@ const KanbanColumnComponent = ({
     };
   }, [color]);
 
+  const handleInlineSubmit = async (text: string) => {
+    if (!onAddItem) return;
+    setIsAddingItem(true);
+    setShowInlineInput(false);
+    await onAddItem(text);
+    setIsAddingItem(false);
+  };
+
   return (
     <div className="flex flex-col h-full my-4 lg:my-0 min-w-0">
       <div className="flex items-center justify-between mb-3 min-w-0">
@@ -86,9 +139,22 @@ const KanbanColumnComponent = ({
           />
           <h3 className="font-medium text-md lg:text-sm text-foreground truncate">{title}</h3>
         </div>
-        <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full shrink-0">
-          {items.length}
-        </span>
+        <div className="flex items-center gap-1 shrink-0">
+          {onAddItem && !isAutoComplete && (
+            <button
+              onClick={() => setShowInlineInput(true)}
+              title={t("kanban.addItemToColumn", { column: title })}
+              aria-label={t("kanban.addItemToColumn", { column: title })}
+              disabled={isAddingItem || showInlineInput}
+              className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Add01Icon className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+            {items.length}
+          </span>
+        </div>
       </div>
 
       <div
@@ -108,6 +174,13 @@ const KanbanColumnComponent = ({
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-2">
+            {showInlineInput && (
+              <InlineAddInput
+                onSubmit={handleInlineSubmit}
+                onCancel={() => setShowInlineInput(false)}
+                placeholder={t("kanban.addItemPlaceholder")}
+              />
+            )}
             {items.map((item) => (
               <KanbanCard
                 checklist={checklist}
@@ -121,7 +194,7 @@ const KanbanColumnComponent = ({
                 statusColor={statusColor}
               />
             ))}
-            {items.length === 0 && (
+            {items.length === 0 && !showInlineInput && (
               <div className="flex flex-col items-center justify-center text-muted-foreground/50 py-8 gap-2">
                 <TaskDaily01Icon className="h-8 w-8" />
                 <span className="text-md lg:text-sm">{t('checklists.noTasks')}</span>
