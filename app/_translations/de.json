@@ -540,7 +540,7 @@
     "viewArchived": "Archivierte anzeigen",
     "customizeStatuses": "Passe die Status für dieses Kanban-Board an. Füge Status hinzu, entferne oder ordne sie neu.",
     "addStatus": "Status hinzufügen",
-    "autoComplete": "Automatische Vervollständigung"
+    "autoComplete": "Automatisch abschließen"
   },
   "kanban": {
     "priority": "Priorität",
