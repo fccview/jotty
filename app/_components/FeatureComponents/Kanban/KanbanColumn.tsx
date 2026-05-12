@@ -12,6 +12,7 @@ import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
 import { TaskDaily01Icon, Add01Icon } from "hugeicons-react";
+import { Input } from "../../GlobalComponents/FormElements/Input";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -35,7 +36,12 @@ interface InlineAddInputProps {
   isLoading?: boolean;
 }
 
-const InlineAddInput = ({ onSubmit, onCancel, placeholder, isLoading }: InlineAddInputProps) => {
+const InlineAddInput = ({
+  onSubmit,
+  onCancel,
+  placeholder,
+  isLoading,
+}: InlineAddInputProps) => {
   const [text, setText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -54,16 +60,17 @@ const InlineAddInput = ({ onSubmit, onCancel, placeholder, isLoading }: InlineAd
   };
 
   return (
-    <input
-      ref={inputRef}
+    <Input
+      id="inline-add-input"
       type="text"
       value={text}
       onChange={(e) => setText(e.target.value)}
       onKeyDown={handleKeyDown}
-      onBlur={() => { if (!text.trim()) onCancel(); }}
+      onBlur={() => {
+        if (!text.trim()) onCancel();
+      }}
       placeholder={placeholder}
       disabled={isLoading}
-      className="w-full px-2 py-1.5 text-xs bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-colors"
     />
   );
 };
@@ -97,7 +104,7 @@ const KanbanColumnComponent = ({
       [TaskStatus.COMPLETED]: "#10b981",
       [TaskStatus.PAUSED]: "#f59e0b",
     }),
-    []
+    [],
   );
 
   const color = statusColor || defaultColors[status] || "#6b7280";
@@ -107,10 +114,10 @@ const KanbanColumnComponent = ({
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
       return result
         ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          }
         : null;
     };
 
@@ -137,7 +144,9 @@ const KanbanColumnComponent = ({
             className="w-3 h-3 rounded-full shrink-0"
             style={{ backgroundColor: color }}
           />
-          <h3 className="font-medium text-md lg:text-sm text-foreground truncate">{title}</h3>
+          <h3 className="font-medium text-md lg:text-sm text-foreground truncate">
+            {title}
+          </h3>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {onAddItem && !isAutoComplete && (
@@ -162,7 +171,7 @@ const KanbanColumnComponent = ({
         aria-label={`${title} column`}
         className={cn(
           "flex-1 min-w-0 rounded-jotty border-2 border-dashed p-3 min-h-[200px] transition-colors duration-200",
-          isOver && "border-primary/70 bg-primary/10 shadow-md"
+          isOver && "border-primary/70 bg-primary/10 shadow-md",
         )}
         style={{
           borderColor: isOver ? undefined : borderColor,
@@ -197,7 +206,9 @@ const KanbanColumnComponent = ({
             {items.length === 0 && !showInlineInput && (
               <div className="flex flex-col items-center justify-center text-muted-foreground/50 py-8 gap-2">
                 <TaskDaily01Icon className="h-8 w-8" />
-                <span className="text-md lg:text-sm">{t('checklists.noTasks')}</span>
+                <span className="text-md lg:text-sm">
+                  {t("checklists.noTasks")}
+                </span>
               </div>
             )}
           </div>
