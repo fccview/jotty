@@ -356,6 +356,27 @@ export const handleBulletListEnter = (
   return insertTextAtCursor(textarea, "\n" + bullet, "", "", 0);
 };
 
+export const handleOrderedListEnter = (
+  textarea: HTMLTextAreaElement
+): string | null => {
+  const { start } = getTextareaSelection(textarea);
+  const { lineContent, lineStart } = _getLineAtPosition(textarea.value, start);
+
+  const match = lineContent.match(/^(\d+)\.(\s+)(.*)/);
+  if (!match) return null;
+
+  const [, numStr, spacing, content] = match;
+  if (!content.trim()) {
+    const newVal =
+      textarea.value.substring(0, lineStart) +
+      textarea.value.substring(lineStart + lineContent.length);
+    return _updateEditor(textarea, newVal, lineStart, lineStart);
+  }
+
+  const nextNum = parseInt(numStr, 10) + 1;
+  return insertTextAtCursor(textarea, `\n${nextNum}.${spacing}`, "", "", 0);
+};
+
 export const autolinkPastedContent = (
   textarea: HTMLTextAreaElement,
   pasted: string

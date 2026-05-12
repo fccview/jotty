@@ -135,7 +135,9 @@ export const SyntaxHighlightedEditor = ({
       e.preventDefault();
       onLinkRequest?.(textarea.selectionStart !== textarea.selectionEnd);
     } else if (e.key === "Enter" && !isMod && !e.shiftKey && !e.altKey) {
-      const newContent = MarkdownUtils.handleBulletListEnter(textarea);
+      const newContent =
+        MarkdownUtils.handleBulletListEnter(textarea) ??
+        MarkdownUtils.handleOrderedListEnter(textarea);
       if (newContent !== null) {
         e.preventDefault();
         const { scrollTop, scrollLeft, selectionStart, selectionEnd } =
