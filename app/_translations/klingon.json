@@ -625,7 +625,9 @@
     "session": "meeting wa'",
     "sessions": "meeting",
     "startTime": "qaStaHvIS",
-    "endTime": "bav"
+    "endTime": "bav",
+    "addItemToColumn": "{column} chel",
+    "addItemPlaceholder": "chu' De'..."
   },
   "profile": {
     "userProfile": "lo'wI'",

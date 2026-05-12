@@ -625,7 +625,9 @@
     "session": "session",
     "sessions": "sessions",
     "startTime": "Start",
-    "endTime": "End"
+    "endTime": "End",
+    "addItemToColumn": "Add item to {column}",
+    "addItemPlaceholder": "New item..."
   },
   "profile": {
     "userProfile": "User",

@@ -625,7 +625,9 @@
     "session": "记录",
     "sessions": "记录",
     "startTime": "开始",
-    "endTime": "结束"
+    "endTime": "结束",
+    "addItemToColumn": "添加项目到 {column}",
+    "addItemPlaceholder": "新项目..."
   },
   "profile": {
     "userProfile": "用户",

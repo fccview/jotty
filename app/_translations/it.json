@@ -600,7 +600,9 @@
     "session": "sessione",
     "sessions": "sessioni",
     "startTime": "Inizio",
-    "endTime": "Fine"
+    "endTime": "Fine",
+    "addItemToColumn": "Aggiungi elemento a {column}",
+    "addItemPlaceholder": "Nuovo elemento..."
   },
   "profile": {
     "userProfile": "Utente",
