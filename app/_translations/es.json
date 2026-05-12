@@ -1144,6 +1144,7 @@
     "toggleStrikethrough": "Alternar tachado",
     "toggleInlineCode": "Alternar código en línea",
     "toggleHeading2": "Alternar encabezado 2",
+    "listOptions": "Lista",
     "toggleBulletList": "Alternar lista con viñetas",
     "toggleOrderedList": "Alternar lista numerada",
     "indentListItem": "Sangrar elemento de lista",

@@ -1169,6 +1169,7 @@
     "toggleStrikethrough": "切换删除线",
     "toggleInlineCode": "切换行内代码",
     "toggleHeading2": "切换标题 2",
+    "listOptions": "列表",
     "toggleBulletList": "切换无序列表",
     "toggleOrderedList": "切换有序列表",
     "indentListItem": "增加列表项缩进",

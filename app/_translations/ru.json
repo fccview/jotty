@@ -1169,6 +1169,7 @@
     "toggleStrikethrough": "Переключить зачёркивание",
     "toggleInlineCode": "Переключить inline-код",
     "toggleHeading2": "Переключить заголовок 2",
+    "listOptions": "Список",
     "toggleBulletList": "Переключить маркированный список",
     "toggleOrderedList": "Переключить нумерованный список",
     "indentListItem": "Увеличить отступ элемента списка",

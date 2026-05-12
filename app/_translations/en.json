@@ -1169,6 +1169,7 @@
     "toggleStrikethrough": "Toggle strikethrough",
     "toggleInlineCode": "Toggle inline code",
     "toggleHeading2": "Toggle heading 2",
+    "listOptions": "List",
     "toggleBulletList": "Toggle bullet list",
     "toggleOrderedList": "Toggle ordered list",
     "indentListItem": "Indent list item",

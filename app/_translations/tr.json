@@ -1171,6 +1171,7 @@
     "toggleStrikethrough": "Üstü çizili yap/kaldır",
     "toggleInlineCode": "Satır içi kodu aç/kapat",
     "toggleHeading2": "Başlık 2'yi aç/kapat",
+    "listOptions": "Liste",
     "toggleBulletList": "Maddeli listeyi aç/kapat",
     "toggleOrderedList": "Numaralı listeyi aç/kapat",
     "indentListItem": "Liste öğesini girintile",

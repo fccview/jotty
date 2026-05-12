@@ -1140,6 +1140,7 @@
     "toggleStrikethrough": "Durchstreichung umschalten",
     "toggleInlineCode": "Code-Formatierung umschalten",
     "toggleHeading2": "Überschrift umschalten",
+    "listOptions": "Liste",
     "toggleBulletList": "Aufzählungsliste umschalten",
     "toggleOrderedList": "Nummerierte Liste umschalten",
     "indentListItem": "Listenelement einrücken",

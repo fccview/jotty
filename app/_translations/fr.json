@@ -1144,6 +1144,7 @@
     "toggleStrikethrough": "Basculer le barré",
     "toggleInlineCode": "Basculer le code en ligne",
     "toggleHeading2": "Basculer titre 2",
+    "listOptions": "Liste",
     "toggleBulletList": "Basculer liste à puces",
     "toggleOrderedList": "Basculer liste numérotée",
     "indentListItem": "Indenter l'élément de liste",

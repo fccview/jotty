@@ -1144,6 +1144,7 @@
     "toggleStrikethrough": "Doorhalen wisselen",
     "toggleInlineCode": "Inline code wisselen",
     "toggleHeading2": "Kop 2 wisselen",
+    "listOptions": "Lijst",
     "toggleBulletList": "Opsommingslijst wisselen",
     "toggleOrderedList": "Genummerde lijst wisselen",
     "indentListItem": "Lijstitem inspringen",
