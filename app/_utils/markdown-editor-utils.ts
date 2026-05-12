@@ -356,6 +356,16 @@ export const handleBulletListEnter = (
   return insertTextAtCursor(textarea, "\n" + bullet, "", "", 0);
 };
 
+export const indentLines = (textarea: HTMLTextAreaElement): string =>
+  processLineSelection(textarea, /^/, (line) =>
+    line.trim() === "" ? line : "    " + line
+  );
+
+export const outdentLines = (textarea: HTMLTextAreaElement): string =>
+  processLineSelection(textarea, /^ {4}/, (line) =>
+    line.startsWith("    ") ? line.slice(4) : line
+  );
+
 export const handleOrderedListEnter = (
   textarea: HTMLTextAreaElement
 ): string | null => {
