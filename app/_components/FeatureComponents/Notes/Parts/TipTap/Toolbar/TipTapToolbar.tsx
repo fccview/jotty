@@ -13,16 +13,13 @@ import {
   Tv02Icon,
   TextUnderlineIcon,
   Image02Icon,
-  LeftToRightListBulletIcon,
-  LeftToRightListNumberIcon,
-  TextIndentMoreIcon,
-  TextIndentLessIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
 import { ImageSizeModal } from "@/app/_components/GlobalComponents/Modals/ImageSizeModal";
 import { CodeBlockDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/CodeBlocksDropdown";
 import { DiagramsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/DiagramsDropdown";
+import { ListMenuDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ListMenuDropdown";
 import { TableInsertModal } from "@/app/_components/FeatureComponents/Notes/Parts/Table/TableInsertModal";
 import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
 import { useState, useEffect } from "react";
@@ -485,76 +482,12 @@ export const TiptapToolbar = ({
           >
             <Heading02Icon className="h-4 w-4" />
           </Button>
-          <Button
-            variant={listState.isInBulletList ? "secondary" : "ghost"}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (isMarkdownMode) {
-                handleMarkdownButtonClick(MarkdownUtils.insertBulletList);
-                return;
-              }
-              if (listState.isInBulletList && listState.currentItemIsEmpty) {
-                editor.chain().focus().liftListItem('listItem').run();
-              } else {
-                editor.chain().focus().toggleBulletList().run();
-              }
-            }}
-            title={`${t('editor.toggleBulletList')} (${mod}+Shift+8)`}
-          >
-            <LeftToRightListBulletIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={listState.isInOrderedList ? "secondary" : "ghost"}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (isMarkdownMode) {
-                handleMarkdownButtonClick(MarkdownUtils.insertOrderedList);
-                return;
-              }
-              if (listState.isInOrderedList && listState.currentItemIsEmpty) {
-                editor.chain().focus().liftListItem('listItem').run();
-              } else {
-                editor.chain().focus().toggleOrderedList().run();
-              }
-            }}
-            title={`${t('editor.toggleOrderedList')} (${mod}+Shift+7)`}
-          >
-            <LeftToRightListNumberIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (isMarkdownMode) {
-                handleMarkdownButtonClick(MarkdownUtils.indentLines);
-                return;
-              }
-              editor?.chain().focus().sinkListItem('listItem').run();
-            }}
-            disabled={!isMarkdownMode && !listState.isInList}
-            title={t('editor.indentListItem')}
-          >
-            <TextIndentMoreIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => {
-              if (isMarkdownMode) {
-                handleMarkdownButtonClick(MarkdownUtils.outdentLines);
-                return;
-              }
-              editor?.chain().focus().liftListItem('listItem').run();
-            }}
-            disabled={!isMarkdownMode && (!listState.isInList || !listState.isNested)}
-            title={t('editor.outdentListItem')}
-          >
-            <TextIndentLessIcon className="h-4 w-4" />
-          </Button>
+          <ListMenuDropdown
+            editor={editor}
+            isMarkdownMode={isMarkdownMode}
+            onMarkdownChange={onMarkdownChange}
+            listState={listState}
+          />
           <Button
             variant={editor && editor.isActive("blockquote") ? "secondary" : "ghost"}
             size="sm"
