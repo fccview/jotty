@@ -190,16 +190,16 @@ const processLineSelection = (
 export const insertBulletList = (textarea: HTMLTextAreaElement): string =>
   processLineSelection(textarea, /^-\s/, (line, _, allMatch) => {
     if (line.trim() === "") return line;
-    return allMatch ? line.replace(/^-\s/, "") : `- ${line}`;
+    return allMatch ? line.replace(/^-\s+/, "") : `-   ${line}`;
   });
 
 export const insertOrderedList = (textarea: HTMLTextAreaElement): string => {
   let num = 1;
   return processLineSelection(textarea, /^\d+\.\s/, (line, _, allMatch) => {
     if (line.trim() === "") return line;
-    if (allMatch) return line.replace(/^\d+\.\s/, "");
-    const clean = line.replace(/^\d+\.\s/, "");
-    return `${num++}. ${clean}`;
+    if (allMatch) return line.replace(/^\d+\.\s+/, "");
+    const clean = line.replace(/^\d+\.\s+/, "");
+    return `${num++}.  ${clean}`;
   });
 };
 
