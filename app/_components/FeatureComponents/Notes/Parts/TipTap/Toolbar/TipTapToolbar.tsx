@@ -527,8 +527,14 @@ export const TiptapToolbar = ({
             variant="ghost"
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => editor?.chain().focus().sinkListItem('listItem').run()}
-            disabled={!listState.isInList}
+            onClick={() => {
+              if (isMarkdownMode) {
+                handleMarkdownButtonClick(MarkdownUtils.indentLines);
+                return;
+              }
+              editor?.chain().focus().sinkListItem('listItem').run();
+            }}
+            disabled={!isMarkdownMode && !listState.isInList}
             title={t('editor.indentListItem')}
           >
             <TextIndentMoreIcon className="h-4 w-4" />
@@ -537,8 +543,14 @@ export const TiptapToolbar = ({
             variant="ghost"
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => editor?.chain().focus().liftListItem('listItem').run()}
-            disabled={!listState.isInList || !listState.isNested}
+            onClick={() => {
+              if (isMarkdownMode) {
+                handleMarkdownButtonClick(MarkdownUtils.outdentLines);
+                return;
+              }
+              editor?.chain().focus().liftListItem('listItem').run();
+            }}
+            disabled={!isMarkdownMode && (!listState.isInList || !listState.isNested)}
             title={t('editor.outdentListItem')}
           >
             <TextIndentLessIcon className="h-4 w-4" />
