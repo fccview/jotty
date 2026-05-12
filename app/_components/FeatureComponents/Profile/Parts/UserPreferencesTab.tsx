@@ -27,6 +27,7 @@ import {
   DefaultNoteFilter,
   QuickCreateNotes,
   HideConnectionIndicator,
+  HideStatusOnCards,
   CodeBlockStyle,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
@@ -39,6 +40,7 @@ import { getAllThemes } from "@/app/_consts/themes";
 import {
   editorSettingsSchema,
   checklistSettingsSchema,
+  kanbanSettingsSchema,
   generalSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
@@ -70,6 +72,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   quickCreateNotes: user?.quickCreateNotes || "disable",
   quickCreateNotesCategory: user?.quickCreateNotesCategory || "",
   hideConnectionIndicator: user?.hideConnectionIndicator || "disable",
+  hideStatusOnCards: user?.hideStatusOnCards || "disable",
   codeBlockStyle: user?.codeBlockStyle || "default",
 });
 
@@ -163,6 +166,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     "defaultChecklistFilter",
     "checklistItemClickAction",
   ]);
+  const hasKanbanChanges = hasChanges(["hideStatusOnCards"]);
 
   const validateAndSave = async <T extends Record<string, any>>(
     settings: T,
@@ -933,6 +937,46 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           />
           <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.checklistItemClickActionDescription')}
+          </p>
+        </div>
+      </FormWrapper>
+
+      <FormWrapper
+        title={t('settings.kanbanSection')}
+        action={
+          <Button
+            onClick={() =>
+              handleSaveSection(
+                ["hideStatusOnCards"],
+                kanbanSettingsSchema,
+                "Kanban"
+              )
+            }
+            disabled={!hasKanbanChanges}
+            size="sm"
+          >
+            {t('settings.saveKanban')}
+          </Button>
+        }
+      >
+        <div className="space-y-2">
+          <Label htmlFor="hide-status-on-cards">
+            {t('settings.hideStatusOnCardsLabel')}
+          </Label>
+          <Dropdown
+            value={currentSettings.hideStatusOnCards || "disable"}
+            onChange={(value) =>
+              handleSettingChange("hideStatusOnCards", value as HideStatusOnCards)
+            }
+            options={[
+              { id: "disable", name: t('settings.showStatusOnCards') },
+              { id: "enable", name: t('settings.hideStatusOnCards') },
+            ]}
+            placeholder={t('settings.selectStatusOnCards')}
+            className="w-full"
+          />
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.hideStatusOnCardsDescription')}
           </p>
         </div>
       </FormWrapper>
