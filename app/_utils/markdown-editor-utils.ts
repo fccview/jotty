@@ -356,10 +356,25 @@ export const handleBulletListEnter = (
   return insertTextAtCursor(textarea, "\n" + indent + bullet, "", "", 0);
 };
 
-export const indentLines = (textarea: HTMLTextAreaElement): string =>
-  processLineSelection(textarea, /^/, (line) =>
-    line.trim() === "" ? line : "    " + line
-  );
+export const indentLines = (textarea: HTMLTextAreaElement): string => {
+  let orderedCounter = 1;
+  let lastWasOrdered = false;
+  return processLineSelection(textarea, /^/, (line) => {
+    if (line.trim() === "") {
+      lastWasOrdered = false;
+      return line;
+    }
+    const orderedMatch = line.match(/^(\s*)(\d+)\.\s+(.*)/);
+    if (orderedMatch) {
+      if (!lastWasOrdered) orderedCounter = 1;
+      const [, indent, , content] = orderedMatch;
+      lastWasOrdered = true;
+      return `    ${indent}${orderedCounter++}.  ${content}`;
+    }
+    lastWasOrdered = false;
+    return "    " + line;
+  });
+};
 
 export const outdentLines = (textarea: HTMLTextAreaElement): string =>
   processLineSelection(textarea, /^ {4}/, (line) =>
