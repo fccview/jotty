@@ -1,6 +1,6 @@
 "use client";
 
-import { Editor } from "@tiptap/react";
+import { Editor, useEditorState } from "@tiptap/react";
 import {
   ArrowDown01Icon,
   LeftToRightListBulletIcon,
@@ -33,6 +33,16 @@ export const ListMenuDropdown = ({
   listState,
 }: ListMenuDropdownProps) => {
   const t = useTranslations();
+
+  const canSink = useEditorState({
+    editor,
+    selector: ({ editor: e }) => (e ? e.can().sinkListItem("listItem") : false),
+  }) ?? false;
+
+  const canLift = useEditorState({
+    editor,
+    selector: ({ editor: e }) => (e ? e.can().liftListItem("listItem") : false),
+  }) ?? false;
 
   if (!editor) return null;
 
@@ -140,7 +150,7 @@ export const ListMenuDropdown = ({
           className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleIndent}
-          disabled={!isMarkdownMode && !listState.isInList}
+          disabled={!isMarkdownMode && !canSink}
         >
           <TextIndentMoreIcon className="h-4 w-4 shrink-0" />
           <span>{t("editor.indentListItem")}</span>
@@ -149,7 +159,7 @@ export const ListMenuDropdown = ({
           className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           onMouseDown={(e) => e.preventDefault()}
           onClick={handleOutdent}
-          disabled={!isMarkdownMode && (!listState.isInList || !listState.isNested)}
+          disabled={!isMarkdownMode && !canLift}
         >
           <TextIndentLessIcon className="h-4 w-4 shrink-0" />
           <span>{t("editor.outdentListItem")}</span>
