@@ -342,10 +342,10 @@ export const handleBulletListEnter = (
   const { start } = getTextareaSelection(textarea);
   const { lineContent, lineStart } = _getLineAtPosition(textarea.value, start);
 
-  const match = lineContent.match(/^(-\s+)(.*)/);
+  const match = lineContent.match(/^(\s*)(-\s+)(.*)/);
   if (!match) return null;
 
-  const [, bullet, content] = match;
+  const [, indent, bullet, content] = match;
   if (!content.trim()) {
     const newVal =
       textarea.value.substring(0, lineStart) +
@@ -353,7 +353,7 @@ export const handleBulletListEnter = (
     return _updateEditor(textarea, newVal, lineStart, lineStart);
   }
 
-  return insertTextAtCursor(textarea, "\n" + bullet, "", "", 0);
+  return insertTextAtCursor(textarea, "\n" + indent + bullet, "", "", 0);
 };
 
 export const indentLines = (textarea: HTMLTextAreaElement): string =>
@@ -372,10 +372,10 @@ export const handleOrderedListEnter = (
   const { start } = getTextareaSelection(textarea);
   const { lineContent, lineStart } = _getLineAtPosition(textarea.value, start);
 
-  const match = lineContent.match(/^(\d+)\.(\s+)(.*)/);
+  const match = lineContent.match(/^(\s*)(\d+)\.(\s+)(.*)/);
   if (!match) return null;
 
-  const [, numStr, spacing, content] = match;
+  const [, indent, numStr, spacing, content] = match;
   if (!content.trim()) {
     const newVal =
       textarea.value.substring(0, lineStart) +
@@ -384,7 +384,7 @@ export const handleOrderedListEnter = (
   }
 
   const nextNum = parseInt(numStr, 10) + 1;
-  return insertTextAtCursor(textarea, `\n${nextNum}.${spacing}`, "", "", 0);
+  return insertTextAtCursor(textarea, `\n${indent}${nextNum}.${spacing}`, "", "", 0);
 };
 
 export const autolinkPastedContent = (
