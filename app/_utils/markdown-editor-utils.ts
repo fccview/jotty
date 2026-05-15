@@ -170,7 +170,8 @@ const processLineSelection = (
   const { lineEnd } = _getLineAtPosition(value, end);
   const lines = value.substring(lineStart, lineEnd).split("\n");
 
-  const allMatch = lines.every((l) => pattern.test(l) || l.trim() === "");
+  const hasNonEmpty = lines.some((l) => l.trim() !== "");
+  const allMatch = hasNonEmpty && lines.every((l) => pattern.test(l) || l.trim() === "");
   const newLines = lines.map((line, i) => processFn(line, i, allMatch));
   const newContent = newLines.join("\n");
   const newValue =
