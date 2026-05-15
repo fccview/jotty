@@ -71,13 +71,26 @@ export const ListMenuDropdown = ({
     }
   };
 
+  const liftOutOfList = () => {
+    let safety = 20;
+    while (
+      safety-- > 0 &&
+      (editor.isActive("bulletList") || editor.isActive("orderedList"))
+    ) {
+      if (!editor.chain().focus().liftListItem("listItem").run()) break;
+    }
+  };
+
   const handleBulletList = () => {
     if (isMarkdownMode) {
       applyMarkdown(MarkdownUtils.insertBulletList);
       return;
     }
-    if (listState.isInBulletList && listState.currentItemIsEmpty) {
-      editor.chain().focus().liftListItem("listItem").run();
+    if (listState.isInBulletList) {
+      liftOutOfList();
+    } else if (listState.isInOrderedList) {
+      liftOutOfList();
+      editor.chain().focus().toggleBulletList().run();
     } else {
       editor.chain().focus().toggleBulletList().run();
     }
@@ -88,8 +101,11 @@ export const ListMenuDropdown = ({
       applyMarkdown(MarkdownUtils.insertOrderedList);
       return;
     }
-    if (listState.isInOrderedList && listState.currentItemIsEmpty) {
-      editor.chain().focus().liftListItem("listItem").run();
+    if (listState.isInOrderedList) {
+      liftOutOfList();
+    } else if (listState.isInBulletList) {
+      liftOutOfList();
+      editor.chain().focus().toggleOrderedList().run();
     } else {
       editor.chain().focus().toggleOrderedList().run();
     }
