@@ -94,10 +94,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const isElement = (n: ParentNode): n is HTMLElement => n.nodeType === 1;
 
       if (parent.nodeName === "LI") {
-        const elementChildren = Array.from(parent.children).filter(
-          (child) => child.nodeType === 1
-        );
-        return elementChildren.length === 1;
+        return true;
       }
       if (
         parent.nodeName === "DIV" &&
