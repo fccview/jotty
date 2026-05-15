@@ -189,15 +189,15 @@ const processLineSelection = (
 
 export const insertBulletList = (textarea: HTMLTextAreaElement): string =>
   processLineSelection(textarea, /^-\s/, (line, _, allMatch) => {
-    if (line.trim() === "") return line;
-    return allMatch ? line.replace(/^-\s+/, "") : `-   ${line}`;
+    if (allMatch) return line.trim() === "" ? line : line.replace(/^-\s+/, "");
+    return line.trim() === "" ? "-   " : `-   ${line}`;
   });
 
 export const insertOrderedList = (textarea: HTMLTextAreaElement): string => {
   let num = 1;
   return processLineSelection(textarea, /^\d+\.\s/, (line, _, allMatch) => {
-    if (line.trim() === "") return line;
-    if (allMatch) return line.replace(/^\d+\.\s+/, "");
+    if (allMatch) return line.trim() === "" ? line : line.replace(/^\d+\.\s+/, "");
+    if (line.trim() === "") return `${num++}.  `;
     const clean = line.replace(/^\d+\.\s+/, "");
     return `${num++}.  ${clean}`;
   });
@@ -359,7 +359,7 @@ export const handleBulletListEnter = (
 export const indentLines = (textarea: HTMLTextAreaElement): string => {
   let orderedCounter = 1;
   let lastWasOrdered = false;
-  return processLineSelection(textarea, /^/, (line) => {
+  const result = processLineSelection(textarea, /^/, (line) => {
     if (line.trim() === "") {
       lastWasOrdered = false;
       return line;
@@ -374,12 +374,19 @@ export const indentLines = (textarea: HTMLTextAreaElement): string => {
     lastWasOrdered = false;
     return "    " + line;
   });
+  const pos = textarea.selectionEnd;
+  textarea.setSelectionRange(pos, pos);
+  return result;
 };
 
-export const outdentLines = (textarea: HTMLTextAreaElement): string =>
-  processLineSelection(textarea, /^ {4}/, (line) =>
+export const outdentLines = (textarea: HTMLTextAreaElement): string => {
+  const result = processLineSelection(textarea, /^ {4}/, (line) =>
     line.startsWith("    ") ? line.slice(4) : line
   );
+  const pos = textarea.selectionEnd;
+  textarea.setSelectionRange(pos, pos);
+  return result;
+};
 
 export const handleOrderedListEnter = (
   textarea: HTMLTextAreaElement
