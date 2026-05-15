@@ -71,6 +71,15 @@ export const ListMenuDropdown = ({
     }
   };
 
+  const getCurrentListType = (): "bulletList" | "orderedList" | null => {
+    const { $from } = editor.state.selection;
+    for (let d = $from.depth; d > 0; d--) {
+      const name = $from.node(d).type.name;
+      if (name === "bulletList" || name === "orderedList") return name;
+    }
+    return null;
+  };
+
   const liftOutOfList = () => {
     let safety = 20;
     while (
@@ -86,11 +95,8 @@ export const ListMenuDropdown = ({
       applyMarkdown(MarkdownUtils.insertBulletList);
       return;
     }
-    if (listState.isInBulletList) {
+    if (getCurrentListType() === "bulletList") {
       liftOutOfList();
-    } else if (listState.isInOrderedList) {
-      liftOutOfList();
-      editor.chain().focus().toggleBulletList().run();
     } else {
       editor.chain().focus().toggleBulletList().run();
     }
@@ -101,11 +107,8 @@ export const ListMenuDropdown = ({
       applyMarkdown(MarkdownUtils.insertOrderedList);
       return;
     }
-    if (listState.isInOrderedList) {
+    if (getCurrentListType() === "orderedList") {
       liftOutOfList();
-    } else if (listState.isInBulletList) {
-      liftOutOfList();
-      editor.chain().focus().toggleOrderedList().run();
     } else {
       editor.chain().focus().toggleOrderedList().run();
     }
