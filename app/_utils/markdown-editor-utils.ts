@@ -188,20 +188,93 @@ const processLineSelection = (
   return newValue;
 };
 
-export const insertBulletList = (textarea: HTMLTextAreaElement): string =>
-  processLineSelection(textarea, /^-\s/, (line, _, allMatch) => {
-    if (allMatch) return line.trim() === "" ? line : line.replace(/^-\s+/, "");
-    return line.trim() === "" ? "-   " : `-   ${line}`;
+export const insertBulletList = (textarea: HTMLTextAreaElement): string => {
+  const { start, end } = getTextareaSelection(textarea);
+  const value = textarea.value;
+  const { lineStart } = _getLineAtPosition(value, start);
+  const { lineEnd } = _getLineAtPosition(value, end);
+  const lines = value.substring(lineStart, lineEnd).split("\n");
+
+  const nonEmpty = lines.filter((l) => l.trim() !== "");
+  const allBullet =
+    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*-\s/.test(l));
+  const allOrdered =
+    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*\d+\.\s/.test(l));
+  const toggle = allBullet || allOrdered;
+
+  const newLines = lines.map((line) => {
+    if (allBullet) {
+      return line.trim() === "" ? line : line.replace(/^(\s*)-\s+/, "$1");
+    }
+    if (allOrdered) {
+      return line.trim() === "" ? line : line.replace(/^(\s*)\d+\.\s+/, "$1-   ");
+    }
+    if (line.trim() === "") return "-   ";
+    if (/^\s*-\s/.test(line)) return line;
+    if (/^\s*\d+\.\s/.test(line))
+      return line.replace(/^(\s*)\d+\.\s+/, "$1-   ");
+    return "-   " + line;
   });
 
+  const newContent = newLines.join("\n");
+  const newValue =
+    value.substring(0, lineStart) + newContent + value.substring(lineEnd);
+  const cursorTarget = lineStart + newLines[0].length;
+  if (toggle) {
+    _updateEditor(textarea, newValue, lineStart, lineStart + newContent.length);
+  } else {
+    _updateEditor(textarea, newValue, cursorTarget, cursorTarget);
+  }
+  return newValue;
+};
+
 export const insertOrderedList = (textarea: HTMLTextAreaElement): string => {
+  const { start, end } = getTextareaSelection(textarea);
+  const value = textarea.value;
+  const { lineStart } = _getLineAtPosition(value, start);
+  const { lineEnd } = _getLineAtPosition(value, end);
+  const lines = value.substring(lineStart, lineEnd).split("\n");
+
+  const nonEmpty = lines.filter((l) => l.trim() !== "");
+  const allOrdered =
+    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*\d+\.\s/.test(l));
+  const allBullet =
+    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*-\s/.test(l));
+  const toggle = allOrdered || allBullet;
+
   let num = 1;
-  return processLineSelection(textarea, /^\d+\.\s/, (line, _, allMatch) => {
-    if (allMatch) return line.trim() === "" ? line : line.replace(/^\d+\.\s+/, "");
+  const newLines = lines.map((line) => {
+    if (allOrdered) {
+      return line.trim() === "" ? line : line.replace(/^(\s*)\d+\.\s+/, "$1");
+    }
+    if (allBullet) {
+      if (line.trim() === "") return line;
+      return line.replace(/^(\s*)-\s+/, `$1${num++}.  `);
+    }
     if (line.trim() === "") return `${num++}.  `;
-    const clean = line.replace(/^\d+\.\s+/, "");
-    return `${num++}.  ${clean}`;
+    if (/^\s*\d+\.\s/.test(line)) {
+      const indent = line.match(/^(\s*)/)?.[1] ?? "";
+      const clean = line.replace(/^\s*\d+\.\s+/, "");
+      return `${indent}${num++}.  ${clean}`;
+    }
+    if (/^\s*-\s/.test(line)) {
+      const indent = line.match(/^(\s*)/)?.[1] ?? "";
+      const clean = line.replace(/^\s*-\s+/, "");
+      return `${indent}${num++}.  ${clean}`;
+    }
+    return `${num++}.  ${line}`;
   });
+
+  const newContent = newLines.join("\n");
+  const newValue =
+    value.substring(0, lineStart) + newContent + value.substring(lineEnd);
+  const cursorTarget = lineStart + newLines[0].length;
+  if (toggle) {
+    _updateEditor(textarea, newValue, lineStart, lineStart + newContent.length);
+  } else {
+    _updateEditor(textarea, newValue, cursorTarget, cursorTarget);
+  }
+  return newValue;
 };
 
 export const insertTaskList = (textarea: HTMLTextAreaElement): string =>
