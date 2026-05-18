@@ -9,6 +9,8 @@ import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 
 const Excalidraw = dynamic(
   async () => (await import("@excalidraw/excalidraw")).Excalidraw,
@@ -125,35 +127,22 @@ export const ExcalidrawNodeView = ({
 
   return (
     <NodeViewWrapper className="excalidraw-node-wrapper">
-      {isEditing && initialData && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-background rounded-jotty shadow-xl w-[95vw] h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-3 border-b border-border">
-              <h3 className="font-semibold">{t("editor.editDiagram")}</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="px-3 py-1 bg-muted hover:bg-muted/80 rounded text-sm"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-3 py-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded text-sm"
-                >
-                  {t('common.save')}
-                </button>
-              </div>
-            </div>
-            <div className="flex-1 w-full">
-              <Excalidraw
-                excalidrawAPI={(api: any) => setExcalidrawAPI(api)}
-                initialData={initialData}
-              />
-            </div>
+      <Modal
+        isOpen={isEditing && !!initialData}
+        onClose={() => setIsEditing(false)}
+        title={
+          <div className="flex items-center gap-2">
+            {t("editor.editDiagram")}
+            <Button size="sm" onClick={handleSave}>{t('common.save')}</Button>
           </div>
-        </div>
-      )}
+        }
+        size="fullscreen"
+      >
+        <Excalidraw
+          excalidrawAPI={(api: any) => setExcalidrawAPI(api)}
+          initialData={initialData}
+        />
+      </Modal>
 
       <div className="excalidraw-diagram-container relative group border border-border rounded-jotty p-4 my-4 bg-background">
         {hasData ? (
