@@ -330,7 +330,7 @@ export const KanbanCardDetail = ({
       className="[&_.jotty-modal-header]:shrink-0 lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)] !flex !flex-col overflow-y-auto overscroll-contain lg:overflow-hidden"
     >
       <div className="flex flex-col lg:flex-row gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
-        <div className="min-w-0 space-y-4 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+        <div className="min-w-0 space-y-4 lg:flex-1 lg:min-h-0 lg:overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-muted/50 scrollbar-thumb-rounded-md scrollbar-track-rounded-md">
           {isEditing ? (
             <div className="space-y-4">
               <div>
@@ -436,7 +436,7 @@ export const KanbanCardDetail = ({
           )}
         </div>
 
-        <div className="lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6 lg:min-h-0 lg:overflow-y-auto">
+        <div className="lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6 lg:min-h-0 lg:overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-muted/50 scrollbar-thumb-rounded-md scrollbar-track-rounded-md">
           <KanbanCardDetailProperties
             item={item}
             priorityInput={priorityInput}
