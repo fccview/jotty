@@ -94,13 +94,13 @@ export const toggleArchive = async (
   newCategory?: string
 ): Promise<{ success: boolean; data?: Checklist | Note; error?: string }> => {
   const currentUser = await getCurrentUser();
-  const isOwner = currentUser?.username === item.owner;
+  const isOwner = !item.owner || currentUser?.username === item.owner;
   const formData = new FormData();
 
   formData.append("id", item.id);
   formData.append("title", item.title);
 
-  if (!formData.get("user") && item.owner) {
+  if (item.owner) {
     formData.append("user", item.owner);
   }
 
@@ -116,6 +116,11 @@ export const toggleArchive = async (
       content = fullNote?.content || "";
     }
     formData.append("content", content);
+  } else {
+    const checklistItem = item as Checklist;
+    if (checklistItem.uuid) {
+      formData.append("uuid", checklistItem.uuid);
+    }
   }
 
   if (isOwner) {
