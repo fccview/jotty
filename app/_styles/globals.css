@@ -662,6 +662,7 @@ pre.text-foreground span,
 
 @supports (-moz-appearance: none) {
     .overflow-y-auto,
+    .overflow-x-auto,
     .overflow-auto {
         scrollbar-width: thin;
         scrollbar-color: rgb(var(--primary) / 0.3) transparent;
