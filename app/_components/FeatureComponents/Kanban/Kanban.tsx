@@ -388,7 +388,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           )}
         </div>
       )}
-      <div className="flex-1 min-w-0 w-full max-w-full overflow-auto pb-[8.5em] scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-muted/50 scrollbar-thumb-rounded-md scrollbar-track-rounded-md">
+      <div className="flex-1 min-w-0 w-full max-w-full overflow-auto pb-[8.5em]">
         {viewMode === "calendar" ? (
           <div className="p-4">
             <CalendarView

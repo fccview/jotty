@@ -115,7 +115,7 @@ export const SidebarWrapper = ({
           <div
             ref={internalScrollRef}
             onScroll={handleScroll}
-            className="jotty-sidebar-categories flex-1 overflow-y-auto scrollbar-thin p-2 space-y-2"
+            className="jotty-sidebar-categories flex-1 overflow-y-auto p-2 space-y-2"
           >
             <div className="pt-2">
               <div className="flex items-center justify-between">
