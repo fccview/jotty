@@ -40,6 +40,11 @@ export const useKanbanItem = ({
   const [editText, setEditText] = useState(item.text);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isRunningRef = useRef(false);
+  const startTimeRef = useRef<Date | null>(null);
+
+  isRunningRef.current = isRunning;
+  startTimeRef.current = startTime;
 
   useEffect(() => {
     const existingTime =
@@ -58,15 +63,24 @@ export const useKanbanItem = ({
     const storageKey = TIMER_STORAGE_KEY(checklistId, item.id);
     try {
       const stored = localStorage.getItem(storageKey);
-      if (stored) {
-        const { startTime: storedStart, isRunning: storedRunning } = JSON.parse(stored);
-        if (storedRunning && storedStart) {
-          setStartTime(new Date(storedStart));
-          setIsRunning(true);
-          setCurrentTime(Math.floor((Date.now() - new Date(storedStart).getTime()) / 1000));
-        }
+      if (!stored) return;
+      const { startTime: storedStart, isRunning: storedRunning, endTime: storedEnd } = JSON.parse(stored);
+      if (!storedRunning || !storedStart) return;
+
+      if (storedEnd) {
+        _saveTimerEntry(new Date(storedStart), new Date(storedEnd)).then((result) => {
+          if (result.success) {
+            try { localStorage.removeItem(storageKey); } catch (e) { console.error(e); }
+          }
+        });
+      } else {
+        setStartTime(new Date(storedStart));
+        setIsRunning(true);
+        setCurrentTime(Math.floor((Date.now() - new Date(storedStart).getTime()) / 1000));
       }
-    } catch {}
+    } catch (e) {
+      console.error(e);
+    }
   }, [checklistId, item.id]);
 
   useEffect(() => {
@@ -80,6 +94,27 @@ export const useKanbanItem = ({
       localStorage.removeItem(storageKey);
     }
   }, [isRunning, startTime, checklistId, item.id]);
+
+  useEffect(() => {
+    const storageKey = TIMER_STORAGE_KEY(checklistId, item.id);
+    const markInterrupted = () => {
+      if (!isRunningRef.current || !startTimeRef.current) return;
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({
+          startTime: startTimeRef.current.toISOString(),
+          isRunning: true,
+          endTime: new Date().toISOString(),
+        }));
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    window.addEventListener("beforeunload", markInterrupted);
+    return () => {
+      window.removeEventListener("beforeunload", markInterrupted);
+      markInterrupted();
+    };
+  }, [checklistId, item.id]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -127,6 +162,7 @@ export const useKanbanItem = ({
 
   function handleTimerToggle() {
     if (isRunning) {
+      try { localStorage.removeItem(TIMER_STORAGE_KEY(checklistId, item.id)); } catch (e) { console.error(e); }
       setIsRunning(false);
       if (startTime) {
         const endTime = new Date();
@@ -166,6 +202,7 @@ export const useKanbanItem = ({
 
   const stopTimerOnDrag = async () => {
     if (isRunning && startTime) {
+      try { localStorage.removeItem(TIMER_STORAGE_KEY(checklistId, item.id)); } catch (e) { console.error(e); }
       const endTime = new Date();
       await _saveTimerEntry(startTime, endTime);
       setIsRunning(false);
