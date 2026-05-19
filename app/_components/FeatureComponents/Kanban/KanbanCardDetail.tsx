@@ -327,9 +327,10 @@ export const KanbanCardDetail = ({
       isOpen={isOpen}
       onClose={onClose}
       title={item.text || t("checklists.untitledTask")}
-      className="jotty-kanban-detail-modal [&_.jotty-modal-header]:shrink-0 lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)] !flex !flex-col lg:overflow-hidden"
+      size="fullscreen"
+      className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
     >
-      <div className="flex flex-col lg:flex-row gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-6 min-h-full lg:overflow-hidden p-6">
         <div className="min-w-0 space-y-4 lg:flex-1 lg:min-h-0 overflow-y-auto">
           {isEditing ? (
             <div className="space-y-4">
