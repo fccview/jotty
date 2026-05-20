@@ -23,6 +23,7 @@ const _RUNTIME_FILES = [
   "app-page-experimental.runtime.prod.js",
   "app-page-turbo.runtime.prod.js",
   "app-page-turbo-experimental.runtime.prod.js",
+  "server.runtime.prod.js",
 ];
 
 const _UNIT_BYTES = {
@@ -51,6 +52,10 @@ const _patchFile = (filePath, label, bytes) => {
   patched = patched.replace(
     /\.parse\(([a-zA-Z_$][\w$]*)\):1048576(?!\d)/g,
     `.parse($1):${bytes}`
+  );
+  patched = patched.replace(
+    /(=[a-zA-Z_$][\w$]*\?\?)0xa00000(?!\d)/g,
+    `$1${bytes}`
   );
   if (patched === original) return "noop";
   fs.writeFileSync(filePath, patched);

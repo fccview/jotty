@@ -18,6 +18,17 @@ interface TableOfContentsProps {
   className?: string;
 }
 
+const findHeadingEl = (id: string, text: string): HTMLElement | null => {
+  const byId = document.getElementById(id);
+  if (byId) return byId;
+  const allHeadings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+  return (
+    (Array.from(allHeadings).find(
+      (h) => h.textContent?.trim() === text
+    ) as HTMLElement) ?? null
+  );
+};
+
 const useTableOfContents = (content?: string, isEditing?: boolean) => {
   const [activeHeading, setActiveHeading] = useState<string | null>(null);
   const [headings, setHeadings] = useState<Heading[]>([]);
@@ -80,25 +91,39 @@ const useTableOfContents = (content?: string, isEditing?: boolean) => {
   useEffect(() => {
     if (headings.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveHeading(entry.target.id);
-            return;
+    let intersectionObserver: IntersectionObserver | null = null;
+
+    const timeoutId = setTimeout(() => {
+      const elementMap = new Map<Element, string>();
+
+      headings.forEach((h) => {
+        const el = findHeadingEl(h.id, h.text);
+        if (el) elementMap.set(el, h.id);
+      });
+
+      if (elementMap.size === 0) return;
+
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const headingId = elementMap.get(entry.target);
+              if (headingId) setActiveHeading(headingId);
+              return;
+            }
           }
-        }
-      },
-      { rootMargin: "-85px 0px -70% 0px" }
-    );
+        },
+        { rootMargin: "-85px 0px -70% 0px" }
+      );
 
-    const elements = headings
-      .map((h) => document.getElementById(h.id))
-      .filter(Boolean);
-    elements.forEach((el) => observer.observe(el!));
+      elementMap.forEach((_, el) => intersectionObserver!.observe(el));
+    }, isEditing ? 300 : 0);
 
-    return () => observer.disconnect();
-  }, [headings]);
+    return () => {
+      clearTimeout(timeoutId);
+      intersectionObserver?.disconnect();
+    };
+  }, [headings, isEditing]);
 
   return { headings, activeHeading, setActiveHeading };
 };
@@ -111,8 +136,8 @@ export const TableOfContents = ({
   const { headings, activeHeading, setActiveHeading } = useTableOfContents(content, isEditing);
   const t = useTranslations();
 
-  const scrollToHeading = (id: string) => {
-    const element = document.getElementById(id);
+  const scrollToHeading = (id: string, text: string) => {
+    const element = findHeadingEl(id, text);
     if (!element) return;
 
     const scrollContainer = element.closest(".jotty-scrollable-content");
@@ -136,7 +161,7 @@ export const TableOfContents = ({
         {headings.map((heading) => (
           <button
             key={heading.id}
-            onClick={() => scrollToHeading(heading.id)}
+            onClick={() => scrollToHeading(heading.id, heading.text)}
             className={cn(
               "block w-full text-left text-md lg:text-sm py-1 hover:text-foreground transition-colors focus:outline-none",
               activeHeading === heading.id

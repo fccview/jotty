@@ -7,6 +7,7 @@ import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/Progr
 import { Item, KanbanStatus } from "@/app/_types";
 import { TaskStatusLabels } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
 
 interface KanbanItemContentProps {
@@ -49,7 +50,9 @@ const KanbanItemContentComponent = ({
   formatDateTimeString,
 }: KanbanItemContentProps) => {
   const { permissions } = usePermissions();
+  const { user } = useAppMode();
   const t = useTranslations();
+  const hideStatus = user?.hideStatusOnCards === "enable";
 
   const getStatusLabel = (status?: string) => {
     if (!status) return TaskStatusLabels.TODO;
@@ -144,33 +147,37 @@ const KanbanItemContentComponent = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs">
-        <div className="flex items-center gap-1.5 text-muted-foreground">
-          {getStatusIcon(item.status)}
-          <span>{getStatusLabel(item.status)}</span>
+      {(!hideStatus || (item.lastModifiedBy && isShared)) && (
+        <div className="flex items-center justify-between text-xs">
+          {!hideStatus && (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              {getStatusIcon(item.status)}
+              <span>{getStatusLabel(item.status)}</span>
+            </div>
+          )}
+          {item.lastModifiedBy && isShared && (
+            <div
+              className="flex items-center gap-1"
+              title={item.lastModifiedAt
+                ? t("common.lastModifiedByOn", {
+                    user: item.lastModifiedBy,
+                    date: formatDateTimeString(item.lastModifiedAt)
+                  })
+                : t("common.lastModifiedBy", { user: item.lastModifiedBy })
+              }
+            >
+              <UserAvatar
+                username={item.lastModifiedBy}
+                size="xs"
+                avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
+              />
+              <span className="text-[10px] text-muted-foreground">
+                {item.lastModifiedAt ? formatDateString(item.lastModifiedAt) : ""}
+              </span>
+            </div>
+          )}
         </div>
-        {item.lastModifiedBy && isShared && (
-          <div
-            className="flex items-center gap-1"
-            title={item.lastModifiedAt
-              ? t("common.lastModifiedByOn", {
-                  user: item.lastModifiedBy,
-                  date: formatDateTimeString(item.lastModifiedAt)
-                })
-              : t("common.lastModifiedBy", { user: item.lastModifiedBy })
-            }
-          >
-            <UserAvatar
-              username={item.lastModifiedBy}
-              size="xs"
-              avatarUrl={getUserAvatarUrl(item.lastModifiedBy) || ""}
-            />
-            <span className="text-[10px] text-muted-foreground">
-              {item.lastModifiedAt ? formatDateString(item.lastModifiedAt) : ""}
-            </span>
-          </div>
-        )}
-      </div>
+      )}
 
       {item.children && item.children.length > 0 && (
         <>

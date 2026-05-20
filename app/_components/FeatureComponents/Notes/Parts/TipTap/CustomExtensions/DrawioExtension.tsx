@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 
 export const DrawioNodeView = ({
   node,
@@ -147,24 +148,18 @@ export const DrawioNodeView = ({
 
   return (
     <NodeViewWrapper className="drawio-node-wrapper">
-      {isEditing && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-background rounded-jotty shadow-xl w-[95vw] h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-3 border-b border-border">
-              <h3 className="font-semibold">{t("editor.editDiagram")}</h3>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-3 py-1 bg-muted hover:bg-muted/80 rounded text-sm"
-              >{t('common.close')}</button>
-            </div>
-            <iframe
-              ref={iframeRef}
-              src={drawioUrl}
-              className="flex-1 w-full border-0"
-            />
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+        title={t("editor.editDiagram")}
+        size="fullscreen"
+      >
+        <iframe
+          ref={iframeRef}
+          src={drawioUrl}
+          className="w-full h-full border-0"
+        />
+      </Modal>
 
       <div className="drawio-diagram-container relative group border border-border rounded-jotty p-4 my-4 bg-background">
         {node.attrs.svgData ? (

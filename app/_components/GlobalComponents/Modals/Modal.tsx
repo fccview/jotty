@@ -12,6 +12,7 @@ interface ModalProps {
   title: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  size?: "default" | "fullscreen";
 }
 
 export const Modal = ({
@@ -20,6 +21,7 @@ export const Modal = ({
   title,
   children,
   className = "",
+  size = "default",
 }: ModalProps) => {
   const t = useTranslations();
   const modalRef = useRef<HTMLDivElement>(null);
@@ -83,14 +85,15 @@ export const Modal = ({
         onClick={(e) => e.stopPropagation()}
         className={`
           jotty-modal-content
-          bg-background border border-border w-full lg:max-w-md shadow-xl
-          lg:rounded-md rounded-t-xl p-6
-          translate-y-0 lg:translate-y-0
-          transition-all duration-200
+          bg-background border border-border w-full shadow-xl
+          translate-y-0 lg:translate-y-0 transition-all duration-200
+          ${size === "fullscreen"
+            ? "lg:w-[95vw] h-[90vh] flex flex-col lg:rounded-jotty rounded-t-xl overflow-hidden"
+            : "lg:max-w-md lg:rounded-md rounded-t-xl p-6"}
           ${className}
         `}
       >
-        <div className="jotty-modal-header flex items-center justify-between mb-6">
+        <div className={`jotty-modal-header flex items-center justify-between ${size === "fullscreen" ? "p-3 border-b border-border shrink-0" : "mb-6"}`}>
           <div className="lg:hidden absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-muted-foreground/20" />
 
           <div className="jotty-modal-title text-xl font-bold text-foreground flex items-center">
@@ -107,7 +110,9 @@ export const Modal = ({
           </Button>
         </div>
 
-        {children}
+        <div className={size === "fullscreen" ? "flex-1 overflow-auto" : ""}>
+          {children}
+        </div>
       </div>
     </div>
   );

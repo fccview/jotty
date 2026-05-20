@@ -73,6 +73,14 @@ export const checklistSettingsSchema = z.object({
   }),
 });
 
+export const kanbanSettingsSchema = z.object({
+  hideStatusOnCards: z
+    .enum(["enable", "disable"], {
+      message: "Hide status on cards must be either 'enable' or 'disable'",
+    })
+    .optional(),
+});
+
 export const fileSettingsSchema = z.object({
   fileRenameMode: z.enum(["dash-case", "minimal", "none"], {
     message: "File rename mode must be 'dash-case', 'minimal', or 'none'",
@@ -110,5 +118,6 @@ export const generalSettingsSchema = z.object({
 export type UserSettingsInput = z.infer<typeof userSettingsSchema>;
 export type EditorSettingsInput = z.infer<typeof editorSettingsSchema>;
 export type ChecklistSettingsInput = z.infer<typeof checklistSettingsSchema>;
+export type KanbanSettingsInput = z.infer<typeof kanbanSettingsSchema>;
 export type FileSettingsInput = z.infer<typeof fileSettingsSchema>;
 export type GeneralSettingsInput = z.infer<typeof generalSettingsSchema>;

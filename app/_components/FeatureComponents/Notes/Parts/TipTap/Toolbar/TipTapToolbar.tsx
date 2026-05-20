@@ -1,4 +1,4 @@
-import { Editor } from "@tiptap/react";
+import { Editor, useEditorState } from "@tiptap/react";
 import {
   TextBoldIcon,
   TextItalicIcon,
@@ -13,13 +13,13 @@ import {
   Tv02Icon,
   TextUnderlineIcon,
   Image02Icon,
-  LeftToRightListBulletIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
 import { ImageSizeModal } from "@/app/_components/GlobalComponents/Modals/ImageSizeModal";
 import { CodeBlockDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/CodeBlocksDropdown";
 import { DiagramsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/DiagramsDropdown";
+import { ListMenuDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ListMenuDropdown";
 import { TableInsertModal } from "@/app/_components/FeatureComponents/Notes/Parts/Table/TableInsertModal";
 import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
 import { useState, useEffect } from "react";
@@ -99,6 +99,29 @@ export const TiptapToolbar = ({
       }
     }
   }, [linkRequestPending, linkRequestHasSelection, isMarkdownMode, editor, onLinkRequestHandled]);
+
+  const listState = useEditorState({
+    editor,
+    selector: ({ editor: e }) => {
+      if (!e) return { isInList: false, isNested: false, isInBulletList: false, isInOrderedList: false, currentItemIsEmpty: false };
+      const isInBulletList = e.isActive('bulletList');
+      const isInOrderedList = e.isActive('orderedList');
+      const isInList = isInBulletList || isInOrderedList;
+      let isNested = false;
+      if (isInList) {
+        const { $anchor } = e.state.selection;
+        outer: for (let d = $anchor.depth; d >= 0; d--) {
+          if ($anchor.node(d).type.name === 'listItem') {
+            for (let d2 = d - 1; d2 >= 0; d2--) {
+              if ($anchor.node(d2).type.name === 'listItem') { isNested = true; break outer; }
+            }
+            break;
+          }
+        }
+      }
+      return { isInList, isNested, isInBulletList, isInOrderedList, currentItemIsEmpty: e.state.selection.$anchor.parent.textContent === '' };
+    },
+  }) ?? { isInList: false, isNested: false, isInBulletList: false, isInOrderedList: false, currentItemIsEmpty: false };
 
   if (!editor) {
     return null;
@@ -459,20 +482,12 @@ export const TiptapToolbar = ({
           >
             <Heading02Icon className="h-4 w-4" />
           </Button>
-          <Button
-            variant={editor && editor.isActive("bulletList") ? "secondary" : "ghost"}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleBulletList().run(),
-                MarkdownUtils.insertBulletList
-              )
-            }
-            title={`${t('editor.toggleBulletList')} (${mod}+Shift+8)`}
-          >
-            <LeftToRightListBulletIcon className="h-4 w-4" />
-          </Button>
+          <ListMenuDropdown
+            editor={editor}
+            isMarkdownMode={isMarkdownMode}
+            onMarkdownChange={onMarkdownChange}
+            listState={listState}
+          />
           <Button
             variant={editor && editor.isActive("blockquote") ? "secondary" : "ghost"}
             size="sm"

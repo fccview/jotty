@@ -15,6 +15,28 @@ import { getContrastColor } from "./color-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
+const utf8ToBase64 = (str: string): string => {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(str, "utf8").toString("base64");
+  }
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  bytes.forEach((b) => { binary += String.fromCharCode(b); });
+  return btoa(binary);
+};
+
+const base64ToUtf8 = (str: string): string => {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(str, "base64").toString("utf8");
+  }
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder().decode(bytes);
+};
+
 const hasComplexTableContent = (table: HTMLElement): boolean => {
   const complexSelectors = ["ul", "ol", "pre", "table", "details", "hr"];
 
@@ -94,10 +116,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const isElement = (n: ParentNode): n is HTMLElement => n.nodeType === 1;
 
       if (parent.nodeName === "LI") {
-        const elementChildren = Array.from(parent.children).filter(
-          (child) => child.nodeType === 1
-        );
-        return elementChildren.length === 1;
+        return true;
       }
       if (
         parent.nodeName === "DIV" &&
@@ -357,14 +376,8 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const svgData = element.getAttribute("data-drawio-svg") || "";
       const themeMode = element.getAttribute("data-drawio-theme") || "light";
 
-      const dataBase64 =
-        typeof btoa !== "undefined"
-          ? btoa(diagramData)
-          : Buffer.from(diagramData).toString("base64");
-      const svgBase64 =
-        typeof btoa !== "undefined"
-          ? btoa(svgData)
-          : Buffer.from(svgData).toString("base64");
+      const dataBase64 = utf8ToBase64(diagramData);
+      const svgBase64 = utf8ToBase64(svgData);
 
       return `\n\n<!-- drawio-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n\n`;
     },
@@ -383,15 +396,8 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       const svgData = element.getAttribute("data-excalidraw-svg") || "";
       const themeMode = element.getAttribute("data-excalidraw-theme") || "light";
 
-      const dataBase64 =
-        typeof btoa !== "undefined"
-          ? btoa(diagramData)
-          : Buffer.from(diagramData).toString("base64");
-
-      const svgBase64 =
-        typeof btoa !== "undefined"
-          ? btoa(svgData)
-          : Buffer.from(svgData).toString("base64");
+      const dataBase64 = utf8ToBase64(diagramData);
+      const svgBase64 = utf8ToBase64(svgData);
 
       return `\n\n<!-- excalidraw-diagram\ndata: ${dataBase64}\nsvg: ${svgBase64}\ntheme: ${themeMode}\n-->\n\n`;
     },
@@ -465,14 +471,8 @@ const markdownProcessor = unified()
               const themeMode = themeMatch ? themeMatch[1].trim() : "light";
 
               try {
-                const diagramData =
-                  typeof atob !== "undefined"
-                    ? atob(dataBase64)
-                    : Buffer.from(dataBase64, "base64").toString();
-                const svgData =
-                  typeof atob !== "undefined"
-                    ? atob(svgBase64)
-                    : Buffer.from(svgBase64, "base64").toString();
+                const diagramData = base64ToUtf8(dataBase64);
+                const svgData = base64ToUtf8(svgBase64);
 
                 node.type = "element";
                 node.tagName = "div";
@@ -503,16 +503,8 @@ const markdownProcessor = unified()
               const themeMode = themeMatch ? themeMatch[1].trim() : "light";
 
               try {
-                const diagramData =
-                  typeof atob !== "undefined"
-                    ? atob(dataBase64)
-                    : Buffer.from(dataBase64, "base64").toString();
-
-                const svgData = svgBase64
-                  ? typeof atob !== "undefined"
-                    ? atob(svgBase64)
-                    : Buffer.from(svgBase64, "base64").toString()
-                  : "";
+                const diagramData = base64ToUtf8(dataBase64);
+                const svgData = svgBase64 ? base64ToUtf8(svgBase64) : "";
 
                 node.type = "element";
                 node.tagName = "div";

@@ -170,7 +170,8 @@ const processLineSelection = (
   const { lineEnd } = _getLineAtPosition(value, end);
   const lines = value.substring(lineStart, lineEnd).split("\n");
 
-  const allMatch = lines.every((l) => pattern.test(l) || l.trim() === "");
+  const hasNonEmpty = lines.some((l) => l.trim() !== "");
+  const allMatch = hasNonEmpty && lines.every((l) => pattern.test(l) || l.trim() === "");
   const newLines = lines.map((line, i) => processFn(line, i, allMatch));
   const newContent = newLines.join("\n");
   const newValue =
@@ -187,20 +188,93 @@ const processLineSelection = (
   return newValue;
 };
 
-export const insertBulletList = (textarea: HTMLTextAreaElement): string =>
-  processLineSelection(textarea, /^-\s/, (line, _, allMatch) => {
-    if (line.trim() === "") return line;
-    return allMatch ? line.replace(/^-\s/, "") : `- ${line}`;
+export const insertBulletList = (textarea: HTMLTextAreaElement): string => {
+  const { start, end } = getTextareaSelection(textarea);
+  const value = textarea.value;
+  const { lineStart } = _getLineAtPosition(value, start);
+  const { lineEnd } = _getLineAtPosition(value, end);
+  const lines = value.substring(lineStart, lineEnd).split("\n");
+
+  const nonEmpty = lines.filter((l) => l.trim() !== "");
+  const allBullet =
+    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*-\s/.test(l));
+  const allOrdered =
+    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*\d+\.\s/.test(l));
+  const toggle = allBullet || allOrdered;
+
+  const newLines = lines.map((line) => {
+    if (allBullet) {
+      return line.trim() === "" ? line : line.replace(/^(\s*)-\s+/, "$1");
+    }
+    if (allOrdered) {
+      return line.trim() === "" ? line : line.replace(/^(\s*)\d+\.\s+/, "$1-   ");
+    }
+    if (line.trim() === "") return "-   ";
+    if (/^\s*-\s/.test(line)) return line;
+    if (/^\s*\d+\.\s/.test(line))
+      return line.replace(/^(\s*)\d+\.\s+/, "$1-   ");
+    return "-   " + line;
   });
 
+  const newContent = newLines.join("\n");
+  const newValue =
+    value.substring(0, lineStart) + newContent + value.substring(lineEnd);
+  const cursorTarget = lineStart + newLines[0].length;
+  if (toggle) {
+    _updateEditor(textarea, newValue, lineStart, lineStart + newContent.length);
+  } else {
+    _updateEditor(textarea, newValue, cursorTarget, cursorTarget);
+  }
+  return newValue;
+};
+
 export const insertOrderedList = (textarea: HTMLTextAreaElement): string => {
+  const { start, end } = getTextareaSelection(textarea);
+  const value = textarea.value;
+  const { lineStart } = _getLineAtPosition(value, start);
+  const { lineEnd } = _getLineAtPosition(value, end);
+  const lines = value.substring(lineStart, lineEnd).split("\n");
+
+  const nonEmpty = lines.filter((l) => l.trim() !== "");
+  const allOrdered =
+    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*\d+\.\s/.test(l));
+  const allBullet =
+    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*-\s/.test(l));
+  const toggle = allOrdered || allBullet;
+
   let num = 1;
-  return processLineSelection(textarea, /^\d+\.\s/, (line, _, allMatch) => {
-    if (line.trim() === "") return line;
-    if (allMatch) return line.replace(/^\d+\.\s/, "");
-    const clean = line.replace(/^\d+\.\s/, "");
-    return `${num++}. ${clean}`;
+  const newLines = lines.map((line) => {
+    if (allOrdered) {
+      return line.trim() === "" ? line : line.replace(/^(\s*)\d+\.\s+/, "$1");
+    }
+    if (allBullet) {
+      if (line.trim() === "") return line;
+      return line.replace(/^(\s*)-\s+/, `$1${num++}.  `);
+    }
+    if (line.trim() === "") return `${num++}.  `;
+    if (/^\s*\d+\.\s/.test(line)) {
+      const indent = line.match(/^(\s*)/)?.[1] ?? "";
+      const clean = line.replace(/^\s*\d+\.\s+/, "");
+      return `${indent}${num++}.  ${clean}`;
+    }
+    if (/^\s*-\s/.test(line)) {
+      const indent = line.match(/^(\s*)/)?.[1] ?? "";
+      const clean = line.replace(/^\s*-\s+/, "");
+      return `${indent}${num++}.  ${clean}`;
+    }
+    return `${num++}.  ${line}`;
   });
+
+  const newContent = newLines.join("\n");
+  const newValue =
+    value.substring(0, lineStart) + newContent + value.substring(lineEnd);
+  const cursorTarget = lineStart + newLines[0].length;
+  if (toggle) {
+    _updateEditor(textarea, newValue, lineStart, lineStart + newContent.length);
+  } else {
+    _updateEditor(textarea, newValue, cursorTarget, cursorTarget);
+  }
+  return newValue;
 };
 
 export const insertTaskList = (textarea: HTMLTextAreaElement): string =>
@@ -342,10 +416,10 @@ export const handleBulletListEnter = (
   const { start } = getTextareaSelection(textarea);
   const { lineContent, lineStart } = _getLineAtPosition(textarea.value, start);
 
-  const match = lineContent.match(/^(-\s+)(.*)/);
+  const match = lineContent.match(/^(\s*)(-\s+)(.*)/);
   if (!match) return null;
 
-  const [, bullet, content] = match;
+  const [, indent, bullet, content] = match;
   if (!content.trim()) {
     const newVal =
       textarea.value.substring(0, lineStart) +
@@ -353,7 +427,60 @@ export const handleBulletListEnter = (
     return _updateEditor(textarea, newVal, lineStart, lineStart);
   }
 
-  return insertTextAtCursor(textarea, "\n" + bullet, "", "", 0);
+  return insertTextAtCursor(textarea, "\n" + indent + bullet, "", "", 0);
+};
+
+export const indentLines = (textarea: HTMLTextAreaElement): string => {
+  let orderedCounter = 1;
+  let lastWasOrdered = false;
+  const result = processLineSelection(textarea, /^/, (line) => {
+    if (line.trim() === "") {
+      lastWasOrdered = false;
+      return line;
+    }
+    const orderedMatch = line.match(/^(\s*)(\d+)\.\s+(.*)/);
+    if (orderedMatch) {
+      if (!lastWasOrdered) orderedCounter = 1;
+      const [, indent, , content] = orderedMatch;
+      lastWasOrdered = true;
+      return `    ${indent}${orderedCounter++}.  ${content}`;
+    }
+    lastWasOrdered = false;
+    return "    " + line;
+  });
+  const pos = textarea.selectionEnd;
+  textarea.setSelectionRange(pos, pos);
+  return result;
+};
+
+export const outdentLines = (textarea: HTMLTextAreaElement): string => {
+  const result = processLineSelection(textarea, /^ {4}/, (line) =>
+    line.startsWith("    ") ? line.slice(4) : line
+  );
+  const pos = textarea.selectionEnd;
+  textarea.setSelectionRange(pos, pos);
+  return result;
+};
+
+export const handleOrderedListEnter = (
+  textarea: HTMLTextAreaElement
+): string | null => {
+  const { start } = getTextareaSelection(textarea);
+  const { lineContent, lineStart } = _getLineAtPosition(textarea.value, start);
+
+  const match = lineContent.match(/^(\s*)(\d+)\.(\s+)(.*)/);
+  if (!match) return null;
+
+  const [, indent, numStr, spacing, content] = match;
+  if (!content.trim()) {
+    const newVal =
+      textarea.value.substring(0, lineStart) +
+      textarea.value.substring(lineStart + lineContent.length);
+    return _updateEditor(textarea, newVal, lineStart, lineStart);
+  }
+
+  const nextNum = parseInt(numStr, 10) + 1;
+  return insertTextAtCursor(textarea, `\n${indent}${nextNum}.${spacing}`, "", "", 0);
 };
 
 export const autolinkPastedContent = (

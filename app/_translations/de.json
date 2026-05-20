@@ -540,7 +540,7 @@
     "viewArchived": "Archivierte anzeigen",
     "customizeStatuses": "Passe die Status für dieses Kanban-Board an. Füge Status hinzu, entferne oder ordne sie neu.",
     "addStatus": "Status hinzufügen",
-    "autoComplete": "Automatische Vervollständigung"
+    "autoComplete": "Automatisch abschließen"
   },
   "kanban": {
     "priority": "Priorität",
@@ -600,7 +600,9 @@
     "session": "Sitzung",
     "sessions": "Sitzungen",
     "startTime": "Start",
-    "endTime": "Ende"
+    "endTime": "Ende",
+    "addItemToColumn": "Element zu {column} hinzufügen",
+    "addItemPlaceholder": "Neues Element..."
   },
   "profile": {
     "userProfile": "Benutzer",
@@ -828,6 +830,13 @@
     "showIndicator": "Indikator anzeigen",
     "hideIndicator": "Anzeige ausblenden",
     "hideConnectionIndicator": "Verbindungsanzeige im Logo ausblenden",
+    "kanbanSection": "Kanban-Einstellungen",
+    "saveKanban": "Kanban speichern",
+    "hideStatusOnCardsLabel": "Status auf Kanban-Karten",
+    "showStatusOnCards": "Status anzeigen",
+    "hideStatusOnCards": "Status ausblenden",
+    "hideStatusOnCardsDescription": "Blendet das Status-Label auf Kanban-Karten aus. Der Status ist bereits durch die Spalte ersichtlich, in der die Karte liegt.",
+    "selectStatusOnCards": "Statussichtbarkeit auswählen",
     "codeBlockChoice": "Wählen Sie den Codeblockstil",
     "themedCodeBlock": "Themenbezogener Codeblock",
     "defaultCodeBlock": "Codepen (Standard)",
@@ -1140,7 +1149,11 @@
     "toggleStrikethrough": "Durchstreichung umschalten",
     "toggleInlineCode": "Code-Formatierung umschalten",
     "toggleHeading2": "Überschrift umschalten",
+    "listOptions": "Liste",
     "toggleBulletList": "Aufzählungsliste umschalten",
+    "toggleOrderedList": "Nummerierte Liste umschalten",
+    "indentListItem": "Listenelement einrücken",
+    "outdentListItem": "Listenelement ausrücken",
     "toggleBlockquote": "Zitat umschalten",
     "toggleLink": "Verknüpfung einfügen",
     "editImageSize": "Bilgröße ändern",
@@ -1174,6 +1187,7 @@
     "heading2": "Überschrift 2",
     "mediumSectionHeading": "Mittlere Abschnittsüberschrift",
     "createBulletedList": "Aufzählungsliste erstellen",
+    "createOrderedList": "Nummerierte Liste erstellen",
     "taskList": "Aufgabenliste erstellen",
     "createTaskList": "Aufgabenliste erstellen",
     "createCodeBlock": "Code-Block erstellen",
