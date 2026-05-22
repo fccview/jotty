@@ -616,6 +616,7 @@
     "archiveAllConfirmMessage": "{column}Daq {count} Dochmey Hoch pol? polmeH Daqvo' bIH DacheghmoHlaH.",
     "archiveAllSuccess": "{count} Dochmey pol",
     "archiveAllFailed": "Hoch Dochmey pollu'laHbe'",
+    "archiveAllPartial": "{total}vo' {archived} Dochmey pol. Dochmey 'op pollu'laHbe'.",
     "itemDeleted": "Qaw'pu'",
     "estimatedTime": "pIq chartoq (rep)",
     "actualVsEstimated": "{actual} / {estimated}",

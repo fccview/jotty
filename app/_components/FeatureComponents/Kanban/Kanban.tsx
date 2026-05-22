@@ -152,6 +152,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
   const handleArchiveAll = useCallback(
     async (items: Item[]) => {
+      let archivedCount = 0;
       let latestChecklist: Checklist | null = null;
 
       for (const item of items) {
@@ -162,15 +163,26 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
         const result = await archiveItem(formData);
         if (!result.success || !result.data) {
+          if (latestChecklist) {
+            onUpdate(latestChecklist);
+          }
+
+          await refreshChecklist();
           showToast({
             type: "error",
             title: t("common.error"),
-            message: t("kanban.archiveAllFailed"),
+            message:
+              archivedCount > 0
+                ? t("kanban.archiveAllPartial", {
+                    archived: archivedCount,
+                    total: items.length,
+                  })
+                : t("kanban.archiveAllFailed"),
           });
-          await refreshChecklist();
           return;
         }
 
+        archivedCount++;
         latestChecklist = result.data;
       }
 
@@ -267,8 +279,12 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 statusColor={statuses.find((s) => s.id === column.id)?.color}
                 statuses={statuses}
                 onAddItem={permissions?.canEdit ? (text) => handleAddItem(text, undefined, column.status) : undefined}
-                archiveItems={columnItems}
-                onArchiveAll={permissions?.canEdit ? handleArchiveAll : undefined}
+                archivableCount={columnItems.length}
+                onArchiveAll={
+                  permissions?.canEdit
+                    ? () => handleArchiveAll(columnItems)
+                    : undefined
+                }
               />
             </div>
           );

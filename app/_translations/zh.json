@@ -616,6 +616,7 @@
     "archiveAllConfirmMessage": "要归档 {column} 中的全部 {count} 个项目吗？你可以从归档中恢复它们。",
     "archiveAllSuccess": "已归档 {count} 个项目",
     "archiveAllFailed": "无法归档所有项目",
+    "archiveAllPartial": "已归档 {total} 个项目中的 {archived} 个。部分项目无法归档。",
     "itemDeleted": "项目已删除",
     "estimatedTime": "预估时间（小时）",
     "actualVsEstimated": "{actual} / {estimated}",

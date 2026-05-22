@@ -616,6 +616,7 @@
     "archiveAllConfirmMessage": "{column} içindeki {count} öğenin tümü arşivlensin mi? Bunları arşivden geri yükleyebilirsiniz.",
     "archiveAllSuccess": "{count} öğe arşivlendi",
     "archiveAllFailed": "Tüm öğeler arşivlenemedi",
+    "archiveAllPartial": "{total} öğeden {archived} tanesi arşivlendi. Bazı öğeler arşivlenemedi.",
     "itemDeleted": "Öğe silindi",
     "estimatedTime": "Tahmini süre (saat)",
     "actualVsEstimated": "{actual} / {estimated}",

@@ -28,8 +28,8 @@ interface KanbanColumnProps {
   statusColor?: string;
   statuses: KanbanStatus[];
   onAddItem?: (status: string) => Promise<void>;
-  archiveItems?: Item[];
-  onArchiveAll?: (items: Item[]) => Promise<void>;
+  archivableCount?: number;
+  onArchiveAll?: () => Promise<void>;
 }
 
 interface InlineAddInputProps {
@@ -91,7 +91,7 @@ const KanbanColumnComponent = ({
   statusColor,
   statuses,
   onAddItem,
-  archiveItems,
+  archivableCount = items.length,
   onArchiveAll,
 }: KanbanColumnProps) => {
   const t = useTranslations();
@@ -103,7 +103,6 @@ const KanbanColumnComponent = ({
 
   const currentStatus = statuses.find((s) => s.id === status);
   const isAutoComplete = currentStatus?.autoComplete === true;
-  const archivableItems = archiveItems ?? items;
 
   const defaultColors: Record<string, string> = useMemo(
     () => ({
@@ -145,10 +144,10 @@ const KanbanColumnComponent = ({
   };
 
   const handleArchiveAll = async () => {
-    if (!onArchiveAll || archivableItems.length === 0) return;
+    if (!onArchiveAll || archivableCount === 0) return;
     setIsArchiving(true);
     try {
-      await onArchiveAll(archivableItems);
+      await onArchiveAll();
     } finally {
       setIsArchiving(false);
     }
@@ -183,7 +182,7 @@ const KanbanColumnComponent = ({
               onClick={() => setShowArchiveAllModal(true)}
               title={t("kanban.archiveAllItemsInColumn", { column: title })}
               aria-label={t("kanban.archiveAllItemsInColumn", { column: title })}
-              disabled={archivableItems.length === 0 || isArchiving}
+              disabled={archivableCount === 0 || isArchiving}
               className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Archive02Icon className="h-3.5 w-3.5" />
@@ -249,7 +248,7 @@ const KanbanColumnComponent = ({
         onConfirm={handleArchiveAll}
         title={t("kanban.archiveAllConfirmTitle")}
         message={t("kanban.archiveAllConfirmMessage", {
-          count: archivableItems.length,
+          count: archivableCount,
           column: title,
         })}
         confirmText={t("common.archive")}

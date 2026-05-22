@@ -616,6 +616,7 @@
     "archiveAllConfirmMessage": "Архивировать все элементы ({count}) в {column}? Их можно восстановить из архива.",
     "archiveAllSuccess": "Архивировано элементов: {count}",
     "archiveAllFailed": "Не удалось архивировать все элементы",
+    "archiveAllPartial": "Архивировано {archived} из {total} элементов. Некоторые элементы не удалось архивировать.",
     "itemDeleted": "Элемент удалён",
     "estimatedTime": "Оценка времени (часы)",
     "actualVsEstimated": "{actual} / {estimated}",

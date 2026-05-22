@@ -591,6 +591,7 @@
     "archiveAllConfirmMessage": "¿Archivar los {count} elementos en {column}? Puedes restaurarlos desde el archivo.",
     "archiveAllSuccess": "{count} elementos archivados",
     "archiveAllFailed": "No se pudieron archivar todos los elementos",
+    "archiveAllPartial": "{archived} de {total} elementos archivados. Algunos elementos no se pudieron archivar.",
     "itemDeleted": "Elemento eliminado",
     "estimatedTime": "Tiempo estimado (horas)",
     "actualVsEstimated": "{actual} / {estimated}",

@@ -616,6 +616,7 @@
     "archiveAllConfirmMessage": "Stow all {count} items in {column}? Ye can haul them back from the archive.",
     "archiveAllSuccess": "{count} items stowed",
     "archiveAllFailed": "Could not stow all items",
+    "archiveAllPartial": "{archived} of {total} items stowed. Some cargo could not be stowed.",
     "itemDeleted": "Item walked the plank",
     "estimatedTime": "Estimated hours o’ toil",
     "actualVsEstimated": "{actual} / {estimated}",
