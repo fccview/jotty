@@ -568,6 +568,7 @@
     "autoComplete": "Auto complete"
   },
   "kanban": {
+    "properties": "Properties",
     "status": "Status",
     "priority": "Priority",
     "score": "Score",

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, type ReactNode } from "react";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { DatePicker, DateTimePicker } from "@/app/_components/GlobalComponents/FormElements/DatePicker";
@@ -9,7 +10,7 @@ import {
   getPriorityDotColor,
   getPriorityLabel,
 } from "@/app/_utils/kanban/index";
-import { UserIcon } from "hugeicons-react";
+import { ArrowDown01Icon, ArrowRight01Icon, UserIcon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/app/_utils/global-utils";
 
@@ -40,6 +41,38 @@ interface KanbanCardDetailPropertiesProps {
   onEstimatedTimeSave: () => void;
   formatDateTimeString: (v: string) => string;
 }
+
+interface PropertySectionProps {
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}
+
+const PropertySection = ({
+  title,
+  children,
+  defaultOpen = true,
+}: PropertySectionProps) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border-b border-border/70 pb-4 last:border-b-0 last:pb-0">
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex w-full items-center justify-between gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide hover:text-foreground transition-colors"
+      >
+        <span>{title}</span>
+        {isOpen ? (
+          <ArrowDown01Icon className="h-3.5 w-3.5" />
+        ) : (
+          <ArrowRight01Icon className="h-3.5 w-3.5" />
+        )}
+      </button>
+      {isOpen && <div className="mt-3 space-y-5">{children}</div>}
+    </div>
+  );
+};
 
 export const KanbanCardDetailProperties = ({
   item,
@@ -127,9 +160,9 @@ export const KanbanCardDetailProperties = ({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {canEdit && (
-        <>
+        <PropertySection title={t("kanban.properties")}>
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-2">
               {t("kanban.status")}
@@ -260,14 +293,14 @@ export const KanbanCardDetailProperties = ({
               </p>
             )}
           </div>
-        </>
+        </PropertySection>
       )}
 
       {metadata.length > 0 && (
-        <div className={cn("pt-4", canEdit && "border-t border-border")}>
-          <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            {t("auditLogs.metadata")}
-          </h5>
+        <PropertySection
+          title={t("auditLogs.metadata")}
+          defaultOpen={false}
+        >
           <div className="space-y-1.5">
             {metadata.map((text, i) => (
               <p
@@ -279,7 +312,7 @@ export const KanbanCardDetailProperties = ({
               </p>
             ))}
           </div>
-        </div>
+        </PropertySection>
       )}
     </div>
   );
