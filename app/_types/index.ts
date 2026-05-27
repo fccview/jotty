@@ -38,6 +38,7 @@ export type {
   QuickCreateNotes,
   HideConnectionIndicator,
   HideStatusOnCards,
+  HideMobileStatusDropdown,
   CodeBlockStyle,
   ChecklistItemClickAction,
 } from "./user";

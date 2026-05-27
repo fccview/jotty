@@ -53,7 +53,7 @@ const KanbanCardComponent = ({
   statusColor,
 }: KanbanCardProps) => {
   const t = useTranslations();
-  const { usersPublicData } = useAppMode();
+  const { usersPublicData, user } = useAppMode();
   const { permissions } = usePermissions();
   const { formatDateString, formatDateTimeString, formatTimeString } =
     usePreferredDateTime();
@@ -72,6 +72,7 @@ const KanbanCardComponent = ({
 
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showTimeEntriesModal, setShowTimeEntriesModal] = useState(false);
+  const hideMobileStatusDropdown = user?.hideMobileStatusDropdown === "enable";
 
   const kanbanItemHook = useKanbanItem({
     checklist,
@@ -256,21 +257,23 @@ const KanbanCardComponent = ({
               </div>
             )}
 
-            <div
-              className="lg:hidden"
-              onPointerDown={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Dropdown
-                value={item.status || TaskStatus.TODO}
-                options={statusOptions}
-                onChange={(newStatus) =>
-                  kanbanItemHook.handleStatusChange(newStatus as TaskStatus)
-                }
-                className="w-full text-sm"
-              />
-            </div>
+            {!hideMobileStatusDropdown && (
+              <div
+                className="lg:hidden"
+                onPointerDown={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Dropdown
+                  value={item.status || TaskStatus.TODO}
+                  options={statusOptions}
+                  onChange={(newStatus) =>
+                    kanbanItemHook.handleStatusChange(newStatus as TaskStatus)
+                  }
+                  className="w-full text-sm"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
