@@ -195,5 +195,5 @@ export const noteToMarkdown = (note: Note): string => {
 
   const frontmatter = generateYamlFrontmatter(metadata);
 
-  return `${frontmatter}${content}`.trim() + "\n";
+  return `${frontmatter}${content}`.trim();
 };

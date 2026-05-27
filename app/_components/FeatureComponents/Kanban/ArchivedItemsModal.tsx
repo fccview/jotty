@@ -111,7 +111,7 @@ export const ArchivedItemsModal = ({
                       <p className="text-md lg:text-xs text-muted-foreground">
                         {t('common.archived')}{" "}
                         {formatDateString(item.archivedAt)}
-                        {item.archivedBy && ` ${t('common.by')} ${item.archivedBy}`}
+                        {item.archivedBy && ` ${t('common.by', { owner: item.archivedBy })}`}
                       </p>
                     )}
                   </div>

@@ -104,9 +104,8 @@ export const parseMarkdown = (
   );
 
   let globalItemCounter = 0;
-  const resolveItemId = (storedId: string | undefined, level: number): string => {
-    const slot = globalItemCounter++;
-    return storedId || `${id}-${level}-${slot}`;
+  const generateItemId = (level: number): string => {
+    return `${id}-${level}-${globalItemCounter++}`;
   };
 
   const buildNestedItems = (
@@ -225,7 +224,7 @@ export const parseMarkdown = (
           });
 
           item = {
-            id: resolveItemId(itemMetadata.id, parentLevel),
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -267,7 +266,7 @@ export const parseMarkdown = (
           }
 
           item = {
-            id: resolveItemId(itemMetadata.id, parentLevel),
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
