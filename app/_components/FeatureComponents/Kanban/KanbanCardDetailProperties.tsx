@@ -3,7 +3,7 @@
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { DatePicker, DateTimePicker } from "@/app/_components/GlobalComponents/FormElements/DatePicker";
-import { Item, KanbanPriority } from "@/app/_types";
+import { Item, KanbanPriority, KanbanStatus } from "@/app/_types";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
 import {
   getPriorityDotColor,
@@ -15,6 +15,8 @@ import { cn } from "@/app/_utils/global-utils";
 
 interface KanbanCardDetailPropertiesProps {
   item: Item;
+  statuses: KanbanStatus[];
+  statusInput: string;
   priorityInput: KanbanPriority;
   scoreInput: string;
   assigneeInput: string;
@@ -26,6 +28,7 @@ interface KanbanCardDetailPropertiesProps {
   isShared: boolean;
   toLocalDateTimeValue: (iso: string) => string;
   toLocalDateValue: (iso: string) => string;
+  onStatusChange: (status: string) => void;
   onPriorityChange: (p: KanbanPriority) => void;
   onScoreChange: (v: string) => void;
   onScoreSave: () => void;
@@ -40,6 +43,8 @@ interface KanbanCardDetailPropertiesProps {
 
 export const KanbanCardDetailProperties = ({
   item,
+  statuses,
+  statusInput,
   priorityInput,
   scoreInput,
   assigneeInput,
@@ -51,6 +56,7 @@ export const KanbanCardDetailProperties = ({
   isShared,
   toLocalDateTimeValue,
   toLocalDateValue,
+  onStatusChange,
   onPriorityChange,
   onScoreChange,
   onScoreSave,
@@ -71,6 +77,8 @@ export const KanbanCardDetailProperties = ({
     KanbanPriorityLevel.LOW,
     KanbanPriorityLevel.NONE,
   ];
+
+  const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
 
   const assigneeOptions = [
     {
@@ -122,6 +130,32 @@ export const KanbanCardDetailProperties = ({
     <div className="space-y-5">
       {canEdit && (
         <>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-2">
+              {t("kanban.status")}
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {sortedStatuses.map((status) => (
+                <button
+                  key={status.id}
+                  onClick={() => onStatusChange(status.id)}
+                  className={cn(
+                    "text-[11px] px-2.5 py-1.5 rounded-jotty border transition-all flex items-center gap-1.5",
+                    statusInput === status.id
+                      ? "border-primary/50 bg-primary/5 text-foreground font-semibold"
+                      : "border-border text-muted-foreground hover:border-primary/30 hover:bg-muted/50",
+                  )}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: status.color || "#6b7280" }}
+                  />
+                  {status.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-2">
               {t("kanban.priority")}

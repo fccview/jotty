@@ -568,6 +568,7 @@
     "autoComplete": "Auto complete"
   },
   "kanban": {
+    "status": "Status",
     "priority": "Priority",
     "score": "Score",
     "assignee": "Assignee",

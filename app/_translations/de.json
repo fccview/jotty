@@ -543,6 +543,7 @@
     "autoComplete": "Automatisch abschließen"
   },
   "kanban": {
+    "status": "Status",
     "priority": "Priorität",
     "score": "Punktzahl",
     "assignee": "Zugewiesen an",
