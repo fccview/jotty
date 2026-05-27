@@ -281,7 +281,8 @@
     "createUser": "Créer un utilisateur",
     "attemptsRemaining": "Attention : {count, plural, one {# tentative} other {# tentatives}} restantes avant le verrouillage du compte",
     "accountLocked": "Trop de tentatives échouées. Veuillez réessayer dans {seconds} {seconds, plural, one {seconde} other {secondes}}",
-    "notAuthorized": "Vous n’êtes pas autorisé à accéder à cette application. Contactez votre administrateur."
+    "notAuthorized": "Vous n’êtes pas autorisé à accéder à cette application. Contactez votre administrateur.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Authentification à deux facteurs",

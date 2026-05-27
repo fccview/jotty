@@ -281,7 +281,8 @@
     "createUser": "Crea Utente",
     "attemptsRemaining": "Attenzione: {count, plural, one {# tentativo} other {# tentativi}} rimanenti prima del blocco dell'account",
     "accountLocked": "Troppi tentativi falliti. Riprova tra {seconds} {seconds, plural, one {secondo} other {secondi}}",
-    "notAuthorized": "Non sei autorizzato ad accedere a questa applicazione. Contatta l’amministratore."
+    "notAuthorized": "Non sei autorizzato ad accedere a questa applicazione. Contatta l’amministratore.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Autenticazione a Due Fattori",

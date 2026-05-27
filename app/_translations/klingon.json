@@ -306,7 +306,8 @@
     "createUser": "lo'wI' yIchenmoH",
     "attemptsRemaining": "ghuH: {count} logh neH bInIDlaH",
     "accountLocked": "bInIDqu'. {seconds} lup 'uy' wa'leS yInIDqa'.",
-    "notAuthorized": "bI'el 'e' chaw'be'lu'. ra'wI' yIghel."
+    "notAuthorized": "bI'el 'e' chaw'be'lu'. ra'wI' yIghel.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "cha'logh ngu'aS",

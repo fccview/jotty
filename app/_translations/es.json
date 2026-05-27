@@ -281,7 +281,8 @@
     "createUser": "Crear usuario",
     "attemptsRemaining": "Advertencia: {count, plural, one {# intento} other {# intentos}} restantes antes del bloqueo de cuenta",
     "accountLocked": "Demasiados intentos fallidos. Por favor, inténtelo de nuevo en {seconds} {seconds, plural, one {segundo} other {segundos}}",
-    "notAuthorized": "No estás autorizado para acceder a esta aplicación. Ponte en contacto con tu administrador."
+    "notAuthorized": "No estás autorizado para acceder a esta aplicación. Ponte en contacto con tu administrador.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Autenticación de dos factores",

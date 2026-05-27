@@ -306,7 +306,8 @@
     "createUser": "Kullanıcı Oluştur",
     "attemptsRemaining": "Uyarı: Hesabın kilitlenmesine {count, plural, one {# deneme} other {# deneme}} kaldı",
     "accountLocked": "Çok fazla hatalı deneme. Lütfen {seconds} {seconds, plural, one {saniye} other {saniye}} sonra tekrar deneyin",
-    "notAuthorized": "Bu uygulamaya erişim yetkiniz yok. Lütfen yöneticinizle iletişime geçin."
+    "notAuthorized": "Bu uygulamaya erişim yetkiniz yok. Lütfen yöneticinizle iletişime geçin.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "İki Faktörlü Doğrulama",

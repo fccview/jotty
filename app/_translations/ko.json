@@ -306,7 +306,8 @@
     "createUser": "사용자 생성",
     "attemptsRemaining": "경고: {count, plural, one {#회} other {#회}}의 시도가 남아 있습니다",
     "accountLocked": "실패 시도가 너무 많습니다. {seconds} {seconds, plural, one {초} other {초}} 후에 다시 시도하세요",
-    "notAuthorized": "접근 권한이 없습니다. 관리자에게 문의하세요."
+    "notAuthorized": "접근 권한이 없습니다. 관리자에게 문의하세요.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "2단계 인증 (2FA)",

@@ -306,7 +306,8 @@
     "createUser": "Recruit Deckhand",
     "attemptsRemaining": "Warning: {count} tries left before we throw ye in the brig",
     "accountLocked": "To the brig with ye! Wait {seconds} seconds.",
-    "notAuthorized": "Ye lack the clearance! Talk to the Captain."
+    "notAuthorized": "Ye lack the clearance! Talk to the Captain.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Two-Step Verification",

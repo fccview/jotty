@@ -306,7 +306,8 @@
     "createUser": "创建用户",
     "attemptsRemaining": "警告：在账户锁定前还剩 {count, plural, one {# 次尝试} other {# 次尝试}}",
     "accountLocked": "失败次数过多。请在 {seconds} {seconds, plural, one {秒} other {秒}} 后重试",
-    "notAuthorized": "您没有权限访问此应用程序。请联系您的管理员。"
+    "notAuthorized": "您没有权限访问此应用程序。请联系您的管理员。",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "双重认证 (2FA)",

@@ -281,7 +281,8 @@
     "createUser": "Gebruiker aanmaken",
     "attemptsRemaining": "Waarschuwing: {count, plural, one {# poging} other {# pogingen}} over voordat account wordt vergrendeld",
     "accountLocked": "Te veel mislukte pogingen. Probeer het opnieuw over {seconds} {seconds, plural, one {seconde} other {seconden}}",
-    "notAuthorized": "U bent niet geautoriseerd om toegang te krijgen tot deze applicatie. Neem contact op met uw beheerder."
+    "notAuthorized": "U bent niet geautoriseerd om toegang te krijgen tot deze applicatie. Neem contact op met uw beheerder.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Twee-factorauthenticatie",

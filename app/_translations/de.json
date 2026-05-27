@@ -280,6 +280,7 @@
     "version": "Version {version}",
     "createUser": "Benutzer erstellen",
     "notAuthorized": "Du bist nicht berechtigt, auf diese Anwendung zuzugreifen. Kontaktiere deinen Administrator.",
+    "rememberMe": "Remember me",
     "attemptsRemaining": "Warnung: Noch {count, plural, one {# Versuch} other {# Versuche}} bis zur Kontosperre",
     "accountLocked": "Zu viele fehlgeschlagene Versuche. Bitte versuche es in {seconds} {seconds, plural, one {Sekunde} other {Sekunden}} erneut."
   },

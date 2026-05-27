@@ -88,15 +88,16 @@ export const writeJsonFile = async (
   data: any,
   filePath: string,
 ): Promise<void> => {
+  const finalPath = path.join(process.cwd(), filePath);
+  const tmpPath = finalPath + ".tmp";
+
   try {
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(
-      path.join(process.cwd(), filePath),
-      JSON.stringify(data, null, 2),
-      "utf-8",
-    );
+    await fs.mkdir(path.dirname(finalPath), { recursive: true });
+    await fs.writeFile(tmpPath, JSON.stringify(data, null, 2), "utf-8");
+    await fs.rename(tmpPath, finalPath);
   } catch (error) {
     console.error("Error writing data:", error);
+    try { await fs.unlink(tmpPath); } catch {}
     throw error;
   }
 };

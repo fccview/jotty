@@ -281,7 +281,8 @@
     "createUser": "Utwórz użytkownika",
     "attemptsRemaining": "Uwaga: {count, plural, one {# próba} few {# próby} other {# prób}} pozostało przed zablokowaniem konta",
     "accountLocked": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {seconds} {seconds, plural, one {sekundę} few {sekundy} other {sekund}}",
-    "notAuthorized": "Nie masz uprawnień dostępu do tej aplikacji. Skontaktuj się z administratorem."
+    "notAuthorized": "Nie masz uprawnień dostępu do tej aplikacji. Skontaktuj się z administratorem.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Autoryzacja dwuskładnikowa",
