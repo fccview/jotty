@@ -660,39 +660,64 @@ pre.text-foreground span,
   }
 }
 
-.overflow-y-auto {
-  scrollbar-width: auto !important;
+@supports (-moz-appearance: none) {
+    .overflow-y-auto,
+    .overflow-x-auto,
+    .overflow-auto {
+        scrollbar-width: thin;
+        scrollbar-color: rgb(var(--primary) / 0.3) transparent;
+    }
 }
 
 .jotty-scrollable-content {
-  -webkit-overflow-scrolling: touch;
-  transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+}
+
+.overflow-y-auto::-webkit-scrollbar-button,
+.overflow-x-auto::-webkit-scrollbar-button,
+.overflow-auto::-webkit-scrollbar-button,
+.scrollbar-thin::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+    width: 0;
 }
 
 .overflow-x-auto::-webkit-scrollbar {
-  height: 8px;
+    height: 6px;
 }
 
 .overflow-y-auto::-webkit-scrollbar,
-.overflow-x-auto::-webkit-scrollbar {
-  -webkit-appearance: none;
-  width: 8px;
-  background-color: rgb(var(--muted) / 0.5) !important;
-  border-radius: 6px;
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-auto::-webkit-scrollbar,
+.scrollbar-thin::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 6px;
+    background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track,
+.overflow-x-auto::-webkit-scrollbar-track,
+.overflow-auto::-webkit-scrollbar-track,
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb,
-.overflow-x-auto::-webkit-scrollbar-thumb {
-  background-color: rgb(var(--primary) / 0.3) !important;
-  border-radius: 6px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  visibility: visible !important;
-  opacity: 1 !important;
-  min-height: 20px !important;
-  height: 20px !important;
-  width: 4px !important;
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.overflow-auto::-webkit-scrollbar-thumb,
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--primary) / 0.3);
+    border-radius: 3px;
 }
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover,
+.overflow-x-auto::-webkit-scrollbar-thumb:hover,
+.overflow-auto::-webkit-scrollbar-thumb:hover,
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(var(--primary) / 0.5);
+}
+
 
 @media (max-width: 992px) {
   .jotty-checklist-page .jotty-quick-nav,
