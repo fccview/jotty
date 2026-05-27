@@ -599,6 +599,7 @@
     "itemTitle": "Item Title",
     "manageStatuses": "Manage Statuses",
     "viewArchived": "View Archived",
+    "changeStatus": "Change status",
     "noBoards": "No boards found",
     "noBoardsYet": "No kanban boards yet",
     "createFirstBoard": "Create your first kanban board to start managing your projects.",

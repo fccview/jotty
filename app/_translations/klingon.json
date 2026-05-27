@@ -568,6 +568,8 @@
     "autoComplete": "nIteb rIn"
   },
   "kanban": {
+    "properties": "DI'onmey",
+    "status": "ghu'",
     "priority": "nom mIw",
     "score": "pong",
     "assignee": "ghu' ghoS",
@@ -597,6 +599,7 @@
     "itemTitle": "chel pong",
     "manageStatuses": "ghu'mey yIvu'",
     "viewArchived": "Pol yIlegh",
+    "changeStatus": "ghu' yIchoH",
     "noBoards": "beQmey lutu'lu'be'",
     "noBoardsYet": "Kanban beQmey not yet",
     "createFirstBoard": "Kanban beQ wa' yIchel 'ej QInmey yIvu'.",
@@ -861,6 +864,11 @@
     "showStatusOnCards": "ngoq legh",
     "hideStatusOnCards": "ngoq So'",
     "hideStatusOnCardsDescription": "Kanban ghItlhmey ngoq So'. ngoq DaH ram vIghItlh Daq legh.",
+    "hideMobileStatusDropdownLabel": "mobile ghu' menu ghItlhmeyDaq",
+    "showMobileStatusDropdown": "mobile menu yIcha'",
+    "hideMobileStatusDropdown": "mobile menu yISo'",
+    "selectMobileStatusDropdown": "mobile ghu' menu mIw yIwIv",
+    "hideMobileStatusDropdownDescription": "mobile Kanban ghItlhmeyDaq reH leghlu'bogh ghu' menu SeH. ngoq label setting latlh.",
     "selectStatusOnCards": "ngoq leghlaHghach wIv",
     "codeBlockChoice": "Choose the code block style",
     "themedCodeBlock": "Themed codeblock",

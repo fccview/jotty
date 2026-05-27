@@ -574,6 +574,7 @@
     "itemTitle": "Elementtitel",
     "manageStatuses": "Status verwalten",
     "viewArchived": "Archivierte anzeigen",
+    "changeStatus": "Status ändern",
     "noBoards": "Keine Boards gefunden",
     "noBoardsYet": "Noch keine Kanban-Boards",
     "createFirstBoard": "Erstelle dein erstes Kanban-Board, um deine Projekte zu verwalten.",

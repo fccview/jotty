@@ -568,6 +568,8 @@
     "autoComplete": "Auto finish"
   },
   "kanban": {
+    "properties": "Particulars",
+    "status": "Condition",
     "priority": "What matters most",
     "score": "Booty score",
     "assignee": "Crew hand",
@@ -597,6 +599,7 @@
     "itemTitle": "Cargo title",
     "manageStatuses": "Manage conditions",
     "viewArchived": "Spy the hold",
+    "changeStatus": "Change condition",
     "noBoards": "No boards in sight",
     "noBoardsYet": "No Kanban boards yet",
     "createFirstBoard": "Create yer first Kanban board to chart yer projects.",
@@ -861,6 +864,11 @@
     "showStatusOnCards": "Show status",
     "hideStatusOnCards": "Stow status",
     "hideStatusOnCardsDescription": "Stows the status mark on yer Kanban scrolls. The status be already plain from the column the scroll sits in, ye scallywag.",
+    "hideMobileStatusDropdownLabel": "Mobile condition menu on scrolls",
+    "showMobileStatusDropdown": "Show mobile menu",
+    "hideMobileStatusDropdown": "Stow mobile menu",
+    "selectMobileStatusDropdown": "Choose mobile condition menu behavior",
+    "hideMobileStatusDropdownDescription": "Controls the always-visible condition menu on mobile Kanban scrolls. The status mark setting stays separate.",
     "selectStatusOnCards": "Pick status visibility",
     "codeBlockChoice": "Choose the code block style",
     "themedCodeBlock": "Themed codeblock",

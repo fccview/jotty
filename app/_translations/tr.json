@@ -568,6 +568,8 @@
     "autoComplete": "Otomatik tamamla"
   },
   "kanban": {
+    "properties": "Özellikler",
+    "status": "Durum",
     "priority": "Öncelik",
     "score": "Puan",
     "assignee": "Atanan",
@@ -597,6 +599,7 @@
     "itemTitle": "Öğe başlığı",
     "manageStatuses": "Durumları yönet",
     "viewArchived": "Arşivlenenleri görüntüle",
+    "changeStatus": "Durumu değiştir",
     "noBoards": "Pano bulunamadı",
     "noBoardsYet": "Henüz Kanban panosu yok",
     "createFirstBoard": "Projelerinizi yönetmek için ilk Kanban panonuzu oluşturun.",
@@ -865,6 +868,11 @@
     "showStatusOnCards": "Durumu göster",
     "hideStatusOnCards": "Durumu gizle",
     "hideStatusOnCardsDescription": "Kanban kartlarındaki durum etiketini gizler. Durum, kartın bulunduğu sütun tarafından zaten belirtilmektedir.",
+    "hideMobileStatusDropdownLabel": "Kartlarda mobil durum açılır menüsü",
+    "showMobileStatusDropdown": "Mobil menüyü göster",
+    "hideMobileStatusDropdown": "Mobil menüyü gizle",
+    "selectMobileStatusDropdown": "Mobil durum menüsü davranışını seç",
+    "hideMobileStatusDropdownDescription": "Mobil Kanban kartlarında her zaman görünen durum açılır menüsünü kontrol eder. Durum etiketi ayarı ayrıdır.",
     "selectStatusOnCards": "Durum görünürlüğünü seçin",
     "checklistItemClickAction": "Kontrol listesi öğesi tıklama eylemi",
     "selectChecklistItemClickAction": "Kontrol listesi öğesini seçin tıklama eylemi",

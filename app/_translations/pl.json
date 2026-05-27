@@ -543,6 +543,8 @@
     "autoComplete": "Automatyczne uzupełnienie"
   },
   "kanban": {
+    "properties": "Właściwości",
+    "status": "Status",
     "priority": "Priorytet",
     "score": "Punkty",
     "assignee": "Przypisany do",
@@ -572,6 +574,7 @@
     "itemTitle": "Tytuł elementu",
     "manageStatuses": "Zarządzaj statusami",
     "viewArchived": "Pokaż zarchiwizowane",
+    "changeStatus": "Zmień status",
     "noBoards": "Nie znaleziono tablic",
     "noBoardsYet": "Brak tablic Kanban",
     "createFirstBoard": "Utwórz pierwszą tablicę Kanban, aby zarządzać projektami.",
@@ -836,6 +839,11 @@
     "showStatusOnCards": "Pokaż status",
     "hideStatusOnCards": "Ukryj status",
     "hideStatusOnCardsDescription": "Ukrywa etykietę statusu na kartach Kanban. Status jest już wskazany przez kolumnę, w której znajduje się karta.",
+    "hideMobileStatusDropdownLabel": "Mobilna lista statusu na kartach",
+    "showMobileStatusDropdown": "Pokaż listę mobilną",
+    "hideMobileStatusDropdown": "Ukryj listę mobilną",
+    "selectMobileStatusDropdown": "Wybierz zachowanie mobilnej listy statusu",
+    "hideMobileStatusDropdownDescription": "Steruje zawsze widoczną listą statusu na mobilnych kartach Kanban. Ustawienie etykiety statusu jest oddzielne.",
     "selectStatusOnCards": "Wybierz widoczność statusu",
     "codeBlockChoice": "Wybierz styl bloku kodu",
     "themedCodeBlock": "Tematyczny blok kodu",

@@ -5,6 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { TaskStatus } from "@/app/_types/enums";
 import { KanbanCardDetail } from "./KanbanCardDetail";
@@ -72,6 +73,7 @@ const KanbanCardComponent = ({
 
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showTimeEntriesModal, setShowTimeEntriesModal] = useState(false);
+  const [showStatusSheet, setShowStatusSheet] = useState(false);
   const hideMobileStatusDropdown = user?.hideMobileStatusDropdown === "enable";
 
   const kanbanItemHook = useKanbanItem({
@@ -116,8 +118,47 @@ const KanbanCardComponent = ({
     return options?.sort((a, b) => a.order - b.order);
   }, [statuses]);
 
+  const handleMobileStatusChange = async (newStatus: string) => {
+    await kanbanItemHook.handleStatusChange(newStatus);
+    setShowStatusSheet(false);
+  };
+
   return (
     <>
+      {showStatusSheet && (
+        <Modal
+          isOpen={showStatusSheet}
+          onClose={() => setShowStatusSheet(false)}
+          title={t("kanban.changeStatus")}
+          className="lg:hidden"
+        >
+          <div className="space-y-2">
+            {statusOptions.map((status) => {
+              const isCurrent = status.id === (item.status || TaskStatus.TODO);
+              return (
+                <button
+                  key={status.id}
+                  type="button"
+                  onClick={() => handleMobileStatusChange(status.id.toString())}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-jotty border text-left transition-colors",
+                    isCurrent
+                      ? "border-primary/50 bg-primary/5 text-foreground font-semibold"
+                      : "border-border text-muted-foreground hover:border-primary/30 hover:bg-muted/50"
+                  )}
+                >
+                  <span
+                    className="h-3 w-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: status.color || "#6b7280" }}
+                  />
+                  <span className="text-sm">{status.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Modal>
+      )}
+
       {showTimeEntriesModal && item.timeEntries && (
         <TimeEntriesModal
           isOpen={showTimeEntriesModal}
@@ -172,6 +213,7 @@ const KanbanCardComponent = ({
               onEditSave={kanbanItemHook.handleSave}
               onEditKeyDown={kanbanItemHook.handleKeyDown}
               onShowSubtaskModal={() => setShowDetailModal(true)}
+              onShowStatusMenu={() => setShowStatusSheet(true)}
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
               onArchive={kanbanItemHook.handleArchive}

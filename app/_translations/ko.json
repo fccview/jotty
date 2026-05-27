@@ -568,6 +568,8 @@
     "autoComplete": "자동 완료"
   },
   "kanban": {
+    "properties": "속성",
+    "status": "상태",
     "priority": "우선순위",
     "score": "점수",
     "assignee": "담당자",
@@ -597,6 +599,7 @@
     "itemTitle": "항목 제목",
     "manageStatuses": "상태 관리",
     "viewArchived": "보관된 항목 보기",
+    "changeStatus": "상태 변경",
     "noBoards": "보드를 찾을 수 없습니다",
     "noBoardsYet": "아직 칸반 보드가 없습니다",
     "createFirstBoard": "프로젝트 관리를 위해 첫 번째 칸반 보드를 만드세요.",
@@ -861,6 +864,11 @@
     "showStatusOnCards": "상태 표시",
     "hideStatusOnCards": "상태 숨기기",
     "hideStatusOnCardsDescription": "칸반 카드에서 상태 레이블을 숨깁니다. 상태는 카드가 있는 열로 이미 표시됩니다.",
+    "hideMobileStatusDropdownLabel": "카드의 모바일 상태 드롭다운",
+    "showMobileStatusDropdown": "모바일 드롭다운 표시",
+    "hideMobileStatusDropdown": "모바일 드롭다운 숨기기",
+    "selectMobileStatusDropdown": "모바일 상태 드롭다운 동작 선택",
+    "hideMobileStatusDropdownDescription": "모바일 칸반 카드에서 항상 보이는 상태 드롭다운을 제어합니다. 상태 레이블 설정은 별도입니다.",
     "selectStatusOnCards": "상태 표시 여부 선택",
     "codeBlockChoice": "코드 블록 스타일을 선택하세요",
     "themedCodeBlock": "테마 코드블록",

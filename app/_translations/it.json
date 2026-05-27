@@ -543,6 +543,8 @@
     "autoComplete": "Complete automaticamente"
   },
   "kanban": {
+    "properties": "Proprietà",
+    "status": "Stato",
     "priority": "Priorità",
     "score": "Punteggio",
     "assignee": "Assegnato a",
@@ -572,6 +574,7 @@
     "itemTitle": "Titolo elemento",
     "manageStatuses": "Gestisci stati",
     "viewArchived": "Visualizza archiviati",
+    "changeStatus": "Cambia stato",
     "noBoards": "Nessuna board trovata",
     "noBoardsYet": "Nessuna board Kanban ancora",
     "createFirstBoard": "Crea la tua prima board Kanban per gestire i tuoi progetti.",
@@ -836,6 +839,11 @@
     "showStatusOnCards": "Mostra stato",
     "hideStatusOnCards": "Nascondi stato",
     "hideStatusOnCardsDescription": "Nasconde l'etichetta di stato dalle schede Kanban. Lo stato è già indicato dalla colonna in cui si trova la scheda.",
+    "hideMobileStatusDropdownLabel": "Menu a discesa stato mobile sulle schede",
+    "showMobileStatusDropdown": "Mostra menu mobile",
+    "hideMobileStatusDropdown": "Nascondi menu mobile",
+    "selectMobileStatusDropdown": "Seleziona comportamento del menu stato mobile",
+    "hideMobileStatusDropdownDescription": "Controlla il menu a discesa dello stato sempre visibile sulle schede Kanban mobili. L'impostazione dell'etichetta di stato è separata.",
     "selectStatusOnCards": "Seleziona visibilità stato",
     "codeBlockChoice": "Scegli lo stile del blocco di codice",
     "themedCodeBlock": "Blocco di codice a tema",
