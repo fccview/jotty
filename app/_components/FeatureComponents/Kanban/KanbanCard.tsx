@@ -123,20 +123,6 @@ const KanbanCardComponent = ({
     setShowStatusSheet(false);
   };
 
-  const handleOpenStatusSheet = () => {
-    if (typeof window !== "undefined" && window.innerWidth >= 1024) return;
-    setShowStatusSheet(true);
-  };
-
-  useEffect(() => {
-    if (!showStatusSheet) return;
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) setShowStatusSheet(false);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [showStatusSheet]);
-
   return (
     <>
       {showStatusSheet && (
@@ -144,7 +130,6 @@ const KanbanCardComponent = ({
           isOpen={showStatusSheet}
           onClose={() => setShowStatusSheet(false)}
           title={t("kanban.changeStatus")}
-          className="lg:hidden"
         >
           <div className="space-y-2">
             {statusOptions.map((status) => {
@@ -215,7 +200,7 @@ const KanbanCardComponent = ({
               onEditSave={kanbanItemHook.handleSave}
               onEditKeyDown={kanbanItemHook.handleKeyDown}
               onShowSubtaskModal={() => onOpenDetail(item)}
-              onShowStatusMenu={handleOpenStatusSheet}
+              onShowStatusMenu={() => setShowStatusSheet(true)}
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
               onArchive={kanbanItemHook.handleArchive}

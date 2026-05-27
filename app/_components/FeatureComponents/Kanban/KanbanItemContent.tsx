@@ -117,7 +117,6 @@ const KanbanItemContentComponent = ({
                     {
                       id: "status",
                       name: t("kanban.changeStatus"),
-                      className: "lg:hidden",
                     },
                   ]
                 : []),
