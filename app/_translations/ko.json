@@ -568,7 +568,6 @@
     "autoComplete": "자동 완료"
   },
   "kanban": {
-    "properties": "속성",
     "status": "상태",
     "priority": "우선순위",
     "score": "점수",

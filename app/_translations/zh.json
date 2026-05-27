@@ -568,7 +568,6 @@
     "autoComplete": "自动完成"
   },
   "kanban": {
-    "properties": "属性",
     "status": "状态",
     "priority": "优先级",
     "score": "分数",

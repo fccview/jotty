@@ -8,7 +8,6 @@ import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown"
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { TaskStatus } from "@/app/_types/enums";
-import { KanbanCardDetail } from "./KanbanCardDetail";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
 import {
@@ -37,6 +36,7 @@ interface KanbanCardProps {
   checklistId: string;
   category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
+  onOpenDetail: (item: Item) => void;
   isShared: boolean;
   statuses: KanbanStatus[];
   statusColor?: string;
@@ -49,6 +49,7 @@ const KanbanCardComponent = ({
   checklistId,
   category,
   onUpdate,
+  onOpenDetail,
   isShared,
   statuses,
   statusColor,
@@ -71,7 +72,6 @@ const KanbanCardComponent = ({
     [usersPublicData],
   );
 
-  const [showDetailModal, setShowDetailModal] = useState(false);
   const [showTimeEntriesModal, setShowTimeEntriesModal] = useState(false);
   const [showStatusSheet, setShowStatusSheet] = useState(false);
   const hideMobileStatusDropdown = user?.hideMobileStatusDropdown === "enable";
@@ -123,6 +123,20 @@ const KanbanCardComponent = ({
     setShowStatusSheet(false);
   };
 
+  const handleOpenStatusSheet = () => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) return;
+    setShowStatusSheet(true);
+  };
+
+  useEffect(() => {
+    if (!showStatusSheet) return;
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setShowStatusSheet(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [showStatusSheet]);
+
   return (
     <>
       {showStatusSheet && (
@@ -172,18 +186,6 @@ const KanbanCardComponent = ({
         />
       )}
 
-      {showDetailModal && (
-        <KanbanCardDetail
-          checklist={checklist}
-          item={item}
-          isOpen={showDetailModal}
-          onClose={() => setShowDetailModal(false)}
-          onUpdate={onUpdate}
-          checklistId={checklistId}
-          category={category}
-        />
-      )}
-
       <div className="min-w-0">
         <div
           ref={setNodeRef}
@@ -191,7 +193,7 @@ const KanbanCardComponent = ({
           {...attributes}
           {...listeners}
           aria-label={item.text}
-          onDoubleClick={() => setShowDetailModal(true)}
+          onDoubleClick={() => onOpenDetail(item)}
           className={cn(
             "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing min-w-0",
             getStatusColor(item.status),
@@ -212,8 +214,8 @@ const KanbanCardComponent = ({
               onEditTextChange={kanbanItemHook.setEditText}
               onEditSave={kanbanItemHook.handleSave}
               onEditKeyDown={kanbanItemHook.handleKeyDown}
-              onShowSubtaskModal={() => setShowDetailModal(true)}
-              onShowStatusMenu={() => setShowStatusSheet(true)}
+              onShowSubtaskModal={() => onOpenDetail(item)}
+              onShowStatusMenu={handleOpenStatusSheet}
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
               onArchive={kanbanItemHook.handleArchive}

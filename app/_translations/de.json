@@ -543,7 +543,6 @@
     "autoComplete": "Automatisch abschließen"
   },
   "kanban": {
-    "properties": "Eigenschaften",
     "status": "Status",
     "priority": "Priorität",
     "score": "Punktzahl",

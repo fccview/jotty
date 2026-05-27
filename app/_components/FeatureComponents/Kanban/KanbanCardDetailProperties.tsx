@@ -162,15 +162,13 @@ export const KanbanCardDetailProperties = ({
   return (
     <div className="space-y-4">
       {canEdit && (
-        <PropertySection title={t("kanban.properties")}>
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-2">
-              {t("kanban.status")}
-            </label>
+        <>
+          <PropertySection title={t("kanban.status")}>
             <div className="flex flex-wrap gap-1.5">
               {sortedStatuses.map((status) => (
                 <button
                   key={status.id}
+                  type="button"
                   onClick={() => onStatusChange(status.id)}
                   className={cn(
                     "text-[11px] px-2.5 py-1.5 rounded-jotty border transition-all flex items-center gap-1.5",
@@ -187,16 +185,14 @@ export const KanbanCardDetailProperties = ({
                 </button>
               ))}
             </div>
-          </div>
+          </PropertySection>
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-2">
-              {t("kanban.priority")}
-            </label>
+          <PropertySection title={t("kanban.priority")}>
             <div className="flex flex-wrap gap-1.5">
               {priorities.map((p) => (
                 <button
                   key={p}
+                  type="button"
                   onClick={() => onPriorityChange(p)}
                   className={cn(
                     "text-[11px] px-2.5 py-1.5 rounded-jotty border transition-all flex items-center gap-1.5",
@@ -215,12 +211,9 @@ export const KanbanCardDetailProperties = ({
                 </button>
               ))}
             </div>
-          </div>
+          </PropertySection>
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-2">
-              {t("kanban.score")}
-            </label>
+          <PropertySection title={t("kanban.score")}>
             <input
               type="number"
               min="0"
@@ -232,47 +225,35 @@ export const KanbanCardDetailProperties = ({
               className="w-full px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-colors"
               placeholder="0"
             />
-          </div>
+          </PropertySection>
 
           {isShared && (
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-2">
-                {t("kanban.assignee")}
-              </label>
+            <PropertySection title={t("kanban.assignee")}>
               <Dropdown
                 value={assigneeInput}
                 options={assigneeOptions}
                 onChange={onAssigneeChange}
                 placeholder={t("kanban.unassigned")}
               />
-            </div>
+            </PropertySection>
           )}
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-2">
-              {t("kanban.reminder")}
-            </label>
+          <PropertySection title={t("kanban.reminder")}>
             <DateTimePicker
               value={reminderInput}
               onChange={onReminderChange}
               onBlur={onReminderSave}
             />
-          </div>
+          </PropertySection>
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-2">
-              {t("kanban.targetDate")}
-            </label>
+          <PropertySection title={t("kanban.targetDate")}>
             <DatePicker
               value={targetDateInput}
               onChange={onTargetDateChange}
             />
-          </div>
+          </PropertySection>
 
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-2">
-              {t("kanban.estimatedTime")}
-            </label>
+          <PropertySection title={t("kanban.estimatedTime")}>
             <input
               type="number"
               min="0"
@@ -292,8 +273,8 @@ export const KanbanCardDetailProperties = ({
                 })}
               </p>
             )}
-          </div>
-        </PropertySection>
+          </PropertySection>
+        </>
       )}
 
       {metadata.length > 0 && (

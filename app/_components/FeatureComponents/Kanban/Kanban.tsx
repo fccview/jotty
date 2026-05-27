@@ -14,7 +14,7 @@ import {
   CollisionDetection,
   rectIntersection,
 } from "@dnd-kit/core";
-import { Checklist, KanbanStatus } from "@/app/_types";
+import { Checklist, Item, KanbanStatus } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanCard } from "./KanbanCard";
 import { ChecklistHeading } from "../Checklists/Parts/Common/ChecklistHeading";
@@ -48,6 +48,17 @@ interface KanbanBoardProps {
   onUpdate: (updatedChecklist: Checklist) => void;
 }
 
+const _findItemById = (items: Item[], itemId: string): Item | null => {
+  for (const item of items) {
+    if (item.id === itemId) return item;
+    if (item.children) {
+      const found = _findItemById(item.children, itemId);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const t = useTranslations();
   const [isClient, setIsClient] = useState(false);
@@ -57,6 +68,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [assigneeFilter, setAssigneeFilter] = useState("");
+  const [detailItemId, setDetailItemId] = useState<string | null>(null);
   const [calendarSelectedItem, setCalendarSelectedItem] = useState<
     import("@/app/_types").Item | null
   >(null);
@@ -134,6 +146,10 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   );
 
   const archivedItems = localChecklist.items.filter((item) => item.isArchived);
+  const detailItem = useMemo(
+    () => (detailItemId ? _findItemById(localChecklist.items, detailItemId) : null),
+    [detailItemId, localChecklist.items],
+  );
 
   const handleUnarchive = async (itemId: string) => {
     const formData = new FormData();
@@ -216,6 +232,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 checklistId={localChecklist.id}
                 category={localChecklist.category || "Uncategorized"}
                 onUpdate={handleItemUpdate}
+                onOpenDetail={(item) => setDetailItemId(item.id)}
                 isShared={isShared}
                 statusColor={statuses.find((s) => s.id === column.id)?.color}
                 statuses={statuses}
@@ -415,6 +432,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   checklistId={localChecklist.id}
                   category={localChecklist.category || "Uncategorized"}
                   onUpdate={refreshChecklist}
+                  onOpenDetail={() => {}}
                   isShared={isShared}
                   statuses={statuses}
                 />
@@ -439,6 +457,18 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           item={calendarSelectedItem}
           isOpen={!!calendarSelectedItem}
           onClose={() => setCalendarSelectedItem(null)}
+          onUpdate={handleItemUpdate}
+          checklistId={localChecklist.id}
+          category={localChecklist.category || "Uncategorized"}
+        />
+      )}
+
+      {detailItem && (
+        <KanbanCardDetail
+          checklist={localChecklist}
+          item={detailItem}
+          isOpen={!!detailItem}
+          onClose={() => setDetailItemId(null)}
           onUpdate={handleItemUpdate}
           checklistId={localChecklist.id}
           category={localChecklist.category || "Uncategorized"}

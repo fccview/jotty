@@ -568,7 +568,6 @@
     "autoComplete": "Auto finish"
   },
   "kanban": {
-    "properties": "Particulars",
     "status": "Condition",
     "priority": "What matters most",
     "score": "Booty score",

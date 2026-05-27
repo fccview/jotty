@@ -568,7 +568,6 @@
     "autoComplete": "Автозавершение"
   },
   "kanban": {
-    "properties": "Свойства",
     "status": "Статус",
     "priority": "Приоритет",
     "score": "Оценка",
