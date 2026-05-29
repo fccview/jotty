@@ -106,6 +106,14 @@ export const ExcalidrawNodeView = ({
     }
   };
 
+  const handleClose = () => {
+    if (excalidrawAPI) {
+      handleSave();
+    } else {
+      setIsEditing(false);
+    }
+  };
+
   const handleDelete = () => {
     setShowDeleteModal(true);
   };
@@ -129,7 +137,7 @@ export const ExcalidrawNodeView = ({
     <NodeViewWrapper className="excalidraw-node-wrapper">
       <Modal
         isOpen={isEditing && !!initialData}
-        onClose={() => setIsEditing(false)}
+        onClose={handleClose}
         title={
           <div className="flex items-center gap-2">
             {t("editor.editDiagram")}
