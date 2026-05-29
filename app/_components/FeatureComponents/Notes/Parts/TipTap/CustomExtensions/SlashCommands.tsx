@@ -348,17 +348,15 @@ export const SlashCommands = Extension.create({
             })),
           ];
 
-          if (!query.trim()) return allItems.slice(0, 8);
+          if (!query.trim()) return allItems;
 
           const lowerCaseQuery = query.toLowerCase();
 
-          return allItems
-            .filter(
-              (item) =>
-                item.title.toLowerCase().includes(lowerCaseQuery) ||
-                item.category?.toLowerCase().includes(lowerCaseQuery)
-            )
-            .slice(0, 8);
+          return allItems.filter(
+            (item) =>
+              item.title.toLowerCase().includes(lowerCaseQuery) ||
+              item.category?.toLowerCase().includes(lowerCaseQuery)
+          );
         },
         render: () => {
           let component: ReactRenderer;
