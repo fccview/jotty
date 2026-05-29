@@ -1,0 +1,69 @@
+/search:
+  get:
+    summary: Search Notes and Checklists
+    description: |
+      Full-text search across all notes and checklists owned by the authenticated user.
+
+      Optionally filter results to a single content type. Results are ranked by relevance and capped at 20 per type.
+    tags:
+      - Search
+    parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 2
+        description: Search query (minimum 2 characters)
+        example: "meeting notes"
+      - name: type
+        in: query
+        schema:
+          type: string
+          enum: [note, checklist]
+        description: Restrict results to a single content type
+        example: "note"
+    responses:
+      '200':
+        description: Search results
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: "meeting notes"
+                total:
+                  type: integer
+                  example: 4
+                results:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "my-note-id"
+                      uuid:
+                        type: string
+                        format: uuid
+                        example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                      type:
+                        type: string
+                        enum: [note, checklist]
+                        example: "note"
+                      title:
+                        type: string
+                        example: "Weekly Meeting Notes"
+                      category:
+                        type: string
+                        example: "Work"
+                      excerpt:
+                        type: string
+                        description: Matching line from the content, omitted when it matches the title
+                        example: "discussed the new API roadmap"
+      '400':
+        description: Query too short (must be at least 2 characters)
+      '401':
+        description: Unauthorized

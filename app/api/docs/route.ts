@@ -50,6 +50,7 @@ function mergePaths(spec: Record<string, unknown>): Record<string, unknown> {
 
   const pathFiles = [
     "./api/paths/health.yaml",
+    "./api/paths/search.yaml",
     "./api/paths/checklists.yaml",
     "./api/paths/notes.yaml",
     "./api/paths/tasks.yaml",
