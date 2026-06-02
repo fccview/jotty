@@ -79,6 +79,12 @@ export const kanbanSettingsSchema = z.object({
       message: "Hide status on cards must be either 'enable' or 'disable'",
     })
     .optional(),
+  hideMobileStatusDropdown: z
+    .enum(["enable", "disable"], {
+      message:
+        "Hide mobile status dropdown must be either 'enable' or 'disable'",
+    })
+    .optional(),
 });
 
 export const fileSettingsSchema = z.object({

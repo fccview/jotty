@@ -544,6 +544,7 @@
     "autoComplete": "Automatisch voltooien"
   },
   "kanban": {
+    "status": "Status",
     "priority": "Prioriteit",
     "score": "Score",
     "assignee": "Toegewezen aan",
@@ -573,6 +574,7 @@
     "itemTitle": "Itemtitel",
     "manageStatuses": "Statussen beheren",
     "viewArchived": "Gearchiveerde bekijken",
+    "changeStatus": "Status wijzigen",
     "noBoards": "Geen borden gevonden",
     "noBoardsYet": "Nog geen Kanban-borden",
     "createFirstBoard": "Maak je eerste Kanban-bord om je projecten te beheren.",
@@ -843,6 +845,11 @@
     "showStatusOnCards": "Status tonen",
     "hideStatusOnCards": "Status verbergen",
     "hideStatusOnCardsDescription": "Verbergt het statuslabel op Kanban-kaarten. De status is al zichtbaar via de kolom waarin de kaart zich bevindt.",
+    "hideMobileStatusDropdownLabel": "Mobiele statuskeuzelijst op kaarten",
+    "showMobileStatusDropdown": "Mobiele keuzelijst tonen",
+    "hideMobileStatusDropdown": "Mobiele keuzelijst verbergen",
+    "selectMobileStatusDropdown": "Gedrag van mobiele statuskeuzelijst selecteren",
+    "hideMobileStatusDropdownDescription": "Bepaalt de altijd zichtbare statuskeuzelijst op mobiele Kanban-kaarten. De instelling voor het statuslabel blijft apart.",
     "selectStatusOnCards": "Selecteer zichtbaarheid status",
     "codeBlockChoice": "Kies de codeblokstijl",
     "themedCodeBlock": "Thema-codeblok",

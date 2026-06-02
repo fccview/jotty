@@ -544,6 +544,7 @@
     "autoComplete": "Complétion automatique"
   },
   "kanban": {
+    "status": "Statut",
     "priority": "Priorité",
     "score": "Score",
     "assignee": "Assigné à",
@@ -573,6 +574,7 @@
     "itemTitle": "Titre de l'élément",
     "manageStatuses": "Gérer les statuts",
     "viewArchived": "Voir les archivés",
+    "changeStatus": "Changer le statut",
     "noBoards": "Aucun tableau trouvé",
     "noBoardsYet": "Pas encore de tableaux Kanban",
     "createFirstBoard": "Créez votre premier tableau Kanban pour gérer vos projets.",
@@ -843,6 +845,11 @@
     "showStatusOnCards": "Afficher le statut",
     "hideStatusOnCards": "Masquer le statut",
     "hideStatusOnCardsDescription": "Masque l'étiquette de statut sur les cartes Kanban. Le statut est déjà indiqué par la colonne dans laquelle se trouve la carte.",
+    "hideMobileStatusDropdownLabel": "Menu déroulant de statut mobile sur les cartes",
+    "showMobileStatusDropdown": "Afficher le menu mobile",
+    "hideMobileStatusDropdown": "Masquer le menu mobile",
+    "selectMobileStatusDropdown": "Sélectionner le comportement du menu de statut mobile",
+    "hideMobileStatusDropdownDescription": "Contrôle le menu déroulant de statut toujours visible sur les cartes Kanban mobiles. Le réglage de l'étiquette de statut est séparé.",
     "selectStatusOnCards": "Sélectionner la visibilité du statut",
     "codeBlockChoice": "Choisissez le style de bloc de code",
     "themedCodeBlock": "Bloc de code thématique",

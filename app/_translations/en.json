@@ -569,6 +569,7 @@
     "autoComplete": "Auto complete"
   },
   "kanban": {
+    "status": "Status",
     "priority": "Priority",
     "score": "Score",
     "assignee": "Assignee",
@@ -598,6 +599,7 @@
     "itemTitle": "Item Title",
     "manageStatuses": "Manage Statuses",
     "viewArchived": "View Archived",
+    "changeStatus": "Change status",
     "noBoards": "No boards found",
     "noBoardsYet": "No kanban boards yet",
     "createFirstBoard": "Create your first kanban board to start managing your projects.",
@@ -869,6 +871,11 @@
     "showStatusOnCards": "Show status",
     "hideStatusOnCards": "Hide status",
     "hideStatusOnCardsDescription": "Hides the status label from Kanban card items. The status is already indicated by the column the card is placed in.",
+    "hideMobileStatusDropdownLabel": "Mobile status dropdown on cards",
+    "showMobileStatusDropdown": "Show mobile dropdown",
+    "hideMobileStatusDropdown": "Hide mobile dropdown",
+    "selectMobileStatusDropdown": "Select mobile status dropdown behavior",
+    "hideMobileStatusDropdownDescription": "Controls the always-visible status dropdown on mobile Kanban cards. The status label setting is separate.",
     "selectStatusOnCards": "Select status visibility",
     "codeBlockChoice": "Choose the code block style",
     "defaultCodeBlock": "Codepen (default)",

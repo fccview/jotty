@@ -10,6 +10,7 @@ interface DropdownOption {
   name: React.ReactNode;
   icon?: React.ComponentType<{ className?: string }>;
   colors?: { background: string; primary: string } | null;
+  className?: string;
 }
 
 interface DropdownProps {
@@ -135,7 +136,8 @@ export const Dropdown = ({
                 onClick={(e) => handleSelect(e, option.id.toString())}
                 className={cn(
                   "w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm hover:bg-accent hover:text-accent-foreground",
-                  option.id === value && "bg-accent text-accent-foreground"
+                  option.id === value && "bg-accent text-accent-foreground",
+                  option.className
                 )}
               >
                 {option.icon && <option.icon className="h-4 w-4" />}

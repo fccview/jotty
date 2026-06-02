@@ -23,6 +23,7 @@ interface KanbanItemContentProps {
   onEditSave: () => void;
   onEditKeyDown: (e: React.KeyboardEvent) => void;
   onShowSubtaskModal: () => void;
+  onShowStatusMenu: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onArchive: () => void;
@@ -43,6 +44,7 @@ const KanbanItemContentComponent = ({
   onEditSave,
   onEditKeyDown,
   onShowSubtaskModal,
+  onShowStatusMenu,
   onEdit,
   onDelete,
   onArchive,
@@ -111,6 +113,14 @@ const KanbanItemContentComponent = ({
             options={[
               { id: "view", name: t("tasks.viewTask") },
               ...(permissions?.canEdit
+                ? [
+                    {
+                      id: "status",
+                      name: t("kanban.changeStatus"),
+                    },
+                  ]
+                : []),
+              ...(permissions?.canEdit
                 ? [{ id: "add", name: t("tasks.addSubtask") }]
                 : []),
               ...(permissions?.canEdit
@@ -127,6 +137,9 @@ const KanbanItemContentComponent = ({
               switch (action) {
                 case "view":
                   onShowSubtaskModal();
+                  break;
+                case "status":
+                  onShowStatusMenu();
                   break;
                 case "add":
                   onShowSubtaskModal();

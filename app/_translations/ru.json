@@ -569,6 +569,7 @@
     "autoComplete": "Автозавершение"
   },
   "kanban": {
+    "status": "Статус",
     "priority": "Приоритет",
     "score": "Оценка",
     "assignee": "Исполнитель",
@@ -598,6 +599,7 @@
     "itemTitle": "Название элемента",
     "manageStatuses": "Управление статусами",
     "viewArchived": "Просмотр архивных",
+    "changeStatus": "Изменить статус",
     "noBoards": "Доски не найдены",
     "noBoardsYet": "Пока нет досок Канбан",
     "createFirstBoard": "Создайте первую доску Канбан для управления проектами.",
@@ -868,6 +870,11 @@
     "showStatusOnCards": "Показать статус",
     "hideStatusOnCards": "Скрыть статус",
     "hideStatusOnCardsDescription": "Скрывает метку статуса на карточках Канбан. Статус уже виден по колонке, в которой находится карточка.",
+    "hideMobileStatusDropdownLabel": "Мобильный выпадающий список статуса на карточках",
+    "showMobileStatusDropdown": "Показать мобильный список",
+    "hideMobileStatusDropdown": "Скрыть мобильный список",
+    "selectMobileStatusDropdown": "Выберите поведение мобильного списка статуса",
+    "hideMobileStatusDropdownDescription": "Управляет всегда видимым выпадающим списком статуса на мобильных карточках Канбан. Настройка метки статуса остаётся отдельной.",
     "selectStatusOnCards": "Выберите видимость статуса",
     "codeBlockChoice": "Выберите стиль блока кода",
     "themedCodeBlock": "Тематический кодовый блок",

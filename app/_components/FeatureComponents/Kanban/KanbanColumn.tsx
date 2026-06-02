@@ -24,6 +24,7 @@ interface KanbanColumnProps {
   checklistId: string;
   category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
+  onOpenDetail: (item: Item) => void;
   isShared: boolean;
   statusColor?: string;
   statuses: KanbanStatus[];
@@ -88,6 +89,7 @@ const KanbanColumnComponent = ({
   category,
   isShared,
   onUpdate,
+  onOpenDetail,
   statusColor,
   statuses,
   onAddItem,
@@ -226,6 +228,7 @@ const KanbanColumnComponent = ({
                 checklistId={checklistId}
                 category={category}
                 onUpdate={onUpdate}
+                onOpenDetail={onOpenDetail}
                 isShared={isShared}
                 statuses={statuses}
                 statusColor={statusColor}

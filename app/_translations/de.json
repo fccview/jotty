@@ -544,6 +544,7 @@
     "autoComplete": "Automatisch abschließen"
   },
   "kanban": {
+    "status": "Status",
     "priority": "Priorität",
     "score": "Punktzahl",
     "assignee": "Zugewiesen an",
@@ -573,6 +574,7 @@
     "itemTitle": "Elementtitel",
     "manageStatuses": "Status verwalten",
     "viewArchived": "Archivierte anzeigen",
+    "changeStatus": "Status ändern",
     "noBoards": "Keine Boards gefunden",
     "noBoardsYet": "Noch keine Kanban-Boards",
     "createFirstBoard": "Erstelle dein erstes Kanban-Board, um deine Projekte zu verwalten.",
@@ -843,6 +845,11 @@
     "showStatusOnCards": "Status anzeigen",
     "hideStatusOnCards": "Status ausblenden",
     "hideStatusOnCardsDescription": "Blendet das Status-Label auf Kanban-Karten aus. Der Status ist bereits durch die Spalte ersichtlich, in der die Karte liegt.",
+    "hideMobileStatusDropdownLabel": "Mobiles Status-Dropdown auf Karten",
+    "showMobileStatusDropdown": "Mobiles Dropdown anzeigen",
+    "hideMobileStatusDropdown": "Mobiles Dropdown ausblenden",
+    "selectMobileStatusDropdown": "Verhalten des mobilen Status-Dropdowns auswählen",
+    "hideMobileStatusDropdownDescription": "Steuert das immer sichtbare Status-Dropdown auf mobilen Kanban-Karten. Die Einstellung für das Status-Label bleibt separat.",
     "selectStatusOnCards": "Statussichtbarkeit auswählen",
     "codeBlockChoice": "Wählen Sie den Codeblockstil",
     "themedCodeBlock": "Themenbezogener Codeblock",

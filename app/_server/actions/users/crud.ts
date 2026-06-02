@@ -204,6 +204,7 @@ export const createUser = async (
       preferredDateFormat: "system",
       preferredTimeFormat: "system",
       handedness: "right-handed",
+      hideMobileStatusDropdown: "disable",
     };
 
     const updatedUsers = [...existingUsers, newUser];

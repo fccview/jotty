@@ -544,6 +544,7 @@
     "autoComplete": "Autocompletar"
   },
   "kanban": {
+    "status": "Estado",
     "priority": "Prioridad",
     "score": "Puntuación",
     "assignee": "Asignado a",
@@ -573,6 +574,7 @@
     "itemTitle": "Título del elemento",
     "manageStatuses": "Gestionar estados",
     "viewArchived": "Ver archivados",
+    "changeStatus": "Cambiar estado",
     "noBoards": "No se encontraron tableros",
     "noBoardsYet": "Aún no hay tableros Kanban",
     "createFirstBoard": "Cree su primer tablero Kanban para empezar a gestionar sus proyectos.",
@@ -843,6 +845,11 @@
     "showStatusOnCards": "Mostrar estado",
     "hideStatusOnCards": "Ocultar estado",
     "hideStatusOnCardsDescription": "Oculta la etiqueta de estado en las tarjetas Kanban. El estado ya se indica por la columna en la que se encuentra la tarjeta.",
+    "hideMobileStatusDropdownLabel": "Menú desplegable de estado móvil en tarjetas",
+    "showMobileStatusDropdown": "Mostrar menú móvil",
+    "hideMobileStatusDropdown": "Ocultar menú móvil",
+    "selectMobileStatusDropdown": "Seleccionar comportamiento del menú de estado móvil",
+    "hideMobileStatusDropdownDescription": "Controla el menú desplegable de estado siempre visible en tarjetas Kanban móviles. La configuración de la etiqueta de estado es independiente.",
     "selectStatusOnCards": "Seleccionar visibilidad del estado",
     "codeBlockChoice": "Elija el estilo del bloque de código",
     "themedCodeBlock": "Bloque de código temático",
