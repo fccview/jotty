@@ -306,7 +306,8 @@
     "createUser": "Recruit Deckhand",
     "attemptsRemaining": "Warning: {count} tries left before we throw ye in the brig",
     "accountLocked": "To the brig with ye! Wait {seconds} seconds.",
-    "notAuthorized": "Ye lack the clearance! Talk to the Captain."
+    "notAuthorized": "Ye lack the clearance! Talk to the Captain.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Two-Step Verification",
@@ -613,6 +614,12 @@
     "targetDate": "Target date",
     "statusUpdated": "Status be updated",
     "itemArchived": "Item sent to Davy Jones’s hold",
+    "archiveAllItemsInColumn": "Stow all items in {column}",
+    "archiveAllConfirmTitle": "Stow all items?",
+    "archiveAllConfirmMessage": "Stow all {count} items in {column}? Ye can haul them back from the archive.",
+    "archiveAllSuccess": "{count} items stowed",
+    "archiveAllFailed": "Could not stow all items",
+    "archiveAllPartial": "{archived} of {total} items stowed. Some cargo could not be stowed.",
     "itemDeleted": "Item walked the plank",
     "estimatedTime": "Estimated hours o’ toil",
     "actualVsEstimated": "{actual} / {estimated}",

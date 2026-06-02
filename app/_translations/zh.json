@@ -306,7 +306,8 @@
     "createUser": "创建用户",
     "attemptsRemaining": "警告：在账户锁定前还剩 {count, plural, one {# 次尝试} other {# 次尝试}}",
     "accountLocked": "失败次数过多。请在 {seconds} {seconds, plural, one {秒} other {秒}} 后重试",
-    "notAuthorized": "您没有权限访问此应用程序。请联系您的管理员。"
+    "notAuthorized": "您没有权限访问此应用程序。请联系您的管理员。",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "双重认证 (2FA)",
@@ -613,6 +614,12 @@
     "targetDate": "目标日期",
     "statusUpdated": "状态已更新",
     "itemArchived": "项目已归档",
+    "archiveAllItemsInColumn": "归档 {column} 中的所有项目",
+    "archiveAllConfirmTitle": "归档所有项目？",
+    "archiveAllConfirmMessage": "要归档 {column} 中的全部 {count} 个项目吗？你可以从归档中恢复它们。",
+    "archiveAllSuccess": "已归档 {count} 个项目",
+    "archiveAllFailed": "无法归档所有项目",
+    "archiveAllPartial": "已归档 {total} 个项目中的 {archived} 个。部分项目无法归档。",
     "itemDeleted": "项目已删除",
     "estimatedTime": "预估时间（小时）",
     "actualVsEstimated": "{actual} / {estimated}",

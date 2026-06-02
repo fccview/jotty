@@ -11,8 +11,9 @@ import { KanbanCard } from "./KanbanCard";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
-import { TaskDaily01Icon, Add01Icon } from "hugeicons-react";
+import { TaskDaily01Icon, Add01Icon, Archive02Icon } from "hugeicons-react";
 import { Input } from "../../GlobalComponents/FormElements/Input";
+import { ConfirmModal } from "../../GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -28,6 +29,8 @@ interface KanbanColumnProps {
   statusColor?: string;
   statuses: KanbanStatus[];
   onAddItem?: (status: string) => Promise<void>;
+  archivableCount?: number;
+  onArchiveAll?: () => Promise<void>;
 }
 
 interface InlineAddInputProps {
@@ -90,11 +93,15 @@ const KanbanColumnComponent = ({
   statusColor,
   statuses,
   onAddItem,
+  archivableCount = items.length,
+  onArchiveAll,
 }: KanbanColumnProps) => {
   const t = useTranslations();
   const { setNodeRef, isOver } = useDroppable({ id });
   const [showInlineInput, setShowInlineInput] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [showArchiveAllModal, setShowArchiveAllModal] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const currentStatus = statuses.find((s) => s.id === status);
   const isAutoComplete = currentStatus?.autoComplete === true;
@@ -138,6 +145,16 @@ const KanbanColumnComponent = ({
     setIsAddingItem(false);
   };
 
+  const handleArchiveAll = async () => {
+    if (!onArchiveAll || archivableCount === 0) return;
+    setIsArchiving(true);
+    try {
+      await onArchiveAll();
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full my-4 lg:my-0 min-w-0">
       <div className="flex items-center justify-between mb-3 min-w-0">
@@ -160,6 +177,17 @@ const KanbanColumnComponent = ({
               className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Add01Icon className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {onArchiveAll && isAutoComplete && (
+            <button
+              onClick={() => setShowArchiveAllModal(true)}
+              title={t("kanban.archiveAllItemsInColumn", { column: title })}
+              aria-label={t("kanban.archiveAllItemsInColumn", { column: title })}
+              disabled={archivableCount === 0 || isArchiving}
+              className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Archive02Icon className="h-3.5 w-3.5" />
             </button>
           )}
           <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
@@ -217,6 +245,18 @@ const KanbanColumnComponent = ({
           </div>
         </SortableContext>
       </div>
+      <ConfirmModal
+        isOpen={showArchiveAllModal}
+        onClose={() => setShowArchiveAllModal(false)}
+        onConfirm={handleArchiveAll}
+        title={t("kanban.archiveAllConfirmTitle")}
+        message={t("kanban.archiveAllConfirmMessage", {
+          count: archivableCount,
+          column: title,
+        })}
+        confirmText={t("common.archive")}
+        variant="destructive"
+      />
     </div>
   );
 };

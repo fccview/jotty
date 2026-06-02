@@ -17,6 +17,7 @@ export interface SessionData {
   createdAt: string;
   lastActivity: string;
   loginType?: "local" | "sso" | "ldap" | "pending-mfa";
+  rememberMe?: boolean;
 }
 
 export interface Session {
@@ -49,6 +50,7 @@ export const createSession = async (
   sessionId: string,
   username: string,
   loginType: "local" | "sso" | "pending-mfa" | "ldap",
+  rememberMe?: boolean,
 ): Promise<void> => {
   const headersList = await headers();
   const userAgent = headersList.get("user-agent") || "Unknown";
@@ -64,6 +66,7 @@ export const createSession = async (
     createdAt: new Date().toISOString(),
     lastActivity: new Date().toISOString(),
     loginType,
+    ...(rememberMe !== undefined && { rememberMe }),
   };
 
   const sessionsData = await readSessionData();

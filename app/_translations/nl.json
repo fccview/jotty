@@ -281,7 +281,8 @@
     "createUser": "Gebruiker aanmaken",
     "attemptsRemaining": "Waarschuwing: {count, plural, one {# poging} other {# pogingen}} over voordat account wordt vergrendeld",
     "accountLocked": "Te veel mislukte pogingen. Probeer het opnieuw over {seconds} {seconds, plural, one {seconde} other {seconden}}",
-    "notAuthorized": "U bent niet geautoriseerd om toegang te krijgen tot deze applicatie. Neem contact op met uw beheerder."
+    "notAuthorized": "U bent niet geautoriseerd om toegang te krijgen tot deze applicatie. Neem contact op met uw beheerder.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Twee-factorauthenticatie",
@@ -588,6 +589,12 @@
     "targetDate": "Doeldatum",
     "statusUpdated": "Status bijgewerkt",
     "itemArchived": "Item gearchiveerd",
+    "archiveAllItemsInColumn": "Alle items in {column} archiveren",
+    "archiveAllConfirmTitle": "Alle items archiveren?",
+    "archiveAllConfirmMessage": "Alle {count} items in {column} archiveren? Je kunt ze herstellen vanuit het archief.",
+    "archiveAllSuccess": "{count} items gearchiveerd",
+    "archiveAllFailed": "Kon niet alle items archiveren",
+    "archiveAllPartial": "{archived} van {total} items gearchiveerd. Sommige items konden niet worden gearchiveerd.",
     "itemDeleted": "Item verwijderd",
     "estimatedTime": "Geschatte tijd (uur)",
     "actualVsEstimated": "{actual} / {estimated}",

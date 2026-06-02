@@ -508,7 +508,7 @@ export const useChecklist = ({
           activeInfo.index < overInfo.index;
 
         const position = isDropIndicator
-          ? overId.startsWith("drop-after::")
+          ? overId.startsWith("drop-after")
             ? "after"
             : "before"
           : isDraggingDown
@@ -539,7 +539,7 @@ export const useChecklist = ({
       activeInfo.index < overInfo.index;
 
     const reorderPosition = isDropIndicator
-      ? overId.startsWith("drop-after::")
+      ? overId.startsWith("drop-after")
         ? "after"
         : "before"
       : isDraggingDown

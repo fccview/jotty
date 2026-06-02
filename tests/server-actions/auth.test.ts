@@ -346,7 +346,8 @@ describe('Auth Actions', () => {
       expect(mockCreateSession).toHaveBeenCalledWith(
         expect.any(String),
         'alice',
-        'ldap'
+        'ldap',
+        expect.any(Boolean)
       )
     })
 

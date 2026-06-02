@@ -306,7 +306,8 @@
     "createUser": "사용자 생성",
     "attemptsRemaining": "경고: {count, plural, one {#회} other {#회}}의 시도가 남아 있습니다",
     "accountLocked": "실패 시도가 너무 많습니다. {seconds} {seconds, plural, one {초} other {초}} 후에 다시 시도하세요",
-    "notAuthorized": "접근 권한이 없습니다. 관리자에게 문의하세요."
+    "notAuthorized": "접근 권한이 없습니다. 관리자에게 문의하세요.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "2단계 인증 (2FA)",
@@ -613,6 +614,12 @@
     "targetDate": "목표일",
     "statusUpdated": "상태가 업데이트됨",
     "itemArchived": "항목이 보관됨",
+    "archiveAllItemsInColumn": "{column}의 모든 항목 보관",
+    "archiveAllConfirmTitle": "모든 항목을 보관할까요?",
+    "archiveAllConfirmMessage": "{column}의 항목 {count}개를 모두 보관할까요? 보관함에서 복원할 수 있습니다.",
+    "archiveAllSuccess": "항목 {count}개가 보관됨",
+    "archiveAllFailed": "모든 항목을 보관하지 못했습니다",
+    "archiveAllPartial": "항목 {total}개 중 {archived}개가 보관되었습니다. 일부 항목은 보관하지 못했습니다.",
     "itemDeleted": "항목이 삭제됨",
     "estimatedTime": "예상 시간(시간)",
     "actualVsEstimated": "{actual} / {estimated}",

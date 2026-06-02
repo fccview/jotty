@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      let userLists = lists.data.filter((list) => list.owner === user.username);
+      let userLists = lists.data.filter(
+        (list) => list.owner === user.username || list.isShared,
+      );
 
       if (category) {
         userLists = userLists.filter((list) => list.category === category);
@@ -78,6 +80,8 @@ export async function GET(request: NextRequest) {
         title: list.title,
         category: list.category || "Uncategorized",
         type: list.type || "simple",
+        owner: list.owner,
+        isShared: list.isShared ?? false,
         items: list.items.map((item, index) =>
           transformItem(item, index, list.type),
         ),

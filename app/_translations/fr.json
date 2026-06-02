@@ -281,7 +281,8 @@
     "createUser": "Créer un utilisateur",
     "attemptsRemaining": "Attention : {count, plural, one {# tentative} other {# tentatives}} restantes avant le verrouillage du compte",
     "accountLocked": "Trop de tentatives échouées. Veuillez réessayer dans {seconds} {seconds, plural, one {seconde} other {secondes}}",
-    "notAuthorized": "Vous n’êtes pas autorisé à accéder à cette application. Contactez votre administrateur."
+    "notAuthorized": "Vous n’êtes pas autorisé à accéder à cette application. Contactez votre administrateur.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Authentification à deux facteurs",
@@ -588,6 +589,12 @@
     "targetDate": "Date cible",
     "statusUpdated": "Statut mis à jour",
     "itemArchived": "Élément archivé",
+    "archiveAllItemsInColumn": "Archiver tous les éléments dans {column}",
+    "archiveAllConfirmTitle": "Archiver tous les éléments ?",
+    "archiveAllConfirmMessage": "Archiver les {count} éléments dans {column} ? Vous pourrez les restaurer depuis l'archive.",
+    "archiveAllSuccess": "{count} éléments archivés",
+    "archiveAllFailed": "Impossible d'archiver tous les éléments",
+    "archiveAllPartial": "{archived} élément(s) sur {total} archivé(s). Certains éléments n'ont pas pu être archivés.",
     "itemDeleted": "Élément supprimé",
     "estimatedTime": "Temps estimé (heures)",
     "actualVsEstimated": "{actual} / {estimated}",

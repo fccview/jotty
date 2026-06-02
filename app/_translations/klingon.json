@@ -306,7 +306,8 @@
     "createUser": "lo'wI' yIchenmoH",
     "attemptsRemaining": "ghuH: {count} logh neH bInIDlaH",
     "accountLocked": "bInIDqu'. {seconds} lup 'uy' wa'leS yInIDqa'.",
-    "notAuthorized": "bI'el 'e' chaw'be'lu'. ra'wI' yIghel."
+    "notAuthorized": "bI'el 'e' chaw'be'lu'. ra'wI' yIghel.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "cha'logh ngu'aS",
@@ -613,6 +614,12 @@
     "targetDate": "jaj target",
     "statusUpdated": "choH pIt",
     "itemArchived": "Pol",
+    "archiveAllItemsInColumn": "{column} Hoch Dochmey pol",
+    "archiveAllConfirmTitle": "Hoch Dochmey pol?",
+    "archiveAllConfirmMessage": "{column}Daq {count} Dochmey Hoch pol? polmeH Daqvo' bIH DacheghmoHlaH.",
+    "archiveAllSuccess": "{count} Dochmey pol",
+    "archiveAllFailed": "Hoch Dochmey pollu'laHbe'",
+    "archiveAllPartial": "{total}vo' {archived} Dochmey pol. Dochmey 'op pollu'laHbe'.",
     "itemDeleted": "Qaw'pu'",
     "estimatedTime": "pIq chartoq (rep)",
     "actualVsEstimated": "{actual} / {estimated}",

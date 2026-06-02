@@ -39,9 +39,10 @@ import { CalendarView } from "./CalendarView";
 import { KanbanCardDetail } from "./KanbanCardDetail";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { updateChecklistStatuses } from "@/app/_server/actions/checklist";
-import { unarchiveItem } from "@/app/_server/actions/checklist-item";
+import { archiveItem, unarchiveItem } from "@/app/_server/actions/checklist-item";
 import { useTranslations } from "next-intl";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -61,6 +62,7 @@ const _findItemById = (items: Item[], itemId: string): Item | null => {
 
 export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const t = useTranslations();
+  const { showToast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
@@ -164,6 +166,62 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     }
   };
 
+  const handleArchiveAll = useCallback(
+    async (items: Item[]) => {
+      let archivedCount = 0;
+      let latestChecklist: Checklist | null = null;
+
+      for (const item of items) {
+        const formData = new FormData();
+        formData.append("listId", localChecklist.id);
+        formData.append("itemId", item.id);
+        formData.append("category", localChecklist.category || "Uncategorized");
+
+        const result = await archiveItem(formData);
+        if (!result.success || !result.data) {
+          if (latestChecklist) {
+            onUpdate(latestChecklist);
+          }
+
+          await refreshChecklist();
+          showToast({
+            type: "error",
+            title: t("common.error"),
+            message:
+              archivedCount > 0
+                ? t("kanban.archiveAllPartial", {
+                    archived: archivedCount,
+                    total: items.length,
+                  })
+                : t("kanban.archiveAllFailed"),
+          });
+          return;
+        }
+
+        archivedCount++;
+        latestChecklist = result.data;
+      }
+
+      if (latestChecklist) {
+        onUpdate(latestChecklist);
+        await refreshChecklist();
+        showToast({
+          type: "success",
+          title: t("common.success"),
+          message: t("kanban.archiveAllSuccess", { count: items.length }),
+        });
+      }
+    },
+    [
+      localChecklist.id,
+      localChecklist.category,
+      onUpdate,
+      refreshChecklist,
+      showToast,
+      t,
+    ],
+  );
+
   const handleToggleItem = useCallback(
     async (itemId: string, completed: boolean) => {
       const newStatus = completed ? TaskStatus.COMPLETED : TaskStatus.TODO;
@@ -216,7 +274,8 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
         }
       >
         {columns.map((column) => {
-          const items = _filterItems(getItemsByStatus(column.status));
+          const columnItems = getItemsByStatus(column.status);
+          const items = _filterItems(columnItems);
           return (
             <div
               key={column.id}
@@ -237,6 +296,12 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 statusColor={statuses.find((s) => s.id === column.id)?.color}
                 statuses={statuses}
                 onAddItem={permissions?.canEdit ? (text) => handleAddItem(text, undefined, column.status) : undefined}
+                archivableCount={columnItems.length}
+                onArchiveAll={
+                  permissions?.canEdit
+                    ? () => handleArchiveAll(columnItems)
+                    : undefined
+                }
               />
             </div>
           );
@@ -251,6 +316,8 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       handleItemUpdate,
       isShared,
       statuses,
+      handleArchiveAll,
+      permissions?.canEdit,
     ],
   );
 

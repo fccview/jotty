@@ -281,7 +281,8 @@
     "createUser": "Utwórz użytkownika",
     "attemptsRemaining": "Uwaga: {count, plural, one {# próba} few {# próby} other {# prób}} pozostało przed zablokowaniem konta",
     "accountLocked": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {seconds} {seconds, plural, one {sekundę} few {sekundy} other {sekund}}",
-    "notAuthorized": "Nie masz uprawnień dostępu do tej aplikacji. Skontaktuj się z administratorem."
+    "notAuthorized": "Nie masz uprawnień dostępu do tej aplikacji. Skontaktuj się z administratorem.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Autoryzacja dwuskładnikowa",
@@ -588,6 +589,12 @@
     "targetDate": "Data docelowa",
     "statusUpdated": "Status zaktualizowany",
     "itemArchived": "Element zarchiwizowany",
+    "archiveAllItemsInColumn": "Archiwizuj wszystkie elementy w {column}",
+    "archiveAllConfirmTitle": "Zarchiwizować wszystkie elementy?",
+    "archiveAllConfirmMessage": "Zarchiwizować wszystkie elementy ({count}) w {column}? Możesz je przywrócić z archiwum.",
+    "archiveAllSuccess": "Zarchiwizowano elementy: {count}",
+    "archiveAllFailed": "Nie udało się zarchiwizować wszystkich elementów",
+    "archiveAllPartial": "Zarchiwizowano {archived} z {total} elementów. Niektórych elementów nie udało się zarchiwizować.",
     "itemDeleted": "Element usunięty",
     "estimatedTime": "Szacowany czas (godziny)",
     "actualVsEstimated": "{actual} / {estimated}",

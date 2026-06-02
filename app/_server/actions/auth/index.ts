@@ -53,15 +53,16 @@ const _generateSessionId = (): string => randomBytes(32).toString("hex");
 async function _setSessionCookie(
   sessionId: string,
   cookieName: string,
-  maxAge: number,
+  maxAge?: number,
 ) {
-  (await cookies()).set(cookieName, sessionId, {
+  const opts: Parameters<Awaited<ReturnType<typeof cookies>>["set"]>[2] = {
     httpOnly: true,
     secure: isSecureEnv(),
     sameSite: "lax",
-    maxAge,
     path: "/",
-  });
+  };
+  if (maxAge !== undefined) opts.maxAge = maxAge;
+  (await cookies()).set(cookieName, sessionId, opts);
 }
 
 async function _handleFailedLogin(
@@ -209,6 +210,7 @@ export const register = async (formData: FormData) => {
 export const login = async (formData: FormData) => {
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
+  const rememberMe = formData.get("rememberMe") === "true";
 
   if (!username || !password) {
     return { error: "Username and password are required" };
@@ -276,8 +278,9 @@ export const login = async (formData: FormData) => {
       await ensureUser(ldapResult.username, ldapResult.isAdmin);
 
       const ldapSessionId = _generateSessionId();
-      await createSession(ldapSessionId, ldapResult.username, "ldap");
-      await _setSessionCookie(ldapSessionId, getSessionCookieName(), 30 * 24 * 60 * 60);
+      const ldapMaxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
+      await createSession(ldapSessionId, ldapResult.username, "ldap", rememberMe);
+      await _setSessionCookie(ldapSessionId, getSessionCookieName(), ldapMaxAge);
       await logAuthEvent("login", ldapResult.username, true);
 
       redirect("/");
@@ -290,7 +293,7 @@ export const login = async (formData: FormData) => {
     if (user.mfaEnabled) {
       const pendingSessionId = _generateSessionId();
       await _setSessionCookie(pendingSessionId, getMfaPendingCookieName(), 10 * 60);
-      await createSession(pendingSessionId, user.username, "pending-mfa");
+      await createSession(pendingSessionId, user.username, "pending-mfa", rememberMe);
 
       redirect("/auth/verify-mfa");
     }
@@ -306,13 +309,10 @@ export const login = async (formData: FormData) => {
     }
 
     const sessionId = _generateSessionId();
-    const sessions = await readSessions();
-    sessions[sessionId] = user.username;
+    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
 
-    await writeSessions(sessions);
-
-    await createSession(sessionId, user.username, "local");
-    await _setSessionCookie(sessionId, getSessionCookieName(), 30 * 24 * 60 * 60);
+    await createSession(sessionId, user.username, "local", rememberMe);
+    await _setSessionCookie(sessionId, getSessionCookieName(), maxAge);
     await logAuthEvent("login", user.username, true);
 
     redirect("/");
@@ -375,6 +375,9 @@ export const verifyMfaLogin = async (formData: FormData) => {
     return { error: "Invalid session" };
   }
 
+  const sessionDataStore = await readSessionData();
+  const rememberMe = sessionDataStore[pendingSessionId]?.rememberMe ?? false;
+
   const users = await readJsonFile(USERS_FILE);
   const user = users.find(
     (u: User) => u.username.toLowerCase() === username.toLowerCase(),
@@ -425,16 +428,17 @@ export const verifyMfaLogin = async (formData: FormData) => {
   }
 
   const sessionId = _generateSessionId();
+  const maxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
 
   sessions[sessionId] = username;
   delete sessions[pendingSessionId];
   await writeSessions(sessions);
 
   await removeSession(pendingSessionId);
-  await createSession(sessionId, username, "local");
+  await createSession(sessionId, username, "local", rememberMe);
 
   (await cookies()).delete(pendingCookieName);
-  await _setSessionCookie(sessionId, getSessionCookieName(), 30 * 24 * 60 * 60);
+  await _setSessionCookie(sessionId, getSessionCookieName(), maxAge);
 
   await logAuthEvent("login", username, true);
 

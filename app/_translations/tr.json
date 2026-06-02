@@ -306,7 +306,8 @@
     "createUser": "Kullanıcı Oluştur",
     "attemptsRemaining": "Uyarı: Hesabın kilitlenmesine {count, plural, one {# deneme} other {# deneme}} kaldı",
     "accountLocked": "Çok fazla hatalı deneme. Lütfen {seconds} {seconds, plural, one {saniye} other {saniye}} sonra tekrar deneyin",
-    "notAuthorized": "Bu uygulamaya erişim yetkiniz yok. Lütfen yöneticinizle iletişime geçin."
+    "notAuthorized": "Bu uygulamaya erişim yetkiniz yok. Lütfen yöneticinizle iletişime geçin.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "İki Faktörlü Doğrulama",
@@ -613,6 +614,12 @@
     "targetDate": "Hedef tarih",
     "statusUpdated": "Durum güncellendi",
     "itemArchived": "Öğe arşivlendi",
+    "archiveAllItemsInColumn": "{column} içindeki tüm öğeleri arşivle",
+    "archiveAllConfirmTitle": "Tüm öğeler arşivlensin mi?",
+    "archiveAllConfirmMessage": "{column} içindeki {count} öğenin tümü arşivlensin mi? Bunları arşivden geri yükleyebilirsiniz.",
+    "archiveAllSuccess": "{count} öğe arşivlendi",
+    "archiveAllFailed": "Tüm öğeler arşivlenemedi",
+    "archiveAllPartial": "{total} öğeden {archived} tanesi arşivlendi. Bazı öğeler arşivlenemedi.",
     "itemDeleted": "Öğe silindi",
     "estimatedTime": "Tahmini süre (saat)",
     "actualVsEstimated": "{actual} / {estimated}",

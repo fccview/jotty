@@ -306,7 +306,8 @@
     "createUser": "Создать пользователя",
     "attemptsRemaining": "Предупреждение: осталось {count, plural, one {# попытка} few {# попытки} many {# попыток} other {# попыток}} до блокировки аккаунта",
     "accountLocked": "Слишком много неудачных попыток. Пожалуйста, попробуйте снова через {seconds} {seconds, plural, one {секунду} few {секунды} many {секунд} other {секунд}}",
-    "notAuthorized": "Вы не авторизованы для доступа к этому приложению. Пожалуйста, свяжитесь с администратором."
+    "notAuthorized": "Вы не авторизованы для доступа к этому приложению. Пожалуйста, свяжитесь с администратором.",
+    "rememberMe": "Remember me"
   },
   "mfa": {
     "title": "Двухфакторная аутентификация",
@@ -613,6 +614,12 @@
     "targetDate": "Целевая дата",
     "statusUpdated": "Статус обновлён",
     "itemArchived": "Элемент архивирован",
+    "archiveAllItemsInColumn": "Архивировать все элементы в {column}",
+    "archiveAllConfirmTitle": "Архивировать все элементы?",
+    "archiveAllConfirmMessage": "Архивировать все элементы ({count}) в {column}? Их можно восстановить из архива.",
+    "archiveAllSuccess": "Архивировано элементов: {count}",
+    "archiveAllFailed": "Не удалось архивировать все элементы",
+    "archiveAllPartial": "Архивировано {archived} из {total} элементов. Некоторые элементы не удалось архивировать.",
     "itemDeleted": "Элемент удалён",
     "estimatedTime": "Оценка времени (часы)",
     "actualVsEstimated": "{actual} / {estimated}",
