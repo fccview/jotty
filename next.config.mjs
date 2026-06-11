@@ -3,17 +3,19 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n.ts");
 
+const maxBodySize = "1gb";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
   serverExternalPackages: ["ws", "libsodium-wrappers-sumo"],
-  serverActions: {
-    bodySizeLimit: "100mb",
-  },
   experimental: {
+    // https://nextjs.org/docs/app/api-reference/config/next-config-js/serverActions
     serverActions: {
-      bodySizeLimit: "100mb",
+      bodySizeLimit: maxBodySize,
     },
+    // https://nextjs.org/docs/app/api-reference/config/next-config-js/proxyClientMaxBodySize
+    proxyClientMaxBodySize: maxBodySize,
   },
   images: {
     unoptimized: true,
