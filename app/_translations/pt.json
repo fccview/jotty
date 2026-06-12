@@ -568,6 +568,7 @@
     "autoComplete": "Conclusão automática"
   },
   "kanban": {
+    "moveFailed": "Não foi possível mover o cartão",
     "priority": "Prioridade",
     "score": "Pontuação",
     "assignee": "Responsável",

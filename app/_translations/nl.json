@@ -594,6 +594,7 @@
     "archiveAllConfirmMessage": "Alle {count} items in {column} archiveren? Je kunt ze herstellen vanuit het archief.",
     "archiveAllSuccess": "{count} items gearchiveerd",
     "archiveAllFailed": "Kon niet alle items archiveren",
+    "moveFailed": "Kon de kaart niet verplaatsen",
     "archiveAllPartial": "{archived} van {total} items gearchiveerd. Sommige items konden niet worden gearchiveerd.",
     "itemDeleted": "Item verwijderd",
     "estimatedTime": "Geschatte tijd (uur)",

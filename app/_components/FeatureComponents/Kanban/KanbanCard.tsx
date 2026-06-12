@@ -1,7 +1,6 @@
 "use client";
 
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useDragItem } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -32,6 +31,8 @@ import { TimeEntriesModal } from "./TimeEntriesModal";
 interface KanbanCardProps {
   checklist: Checklist;
   item: Item;
+  index?: number;
+  listId?: string;
   isDragging?: boolean;
   checklistId: string;
   category: string;
@@ -45,6 +46,8 @@ interface KanbanCardProps {
 const KanbanCardComponent = ({
   checklist,
   item,
+  index = 0,
+  listId,
   isDragging,
   checklistId,
   category,
@@ -84,28 +87,19 @@ const KanbanCardComponent = ({
     onUpdate,
   });
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging: isSortableDragging,
-  } = useSortable({
+  const { setNodeRef, handleProps, isLifted, isAway, style } = useDragItem({
     id: item.id,
+    listId: listId || item.status || TaskStatus.TODO,
+    index,
     disabled: kanbanItemHook.isEditing || !permissions?.canEdit,
+    ghost: isDragging,
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   useEffect(() => {
-    if (isSortableDragging) {
+    if (isLifted) {
       kanbanItemHook.stopTimerOnDrag();
     }
-  }, [isSortableDragging]);
+  }, [isLifted]);
 
   const statusOptions = useMemo(() => {
     const options = statuses?.map((status) => ({
@@ -171,19 +165,27 @@ const KanbanCardComponent = ({
         />
       )}
 
-      <div className="min-w-0">
+      <div
+        className={cn(
+          "min-w-0",
+          isLifted &&
+            !isAway &&
+            "rounded-jotty outline-dashed outline-2 -outline-offset-2 outline-primary/30",
+        )}
+      >
         <div
           ref={setNodeRef}
           style={style}
-          {...attributes}
-          {...listeners}
+          {...handleProps}
+          tabIndex={0}
           aria-label={item.text}
           onDoubleClick={() => onOpenDetail(item)}
           className={cn(
             "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing min-w-0",
             getStatusColor(item.status),
-            (isDragging || isSortableDragging) &&
+            isDragging &&
               "opacity-60 scale-[0.98] shadow-lg border-primary/40 z-50 transition-all duration-200",
+            isLifted && "opacity-0 pointer-events-none",
           )}
         >
           <div className="space-y-2">

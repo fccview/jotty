@@ -594,6 +594,7 @@
     "archiveAllConfirmMessage": "Archiviare tutti i {count} elementi in {column}? Potrai ripristinarli dall'archivio.",
     "archiveAllSuccess": "{count} elementi archiviati",
     "archiveAllFailed": "Impossibile archiviare tutti gli elementi",
+    "moveFailed": "Impossibile spostare la scheda",
     "archiveAllPartial": "{archived} elementi su {total} archiviati. Alcuni elementi non sono stati archiviati.",
     "itemDeleted": "Elemento eliminato",
     "estimatedTime": "Tempo stimato (ore)",

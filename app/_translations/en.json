@@ -619,6 +619,7 @@
     "archiveAllConfirmMessage": "Archive all {count} items in {column}? You can restore them from the archive.",
     "archiveAllSuccess": "{count} items archived",
     "archiveAllFailed": "Could not archive all items",
+    "moveFailed": "Could not move the card",
     "archiveAllPartial": "{archived} of {total} items archived. Some items could not be archived.",
     "itemDeleted": "Item deleted",
     "estimatedTime": "Estimated Time (hours)",

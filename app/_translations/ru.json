@@ -619,6 +619,7 @@
     "archiveAllConfirmMessage": "Архивировать все элементы ({count}) в {column}? Их можно восстановить из архива.",
     "archiveAllSuccess": "Архивировано элементов: {count}",
     "archiveAllFailed": "Не удалось архивировать все элементы",
+    "moveFailed": "Не удалось переместить карточку",
     "archiveAllPartial": "Архивировано {archived} из {total} элементов. Некоторые элементы не удалось архивировать.",
     "itemDeleted": "Элемент удалён",
     "estimatedTime": "Оценка времени (часы)",
