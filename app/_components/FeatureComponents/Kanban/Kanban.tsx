@@ -175,9 +175,9 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
             message:
               archivedCount > 0
                 ? t("kanban.archiveAllPartial", {
-                    archived: archivedCount,
-                    total: items.length,
-                  })
+                  archived: archivedCount,
+                  total: items.length,
+                })
                 : t("kanban.archiveAllFailed"),
           });
           return;
@@ -261,13 +261,13 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
         className={
           columns.length <= 6
             ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
-            : "h-full min-w-0 flex gap-4 p-2 sm:p-4"
+            : "min-h-0 min-w-0 flex gap-4 p-2 sm:p-4"
         }
         style={
           columns.length <= 6
             ? ({
-                "--kanban-col-count": columns.length,
-              } as React.CSSProperties)
+              "--kanban-col-count": columns.length,
+            } as React.CSSProperties)
             : undefined
         }
       >
@@ -464,8 +464,8 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   isDragging
                   checklistId={localChecklist.id}
                   category={localChecklist.category || "Uncategorized"}
-                  onUpdate={() => {}}
-                  onOpenDetail={() => {}}
+                  onUpdate={() => { }}
+                  onOpenDetail={() => { }}
                   isShared={isShared}
                   statuses={statuses}
                 />

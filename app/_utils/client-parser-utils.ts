@@ -115,6 +115,7 @@ export const parseChecklistContent = (
           let timeEntries: any[] = [];
           let estimatedTime: number | undefined;
           let targetDate: string | undefined;
+          let startDate: string | undefined;
           let description: string | undefined;
           let itemMetadata: Record<string, unknown> = {};
           let priority: KanbanPriority | undefined;
@@ -138,6 +139,8 @@ export const parseChecklistContent = (
               estimatedTime = parseInt(meta.substring(10));
             } else if (meta.startsWith("target:")) {
               targetDate = meta.substring(7);
+            } else if (meta.startsWith("start:")) {
+              startDate = meta.substring(6);
             } else if (meta.startsWith("description:")) {
               description = meta.substring(12).replace(/∣/g, "|");
             } else if (meta.startsWith("metadata:")) {
@@ -175,6 +178,7 @@ export const parseChecklistContent = (
             status,
             timeEntries,
             estimatedTime,
+            startDate,
             targetDate,
             description,
             ...itemMetadata,

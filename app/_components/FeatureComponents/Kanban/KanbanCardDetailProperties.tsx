@@ -23,6 +23,7 @@ interface KanbanCardDetailPropertiesProps {
   assigneeInput: string;
   reminderInput: string;
   targetDateInput: string;
+  startDateInput: string;
   estimatedTimeInput: string;
   availableUsers: { username: string; avatarUrl?: string }[];
   canEdit: boolean;
@@ -37,6 +38,7 @@ interface KanbanCardDetailPropertiesProps {
   onReminderChange: (v: string) => void;
   onReminderSave: () => void;
   onTargetDateChange: (v: string) => void;
+  onStartDateChange: (v: string) => void;
   onEstimatedTimeChange: (v: string) => void;
   onEstimatedTimeSave: () => void;
   formatDateTimeString: (v: string) => string;
@@ -83,6 +85,7 @@ export const KanbanCardDetailProperties = ({
   assigneeInput,
   reminderInput,
   targetDateInput,
+  startDateInput,
   estimatedTimeInput,
   availableUsers,
   canEdit,
@@ -97,6 +100,7 @@ export const KanbanCardDetailProperties = ({
   onReminderChange,
   onReminderSave,
   onTargetDateChange,
+  onStartDateChange,
   onEstimatedTimeChange,
   onEstimatedTimeSave,
   formatDateTimeString,
@@ -246,9 +250,16 @@ export const KanbanCardDetailProperties = ({
             />
           </PropertySection>
 
+          <PropertySection title={t("common.startDate")}>
+            <DatePicker
+              value={startDateInput ? toLocalDateValue(startDateInput) : ""}
+              onChange={onStartDateChange}
+            />
+          </PropertySection>
+
           <PropertySection title={t("kanban.targetDate")}>
             <DatePicker
-              value={targetDateInput}
+              value={targetDateInput ? toLocalDateValue(targetDateInput) : ""}
               onChange={onTargetDateChange}
             />
           </PropertySection>

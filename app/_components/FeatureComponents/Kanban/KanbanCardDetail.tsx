@@ -91,6 +91,7 @@ export const KanbanCardDetail = ({
   const [scoreInput, setScoreInput] = useState(initialItem.score?.toString() || "");
   const [reminderInput, setReminderInput] = useState(initialItem.reminder?.datetime || "");
   const [targetDateInput, setTargetDateInput] = useState(initialItem.targetDate || "");
+  const [startDateInput, setStartDateInput] = useState(initialItem.startDate || "");
   const [priorityInput, setPriorityInput] = useState<KanbanPriority>(initialItem.priority || KanbanPriorityLevel.NONE);
   const [statusInput, setStatusInput] = useState(initialItem.status || defaultStatusId);
   const [assigneeInput, setAssigneeInput] = useState(initialItem.assignee || "");
@@ -105,6 +106,7 @@ export const KanbanCardDetail = ({
     setScoreInput(initialItem.score?.toString() || "");
     setReminderInput(initialItem.reminder?.datetime || "");
     setTargetDateInput(initialItem.targetDate || "");
+    setStartDateInput(initialItem.startDate || "");
     setPriorityInput(initialItem.priority || KanbanPriorityLevel.NONE);
     setStatusInput(initialItem.status || defaultStatusId);
     setAssigneeInput(initialItem.assignee || "");
@@ -335,9 +337,36 @@ export const KanbanCardDetail = ({
     });
   };
 
+  const _dateKey = (value: string): string =>
+    value.includes("T") ? _toLocalDateValue(value) : value;
+
+  const handleStartDateChange = async (value: string) => {
+    setStartDateInput(value);
+    const iso = value ? new Date(value).toISOString() : "";
+    const targetKey = _dateKey(targetDateInput);
+    if (value && targetKey && value > targetKey) {
+      setTargetDateInput(value);
+      await _saveField({ startDate: iso, targetDate: iso });
+      return;
+    }
+    await _saveField({ startDate: iso });
+  };
+
   const handleTargetDateChange = async (value: string) => {
     setTargetDateInput(value);
-    await _saveField({ targetDate: value ? new Date(value).toISOString() : "" });
+    if (!value) {
+      setStartDateInput("");
+      await _saveField({ targetDate: "", startDate: "" });
+      return;
+    }
+    const iso = new Date(value).toISOString();
+    const startKey = _dateKey(startDateInput);
+    if (startKey && startKey > value) {
+      setStartDateInput(value);
+      await _saveField({ targetDate: iso, startDate: iso });
+      return;
+    }
+    await _saveField({ targetDate: iso });
   };
 
   const handleEstimatedTimeSave = async () => {
@@ -473,6 +502,7 @@ export const KanbanCardDetail = ({
             assigneeInput={assigneeInput}
             reminderInput={reminderInput}
             targetDateInput={targetDateInput}
+            startDateInput={startDateInput}
             estimatedTimeInput={estimatedTimeInput}
             availableUsers={availableUsers}
             canEdit={!!permissions?.canEdit}
@@ -506,6 +536,7 @@ export const KanbanCardDetail = ({
             }}
             onReminderSave={handleReminderSave}
             onTargetDateChange={handleTargetDateChange}
+            onStartDateChange={handleStartDateChange}
             onEstimatedTimeChange={setEstimatedTimeInput}
             onEstimatedTimeSave={handleEstimatedTimeSave}
             formatDateTimeString={formatDateTimeString}

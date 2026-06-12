@@ -175,6 +175,7 @@ export const parseMarkdown = (
           let timeEntries: any[] = [];
           let estimatedTime: number | undefined;
           let targetDate: string | undefined;
+          let startDate: string | undefined;
           let description: string | undefined;
           let itemMetadata: Record<string, any> = {};
           let priority: KanbanPriority | undefined;
@@ -198,6 +199,8 @@ export const parseMarkdown = (
               estimatedTime = parseInt(meta.substring(10));
             } else if (meta.startsWith("target:")) {
               targetDate = meta.substring(7);
+            } else if (meta.startsWith("start:")) {
+              startDate = meta.substring(6);
             } else if (meta.startsWith("description:")) {
               description = meta.substring(12).replace(/∣/g, "|");
             } else if (meta.startsWith("metadata:")) {
@@ -231,6 +234,7 @@ export const parseMarkdown = (
             status,
             timeEntries,
             estimatedTime,
+            startDate,
             targetDate,
             description,
             ...itemMetadata,
@@ -402,6 +406,10 @@ const generateItemMarkdown = (
       metadata.push(`estimated:${item.estimatedTime}`);
     }
 
+    if (item.startDate) {
+      metadata.push(`start:${item.startDate}`);
+    }
+
     if (item.targetDate) {
       metadata.push(`target:${item.targetDate}`);
     }
@@ -468,6 +476,9 @@ const generateItemMarkdown = (
     }
     if (item.estimatedTime) {
       itemMetadata.estimatedTime = item.estimatedTime;
+    }
+    if (item.startDate) {
+      itemMetadata.startDate = item.startDate;
     }
     if (item.targetDate) {
       itemMetadata.targetDate = item.targetDate;
