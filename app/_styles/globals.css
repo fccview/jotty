@@ -63,6 +63,10 @@ svg {
   .kanban-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .kanban-card-detail-body {
+    height: calc(84vh - calc(34px + 4em));
+  }  
 }
 
 @media (min-width: 1024px) {
