@@ -352,10 +352,12 @@ export const KanbanCardDetail = ({
       onClose={onClose}
       title={item.text || t("checklists.untitledTask")}
       size="fullscreen"
+      allowEnlarge
+      defaultEnlarged
       className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
     >
-      <div className="kanban-card-detail-body flex flex-col lg:flex-row gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
-        <div className="p-4 min-w-0 space-y-4 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+      <div className="kanban-card-detail-body flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:overflow-hidden">
+        <div className="min-w-0 space-y-4 p-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           {isEditing ? (
             <div className="space-y-4">
               <div>
@@ -461,7 +463,7 @@ export const KanbanCardDetail = ({
           )}
         </div>
 
-        <div className="p-4 lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6 lg:min-h-0 overflow-y-auto">
+        <div className="overflow-y-auto p-4 lg:min-h-0 lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6">
           <KanbanCardDetailProperties
             item={item}
             statuses={statuses}

@@ -1,7 +1,11 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { MultiplicationSignIcon } from "hugeicons-react";
+import {
+  MaximizeScreenIcon,
+  MinimizeScreenIcon,
+  MultiplicationSignIcon,
+} from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
@@ -13,6 +17,8 @@ interface ModalProps {
   children: React.ReactNode;
   className?: string;
   size?: "default" | "fullscreen";
+  allowEnlarge?: boolean;
+  defaultEnlarged?: boolean;
 }
 
 export const Modal = ({
@@ -22,10 +28,13 @@ export const Modal = ({
   children,
   className = "",
   size = "default",
+  allowEnlarge = false,
+  defaultEnlarged = false,
 }: ModalProps) => {
   const t = useTranslations();
   const modalRef = useRef<HTMLDivElement>(null);
   const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
+  const [isEnlarged, setIsEnlarged] = useState(defaultEnlarged);
 
   useEffect(() => {
     let portalRoot = document.getElementById("modal-portal-root");
@@ -68,9 +77,20 @@ export const Modal = ({
     };
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (isOpen) {
+      setIsEnlarged(defaultEnlarged);
+    }
+  }, [isOpen, defaultEnlarged]);
+
   if (!isOpen || !portalElement) {
     return null;
   }
+
+  const isFullscreenLayout = size === "fullscreen" || isEnlarged;
+
+  const enlargedDesktopClasses =
+    "lg:!w-[calc(100vw-2.5em)] lg:!h-[calc(100dvh-2.5em)] lg:!max-w-[calc(100vw-2.5em)] lg:!max-h-[calc(100dvh-2.5em)]";
 
   const modalContent = (
     <div
@@ -85,32 +105,51 @@ export const Modal = ({
         onClick={(e) => e.stopPropagation()}
         className={`
           jotty-modal-content
-          bg-background border border-border w-full shadow-xl
+          bg-background border border-border shadow-xl
           translate-y-0 lg:translate-y-0 transition-all duration-200
+          w-full
           ${size === "fullscreen"
-            ? "lg:w-[95vw] h-[90vh] flex flex-col lg:rounded-jotty rounded-t-xl overflow-hidden"
+            ? "h-[90vh] flex flex-col lg:rounded-jotty rounded-t-xl overflow-hidden lg:w-[95vw]"
             : "lg:max-w-md lg:rounded-md rounded-t-xl p-6"}
           ${className}
+          ${isEnlarged ? enlargedDesktopClasses : ""}
         `}
       >
-        <div className={`jotty-modal-header flex items-center justify-between ${size === "fullscreen" ? "p-3 border-b border-border shrink-0" : "mb-6"}`}>
+        <div className={`jotty-modal-header flex items-center justify-between ${isFullscreenLayout ? "p-3 border-b border-border shrink-0" : "mb-6"}`}>
           <div className="lg:hidden absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-muted-foreground/20" />
 
-          <div className="jotty-modal-title text-xl font-bold text-foreground flex items-center">
+          <div className="jotty-modal-title text-xl font-bold text-foreground flex items-center min-w-0">
             {title}
           </div>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
-            aria-label={t("common.close")}
-          >
-            <MultiplicationSignIcon className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1 shrink-0">
+            {allowEnlarge && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEnlarged((prev) => !prev)}
+                className="hidden lg:inline-flex h-8 w-8 p-0"
+                aria-label={isEnlarged ? t("common.shrink") : t("common.enlarge")}
+              >
+                {isEnlarged ? (
+                  <MinimizeScreenIcon className="h-4 w-4" />
+                ) : (
+                  <MaximizeScreenIcon className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0"
+              aria-label={t("common.close")}
+            >
+              <MultiplicationSignIcon className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
-        <div className={size === "fullscreen" ? "flex-1 overflow-auto" : ""}>
+        <div className={isFullscreenLayout ? "flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden" : ""}>
           {children}
         </div>
       </div>

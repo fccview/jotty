@@ -7,6 +7,8 @@
     "view": "Spy",
     "new": "Fresh",
     "close": "Batten Down",
+    "enlarge": "Hoist the Sails",
+    "shrink": "Lower the Sails",
     "confirm": "Aye!",
     "loading": "Hoisting the sails...",
     "search": "Scour",
