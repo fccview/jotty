@@ -19,6 +19,10 @@ export {
 } from "./status";
 
 export {
+  dropItem,
+} from "./drop";
+
+export {
   createSubItem,
 } from "./sub-items";
 

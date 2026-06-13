@@ -1,11 +1,7 @@
 "use client";
 
 import { useMemo, memo, useState, useRef, useEffect } from "react";
-import { useDroppable } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { useDropList } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanCard } from "./KanbanCard";
 import { cn } from "@/app/_utils/global-utils";
@@ -97,7 +93,7 @@ const KanbanColumnComponent = ({
   onArchiveAll,
 }: KanbanColumnProps) => {
   const t = useTranslations();
-  const { setNodeRef, isOver } = useDroppable({ id });
+  const { setNodeRef, isOver, padBottom } = useDropList({ id });
   const [showInlineInput, setShowInlineInput] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [showArchiveAllModal, setShowArchiveAllModal] = useState(false);
@@ -206,44 +202,44 @@ const KanbanColumnComponent = ({
         style={{
           borderColor: isOver ? undefined : borderColor,
           backgroundColor: isOver ? undefined : bgColor,
+          paddingBottom: padBottom
+            ? `calc(0.75rem + ${padBottom}px)`
+            : undefined,
         }}
       >
-        <SortableContext
-          items={items.map((item) => item.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="space-y-2">
-            {showInlineInput && (
-              <InlineAddInput
-                onSubmit={handleInlineSubmit}
-                onCancel={() => setShowInlineInput(false)}
-                placeholder={t("kanban.addItemPlaceholder")}
-              />
-            )}
-            {items.map((item) => (
-              <KanbanCard
-                checklist={checklist}
-                key={item.id}
-                item={item}
-                checklistId={checklistId}
-                category={category}
-                onUpdate={onUpdate}
-                onOpenDetail={onOpenDetail}
-                isShared={isShared}
-                statuses={statuses}
-                statusColor={statusColor}
-              />
-            ))}
-            {items.length === 0 && !showInlineInput && (
-              <div className="flex flex-col items-center justify-center text-muted-foreground/50 py-8 gap-2">
-                <TaskDaily01Icon className="h-8 w-8" />
-                <span className="text-md lg:text-sm">
-                  {t("checklists.noTasks")}
-                </span>
-              </div>
-            )}
-          </div>
-        </SortableContext>
+        <div className="space-y-2">
+          {showInlineInput && (
+            <InlineAddInput
+              onSubmit={handleInlineSubmit}
+              onCancel={() => setShowInlineInput(false)}
+              placeholder={t("kanban.addItemPlaceholder")}
+            />
+          )}
+          {items.map((item, index) => (
+            <KanbanCard
+              checklist={checklist}
+              key={item.id}
+              item={item}
+              index={index}
+              listId={status}
+              checklistId={checklistId}
+              category={category}
+              onUpdate={onUpdate}
+              onOpenDetail={onOpenDetail}
+              isShared={isShared}
+              statuses={statuses}
+              statusColor={statusColor}
+            />
+          ))}
+          {items.length === 0 && !showInlineInput && (
+            <div className="flex flex-col items-center justify-center text-muted-foreground/50 py-8 gap-2">
+              <TaskDaily01Icon className="h-8 w-8" />
+              <span className="text-md lg:text-sm">
+                {t("checklists.noTasks")}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
       <ConfirmModal
         isOpen={showArchiveAllModal}

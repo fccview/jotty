@@ -48,6 +48,7 @@ export interface Item {
   status?: string;
   timeEntries?: TimeEntry[];
   estimatedTime?: number;
+  startDate?: string;
   targetDate?: string;
   children?: Item[];
   createdBy?: string;

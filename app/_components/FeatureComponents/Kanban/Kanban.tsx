@@ -1,19 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  KeyboardSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  pointerWithin,
-  closestCorners,
-  CollisionDetection,
-  rectIntersection,
-} from "@dnd-kit/core";
+import { useState, useMemo, useCallback } from "react";
+import { DndProvider } from "@/app/_hooks/dnd";
 import { Checklist, Item, KanbanStatus } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanCard } from "./KanbanCard";
@@ -22,6 +10,7 @@ import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPa
 import { StatusManager } from "./StatusManager";
 import { ArchivedItems } from "./ArchivedItems";
 import { useKanbanBoard } from "@/app/_hooks/kanban/useKanban";
+import { useKanbanDnd } from "@/app/_hooks/kanban/useKanbanDnd";
 import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { ReferencedBySection } from "../Notes/Parts/ReferencedBySection";
 import { getReferences } from "@/app/_utils/indexes-utils";
@@ -63,7 +52,6 @@ const _findItemById = (items: Item[], itemId: string): Item | null => {
 export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const t = useTranslations();
   const { showToast } = useToast();
-  const [isClient, setIsClient] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
   const [viewMode, setViewMode] = useState<"board" | "calendar">("board");
@@ -88,6 +76,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const { permissions } = usePermissions();
   const {
     localChecklist,
+    setLocalChecklist,
     isLoading,
     showBulkPasteModal,
     setShowBulkPasteModal,
@@ -95,13 +84,9 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     refreshChecklist,
     handleItemUpdate,
     getItemsByStatus,
-    handleDragStart,
-    handleDragOver,
-    handleDragEnd,
     handleAddItem,
     handleBulkPaste,
     handleItemStatusUpdate,
-    activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
   const statuses = useMemo(() => {
@@ -190,9 +175,9 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
             message:
               archivedCount > 0
                 ? t("kanban.archiveAllPartial", {
-                    archived: archivedCount,
-                    total: items.length,
-                  })
+                  archived: archivedCount,
+                  total: items.length,
+                })
                 : t("kanban.archiveAllFailed"),
           });
           return;
@@ -249,6 +234,19 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     [searchQuery, priorityFilter, assigneeFilter, _hasFilters],
   );
 
+  const visibleFor = useCallback(
+    (status: string) => _filterItems(getItemsByStatus(status)),
+    [_filterItems, getItemsByStatus],
+  );
+
+  const { handleDrop } = useKanbanDnd({
+    checklist: localChecklist,
+    setChecklist: setLocalChecklist,
+    onUpdate,
+    visibleFor,
+    fallbackMove: handleItemStatusUpdate,
+  });
+
   const _uniqueAssignees = useMemo(() => {
     const assignees = new Set<string>();
     localChecklist.items.forEach((item) => {
@@ -263,13 +261,13 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
         className={
           columns.length <= 6
             ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
-            : "h-full min-w-0 flex gap-4 p-2 sm:p-4"
+            : "min-h-0 min-w-0 flex gap-4 p-2 sm:p-4"
         }
         style={
           columns.length <= 6
             ? ({
-                "--kanban-col-count": columns.length,
-              } as React.CSSProperties)
+              "--kanban-col-count": columns.length,
+            } as React.CSSProperties)
             : undefined
         }
       >
@@ -320,33 +318,6 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       permissions?.canEdit,
     ],
   );
-
-  const _collisionDetection: CollisionDetection = useCallback((args) => {
-    const pointerCollisions = pointerWithin(args);
-    if (pointerCollisions.length > 0) return pointerCollisions;
-    return closestCorners(args);
-  }, []);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-        delay: 30,
-        tolerance: 5,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 250,
-        tolerance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor),
-  );
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const referencingItems = useMemo(() => {
     return getReferences(
@@ -480,34 +451,29 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
               onItemClick={(item) => setCalendarSelectedItem(item)}
             />
           </div>
-        ) : isClient ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={_collisionDetection}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
-            {_renderColumns()}
-
-            <DragOverlay>
-              {activeItem ? (
+        ) : (
+          <DndProvider
+            onDrop={handleDrop}
+            renderGhost={(itemId) => {
+              const ghostItem = _findItemById(localChecklist.items, itemId);
+              if (!ghostItem) return null;
+              return (
                 <KanbanCard
                   checklist={localChecklist}
-                  item={activeItem}
+                  item={ghostItem}
                   isDragging
                   checklistId={localChecklist.id}
                   category={localChecklist.category || "Uncategorized"}
-                  onUpdate={refreshChecklist}
-                  onOpenDetail={() => {}}
+                  onUpdate={() => { }}
+                  onOpenDetail={() => { }}
                   isShared={isShared}
                   statuses={statuses}
                 />
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        ) : (
-          _renderColumns()
+              );
+            }}
+          >
+            {_renderColumns()}
+          </DndProvider>
         )}
 
         <div className="px-4 pt-4 pb-[100px] lg:pb-4">

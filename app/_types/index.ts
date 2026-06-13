@@ -94,4 +94,12 @@ export type { WsEvent } from "./websocket";
 
 export type { GetNotesOptions, GetChecklistsOptions } from "./options";
 
+export type {
+  DragPoint,
+  DragRect,
+  DragSize,
+  DropResult,
+  ListItemRect,
+} from "./dnd";
+
 export type { AppNotification, AppNotificationData, NotificationType } from "./notifications";
