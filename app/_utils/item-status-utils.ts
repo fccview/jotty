@@ -63,15 +63,22 @@ export const completeParent = (
   const autoCompleteStatus = statuses?.find((s) => s.autoComplete);
   if (!autoCompleteStatus) return items;
 
-  return updateItem(items, parent.id, (p) => ({
-    ...p,
-    completed: true,
-    status: autoCompleteStatus.id,
-    lastModifiedBy: username,
-    lastModifiedAt: now,
-    history: [
-      ...(p.history || []),
-      { status: autoCompleteStatus.id, timestamp: now, user: username },
-    ],
-  }));
+  const alreadyComplete =
+    parent.completed && parent.status === autoCompleteStatus.id;
+
+  const next = alreadyComplete
+    ? items
+    : updateItem(items, parent.id, (p) => ({
+        ...p,
+        completed: true,
+        status: autoCompleteStatus.id,
+        lastModifiedBy: username,
+        lastModifiedAt: now,
+        history: [
+          ...(p.history || []),
+          { status: autoCompleteStatus.id, timestamp: now, user: username },
+        ],
+      }));
+
+  return completeParent(next, parent.id, statuses, username, now);
 };

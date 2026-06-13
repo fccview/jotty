@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile, ensureDir } from "@/app/_server/actions/file";
+import { checkUserPermission } from "@/app/_server/actions/sharing";
+import { broadcast } from "@/app/_server/ws/broadcast";
+import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 
@@ -70,6 +74,18 @@ export async function PUT(
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
 
+      const canEdit = await checkUserPermission(
+        list.uuid || params.listId,
+        list.category || "",
+        ItemTypes.CHECKLIST,
+        user.username,
+        PermissionTypes.EDIT,
+      );
+
+      if (!canEdit) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
       const items = cloneTree(list.items as unknown as TreeItem[]);
 
       if (isDescendant(activeItemId, overItemId, items)) {
@@ -81,6 +97,10 @@ export async function PUT(
 
       if (!activeInfo || !overInfo) {
         return NextResponse.json({ error: "Item not found" }, { status: 404 });
+      }
+
+      if (activeItemId === overItemId) {
+        return NextResponse.json({ success: true });
       }
 
       activeInfo.siblings.splice(activeInfo.index, 1);
@@ -102,6 +122,24 @@ export async function PUT(
       const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
       await ensureDir(categoryDir);
       await serverWriteFile(path.join(categoryDir, `${list.id}.md`), listToMarkdown(updatedList as any));
+
+      try {
+        revalidatePath("/");
+        revalidatePath(`/checklist/${list.id}`);
+      } catch (error) {
+        console.warn("Cache revalidation failed, but data was saved successfully:", error);
+      }
+
+      try {
+        await broadcast({
+          type: "checklist",
+          action: "updated",
+          entityId: list.id,
+          username: user.username,
+        });
+      } catch (error) {
+        console.warn("Broadcast failed, but data was saved successfully:", error);
+      }
 
       return NextResponse.json({ success: true });
     } catch (error) {

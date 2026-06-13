@@ -50,6 +50,13 @@ export const dropItem = async (
       return { success: false, error: "Item not found" };
     }
 
+    const isValidStatus = (list.statuses || []).some(
+      (s) => s.id === targetStatus,
+    );
+    if (!isValidStatus) {
+      return { success: false, error: "Invalid target status" };
+    }
+
     const now = new Date().toISOString();
     const updatedList = applyDrop(
       list,
@@ -83,12 +90,16 @@ export const dropItem = async (
       );
     }
 
-    await broadcast({
-      type: "checklist",
-      action: "updated",
-      entityId: list.id,
-      username,
-    });
+    try {
+      await broadcast({
+        type: "checklist",
+        action: "updated",
+        entityId: list.id,
+        username,
+      });
+    } catch (error) {
+      console.warn("Broadcast failed, but data was saved successfully:", error);
+    }
 
     return { success: true, data: updatedList };
   } catch (error) {

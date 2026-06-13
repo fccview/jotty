@@ -247,6 +247,7 @@ export default function LoginForm({
         <div className="text-center text-sm lg:text-xs text-muted-foreground">
           <a
             target="_blank"
+            rel="noopener noreferrer"
             href={`https://github.com/fccview/jotty/releases/tag/${appVersion}`}
           >
             {t("version", { version: appVersion })}

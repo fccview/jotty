@@ -3,6 +3,7 @@ import { ItemTypes } from "@/app/_types/enums";
 import { buildCategoryPath } from "@/app/_utils/global-utils";
 
 export const MAX_GRAPH_NODES = 600;
+export const MAX_TAG_LINK_FANOUT = 8;
 
 export interface ConnectionGraphNode {
   id: string;
@@ -202,7 +203,11 @@ export const buildConnectionGraphData = (
     const sortedIds = [...taggedNodeIds].sort();
 
     sortedIds.forEach((source, sourceIndex) => {
-      sortedIds.slice(sourceIndex + 1).forEach((target) => {
+      const fanOutTargets = sortedIds.slice(
+        sourceIndex + 1,
+        sourceIndex + 1 + MAX_TAG_LINK_FANOUT,
+      );
+      fanOutTargets.forEach((target) => {
         const linkKey = `tag::${tag}::${source}::${target}`;
         if (linkMap.has(linkKey)) return;
 

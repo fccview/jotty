@@ -71,7 +71,14 @@ export const useKanbanDnd = ({
       formData.append("targetStatus", targetListId);
       formData.append("targetIndex", String(colIndex));
 
-      const response = await dropItem(formData);
+      let response: Awaited<ReturnType<typeof dropItem>>;
+      try {
+        response = await dropItem(formData);
+      } catch (error) {
+        console.error("dropItem threw:", error);
+        response = { success: false, error: "drop failed" };
+      }
+
       if (response.success && response.data) {
         setChecklist(response.data);
         onUpdate(response.data);

@@ -108,7 +108,7 @@ export const createRegistry = (): RectRegistry => {
     scrollables: () => {
       const found = new Set<HTMLElement>();
       lists.forEach(({ el }) => {
-        let node = el.parentElement;
+        let node: HTMLElement | null = el;
         while (node) {
           if (_scrolls(node)) found.add(node);
           node = node.parentElement;

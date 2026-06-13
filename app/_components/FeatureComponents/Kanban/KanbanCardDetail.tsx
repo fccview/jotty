@@ -340,12 +340,17 @@ export const KanbanCardDetail = ({
   const _dateKey = (value: string): string =>
     value.includes("T") ? _toLocalDateValue(value) : value;
 
+  const _dateToIso = (value: string): string =>
+    value
+      ? new Date(value.includes("T") ? value : `${value}T00:00:00`).toISOString()
+      : "";
+
   const handleStartDateChange = async (value: string) => {
-    setStartDateInput(value);
-    const iso = value ? new Date(value).toISOString() : "";
+    const iso = _dateToIso(value);
+    setStartDateInput(iso);
     const targetKey = _dateKey(targetDateInput);
     if (value && targetKey && value > targetKey) {
-      setTargetDateInput(value);
+      setTargetDateInput(iso);
       await _saveField({ startDate: iso, targetDate: iso });
       return;
     }
@@ -353,16 +358,15 @@ export const KanbanCardDetail = ({
   };
 
   const handleTargetDateChange = async (value: string) => {
-    setTargetDateInput(value);
+    const iso = _dateToIso(value);
+    setTargetDateInput(iso);
     if (!value) {
-      setStartDateInput("");
-      await _saveField({ targetDate: "", startDate: "" });
+      await _saveField({ targetDate: "" });
       return;
     }
-    const iso = new Date(value).toISOString();
     const startKey = _dateKey(startDateInput);
     if (startKey && startKey > value) {
-      setStartDateInput(value);
+      setStartDateInput(iso);
       await _saveField({ targetDate: iso, startDate: iso });
       return;
     }

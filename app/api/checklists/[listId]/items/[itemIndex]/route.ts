@@ -26,6 +26,24 @@ export async function PATCH(
         );
       }
 
+      if (text !== undefined && typeof text !== "string") {
+        return NextResponse.json(
+          { error: "'text' must be a string" },
+          { status: 400 },
+        );
+      }
+
+      if (
+        description !== undefined &&
+        description !== null &&
+        typeof description !== "string"
+      ) {
+        return NextResponse.json(
+          { error: "'description' must be a string" },
+          { status: 400 },
+        );
+      }
+
       const list = await getListById(params.listId, user.username);
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });

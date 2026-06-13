@@ -36,7 +36,9 @@ export const visToColIndex = (
   visIndex: number,
 ): number => {
   if (visIndex < visibleItems.length) {
-    const anchor = visibleItems[visIndex];
+    const safeIndex = Math.max(0, visIndex);
+    const anchor = visibleItems[safeIndex];
+    if (!anchor) return columnItems.length;
     const anchorIdx = columnItems.findIndex((item) => item.id === anchor.id);
     return anchorIdx === -1 ? columnItems.length : anchorIdx;
   }

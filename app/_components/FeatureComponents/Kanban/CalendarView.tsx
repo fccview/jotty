@@ -154,7 +154,16 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
                     return (
                     <div
                       key={`${segment.event.id}-${segment.colStart}-${segment.lane}`}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={segment.event.title}
                       onClick={() => _openItem(segment.event.itemId)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          _openItem(segment.event.itemId);
+                        }
+                      }}
                       className={cn(
                         "pointer-events-auto h-4 text-[10px] font-medium leading-4 px-1.5 truncate cursor-pointer hover:brightness-95 dark:hover:brightness-110 transition-[filter,opacity]",
                         !barStyle.backgroundColor && "bg-muted/80 text-muted-foreground",

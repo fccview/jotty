@@ -64,6 +64,7 @@ export const NavigationGuardProvider = ({
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         e.preventDefault();
+        e.returnValue = "";
       }
     };
 

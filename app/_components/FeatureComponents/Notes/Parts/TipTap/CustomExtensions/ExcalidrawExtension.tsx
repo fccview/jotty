@@ -85,24 +85,28 @@ export const ExcalidrawNodeView = ({
         files: files || null,
       };
 
-      const { exportToSvg } = await import("@excalidraw/excalidraw");
-      const svg = await exportToSvg({
-        elements,
-        appState,
-        files,
-        exportPadding: 20,
-      });
-      svg.removeAttribute("width");
-      svg.removeAttribute("height");
-      svg.setAttribute("style", "max-width: 100%; height: auto;");
-      const svgString = svg.outerHTML;
+      try {
+        const { exportToSvg } = await import("@excalidraw/excalidraw");
+        const svg = await exportToSvg({
+          elements,
+          appState,
+          files,
+          exportPadding: 20,
+        });
+        svg.removeAttribute("width");
+        svg.removeAttribute("height");
+        svg.setAttribute("style", "max-width: 100%; height: auto;");
+        const svgString = svg.outerHTML;
 
-      updateAttributes({
-        diagramData: JSON.stringify(sceneData),
-        svgData: svgString,
-      });
-
-      setIsEditing(false);
+        updateAttributes({
+          diagramData: JSON.stringify(sceneData),
+          svgData: svgString,
+        });
+      } catch (error) {
+        console.error("Failed to export Excalidraw diagram:", error);
+      } finally {
+        setIsEditing(false);
+      }
     }
   };
 

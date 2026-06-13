@@ -12,7 +12,7 @@ import {
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { Checklist, Result } from "@/app/_types";
+import { Checklist, Result, TimeEntry } from "@/app/_types";
 import {
   ItemTypes,
   PermissionTypes,
@@ -48,6 +48,20 @@ export const updateItemStatus = async (
       };
     }
 
+    let parsedTimeEntries: TimeEntry[] | null = null;
+    if (timeEntriesStr) {
+      try {
+        const parsed = JSON.parse(timeEntriesStr);
+        if (!Array.isArray(parsed)) {
+          throw new Error("timeEntries must be an array");
+        }
+        parsedTimeEntries = parsed;
+      } catch (e) {
+        console.error("Failed to parse timeEntries:", e);
+        return { success: false, error: "Invalid timeEntries payload" };
+      }
+    }
+
     const list = await getListById(listId, username, category);
     if (!list) {
       return { success: false, error: "List not found" };
@@ -71,22 +85,14 @@ export const updateItemStatus = async (
       ? applyStatus(list.items, itemId, status, list.statuses, username, now)
       : list.items;
 
-    const updatedItems = timeEntriesStr
-      ? updateItem(statusItems, itemId, (item) => {
-          try {
-            const timeEntries = JSON.parse(timeEntriesStr);
-            return {
-              ...item,
-              timeEntries: timeEntries.map((entry: { user?: string }) => ({
-                ...entry,
-                user: entry.user || username,
-              })),
-            };
-          } catch (e) {
-            console.error("Failed to parse timeEntries:", e);
-            return item;
-          }
-        })
+    const updatedItems = parsedTimeEntries
+      ? updateItem(statusItems, itemId, (item) => ({
+          ...item,
+          timeEntries: parsedTimeEntries!.map((entry) => ({
+            ...entry,
+            user: entry.user || username,
+          })),
+        }))
       : statusItems;
 
     const itemsWithParentAutoComplete = completeParent(

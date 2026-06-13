@@ -249,6 +249,43 @@
         description: Missing fields or invalid index
       '404':
         description: Checklist or item not found
+  delete:
+    summary: Delete Item
+    description: |
+      Deletes a checklist item.
+
+      Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
+    tags:
+      - Checklists
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index or index path (e.g., "0", "0.1", "2.0.1")
+        example: "1"
+    responses:
+      '200':
+        description: Item deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Checklist or item not found
+      '400':
+        description: Invalid item index
 
 /checklists/{listId}/items/reorder:
   put:
@@ -374,45 +411,6 @@
     responses:
       '200':
         description: Item marked as incomplete
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-      '404':
-        description: Checklist or item not found
-      '400':
-        description: Invalid item index
-
-/checklists/{listId}/items/{itemIndex}:
-  delete:
-    summary: Delete Item
-    description: |
-      Deletes a checklist item.
-
-      Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
-    tags:
-      - Checklists
-    parameters:
-      - name: listId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: itemIndex
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Index or index path (e.g., "0", "0.1", "2.0.1")
-        example: "1"
-    responses:
-      '200':
-        description: Item deleted successfully
         content:
           application/json:
             schema:
