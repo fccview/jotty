@@ -17,7 +17,7 @@ const nextConfig = {
     // https://nextjs.org/docs/app/api-reference/config/next-config-js/proxyClientMaxBodySize
     proxyClientMaxBodySize: maxBodySize,
   },
-  allowedDevOrigins: ['192.168.86.233'],
+  allowedDevOrigins: process.env.DEV_ORIGINS ? process.env.DEV_ORIGINS.split(',') : [],
   images: {
     unoptimized: true,
   },
