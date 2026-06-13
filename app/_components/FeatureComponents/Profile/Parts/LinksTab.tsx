@@ -1,85 +1,26 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LinkIndex } from "@/app/_types";
-import dynamic from "next/dynamic";
+import type React from "react";
 import {
   File02Icon,
   Link04Icon,
-  SharedWifiIcon,
   RefreshIcon,
+  SharedWifiIcon,
 } from "hugeicons-react";
-import { Checklist, ItemType, Note } from "@/app/_types";
-import { ItemTypes } from "@/app/_types/enums";
+import { useTranslations } from "next-intl";
+import { LinkIndex } from "@/app/_types";
+import { Checklist, Note } from "@/app/_types";
 import { getUsername } from "@/app/_server/actions/users";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { useTranslations } from "next-intl";
 import { useToast } from "@/app/_providers/ToastProvider";
-
-const ResponsiveNetwork = dynamic(
-  () => import("@nivo/network").then((mod) => mod.ResponsiveNetwork),
-  { ssr: false },
-);
-
-const NOTES_COLOR = "#3b82f6";
-const CHECKLISTS_COLOR = "#10b981";
-const TEXT_COLOR = "rgb(var(--foreground))";
-const BORDER_COLOR = "rgb(var(--muted-foreground))";
-const MAX_GRAPH_NODES = 600;
-
-const getLabel = (
-  node: any,
-  notes: Partial<Note>[],
-  checklists: Partial<Checklist>[],
-) => {
-  const fullItem =
-    (notes.find((n) => n.uuid === node.data.id) as Note | undefined) ||
-    (checklists.find((c) => c.uuid === node.data.id) as Checklist | undefined);
-  return `${fullItem?.id}.md`;
-};
-
-const CustomNode = ({ node, onHover, onLeave, notes, checklists }: any) => {
-  const label = getLabel(node, notes, checklists);
-
-  const nodeColors: Record<string, string> = {
-    note: NOTES_COLOR,
-    checklist: CHECKLISTS_COLOR,
-  };
-
-  const indicatorRadius = Math.max(
-    3,
-    Math.min(12, 3 + (node.data.connectionCount || 0) * 0.8),
-  );
-  const textOffset = indicatorRadius * 2 + 4;
-
-  return (
-    <g
-      style={{ cursor: "pointer" }}
-      onMouseEnter={(e) => onHover && onHover(node, e)}
-      onMouseLeave={() => onLeave && onLeave()}
-    >
-      <circle
-        cx={node.x}
-        cy={node.y}
-        r={indicatorRadius}
-        fill={nodeColors[node.data.type] || NOTES_COLOR}
-      />
-      <text
-        x={node.x + textOffset}
-        y={node.y}
-        textAnchor="start"
-        dominantBaseline="central"
-        fontSize="12"
-        fill={TEXT_COLOR}
-        fontWeight="500"
-        style={{ pointerEvents: "none" }}
-      >
-        {label.length > 25 ? label.substring(0, 22) + "..." : label}
-      </text>
-    </g>
-  );
-};
+import { ConnectionsGraph } from "./ConnectionsGraph/ConnectionsGraph";
+import {
+  buildConnectionGraphData,
+  ConnectionGraphFilters,
+  filterConnectionGraphData,
+} from "./ConnectionsGraph/graph-data";
 
 interface LinksTabProps {
   linkIndex: LinkIndex;
@@ -87,38 +28,36 @@ interface LinksTabProps {
   checklists: Partial<Checklist>[];
 }
 
-interface NetworkNode {
-  id: string;
-  label: string;
-  type: ItemType;
-  size: number;
-  color: string;
-  connectionCount: number;
-}
-
-interface NetworkLink {
-  source: string;
-  target: string;
-  distance: number;
-}
-
 export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
   const t = useTranslations();
   const { showToast } = useToast();
-  const [hoveredNode, setHoveredNode] = useState<any>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [rebuildingIndex, setRebuildingIndex] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [showLabels, setShowLabels] = useState(false);
+  const [showArrows, setShowArrows] = useState(true);
+  const [nodeScale, setNodeScale] = useState(1);
+  const [linkWidth, setLinkWidth] = useState(1.6);
+  const [linkDistance, setLinkDistance] = useState(90);
+  const [repelForce, setRepelForce] = useState(120);
+  const [filters, setFilters] = useState<ConnectionGraphFilters>({
+    search: "",
+    showNotes: true,
+    showChecklists: true,
+    showOrphans: false,
+    showTagLinks: true,
+  });
 
-  const handleNodeHover = (node: any, event?: any) => {
-    setHoveredNode(node);
-    if (event) {
-      setMousePosition({ x: event.clientX, y: event.clientY });
-    }
-  };
+  const graphData = useMemo(
+    () => buildConnectionGraphData(linkIndex, notes, checklists, true),
+    [linkIndex, notes, checklists],
+  );
 
-  const handleNodeLeave = () => {
-    setHoveredNode(null);
-  };
+  const visibleGraphData = useMemo(
+    () => filterConnectionGraphData(graphData, filters),
+    [filters, graphData],
+  );
+
+  const connectedItems = graphData.nodes.filter((node) => !node.orphan).length;
 
   const handleRebuildIndex = async () => {
     setRebuildingIndex(true);
@@ -143,226 +82,49 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
     }
   };
 
-  const networkData = useMemo(() => {
-    const nodes = new Map<string, NetworkNode>();
-    const links: NetworkLink[] = [];
+  const updateFilters = (next: Partial<ConnectionGraphFilters>) => {
+    setFilters((current) => ({ ...current, ...next }));
+  };
 
-    Object.entries(linkIndex.notes).forEach(([uuid, itemLinks]) => {
-      const connectionCount =
-        itemLinks.isLinkedTo.notes.length +
-        itemLinks.isLinkedTo.checklists.length +
-        itemLinks.isReferencedIn.notes.length +
-        itemLinks.isReferencedIn.checklists.length;
-      if (connectionCount === 0) return;
-      if (!nodes.has(uuid)) {
-        const item = notes.find((n) => n.uuid === uuid);
-        const label = item?.title || `Note ${uuid.slice(0, 8)}`;
-        const size = Math.max(5, Math.min(25, 5 + connectionCount * 2));
-        nodes.set(uuid, {
-          id: uuid,
-          label: label,
-          type: ItemTypes.NOTE,
-          size: size,
-          color: NOTES_COLOR,
-          connectionCount,
-        });
-      }
-    });
-
-    Object.entries(linkIndex.checklists).forEach(([uuid, itemLinks]) => {
-      const connectionCount =
-        itemLinks.isLinkedTo.notes.length +
-        itemLinks.isLinkedTo.checklists.length +
-        itemLinks.isReferencedIn.notes.length +
-        itemLinks.isReferencedIn.checklists.length;
-      if (connectionCount === 0) return;
-      if (!nodes.has(uuid)) {
-        const item = checklists.find((c) => c.uuid === uuid);
-        const label = item?.title || `Checklist ${uuid.slice(0, 8)}`;
-        const size = Math.max(5, Math.min(25, 5 + connectionCount * 2));
-        nodes.set(uuid, {
-          id: uuid,
-          label: label,
-          type: ItemTypes.CHECKLIST,
-          size: size,
-          color: CHECKLISTS_COLOR,
-          connectionCount,
-        });
-      }
-    });
-
-    const linkSet = new Set<string>();
-
-    Object.entries(linkIndex.notes).forEach(([sourcePath, itemLinks]) => {
-      itemLinks.isLinkedTo.notes.forEach((targetPath) => {
-        if (nodes.has(targetPath) && sourcePath !== targetPath) {
-          const linkKey = [sourcePath, targetPath].sort().join("->");
-          if (!linkSet.has(linkKey)) {
-            linkSet.add(linkKey);
-            links.push({
-              source: sourcePath,
-              target: targetPath,
-              distance: 80,
-            });
-          }
-        }
-      });
-
-      itemLinks.isLinkedTo.checklists.forEach((targetPath) => {
-        if (nodes.has(targetPath) && sourcePath !== targetPath) {
-          const linkKey = [sourcePath, targetPath].sort().join("->");
-          if (!linkSet.has(linkKey)) {
-            linkSet.add(linkKey);
-            links.push({
-              source: sourcePath,
-              target: targetPath,
-              distance: 80,
-            });
-          }
-        }
-      });
-    });
-
-    Object.entries(linkIndex.checklists).forEach(([sourcePath, itemLinks]) => {
-      itemLinks.isLinkedTo.checklists.forEach((targetPath) => {
-        if (nodes.has(targetPath) && sourcePath !== targetPath) {
-          const linkKey = [sourcePath, targetPath].sort().join("->");
-          if (!linkSet.has(linkKey)) {
-            linkSet.add(linkKey);
-            links.push({
-              source: sourcePath,
-              target: targetPath,
-              distance: 80,
-            });
-          }
-        }
-      });
-
-      itemLinks.isLinkedTo.notes.forEach((targetPath) => {
-        if (nodes.has(targetPath) && sourcePath !== targetPath) {
-          const linkKey = [sourcePath, targetPath].sort().join("->");
-          if (!linkSet.has(linkKey)) {
-            linkSet.add(linkKey);
-            links.push({
-              source: sourcePath,
-              target: targetPath,
-              distance: 80,
-            });
-          }
-        }
-      });
-    });
-
-    const nodeList = Array.from(nodes.values());
-    if (nodeList.length > MAX_GRAPH_NODES) {
-      nodeList.sort((a, b) => b.connectionCount - a.connectionCount);
-      const keptIds = new Set(
-        nodeList.slice(0, MAX_GRAPH_NODES).map((n) => n.id),
-      );
-      const keptNodes = nodeList.slice(0, MAX_GRAPH_NODES);
-      const keptLinks = links.filter(
-        (l) => keptIds.has(l.source) && keptIds.has(l.target),
-      );
-      return {
-        nodes: keptNodes,
-        links: keptLinks,
-        truncated: nodeList.length,
-      };
-    }
-    return {
-      nodes: nodeList,
-      links: links,
-      truncated: 0,
-    };
-  }, [linkIndex, notes, checklists]);
-
-  const totalNodes = networkData.nodes.length;
-  const totalLinks = networkData.links.length;
-  const truncatedTotal =
-    "truncated" in networkData && networkData.truncated > 0
-      ? networkData.truncated
-      : 0;
-
-  if (totalNodes === 0) {
+  if (graphData.totalNodes === 0) {
     return (
       <div className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold">{t("profile.contentLinks")}</h2>
-          <p className="text-muted-foreground">
-            {t("profile.visualizeRelationships")}
-          </p>
-        </div>
-
-        <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6 lg:mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <File02Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {totalNodes}
-                </div>
-                <div className="text-md lg:text-xs text-muted-foreground">
-                  {t("checklists.totalItems")}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <Link04Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {totalLinks}
-                </div>
-                <div className="text-md lg:text-xs text-muted-foreground">
-                  {t("profile.connectionsTab")}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-secondary rounded-jotty">
-                <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-bold text-foreground">
-                  {
-                    networkData.nodes.filter((n) => n.connectionCount > 0)
-                      .length
-                  }
-                </div>
-                <div className="text-md lg:text-xs text-muted-foreground">
-                  {t("profile.connectedItems")}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border rounded-md p-8">
-          <div className="text-center space-y-4">
-            <div className="text-6xl flex items-center justify-center">
-              <Link04Icon className="h-12 w-12" />
-            </div>
+        <Header />
+        <Stats
+          totalNodes={0}
+          totalLinks={0}
+          connectedItems={0}
+        />
+        <div className="rounded-md border border-border bg-card p-8">
+          <div className="mx-auto max-w-md space-y-4 text-center">
+            <Link04Icon className="mx-auto h-12 w-12" />
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">
                 {t("profile.noLinksFound")}
               </h3>
-              <p className="text-muted-foreground max-w-md mx-auto">
+              <p className="text-muted-foreground">
                 {t("profile.startCreatingInternalLinks")}{" "}
-                <code className="bg-muted px-1 py-0.5 rounded text-sm">
+                <code className="rounded bg-muted px-1 py-0.5 text-sm">
                   /note/your-note
                 </code>{" "}
                 {t("profile.orFormat")}{" "}
-                <code className="bg-muted px-1 py-0.5 rounded text-sm">
+                <code className="rounded bg-muted px-1 py-0.5 text-sm">
                   /checklist/your-list
                 </code>{" "}
                 {t("profile.inYourContent")}
               </p>
             </div>
+            <Button
+              variant="outline"
+              onClick={handleRebuildIndex}
+              disabled={rebuildingIndex}
+              className="gap-2"
+            >
+              <RefreshIcon
+                className={`h-4 w-4 ${rebuildingIndex ? "animate-spin" : ""}`}
+              />
+              {rebuildingIndex ? t("admin.rebuilding") : t("admin.rebuildIndexes")}
+            </Button>
           </div>
         </div>
       </div>
@@ -371,160 +133,320 @@ export const LinksTab = ({ linkIndex, notes, checklists }: LinksTabProps) => {
 
   return (
     <div className="space-y-6">
+      <Header />
+      <Stats
+        totalNodes={graphData.totalNodes}
+        totalLinks={graphData.totalLinks}
+        connectedItems={connectedItems}
+      />
+
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">{t("profile.linkNetwork")}</h3>
+            <p className="text-sm text-muted-foreground">
+              {t("profile.visibleGraphSummary", {
+                items: visibleGraphData.nodes.length,
+                links: visibleGraphData.links.length,
+              })}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRebuildIndex}
+            disabled={rebuildingIndex}
+            className="w-full gap-2 sm:w-auto"
+            title={t("profile.rebuildLinkIndexes")}
+          >
+            <RefreshIcon
+              className={`h-4 w-4 ${rebuildingIndex ? "animate-spin" : ""}`}
+            />
+            {rebuildingIndex ? t("admin.rebuilding") : t("admin.rebuildIndexes")}
+          </Button>
+        </div>
+
+        {graphData.truncated > 0 && (
+          <p className="rounded-md border border-border bg-card p-3 text-sm text-muted-foreground">
+            {t("profile.graphTruncated", {
+              visible: visibleGraphData.nodes.length,
+              omitted: graphData.truncated,
+            })}
+          </p>
+        )}
+
+        <div className="order-2 lg:order-1">
+          <Controls
+            filters={filters}
+            updateFilters={updateFilters}
+            showLabels={showLabels}
+            setShowLabels={setShowLabels}
+            showArrows={showArrows}
+            setShowArrows={setShowArrows}
+            nodeScale={nodeScale}
+            setNodeScale={setNodeScale}
+            linkWidth={linkWidth}
+            setLinkWidth={setLinkWidth}
+            linkDistance={linkDistance}
+            setLinkDistance={setLinkDistance}
+            repelForce={repelForce}
+            setRepelForce={setRepelForce}
+          />
+        </div>
+
+        <div className="order-1 lg:order-2">
+          <ConnectionsGraph
+            graphData={visibleGraphData}
+            selectedNodeId={selectedNodeId}
+            onSelectedNodeChange={setSelectedNodeId}
+            showLabels={showLabels}
+            showArrows={showArrows}
+            nodeScale={nodeScale}
+            linkWidth={linkWidth}
+            linkDistance={linkDistance}
+            repelForce={repelForce}
+            labels={{
+              unknown: t("profile.unknown"),
+              total: t("profile.totalConnections"),
+              inbound: t("profile.inboundConnections"),
+              outbound: t("profile.outboundConnections"),
+              updated: t("profile.updated"),
+              uuid: t("profile.uuid"),
+              openItem: t("profile.openItem"),
+              selectItem: t("profile.selectItem"),
+              inspectHint: t("profile.inspectNodeHint"),
+              linkedItems: t("profile.linkedItems"),
+            }}
+          />
+        </div>
+      </section>
+    </div>
+  );
+
+  function Header() {
+    return (
       <div className="space-y-2">
         <h2 className="text-2xl font-bold">{t("profile.contentLinks")}</h2>
         <p className="text-muted-foreground">
           {t("profile.visualizeRelationships")}
         </p>
       </div>
+    );
+  }
 
-      <div className="bg-card border border-border rounded-jotty p-4 sm:p-6 mb-6 lg:mb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-secondary rounded-jotty">
-              <File02Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <div>
-              <div className="text-xl sm:text-2xl font-bold text-foreground">
-                {totalNodes}
-              </div>
-              <div className="text-md lg:text-xs text-muted-foreground">
-                {t("checklists.totalItems")}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-secondary rounded-jotty">
-              <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <div>
-              <div className="text-xl sm:text-2xl font-bold text-foreground">
-                {totalLinks}
-              </div>
-              <div className="text-md lg:text-xs text-muted-foreground">
-                {t("profile.connectionsTab")}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-secondary rounded-jotty">
-              <SharedWifiIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-            </div>
-            <div>
-              <div className="text-xl sm:text-2xl font-bold text-foreground">
-                {networkData.nodes.filter((n) => n.connectionCount > 0).length}
-              </div>
-              <div className="text-md lg:text-xs text-muted-foreground">
-                {t("profile.connectedItems")}
-              </div>
-            </div>
-          </div>
+  function Stats({
+    totalNodes,
+    totalLinks,
+    connectedItems,
+  }: {
+    totalNodes: number;
+    totalLinks: number;
+    connectedItems: number;
+  }) {
+    return (
+      <div className="rounded-jotty border border-border bg-card p-4 sm:p-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
+          <Stat icon={<File02Icon className="h-5 w-5" />} value={totalNodes} label={t("checklists.totalItems")} />
+          <Stat icon={<Link04Icon className="h-5 w-5" />} value={totalLinks} label={t("profile.connectionsTab")} />
+          <Stat icon={<SharedWifiIcon className="h-5 w-5" />} value={connectedItems} label={t("profile.connectedItems")} />
         </div>
       </div>
+    );
+  }
 
-      <div className="bg-card border border-border rounded-md p-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">
-              {t("profile.linkNetwork")}
-            </h3>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span>{t("notes.title")}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span>{t("checklists.title")}</span>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="xs"
-                onClick={handleRebuildIndex}
-                disabled={rebuildingIndex}
-                className="flex items-center gap-2"
-                title={t("profile.rebuildLinkIndexes")}
-              >
-                <RefreshIcon
-                  className={`h-3 w-3 ${rebuildingIndex ? "animate-spin" : ""}`}
-                />
-                {rebuildingIndex
-                  ? t("admin.rebuilding")
-                  : t("admin.rebuildIndexes")}
-              </Button>
-            </div>
-          </div>
-
-          {truncatedTotal > 0 && (
-            <p className="text-sm text-muted-foreground mb-2">
-              Only showing partial content due to performance reasons.
-            </p>
-          )}
-
-          <div className="h-[600px] w-full">
-            <ResponsiveNetwork
-              data={{ nodes: networkData.nodes, links: networkData.links }}
-              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-              linkDistance={(e: any) => e.distance}
-              centeringStrength={0.3}
-              repulsivity={10}
-              nodeSize={(n: any) => n.size}
-              activeNodeSize={(n: any) => n.size * 1.5}
-              nodeComponent={(props: any) => (
-                <CustomNode
-                  {...props}
-                  onHover={handleNodeHover}
-                  onLeave={handleNodeLeave}
-                  notes={notes}
-                  checklists={checklists}
-                />
-              )}
-              linkThickness={2}
-              linkColor={BORDER_COLOR}
-              motionConfig={{
-                mass: 1,
-                tension: 120,
-                friction: 14,
-              }}
-            />
-          </div>
-
-          {hoveredNode && (
-            <div
-              className="fixed z-50 bg-popover text-popover-foreground p-3 rounded-jotty border shadow-lg max-w-xs pointer-events-none"
-              style={{
-                left: mousePosition.x + 10,
-                top: mousePosition.y - 10,
-                transform: "translate(0, -100%)",
-              }}
-            >
-              <div className="font-semibold text-sm">
-                {hoveredNode.data.label}
-              </div>
-              <div className="text-md lg:text-xs text-muted-foreground capitalize mt-1">
-                {hoveredNode.data.type} • {hoveredNode.data.connectionCount}{" "}
-                {t("profile.connection", {
-                  count: hoveredNode.data.connectionCount,
-                })}
-                {hoveredNode.data.connectionCount >= 5
-                  ? ` (${t("profile.highlyConnected")})`
-                  : hoveredNode.data.connectionCount >= 2
-                    ? ` (${t("profile.moderatelyConnected")})`
-                    : hoveredNode.data.connectionCount === 0
-                      ? ` (${t("profile.isolated")})`
-                      : ""}
-              </div>
-              <div className="text-md lg:text-xs text-muted-foreground mt-1 font-mono line-clamp-1">
-                {hoveredNode.data.id}
-              </div>
-            </div>
-          )}
+  function Stat({
+    icon,
+    value,
+    label,
+  }: {
+    icon: React.ReactNode;
+    value: number;
+    label: string;
+  }) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="rounded-jotty bg-secondary p-2">{icon}</div>
+        <div>
+          <div className="text-2xl font-bold text-foreground">{value}</div>
+          <div className="text-sm text-muted-foreground">{label}</div>
         </div>
+      </div>
+    );
+  }
+};
+
+interface ControlsProps {
+  filters: ConnectionGraphFilters;
+  updateFilters: (next: Partial<ConnectionGraphFilters>) => void;
+  showLabels: boolean;
+  setShowLabels: (value: boolean) => void;
+  showArrows: boolean;
+  setShowArrows: (value: boolean) => void;
+  nodeScale: number;
+  setNodeScale: (value: number) => void;
+  linkWidth: number;
+  setLinkWidth: (value: number) => void;
+  linkDistance: number;
+  setLinkDistance: (value: number) => void;
+  repelForce: number;
+  setRepelForce: (value: number) => void;
+}
+
+const Controls = ({
+  filters,
+  updateFilters,
+  showLabels,
+  setShowLabels,
+  showArrows,
+  setShowArrows,
+  nodeScale,
+  setNodeScale,
+  linkWidth,
+  setLinkWidth,
+  linkDistance,
+  setLinkDistance,
+  repelForce,
+  setRepelForce,
+}: ControlsProps) => {
+  const t = useTranslations();
+
+  return (
+    <div className="rounded-md border border-border bg-card p-4">
+      <div className="grid gap-4">
+        <label className="space-y-1">
+          <span className="text-sm font-medium">{t("common.search")}</span>
+          <input
+            value={filters.search}
+            onChange={(event) => updateFilters({ search: event.target.value })}
+            placeholder={t("profile.graphSearchPlaceholder")}
+            className="h-10 w-full rounded-jotty border border-input bg-background px-3 text-sm"
+          />
+        </label>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <Toggle
+          label={t("notes.title")}
+          checked={filters.showNotes}
+          onChange={(checked) => updateFilters({ showNotes: checked })}
+        />
+        <Toggle
+          label={t("checklists.title")}
+          checked={filters.showChecklists}
+          onChange={(checked) => updateFilters({ showChecklists: checked })}
+        />
+        <Toggle
+          label={t("profile.orphans")}
+          checked={filters.showOrphans}
+          onChange={(checked) => updateFilters({ showOrphans: checked })}
+        />
+        <Toggle
+          label={t("profile.labels")}
+          checked={showLabels}
+          onChange={setShowLabels}
+        />
+        <Toggle
+          label={t("profile.arrows")}
+          checked={showArrows}
+          onChange={setShowArrows}
+        />
+        <Toggle
+          label={t("profile.tagLinks")}
+          checked={filters.showTagLinks}
+          onChange={(checked) => updateFilters({ showTagLinks: checked })}
+        />
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Range
+          label={t("profile.nodeSize")}
+          value={nodeScale}
+          min={0.6}
+          max={1.8}
+          step={0.1}
+          onChange={setNodeScale}
+        />
+        <Range
+          label={t("profile.linkWidth")}
+          value={linkWidth}
+          min={0.5}
+          max={4}
+          step={0.1}
+          onChange={setLinkWidth}
+        />
+        <Range
+          label={t("profile.linkDistance")}
+          value={linkDistance}
+          min={45}
+          max={180}
+          step={5}
+          onChange={setLinkDistance}
+        />
+        <Range
+          label={t("profile.repelForce")}
+          value={repelForce}
+          min={40}
+          max={260}
+          step={10}
+          onChange={setRepelForce}
+        />
       </div>
     </div>
   );
 };
+
+const Toggle = ({
+  label,
+  checked,
+  onChange,
+  disabled = false,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  disabled?: boolean;
+}) => (
+  <label className="flex min-h-10 items-center justify-between gap-3 rounded-jotty border border-border px-3 py-2 text-sm">
+    <span className={`min-w-0 truncate ${disabled ? "text-muted-foreground" : ""}`}>
+      {label}
+    </span>
+    <input
+      type="checkbox"
+      checked={checked}
+      disabled={disabled}
+      onChange={(event) => onChange(event.target.checked)}
+      className="h-4 w-4 shrink-0"
+    />
+  </label>
+);
+
+const Range = ({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) => (
+  <label className="block min-h-16 rounded-jotty border border-border px-3 py-2">
+    <span className="block truncate text-sm font-medium">
+      {label} {value}
+    </span>
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(event) => onChange(Number(event.target.value))}
+      className="mt-2 block w-full"
+    />
+  </label>
+);
