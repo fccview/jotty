@@ -5,7 +5,8 @@ import {
   updateList,
   deleteList,
 } from "@/app/_server/actions/checklist";
-import { isKanbanType, TaskStatus } from "@/app/_types/enums";
+import { isKanbanType } from "@/app/_types/enums";
+import { toApiItem } from "@/app/_utils/api-item";
 
 export const dynamic = "force-dynamic";
 
@@ -28,25 +29,6 @@ export async function GET(
         );
       }
 
-      const transformItem = (item: any, index: number): any => {
-        const baseItem: any = {
-          id: item.id,
-          index,
-          text: item.text,
-          status: item.status || TaskStatus.TODO,
-          completed: item.completed,
-        };
-
-        if (item.children && item.children.length > 0) {
-          baseItem.children = item.children.map(
-            (child: any, childIndex: number) =>
-              transformItem(child, childIndex),
-          );
-        }
-
-        return baseItem;
-      };
-
       const transformedTask = {
         id: task.uuid || task.id,
         title: task.title,
@@ -56,7 +38,7 @@ export async function GET(
           { id: "in_progress", name: "In Progress", order: 1 },
           { id: "completed", name: "Completed", order: 2 },
         ],
-        items: task.items.map((item, index) => transformItem(item, index)),
+        items: task.items.map((item, index) => toApiItem(item, index, true)),
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,
       };

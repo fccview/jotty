@@ -14,7 +14,7 @@ import {
 import { POST } from "@/app/api/checklists/[listId]/items/route"
 import { PUT as CHECK } from "@/app/api/checklists/[listId]/items/[itemIndex]/check/route"
 import { PUT as UNCHECK } from "@/app/api/checklists/[listId]/items/[itemIndex]/uncheck/route"
-import { DELETE } from "@/app/api/checklists/[listId]/items/[itemIndex]/route"
+import { DELETE, PATCH } from "@/app/api/checklists/[listId]/items/[itemIndex]/route"
 
 describe("Checklist Items API", () => {
   const mockList = {
@@ -285,6 +285,59 @@ describe("Checklist Items API", () => {
 
       expect(response.status).toBe(401)
       expect(data.error).toBe("Unauthorized")
+    })
+  })
+
+  describe("PATCH /api/checklists/:id/items/:index", () => {
+    it("should update writable kanban item fields", async () => {
+      mockGetListById.mockResolvedValue({ ...mockList, type: "kanban" })
+      mockUpdateItem.mockResolvedValue({ success: true })
+
+      const request = createMockRequest("PATCH", "http://localhost:3000/api/checklists/uuid-1/items/0", {
+        description: "Implementation notes",
+        priority: "high",
+        score: 5,
+        startDate: "2026-06-10",
+        targetDate: "2026-06-15",
+        estimatedTime: 2.5,
+      })
+      const response = await PATCH(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.success).toBe(true)
+      expect(mockUpdateItem).toHaveBeenCalledOnce()
+
+      const formData = mockUpdateItem.mock.calls[0][1] as FormData
+      expect(formData.get("itemId")).toBe("item-1")
+      expect(formData.get("description")).toBe("Implementation notes")
+      expect(formData.get("priority")).toBe("high")
+      expect(formData.get("score")).toBe("5")
+      expect(formData.get("startDate")).toBe("2026-06-10")
+      expect(formData.get("targetDate")).toBe("2026-06-15")
+      expect(formData.get("estimatedTime")).toBe("2.5")
+    })
+
+    it("should return 400 when no patch fields are provided", async () => {
+      const request = createMockRequest("PATCH", "http://localhost:3000/api/checklists/uuid-1/items/0", {})
+      const response = await PATCH(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(400)
+      expect(data.error).toBe("Provide at least one field to update")
+      expect(mockUpdateItem).not.toHaveBeenCalled()
+    })
+
+    it("should return 400 for invalid priority", async () => {
+      const request = createMockRequest("PATCH", "http://localhost:3000/api/checklists/uuid-1/items/0", {
+        priority: "urgent",
+      })
+      const response = await PATCH(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(400)
+      expect(data.error).toContain("'priority' must be one of")
+      expect(mockUpdateItem).not.toHaveBeenCalled()
     })
   })
 

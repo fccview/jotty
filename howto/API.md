@@ -393,6 +393,24 @@ Items can contain a `children` array with nested sub-items:
       "index": 0,
       "text": "Parent Task",
       "completed": false,
+      "status": "todo",
+      "description": "Implementation notes",
+      "priority": "high",
+      "score": 5,
+      "startDate": "2026-06-10",
+      "targetDate": "2026-06-15",
+      "estimatedTime": 2.5,
+      "createdBy": "alice",
+      "createdAt": "2026-06-01T09:00:00.000Z",
+      "lastModifiedBy": "alice",
+      "lastModifiedAt": "2026-06-02T10:30:00.000Z",
+      "history": [
+        {
+          "status": "todo",
+          "timestamp": "2026-06-01T09:00:00.000Z",
+          "user": "alice"
+        }
+      ],
       "children": [
         {
           "id": "list-sub-456",
@@ -417,6 +435,44 @@ Items can contain a `children` array with nested sub-items:
       ]
     }
   ]
+}
+```
+
+### Update Checklist Item
+
+**PATCH** `/api/checklists/{listId}/items/{itemIndex}`
+
+Updates one or more writable fields on a checklist item. Omitted fields are left unchanged. Supports nested items using index paths.
+
+**Request Body:**
+
+```json
+{
+  "text": "Updated task title",
+  "description": "Additional notes",
+  "priority": "high",
+  "score": 5,
+  "startDate": "2026-06-10",
+  "targetDate": "2026-06-15",
+  "estimatedTime": 2.5
+}
+```
+
+**Writable Fields:**
+
+- `text` (optional): Item title
+- `description` (optional): Item body or notes
+- `priority` (optional): `"critical"`, `"high"`, `"medium"`, `"low"`, or `"none"`
+- `score` (optional): Numeric score
+- `startDate` (optional): Start date as an ISO date string
+- `targetDate` (optional): Target date as an ISO date string
+- `estimatedTime` (optional): Estimated hours
+
+**Response:**
+
+```json
+{
+  "success": true
 }
 ```
 
@@ -917,6 +973,45 @@ Index path examples:
   "success": true,
   "data": {
     "id": "task-item-1234567890"
+  }
+}
+```
+
+### Get Task Item
+
+**GET** `/api/tasks/{taskId}/items/{itemIndex}`
+
+Retrieves a single task item, including nested `children` and Kanban item fields. Supports nested index paths.
+
+**Response:**
+
+```json
+{
+  "item": {
+    "id": "task-item-1234567890",
+    "index": 0,
+    "text": "Implement user authentication",
+    "completed": false,
+    "status": "todo",
+    "time": 0,
+    "description": "Add login and token refresh",
+    "priority": "high",
+    "score": 5,
+    "startDate": "2026-06-10",
+    "targetDate": "2026-06-15",
+    "estimatedTime": 2.5,
+    "createdBy": "alice",
+    "createdAt": "2026-06-01T09:00:00.000Z",
+    "lastModifiedBy": "alice",
+    "lastModifiedAt": "2026-06-02T10:30:00.000Z",
+    "history": [
+      {
+        "status": "todo",
+        "timestamp": "2026-06-01T09:00:00.000Z",
+        "user": "alice"
+      }
+    ],
+    "children": []
   }
 }
 ```

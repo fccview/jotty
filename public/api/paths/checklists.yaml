@@ -202,7 +202,7 @@
   patch:
     summary: Update Checklist Item
     description: |
-      Updates the text or description of a checklist item.
+      Updates one or more writable fields on a checklist item.
 
       Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item).
     tags:
@@ -234,6 +234,24 @@
               description:
                 type: string
                 example: "Additional notes about this item"
+              priority:
+                type: string
+                enum: [critical, high, medium, low, none]
+                example: "high"
+              score:
+                type: number
+                example: 5
+              startDate:
+                type: string
+                format: date
+                example: "2026-06-10"
+              targetDate:
+                type: string
+                format: date
+                example: "2026-06-15"
+              estimatedTime:
+                type: number
+                example: 2.5
     responses:
       '200':
         description: Item updated successfully

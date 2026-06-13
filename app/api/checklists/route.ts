@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getUserChecklists, createList } from "@/app/_server/actions/checklist";
-import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
+import { ChecklistsTypes, isKanbanType } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";
+import { toApiItem } from "@/app/_utils/api-item";
 
 export const dynamic = "force-dynamic";
 
@@ -45,36 +46,6 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      const transformItem = (
-        item: any,
-        index: number,
-        listType: string,
-      ): any => {
-        const baseItem: any = {
-          id: item.id,
-          index,
-          text: item.text,
-          completed: item.completed,
-        };
-
-        if (isKanbanType(listType)) {
-          baseItem.status = item.status || TaskStatus.TODO;
-          baseItem.time =
-            item.timeEntries && item.timeEntries.length > 0
-              ? item.timeEntries
-              : 0;
-        }
-
-        if (item.children && item.children.length > 0) {
-          baseItem.children = item.children.map(
-            (child: any, childIndex: number) =>
-              transformItem(child, childIndex, listType),
-          );
-        }
-
-        return baseItem;
-      };
-
       const checklists = userLists.map((list) => ({
         id: list.uuid || list.id,
         title: list.title,
@@ -83,7 +54,7 @@ export async function GET(request: NextRequest) {
         owner: list.owner,
         isShared: list.isShared ?? false,
         items: list.items.map((item, index) =>
-          transformItem(item, index, list.type),
+          toApiItem(item, index, isKanbanType(list.type)),
         ),
         createdAt: list.createdAt,
         updatedAt: list.updatedAt,

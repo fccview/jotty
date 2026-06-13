@@ -6,8 +6,11 @@ import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { KanbanPriorityLevel } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
+
+const ALLOWED_PRIORITIES = Object.values(KanbanPriorityLevel) as string[];
 
 export async function PATCH(
   request: NextRequest,
@@ -17,11 +20,28 @@ export async function PATCH(
   return withApiAuth(request, async (user) => {
     try {
       const body = await request.json();
-      const { text, description } = body;
+      const {
+        text,
+        description,
+        priority,
+        score,
+        startDate,
+        targetDate,
+        estimatedTime,
+      } = body;
 
-      if (!text && description === undefined) {
+      const hasField =
+        text !== undefined ||
+        description !== undefined ||
+        priority !== undefined ||
+        score !== undefined ||
+        startDate !== undefined ||
+        targetDate !== undefined ||
+        estimatedTime !== undefined;
+
+      if (!hasField) {
         return NextResponse.json(
-          { error: "Provide at least 'text' or 'description' to update" },
+          { error: "Provide at least one field to update" },
           { status: 400 },
         );
       }
@@ -44,6 +64,63 @@ export async function PATCH(
         );
       }
 
+      if (
+        priority !== undefined &&
+        priority !== null &&
+        !ALLOWED_PRIORITIES.includes(priority)
+      ) {
+        return NextResponse.json(
+          {
+            error: `'priority' must be one of: ${ALLOWED_PRIORITIES.join(", ")}`,
+          },
+          { status: 400 },
+        );
+      }
+
+      if (
+        score !== undefined &&
+        score !== null &&
+        (typeof score !== "number" || Number.isNaN(score))
+      ) {
+        return NextResponse.json(
+          { error: "'score' must be a number" },
+          { status: 400 },
+        );
+      }
+
+      if (
+        startDate !== undefined &&
+        startDate !== null &&
+        typeof startDate !== "string"
+      ) {
+        return NextResponse.json(
+          { error: "'startDate' must be a string" },
+          { status: 400 },
+        );
+      }
+
+      if (
+        targetDate !== undefined &&
+        targetDate !== null &&
+        typeof targetDate !== "string"
+      ) {
+        return NextResponse.json(
+          { error: "'targetDate' must be a string" },
+          { status: 400 },
+        );
+      }
+
+      if (
+        estimatedTime !== undefined &&
+        estimatedTime !== null &&
+        (typeof estimatedTime !== "number" || Number.isNaN(estimatedTime))
+      ) {
+        return NextResponse.json(
+          { error: "'estimatedTime' must be a number" },
+          { status: 400 },
+        );
+      }
+
       const list = await getListById(params.listId, user.username);
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
@@ -53,7 +130,10 @@ export async function PATCH(
 
       for (const idx of indexPath) {
         if (isNaN(idx) || idx < 0) {
-          return NextResponse.json({ error: "Invalid item index" }, { status: 400 });
+          return NextResponse.json(
+            { error: "Invalid item index" },
+            { status: 400 },
+          );
         }
       }
 
@@ -62,7 +142,10 @@ export async function PATCH(
 
       for (const idx of indexPath) {
         if (idx >= currentItems.length) {
-          return NextResponse.json({ error: "Item index out of range" }, { status: 400 });
+          return NextResponse.json(
+            { error: "Item index out of range" },
+            { status: 400 },
+          );
         }
         item = currentItems[idx];
         currentItems = item.children || [];
@@ -77,7 +160,20 @@ export async function PATCH(
       formData.append("itemId", item.id);
       formData.append("category", list.category || "Uncategorized");
       if (text) formData.append("text", text);
-      if (description !== undefined) formData.append("description", description ?? "");
+      if (description !== undefined)
+        formData.append("description", description ?? "");
+      if (priority !== undefined) formData.append("priority", priority ?? "");
+      if (score !== undefined)
+        formData.append("score", score === null ? "" : String(score));
+      if (startDate !== undefined)
+        formData.append("startDate", startDate ?? "");
+      if (targetDate !== undefined)
+        formData.append("targetDate", targetDate ?? "");
+      if (estimatedTime !== undefined)
+        formData.append(
+          "estimatedTime",
+          estimatedTime === null ? "" : String(estimatedTime),
+        );
 
       const result = await updateItem(list, formData, user.username, true);
 
@@ -91,7 +187,10 @@ export async function PATCH(
       return NextResponse.json({ success: true });
     } catch (error) {
       console.error("API Error:", error);
-      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
     }
   });
 }

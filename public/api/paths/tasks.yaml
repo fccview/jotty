@@ -541,6 +541,40 @@
         description: Task or item not found
 
 /tasks/{taskId}/items/{itemIndex}:
+  get:
+    summary: Get Task Item
+    description: Retrieves a single item from a task checklist, including nested children and Kanban item fields.
+    tags:
+      - Tasks
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the task
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index path of the item to fetch (e.g., "0", "0.1", "2.0.1")
+    responses:
+      '200':
+        description: Item details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                item:
+                  $ref: '#/components/schemas/ChecklistItem'
+      '400':
+        description: Invalid item index or not a task checklist
+      '404':
+        description: Task or item not found
+
   delete:
     summary: Delete Task Item
     description: Deletes an item from a task checklist

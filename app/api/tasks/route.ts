@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { getUserChecklists, createList } from "@/app/_server/actions/checklist";
-import { isKanbanType, TaskStatus } from "@/app/_types/enums";
+import { isKanbanType } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";
+import { toApiItem } from "@/app/_utils/api-item";
 
 export const dynamic = "force-dynamic";
 
@@ -47,25 +48,6 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      const transformItem = (item: any, index: number): any => {
-        const baseItem: any = {
-          id: item.id,
-          index,
-          text: item.text,
-          status: item.status || TaskStatus.TODO,
-          completed: item.completed,
-        };
-
-        if (item.children && item.children.length > 0) {
-          baseItem.children = item.children.map(
-            (child: any, childIndex: number) =>
-              transformItem(child, childIndex),
-          );
-        }
-
-        return baseItem;
-      };
-
       const tasks = userTasks.map((list) => ({
         id: list.uuid || list.id,
         title: list.title,
@@ -75,7 +57,7 @@ export async function GET(request: NextRequest) {
           { id: "in_progress", name: "In Progress", order: 1 },
           { id: "completed", name: "Completed", order: 2 },
         ],
-        items: list.items.map((item, index) => transformItem(item, index)),
+        items: list.items.map((item, index) => toApiItem(item, index, true)),
         createdAt: list.createdAt,
         updatedAt: list.updatedAt,
       }));
