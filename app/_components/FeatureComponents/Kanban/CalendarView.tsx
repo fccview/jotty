@@ -1,5 +1,6 @@
 "use client";
 
+import { KeyboardEvent } from "react";
 import { Checklist, Item } from "@/app/_types";
 import { useCalendarView } from "@/app/_hooks/kanban/useCalendarView";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -154,18 +155,24 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
                     return (
                     <div
                       key={`${segment.event.id}-${segment.colStart}-${segment.lane}`}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={segment.event.title}
-                      onClick={() => _openItem(segment.event.itemId)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          _openItem(segment.event.itemId);
-                        }
-                      }}
+                      {...(onItemClick
+                        ? {
+                            role: "button" as const,
+                            tabIndex: 0,
+                            "aria-label": segment.event.title,
+                            onClick: () => _openItem(segment.event.itemId),
+                            onKeyDown: (e: KeyboardEvent) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                _openItem(segment.event.itemId);
+                              }
+                            },
+                          }
+                        : {})}
                       className={cn(
-                        "pointer-events-auto h-4 text-[10px] font-medium leading-4 px-1.5 truncate cursor-pointer hover:brightness-95 dark:hover:brightness-110 transition-[filter,opacity]",
+                        "pointer-events-auto h-4 text-[10px] font-medium leading-4 px-1.5 truncate transition-[filter,opacity]",
+                        onItemClick &&
+                          "cursor-pointer hover:brightness-95 dark:hover:brightness-110",
                         !barStyle.backgroundColor && "bg-muted/80 text-muted-foreground",
                         segment.continuesPrev ? "rounded-l-none ml-0" : "rounded-l-jotty ml-0.5",
                         segment.continuesNext ? "rounded-r-none mr-0" : "rounded-r-jotty mr-0.5",

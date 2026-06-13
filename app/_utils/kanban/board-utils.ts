@@ -10,14 +10,20 @@ const _renumber = (items: Item[]): Item[] =>
     children: item.children ? _renumber(item.children) : item.children,
   }));
 
+const _firstStatusId = (statuses: KanbanStatus[] | undefined): string => {
+  const statusList = statuses || DEFAULT_KANBAN_STATUSES;
+  return (
+    [...statusList].sort((a, b) => a.order - b.order)[0]?.id || TaskStatus.TODO
+  );
+};
+
 export const getColumnItems = (
   items: Item[],
   statusId: string,
   statuses: KanbanStatus[] | undefined,
 ): Item[] => {
   const statusList = statuses || DEFAULT_KANBAN_STATUSES;
-  const firstStatus =
-    [...statusList].sort((a, b) => a.order - b.order)[0]?.id || TaskStatus.TODO;
+  const firstStatus = _firstStatusId(statuses);
   const validIds = statusList.map((s) => s.id);
 
   return items.filter((item) => {

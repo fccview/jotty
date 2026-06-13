@@ -177,27 +177,30 @@ export const DndProvider = ({
       const session = sessionRef.current;
       if (!session) return;
 
-      if (session.dragging) {
-        const { activeId, sourceListId, sourceIndex, targetListId, targetIndex } =
-          useDragStore.getState();
-        const moved =
-          targetListId !== null &&
-          targetIndex !== null &&
-          !(targetListId === sourceListId && targetIndex === sourceIndex);
+      try {
+        if (session.dragging) {
+          const { activeId, sourceListId, sourceIndex, targetListId, targetIndex } =
+            useDragStore.getState();
+          const moved =
+            targetListId !== null &&
+            targetIndex !== null &&
+            !(targetListId === sourceListId && targetIndex === sourceIndex);
 
-        if (!cancelled && moved && activeId && sourceListId) {
-          callbacksRef.current.onDrop({
-            itemId: activeId,
-            sourceListId,
-            sourceIndex,
-            targetListId,
-            targetIndex,
-          });
-        } else {
-          callbacksRef.current.onDragCancel?.(session.itemId);
+          if (!cancelled && moved && activeId && sourceListId) {
+            callbacksRef.current.onDrop({
+              itemId: activeId,
+              sourceListId,
+              sourceIndex,
+              targetListId,
+              targetIndex,
+            });
+          } else {
+            callbacksRef.current.onDragCancel?.(session.itemId);
+          }
         }
+      } finally {
+        _teardown();
       }
-      _teardown();
     },
     [_teardown],
   );

@@ -34,10 +34,10 @@ export const useKanbanBoard = ({
   const pendingRef = useRef<Checklist | null>(null);
 
   useEffect(() => {
-    if (
-      checklist.id !== localChecklist.id ||
-      checklist.updatedAt !== localChecklist.updatedAt
-    ) {
+    const isDifferentList = checklist.id !== localChecklist.id;
+    const isNewer = checklist.updatedAt > localChecklist.updatedAt;
+
+    if (isDifferentList || isNewer) {
       if (dragPhase !== DragPhase.IDLE) {
         pendingRef.current = checklist;
         return;

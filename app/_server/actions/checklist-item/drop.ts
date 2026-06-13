@@ -20,13 +20,24 @@ export const dropItem = async (
     const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
     const targetStatus = formData.get("targetStatus") as string;
-    const targetIndex = Number(formData.get("targetIndex"));
+    const targetIndexRaw = formData.get("targetIndex");
 
-    if (!uuid || !itemId || !targetStatus || Number.isNaN(targetIndex)) {
+    if (
+      !uuid ||
+      !itemId ||
+      !targetStatus ||
+      targetIndexRaw === null ||
+      targetIndexRaw === ""
+    ) {
       return {
         success: false,
         error: "uuid, itemId, targetStatus and targetIndex are required",
       };
+    }
+
+    const targetIndex = Number(targetIndexRaw);
+    if (Number.isNaN(targetIndex)) {
+      return { success: false, error: "targetIndex must be a number" };
     }
 
     const username = await getUsername();

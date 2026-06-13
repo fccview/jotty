@@ -55,6 +55,15 @@ export const updateItemStatus = async (
         if (!Array.isArray(parsed)) {
           throw new Error("timeEntries must be an array");
         }
+        const allObjects = parsed.every(
+          (entry) =>
+            entry !== null &&
+            typeof entry === "object" &&
+            !Array.isArray(entry)
+        );
+        if (!allObjects) {
+          throw new Error("timeEntries must contain objects");
+        }
         parsedTimeEntries = parsed;
       } catch (e) {
         console.error("Failed to parse timeEntries:", e);
