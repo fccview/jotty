@@ -571,6 +571,14 @@
     "autoComplete": "Conclusão automática"
   },
   "kanban": {
+    "status": "Estado",
+    "changeStatus": "Alterar estado",
+    "archiveAllItemsInColumn": "Arquivar todos os itens em {column}",
+    "archiveAllConfirmTitle": "Arquivar todos os itens?",
+    "archiveAllConfirmMessage": "Arquivar todos os {count} itens em {column}? Pode restaurá-los a partir do arquivo.",
+    "archiveAllSuccess": "{count} itens arquivados",
+    "archiveAllFailed": "Não foi possível arquivar todos os itens",
+    "archiveAllPartial": "{archived} de {total} itens arquivados. Não foi possível arquivar alguns itens.",
     "moveFailed": "Não foi possível mover o cartão",
     "priority": "Prioridade",
     "score": "Pontuação",
@@ -732,6 +740,11 @@
     "uuid": "UUID"
   },
   "settings": {
+    "hideMobileStatusDropdownLabel": "Menu de estado móvel nos cartões",
+    "showMobileStatusDropdown": "Mostrar menu móvel",
+    "hideMobileStatusDropdown": "Ocultar menu móvel",
+    "selectMobileStatusDropdown": "Selecionar comportamento do menu de estado móvel",
+    "hideMobileStatusDropdownDescription": "Controla o menu de estado sempre visível nos cartões Kanban em dispositivos móveis. A definição da etiqueta de estado é separada.",
     "title": "Definições",
     "general": "Geral",
     "saveGeneral": "Guardar geral",
