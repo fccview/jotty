@@ -159,7 +159,7 @@ export async function PATCH(
       formData.append("listId", list.id);
       formData.append("itemId", item.id);
       formData.append("category", list.category || "Uncategorized");
-      if (text) formData.append("text", text);
+      if (text !== undefined && text !== null) formData.append("text", text);
       if (description !== undefined)
         formData.append("description", description ?? "");
       if (priority !== undefined) formData.append("priority", priority ?? "");

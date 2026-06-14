@@ -393,7 +393,7 @@ Items can contain a `children` array with nested sub-items:
       "index": 0,
       "text": "Parent Task",
       "completed": false,
-      "status": "todo",
+      "status": "in_progress",
       "description": "Implementation notes",
       "priority": "high",
       "score": 5,
@@ -406,7 +406,7 @@ Items can contain a `children` array with nested sub-items:
       "lastModifiedAt": "2026-06-02T10:30:00.000Z",
       "history": [
         {
-          "status": "todo",
+          "status": "in_progress",
           "timestamp": "2026-06-01T09:00:00.000Z",
           "user": "alice"
         }
