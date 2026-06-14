@@ -9,6 +9,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Orbit01Icon } from "hugeicons-react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
+import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 
 export default function LoginForm({
   ssoEnabled,
@@ -17,14 +18,17 @@ export default function LoginForm({
   ssoEnabled: boolean;
   showRegisterLink?: boolean;
 }) {
-  const t = useTranslations('auth');
+  const t = useTranslations("auth");
   const searchParams = useSearchParams();
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
-  const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(null);
+  const [attemptsRemaining, setAttemptsRemaining] = useState<number | null>(
+    null,
+  );
   const [lockedUntil, setLockedUntil] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
+  const [rememberMe, setRememberMe] = useState(true);
   const { isDemoMode, appVersion, isRwMarkable } = useAppMode();
 
   useEffect(() => {
@@ -87,7 +91,7 @@ export default function LoginForm({
           throw error;
         }
       }
-      setError(t('errorOccurred'));
+      setError(t("errorOccurred"));
       setIsLoading(false);
     }
   }
@@ -96,7 +100,7 @@ export default function LoginForm({
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t('welcomeBack')}
+          {t("welcomeBack")}
         </h1>
       </div>
 
@@ -112,10 +116,10 @@ export default function LoginForm({
           >
             {isSsoLoading ? (
               <>
-                <Logo className="h-4 w-4 mr-2 animate-pulse" /> {t('signingIn')}
+                <Logo className="h-4 w-4 mr-2 animate-pulse" /> {t("signingIn")}
               </>
             ) : (
-              t('signInWithSSO')
+              t("signInWithSSO")
             )}
           </Button>
           <div className="relative !mt-8">
@@ -123,9 +127,7 @@ export default function LoginForm({
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-sm lg:text-xs text-muted-foreground">
-              <span className="bg-background px-2">
-                {t('orContinueWith')}
-              </span>
+              <span className="bg-background px-2">{t("orContinueWith")}</span>
             </div>
           </div>
         </div>
@@ -133,8 +135,8 @@ export default function LoginForm({
 
       {isDemoMode && (
         <div className="bg-muted p-3 rounded-jotty">
-          <strong>{t('usernameLabel')}: </strong>demo <br />
-          <strong>{t('passwordLabel')}: </strong>demodemo
+          <strong>{t("usernameLabel")}: </strong>demo <br />
+          <strong>{t("passwordLabel")}: </strong>demodemo
         </div>
       )}
 
@@ -148,29 +150,32 @@ export default function LoginForm({
         {countdown > 0 && (
           <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
             <span className="text-md lg:text-sm text-warning">
-              {t('accountLocked', { seconds: countdown })}
+              {t("accountLocked", { seconds: countdown })}
             </span>
           </div>
         )}
 
-        {!countdown && attemptsRemaining !== null && attemptsRemaining > 0 && attemptsRemaining < 4 && (
-          <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
-            <span className="text-md lg:text-sm text-warning">
-              {t('attemptsRemaining', { count: attemptsRemaining })}
-            </span>
-          </div>
-        )}
+        {!countdown &&
+          attemptsRemaining !== null &&
+          attemptsRemaining > 0 &&
+          attemptsRemaining < 4 && (
+            <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
+              <span className="text-md lg:text-sm text-warning">
+                {t("attemptsRemaining", { count: attemptsRemaining })}
+              </span>
+            </div>
+          )}
 
         <div className="space-y-2">
           <Input
             id="username"
-            label={t('usernameLabel')}
+            label={t("usernameLabel")}
             name="username"
             type="text"
             required
             disabled={isLoading || isSsoLoading || countdown > 0}
             className="mt-1"
-            placeholder={t('enterUsername')}
+            placeholder={t("enterUsername")}
             defaultValue=""
             autoComplete="username"
           />
@@ -179,16 +184,33 @@ export default function LoginForm({
         <div className="space-y-2">
           <Input
             id="password"
-            label={t('passwordLabel')}
+            label={t("passwordLabel")}
             name="password"
             type="password"
             required
             disabled={isLoading || isSsoLoading || countdown > 0}
             className="mt-1"
-            placeholder={t('enterPassword')}
+            placeholder={t("enterPassword")}
             autoComplete="current-password"
             defaultValue=""
           />
+        </div>
+
+        <div className="flex items-center justify-end gap-2">
+          <Toggle
+            id="rememberMe"
+            size="sm"
+            checked={rememberMe}
+            onCheckedChange={setRememberMe}
+            disabled={isLoading || isSsoLoading || countdown > 0}
+          />
+          <input type="hidden" name="rememberMe" value={String(rememberMe)} />
+          <span
+            onClick={() => setRememberMe(!rememberMe)}
+            className="text-sm lg:text-xs text-muted-foreground cursor-pointer select-none"
+          >
+            {t("rememberMe")}
+          </span>
         </div>
 
         <Button
@@ -198,25 +220,38 @@ export default function LoginForm({
         >
           {isLoading ? (
             <>
-              <Logo className="h-4 w-4 bg-background mr-2 animate-pulse" pathClassName="fill-primary" /> {t('signingIn')}
+              <Logo
+                className="h-4 w-4 bg-background mr-2 animate-pulse"
+                pathClassName="fill-primary"
+              />{" "}
+              {t("signingIn")}
             </>
           ) : (
-            t('signInButton')
+            t("signInButton")
           )}
         </Button>
       </form>
 
       {showRegisterLink && (
         <div className="text-center">
-          <a href="/auth/setup" className="text-sm lg:text-xs text-muted-foreground hover:text-foreground underline">
-            {t('createAccount')}
+          <a
+            href="/auth/setup"
+            className="text-sm lg:text-xs text-muted-foreground hover:text-foreground underline"
+          >
+            {t("createAccount")}
           </a>
         </div>
       )}
 
       {appVersion && (
         <div className="text-center text-sm lg:text-xs text-muted-foreground">
-          <a target="_blank" href={`https://github.com/fccview/jotty/releases/tag/${appVersion}`}>{t('version', { version: appVersion })}</a>
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href={`https://github.com/fccview/jotty/releases/tag/${appVersion}`}
+          >
+            {t("version", { version: appVersion })}
+          </a>
         </div>
       )}
     </div>

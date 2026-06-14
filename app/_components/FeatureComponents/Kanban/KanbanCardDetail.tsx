@@ -22,6 +22,7 @@ import { useTranslations } from "next-intl";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
+import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 
 interface KanbanCardDetailProps {
   checklist: Checklist;
@@ -78,6 +79,9 @@ export const KanbanCardDetail = ({
   const t = useTranslations();
   const { permissions } = usePermissions();
   const { formatDateTimeString } = usePreferredDateTime();
+  const statuses = checklist.statuses || DEFAULT_KANBAN_STATUSES;
+  const defaultStatusId =
+    [...statuses].sort((a, b) => a.order - b.order)[0]?.id || "";
 
   const [showHistory, setShowHistory] = useState(false);
   const [item, setItem] = useState(initialItem);
@@ -87,7 +91,9 @@ export const KanbanCardDetail = ({
   const [scoreInput, setScoreInput] = useState(initialItem.score?.toString() || "");
   const [reminderInput, setReminderInput] = useState(initialItem.reminder?.datetime || "");
   const [targetDateInput, setTargetDateInput] = useState(initialItem.targetDate || "");
+  const [startDateInput, setStartDateInput] = useState(initialItem.startDate || "");
   const [priorityInput, setPriorityInput] = useState<KanbanPriority>(initialItem.priority || KanbanPriorityLevel.NONE);
+  const [statusInput, setStatusInput] = useState(initialItem.status || defaultStatusId);
   const [assigneeInput, setAssigneeInput] = useState(initialItem.assignee || "");
   const [estimatedTimeInput, setEstimatedTimeInput] = useState(initialItem.estimatedTime?.toString() || "");
   const [availableUsers, setAvailableUsers] = useState<{ username: string; avatarUrl?: string }[]>([]);
@@ -100,10 +106,12 @@ export const KanbanCardDetail = ({
     setScoreInput(initialItem.score?.toString() || "");
     setReminderInput(initialItem.reminder?.datetime || "");
     setTargetDateInput(initialItem.targetDate || "");
+    setStartDateInput(initialItem.startDate || "");
     setPriorityInput(initialItem.priority || KanbanPriorityLevel.NONE);
+    setStatusInput(initialItem.status || defaultStatusId);
     setAssigneeInput(initialItem.assignee || "");
     setEstimatedTimeInput(initialItem.estimatedTime?.toString() || "");
-  }, [initialItem]);
+  }, [initialItem, defaultStatusId]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -299,6 +307,24 @@ export const KanbanCardDetail = ({
     await _saveField({ priority });
   };
 
+  const handleStatusChange = async (status: string) => {
+    setStatusInput(status);
+    const formData = new FormData();
+    formData.append("listId", checklistId);
+    formData.append("itemId", item.id);
+    formData.append("status", status);
+    formData.append("category", category);
+    const result = await updateItemStatus(formData);
+    if (result.success && result.data) {
+      onUpdate(result.data);
+      const updatedItem = _findItemInChecklist(result.data, item.id);
+      if (updatedItem) {
+        setItem(updatedItem);
+        setStatusInput(updatedItem.status || status);
+      }
+    }
+  };
+
   const handleScoreSave = async () => {
     const score = parseInt(scoreInput);
     if (isNaN(score)) return;
@@ -311,9 +337,40 @@ export const KanbanCardDetail = ({
     });
   };
 
+  const _dateKey = (value: string): string =>
+    value.includes("T") ? _toLocalDateValue(value) : value;
+
+  const _dateToIso = (value: string): string =>
+    value
+      ? new Date(value.includes("T") ? value : `${value}T00:00:00`).toISOString()
+      : "";
+
+  const handleStartDateChange = async (value: string) => {
+    const iso = _dateToIso(value);
+    setStartDateInput(iso);
+    const targetKey = _dateKey(targetDateInput);
+    if (value && targetKey && value > targetKey) {
+      setTargetDateInput(iso);
+      await _saveField({ startDate: iso, targetDate: iso });
+      return;
+    }
+    await _saveField({ startDate: iso });
+  };
+
   const handleTargetDateChange = async (value: string) => {
-    setTargetDateInput(value);
-    await _saveField({ targetDate: value ? new Date(value).toISOString() : "" });
+    const iso = _dateToIso(value);
+    setTargetDateInput(iso);
+    if (!value) {
+      await _saveField({ targetDate: "" });
+      return;
+    }
+    const startKey = _dateKey(startDateInput);
+    if (startKey && startKey > value) {
+      setStartDateInput(iso);
+      await _saveField({ targetDate: iso, startDate: iso });
+      return;
+    }
+    await _saveField({ targetDate: iso });
   };
 
   const handleEstimatedTimeSave = async () => {
@@ -327,10 +384,13 @@ export const KanbanCardDetail = ({
       isOpen={isOpen}
       onClose={onClose}
       title={item.text || t("checklists.untitledTask")}
-      className="[&_.jotty-modal-header]:shrink-0 lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)] !flex !flex-col overflow-y-auto overscroll-contain lg:overflow-hidden"
+      size="fullscreen"
+      allowEnlarge
+      defaultEnlarged
+      className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
     >
-      <div className="flex flex-col lg:flex-row gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
-        <div className="min-w-0 space-y-4 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+      <div className="kanban-card-detail-body flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:overflow-hidden">
+        <div className="min-w-0 space-y-4 p-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           {isEditing ? (
             <div className="space-y-4">
               <div>
@@ -436,14 +496,17 @@ export const KanbanCardDetail = ({
           )}
         </div>
 
-        <div className="lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6 lg:min-h-0 lg:overflow-y-auto">
+        <div className="overflow-y-auto p-4 lg:min-h-0 lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6">
           <KanbanCardDetailProperties
             item={item}
+            statuses={statuses}
+            statusInput={statusInput}
             priorityInput={priorityInput}
             scoreInput={scoreInput}
             assigneeInput={assigneeInput}
             reminderInput={reminderInput}
             targetDateInput={targetDateInput}
+            startDateInput={startDateInput}
             estimatedTimeInput={estimatedTimeInput}
             availableUsers={availableUsers}
             canEdit={!!permissions?.canEdit}
@@ -477,9 +540,11 @@ export const KanbanCardDetail = ({
             }}
             onReminderSave={handleReminderSave}
             onTargetDateChange={handleTargetDateChange}
+            onStartDateChange={handleStartDateChange}
             onEstimatedTimeChange={setEstimatedTimeInput}
             onEstimatedTimeSave={handleEstimatedTimeSave}
             formatDateTimeString={formatDateTimeString}
+            onStatusChange={handleStatusChange}
           />
         </div>
       </div>

@@ -1,20 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
-import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  KeyboardSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  pointerWithin,
-  closestCorners,
-  CollisionDetection,
-  rectIntersection,
-} from "@dnd-kit/core";
-import { Checklist, KanbanStatus } from "@/app/_types";
+import { useState, useMemo, useCallback } from "react";
+import { DndProvider } from "@/app/_hooks/dnd";
+import { Checklist, Item, KanbanStatus } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanCard } from "./KanbanCard";
 import { ChecklistHeading } from "../Checklists/Parts/Common/ChecklistHeading";
@@ -22,6 +10,7 @@ import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPa
 import { StatusManager } from "./StatusManager";
 import { ArchivedItems } from "./ArchivedItems";
 import { useKanbanBoard } from "@/app/_hooks/kanban/useKanban";
+import { useKanbanDnd } from "@/app/_hooks/kanban/useKanbanDnd";
 import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { ReferencedBySection } from "../Notes/Parts/ReferencedBySection";
 import { getReferences } from "@/app/_utils/indexes-utils";
@@ -39,24 +28,37 @@ import { CalendarView } from "./CalendarView";
 import { KanbanCardDetail } from "./KanbanCardDetail";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { updateChecklistStatuses } from "@/app/_server/actions/checklist";
-import { unarchiveItem } from "@/app/_server/actions/checklist-item";
+import { archiveItem, unarchiveItem } from "@/app/_server/actions/checklist-item";
 import { useTranslations } from "next-intl";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 interface KanbanBoardProps {
   checklist: Checklist;
   onUpdate: (updatedChecklist: Checklist) => void;
 }
 
+const _findItemById = (items: Item[], itemId: string): Item | null => {
+  for (const item of items) {
+    if (item.id === itemId) return item;
+    if (item.children) {
+      const found = _findItemById(item.children, itemId);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const t = useTranslations();
-  const [isClient, setIsClient] = useState(false);
+  const { showToast } = useToast();
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showArchivedModal, setShowArchivedModal] = useState(false);
   const [viewMode, setViewMode] = useState<"board" | "calendar">("board");
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
   const [assigneeFilter, setAssigneeFilter] = useState("");
+  const [detailItemId, setDetailItemId] = useState<string | null>(null);
   const [calendarSelectedItem, setCalendarSelectedItem] = useState<
     import("@/app/_types").Item | null
   >(null);
@@ -74,6 +76,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const { permissions } = usePermissions();
   const {
     localChecklist,
+    setLocalChecklist,
     isLoading,
     showBulkPasteModal,
     setShowBulkPasteModal,
@@ -81,13 +84,9 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     refreshChecklist,
     handleItemUpdate,
     getItemsByStatus,
-    handleDragStart,
-    handleDragOver,
-    handleDragEnd,
     handleAddItem,
     handleBulkPaste,
     handleItemStatusUpdate,
-    activeItem,
   } = useKanbanBoard({ checklist, onUpdate });
 
   const statuses = useMemo(() => {
@@ -134,6 +133,10 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   );
 
   const archivedItems = localChecklist.items.filter((item) => item.isArchived);
+  const detailItem = useMemo(
+    () => (detailItemId ? _findItemById(localChecklist.items, detailItemId) : null),
+    [detailItemId, localChecklist.items],
+  );
 
   const handleUnarchive = async (itemId: string) => {
     const formData = new FormData();
@@ -147,6 +150,62 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       await refreshChecklist();
     }
   };
+
+  const handleArchiveAll = useCallback(
+    async (items: Item[]) => {
+      let archivedCount = 0;
+      let latestChecklist: Checklist | null = null;
+
+      for (const item of items) {
+        const formData = new FormData();
+        formData.append("listId", localChecklist.id);
+        formData.append("itemId", item.id);
+        formData.append("category", localChecklist.category || "Uncategorized");
+
+        const result = await archiveItem(formData);
+        if (!result.success || !result.data) {
+          if (latestChecklist) {
+            onUpdate(latestChecklist);
+          }
+
+          await refreshChecklist();
+          showToast({
+            type: "error",
+            title: t("common.error"),
+            message:
+              archivedCount > 0
+                ? t("kanban.archiveAllPartial", {
+                  archived: archivedCount,
+                  total: items.length,
+                })
+                : t("kanban.archiveAllFailed"),
+          });
+          return;
+        }
+
+        archivedCount++;
+        latestChecklist = result.data;
+      }
+
+      if (latestChecklist) {
+        onUpdate(latestChecklist);
+        await refreshChecklist();
+        showToast({
+          type: "success",
+          title: t("common.success"),
+          message: t("kanban.archiveAllSuccess", { count: items.length }),
+        });
+      }
+    },
+    [
+      localChecklist.id,
+      localChecklist.category,
+      onUpdate,
+      refreshChecklist,
+      showToast,
+      t,
+    ],
+  );
 
   const handleToggleItem = useCallback(
     async (itemId: string, completed: boolean) => {
@@ -175,6 +234,19 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     [searchQuery, priorityFilter, assigneeFilter, _hasFilters],
   );
 
+  const visibleFor = useCallback(
+    (status: string) => _filterItems(getItemsByStatus(status)),
+    [_filterItems, getItemsByStatus],
+  );
+
+  const { handleDrop } = useKanbanDnd({
+    checklist: localChecklist,
+    setChecklist: setLocalChecklist,
+    onUpdate,
+    visibleFor,
+    fallbackMove: handleItemStatusUpdate,
+  });
+
   const _uniqueAssignees = useMemo(() => {
     const assignees = new Set<string>();
     localChecklist.items.forEach((item) => {
@@ -189,18 +261,19 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
         className={
           columns.length <= 6
             ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
-            : "h-full min-w-0 flex gap-4 p-2 sm:p-4"
+            : "min-h-0 min-w-0 flex gap-4 p-2 sm:p-4"
         }
         style={
           columns.length <= 6
             ? ({
-                "--kanban-col-count": columns.length,
-              } as React.CSSProperties)
+              "--kanban-col-count": columns.length,
+            } as React.CSSProperties)
             : undefined
         }
       >
         {columns.map((column) => {
-          const items = _filterItems(getItemsByStatus(column.status));
+          const columnItems = getItemsByStatus(column.status);
+          const items = _filterItems(columnItems);
           return (
             <div
               key={column.id}
@@ -216,10 +289,17 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 checklistId={localChecklist.id}
                 category={localChecklist.category || "Uncategorized"}
                 onUpdate={handleItemUpdate}
+                onOpenDetail={(item) => setDetailItemId(item.id)}
                 isShared={isShared}
                 statusColor={statuses.find((s) => s.id === column.id)?.color}
                 statuses={statuses}
                 onAddItem={permissions?.canEdit ? (text) => handleAddItem(text, undefined, column.status) : undefined}
+                archivableCount={columnItems.length}
+                onArchiveAll={
+                  permissions?.canEdit
+                    ? () => handleArchiveAll(columnItems)
+                    : undefined
+                }
               />
             </div>
           );
@@ -234,35 +314,10 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       handleItemUpdate,
       isShared,
       statuses,
+      handleArchiveAll,
+      permissions?.canEdit,
     ],
   );
-
-  const _collisionDetection: CollisionDetection = useCallback((args) => {
-    const pointerCollisions = pointerWithin(args);
-    if (pointerCollisions.length > 0) return pointerCollisions;
-    return closestCorners(args);
-  }, []);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-        delay: 30,
-        tolerance: 5,
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 250,
-        tolerance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor),
-  );
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const referencingItems = useMemo(() => {
     return getReferences(
@@ -396,33 +451,29 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
               onItemClick={(item) => setCalendarSelectedItem(item)}
             />
           </div>
-        ) : isClient ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={_collisionDetection}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
-            {_renderColumns()}
-
-            <DragOverlay>
-              {activeItem ? (
+        ) : (
+          <DndProvider
+            onDrop={handleDrop}
+            renderGhost={(itemId) => {
+              const ghostItem = _findItemById(localChecklist.items, itemId);
+              if (!ghostItem) return null;
+              return (
                 <KanbanCard
                   checklist={localChecklist}
-                  item={activeItem}
+                  item={ghostItem}
                   isDragging
                   checklistId={localChecklist.id}
                   category={localChecklist.category || "Uncategorized"}
-                  onUpdate={refreshChecklist}
+                  onUpdate={() => { }}
+                  onOpenDetail={() => { }}
                   isShared={isShared}
                   statuses={statuses}
                 />
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        ) : (
-          _renderColumns()
+              );
+            }}
+          >
+            {_renderColumns()}
+          </DndProvider>
         )}
 
         <div className="px-4 pt-4 pb-[100px] lg:pb-4">
@@ -439,6 +490,18 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           item={calendarSelectedItem}
           isOpen={!!calendarSelectedItem}
           onClose={() => setCalendarSelectedItem(null)}
+          onUpdate={handleItemUpdate}
+          checklistId={localChecklist.id}
+          category={localChecklist.category || "Uncategorized"}
+        />
+      )}
+
+      {detailItem && (
+        <KanbanCardDetail
+          checklist={localChecklist}
+          item={detailItem}
+          isOpen={!!detailItem}
+          onClose={() => setDetailItemId(null)}
           onUpdate={handleItemUpdate}
           checklistId={localChecklist.id}
           category={localChecklist.category || "Uncategorized"}

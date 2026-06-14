@@ -3,49 +3,83 @@ import { Item, KanbanStatus } from "@/app/_types";
 export interface CalendarEvent {
   id: string;
   title: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   status?: string;
   priority?: string;
   completed: boolean;
   itemId: string;
 }
 
+export interface WeekBarSegment {
+  event: CalendarEvent;
+  colStart: number;
+  colSpan: number;
+  lane: number;
+  continuesPrev: boolean;
+  continuesNext: boolean;
+}
+
+export const toDateKey = (dateStr: string): string => dateStr.split("T")[0];
+
+export const toLocalDateKey = (date: Date): string => {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
 export const parseItemsForCalendar = (items: Item[]): CalendarEvent[] =>
   items
     .filter((item) => item.targetDate && !item.isArchived)
-    .map((item) => ({
-      id: item.id,
-      title: item.text,
-      date: item.targetDate!,
-      status: item.status,
-      priority: item.priority,
-      completed: item.completed,
-      itemId: item.id,
-    }));
+    .map((item) => {
+      const endDate = toDateKey(item.targetDate!);
+      const startDate = item.startDate ? toDateKey(item.startDate) : endDate;
+      return {
+        id: item.id,
+        title: item.text,
+        startDate: startDate <= endDate ? startDate : endDate,
+        endDate: endDate >= startDate ? endDate : startDate,
+        status: item.status,
+        priority: item.priority,
+        completed: item.completed,
+        itemId: item.id,
+      };
+    });
 
 const _escapeICS = (text: string): string =>
   text.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
 
-const _formatICSDate = (dateStr: string): string => {
+const _formatICSDateTime = (dateStr: string): string => {
   const d = new Date(dateStr);
   return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+};
+
+const _addDays = (dateKey: string, days: number): string => {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const date = new Date(y, m - 1, d + days);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 };
 
 export const generateVEVENT = (item: Item, boardTitle: string): string => {
   if (!item.targetDate) return "";
 
-  const dtstart = _formatICSDate(item.targetDate);
-  const dtend = _formatICSDate(
-    new Date(new Date(item.targetDate).getTime() + 3600000).toISOString()
-  );
-  const now = _formatICSDate(new Date().toISOString());
+  const endDate = toDateKey(item.targetDate);
+  const startDate = item.startDate ? toDateKey(item.startDate) : endDate;
+  const rangeStart = startDate <= endDate ? startDate : endDate;
+  const rangeEnd = endDate >= startDate ? endDate : startDate;
+  const isMultiDay = rangeStart !== rangeEnd;
+  const now = _formatICSDateTime(new Date().toISOString());
 
   const lines = [
     "BEGIN:VEVENT",
     `UID:${item.id}@jotty`,
     `DTSTAMP:${now}`,
-    `DTSTART:${dtstart}`,
-    `DTEND:${dtend}`,
+    isMultiDay
+      ? `DTSTART;VALUE=DATE:${rangeStart.replace(/-/g, "")}`
+      : `DTSTART:${_formatICSDateTime(item.targetDate)}`,
+    isMultiDay
+      ? `DTEND;VALUE=DATE:${_addDays(rangeEnd, 1).replace(/-/g, "")}`
+      : `DTEND:${_formatICSDateTime(new Date(new Date(item.targetDate).getTime() + 3600000).toISOString())}`,
     `SUMMARY:${_escapeICS(item.text)}`,
     `DESCRIPTION:${_escapeICS(`Board: ${boardTitle}${item.description ? `\\n${item.description}` : ""}`)}`,
     item.status ? `STATUS:${item.completed ? "COMPLETED" : "NEEDS-ACTION"}` : "",
@@ -79,9 +113,17 @@ export const getItemsGroupedByDate = (items: Item[]): Record<string, Item[]> => 
   items
     .filter((item) => item.targetDate && !item.isArchived)
     .forEach((item) => {
-      const date = item.targetDate!.split("T")[0];
-      if (!grouped[date]) grouped[date] = [];
-      grouped[date].push(item);
+      const endDate = toDateKey(item.targetDate!);
+      const startDate = item.startDate ? toDateKey(item.startDate) : endDate;
+      const rangeStart = startDate <= endDate ? startDate : endDate;
+      const rangeEnd = endDate >= startDate ? endDate : startDate;
+      let cursor = rangeStart;
+
+      while (cursor <= rangeEnd) {
+        if (!grouped[cursor]) grouped[cursor] = [];
+        grouped[cursor].push(item);
+        cursor = _addDays(cursor, 1);
+      }
     });
 
   return grouped;
@@ -118,3 +160,65 @@ export const getCalendarGrid = (year: number, month: number): (Date | null)[][] 
 
   return grid;
 };
+
+export const getWeekBarSegments = (
+  week: (Date | null)[],
+  events: CalendarEvent[],
+): WeekBarSegment[] => {
+  const raw: Omit<WeekBarSegment, "lane">[] = [];
+
+  events.forEach((event) => {
+    let colStart = -1;
+    let colEnd = -1;
+
+    week.forEach((day, index) => {
+      if (!day) return;
+      const key = toLocalDateKey(day);
+      if (key >= event.startDate && key <= event.endDate) {
+        if (colStart === -1) colStart = index;
+        colEnd = index;
+      }
+    });
+
+    if (colStart === -1) return;
+
+    const startKey = toLocalDateKey(week[colStart]!);
+    const endKey = toLocalDateKey(week[colEnd]!);
+
+    raw.push({
+      event,
+      colStart,
+      colSpan: colEnd - colStart + 1,
+      continuesPrev: startKey > event.startDate,
+      continuesNext: endKey < event.endDate,
+    });
+  });
+
+  raw.sort((a, b) => a.colStart - b.colStart || b.colSpan - a.colSpan);
+
+  const lanes: { start: number; end: number }[][] = [];
+  const segments: WeekBarSegment[] = [];
+
+  raw.forEach((segment) => {
+    const segmentEnd = segment.colStart + segment.colSpan - 1;
+    let lane = 0;
+
+    while (true) {
+      if (!lanes[lane]) lanes[lane] = [];
+      const blocked = lanes[lane].some(
+        (occupied) => !(segmentEnd < occupied.start || segment.colStart > occupied.end),
+      );
+      if (!blocked) {
+        lanes[lane].push({ start: segment.colStart, end: segmentEnd });
+        segments.push({ ...segment, lane });
+        break;
+      }
+      lane += 1;
+    }
+  });
+
+  return segments;
+};
+
+export const getMaxBarLanes = (segments: WeekBarSegment[]): number =>
+  segments.reduce((max, segment) => Math.max(max, segment.lane + 1), 0);

@@ -1,13 +1,12 @@
 "use client";
 
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useDragItem } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { TaskStatus } from "@/app/_types/enums";
-import { KanbanCardDetail } from "./KanbanCardDetail";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
 import {
@@ -32,10 +31,13 @@ import { TimeEntriesModal } from "./TimeEntriesModal";
 interface KanbanCardProps {
   checklist: Checklist;
   item: Item;
+  index?: number;
+  listId?: string;
   isDragging?: boolean;
   checklistId: string;
   category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
+  onOpenDetail: (item: Item) => void;
   isShared: boolean;
   statuses: KanbanStatus[];
   statusColor?: string;
@@ -44,16 +46,19 @@ interface KanbanCardProps {
 const KanbanCardComponent = ({
   checklist,
   item,
+  index = 0,
+  listId,
   isDragging,
   checklistId,
   category,
   onUpdate,
+  onOpenDetail,
   isShared,
   statuses,
   statusColor,
 }: KanbanCardProps) => {
   const t = useTranslations();
-  const { usersPublicData } = useAppMode();
+  const { usersPublicData, user } = useAppMode();
   const { permissions } = usePermissions();
   const { formatDateString, formatDateTimeString, formatTimeString } =
     usePreferredDateTime();
@@ -70,8 +75,9 @@ const KanbanCardComponent = ({
     [usersPublicData],
   );
 
-  const [showDetailModal, setShowDetailModal] = useState(false);
   const [showTimeEntriesModal, setShowTimeEntriesModal] = useState(false);
+  const [showStatusSheet, setShowStatusSheet] = useState(false);
+  const hideMobileStatusDropdown = user?.hideMobileStatusDropdown === "enable";
 
   const kanbanItemHook = useKanbanItem({
     checklist,
@@ -81,28 +87,19 @@ const KanbanCardComponent = ({
     onUpdate,
   });
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging: isSortableDragging,
-  } = useSortable({
+  const { setNodeRef, handleProps, isLifted, isAway, style } = useDragItem({
     id: item.id,
+    listId: listId || item.status || TaskStatus.TODO,
+    index,
     disabled: kanbanItemHook.isEditing || !permissions?.canEdit,
+    ghost: isDragging,
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   useEffect(() => {
-    if (isSortableDragging) {
+    if (isLifted) {
       kanbanItemHook.stopTimerOnDrag();
     }
-  }, [isSortableDragging]);
+  }, [isLifted]);
 
   const statusOptions = useMemo(() => {
     const options = statuses?.map((status) => ({
@@ -115,8 +112,46 @@ const KanbanCardComponent = ({
     return options?.sort((a, b) => a.order - b.order);
   }, [statuses]);
 
+  const handleMobileStatusChange = async (newStatus: string) => {
+    await kanbanItemHook.handleStatusChange(newStatus);
+    setShowStatusSheet(false);
+  };
+
   return (
     <>
+      {showStatusSheet && (
+        <Modal
+          isOpen={showStatusSheet}
+          onClose={() => setShowStatusSheet(false)}
+          title={t("kanban.changeStatus")}
+        >
+          <div className="space-y-2">
+            {statusOptions.map((status) => {
+              const isCurrent = status.id === (item.status || TaskStatus.TODO);
+              return (
+                <button
+                  key={status.id}
+                  type="button"
+                  onClick={() => handleMobileStatusChange(status.id.toString())}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-jotty border text-left transition-colors",
+                    isCurrent
+                      ? "border-primary/50 bg-primary/5 text-foreground font-semibold"
+                      : "border-border text-muted-foreground hover:border-primary/30 hover:bg-muted/50"
+                  )}
+                >
+                  <span
+                    className="h-3 w-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: status.color || "#6b7280" }}
+                  />
+                  <span className="text-sm">{status.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Modal>
+      )}
+
       {showTimeEntriesModal && item.timeEntries && (
         <TimeEntriesModal
           isOpen={showTimeEntriesModal}
@@ -130,31 +165,27 @@ const KanbanCardComponent = ({
         />
       )}
 
-      {showDetailModal && (
-        <KanbanCardDetail
-          checklist={checklist}
-          item={item}
-          isOpen={showDetailModal}
-          onClose={() => setShowDetailModal(false)}
-          onUpdate={onUpdate}
-          checklistId={checklistId}
-          category={category}
-        />
-      )}
-
-      <div className="min-w-0">
+      <div
+        className={cn(
+          "min-w-0",
+          isLifted &&
+            !isAway &&
+            "rounded-jotty outline-dashed outline-2 -outline-offset-2 outline-primary/30",
+        )}
+      >
         <div
           ref={setNodeRef}
           style={style}
-          {...attributes}
-          {...listeners}
+          {...handleProps}
+          tabIndex={0}
           aria-label={item.text}
-          onDoubleClick={() => setShowDetailModal(true)}
+          onDoubleClick={() => onOpenDetail(item)}
           className={cn(
             "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing min-w-0",
             getStatusColor(item.status),
-            (isDragging || isSortableDragging) &&
+            isDragging &&
               "opacity-60 scale-[0.98] shadow-lg border-primary/40 z-50 transition-all duration-200",
+            isLifted && "opacity-0 pointer-events-none",
           )}
         >
           <div className="space-y-2">
@@ -170,7 +201,8 @@ const KanbanCardComponent = ({
               onEditTextChange={kanbanItemHook.setEditText}
               onEditSave={kanbanItemHook.handleSave}
               onEditKeyDown={kanbanItemHook.handleKeyDown}
-              onShowSubtaskModal={() => setShowDetailModal(true)}
+              onShowSubtaskModal={() => onOpenDetail(item)}
+              onShowStatusMenu={() => setShowStatusSheet(true)}
               onEdit={kanbanItemHook.handleEdit}
               onDelete={kanbanItemHook.handleDelete}
               onArchive={kanbanItemHook.handleArchive}
@@ -256,21 +288,23 @@ const KanbanCardComponent = ({
               </div>
             )}
 
-            <div
-              className="lg:hidden"
-              onPointerDown={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Dropdown
-                value={item.status || TaskStatus.TODO}
-                options={statusOptions}
-                onChange={(newStatus) =>
-                  kanbanItemHook.handleStatusChange(newStatus as TaskStatus)
-                }
-                className="w-full text-sm"
-              />
-            </div>
+            {!hideMobileStatusDropdown && (
+              <div
+                className="lg:hidden"
+                onPointerDown={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Dropdown
+                  value={item.status || TaskStatus.TODO}
+                  options={statusOptions}
+                  onChange={(newStatus) =>
+                    kanbanItemHook.handleStatusChange(newStatus as TaskStatus)
+                  }
+                  className="w-full text-sm"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

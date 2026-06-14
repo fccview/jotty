@@ -104,9 +104,8 @@ export const parseMarkdown = (
   );
 
   let globalItemCounter = 0;
-  const resolveItemId = (storedId: string | undefined, level: number): string => {
-    const slot = globalItemCounter++;
-    return storedId || `${id}-${level}-${slot}`;
+  const generateItemId = (level: number): string => {
+    return `${id}-${level}-${globalItemCounter++}`;
   };
 
   const buildNestedItems = (
@@ -176,6 +175,7 @@ export const parseMarkdown = (
           let timeEntries: any[] = [];
           let estimatedTime: number | undefined;
           let targetDate: string | undefined;
+          let startDate: string | undefined;
           let description: string | undefined;
           let itemMetadata: Record<string, any> = {};
           let priority: KanbanPriority | undefined;
@@ -199,6 +199,8 @@ export const parseMarkdown = (
               estimatedTime = parseInt(meta.substring(10));
             } else if (meta.startsWith("target:")) {
               targetDate = meta.substring(7);
+            } else if (meta.startsWith("start:")) {
+              startDate = meta.substring(6);
             } else if (meta.startsWith("description:")) {
               description = meta.substring(12).replace(/∣/g, "|");
             } else if (meta.startsWith("metadata:")) {
@@ -225,13 +227,14 @@ export const parseMarkdown = (
           });
 
           item = {
-            id: resolveItemId(itemMetadata.id, parentLevel),
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
             status,
             timeEntries,
             estimatedTime,
+            startDate,
             targetDate,
             description,
             ...itemMetadata,
@@ -267,7 +270,7 @@ export const parseMarkdown = (
           }
 
           item = {
-            id: resolveItemId(itemMetadata.id, parentLevel),
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -403,6 +406,10 @@ const generateItemMarkdown = (
       metadata.push(`estimated:${item.estimatedTime}`);
     }
 
+    if (item.startDate) {
+      metadata.push(`start:${item.startDate}`);
+    }
+
     if (item.targetDate) {
       metadata.push(`target:${item.targetDate}`);
     }
@@ -469,6 +476,9 @@ const generateItemMarkdown = (
     }
     if (item.estimatedTime) {
       itemMetadata.estimatedTime = item.estimatedTime;
+    }
+    if (item.startDate) {
+      itemMetadata.startDate = item.startDate;
     }
     if (item.targetDate) {
       itemMetadata.targetDate = item.targetDate;

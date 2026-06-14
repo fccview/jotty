@@ -11,12 +11,18 @@
  * Enjoy it <3
  */
 
-import { exec } from "child_process";
+import { exec, execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
 import yaml from "js-yaml";
 
 const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
+
+const _isNoMatch = (error: unknown): boolean =>
+  typeof error === "object" &&
+  error !== null &&
+  (error as { code?: number }).code === 1;
 
 export interface GrepFileResult {
   filePath: string;
@@ -248,9 +254,13 @@ export const grepSearchContent = async (
   pattern: string,
 ): Promise<GrepSearchResult[]> => {
   try {
-    const { stdout } = await execAsync(
-      `grep -rli "${pattern}" "${dir}" --include="*.md" 2>/dev/null || true`,
-    );
+    const { stdout } = await execFileAsync("grep", [
+      "-rli",
+      "--include=*.md",
+      "--",
+      pattern,
+      dir,
+    ]);
 
     const files = stdout.trim().split("\n").filter(Boolean);
 
@@ -264,18 +274,28 @@ export const grepSearchContent = async (
 
         let matchLine = "";
         try {
-          const { stdout: matchOut } = await execAsync(
-            `grep -im1 "${pattern}" "${filePath}" 2>/dev/null || true`,
-          );
+          const { stdout: matchOut } = await execFileAsync("grep", [
+            "-im1",
+            "--",
+            pattern,
+            filePath,
+          ]);
           matchLine = matchOut.trim();
-        } catch {}
+        } catch (error) {
+          if (!_isNoMatch(error)) {
+            console.error("grep match-line failed:", error);
+          }
+        }
 
         return { filePath, id, category, matchLine };
       }),
     );
 
     return results;
-  } catch {
+  } catch (error) {
+    if (!_isNoMatch(error)) {
+      console.error("grepSearchContent failed:", error);
+    }
     return [];
   }
 };

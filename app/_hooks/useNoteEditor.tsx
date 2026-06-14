@@ -115,6 +115,7 @@ export const useNoteEditor = ({
     registerNavigationGuard,
     unregisterNavigationGuard,
     executePendingNavigation,
+    setHasUnsavedChanges: setProviderUnsaved,
   } = useNavigationGuard();
   const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -167,10 +168,15 @@ export const useNoteEditor = ({
   }, [isEditing]);
 
   useEffect(() => {
-    if (notesDefaultMode !== "edit" && !isEditing) return;
+    if (notesDefaultMode !== "edit" && !isEditing) {
+      setProviderUnsaved(false);
+      return;
+    }
     const titleChanged = title !== note.title;
     const categoryChanged = category !== (note.category || "Uncategorized");
-    setHasUnsavedChanges(contentIsDirty || titleChanged || categoryChanged);
+    const dirty = contentIsDirty || titleChanged || categoryChanged;
+    setHasUnsavedChanges(dirty);
+    setProviderUnsaved(dirty);
   }, [contentIsDirty, title, category, note, isEditing]);
 
   const handleSave = useCallback(
@@ -275,6 +281,7 @@ export const useNoteEditor = ({
         setIsEditing(false);
         setIsEditingEncrypted(false);
         setContentIsDirty(false);
+        setProviderUnsaved(false);
 
         const categoryPath = buildCategoryPath(
           category || "Uncategorized",
@@ -352,6 +359,7 @@ export const useNoteEditor = ({
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     setContentIsDirty(false);
+    setProviderUnsaved(false);
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
     if (isMinimalMode) {
       setEditorContent(contentWithoutMetadata);

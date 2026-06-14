@@ -12,52 +12,15 @@ import {
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { Checklist, Result } from "@/app/_types";
+import { Checklist, Result, TimeEntry } from "@/app/_types";
 import {
   ItemTypes,
   PermissionTypes,
 } from "@/app/_types/enums";
 import { checkUserPermission } from "../sharing";
 import { broadcast } from "@/app/_server/ws/broadcast";
-import { updateItem, updateAllChildren } from "@/app/_utils/item-tree-utils";
-import { KanbanStatus, Item } from "@/app/_types";
-
-const _findParent = (items: Item[], childId: string): Item | null => {
-  for (const item of items) {
-    if (item.children?.some((c) => c.id === childId)) return item;
-    if (item.children) {
-      const found = _findParent(item.children, childId);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-
-const _autoCompleteParent = (
-  items: Item[],
-  childId: string,
-  statuses: KanbanStatus[] | undefined,
-  username: string,
-  now: string
-): Item[] => {
-  const parent = _findParent(items, childId);
-  if (!parent || !parent.children) return items;
-
-  const allChildrenCompleted = parent.children.every((c) => c.completed);
-  if (!allChildrenCompleted) return items;
-
-  const autoCompleteStatus = statuses?.find((s) => s.autoComplete);
-  if (!autoCompleteStatus) return items;
-
-  return updateItem(items, parent.id, (p) => ({
-    ...p,
-    completed: true,
-    status: autoCompleteStatus.id,
-    lastModifiedBy: username,
-    lastModifiedAt: now,
-    history: [...(p.history || []), { status: autoCompleteStatus.id, timestamp: now, user: username }],
-  }));
-};
+import { updateItem } from "@/app/_utils/item-tree-utils";
+import { applyStatus, completeParent } from "@/app/_utils/item-status-utils";
 
 export const updateItemStatus = async (
   formData: FormData,
@@ -85,6 +48,29 @@ export const updateItemStatus = async (
       };
     }
 
+    let parsedTimeEntries: TimeEntry[] | null = null;
+    if (timeEntriesStr) {
+      try {
+        const parsed = JSON.parse(timeEntriesStr);
+        if (!Array.isArray(parsed)) {
+          throw new Error("timeEntries must be an array");
+        }
+        const allObjects = parsed.every(
+          (entry) =>
+            entry !== null &&
+            typeof entry === "object" &&
+            !Array.isArray(entry)
+        );
+        if (!allObjects) {
+          throw new Error("timeEntries must contain objects");
+        }
+        parsedTimeEntries = parsed;
+      } catch (e) {
+        console.error("Failed to parse timeEntries:", e);
+        return { success: false, error: "Invalid timeEntries payload" };
+      }
+    }
+
     const list = await getListById(listId, username, category);
     if (!list) {
       return { success: false, error: "List not found" };
@@ -104,47 +90,21 @@ export const updateItemStatus = async (
 
     const now = new Date().toISOString();
 
-    const updatedItems = updateItem(list.items, itemId, (item) => {
-      const updates: Partial<typeof item> & { history?: typeof item.history; timeEntries?: typeof item.timeEntries } = {};
+    const statusItems = status
+      ? applyStatus(list.items, itemId, status, list.statuses, username, now)
+      : list.items;
 
-      if (status) {
-        updates.status = status;
-        updates.lastModifiedBy = username;
-        updates.lastModifiedAt = now;
-
-        const targetStatus = list.statuses?.find((s) => s.id === status);
-        if (targetStatus?.autoComplete) {
-          updates.completed = true;
-          if (item.children && item.children.length > 0) {
-            updates.children = updateAllChildren(item.children, true, username, now);
-          }
-        } else if (item.completed && status !== item.status) {
-          updates.completed = false;
-        }
-
-        if (status !== item.status) {
-          const history = [...(item.history || [])];
-          history.push({ status, timestamp: now, user: username });
-          updates.history = history;
-        }
-      }
-
-      if (timeEntriesStr) {
-        try {
-          const timeEntries = JSON.parse(timeEntriesStr);
-          updates.timeEntries = timeEntries.map((entry: { user?: string }) => ({
+    const updatedItems = parsedTimeEntries
+      ? updateItem(statusItems, itemId, (item) => ({
+          ...item,
+          timeEntries: parsedTimeEntries!.map((entry) => ({
             ...entry,
             user: entry.user || username,
-          }));
-        } catch (e) {
-          console.error("Failed to parse timeEntries:", e);
-        }
-      }
+          })),
+        }))
+      : statusItems;
 
-      return { ...item, ...updates };
-    });
-
-    const itemsWithParentAutoComplete = _autoCompleteParent(
+    const itemsWithParentAutoComplete = completeParent(
       updatedItems, itemId, list.statuses, username, now
     );
 

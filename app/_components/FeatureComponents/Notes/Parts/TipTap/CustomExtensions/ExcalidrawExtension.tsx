@@ -85,23 +85,35 @@ export const ExcalidrawNodeView = ({
         files: files || null,
       };
 
-      const { exportToSvg } = await import("@excalidraw/excalidraw");
-      const svg = await exportToSvg({
-        elements,
-        appState,
-        files,
-        exportPadding: 20,
-      });
-      svg.removeAttribute("width");
-      svg.removeAttribute("height");
-      svg.setAttribute("style", "max-width: 100%; height: auto;");
-      const svgString = svg.outerHTML;
+      try {
+        const { exportToSvg } = await import("@excalidraw/excalidraw");
+        const svg = await exportToSvg({
+          elements,
+          appState,
+          files,
+          exportPadding: 20,
+        });
+        svg.removeAttribute("width");
+        svg.removeAttribute("height");
+        svg.setAttribute("style", "max-width: 100%; height: auto;");
+        const svgString = svg.outerHTML;
 
-      updateAttributes({
-        diagramData: JSON.stringify(sceneData),
-        svgData: svgString,
-      });
+        updateAttributes({
+          diagramData: JSON.stringify(sceneData),
+          svgData: svgString,
+        });
+      } catch (error) {
+        console.error("Failed to export Excalidraw diagram:", error);
+      } finally {
+        setIsEditing(false);
+      }
+    }
+  };
 
+  const handleClose = () => {
+    if (excalidrawAPI) {
+      handleSave();
+    } else {
       setIsEditing(false);
     }
   };
@@ -129,7 +141,7 @@ export const ExcalidrawNodeView = ({
     <NodeViewWrapper className="excalidraw-node-wrapper">
       <Modal
         isOpen={isEditing && !!initialData}
-        onClose={() => setIsEditing(false)}
+        onClose={handleClose}
         title={
           <div className="flex items-center gap-2">
             {t("editor.editDiagram")}

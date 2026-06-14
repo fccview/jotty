@@ -1,18 +1,15 @@
 "use client";
 
 import { useMemo, memo, useState, useRef, useEffect } from "react";
-import { useDroppable } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { useDropList } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanCard } from "./KanbanCard";
 import { cn } from "@/app/_utils/global-utils";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
-import { TaskDaily01Icon, Add01Icon } from "hugeicons-react";
+import { TaskDaily01Icon, Add01Icon, Archive02Icon } from "hugeicons-react";
 import { Input } from "../../GlobalComponents/FormElements/Input";
+import { ConfirmModal } from "../../GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -23,10 +20,13 @@ interface KanbanColumnProps {
   checklistId: string;
   category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
+  onOpenDetail: (item: Item) => void;
   isShared: boolean;
   statusColor?: string;
   statuses: KanbanStatus[];
   onAddItem?: (status: string) => Promise<void>;
+  archivableCount?: number;
+  onArchiveAll?: () => Promise<void>;
 }
 
 interface InlineAddInputProps {
@@ -85,14 +85,19 @@ const KanbanColumnComponent = ({
   category,
   isShared,
   onUpdate,
+  onOpenDetail,
   statusColor,
   statuses,
   onAddItem,
+  archivableCount = items.length,
+  onArchiveAll,
 }: KanbanColumnProps) => {
   const t = useTranslations();
-  const { setNodeRef, isOver } = useDroppable({ id });
+  const { setNodeRef, isOver, padBottom } = useDropList({ id });
   const [showInlineInput, setShowInlineInput] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [showArchiveAllModal, setShowArchiveAllModal] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
 
   const currentStatus = statuses.find((s) => s.id === status);
   const isAutoComplete = currentStatus?.autoComplete === true;
@@ -136,6 +141,16 @@ const KanbanColumnComponent = ({
     setIsAddingItem(false);
   };
 
+  const handleArchiveAll = async () => {
+    if (!onArchiveAll || archivableCount === 0) return;
+    setIsArchiving(true);
+    try {
+      await onArchiveAll();
+    } finally {
+      setIsArchiving(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full my-4 lg:my-0 min-w-0">
       <div className="flex items-center justify-between mb-3 min-w-0">
@@ -160,6 +175,17 @@ const KanbanColumnComponent = ({
               <Add01Icon className="h-3.5 w-3.5" />
             </button>
           )}
+          {onArchiveAll && isAutoComplete && (
+            <button
+              onClick={() => setShowArchiveAllModal(true)}
+              title={t("kanban.archiveAllItemsInColumn", { column: title })}
+              aria-label={t("kanban.archiveAllItemsInColumn", { column: title })}
+              disabled={archivableCount === 0 || isArchiving}
+              className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Archive02Icon className="h-3.5 w-3.5" />
+            </button>
+          )}
           <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
             {items.length}
           </span>
@@ -176,44 +202,57 @@ const KanbanColumnComponent = ({
         style={{
           borderColor: isOver ? undefined : borderColor,
           backgroundColor: isOver ? undefined : bgColor,
+          paddingBottom: padBottom
+            ? `calc(0.75rem + ${padBottom}px)`
+            : undefined,
         }}
       >
-        <SortableContext
-          items={items.map((item) => item.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="space-y-2">
-            {showInlineInput && (
-              <InlineAddInput
-                onSubmit={handleInlineSubmit}
-                onCancel={() => setShowInlineInput(false)}
-                placeholder={t("kanban.addItemPlaceholder")}
-              />
-            )}
-            {items.map((item) => (
-              <KanbanCard
-                checklist={checklist}
-                key={item.id}
-                item={item}
-                checklistId={checklistId}
-                category={category}
-                onUpdate={onUpdate}
-                isShared={isShared}
-                statuses={statuses}
-                statusColor={statusColor}
-              />
-            ))}
-            {items.length === 0 && !showInlineInput && (
-              <div className="flex flex-col items-center justify-center text-muted-foreground/50 py-8 gap-2">
-                <TaskDaily01Icon className="h-8 w-8" />
-                <span className="text-md lg:text-sm">
-                  {t("checklists.noTasks")}
-                </span>
-              </div>
-            )}
-          </div>
-        </SortableContext>
+        <div className="space-y-2">
+          {showInlineInput && (
+            <InlineAddInput
+              onSubmit={handleInlineSubmit}
+              onCancel={() => setShowInlineInput(false)}
+              placeholder={t("kanban.addItemPlaceholder")}
+            />
+          )}
+          {items.map((item, index) => (
+            <KanbanCard
+              checklist={checklist}
+              key={item.id}
+              item={item}
+              index={index}
+              listId={status}
+              checklistId={checklistId}
+              category={category}
+              onUpdate={onUpdate}
+              onOpenDetail={onOpenDetail}
+              isShared={isShared}
+              statuses={statuses}
+              statusColor={statusColor}
+            />
+          ))}
+          {items.length === 0 && !showInlineInput && (
+            <div className="flex flex-col items-center justify-center text-muted-foreground/50 py-8 gap-2">
+              <TaskDaily01Icon className="h-8 w-8" />
+              <span className="text-md lg:text-sm">
+                {t("checklists.noTasks")}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
+      <ConfirmModal
+        isOpen={showArchiveAllModal}
+        onClose={() => setShowArchiveAllModal(false)}
+        onConfirm={handleArchiveAll}
+        title={t("kanban.archiveAllConfirmTitle")}
+        message={t("kanban.archiveAllConfirmMessage", {
+          count: archivableCount,
+          column: title,
+        })}
+        confirmText={t("common.archive")}
+        variant="destructive"
+      />
     </div>
   );
 };

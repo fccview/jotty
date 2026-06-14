@@ -42,6 +42,10 @@ export const parseChecklistContent = (
     (line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line),
   );
 
+  let globalItemCounter = 0;
+  const generateItemId = (level: number): string =>
+    `${id}-${level}-${globalItemCounter++}`;
+
   const buildNestedItems = (
     lines: string[],
     startIndex: number = 0,
@@ -111,6 +115,7 @@ export const parseChecklistContent = (
           let timeEntries: any[] = [];
           let estimatedTime: number | undefined;
           let targetDate: string | undefined;
+          let startDate: string | undefined;
           let description: string | undefined;
           let itemMetadata: Record<string, unknown> = {};
           let priority: KanbanPriority | undefined;
@@ -134,6 +139,8 @@ export const parseChecklistContent = (
               estimatedTime = parseInt(meta.substring(10));
             } else if (meta.startsWith("target:")) {
               targetDate = meta.substring(7);
+            } else if (meta.startsWith("start:")) {
+              startDate = meta.substring(6);
             } else if (meta.startsWith("description:")) {
               description = meta.substring(12).replace(/∣/g, "|");
             } else if (meta.startsWith("metadata:")) {
@@ -164,13 +171,14 @@ export const parseChecklistContent = (
           });
 
           item = {
-            id: (itemMetadata.id as string) || `${id}-${currentItemIndex}`,
+            id: (itemMetadata.id as string) || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
             status,
             timeEntries,
             estimatedTime,
+            startDate,
             targetDate,
             description,
             ...itemMetadata,
@@ -206,7 +214,7 @@ export const parseChecklistContent = (
           }
 
           item = {
-            id: itemMetadata.id || `${id}-${currentItemIndex}`,
+            id: itemMetadata.id || generateItemId(parentLevel),
             text: itemText,
             completed,
             order: currentItemIndex,
@@ -245,6 +253,21 @@ export const parseChecklistContent = (
   };
 
   const { items } = buildNestedItems(itemLines, 0, 0, 0);
+
+  const dedupeItemIds = (itemList: Item[], seen: Set<string>): void => {
+    itemList.forEach((item) => {
+      if (item.id && seen.has(item.id)) {
+        item.id = generateItemId(0);
+      }
+      if (item.id) {
+        seen.add(item.id);
+      }
+      if (item.children && item.children.length > 0) {
+        dedupeItemIds(item.children, seen);
+      }
+    });
+  };
+  dedupeItemIds(items, new Set<string>());
 
   let statuses = undefined;
   if (metadata.statuses && Array.isArray(metadata.statuses)) {

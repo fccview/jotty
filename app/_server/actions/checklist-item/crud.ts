@@ -102,6 +102,7 @@ export const updateItem = async (
     const assignee = formData.get("assignee") as string | null;
     const reminder = formData.get("reminder") as string | null;
     const targetDate = formData.get("targetDate") as string | null;
+    const startDate = formData.get("startDate") as string | null;
     const estimatedTime = formData.get("estimatedTime") as string | null;
 
     const updatedList = {
@@ -118,6 +119,7 @@ export const updateItem = async (
           reminder: reminder ? JSON.parse(reminder) : undefined,
         }),
         ...(targetDate !== null && { targetDate: targetDate || undefined }),
+        ...(startDate !== null && { startDate: startDate || undefined }),
         ...(estimatedTime !== null && { estimatedTime: estimatedTime ? parseFloat(estimatedTime) : undefined }),
         lastModifiedBy: currentUser,
         lastModifiedAt: now,

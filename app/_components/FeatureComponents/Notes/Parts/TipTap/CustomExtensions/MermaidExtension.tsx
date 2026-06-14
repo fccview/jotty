@@ -57,6 +57,9 @@ if (typeof window !== "undefined") {
   initializeMermaidTheme();
 }
 
+const normalizeDiagramType = (code: string): string =>
+  code.replace(/^(\s*)sankey(\s)/m, "$1sankey-beta$2");
+
 export const MermaidNodeView = ({
   node,
   updateAttributes,
@@ -78,7 +81,7 @@ export const MermaidNodeView = ({
 
         setError(null);
         const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
-        const { svg } = await mermaid.render(id, node.attrs.content);
+        const { svg } = await mermaid.render(id, normalizeDiagramType(node.attrs.content));
         if (containerRef.current) {
           containerRef.current.innerHTML = svg;
         }

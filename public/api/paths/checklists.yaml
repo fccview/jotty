@@ -1,7 +1,7 @@
 /checklists:
   get:
     summary: Get All Checklists
-    description: Retrieves all checklists for the authenticated user. Supports filtering and search.
+    description: Retrieves all checklists owned by or shared with the authenticated user. Supports filtering and search.
     tags:
       - Checklists
     parameters:
@@ -55,6 +55,13 @@
                       createdAt:
                         type: string
                         format: date-time
+                      owner:
+                        type: string
+                        example: "alice"
+                      isShared:
+                        type: boolean
+                        description: True when this checklist was shared with the user by another user
+                        example: false
                       updatedAt:
                         type: string
                         format: date-time
@@ -191,6 +198,172 @@
       '400':
         description: Invalid request
 
+/checklists/{listId}/items/{itemIndex}:
+  patch:
+    summary: Update Checklist Item
+    description: |
+      Updates one or more writable fields on a checklist item.
+
+      Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item).
+    tags:
+      - Checklists
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index or index path (e.g., "0", "0.1", "2.0.1")
+        example: "0"
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              text:
+                type: string
+                example: "Updated task text"
+              description:
+                type: string
+                example: "Additional notes about this item"
+              priority:
+                type: string
+                enum: [critical, high, medium, low, none]
+                example: "high"
+              score:
+                type: number
+                example: 5
+              startDate:
+                type: string
+                format: date
+                example: "2026-06-10"
+              targetDate:
+                type: string
+                format: date
+                example: "2026-06-15"
+              estimatedTime:
+                type: number
+                example: 2.5
+    responses:
+      '200':
+        description: Item updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '400':
+        description: Missing fields or invalid index
+      '404':
+        description: Checklist or item not found
+  delete:
+    summary: Delete Item
+    description: |
+      Deletes a checklist item.
+
+      Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
+    tags:
+      - Checklists
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: itemIndex
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Index or index path (e.g., "0", "0.1", "2.0.1")
+        example: "1"
+    responses:
+      '200':
+        description: Item deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '404':
+        description: Checklist or item not found
+      '400':
+        description: Invalid item index
+
+/checklists/{listId}/items/reorder:
+  put:
+    summary: Reorder Checklist Items
+    description: |
+      Moves an item before or after another item, or nests it as a child.
+
+      Use `position: "before"` or `"after"` for sibling placement, or `isDropInto: true` to nest the active item inside the over item.
+    tags:
+      - Checklists
+    parameters:
+      - name: listId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - activeItemId
+              - overItemId
+            properties:
+              activeItemId:
+                type: string
+                description: ID of the item being moved
+                example: "my-list-1716900000000"
+              overItemId:
+                type: string
+                description: ID of the reference item to move relative to
+                example: "my-list-1716900000001"
+              position:
+                type: string
+                enum: [before, after]
+                default: before
+                description: Whether to place the active item before or after the reference item
+              isDropInto:
+                type: boolean
+                default: false
+                description: When true, nests the active item as a child of the reference item
+    responses:
+      '200':
+        description: Items reordered successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+      '400':
+        description: Missing required fields or invalid position value
+      '404':
+        description: Checklist or item not found
+
 /checklists/{listId}/items/{itemIndex}/check:
   put:
     summary: Mark Item as Completed
@@ -256,45 +429,6 @@
     responses:
       '200':
         description: Item marked as incomplete
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-      '404':
-        description: Checklist or item not found
-      '400':
-        description: Invalid item index
-
-/checklists/{listId}/items/{itemIndex}:
-  delete:
-    summary: Delete Item
-    description: |
-      Deletes a checklist item.
-
-      Supports nested items using index paths (e.g., "0" for first item, "0.1" for second child of first item, "2.0.1" for nested grandchild).
-    tags:
-      - Checklists
-    parameters:
-      - name: listId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: itemIndex
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Index or index path (e.g., "0", "0.1", "2.0.1")
-        example: "1"
-    responses:
-      '200':
-        description: Item deleted successfully
         content:
           application/json:
             schema:

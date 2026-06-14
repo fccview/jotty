@@ -28,6 +28,7 @@ import {
   QuickCreateNotes,
   HideConnectionIndicator,
   HideStatusOnCards,
+  HideMobileStatusDropdown,
   CodeBlockStyle,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
@@ -73,6 +74,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   quickCreateNotesCategory: user?.quickCreateNotesCategory || "",
   hideConnectionIndicator: user?.hideConnectionIndicator || "disable",
   hideStatusOnCards: user?.hideStatusOnCards || "disable",
+  hideMobileStatusDropdown: user?.hideMobileStatusDropdown || "disable",
   codeBlockStyle: user?.codeBlockStyle || "default",
 });
 
@@ -166,7 +168,10 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     "defaultChecklistFilter",
     "checklistItemClickAction",
   ]);
-  const hasKanbanChanges = hasChanges(["hideStatusOnCards"]);
+  const hasKanbanChanges = hasChanges([
+    "hideStatusOnCards",
+    "hideMobileStatusDropdown",
+  ]);
 
   const validateAndSave = async <T extends Record<string, any>>(
     settings: T,
@@ -947,7 +952,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           <Button
             onClick={() =>
               handleSaveSection(
-                ["hideStatusOnCards"],
+                ["hideStatusOnCards", "hideMobileStatusDropdown"],
                 kanbanSettingsSchema,
                 "Kanban"
               )
@@ -977,6 +982,30 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           />
           <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.hideStatusOnCardsDescription')}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="hide-mobile-status-dropdown">
+            {t('settings.hideMobileStatusDropdownLabel')}
+          </Label>
+          <Dropdown
+            value={currentSettings.hideMobileStatusDropdown || "disable"}
+            onChange={(value) =>
+              handleSettingChange(
+                "hideMobileStatusDropdown",
+                value as HideMobileStatusDropdown
+              )
+            }
+            options={[
+              { id: "disable", name: t('settings.showMobileStatusDropdown') },
+              { id: "enable", name: t('settings.hideMobileStatusDropdown') },
+            ]}
+            placeholder={t('settings.selectMobileStatusDropdown')}
+            className="w-full"
+          />
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.hideMobileStatusDropdownDescription')}
           </p>
         </div>
       </FormWrapper>

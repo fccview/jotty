@@ -121,6 +121,64 @@ ChecklistItem:
       type: string
       enum: [todo, in_progress, paused, completed]
       description: Only present for task-type checklists
+    description:
+      type: string
+      description: Item body or notes
+      example: "Details and acceptance criteria for this item"
+    priority:
+      type: string
+      enum: [critical, high, medium, low, none]
+      description: Kanban item priority
+      example: "high"
+    score:
+      type: number
+      description: Numeric score for ordering or estimation
+      example: 5
+    startDate:
+      type: string
+      format: date
+      description: Start date
+      example: "2026-06-10"
+    targetDate:
+      type: string
+      format: date
+      description: Due or target date
+      example: "2026-06-15"
+    estimatedTime:
+      type: number
+      description: Estimated time in hours
+      example: 2.5
+    createdBy:
+      type: string
+      description: Username of the user who created the item
+      example: "alice"
+    createdAt:
+      type: string
+      format: date-time
+      description: Item creation timestamp
+    lastModifiedBy:
+      type: string
+      description: Username of the last user to edit the item
+      example: "alice"
+    lastModifiedAt:
+      type: string
+      format: date-time
+      description: Last item edit timestamp
+    history:
+      type: array
+      description: Status change history
+      items:
+        type: object
+        properties:
+          status:
+            type: string
+            example: "in_progress"
+          timestamp:
+            type: string
+            format: date-time
+          user:
+            type: string
+            example: "alice"
     time:
       oneOf:
         - type: integer

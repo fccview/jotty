@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   ReactNode,
 } from "react";
 
@@ -58,6 +59,18 @@ export const NavigationGuardProvider = ({
   const checkWouldBlock = useCallback(() => {
     return navigationGuard ? !navigationGuard() : false;
   }, [navigationGuard]);
+
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const executePendingNavigation = useCallback(() => {
     if (pendingNavigation) {

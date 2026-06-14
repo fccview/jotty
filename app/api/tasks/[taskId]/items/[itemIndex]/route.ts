@@ -6,8 +6,70 @@ import { serverWriteFile } from "@/app/_server/actions/file";
 import path from "path";
 import { isKanbanType } from "@/app/_types/enums";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { toApiItem } from "@/app/_utils/api-item";
 
 export const dynamic = "force-dynamic";
+
+export async function GET(
+  request: NextRequest,
+  props: { params: Promise<{ taskId: string; itemIndex: string }> },
+) {
+  const params = await props.params;
+  return withApiAuth(request, async (user) => {
+    try {
+      const task = await getListById(params.taskId, user.username);
+      if (!task) {
+        return NextResponse.json({ error: "Task not found" }, { status: 404 });
+      }
+
+      if (!isKanbanType(task.type)) {
+        return NextResponse.json(
+          { error: "Not a task checklist" },
+          { status: 400 },
+        );
+      }
+
+      const indexPath = params.itemIndex.split(".").map((i) => parseInt(i));
+
+      for (const idx of indexPath) {
+        if (isNaN(idx) || idx < 0) {
+          return NextResponse.json(
+            { error: "Invalid item index" },
+            { status: 400 },
+          );
+        }
+      }
+
+      let item: any = null;
+      let itemIndex = 0;
+      let currentItems = task.items;
+
+      for (const idx of indexPath) {
+        if (idx >= currentItems.length) {
+          return NextResponse.json(
+            { error: "Item index out of range" },
+            { status: 400 },
+          );
+        }
+        item = currentItems[idx];
+        itemIndex = idx;
+        currentItems = item.children || [];
+      }
+
+      if (!item) {
+        return NextResponse.json({ error: "Item not found" }, { status: 404 });
+      }
+
+      return NextResponse.json({ item: toApiItem(item, itemIndex, true) });
+    } catch (error) {
+      console.error("API Error:", error);
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 },
+      );
+    }
+  });
+}
 
 export async function DELETE(
   request: NextRequest,

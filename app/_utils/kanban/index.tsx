@@ -2,7 +2,7 @@ import { Clock01Icon, TimeQuarterIcon } from "hugeicons-react";
 import { TaskStatus } from "@/app/_types/enums";
 import { Item, KanbanPriority } from "@/app/_types";
 
-import type { JSX } from "react";
+import type { CSSProperties, ReactElement } from "react";
 
 export const formatTimerTime = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
@@ -36,7 +36,7 @@ export const getStatusColor = (status?: string, customColor?: string): string =>
   }
 };
 
-export const getStatusIcon = (status?: string): JSX.Element | null => {
+export const getStatusIcon = (status?: string): ReactElement | null => {
   switch (status) {
     case TaskStatus.IN_PROGRESS:
       return <TimeQuarterIcon className="h-3 w-3 text-primary" />;
@@ -63,6 +63,18 @@ const PRIORITY_CONFIG: Record<KanbanPriority, { dotColor: string; translationKey
 
 export const getPriorityDotColor = (priority?: KanbanPriority): string =>
   PRIORITY_CONFIG[priority || "none"].dotColor;
+
+export const getPriorityBarStyle = (
+  priority?: KanbanPriority,
+): CSSProperties => {
+  const { dotColor } = PRIORITY_CONFIG[priority || "none"];
+  if (dotColor === "transparent") return {};
+
+  return {
+    backgroundColor: `color-mix(in srgb, ${dotColor} 28%, transparent)`,
+    color: `color-mix(in srgb, ${dotColor} 60%, hsl(var(--foreground)))`,
+  };
+};
 
 export const getPriorityLabel = (priority: KanbanPriority | undefined, t: (key: string) => string): string =>
   t(PRIORITY_CONFIG[priority || "none"].translationKey);

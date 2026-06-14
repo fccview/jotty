@@ -1,5 +1,6 @@
 "use client";
 
+import { KeyboardEvent } from "react";
 import { Checklist, Item } from "@/app/_types";
 import { useCalendarView } from "@/app/_hooks/kanban/useCalendarView";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -10,7 +11,11 @@ import {
   Download04Icon,
 } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
-import { getPriorityDotColor } from "@/app/_utils/kanban/index";
+import { getPriorityBarStyle } from "@/app/_utils/kanban/index";
+import {
+  getMaxBarLanes,
+  getWeekBarSegments,
+} from "@/app/_utils/kanban/calendar-utils";
 import { useTranslations } from "next-intl";
 
 interface CalendarViewProps {
@@ -33,16 +38,18 @@ const _toLocalDate = (d: Date): string => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
+const _BAR_HEIGHT = 18;
+
 export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
   const t = useTranslations();
   const {
     currentDate,
     calendarGrid,
+    events,
     goToPreviousMonth,
     goToNextMonth,
     goToToday,
     exportICS,
-    getEventsForDate,
     unscheduledItems,
   } = useCalendarView(checklist);
 
@@ -52,6 +59,11 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
     month: "long",
     year: "numeric",
   });
+
+  const _openItem = (itemId: string) => {
+    const item = checklist.items.find((entry) => entry.id === itemId);
+    if (item && onItemClick) onItemClick(item);
+  };
 
   return (
     <div className="space-y-4 min-w-0">
@@ -88,78 +100,99 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
           ))}
         </div>
 
-        {calendarGrid.map((week, weekIndex) => (
-          <div key={weekIndex} className="grid grid-cols-7">
-            {week.map((day, dayIndex) => {
-              if (!day) {
+        {calendarGrid.map((week, weekIndex) => {
+          const segments = getWeekBarSegments(week, events);
+          const maxLanes = getMaxBarLanes(segments);
+          const barAreaHeight = maxLanes * _BAR_HEIGHT;
+
+          return (
+            <div key={weekIndex} className="relative grid grid-cols-7">
+              {week.map((day, dayIndex) => {
+                if (!day) {
+                  return (
+                    <div
+                      key={`empty-${dayIndex}`}
+                      className="border-b border-r border-border bg-muted/20"
+                      style={{ minHeight: 72 + barAreaHeight }}
+                    />
+                  );
+                }
+
+                const dateStr = _toLocalDate(day);
+                const isToday = dateStr === today;
+
                 return (
                   <div
-                    key={`empty-${dayIndex}`}
-                    className="min-h-[100px] p-1 border-b border-r border-border bg-muted/20"
-                  />
-                );
-              }
-
-              const dateStr = _toLocalDate(day);
-              const dayEvents = getEventsForDate(day);
-              const isToday = dateStr === today;
-
-              return (
-                <div
-                  key={dateStr}
-                  className={cn(
-                    "min-h-[100px] p-1 border-b border-r border-border transition-colors",
-                    isToday && "bg-primary/5",
-                  )}
-                >
-                  <div
+                    key={dateStr}
                     className={cn(
-                      "text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full",
-                      isToday && "bg-primary text-primary-foreground",
+                      "border-b border-r border-border p-1 transition-colors",
+                      isToday && "bg-primary/5",
                     )}
+                    style={{ minHeight: 72 + barAreaHeight }}
                   >
-                    {day.getDate()}
+                    <div
+                      className={cn(
+                        "text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full",
+                        isToday && "bg-primary text-primary-foreground",
+                      )}
+                    >
+                      {day.getDate()}
+                    </div>
                   </div>
-                  <div className="space-y-0.5">
-                    {dayEvents.slice(0, 3).map((event) => (
-                      <div
-                        key={event.id}
-                        onClick={() => {
-                          const item = checklist.items.find(
-                            (i) => i.id === event.itemId,
-                          );
-                          if (item && onItemClick) onItemClick(item);
-                        }}
-                        className={cn(
-                          "text-[10px] px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1 bg-muted text-muted-foreground border-l-2",
-                          event.completed && "line-through opacity-60",
-                        )}
-                        style={{
-                          borderLeftColor: event.completed
-                            ? "#22c55e"
-                            : getPriorityDotColor(
-                                event.priority as Parameters<
-                                  typeof getPriorityDotColor
-                                >[0],
-                              ),
-                        }}
-                      >
-                        {event.title}
-                      </div>
-                    ))}
-                    {dayEvents.length > 3 && (
-                      <div className="text-[10px] text-muted-foreground px-1">
-                        {t("kanban.moreEvents", {
-                          count: dayEvents.length - 3,
-                        })}
-                      </div>
-                    )}
-                  </div>
+                );
+              })}
+
+              {maxLanes > 0 && (
+                <div
+                  className="absolute inset-x-0 top-7 grid grid-cols-7 gap-y-0.5 px-0.5 pointer-events-none"
+                  style={{ gridTemplateRows: `repeat(${maxLanes}, ${_BAR_HEIGHT}px)` }}
+                >
+                  {segments.map((segment) => {
+                    const barStyle = getPriorityBarStyle(
+                      segment.event.priority as Parameters<typeof getPriorityBarStyle>[0],
+                    );
+
+                    return (
+                    <div
+                      key={`${segment.event.id}-${segment.colStart}-${segment.lane}`}
+                      {...(onItemClick
+                        ? {
+                            role: "button" as const,
+                            tabIndex: 0,
+                            "aria-label": segment.event.title,
+                            onClick: () => _openItem(segment.event.itemId),
+                            onKeyDown: (e: KeyboardEvent) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                _openItem(segment.event.itemId);
+                              }
+                            },
+                          }
+                        : {})}
+                      className={cn(
+                        "pointer-events-auto h-4 text-[10px] font-medium leading-4 px-1.5 truncate transition-[filter,opacity]",
+                        onItemClick &&
+                          "cursor-pointer hover:brightness-95 dark:hover:brightness-110",
+                        !barStyle.backgroundColor && "bg-muted/80 text-muted-foreground",
+                        segment.continuesPrev ? "rounded-l-none ml-0" : "rounded-l-jotty ml-0.5",
+                        segment.continuesNext ? "rounded-r-none mr-0" : "rounded-r-jotty mr-0.5",
+                        segment.event.completed && "line-through opacity-70",
+                      )}
+                      style={{
+                        ...barStyle,
+                        gridColumn: `${segment.colStart + 1} / span ${segment.colSpan}`,
+                        gridRow: segment.lane + 1,
+                      }}
+                    >
+                      {!segment.continuesPrev ? segment.event.title : "\u00a0"}
+                    </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        ))}
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {unscheduledItems.length > 0 && (

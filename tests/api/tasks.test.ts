@@ -20,7 +20,7 @@ import { GET as GET_TASK, PUT as PUT_TASK, DELETE as DELETE_TASK } from "@/app/a
 import { GET as GET_STATUSES, POST as POST_STATUS } from "@/app/api/tasks/[taskId]/statuses/route"
 import { PUT as PUT_STATUS, DELETE as DELETE_STATUS } from "@/app/api/tasks/[taskId]/statuses/[statusId]/route"
 import { POST as POST_TASK_ITEM } from "@/app/api/tasks/[taskId]/items/route"
-import { DELETE as DELETE_TASK_ITEM } from "@/app/api/tasks/[taskId]/items/[itemIndex]/route"
+import { DELETE as DELETE_TASK_ITEM, GET as GET_TASK_ITEM } from "@/app/api/tasks/[taskId]/items/[itemIndex]/route"
 import { PUT as PUT_ITEM_STATUS } from "@/app/api/tasks/[taskId]/items/[itemIndex]/status/route"
 
 describe("Tasks API", () => {
@@ -42,12 +42,31 @@ describe("Tasks API", () => {
         text: "Task Item 1",
         status: "todo",
         completed: false,
+        description: "Task notes",
+        priority: "high",
+        score: 8,
+        startDate: "2026-06-10",
+        targetDate: "2026-06-15",
+        estimatedTime: 3.5,
+        createdBy: "testuser",
+        createdAt: "2024-01-01T00:00:00.000Z",
+        lastModifiedBy: "testuser",
+        lastModifiedAt: "2024-01-02T00:00:00.000Z",
+        history: [
+          {
+            status: "todo",
+            timestamp: "2024-01-01T00:00:00.000Z",
+            user: "testuser",
+          },
+        ],
         children: [
           {
             id: "item-1-1",
             text: "Sub Task",
             status: "todo",
             completed: false,
+            description: "Sub-task notes",
+            priority: "medium",
           },
         ],
       },
@@ -583,6 +602,78 @@ describe("Tasks API", () => {
 
       expect(response.status).toBe(401)
       expect(data.error).toBe("Unauthorized")
+    })
+  })
+
+  describe("GET /api/tasks/:taskId/items/:itemIndex", () => {
+    it("should return a transformed task item with rich fields", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1/items/0")
+      const response = await GET_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.item).toMatchObject({
+        id: "item-1",
+        index: 0,
+        text: "Task Item 1",
+        completed: false,
+        status: "todo",
+        time: 0,
+        description: "Task notes",
+        priority: "high",
+        score: 8,
+        startDate: "2026-06-10",
+        targetDate: "2026-06-15",
+        estimatedTime: 3.5,
+        createdBy: "testuser",
+        createdAt: "2024-01-01T00:00:00.000Z",
+        lastModifiedBy: "testuser",
+        lastModifiedAt: "2024-01-02T00:00:00.000Z",
+        history: [
+          {
+            status: "todo",
+            timestamp: "2024-01-01T00:00:00.000Z",
+            user: "testuser",
+          },
+        ],
+      })
+      expect(data.item.children[0]).toMatchObject({
+        id: "item-1-1",
+        index: 0,
+        description: "Sub-task notes",
+        priority: "medium",
+      })
+    })
+
+    it("should return a transformed nested task item", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1/items/0.0")
+      const response = await GET_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0.0" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.item).toMatchObject({
+        id: "item-1-1",
+        index: 0,
+        text: "Sub Task",
+        status: "todo",
+        time: 0,
+        description: "Sub-task notes",
+      })
+    })
+
+    it("should return 400 for non-task checklist item reads", async () => {
+      mockGetListById.mockResolvedValue({ ...mockTask, type: "simple" })
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1/items/0")
+      const response = await GET_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(400)
+      expect(data.error).toBe("Not a task checklist")
     })
   })
 
