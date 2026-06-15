@@ -22,6 +22,12 @@ import { useTranslations } from "next-intl";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
+import { KanbanItemTimer } from "./KanbanItemTimer";
+import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
+import { TimeEntriesModal } from "./TimeEntriesModal";
+import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { formatTimerTime } from "@/app/_utils/kanban/index";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 
 interface KanbanCardDetailProps {
@@ -78,7 +84,9 @@ export const KanbanCardDetail = ({
 }: KanbanCardDetailProps) => {
   const t = useTranslations();
   const { permissions } = usePermissions();
-  const { formatDateTimeString } = usePreferredDateTime();
+  const { usersPublicData } = useAppMode();
+  const { formatDateTimeString, formatDateString, formatTimeString } =
+    usePreferredDateTime();
   const statuses = checklist.statuses || DEFAULT_KANBAN_STATUSES;
   const defaultStatusId =
     [...statuses].sort((a, b) => a.order - b.order)[0]?.id || "";
@@ -98,6 +106,15 @@ export const KanbanCardDetail = ({
   const [estimatedTimeInput, setEstimatedTimeInput] = useState(initialItem.estimatedTime?.toString() || "");
   const [availableUsers, setAvailableUsers] = useState<{ username: string; avatarUrl?: string }[]>([]);
   const [boardIsShared, setBoardIsShared] = useState(false);
+  const [showTimeEntriesModal, setShowTimeEntriesModal] = useState(false);
+
+  const kanbanItemHook = useKanbanItem({
+    checklist,
+    item,
+    checklistId,
+    category,
+    onUpdate,
+  });
 
   useEffect(() => {
     setItem(initialItem);
@@ -379,16 +396,53 @@ export const KanbanCardDetail = ({
     await _saveField({ estimatedTime: hours.toString() });
   };
 
+  const timeTrackingContent = (
+    <div className="space-y-2">
+      <KanbanItemTimer
+        totalTime={kanbanItemHook.totalTime}
+        currentTime={kanbanItemHook.currentTime}
+        isRunning={kanbanItemHook.isRunning}
+        formatTimerTime={formatTimerTime}
+        onTimerToggle={kanbanItemHook.handleTimerToggle}
+        onAddManualTime={kanbanItemHook.handleAddManualTime}
+      />
+      {item.timeEntries && item.timeEntries.length > 0 && (
+        <TimeEntriesAccordion
+          timeEntries={item.timeEntries}
+          totalTime={kanbanItemHook.totalTime + kanbanItemHook.currentTime}
+          formatTimerTime={formatTimerTime}
+          usersPublicData={usersPublicData}
+          formatDateString={formatDateString}
+          formatTimeString={formatTimeString}
+          onOpenTimeEntries={() => setShowTimeEntriesModal(true)}
+        />
+      )}
+    </div>
+  );
+
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={item.text || t("checklists.untitledTask")}
-      size="fullscreen"
-      allowEnlarge
-      defaultEnlarged
-      className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
-    >
+    <>
+      {showTimeEntriesModal && item.timeEntries && (
+        <TimeEntriesModal
+          isOpen={showTimeEntriesModal}
+          onClose={() => setShowTimeEntriesModal(false)}
+          timeEntries={item.timeEntries}
+          checklistId={checklistId}
+          itemId={item.id}
+          category={category}
+          onUpdate={onUpdate}
+          usersPublicData={usersPublicData}
+        />
+      )}
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={item.text || t("checklists.untitledTask")}
+        size="fullscreen"
+        allowEnlarge
+        defaultEnlarged
+        className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
+      >
       <div className="kanban-card-detail-body flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:overflow-hidden">
         <div className="min-w-0 space-y-4 p-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           {isEditing ? (
@@ -545,9 +599,11 @@ export const KanbanCardDetail = ({
             onEstimatedTimeSave={handleEstimatedTimeSave}
             formatDateTimeString={formatDateTimeString}
             onStatusChange={handleStatusChange}
+            timeTracking={timeTrackingContent}
           />
         </div>
       </div>
-    </Modal>
+      </Modal>
+    </>
   );
 };

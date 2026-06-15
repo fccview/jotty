@@ -78,6 +78,7 @@ const KanbanCardComponent = ({
   const [showTimeEntriesModal, setShowTimeEntriesModal] = useState(false);
   const [showStatusSheet, setShowStatusSheet] = useState(false);
   const hideMobileStatusDropdown = user?.hideMobileStatusDropdown === "enable";
+  const hideTimeTrackingOnCards = user?.hideTimeTrackingOnCards === "enable";
 
   const kanbanItemHook = useKanbanItem({
     checklist,
@@ -157,7 +158,7 @@ const KanbanCardComponent = ({
           isOpen={showTimeEntriesModal}
           onClose={() => setShowTimeEntriesModal(false)}
           timeEntries={item.timeEntries}
-          checklistId={checklist.uuid || checklistId}
+          checklistId={checklistId}
           itemId={item.id}
           category={category}
           onUpdate={onUpdate}
@@ -255,29 +256,33 @@ const KanbanCardComponent = ({
               )}
             </div>
 
-            <KanbanItemTimer
-              totalTime={kanbanItemHook.totalTime}
-              currentTime={kanbanItemHook.currentTime}
-              isRunning={kanbanItemHook.isRunning}
-              formatTimerTime={formatTimerTime}
-              onTimerToggle={kanbanItemHook.handleTimerToggle}
-              onAddManualTime={kanbanItemHook.handleAddManualTime}
-            />
-
-            {item.timeEntries && item.timeEntries.length > 0 && (
-              <div onPointerDown={(e) => e.stopPropagation()}>
-                <TimeEntriesAccordion
-                  timeEntries={item.timeEntries}
-                  totalTime={
-                    kanbanItemHook.totalTime + kanbanItemHook.currentTime
-                  }
+            {!hideTimeTrackingOnCards && (
+              <>
+                <KanbanItemTimer
+                  totalTime={kanbanItemHook.totalTime}
+                  currentTime={kanbanItemHook.currentTime}
+                  isRunning={kanbanItemHook.isRunning}
                   formatTimerTime={formatTimerTime}
-                  usersPublicData={usersPublicData}
-                  formatDateString={formatDateString}
-                  formatTimeString={formatTimeString}
-                  onOpenTimeEntries={() => setShowTimeEntriesModal(true)}
+                  onTimerToggle={kanbanItemHook.handleTimerToggle}
+                  onAddManualTime={kanbanItemHook.handleAddManualTime}
                 />
-              </div>
+
+                {item.timeEntries && item.timeEntries.length > 0 && (
+                  <div onPointerDown={(e) => e.stopPropagation()}>
+                    <TimeEntriesAccordion
+                      timeEntries={item.timeEntries}
+                      totalTime={
+                        kanbanItemHook.totalTime + kanbanItemHook.currentTime
+                      }
+                      formatTimerTime={formatTimerTime}
+                      usersPublicData={usersPublicData}
+                      formatDateString={formatDateString}
+                      formatTimeString={formatTimeString}
+                      onOpenTimeEntries={() => setShowTimeEntriesModal(true)}
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             {item.recurrence && (

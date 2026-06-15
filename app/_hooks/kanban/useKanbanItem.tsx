@@ -15,6 +15,8 @@ import { useToast } from "@/app/_providers/ToastProvider";
 const TIMER_STORAGE_KEY = (checklistId: string, itemId: string) =>
   `jotty-timer-${checklistId}-${itemId}`;
 
+const TIMER_SYNC_EVENT = "jotty-timer-sync";
+
 interface UseKanbanItemProps {
   item: Item;
   checklist: Checklist;
@@ -79,7 +81,53 @@ export const useKanbanItem = ({
     } else {
       localStorage.removeItem(storageKey);
     }
+    // The same item can mount this hook twice at once (card + detail modal).
+    // The "storage" event only fires across tabs, so broadcast in-tab too.
+    window.dispatchEvent(
+      new CustomEvent(TIMER_SYNC_EVENT, { detail: { key: storageKey } })
+    );
   }, [isRunning, startTime, checklistId, item.id]);
+
+  useEffect(() => {
+    const storageKey = TIMER_STORAGE_KEY(checklistId, item.id);
+
+    const _syncFromStorage = () => {
+      let parsed: { startTime?: string; isRunning?: boolean } | null = null;
+      try {
+        const stored = localStorage.getItem(storageKey);
+        parsed = stored ? JSON.parse(stored) : null;
+      } catch {
+        parsed = null;
+      }
+
+      if (parsed?.isRunning && parsed.startTime) {
+        const storedStart = new Date(parsed.startTime);
+        setStartTime((prev) =>
+          prev?.getTime() === storedStart.getTime() ? prev : storedStart
+        );
+        setIsRunning((prev) => (prev ? prev : true));
+        setCurrentTime(Math.floor((Date.now() - storedStart.getTime()) / 1000));
+      } else {
+        setIsRunning((prev) => (prev ? false : prev));
+        setStartTime((prev) => (prev ? null : prev));
+        setCurrentTime((prev) => (prev ? 0 : prev));
+      }
+    };
+
+    const _handleStorage = (e: StorageEvent) => {
+      if (e.key === storageKey) _syncFromStorage();
+    };
+    const _handleSync = (e: Event) => {
+      if ((e as CustomEvent).detail?.key === storageKey) _syncFromStorage();
+    };
+
+    window.addEventListener("storage", _handleStorage);
+    window.addEventListener(TIMER_SYNC_EVENT, _handleSync);
+    return () => {
+      window.removeEventListener("storage", _handleStorage);
+      window.removeEventListener(TIMER_SYNC_EVENT, _handleSync);
+    };
+  }, [checklistId, item.id]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;

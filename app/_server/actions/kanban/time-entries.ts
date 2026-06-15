@@ -55,12 +55,10 @@ export const editTimeEntry = async (formData: FormData) => {
     const endTime = formData.get("endTime") as string;
     const duration = formData.get("duration") as string;
 
-    const [currentUser, list] = await Promise.all([
-      getCurrentUser(),
-      getListById(listId, undefined, category),
-    ]);
-
+    const currentUser = await getCurrentUser();
     if (!currentUser) return { error: "Not authenticated" };
+
+    const list = await getListById(listId, currentUser.username, category);
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(
@@ -107,12 +105,10 @@ export const deleteTimeEntry = async (formData: FormData) => {
       "listId", "itemId", "entryId", "category",
     ]);
 
-    const [currentUser, list] = await Promise.all([
-      getCurrentUser(),
-      getListById(listId, undefined, category),
-    ]);
-
+    const currentUser = await getCurrentUser();
     if (!currentUser) return { error: "Not authenticated" };
+
+    const list = await getListById(listId, currentUser.username, category);
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(

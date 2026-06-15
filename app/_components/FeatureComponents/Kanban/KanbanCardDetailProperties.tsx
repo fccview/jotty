@@ -42,6 +42,7 @@ interface KanbanCardDetailPropertiesProps {
   onEstimatedTimeChange: (v: string) => void;
   onEstimatedTimeSave: () => void;
   formatDateTimeString: (v: string) => string;
+  timeTracking?: ReactNode;
 }
 
 interface PropertySectionProps {
@@ -104,6 +105,7 @@ export const KanbanCardDetailProperties = ({
   onEstimatedTimeChange,
   onEstimatedTimeSave,
   formatDateTimeString,
+  timeTracking,
 }: KanbanCardDetailPropertiesProps) => {
   const t = useTranslations();
 
@@ -286,6 +288,12 @@ export const KanbanCardDetailProperties = ({
             )}
           </PropertySection>
         </>
+      )}
+
+      {timeTracking && (
+        <PropertySection title={t("kanban.timeTracking")}>
+          {timeTracking}
+        </PropertySection>
       )}
 
       {metadata.length > 0 && (
