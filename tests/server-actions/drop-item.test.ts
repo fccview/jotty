@@ -190,6 +190,48 @@ describe("dropItem", () => {
     expect(mockServerWriteFile).not.toHaveBeenCalled();
   });
 
+  it("accepts a default status on a legacy board without explicit statuses", async () => {
+    const { statuses: _statuses, ...legacyBoard } = mockBoard;
+    mockGetListById.mockImplementation(async (id: string) =>
+      id === BOARD_UUID ? structuredClone(legacyBoard) : undefined,
+    );
+
+    const result = await dropItem(
+      createFormData({
+        uuid: BOARD_UUID,
+        itemId: "task-1",
+        targetStatus: "in_progress",
+        targetIndex: "0",
+      }),
+    );
+
+    expect(result.success).toBe(true);
+    expect(result.data!.items.find((i) => i.id === "task-1")?.status).toBe(
+      "in_progress",
+    );
+    expect(mockServerWriteFile).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a target status that is not a default when none are defined", async () => {
+    const { statuses: _statuses, ...legacyBoard } = mockBoard;
+    mockGetListById.mockImplementation(async (id: string) =>
+      id === BOARD_UUID ? structuredClone(legacyBoard) : undefined,
+    );
+
+    const result = await dropItem(
+      createFormData({
+        uuid: BOARD_UUID,
+        itemId: "task-1",
+        targetStatus: "nonsense",
+        targetIndex: "0",
+      }),
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Invalid target status");
+    expect(mockServerWriteFile).not.toHaveBeenCalled();
+  });
+
   it("rejects without edit permission", async () => {
     mockCheckUserPermission.mockResolvedValue(false);
 
