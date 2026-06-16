@@ -10,6 +10,7 @@ import { broadcast } from "@/app/_server/ws/broadcast";
 import { applyDrop } from "@/app/_utils/kanban/board-utils";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { Checklist, Result } from "@/app/_types";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 
@@ -61,9 +62,11 @@ export const dropItem = async (
       return { success: false, error: "Item not found" };
     }
 
-    const isValidStatus = (list.statuses || []).some(
-      (s) => s.id === targetStatus,
-    );
+    const statuses =
+      list.statuses && list.statuses.length > 0
+        ? list.statuses
+        : DEFAULT_KANBAN_STATUSES;
+    const isValidStatus = statuses.some((s) => s.id === targetStatus);
     if (!isValidStatus) {
       return { success: false, error: "Invalid target status" };
     }
