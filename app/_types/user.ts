@@ -39,6 +39,7 @@ export type QuickCreateNotes = "enable" | "disable";
 export type HideConnectionIndicator = "enable" | "disable";
 export type HideStatusOnCards = "enable" | "disable";
 export type HideMobileStatusDropdown = "enable" | "disable";
+export type HideTimeTrackingOnCards = "enable" | "disable";
 export type CodeBlockStyle = "default" | "themed";
 export type ChecklistItemClickAction = "toggle" | "edit";
 
@@ -77,6 +78,7 @@ export interface User {
   hideConnectionIndicator?: HideConnectionIndicator;
   hideStatusOnCards?: HideStatusOnCards;
   hideMobileStatusDropdown?: HideMobileStatusDropdown;
+  hideTimeTrackingOnCards?: HideTimeTrackingOnCards;
   codeBlockStyle?: CodeBlockStyle;
   mfaEnabled?: boolean;
   mfaSecret?: string;

@@ -29,6 +29,7 @@ import {
   HideConnectionIndicator,
   HideStatusOnCards,
   HideMobileStatusDropdown,
+  HideTimeTrackingOnCards,
   CodeBlockStyle,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
@@ -75,6 +76,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   hideConnectionIndicator: user?.hideConnectionIndicator || "disable",
   hideStatusOnCards: user?.hideStatusOnCards || "disable",
   hideMobileStatusDropdown: user?.hideMobileStatusDropdown || "disable",
+  hideTimeTrackingOnCards: user?.hideTimeTrackingOnCards || "disable",
   codeBlockStyle: user?.codeBlockStyle || "default",
 });
 
@@ -171,6 +173,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
   const hasKanbanChanges = hasChanges([
     "hideStatusOnCards",
     "hideMobileStatusDropdown",
+    "hideTimeTrackingOnCards",
   ]);
 
   const validateAndSave = async <T extends Record<string, any>>(
@@ -952,7 +955,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           <Button
             onClick={() =>
               handleSaveSection(
-                ["hideStatusOnCards", "hideMobileStatusDropdown"],
+                [
+                  "hideStatusOnCards",
+                  "hideMobileStatusDropdown",
+                  "hideTimeTrackingOnCards",
+                ],
                 kanbanSettingsSchema,
                 "Kanban"
               )
@@ -1006,6 +1013,30 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           />
           <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.hideMobileStatusDropdownDescription')}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="hide-time-tracking-on-cards">
+            {t('settings.hideTimeTrackingOnCardsLabel')}
+          </Label>
+          <Dropdown
+            value={currentSettings.hideTimeTrackingOnCards || "disable"}
+            onChange={(value) =>
+              handleSettingChange(
+                "hideTimeTrackingOnCards",
+                value as HideTimeTrackingOnCards
+              )
+            }
+            options={[
+              { id: "disable", name: t('settings.showTimeTrackingOnCards') },
+              { id: "enable", name: t('settings.hideTimeTrackingOnCards') },
+            ]}
+            placeholder={t('settings.selectTimeTrackingOnCards')}
+            className="w-full"
+          />
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.hideTimeTrackingOnCardsDescription')}
           </p>
         </div>
       </FormWrapper>
