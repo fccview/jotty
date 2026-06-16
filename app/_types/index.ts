@@ -39,6 +39,7 @@ export type {
   HideConnectionIndicator,
   HideStatusOnCards,
   HideMobileStatusDropdown,
+  HideTimeTrackingOnCards,
   CodeBlockStyle,
   ChecklistItemClickAction,
 } from "./user";
