@@ -409,7 +409,7 @@
     "tags": "标签",
     "noTagsFound": "未找到标签",
     "searchTags": "搜索标签...",
-    "copyRawContent": "复制降价",
+    "copyRawContent": "复制 Markdown",
     "printSaveAsPdf": "打印 / 另存为PDF",
     "tableOfContents": "目录",
     "wordCount": "{count, plural, one {# 个字} other {# 个字}}",
