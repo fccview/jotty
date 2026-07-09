@@ -1,4 +1,4 @@
-import { AppMode, Checklist, ItemType, Note, Result, User } from "@/app/_types";
+import { AppMode, Checklist, ItemType, Note, Result } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { updateList } from "../checklist";
 import { updateNote, getNoteById } from "../note";
@@ -6,9 +6,11 @@ import { getCurrentUser, getUserIndex } from "../users";
 import { readJsonFile, writeJsonFile } from "../file";
 import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
 
+const _pinMatches = (entry: string, uuid: string): boolean =>
+  entry === uuid || entry.split("/").pop() === uuid;
+
 export const togglePin = async (
-  itemId: string,
-  category: string,
+  uuid: string,
   type: ItemType
 ): Promise<Result<null>> => {
   try {
@@ -21,30 +23,21 @@ export const togglePin = async (
     const userIndex = await getUserIndex(currentUser.username);
 
     const user = allUsers[userIndex];
-    const itemPath = `${category}/${itemId}`;
 
     if (type === ItemTypes.CHECKLIST) {
-      const pinnedLists = user.pinnedLists || [];
-      const isPinned = pinnedLists.includes(itemPath);
+      const pinnedLists: string[] = user.pinnedLists || [];
+      const isPinned = pinnedLists.some((entry) => _pinMatches(entry, uuid));
 
-      if (isPinned) {
-        user.pinnedLists = pinnedLists.filter(
-          (path: string) => path !== itemPath
-        );
-      } else {
-        user.pinnedLists = [...pinnedLists, itemPath];
-      }
+      user.pinnedLists = isPinned
+        ? pinnedLists.filter((entry) => !_pinMatches(entry, uuid))
+        : [...pinnedLists, uuid];
     } else {
-      const pinnedNotes = user.pinnedNotes || [];
-      const isPinned = pinnedNotes.includes(itemPath);
+      const pinnedNotes: string[] = user.pinnedNotes || [];
+      const isPinned = pinnedNotes.some((entry) => _pinMatches(entry, uuid));
 
-      if (isPinned) {
-        user.pinnedNotes = pinnedNotes.filter(
-          (path: string) => path !== itemPath
-        );
-      } else {
-        user.pinnedNotes = [...pinnedNotes, itemPath];
-      }
+      user.pinnedNotes = isPinned
+        ? pinnedNotes.filter((entry) => !_pinMatches(entry, uuid))
+        : [...pinnedNotes, uuid];
     }
 
     allUsers[userIndex] = user;
@@ -97,7 +90,7 @@ export const toggleArchive = async (
   const isOwner = !item.owner || currentUser?.username === item.owner;
   const formData = new FormData();
 
-  formData.append("id", item.id);
+  formData.append("uuid", item.uuid!);
   formData.append("title", item.title);
 
   if (item.owner) {
@@ -108,26 +101,15 @@ export const toggleArchive = async (
     const noteItem = item as Note;
     let content = noteItem.content;
     if (content === undefined || content === null) {
-      const fullNote = await getNoteById(
-        noteItem.uuid || noteItem.id,
-        noteItem.category || "Uncategorized",
-        noteItem.owner
-      );
+      const fullNote = await getNoteById(noteItem.uuid!, noteItem.owner);
       content = fullNote?.content || "";
     }
     formData.append("content", content);
-  } else {
-    const checklistItem = item as Checklist;
-    if (checklistItem.uuid) {
-      formData.append("uuid", checklistItem.uuid);
-    }
   }
 
   if (isOwner) {
     formData.append("category", newCategory || ARCHIVED_DIR_NAME);
   }
-
-  formData.append("originalCategory", item.category || "Uncategorized");
 
   let result: Result<Checklist | Note>;
   if (mode === Modes.NOTES) {

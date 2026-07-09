@@ -17,7 +17,7 @@ import {
   Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
+import { cn, itemHref as itemUrl } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
@@ -78,23 +78,20 @@ export const SidebarItem = ({
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
-  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || "Uncategorized", item.id)}`;
+  const itemType =
+    mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST;
+  const itemHref = itemUrl(itemType, item.uuid!);
 
   const handleDeleteItem = async () => {
     const formData = new FormData();
+    formData.append("uuid", item.uuid!);
 
     if (mode === Modes.CHECKLISTS) {
-      formData.append("id", item.id);
-      formData.append("category", item.category || "Uncategorized");
-      if (item.uuid) formData.append("uuid", item.uuid);
       const result = await deleteList(formData);
       if (result.success) {
         router.refresh();
       }
     } else {
-      formData.append("id", item.id);
-      formData.append("category", item.category || "Uncategorized");
-      if (item.uuid) formData.append("uuid", item.uuid);
       const result = await deleteNote(formData);
       if (result.success) {
         router.refresh();
@@ -106,13 +103,9 @@ export const SidebarItem = ({
   const handleTogglePin = async () => {
     if (!user || isTogglingPin) return;
 
-    setIsTogglingPin(item.id);
+    setIsTogglingPin(item.uuid!);
     try {
-      const result = await togglePin(
-        item.uuid || item.id,
-        item.category || "Uncategorized",
-        mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
-      );
+      const result = await togglePin(item.uuid!, itemType);
       if (result.success) {
         router.refresh();
       }
@@ -129,10 +122,9 @@ export const SidebarItem = ({
       mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
     if (!pinnedItems) return false;
 
-    const itemPath = `${item.category || "Uncategorized"}/${
-      item.uuid || item.id
-    }`;
-    return pinnedItems.includes(itemPath);
+    return pinnedItems.some(
+      (entry) => entry === item.uuid || entry.split("/").pop() === item.uuid,
+    );
   };
 
   const dropdownItems = [

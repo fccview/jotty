@@ -97,7 +97,14 @@ export const scanReminders = async (): Promise<void> => {
         const dueItems = _collectDueItems(list.items, now);
         if (dueItems.length === 0) continue;
 
-        const sharees = await getUsersWithAccess(list.id, list.uuid);
+        if (!list.uuid) {
+          console.warn(
+            `[reminders] skipping list without uuid: ${filePath}`,
+          );
+          continue;
+        }
+
+        const sharees = await getUsersWithAccess(list.uuid);
         const recipients = Array.from(new Set([owner, ...sharees]));
 
         let updatedItems = list.items;
@@ -114,7 +121,7 @@ export const scanReminders = async (): Promise<void> => {
                 board: list.title,
               },
               data: {
-                itemId: list.uuid || list.id,
+                itemId: list.uuid,
                 itemType: "checklist",
                 taskId: item.id,
               },
@@ -140,7 +147,7 @@ export const scanReminders = async (): Promise<void> => {
         await broadcast({
           type: "checklist",
           action: "updated",
-          entityId: updatedList.uuid || updatedList.id,
+          entityId: updatedList.uuid,
           username: owner,
         });
       } catch (err) {

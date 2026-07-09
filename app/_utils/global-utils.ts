@@ -1,5 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { ItemType } from "@/app/_types/core";
+import { ItemTypes } from "@/app/_types/enums";
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
 };
@@ -85,24 +87,11 @@ export function decodeCategoryPath(encodedPath: string): string {
     .join("/");
 }
 
-export function buildCategoryPath(category: string, id: string): string {
-  const encodedCategory = encodeCategoryPath(category);
-  return encodedCategory ? `${encodedCategory}/${encodeId(id)}` : encodeId(id);
-}
+export const itemHref = (type: ItemType, uuid: string): string =>
+  type === ItemTypes.CHECKLIST ? `/checklist/${uuid}` : `/note/${uuid}`;
 
-export function decodeId(encodedId: string): string {
-  if (!encodedId) {
-    return encodedId;
-  }
-  return decodeURIComponent(encodedId);
-}
-
-export function encodeId(id: string): string {
-  if (id.includes("%20") || id.includes("%2F")) {
-    return id;
-  }
-  return encodeURIComponent(id);
-}
+export const publicHref = (type: ItemType, uuid: string): string =>
+  `/public${itemHref(type, uuid)}`;
 
 export const generateWebManifest = (
   appName: string,

@@ -216,59 +216,29 @@ export const NoteEditorHeader = ({
 
   const handlePermanentDecryption = async (newContent: string) => {
     const formData = new FormData();
-    formData.append("id", note.id);
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
-    formData.append("originalCategory", note.category || "Uncategorized");
-    if (note.uuid) {
-      formData.append("uuid", note.uuid);
-    }
+    formData.append("uuid", note.uuid!);
 
     const result = await updateNote(formData);
 
     if (result.success && result.data) {
-      const categoryPath = buildCategoryPath(
-        result.data.category || t("notes.uncategorized"),
-        result.data.id
-      );
-      const newPath = `/note/${categoryPath}`;
-      const currentPath = window.location.pathname;
-
-      if (newPath === currentPath) {
-        window.location.reload();
-      } else {
-        router.push(newPath);
-      }
+      window.location.reload();
     }
   };
 
   const handleEncryptionSuccess = async (newContent: string) => {
     const formData = new FormData();
-    formData.append("id", note.id);
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
-    formData.append("originalCategory", note.category || "Uncategorized");
-    if (note.uuid) {
-      formData.append("uuid", note.uuid);
-    }
+    formData.append("uuid", note.uuid!);
 
     const result = await updateNote(formData);
 
     if (result.success && result.data) {
-      const categoryPath = buildCategoryPath(
-        result.data.category || t("notes.uncategorized"),
-        result.data.id
-      );
-      const newPath = `/note/${categoryPath}`;
-      const currentPath = window.location.pathname;
-
-      if (newPath === currentPath) {
-        window.location.reload();
-      } else {
-        router.push(newPath);
-      }
+      window.location.reload();
     }
   };
 

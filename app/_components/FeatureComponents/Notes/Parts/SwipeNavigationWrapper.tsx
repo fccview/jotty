@@ -6,7 +6,8 @@ import { Note } from "@/app/_types";
 import { useAdjacentNotes } from "@/app/_hooks/useAdjacentNotes";
 import { useSwipeNavigation } from "@/app/_hooks/useSwipeNavigation";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
-import { isMobileDevice, buildCategoryPath } from "@/app/_utils/global-utils";
+import { isMobileDevice, itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface SwipeNavigationWrapperProps {
   children: ReactNode;
@@ -16,8 +17,8 @@ interface SwipeNavigationWrapperProps {
 }
 
 const getNoteUrl = (note: Partial<Note> | null, embed = false): string | null => {
-  if (!note?.id) return null;
-  const base = `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`;
+  if (!note?.uuid) return null;
+  const base = itemHref(ItemTypes.NOTE, note.uuid);
   return embed ? `${base}?embed=true` : base;
 };
 

@@ -15,7 +15,6 @@ import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { ReferencedBySection } from "../Notes/Parts/ReferencedBySection";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import {
   Settings01Icon,
@@ -64,14 +63,9 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   >(null);
   const { linkIndex, notes, checklists, appSettings, allSharedItems } =
     useAppMode();
-  const encodedCategory = encodeCategoryPath(
-    checklist.category || "Uncategorized",
-  );
   const isShared =
     allSharedItems?.checklists.some(
-      (sharedChecklist) =>
-        sharedChecklist.id === checklist.id &&
-        sharedChecklist.category === encodedCategory,
+      (sharedChecklist) => sharedChecklist.uuid === checklist.uuid,
     ) || false;
   const { permissions } = usePermissions();
   const {

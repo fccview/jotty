@@ -1,120 +1,28 @@
-import { redirect } from "next/navigation";
-import { getAllLists, getListById } from "@/app/_server/actions/checklist";
-import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
-import { CheckForNeedsMigration } from "@/app/_server/actions/note";
-import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
-import type { Metadata } from "next";
+import { redirect, permanentRedirect } from "next/navigation";
 import { Modes } from "@/app/_types/enums";
-import { getMedatadaTitle } from "@/app/_server/actions/config";
-import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
-import { sharingInfo } from "@/app/_utils/sharing-utils";
-import { isItemSharedWith } from "@/app/_server/actions/sharing";
-import { MetadataProvider } from "@/app/_providers/MetadataProvider";
-import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
-import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
-import { isEnvEnabled } from "@/app/_utils/env-utils";
+import { legacyResolve } from "@/app/_server/lib/legacy-lookup";
+import { decodeCategoryPath } from "@/app/_utils/global-utils";
 
-interface PublicChecklistPageProps {
+interface LegacyPublicChecklistProps {
   params: Promise<{
     categoryPath: string[];
   }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(
-  props: PublicChecklistPageProps,
-): Promise<Metadata> {
-  const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
-
-  return getMedatadaTitle(Modes.CHECKLISTS, id, category);
-}
-
-export default async function PublicChecklistPage(
-  props: PublicChecklistPageProps,
+export default async function LegacyPublicChecklist(
+  props: LegacyPublicChecklistProps,
 ) {
-  const searchParams = await props.searchParams;
   const params = await props.params;
   const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
+  const id = decodeURIComponent(categoryPath[categoryPath.length - 1]);
+  const category = decodeCategoryPath(categoryPath.slice(0, -1).join("/"));
 
-  await CheckForNeedsMigration();
+  const uuid = await legacyResolve(Modes.CHECKLISTS, category, id);
 
-  let checklist = await getListById(id, undefined, category);
-
-  if (!checklist) {
-    const listsResult = await getAllLists();
-    if (!listsResult.success || !listsResult.data) {
-      redirect("/");
-    }
-
-    checklist = listsResult.data.find(
-      (list) => list.id === id && list.category === category,
-    );
-
-    if (!checklist && categoryPath.length === 1) {
-      checklist = listsResult.data.find(
-        (list) => list.id === id && list.category === "Uncategorized",
-      );
-
-      if (!checklist) {
-        checklist = listsResult.data.find((list) => list.id === id);
-      }
-    }
-  }
-
-  if (!checklist) {
-    redirect("/");
-  }
-
-  const userRecord = await getUserByUsername(checklist.owner!);
-  const user = sanitizeUserForPublic(
-    userRecord,
-    !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
-  );
-
-  const isPubliclyShared = await isItemSharedWith(
-    checklist.uuid || id,
-    category,
-    "checklist",
-    "public",
-  );
-  const currentUser = await getCurrentUser();
-  const isOwner = currentUser?.username === checklist.owner;
-  const isPrintView = searchParams?.view_mode === "print";
-
-  if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
-    const metadata = {
-      id: checklist.id,
-      uuid: checklist.uuid,
-      title: checklist.title,
-      category: checklist.category || "Uncategorized",
-      owner: checklist.owner,
-      createdAt: checklist.createdAt,
-      updatedAt: checklist.updatedAt,
-      type: "checklist" as const,
-    };
-
-    return (
-      <MetadataProvider metadata={metadata}>
-        <PermissionsProvider item={checklist}>
-          <PublicChecklistView checklist={checklist} user={user} />
-        </PermissionsProvider>
-      </MetadataProvider>
-    );
+  if (uuid) {
+    permanentRedirect(`/public/checklist/${uuid}`);
   }
 
   redirect("/");

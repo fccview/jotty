@@ -19,7 +19,8 @@ import { NOTES_DIR } from "@/app/_consts/files";
 import { PermissionTypes, Modes } from "@/app/_types/enums";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
 import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
-import { buildCategoryPath, getFormData } from "@/app/_utils/global-utils";
+import { getFormData } from "@/app/_utils/global-utils";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import {
   updateIndexForItem,
   parseInternalLinks,
@@ -144,16 +145,13 @@ export const createNote = async (formData: FormData) => {
 
 export const updateNote = async (formData: FormData, autosaveNotes = false) => {
   try {
-    const { id, title, content, category, originalCategory, user, uuid } =
-      getFormData(formData, [
-        "id",
-        "title",
-        "content",
-        "category",
-        "originalCategory",
-        "user",
-        "uuid",
-      ]);
+    const { title, content, category, user, uuid } = getFormData(formData, [
+      "title",
+      "content",
+      "category",
+      "user",
+      "uuid",
+    ]);
     const settings = await getSettings();
 
     let currentUser = user;
@@ -171,27 +169,14 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       return { error: "Not authenticated" };
     }
 
-    const sanitizedContent = sanitizeMarkdown(content);
-    const { contentWithoutMetadata } = stripYaml(sanitizedContent);
-    const processedContent = settings?.editor?.enableBilateralLinks
-      ? await convertInternalLinksToNewFormat(
-          contentWithoutMetadata,
-          currentUser,
-          originalCategory
-        )
-      : contentWithoutMetadata;
-
-    const convertedContent = processedContent;
-
-    const note = await getNoteById(uuid || id, originalCategory, undefined);
+    const note = await getNoteById(uuid);
 
     if (!note) {
       throw new Error("Note not found");
     }
 
     const canEdit = await checkUserPermission(
-      note.uuid || id,
-      originalCategory,
+      note.uuid!,
       "note",
       actingUsername,
       PermissionTypes.EDIT
@@ -200,6 +185,18 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     if (!canEdit) {
       return { error: "Permission denied" };
     }
+
+    const sanitizedContent = sanitizeMarkdown(content);
+    const { contentWithoutMetadata } = stripYaml(sanitizedContent);
+    const processedContent = settings?.editor?.enableBilateralLinks
+      ? await convertInternalLinksToNewFormat(
+          contentWithoutMetadata,
+          currentUser,
+          note.category
+        )
+      : contentWithoutMetadata;
+
+    const convertedContent = processedContent;
 
     const encryptionMethod =
       detectEncryptionMethod(convertedContent) || undefined;
@@ -221,12 +218,13 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const ownerDir = NOTES_DIR(note.owner!);
     const categoryDir = path.join(
       ownerDir,
-      updatedDoc.category || "Uncategorized"
+      updatedDoc.category || UNCATEGORIZED
     );
     await ensureDir(categoryDir);
 
+    const currentId = note.id;
     let newFilename: string;
-    let newId = id;
+    let newId = currentId;
 
     if (title !== note.title) {
       const ownerUser = await getCurrentUser();
@@ -239,27 +237,24 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       );
       newId = path.basename(newFilename, ".md");
     } else {
-      newFilename = `${id}.md`;
+      newFilename = `${currentId}.md`;
     }
 
-    if (newId !== id) {
+    if (newId !== currentId) {
       updatedDoc.id = newId;
     }
 
     const filePath = path.join(categoryDir, newFilename);
 
     let oldFilePath: string | null = null;
-    if (category && category !== note.category) {
+    if (
+      (category && category !== note.category) ||
+      newId !== currentId
+    ) {
       oldFilePath = path.join(
         ownerDir,
-        note.category || "Uncategorized",
-        `${id}.md`
-      );
-    } else if (newId !== id) {
-      oldFilePath = path.join(
-        ownerDir,
-        note.category || "Uncategorized",
-        `${id}.md`
+        note.category || UNCATEGORIZED,
+        `${currentId}.md`
       );
     }
 
@@ -267,7 +262,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     if (!autosaveNotes && !updatedDoc.encrypted) {
       const historyRelativePath = path.join(
-        updatedDoc.category || "Uncategorized",
+        updatedDoc.category || UNCATEGORIZED,
         `${newId}.md`
       );
 
@@ -276,9 +271,12 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
       const historyMetadata = isCategoryChange
         ? {
-            oldCategory: note.category || "Uncategorized",
-            newCategory: updatedDoc.category || "Uncategorized",
-            oldPath: path.join(note.category || "Uncategorized", `${id}.md`),
+            oldCategory: note.category || UNCATEGORIZED,
+            newCategory: updatedDoc.category || UNCATEGORIZED,
+            oldPath: path.join(
+              note.category || UNCATEGORIZED,
+              `${currentId}.md`
+            ),
           }
         : undefined;
 
@@ -294,11 +292,11 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     if (settings?.editor?.enableBilateralLinks) {
       try {
         const links = (await parseInternalLinks(updatedDoc.content)) || [];
-        const newItemKey = `${updatedDoc.category || "Uncategorized"}/${
+        const newItemKey = `${updatedDoc.category || UNCATEGORIZED}/${
           updatedDoc.id
         }`;
 
-        const oldItemKey = `${note.category || "Uncategorized"}/${id}`;
+        const oldItemKey = `${note.category || UNCATEGORIZED}/${currentId}`;
 
         if (oldItemKey !== newItemKey) {
           await rebuildLinkIndex(note.owner!);
@@ -315,27 +313,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       }
     }
 
-    if (newId !== id || (category && category !== note.category)) {
-      const { updateSharingData } = await import(
-        "@/app/_server/actions/sharing"
-      );
-
-      await updateSharingData(
-        {
-          id,
-          category: note.category || "Uncategorized",
-          itemType: "note",
-          sharer: note.owner!,
-        },
-        {
-          id: newId,
-          category: updatedDoc.category || "Uncategorized",
-          itemType: "note",
-          sharer: note.owner!,
-        }
-      );
-    }
-
     if (oldFilePath && oldFilePath !== filePath) {
       await serverDeleteFile(oldFilePath);
     }
@@ -343,20 +320,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     try {
       if (!autosaveNotes) {
         revalidatePath("/");
-        const oldCategoryPath = buildCategoryPath(
-          note.category || "Uncategorized",
-          id
-        );
-        const newCategoryPath = buildCategoryPath(
-          updatedDoc.category || "Uncategorized",
-          newId !== id ? newId : id
-        );
-
-        revalidatePath(`/note/${oldCategoryPath}`);
-
-        if (newId !== id || note.category !== updatedDoc.category) {
-          revalidatePath(`/note/${newCategoryPath}`);
-        }
+        revalidatePath(`/note/${note.uuid}`);
       }
     } catch (error) {
       console.warn(
@@ -394,12 +358,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
 export const deleteNote = async (formData: FormData, username?: string) => {
   try {
-    const { id, category, uuid } = getFormData(formData, [
-      "id",
-      "category",
-      "uuid",
-    ]);
-    const itemIdentifier = uuid || id;
+    const { uuid } = getFormData(formData, ["uuid"]);
 
     let currentUser: any = null;
     if (username) {
@@ -418,15 +377,14 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       return { error: "Not authenticated" };
     }
 
-    const note = await getNoteById(itemIdentifier, category, undefined);
+    const note = await getNoteById(uuid!);
 
     if (!note) {
       return { error: "Document not found" };
     }
 
     const canDelete = await checkUserPermission(
-      note.uuid || itemIdentifier,
-      category,
+      note.uuid!,
       "note",
       currentUser.username,
       PermissionTypes.DELETE
@@ -440,7 +398,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     const ownerDir = NOTES_DIR(ownerUsername);
     const filePath = path.join(
       ownerDir,
-      note.category || "Uncategorized",
+      note.category || UNCATEGORIZED,
       `${note.id}.md`
     );
 
@@ -448,7 +406,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
 
     if (!note.encrypted) {
       const deleteRelativePath = path.join(
-        note.category || "Uncategorized",
+        note.category || UNCATEGORIZED,
         `${note.id}.md`
       );
       commitNote(
@@ -472,8 +430,6 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       await updateSharingData(
         {
           uuid: note.uuid,
-          id: note.id,
-          category: note.category || "Uncategorized",
           itemType: "note",
           sharer: note.owner,
         },
@@ -483,11 +439,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
 
     try {
       revalidatePath("/");
-      const categoryPath = buildCategoryPath(
-        note.category || "Uncategorized",
-        note.id
-      );
-      revalidatePath(`/note/${categoryPath}`);
+      revalidatePath(`/note/${note.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -509,7 +461,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     return { success: true };
   } catch (error) {
     const { uuid } = getFormData(formData, ["uuid"]);
-    const note = await getNoteById(uuid!, "");
+    const note = await getNoteById(uuid!);
     await logContentEvent(
       "note_deleted",
       "note",
@@ -523,17 +475,11 @@ export const deleteNote = async (formData: FormData, username?: string) => {
 
 export const cloneNote = async (formData: FormData) => {
   try {
-    const id = formData.get("id") as string;
     const uuid = formData.get("uuid") as string;
-    const originalCategory = formData.get("originalCategory") as string | null;
     const targetCategory = formData.get("category") as string;
     const ownerUsername = formData.get("user") as string | null;
 
-    const note = await getNoteById(
-      uuid || id,
-      originalCategory || undefined,
-      ownerUsername || undefined
-    );
+    const note = await getNoteById(uuid, ownerUsername || undefined);
     if (!note) {
       return { error: "Note not found" };
     }
@@ -544,8 +490,8 @@ export const cloneNote = async (formData: FormData) => {
     const isOwnedByCurrentUser =
       !note.owner || note.owner === currentUser?.username;
     const finalTargetCategory = isOwnedByCurrentUser
-      ? targetCategory || "Uncategorized"
-      : "Uncategorized";
+      ? targetCategory || UNCATEGORIZED
+      : UNCATEGORIZED;
 
     const categoryDir = path.join(userDir, finalTargetCategory);
     await ensureDir(categoryDir);
@@ -561,8 +507,9 @@ export const cloneNote = async (formData: FormData) => {
     const filePath = path.join(categoryDir, filename);
 
     const content = note.content || "";
+    const cloneUuid = generateUuid();
     const updatedContent = updateYamlMetadata(content, {
-      uuid: generateUuid(),
+      uuid: cloneUuid,
       title: cloneTitle,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -570,12 +517,7 @@ export const cloneNote = async (formData: FormData) => {
 
     await serverWriteFile(filePath, updatedContent);
 
-    const newId = path.basename(filename, ".md");
-    const clonedNote = await getNoteById(
-      newId,
-      finalTargetCategory,
-      currentUser?.username
-    );
+    const clonedNote = await getNoteById(cloneUuid, currentUser?.username);
 
     try {
       revalidatePath("/");
@@ -586,7 +528,7 @@ export const cloneNote = async (formData: FormData) => {
       );
     }
 
-    await broadcast({ type: "note", action: "created", entityId: newId, username: currentUser?.username || "" });
+    await broadcast({ type: "note", action: "created", entityId: cloneUuid, username: currentUser?.username || "" });
 
     return { success: true, data: clonedNote };
   } catch (error) {

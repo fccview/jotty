@@ -26,6 +26,24 @@ import { exec } from "child_process";
 
 const execAsync = promisify(exec);
 
+const _stampUuid = async (filePath: string): Promise<string | undefined> => {
+  try {
+    const content = await serverReadFile(filePath);
+    if (!content) return undefined;
+
+    const uuid = generateUuid();
+    await fs.writeFile(
+      filePath,
+      updateYamlMetadata(content, { uuid }),
+      "utf-8",
+    );
+    return uuid;
+  } catch (error) {
+    console.warn("Failed to stamp UUID on note:", filePath, error);
+    return undefined;
+  }
+};
+
 export const readNotesRecursively = async (
   dir: string,
   basePath: string = "",
@@ -194,7 +212,10 @@ export const readNotesRecursively = async (
 
         return {
           id,
-          uuid: typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
+          uuid:
+            typeof metadata?.uuid === "string"
+              ? metadata.uuid
+              : await _stampUuid(filePath),
           title: typeof metadata?.title === "string" ? metadata.title : id,
           category: categoryPath,
           createdAt: toIso(stats.birthtime),
@@ -215,7 +236,10 @@ export const readNotesRecursively = async (
 
         return {
           id,
-          uuid: typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
+          uuid:
+            typeof metadata?.uuid === "string"
+              ? metadata.uuid
+              : await _stampUuid(filePath),
           title: typeof metadata?.title === "string" ? metadata.title : id,
           content: excerpt,
           category: categoryPath,
@@ -233,7 +257,15 @@ export const readNotesRecursively = async (
           let uuid = metadata.uuid;
           if (!uuid) {
             uuid = generateUuid();
-            updateYamlMetadata(content, { uuid });
+            try {
+              await fs.writeFile(
+                filePath,
+                updateYamlMetadata(content, { uuid }),
+                "utf-8",
+              );
+            } catch (error) {
+              console.warn("Failed to save UUID to note file:", error);
+            }
           }
           return {
             id,

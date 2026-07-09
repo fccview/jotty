@@ -4,7 +4,7 @@ import { useNavigationGuard } from "../_providers/NavigationGuardProvider";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Checklist, Category, Note, AppMode, SanitisedUser } from "../_types";
 import { ItemTypes, Modes } from "../_types/enums";
-import { buildCategoryPath } from "../_utils/global-utils";
+import { itemHref } from "../_utils/global-utils";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { useSidebarStore } from "../_utils/sidebar-store";
 
@@ -168,15 +168,14 @@ export const useSidebar = (props: SidebarProps) => {
   };
 
   const isItemSelected = (item: Checklist | Note) => {
-    const expectedPath = buildCategoryPath(
-      item.category || "Uncategorized",
-      item.id
-    )?.toLowerCase();
+    if (!item.uuid) return false;
 
     return (
       pathname?.toLowerCase() ===
-      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
-        }/${expectedPath}`.toLowerCase()
+      itemHref(
+        mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
+        item.uuid,
+      ).toLowerCase()
     );
   };
 

@@ -1,19 +1,23 @@
-import { redirect } from "next/navigation";
+import { redirect, permanentRedirect } from "next/navigation";
 import {
   CheckForNeedsMigration,
   getNoteById,
-  getUserNotes,
 } from "@/app/_server/actions/note";
-import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
+import {
+  getCurrentUser,
+  canAccessAllContent,
+} from "@/app/_server/actions/users";
 import { NoteClient } from "@/app/_components/FeatureComponents/Notes/NoteClient";
 import { Modes } from "@/app/_types/enums";
 import { getCategories } from "@/app/_server/actions/category";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
+import { isUuid } from "@/app/_consts/identity";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 
-interface AdminNotePageProps {
+interface NotePageProps {
   params: Promise<{
     uuid: string;
   }>;
@@ -21,33 +25,43 @@ interface AdminNotePageProps {
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(props: AdminNotePageProps): Promise<Metadata> {
+export async function generateMetadata(props: NotePageProps): Promise<Metadata> {
   const params = await props.params;
-  const { uuid } = params;
-  return getMedatadaTitle(Modes.NOTES, uuid);
+  return getMedatadaTitle(Modes.NOTES, params.uuid);
 }
 
-export default async function AdminNotePage(props: AdminNotePageProps) {
+export default async function NotePage(props: NotePageProps) {
   const params = await props.params;
   const { uuid } = params;
-  const hasContentAccess = await canAccessAllContent();
 
-  if (!hasContentAccess) {
+  if (!isUuid(uuid)) {
+    const { legacyResolve } = await import("@/app/_server/lib/legacy-lookup");
+    const resolved = await legacyResolve(
+      Modes.NOTES,
+      UNCATEGORIZED,
+      decodeURIComponent(uuid),
+    );
+
+    if (resolved) {
+      permanentRedirect(`/note/${resolved}`);
+    }
+
     redirect("/");
   }
+
+  const user = await getCurrentUser();
+  const username = user?.username || "";
+  const hasContentAccess = await canAccessAllContent();
 
   await CheckForNeedsMigration();
 
-  const [docsResult, categoriesResult] = await Promise.all([
-    getUserNotes({ isRaw: true }),
-    getCategories(Modes.NOTES),
-  ]);
+  const categoriesResult = await getCategories(Modes.NOTES);
 
-  if (!docsResult.success || !docsResult.data) {
-    redirect("/");
+  let note = await getNoteById(uuid, username);
+
+  if (!note && hasContentAccess) {
+    note = await getNoteById(uuid);
   }
-
-  const note = await getNoteById(uuid);
 
   if (!note) {
     redirect("/");
@@ -62,7 +76,7 @@ export default async function AdminNotePage(props: AdminNotePageProps) {
     id: note.id,
     uuid: note.uuid,
     title: note.title,
-    category: note.category || "Uncategorized",
+    category: note.category || UNCATEGORIZED,
     owner: note.owner,
     createdAt: note.createdAt,
     updatedAt: note.updatedAt,

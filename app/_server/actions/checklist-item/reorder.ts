@@ -6,13 +6,11 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import {
-  getAllLists,
-  getUserChecklists,
-} from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { isAdmin, getUsername } from "@/app/_server/actions/users";
+import { getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { broadcast } from "@/app/_server/ws/broadcast";
 
 export const reorderItems = async (formData: FormData) => {
@@ -20,19 +18,11 @@ export const reorderItems = async (formData: FormData) => {
     const listId = formData.get("listId") as string;
     const activeItemId = formData.get("activeItemId") as string;
     const overItemId = formData.get("overItemId") as string;
-    const category = formData.get("category") as string;
     const isDropInto = formData.get("isDropInto") === "true";
     const position = (formData.get("position") as string) || "before";
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
-    }
-
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
-    );
+    const currentUser = await getUsername();
+    const list = await getListById(listId, currentUser);
     if (!list) {
       throw new Error("List not found");
     }
@@ -140,10 +130,10 @@ export const reorderItems = async (formData: FormData) => {
       CHECKLISTS_FOLDER,
       list.owner!
     );
-    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${list.id}.md`);
 
     const markdownContent = listToMarkdown(updatedList as any);
 
@@ -151,7 +141,7 @@ export const reorderItems = async (formData: FormData) => {
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -159,7 +149,7 @@ export const reorderItems = async (formData: FormData) => {
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: (await getUsername()) });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 

@@ -4,7 +4,7 @@ import { AppMode, ItemType } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
 import { ItemTypes } from "@/app/_types/enums";
-import { encodeCategoryPath, encodeId } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
 import { search } from "@/app/_server/actions/search";
 
 interface useSearchProps {
@@ -39,9 +39,9 @@ export const useSearch = ({
 
   const handleSelectResult = useCallback(
     (result: SearchResult) => {
-      const targetPath = `/${result.type}/${encodeCategoryPath(
-        result.category || "Uncategorized"
-      )}/${encodeId(result.id)}`;
+      if (!result.uuid) return;
+
+      const targetPath = itemHref(result.type as ItemTypes, result.uuid);
       const targetMode = `${result.type}s` as AppMode;
 
       if (mode !== targetMode && onModeChange) {

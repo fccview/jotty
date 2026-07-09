@@ -12,6 +12,7 @@ import {
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Checklist, Result } from "@/app/_types";
 import {
   ItemTypes,
@@ -26,7 +27,6 @@ export const archiveItem = async (
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
-    const category = formData.get("category") as string;
 
     const currentUser = await getUsername();
 
@@ -34,14 +34,13 @@ export const archiveItem = async (
       return { success: false, error: "List ID and item ID are required" };
     }
 
-    const list = await getListById(listId, currentUser, category);
+    const list = await getListById(listId, currentUser);
     if (!list) {
       return { success: false, error: "List not found" };
     }
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category,
+      list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT
@@ -86,16 +85,16 @@ export const archiveItem = async (
       CHECKLISTS_FOLDER,
       list.owner!
     );
-    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${list.id}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -103,7 +102,7 @@ export const archiveItem = async (
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -118,7 +117,6 @@ export const unarchiveItem = async (
   try {
     const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
-    const category = formData.get("category") as string;
 
     const currentUser = await getUsername();
 
@@ -126,14 +124,13 @@ export const unarchiveItem = async (
       return { success: false, error: "List ID and item ID are required" };
     }
 
-    const list = await getListById(listId, currentUser, category);
+    const list = await getListById(listId, currentUser);
     if (!list) {
       return { success: false, error: "List not found" };
     }
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category,
+      list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT
@@ -182,16 +179,16 @@ export const unarchiveItem = async (
       CHECKLISTS_FOLDER,
       list.owner!
     );
-    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${list.id}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -199,7 +196,7 @@ export const unarchiveItem = async (
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
