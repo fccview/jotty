@@ -25,16 +25,16 @@ export const archiveItem = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
 
     const currentUser = await getUsername();
 
-    if (!listId || !itemId) {
-      return { success: false, error: "List ID and item ID are required" };
+    if (!uuid || !itemId) {
+      return { success: false, error: "List uuid and item ID are required" };
     }
 
-    const list = await getListById(listId, currentUser);
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       return { success: false, error: "List not found" };
     }
@@ -115,16 +115,16 @@ export const unarchiveItem = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
 
     const currentUser = await getUsername();
 
-    if (!listId || !itemId) {
-      return { success: false, error: "List ID and item ID are required" };
+    if (!uuid || !itemId) {
+      return { success: false, error: "List uuid and item ID are required" };
     }
 
-    const list = await getListById(listId, currentUser);
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       return { success: false, error: "List not found" };
     }

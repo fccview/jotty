@@ -8,7 +8,8 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { getNoteById, updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
@@ -40,13 +41,9 @@ export const EditNoteModal = ({
 
   useEffect(() => {
     const fetchNote = async () => {
-      if (!user?.username) return;
+      if (!user?.username || !initialNote.uuid) return;
 
-      const fetchedNote = await getNoteById(
-        initialNote.uuid || initialNote.id,
-        initialNote.category || "Uncategorized",
-        user.username
-      );
+      const fetchedNote = await getNoteById(initialNote.uuid, user.username);
 
       if (!fetchedNote) {
         setNote(null);
@@ -74,7 +71,6 @@ export const EditNoteModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", note.id);
     formData.append("title", title.trim());
     formData.append("content", note.content || "");
     formData.append("unarchive", unarchive ? "true" : "false");
@@ -89,22 +85,13 @@ export const EditNoteModal = ({
       formData.append("category", category || "Uncategorized");
     }
 
-    formData.append("originalCategory", note.category || "Uncategorized");
-
     const result = await updateNote(formData, false);
 
     setIsLoading(false);
 
     if (result.success && result.data) {
-      const updatedNote = result.data;
-
-      const categoryPath = buildCategoryPath(
-        updatedNote.category || t("notes.uncategorized"),
-        updatedNote.id
-      );
-
-      if (!unarchive) {
-        router.push(`/note/${categoryPath}`);
+      if (!unarchive && result.data.uuid) {
+        router.push(itemHref(ItemTypes.NOTE, result.data.uuid));
       }
       onUpdated();
     }

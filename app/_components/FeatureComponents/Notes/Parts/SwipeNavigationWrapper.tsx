@@ -11,8 +11,7 @@ import { ItemTypes } from "@/app/_types/enums";
 
 interface SwipeNavigationWrapperProps {
   children: ReactNode;
-  noteId: string;
-  noteCategory?: string;
+  noteUuid: string;
   enabled: boolean;
 }
 
@@ -24,8 +23,7 @@ const getNoteUrl = (note: Partial<Note> | null, embed = false): string | null =>
 
 export const SwipeNavigationWrapper = ({
   children,
-  noteId,
-  noteCategory,
+  noteUuid,
   enabled,
 }: SwipeNavigationWrapperProps) => {
   const router = useRouter();
@@ -36,7 +34,7 @@ export const SwipeNavigationWrapper = ({
   const nextRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  const { prev, next } = useAdjacentNotes(noteId);
+  const { prev, next } = useAdjacentNotes(noteUuid);
 
   const prevUrl = getNoteUrl(prev, true);
   const nextUrl = getNoteUrl(next, true);

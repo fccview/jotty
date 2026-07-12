@@ -8,8 +8,8 @@ import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { Checklist, Category, Note, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
-import { Modes } from "@/app/_types/enums";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { ItemTypes, Modes } from "@/app/_types/enums";
+import { itemHref } from "@/app/_utils/global-utils";
 import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHeader";
 
 interface SharingStatus {
@@ -70,11 +70,8 @@ export const HomeClient = ({
           user={user}
           onCreateModal={handleOpenCreateModal}
           onSelectChecklist={(list) => {
-            const categoryPath = buildCategoryPath(
-              list.category || "Uncategorized",
-              list.id
-            );
-            router.push(`/checklist/${categoryPath}`);
+            if (!list.uuid) return;
+            router.push(itemHref(ItemTypes.CHECKLIST, list.uuid));
           }}
         />
       )}
@@ -86,11 +83,8 @@ export const HomeClient = ({
           user={user}
           onCreateModal={handleOpenCreateModal}
           onSelectNote={(note) => {
-            const categoryPath = buildCategoryPath(
-              note.category || "Uncategorized",
-              note.id
-            );
-            router.push(`/note/${categoryPath}`);
+            if (!note.uuid) return;
+            router.push(itemHref(ItemTypes.NOTE, note.uuid));
           }}
         />
       )}

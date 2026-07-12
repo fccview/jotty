@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { createItem } from "@/app/_server/actions/checklist-item";
 import { isKanbanType } from "@/app/_types/enums";
@@ -23,7 +23,8 @@ export async function POST(
         );
       }
 
-      const board = await getListById(params.boardId, user.username);
+      const uuid = await listUuid(request, params.boardId, user.username);
+      const board = uuid ? await getListById(uuid, user.username) : undefined;
       if (!board) {
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
@@ -36,9 +37,7 @@ export async function POST(
       }
 
       const formData = new FormData();
-      formData.append("listId", board.id);
       formData.append("text", text);
-      formData.append("category", board.category || "Uncategorized");
       if (status) formData.append("status", status);
       if (description) formData.append("description", description);
 

@@ -134,9 +134,8 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
   const handleUnarchive = async (itemId: string) => {
     const formData = new FormData();
-    formData.append("listId", localChecklist.id);
+    formData.append("uuid", localChecklist.uuid || "");
     formData.append("itemId", itemId);
-    formData.append("category", localChecklist.category || "Uncategorized");
 
     const result = await unarchiveItem(formData);
     if (result.success && result.data) {
@@ -152,9 +151,8 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
       for (const item of items) {
         const formData = new FormData();
-        formData.append("listId", localChecklist.id);
+        formData.append("uuid", localChecklist.uuid || "");
         formData.append("itemId", item.id);
-        formData.append("category", localChecklist.category || "Uncategorized");
 
         const result = await archiveItem(formData);
         if (!result.success || !result.data) {
@@ -192,8 +190,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       }
     },
     [
-      localChecklist.id,
-      localChecklist.category,
+      localChecklist.uuid,
       onUpdate,
       refreshChecklist,
       showToast,
@@ -280,8 +277,6 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 title={column.title}
                 items={items}
                 status={column.status}
-                checklistId={localChecklist.id}
-                category={localChecklist.category || "Uncategorized"}
                 onUpdate={handleItemUpdate}
                 onOpenDetail={(item) => setDetailItemId(item.id)}
                 isShared={isShared}
@@ -317,18 +312,11 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     return getReferences(
       linkIndex,
       localChecklist.uuid,
-      localChecklist.category,
       ItemTypes.CHECKLIST,
       notes,
       checklists,
     );
-  }, [
-    linkIndex,
-    localChecklist.uuid,
-    localChecklist.category,
-    checklists,
-    notes,
-  ]);
+  }, [linkIndex, localChecklist.uuid, checklists, notes]);
 
   return (
     <div className="h-full flex flex-col bg-background overflow-y-auto overflow-x-hidden min-w-0 max-w-full jotty-scrollable-content">
@@ -456,8 +444,6 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                   checklist={localChecklist}
                   item={ghostItem}
                   isDragging
-                  checklistId={localChecklist.id}
-                  category={localChecklist.category || "Uncategorized"}
                   onUpdate={() => { }}
                   onOpenDetail={() => { }}
                   isShared={isShared}
@@ -485,8 +471,6 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           isOpen={!!calendarSelectedItem}
           onClose={() => setCalendarSelectedItem(null)}
           onUpdate={handleItemUpdate}
-          checklistId={localChecklist.id}
-          category={localChecklist.category || "Uncategorized"}
         />
       )}
 
@@ -497,8 +481,6 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
           isOpen={!!detailItem}
           onClose={() => setDetailItemId(null)}
           onUpdate={handleItemUpdate}
-          checklistId={localChecklist.id}
-          category={localChecklist.category || "Uncategorized"}
         />
       )}
 

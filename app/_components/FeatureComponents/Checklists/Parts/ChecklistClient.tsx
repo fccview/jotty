@@ -18,7 +18,8 @@ import { useChecklist } from "@/app/_hooks/useChecklist";
 import { isKanbanType, Modes } from "@/app/_types/enums";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
 
 interface ChecklistClientProps {
@@ -84,11 +85,7 @@ export const ChecklistClient = ({
 
   const handleCloneConfirm = async (targetCategory: string) => {
     const formData = new FormData();
-    formData.append("id", localChecklist.id);
-    formData.append(
-      "originalCategory",
-      localChecklist.category || "Uncategorized",
-    );
+    formData.append("uuid", localChecklist.uuid || "");
     formData.append("category", targetCategory || "Uncategorized");
     if (localChecklist.owner) {
       formData.append("user", localChecklist.owner);
@@ -97,13 +94,8 @@ export const ChecklistClient = ({
     const { cloneChecklist } = await import("@/app/_server/actions/checklist");
     const result = await cloneChecklist(formData);
 
-    if (result.success && result.data) {
-      router.push(
-        `/checklist/${buildCategoryPath(
-          result.data.category || "Uncategorized",
-          result.data.id,
-        )}`,
-      );
+    if (result.success && result.data?.uuid) {
+      router.push(itemHref(ItemTypes.CHECKLIST, result.data.uuid));
       router.refresh();
     }
   };
@@ -219,8 +211,8 @@ export const ChecklistClient = ({
         <CreateListModal
           onClose={() => setShowCreateModal(false)}
           onCreated={(newChecklist) => {
-            if (newChecklist) {
-              router.push(`/checklist/${newChecklist.id}`);
+            if (newChecklist?.uuid) {
+              router.push(itemHref(ItemTypes.CHECKLIST, newChecklist.uuid));
             }
             setShowCreateModal(false);
             router.refresh();

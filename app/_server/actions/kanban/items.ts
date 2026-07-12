@@ -48,13 +48,13 @@ async function _saveAndBroadcast(list: Checklist, username: string) {
 
 export const updateKanbanItemPriority = async (formData: FormData) => {
   try {
-    const { listId, itemId, priority } = getFormData(formData, [
-      "listId", "itemId", "priority",
+    const { uuid, itemId, priority } = getFormData(formData, [
+      "uuid", "itemId", "priority",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId),
+      getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
@@ -86,13 +86,13 @@ export const updateKanbanItemPriority = async (formData: FormData) => {
 
 export const updateKanbanItemScore = async (formData: FormData) => {
   try {
-    const { listId, itemId, score } = getFormData(formData, [
-      "listId", "itemId", "score",
+    const { uuid, itemId, score } = getFormData(formData, [
+      "uuid", "itemId", "score",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId),
+      getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
@@ -124,13 +124,13 @@ export const updateKanbanItemScore = async (formData: FormData) => {
 
 export const assignKanbanItem = async (formData: FormData) => {
   try {
-    const { listId, itemId, assignee } = getFormData(formData, [
-      "listId", "itemId", "assignee",
+    const { uuid, itemId, assignee } = getFormData(formData, [
+      "uuid", "itemId", "assignee",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId),
+      getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
@@ -173,13 +173,13 @@ export const assignKanbanItem = async (formData: FormData) => {
 
 export const setKanbanItemReminder = async (formData: FormData) => {
   try {
-    const { listId, itemId, reminder: reminderStr } = getFormData(formData, [
-      "listId", "itemId", "reminder",
+    const { uuid, itemId, reminder: reminderStr } = getFormData(formData, [
+      "uuid", "itemId", "reminder",
     ]);
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId),
+      getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };

@@ -379,7 +379,7 @@ export const deleteList = async (formData: FormData) => {
       true,
       { category: list.category }
     );
-    await broadcast({ type: "checklist", action: "deleted", entityId: list.uuid || list.id, username: currentUser.username });
+    await broadcast({ type: "checklist", action: "deleted", entityId: list.uuid, username: currentUser.username });
 
     return { success: true };
   } catch (error) {

@@ -15,14 +15,14 @@ import { broadcast } from "@/app/_server/ws/broadcast";
 
 export const reorderItems = async (formData: FormData) => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const activeItemId = formData.get("activeItemId") as string;
     const overItemId = formData.get("overItemId") as string;
     const isDropInto = formData.get("isDropInto") === "true";
     const position = (formData.get("position") as string) || "before";
 
     const currentUser = await getUsername();
-    const list = await getListById(listId, currentUser);
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       throw new Error("List not found");
     }

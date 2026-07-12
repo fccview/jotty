@@ -368,11 +368,9 @@ export const useNoteEditor = ({
 
   const confirmDelete = async () => {
     const formData = new FormData();
-    formData.append("id", note.id);
-    formData.append("category", note.category || "");
-    if (note.uuid) formData.append("uuid", note.uuid);
+    formData.append("uuid", note.uuid!);
     await deleteNote(formData);
-    onDelete?.(note.id);
+    onDelete?.(note.uuid!);
     router.refresh();
     onBack();
     setShowDeleteModal(false);

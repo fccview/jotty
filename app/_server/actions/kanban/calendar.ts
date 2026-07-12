@@ -7,9 +7,9 @@ import { parseItemsForCalendar, CalendarEvent } from "@/app/_utils/kanban/calend
 
 export const exportBoardAsICS = async (formData: FormData) => {
   try {
-    const { listId } = getFormData(formData, ["listId"]);
+    const { uuid } = getFormData(formData, ["uuid"]);
 
-    const list = await getListById(listId);
+    const list = await getListById(uuid);
     if (!list) return { error: "Board not found" };
 
     const icsContent = generateICS(list.items, list.title);
@@ -22,9 +22,9 @@ export const exportBoardAsICS = async (formData: FormData) => {
 
 export const getCalendarEvents = async (formData: FormData) => {
   try {
-    const { listId } = getFormData(formData, ["listId"]);
+    const { uuid } = getFormData(formData, ["uuid"]);
 
-    const list = await getListById(listId);
+    const list = await getListById(uuid);
     if (!list) return { error: "Board not found" };
 
     const events: CalendarEvent[] = parseItemsForCalendar(list.items);

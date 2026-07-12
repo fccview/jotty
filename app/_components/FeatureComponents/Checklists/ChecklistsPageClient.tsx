@@ -25,6 +25,7 @@ import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/Chec
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
 import { useChecklistsFilter } from "@/app/_components/FeatureComponents/Checklists/ChecklistsClient";
 import { isKanbanType } from "@/app/_types/enums";
+import { itemHref } from "@/app/_utils/global-utils";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -54,12 +55,13 @@ export const ChecklistsPageClient = ({
     let filtered = [...initialLists];
 
     if (checklistFilter === "pinned") {
-      const pinnedPaths = user?.pinnedLists || [];
-      filtered = filtered.filter((list) => {
-        const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
-        const idPath = `${list.category || "Uncategorized"}/${list.id}`;
-        return pinnedPaths.includes(uuidPath) || pinnedPaths.includes(idPath);
-      });
+      const pinnedEntries = user?.pinnedLists || [];
+      filtered = filtered.filter((list) =>
+        pinnedEntries.some(
+          (entry) =>
+            entry === list.uuid || entry.split("/").pop() === list.uuid,
+        ),
+      );
     } else if (checklistFilter === "completed") {
       filtered = filtered.filter(
         (list) =>
@@ -135,15 +137,11 @@ export const ChecklistsPageClient = ({
   ]);
 
   const handleTogglePin = async (list: Checklist) => {
-    if (!user || isTogglingPin === list.id) return;
+    if (!user || !list.uuid || isTogglingPin === list.uuid) return;
 
-    setIsTogglingPin(list.id);
+    setIsTogglingPin(list.uuid);
     try {
-      const result = await togglePin(
-        list.id,
-        list.category || "Uncategorized",
-        ItemTypes.CHECKLIST,
-      );
+      const result = await togglePin(list.uuid, ItemTypes.CHECKLIST);
       if (result.success) {
         router.refresh();
       }
@@ -268,14 +266,15 @@ export const ChecklistsPageClient = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {paginatedItems.map((list) => (
                 <ChecklistCard
-                  key={list.id}
+                  key={list.uuid}
                   list={list}
-                  onSelect={(list) => {
-                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
-                    router.push(`/checklist/${categoryPath}`);
-                  }}
-                  isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`,
+                  onSelect={(list) =>
+                    router.push(itemHref(ItemTypes.CHECKLIST, list.uuid || ""))
+                  }
+                  isPinned={user?.pinnedLists?.some(
+                    (entry) =>
+                      entry === list.uuid ||
+                      entry.split("/").pop() === list.uuid,
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />
@@ -287,14 +286,15 @@ export const ChecklistsPageClient = ({
             <div className="space-y-3">
               {paginatedItems.map((list) => (
                 <ChecklistListItem
-                  key={list.id}
+                  key={list.uuid}
                   list={list}
-                  onSelect={(list) => {
-                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
-                    router.push(`/checklist/${categoryPath}`);
-                  }}
-                  isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`,
+                  onSelect={(list) =>
+                    router.push(itemHref(ItemTypes.CHECKLIST, list.uuid || ""))
+                  }
+                  isPinned={user?.pinnedLists?.some(
+                    (entry) =>
+                      entry === list.uuid ||
+                      entry.split("/").pop() === list.uuid,
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />
@@ -306,14 +306,15 @@ export const ChecklistsPageClient = ({
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {paginatedItems.map((list) => (
                 <ChecklistGridItem
-                  key={list.id}
+                  key={list.uuid}
                   list={list}
-                  onSelect={(list) => {
-                    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
-                    router.push(`/checklist/${categoryPath}`);
-                  }}
-                  isPinned={user?.pinnedLists?.includes(
-                    `${list.category || "Uncategorized"}/${list.id}`,
+                  onSelect={(list) =>
+                    router.push(itemHref(ItemTypes.CHECKLIST, list.uuid || ""))
+                  }
+                  isPinned={user?.pinnedLists?.some(
+                    (entry) =>
+                      entry === list.uuid ||
+                      entry.split("/").pop() === list.uuid,
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />

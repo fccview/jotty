@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 
 interface SearchResult {
   id: string;
+  uuid?: string;
   title: string;
   type: ItemType;
   content?: string;
@@ -73,7 +74,7 @@ export const SearchResults = ({
     <div className="max-h-[50vh] overflow-y-auto">
       {results.map((result, index) => (
         <button
-          key={result.id}
+          key={result.uuid || result.id}
           onClick={() => onSelectResult(result)}
           className={cn(
             "w-full border-b border-border p-4 text-left transition-colors last:border-b-0 hover:bg-accent hover:text-accent-foreground md:p-3",

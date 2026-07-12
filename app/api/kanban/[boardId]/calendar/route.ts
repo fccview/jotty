@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import {
   generateICS,
@@ -16,7 +16,8 @@ export async function GET(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const board = await getListById(params.boardId, user.username);
+      const uuid = await listUuid(request, params.boardId, user.username);
+      const board = uuid ? await getListById(uuid, user.username) : undefined;
       if (!board) {
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }

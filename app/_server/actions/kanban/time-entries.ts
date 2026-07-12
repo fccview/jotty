@@ -48,8 +48,8 @@ async function _saveAndBroadcast(list: Checklist, username: string) {
 
 export const editTimeEntry = async (formData: FormData) => {
   try {
-    const { listId, itemId, entryId } = getFormData(formData, [
-      "listId", "itemId", "entryId",
+    const { uuid, itemId, entryId } = getFormData(formData, [
+      "uuid", "itemId", "entryId",
     ]);
 
     const startTime = formData.get("startTime") as string;
@@ -59,7 +59,7 @@ export const editTimeEntry = async (formData: FormData) => {
     const currentUser = await getCurrentUser();
     if (!currentUser) return { error: "Not authenticated" };
 
-    const list = await getListById(listId, currentUser.username);
+    const list = await getListById(uuid, currentUser.username);
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(
@@ -102,14 +102,14 @@ export const editTimeEntry = async (formData: FormData) => {
 
 export const deleteTimeEntry = async (formData: FormData) => {
   try {
-    const { listId, itemId, entryId } = getFormData(formData, [
-      "listId", "itemId", "entryId",
+    const { uuid, itemId, entryId } = getFormData(formData, [
+      "uuid", "itemId", "entryId",
     ]);
 
     const currentUser = await getCurrentUser();
     if (!currentUser) return { error: "Not authenticated" };
 
-    const list = await getListById(listId, currentUser.username);
+    const list = await getListById(uuid, currentUser.username);
     if (!list) return { error: "List not found" };
 
     const canEdit = await checkUserPermission(

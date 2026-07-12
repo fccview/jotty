@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
@@ -17,7 +17,8 @@ export async function GET(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const task = await getListById(params.taskId, user.username);
+      const uuid = await listUuid(request, params.taskId, user.username);
+      const task = uuid ? await getListById(uuid, user.username) : undefined;
       if (!task) {
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
@@ -78,7 +79,8 @@ export async function DELETE(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const task = await getListById(params.taskId, user.username);
+      const uuid = await listUuid(request, params.taskId, user.username);
+      const task = uuid ? await getListById(uuid, user.username) : undefined;
       if (!task) {
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }

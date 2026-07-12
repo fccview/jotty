@@ -18,7 +18,6 @@ import {
 } from "@dnd-kit/sortable";
 import { useNotesHome } from "@/app/_hooks/useNotesHome";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
@@ -133,11 +132,8 @@ export const NotesHome = ({
   }, [selectedFilter, tagsIndex]);
 
   const getNoteSharer = (note: Note) => {
-    const encodedCategory = encodeCategoryPath(
-      note.category || "Uncategorized",
-    );
     const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.id === note.id && item.category === encodedCategory,
+      (item) => item.uuid === note.uuid,
     );
     return sharedItem?.sharer;
   };
@@ -220,7 +216,7 @@ export const NotesHome = ({
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={pinned.map((note) => note.uuid || note.id)}
+                items={pinned.map((note) => note.uuid)}
                 strategy={verticalListSortingStrategy}
               >
                 {viewMode === "card" && (
@@ -231,7 +227,7 @@ export const NotesHome = ({
                   >
                     {pinned.map((note) => (
                       <div
-                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        key={`pinned-${note.category}-${note.uuid}`}
                         className="mb-6"
                       >
                         <NoteCard
@@ -251,7 +247,7 @@ export const NotesHome = ({
                   <div className="space-y-3">
                     {pinned.map((note) => (
                       <NoteListItem
-                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        key={`pinned-${note.category}-${note.uuid}`}
                         note={note}
                         onSelect={onSelectNote}
                         isPinned={true}
@@ -267,7 +263,7 @@ export const NotesHome = ({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {pinned.map((note) => (
                       <NoteGridItem
-                        key={`pinned-${note.category}-${note.uuid || note.id}`}
+                        key={`pinned-${note.category}-${note.uuid}`}
                         note={note}
                         onSelect={onSelectNote}
                         isPinned={true}

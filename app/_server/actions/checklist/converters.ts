@@ -26,15 +26,11 @@ import { getListById, getUserChecklists } from "./queries";
 
 export const convertChecklistType = async (formData: FormData) => {
   try {
-    const {
-      listId,
-      newType: type,
-      uuid,
-    } = getFormData(formData, ["listId", "newType", "uuid"]);
+    const { newType: type, uuid } = getFormData(formData, ["newType", "uuid"]);
     const newType = type as ChecklistType;
 
-    if (!listId || !newType) {
-      return { error: "List ID and type are required" };
+    if (!uuid || !newType) {
+      return { error: "UUID and type are required" };
     }
 
     let list = await getListById(uuid);

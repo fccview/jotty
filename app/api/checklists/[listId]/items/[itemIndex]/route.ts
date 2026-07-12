@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { updateItem } from "@/app/_server/actions/checklist-item";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
@@ -121,7 +121,8 @@ export async function PATCH(
         );
       }
 
-      const list = await getListById(params.listId, user.username);
+      const uuid = await listUuid(request, params.listId, user.username);
+      const list = uuid ? await getListById(uuid, user.username) : undefined;
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
@@ -156,9 +157,7 @@ export async function PATCH(
       }
 
       const formData = new FormData();
-      formData.append("listId", list.id);
       formData.append("itemId", item.id);
-      formData.append("category", list.category || "Uncategorized");
       if (text !== undefined && text !== null) formData.append("text", text);
       if (description !== undefined)
         formData.append("description", description ?? "");
@@ -202,7 +201,8 @@ export async function DELETE(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const list = await getListById(params.listId, user.username);
+      const uuid = await listUuid(request, params.listId, user.username);
+      const list = uuid ? await getListById(uuid, user.username) : undefined;
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }

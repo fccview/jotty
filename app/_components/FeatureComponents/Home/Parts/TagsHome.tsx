@@ -12,10 +12,8 @@ import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/Chec
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import Masonry from "react-masonry-css";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import {
-  encodeCategoryPath,
-  buildCategoryPath,
-} from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useMemo, useState, useEffect, useTransition } from "react";
@@ -123,39 +121,27 @@ export const TagsHome = ({
   }, [selectedFilter, tagsIndex]);
 
   const getNoteSharer = (note: Note) => {
-    const encodedCategory = encodeCategoryPath(
-      note.category || "Uncategorized",
-    );
     const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.id === note.id && item.category === encodedCategory,
+      (item) => item.uuid && item.uuid === note.uuid,
     );
     return sharedItem?.sharer;
   };
 
   const getListSharer = (list: Checklist) => {
-    const encodedCategory = encodeCategoryPath(
-      list.category || "Uncategorized",
-    );
     const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.id === list.id && item.category === encodedCategory,
+      (item) => item.uuid && item.uuid === list.uuid,
     );
     return sharedItem?.sharer;
   };
 
   const handleSelectNote = (note: Note) => {
-    const categoryPath = buildCategoryPath(
-      note.category || "Uncategorized",
-      note.id,
-    );
-    router.push(`/note/${categoryPath}`);
+    if (!note.uuid) return;
+    router.push(itemHref(ItemTypes.NOTE, note.uuid));
   };
 
   const handleSelectChecklist = (list: Checklist) => {
-    const categoryPath = buildCategoryPath(
-      list.category || "Uncategorized",
-      list.id,
-    );
-    router.push(`/checklist/${categoryPath}`);
+    if (!list.uuid) return;
+    router.push(itemHref(ItemTypes.CHECKLIST, list.uuid));
   };
 
   if (combinedItems.length === 0 && !selectedFilter) {
@@ -178,7 +164,7 @@ export const TagsHome = ({
       if (viewMode === "card") {
         return (
           <div
-            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+            key={`${keyPrefix}-note-${note.category}-${note.uuid}`}
             className="mb-6"
           >
             <NoteCard
@@ -193,7 +179,7 @@ export const TagsHome = ({
       if (viewMode === "list") {
         return (
           <NoteListItem
-            key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+            key={`${keyPrefix}-note-${note.category}-${note.uuid}`}
             note={note}
             onSelect={handleSelectNote}
             isPinned={false}
@@ -203,7 +189,7 @@ export const TagsHome = ({
       }
       return (
         <NoteGridItem
-          key={`${keyPrefix}-note-${note.category}-${note.uuid || note.id}`}
+          key={`${keyPrefix}-note-${note.category}-${note.uuid}`}
           note={note}
           onSelect={handleSelectNote}
           isPinned={false}
@@ -216,7 +202,7 @@ export const TagsHome = ({
     if (viewMode === "card") {
       return (
         <div
-          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+          key={`${keyPrefix}-cl-${list.category}-${list.uuid}`}
           className="mb-6"
         >
           <ChecklistCard
@@ -231,7 +217,7 @@ export const TagsHome = ({
     if (viewMode === "list") {
       return (
         <ChecklistListItem
-          key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+          key={`${keyPrefix}-cl-${list.category}-${list.uuid}`}
           list={list}
           onSelect={handleSelectChecklist}
           isPinned={false}
@@ -241,7 +227,7 @@ export const TagsHome = ({
     }
     return (
       <ChecklistGridItem
-        key={`${keyPrefix}-cl-${list.category}-${list.uuid || list.id}`}
+        key={`${keyPrefix}-cl-${list.category}-${list.uuid}`}
         list={list}
         onSelect={handleSelectChecklist}
         isPinned={false}

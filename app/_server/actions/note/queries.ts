@@ -303,18 +303,14 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       limit &&
       limit > 0
     ) {
-      const pathMatches = (
-        note: { category?: string; uuid?: string; id: string },
-        p: string,
-      ) => {
-        const u = note.uuid || note.id;
+      const pathMatches = (note: { uuid?: string }, p: string) => {
+        const u = note.uuid;
         return p === u || p.split("/").pop() === u;
       };
       const pinned: typeof filteredNotes = [];
       for (const p of pinnedPaths) {
-        const found = filteredNotes.find(
-          (n: { category?: string; uuid?: string; id: string }) =>
-            pathMatches(n, p),
+        const found = filteredNotes.find((n: { uuid?: string }) =>
+          pathMatches(n, p),
         );
         if (found) pinned.push(found);
       }

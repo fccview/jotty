@@ -342,11 +342,11 @@ export const deleteItem = async (
   formData: FormData,
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
 
     const currentUser = await getUsername();
-    const list = await getListById(listId, currentUser);
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       throw new Error("List not found");
     }

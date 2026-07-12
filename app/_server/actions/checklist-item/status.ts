@@ -28,7 +28,7 @@ export const updateItemStatus = async (
   usernameOverride?: string
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
     const status = formData.get("status") as string;
     const timeEntriesStr = formData.get("timeEntries") as string;
@@ -37,8 +37,8 @@ export const updateItemStatus = async (
     const username =
       usernameOverride || formDataUsername || (await getUsername());
 
-    if (!listId || !itemId) {
-      return { success: false, error: "List ID and item ID are required" };
+    if (!uuid || !itemId) {
+      return { success: false, error: "List uuid and item ID are required" };
     }
 
     if (!status && !timeEntriesStr) {
@@ -71,7 +71,7 @@ export const updateItemStatus = async (
       }
     }
 
-    const list = await getListById(listId, username);
+    const list = await getListById(uuid, username);
     if (!list) {
       return { success: false, error: "List not found" };
     }

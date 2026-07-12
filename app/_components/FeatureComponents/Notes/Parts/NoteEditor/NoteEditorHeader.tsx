@@ -38,11 +38,7 @@ import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
-import {
-  copyTextToClipboard,
-  encodeCategoryPath,
-  buildCategoryPath,
-} from "@/app/_utils/global-utils";
+import { copyTextToClipboard } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
@@ -163,13 +159,7 @@ export const NoteEditorHeader = ({
   };
 
   const handleCopyId = async () => {
-    const success = await copyTextToClipboard(
-      `${note?.uuid
-        ? note?.uuid
-        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id
-        }`
-      }`
-    );
+    const success = await copyTextToClipboard(note?.uuid || "");
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -243,12 +233,7 @@ export const NoteEditorHeader = ({
   };
 
   const { globalSharing } = useAppMode();
-  const encodedCategory = encodeCategoryPath(metadata.category);
-  const itemDetails = sharingInfo(
-    globalSharing,
-    metadata.uuid || metadata.id,
-    encodedCategory
-  );
+  const itemDetails = sharingInfo(globalSharing, metadata.uuid || "");
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
   const sharedWith = itemDetails.sharedWith;
   const isPubliclyShared = itemDetails.isPublic;
@@ -297,12 +282,7 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0"
-                      title={`Copy ID: ${note?.uuid
-                        ? note?.uuid
-                        : `${encodeCategoryPath(
-                          note?.category || t("notes.uncategorized")
-                        )}/${note?.id}`
-                        }`}
+                      title={`Copy ID: ${note?.uuid || ""}`}
                     >
                       {copied ? (
                         <Tick02Icon className="h-3 w-3 text-green-500" />

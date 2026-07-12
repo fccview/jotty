@@ -456,7 +456,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       { category: note.category }
     );
 
-    await broadcast({ type: "note", action: "deleted", entityId: note.uuid || note.id, username: currentUser.username });
+    await broadcast({ type: "note", action: "deleted", entityId: note.uuid, username: currentUser.username });
 
     return { success: true };
   } catch (error) {

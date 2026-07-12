@@ -20,7 +20,6 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { ChecklistsTypes } from "@/app/_types/enums";
@@ -62,8 +61,7 @@ export const ChecklistHeader = ({
   const { permissions } = usePermissions();
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
 
-  const encodedCategory = encodeCategoryPath(metadata.category);
-  const itemDetails = sharingInfo(globalSharing, metadata.uuid || metadata.id, encodedCategory);
+  const itemDetails = sharingInfo(globalSharing, metadata.uuid || "");
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
 
   const sharedWith = itemDetails.sharedWith;
@@ -91,7 +89,7 @@ export const ChecklistHeader = ({
               size="sm"
               onClick={handleCopyId}
               className="h-6 w-6 p-0"
-              title={`Copy ID: ${checklist?.uuid || checklist?.id}`}
+              title={`Copy ID: ${checklist?.uuid}`}
             >
               {copied ? (
                 <Tick02Icon className="h-3 w-3 text-green-500" />

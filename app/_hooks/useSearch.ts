@@ -15,6 +15,7 @@ interface useSearchProps {
 
 interface SearchResult {
   id: string;
+  uuid?: string;
   title: string;
   type: ItemType;
   category?: string;
@@ -70,6 +71,7 @@ export const useSearch = ({
         if (result.success && result.data) {
           const formatted = result.data.map((item) => ({
             id: item.id,
+            uuid: item.uuid,
             title:
               appSettings?.parseContent === "yes"
                 ? item.title

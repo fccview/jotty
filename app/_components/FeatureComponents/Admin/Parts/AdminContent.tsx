@@ -13,7 +13,6 @@ import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
 import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
 import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { updateTagsFromContent } from "@/app/_server/actions/tags";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";

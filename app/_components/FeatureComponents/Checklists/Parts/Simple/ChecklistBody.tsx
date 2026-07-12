@@ -63,12 +63,11 @@ export const ChecklistBody = ({
     return getReferences(
       linkIndex,
       localList.uuid,
-      localList.category,
       ItemTypes.CHECKLIST,
       notes,
       checklists
     );
-  }, [linkIndex, localList.uuid, localList.category, notes, checklists]);
+  }, [linkIndex, localList.uuid, notes, checklists]);
 
   const onDragStart = (event: DragStartEvent) => {
     const findItem = (items: Item[], id: string): Item | undefined => {

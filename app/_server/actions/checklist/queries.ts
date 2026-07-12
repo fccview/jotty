@@ -194,7 +194,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       limitNum !== undefined
     ) {
       const pathMatches = (list: ChecklistReadResult, p: string) => {
-        const u = (list as { uuid?: string }).uuid || list.id;
+        const u = (list as { uuid?: string }).uuid;
         return p === u || p.split("/").pop() === u;
       };
       const pinned: ChecklistReadResult[] = [];

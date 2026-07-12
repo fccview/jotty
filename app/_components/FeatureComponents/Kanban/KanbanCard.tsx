@@ -34,8 +34,6 @@ interface KanbanCardProps {
   index?: number;
   listId?: string;
   isDragging?: boolean;
-  checklistId: string;
-  category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
   onOpenDetail: (item: Item) => void;
   isShared: boolean;
@@ -49,8 +47,6 @@ const KanbanCardComponent = ({
   index = 0,
   listId,
   isDragging,
-  checklistId,
-  category,
   onUpdate,
   onOpenDetail,
   isShared,
@@ -83,8 +79,6 @@ const KanbanCardComponent = ({
   const kanbanItemHook = useKanbanItem({
     checklist,
     item,
-    checklistId,
-    category,
     onUpdate,
   });
 
@@ -158,9 +152,8 @@ const KanbanCardComponent = ({
           isOpen={showTimeEntriesModal}
           onClose={() => setShowTimeEntriesModal(false)}
           timeEntries={item.timeEntries}
-          checklistId={checklistId}
+          checklistUuid={checklist.uuid || ""}
           itemId={item.id}
-          category={category}
           onUpdate={onUpdate}
           usersPublicData={usersPublicData}
         />
