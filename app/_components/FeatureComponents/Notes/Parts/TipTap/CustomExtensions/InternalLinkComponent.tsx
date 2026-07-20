@@ -12,18 +12,13 @@ import {
 import { useRouter } from "next/navigation";
 import { getNoteById } from "@/app/_server/actions/note";
 import { getListById } from "@/app/_server/actions/checklist";
-import {
-  buildCategoryPath,
-  decodeCategoryPath,
-  encodeCategoryPath,
-} from "@/app/_utils/global-utils";
+import { decodeCategoryPath, itemHref } from "@/app/_utils/global-utils";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes } from "@/app/_types/enums";
-import { encodeId } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 
 interface InternalLinkComponentProps {
@@ -45,13 +40,8 @@ interface InternalLinkComponentProps {
 const _returnNote = async (uuid: string, router: any, note?: Note) => {
   const finalNote = note || (await getNoteById(uuid));
 
-  if (finalNote) {
-    router.push(
-      `/note/${buildCategoryPath(
-        finalNote.category || "Uncategorized",
-        finalNote.id,
-      )}`,
-    );
+  if (finalNote?.uuid) {
+    router.push(itemHref(ItemTypes.NOTE, finalNote.uuid));
     return;
   }
 
@@ -65,13 +55,8 @@ const _returnChecklist = async (
 ) => {
   const finalChecklist = checklist || (await getListById(uuid));
 
-  if (finalChecklist) {
-    router.push(
-      `/checklist/${buildCategoryPath(
-        finalChecklist.category || "Uncategorized",
-        finalChecklist.id,
-      )}`,
-    );
+  if (finalChecklist?.uuid) {
+    router.push(itemHref(ItemTypes.CHECKLIST, finalChecklist.uuid));
     return;
   }
   return undefined;
@@ -147,16 +132,14 @@ export const InternalLinkComponent = ({
     if (href.startsWith("/jotty/")) {
       const uuidFromPath = href.replace("/jotty/", "");
 
-      if (fullItem && fullItem.id) {
+      if (fullItem?.uuid) {
         router.push(
-          `/${
-            fullItem && "type" in fullItem && fullItem.type
+          itemHref(
+            "type" in fullItem && fullItem.type
               ? ItemTypes.CHECKLIST
-              : ItemTypes.NOTE
-          }/${buildCategoryPath(
-            fullItem.category || "Uncategorized",
-            fullItem.id,
-          )}`,
+              : ItemTypes.NOTE,
+            fullItem.uuid,
+          ),
         );
         return;
       }
@@ -184,67 +167,37 @@ export const InternalLinkComponent = ({
     e.stopPropagation();
 
     if (isJottyLink) {
-      if (fullItem && fullItem.id) {
-        const pathPrefix =
-          fullItem && "type" in fullItem && fullItem.type
-            ? "/checklist/"
-            : "/note/";
-        const newHref = `${pathPrefix}${buildCategoryPath(
-          fullItem.category || "Uncategorized",
-          fullItem.id,
-        )}`;
+      const isChecklist = fullItem && "type" in fullItem && fullItem.type;
+      const targetUuid = fullItem?.uuid || uuid || href.replace("/jotty/", "");
+
+      if (targetUuid) {
         updateAttributes({
-          href: newHref,
-          type:
-            fullItem && "type" in fullItem && fullItem.type
-              ? "checklist"
-              : "note",
-          category: fullItem.category || "Uncategorized",
-          itemId: fullItem.id,
-          convertToBidirectional: false,
-        });
-      } else if (itemId && category) {
-        const pathPrefix = type === "checklist" ? "/checklist/" : "/note/";
-        const newHref = `${pathPrefix}${buildCategoryPath(category, itemId)}`;
-        updateAttributes({
-          href: newHref,
+          href: itemHref(
+            isChecklist ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
+            targetUuid,
+          ),
+          type: isChecklist ? "checklist" : "note",
+          category: fullItem?.category || category || "Uncategorized",
           convertToBidirectional: false,
         });
       } else {
         console.warn("Cannot convert jotty to path - missing data");
       }
     } else if (isPathBasedLink) {
-      if (uuid) {
+      const resolvedUuid =
+        uuid ||
+        fullItem?.uuid ||
+        notes.find((n) => n.id === itemId && (n.category || "") === (category || ""))?.uuid ||
+        checklists.find((c) => c.id === itemId && (c.category || "") === (category || ""))?.uuid;
+
+      if (resolvedUuid) {
         updateAttributes({
-          href: `/jotty/${uuid}`,
+          href: `/jotty/${resolvedUuid}`,
+          uuid: resolvedUuid,
           convertToBidirectional: false,
         });
-      } else if (itemId && category) {
-        const foundItem =
-          notes.find(
-            (n) =>
-              encodeId(n.id || "") === encodeId(itemId) &&
-              encodeCategoryPath(n?.category || "") ===
-                encodeCategoryPath(category),
-          ) ||
-          checklists.find(
-            (c) =>
-              encodeId(c.id || "") === encodeId(itemId) &&
-              encodeCategoryPath(c?.category || "") ===
-                encodeCategoryPath(category),
-          );
-
-        if (foundItem?.uuid) {
-          updateAttributes({
-            href: `/jotty/${foundItem.uuid}`,
-            uuid: foundItem.uuid,
-            convertToBidirectional: false,
-          });
-        } else {
-          console.log("Could not find item to convert");
-        }
       } else {
-        console.log("Missing itemId or category");
+        console.log("Could not find item to convert");
       }
     }
   };

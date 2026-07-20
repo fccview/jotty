@@ -3,7 +3,8 @@
 import { Note, Checklist } from "@/app/_types";
 import { File02Icon, CheckmarkSquare04Icon } from "hugeicons-react";
 import { useRouter } from "next/navigation";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
@@ -21,9 +22,7 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
   const handleNoteClick = (e: React.MouseEvent, note: Note) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(
-      `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`,
-    );
+    router.push(itemHref(ItemTypes.NOTE, note.uuid!));
   };
 
   const handleChecklistClick = (
@@ -32,9 +31,7 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
   ) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(
-      `/checklist/${buildCategoryPath(list.category || "Uncategorized", list.id!)}`,
-    );
+    router.push(itemHref(ItemTypes.CHECKLIST, list.uuid!));
   };
 
   const showSectionLabels = notes.length > 0 && checklists.length > 0;

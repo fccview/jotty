@@ -262,8 +262,6 @@ export const commitNote = async (
 
 export const getHistory = async (
   noteUuid: string,
-  noteId: string,
-  noteCategory: string,
   noteOwner: string,
   page: number = 1,
   pageSize: number = 20
@@ -280,7 +278,6 @@ export const getHistory = async (
 
   const canRead = await checkUserPermission(
     noteUuid,
-    noteCategory || "Uncategorized",
     "note",
     currentUser.username,
     PermissionTypes.READ
@@ -298,7 +295,7 @@ export const getHistory = async (
     const git = _getGitInstance(userDir);
 
     const { getNoteById } = await import("@/app/_server/actions/note");
-    const note = await getNoteById(noteUuid, undefined, username);
+    const note = await getNoteById(noteUuid, username);
 
     if (!note) {
       return { success: false, error: "Note not found" };
@@ -356,8 +353,6 @@ export const getHistory = async (
 
 export const getVersion = async (
   noteUuid: string,
-  noteId: string,
-  noteCategory: string,
   noteOwner: string,
   commitHash: string
 ): Promise<HistoryResult<HistoryVersion>> => {
@@ -377,7 +372,6 @@ export const getVersion = async (
 
   const canRead = await checkUserPermission(
     noteUuid,
-    noteCategory || "Uncategorized",
     "note",
     currentUser.username,
     PermissionTypes.READ
@@ -446,7 +440,7 @@ export const getVersion = async (
         commitHash,
         date: commitDate,
         content: contentWithoutMetadata,
-        title: metadata.title || noteId,
+        title: metadata.title || "Untitled",
       },
     };
   } catch (error) {
@@ -456,8 +450,6 @@ export const getVersion = async (
 
 export const restoreNoteVersion = async (
   noteUuid: string,
-  noteId: string,
-  noteCategory: string,
   noteOwner: string,
   commitHash: string
 ): Promise<HistoryResult<void>> => {
@@ -476,8 +468,7 @@ export const restoreNoteVersion = async (
   }
 
   const canEdit = await checkUserPermission(
-    noteId,
-    noteCategory || "Uncategorized",
+    noteUuid,
     "note",
     currentUser.username,
     PermissionTypes.EDIT
@@ -487,13 +478,7 @@ export const restoreNoteVersion = async (
     return { success: false, error: "Permission denied" };
   }
 
-  const versionResult = await getVersion(
-    noteUuid,
-    noteId,
-    noteCategory,
-    noteOwner,
-    commitHash
-  );
+  const versionResult = await getVersion(noteUuid, noteOwner, commitHash);
 
   if (!versionResult.success || !versionResult.data) {
     return { success: false, error: versionResult.error };
@@ -502,12 +487,9 @@ export const restoreNoteVersion = async (
   const { updateNote } = await import("@/app/_server/actions/note");
 
   const formData = new FormData();
-  formData.append("id", noteId);
-  formData.append("uuid", noteUuid || "");
+  formData.append("uuid", noteUuid);
   formData.append("title", versionResult.data.title);
   formData.append("content", versionResult.data.content);
-  formData.append("category", noteCategory || "Uncategorized");
-  formData.append("originalCategory", noteCategory || "Uncategorized");
 
   const result = await updateNote(formData);
 

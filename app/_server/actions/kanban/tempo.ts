@@ -70,7 +70,7 @@ const _aggregateForItem = (
 
 export const getTempoData = async (formData: FormData) => {
   try {
-    const { listId, category } = getFormData(formData, ["listId", "category"]);
+    const { uuid } = getFormData(formData, ["uuid"]);
     const startDate = formData.get("startDate") as string;
     const endDate = formData.get("endDate") as string;
 
@@ -78,7 +78,7 @@ export const getTempoData = async (formData: FormData) => {
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId, undefined, category),
+      getListById(uuid),
     ]);
 
     if (!currentUser) return { error: "Not authenticated" };

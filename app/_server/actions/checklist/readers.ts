@@ -29,6 +29,20 @@ const execAsync = promisify(exec);
 
 const debugCrud = isDebugFlag("crud");
 
+const _stampUuid = async (filePath: string): Promise<string | undefined> => {
+  try {
+    const content = await serverReadFile(filePath);
+    if (!content) return undefined;
+
+    const uuid = generateUuid();
+    await serverWriteFile(filePath, updateYamlMetadata(content, { uuid }));
+    return uuid;
+  } catch (error) {
+    console.warn("Failed to stamp UUID on checklist:", filePath, error);
+    return undefined;
+  }
+};
+
 export type ChecklistReadResult =
   | Partial<Checklist>
   | Checklist
@@ -201,7 +215,9 @@ export const readListsRecursively = async (
             return {
               id,
               uuid:
-                typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
+                typeof metadata?.uuid === "string"
+                  ? metadata.uuid
+                  : await _stampUuid(filePath),
               title: typeof metadata?.title === "string" ? metadata.title : id,
               type: isKanbanType(metadata?.checklistType as string)
                 ? "kanban"

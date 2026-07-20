@@ -36,8 +36,6 @@ interface KanbanCardDetailProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (updatedChecklist: Checklist) => void;
-  checklistId: string;
-  category: string;
 }
 
 const _sanitizeDescription = (text: string): string => text.replace(/\n/g, "\\n");
@@ -79,9 +77,8 @@ export const KanbanCardDetail = ({
   isOpen,
   onClose,
   onUpdate,
-  checklistId,
-  category,
 }: KanbanCardDetailProps) => {
+  const checklistUuid = checklist.uuid || "";
   const t = useTranslations();
   const { permissions } = usePermissions();
   const { usersPublicData } = useAppMode();
@@ -111,8 +108,6 @@ export const KanbanCardDetail = ({
   const kanbanItemHook = useKanbanItem({
     checklist,
     item,
-    checklistId,
-    category,
     onUpdate,
   });
 
@@ -133,7 +128,7 @@ export const KanbanCardDetail = ({
   useEffect(() => {
     if (!isOpen) return;
     const _loadUsers = async () => {
-      const sharedWithUsers = await getUsersWithAccess(checklistId, checklist.uuid);
+      const sharedWithUsers = await getUsersWithAccess(checklistUuid);
       if (sharedWithUsers.length === 0) {
         setBoardIsShared(false);
         return;
@@ -154,7 +149,7 @@ export const KanbanCardDetail = ({
       setAvailableUsers(Array.from(userMap.values()));
     };
     _loadUsers();
-  }, [isOpen, checklistId, checklist.uuid, checklist.owner]);
+  }, [isOpen, checklistUuid, checklist.owner]);
 
   const descriptionHtml = useMemo(() => {
     const noDescText = `<p class="text-muted-foreground text-sm opacity-50">${t("checklists.noDescription")}</p>`;
@@ -165,9 +160,8 @@ export const KanbanCardDetail = ({
 
   const _saveField = async (fields: Record<string, string>) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
-    formData.append("category", category);
     Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
@@ -182,12 +176,11 @@ export const KanbanCardDetail = ({
     const currentUnsanitized = _unsanitizeDescription(item.description || "");
     if (editText.trim() !== item.text || editDescription.trim() !== currentUnsanitized) {
       const formData = new FormData();
-      formData.append("listId", checklistId);
+      formData.append("uuid", checklistUuid);
       formData.append("itemId", item.id);
       formData.append("text", editText.trim());
       formData.append("description", sanitizedDescription);
-      formData.append("category", category);
-      const result = await updateItem(checklist, formData);
+        const result = await updateItem(checklist, formData);
       if (result.success && result.data) {
         onUpdate(result.data);
         const updatedItem = _findItemInChecklist(result.data, item.id);
@@ -203,10 +196,9 @@ export const KanbanCardDetail = ({
 
   const handleAddSubtask = async (text: string) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("parentId", item.id);
     formData.append("text", text);
-    formData.append("category", category);
     const result = await createSubItem(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
@@ -217,10 +209,9 @@ export const KanbanCardDetail = ({
 
   const handleAddNestedSubtask = async (parentId: string, text: string) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("parentId", parentId);
     formData.append("text", text);
-    formData.append("category", category);
     const result = await createSubItem(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
@@ -241,10 +232,9 @@ export const KanbanCardDetail = ({
 
   const handleToggleSubtask = async (subtaskId: string, completed: boolean) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", subtaskId);
     formData.append("completed", completed.toString());
-    formData.append("category", category);
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data);
@@ -253,10 +243,9 @@ export const KanbanCardDetail = ({
         setItem(updatedItem);
         if (_autoCompleteStatus && updatedItem.children?.length && _allChildrenComplete(updatedItem.children)) {
           const statusFormData = new FormData();
-          statusFormData.append("listId", checklistId);
+          statusFormData.append("uuid", checklistUuid);
           statusFormData.append("itemId", item.id);
           statusFormData.append("status", _autoCompleteStatus.id);
-          statusFormData.append("category", category);
           const statusResult = await updateItemStatus(statusFormData);
           if (statusResult.success && statusResult.data) {
             onUpdate(statusResult.data as import("@/app/_types").Checklist);
@@ -268,10 +257,9 @@ export const KanbanCardDetail = ({
 
   const handleEditSubtask = async (subtaskId: string, text: string) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", subtaskId);
     formData.append("text", text);
-    formData.append("category", category);
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data);
@@ -282,9 +270,8 @@ export const KanbanCardDetail = ({
 
   const handleDeleteSubtask = async (subtaskId: string) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", subtaskId);
-    formData.append("category", category);
     const result = await deleteItem(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
@@ -307,10 +294,9 @@ export const KanbanCardDetail = ({
     const targetItems = _findTargetItems(item.children);
     if (!targetItems.length) return;
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("completed", String(completed));
     formData.append("itemIds", JSON.stringify(targetItems.map((t) => t.id)));
-    formData.append("category", category);
     const result = await bulkToggleItems(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
@@ -327,10 +313,9 @@ export const KanbanCardDetail = ({
   const handleStatusChange = async (status: string) => {
     setStatusInput(status);
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
     formData.append("status", status);
-    formData.append("category", category);
     const result = await updateItemStatus(formData);
     if (result.success && result.data) {
       onUpdate(result.data);
@@ -427,9 +412,8 @@ export const KanbanCardDetail = ({
           isOpen={showTimeEntriesModal}
           onClose={() => setShowTimeEntriesModal(false)}
           timeEntries={item.timeEntries}
-          checklistId={checklistId}
+          checklistUuid={checklistUuid}
           itemId={item.id}
-          category={category}
           onUpdate={onUpdate}
           usersPublicData={usersPublicData}
         />
@@ -579,7 +563,7 @@ export const KanbanCardDetail = ({
                   title: t("notifications.assignmentTitle"),
                   message: t("notifications.assignmentMessage", { task: item.text, board: checklist.title }),
                   data: {
-                    itemId: checklist.uuid || checklistId,
+                    itemId: checklistUuid,
                     itemType: "checklist",
                     taskId: item.id,
                   },

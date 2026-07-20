@@ -3,9 +3,7 @@
 import { ItemType, Result, SharingPermissions } from "@/app/_types/core";
 import { broadcast } from "@/app/_server/ws/broadcast";
 import { ItemTypes } from "@/app/_types/enums";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { logAudit } from "@/app/_server/actions/log";
-import { getItemUuid } from "./helpers";
 import { readShareFile, writeShareFile } from "./io";
 import { SharedItemEntry } from "./types";
 import { revalidateTag } from "next/cache";
@@ -13,8 +11,7 @@ import { getTranslations } from "next-intl/server";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
 
 export const shareWith = async (
-  item: string,
-  categoryPath: string,
+  uuid: string,
   sharerUsername: string,
   receiverUsername: string,
   itemType: ItemType,
@@ -25,16 +22,7 @@ export const shareWith = async (
   }
 ): Promise<Result<null>> => {
   try {
-    const sharingData = await readShareFile(itemType);
-
-    const itemUuid = await getItemUuid(
-      sharerUsername,
-      itemType === ItemTypes.CHECKLIST ? "checklist" : "note",
-      item,
-      categoryPath || "Uncategorized"
-    );
-
-    if (!itemUuid) {
+    if (!uuid) {
       return {
         success: false,
         error:
@@ -42,9 +30,10 @@ export const shareWith = async (
       };
     }
 
+    const sharingData = await readShareFile(itemType);
+
     const newEntry: SharedItemEntry = {
-      uuid: itemUuid,
-      id: item,
+      uuid,
       sharer: sharerUsername,
       permissions,
     };
@@ -54,7 +43,7 @@ export const shareWith = async (
     }
 
     sharingData[receiverUsername] = sharingData[receiverUsername].filter(
-      (entry) => !(entry.id === item && entry.sharer === sharerUsername)
+      (entry) => entry.uuid !== uuid
     );
 
     sharingData[receiverUsername].push(newEntry);
@@ -69,12 +58,12 @@ export const shareWith = async (
       category: "sharing",
       success: true,
       resourceType: itemType,
-      resourceId: item,
-      resourceTitle: item,
+      resourceId: uuid,
+      resourceTitle: uuid,
       metadata: { receiver: receiverUsername, permissions },
     });
 
-    await broadcast({ type: "sharing", action: "updated", entityId: item, username: sharerUsername });
+    await broadcast({ type: "sharing", action: "updated", entityId: uuid, username: sharerUsername });
 
     const itemTypeLabel = itemType === ItemTypes.CHECKLIST ? "checklist" : "note";
     const t = await getTranslations("notifications");
@@ -82,7 +71,7 @@ export const shareWith = async (
       type: "sharing",
       title: t("sharingTitle", { user: sharerUsername, type: itemTypeLabel }),
       message: t("sharingMessage", { type: itemTypeLabel }),
-      data: { itemId: itemUuid, itemType: itemTypeLabel },
+      data: { itemId: uuid, itemType: itemTypeLabel },
     });
 
     return { success: true, data: null };
@@ -93,8 +82,8 @@ export const shareWith = async (
       category: "sharing",
       success: false,
       resourceType: itemType,
-      resourceId: item,
-      resourceTitle: item,
+      resourceId: uuid,
+      resourceTitle: uuid,
       errorMessage:
         error instanceof Error ? error.message : "Failed to share item",
     });
@@ -104,32 +93,17 @@ export const shareWith = async (
 };
 
 export const unshareWith = async (
-  item: string,
-  categoryPath: string,
+  uuid: string,
   sharerUsername: string,
   receiverUsername: string,
   itemType: ItemType
 ): Promise<Result<null>> => {
   const sharingData = await readShareFile(itemType);
-  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
 
   if (sharingData[receiverUsername]) {
-    const entryIndex = sharingData[receiverUsername].findIndex(
-      (entry) => entry.uuid === item
+    sharingData[receiverUsername] = sharingData[receiverUsername].filter(
+      (entry) => entry.uuid !== uuid
     );
-
-    if (entryIndex !== -1) {
-      sharingData[receiverUsername].splice(entryIndex, 1);
-    } else {
-      sharingData[receiverUsername] = sharingData[receiverUsername].filter(
-        (entry) =>
-          !(
-            entry.id === item &&
-            entry.sharer === sharerUsername &&
-            entry.category === encodedCategory
-          )
-      );
-    }
 
     if (sharingData[receiverUsername].length === 0) {
       delete sharingData[receiverUsername];
@@ -146,12 +120,12 @@ export const unshareWith = async (
       category: "sharing",
       success: true,
       resourceType: itemType,
-      resourceId: item,
-      resourceTitle: item,
+      resourceId: uuid,
+      resourceTitle: uuid,
       metadata: { receiver: receiverUsername },
     });
 
-    await broadcast({ type: "sharing", action: "updated", entityId: item, username: sharerUsername });
+    await broadcast({ type: "sharing", action: "updated", entityId: uuid, username: sharerUsername });
   } catch (error) {
     await logAudit({
       level: "ERROR",
@@ -159,8 +133,8 @@ export const unshareWith = async (
       category: "sharing",
       success: false,
       resourceType: itemType,
-      resourceId: item,
-      resourceTitle: item,
+      resourceId: uuid,
+      resourceTitle: uuid,
       errorMessage: "Failed to write unshare file",
     });
     return { success: false, error: "Failed to write unshare file" };
@@ -170,14 +144,12 @@ export const unshareWith = async (
 };
 
 export const updateItemPermissions = async (
-  item: string,
-  categoryPath: string,
+  uuid: string,
   itemType: ItemType,
   username: string,
   permissions: SharingPermissions
 ): Promise<Result<null>> => {
   const sharingData = await readShareFile(itemType);
-  const encodedCategory = encodeCategoryPath(categoryPath || "Uncategorized");
 
   if (!sharingData[username]) {
     await logAudit({
@@ -186,22 +158,16 @@ export const updateItemPermissions = async (
       category: "sharing",
       success: false,
       resourceType: itemType,
-      resourceId: item,
+      resourceId: uuid,
       errorMessage: "Item not shared with this user",
       metadata: { targetUser: username },
     });
     return { success: false, error: "Item not shared with this user" };
   }
 
-  let entryIndex = sharingData[username].findIndex(
-    (entry) => entry.uuid === item
+  const entryIndex = sharingData[username].findIndex(
+    (entry) => entry.uuid === uuid
   );
-
-  if (entryIndex === -1) {
-    entryIndex = sharingData[username].findIndex(
-      (entry) => entry.id === item && entry.category === encodedCategory
-    );
-  }
 
   if (entryIndex === -1) {
     await logAudit({
@@ -210,7 +176,7 @@ export const updateItemPermissions = async (
       category: "sharing",
       success: false,
       resourceType: itemType,
-      resourceId: item,
+      resourceId: uuid,
       errorMessage: "Item not shared with this user",
       metadata: { targetUser: username },
     });
@@ -231,7 +197,7 @@ export const updateItemPermissions = async (
       category: "sharing",
       success: true,
       resourceType: itemType,
-      resourceId: item,
+      resourceId: uuid,
       metadata: {
         targetUser: username,
         oldPermissions,
@@ -239,7 +205,7 @@ export const updateItemPermissions = async (
       },
     });
 
-    await broadcast({ type: "sharing", action: "updated", entityId: item, username });
+    await broadcast({ type: "sharing", action: "updated", entityId: uuid, username });
 
     return { success: true, data: null };
   } catch (error) {
@@ -249,7 +215,7 @@ export const updateItemPermissions = async (
       category: "sharing",
       success: false,
       resourceType: itemType,
-      resourceId: item,
+      resourceId: uuid,
       errorMessage: "Failed to update permissions",
       metadata: { targetUser: username },
     });

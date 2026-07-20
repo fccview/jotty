@@ -39,9 +39,7 @@ export interface GlobalSharingReturn {
 }
 
 export interface SharedItemSummary {
-  id: string;
-  uuid?: string;
-  category: string;
+  uuid: string;
 }
 
 export interface AllSharedItems {
@@ -54,8 +52,10 @@ export interface AllSharedItems {
 }
 
 export interface UserSharedItem {
-  id?: string;
   uuid?: string;
+  /** @deprecated legacy on-disk field, ignored; entries are matched by uuid */
+  id?: string;
+  /** @deprecated legacy on-disk field, ignored; entries are matched by uuid */
   category?: string;
   sharer: string;
 }

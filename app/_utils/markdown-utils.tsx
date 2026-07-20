@@ -10,7 +10,7 @@ import { Element } from "hast";
 import { addCustomHtmlTurndownRules } from "@/app/_utils/custom-html-utils";
 import { html as beautifyHtml } from "js-beautify";
 import { TableSyntax } from "@/app/_types";
-import { decodeCategoryPath, decodeId } from "./global-utils";
+import { decodeCategoryPath } from "./global-utils";
 import { getContrastColor } from "./color-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
@@ -663,12 +663,12 @@ const markdownProcessor = unified()
             } else if (href.startsWith("/note/")) {
               type = "note";
               const pathParts = href.replace("/note/", "").split("/");
-              itemId = decodeId(pathParts.pop() || "");
+              itemId = decodeURIComponent(pathParts.pop() || "");
               category = decodeCategoryPath(pathParts.join("/"));
             } else if (href.startsWith("/checklist/")) {
               type = "checklist";
               const pathParts = href.replace("/checklist/", "").split("/");
-              itemId = decodeId(pathParts.pop() || "");
+              itemId = decodeURIComponent(pathParts.pop() || "");
               category = decodeCategoryPath(pathParts.join("/"));
             }
 

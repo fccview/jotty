@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { updateItemStatus } from "@/app/_server/actions/checklist-item";
 import { isKanbanType } from "@/app/_types/enums";
@@ -23,7 +23,8 @@ export async function PUT(
         );
       }
 
-      const task = await getListById(params.taskId, user.username);
+      const uuid = await listUuid(request, params.taskId, user.username);
+      const task = uuid ? await getListById(uuid, user.username) : undefined;
       if (!task) {
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
@@ -65,10 +66,9 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("listId", task.id);
+      formData.append("uuid", task.uuid!);
       formData.append("itemId", item.id);
       formData.append("status", status);
-      formData.append("category", task.category || "Uncategorized");
       formData.append("username", user.username);
 
       const result = await updateItemStatus(formData, user.username);

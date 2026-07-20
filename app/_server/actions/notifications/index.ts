@@ -58,11 +58,11 @@ const _resolveLink = async (data?: AppNotificationData): Promise<string | undefi
   try {
     if (data.itemType === "checklist") {
       const list = await getListById(data.itemId);
-      if (list) return `/checklist/${list.category}/${list.id}`;
+      if (list) return `/checklist/${list.uuid}`;
     }
     if (data.itemType === "note") {
       const note = await getNoteById(data.itemId);
-      if (note) return `/note/${note.category}/${note.id}`;
+      if (note) return `/note/${note.uuid}`;
     }
   } catch {}
 

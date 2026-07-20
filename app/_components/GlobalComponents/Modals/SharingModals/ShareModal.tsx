@@ -26,12 +26,10 @@ export const ShareModal = ({
     isOpen,
     onClose,
     enabled: true,
-    itemId: metadata.id,
     itemTitle: metadata.title,
     itemType: metadata.type as ItemType,
-    itemCategory: metadata.category,
     itemOwner: metadata.owner || "",
-    itemUuid: metadata.uuid,
+    itemUuid: metadata.uuid || "",
   });
   const { error, success, activeTab, setActiveTab, resetMessages } = hookResult;
 

@@ -19,6 +19,7 @@ import {
   isEncrypted,
 } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -30,7 +31,6 @@ interface NoteEditorContentProps {
     isDirty: boolean,
   ) => void;
   noteId?: string;
-  noteCategory?: string;
   encrypted?: boolean;
   onOpenDecryptModal?: () => void;
   onOpenViewModal?: () => void;
@@ -43,7 +43,6 @@ export const NoteEditorContent = ({
   editorContent,
   onEditorContentChange,
   noteId,
-  noteCategory,
   encrypted,
   onOpenDecryptModal,
   onOpenViewModal,
@@ -64,12 +63,11 @@ export const NoteEditorContent = ({
     return getReferences(
       linkIndex,
       noteId,
-      noteCategory,
-      "note",
+      ItemTypes.NOTE,
       notes,
       checklists,
     );
-  }, [linkIndex, noteId, noteCategory, notes, checklists]);
+  }, [linkIndex, noteId, notes, checklists]);
 
   useEffect(() => {
     if (

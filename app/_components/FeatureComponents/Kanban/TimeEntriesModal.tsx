@@ -15,9 +15,8 @@ interface TimeEntriesModalProps {
   isOpen: boolean;
   onClose: () => void;
   timeEntries: TimeEntry[];
-  checklistId: string;
+  checklistUuid: string;
   itemId: string;
-  category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
   usersPublicData?: { username?: string; avatarUrl?: string }[];
 }
@@ -60,9 +59,8 @@ const TimeEntriesModalComponent = ({
   isOpen,
   onClose,
   timeEntries,
-  checklistId,
+  checklistUuid,
   itemId,
-  category,
   onUpdate,
   usersPublicData,
 }: TimeEntriesModalProps) => {
@@ -88,10 +86,9 @@ const TimeEntriesModalComponent = ({
     if (!editing) return;
     setSaving(true);
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", itemId);
     formData.append("entryId", editing.entryId);
-    formData.append("category", category);
     if (editing.startTime)
       formData.append("startTime", new Date(editing.startTime).toISOString());
     if (editing.endTime) {
@@ -116,10 +113,9 @@ const TimeEntriesModalComponent = ({
     if (!deleteTarget) return;
     setSaving(true);
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", itemId);
     formData.append("entryId", deleteTarget);
-    formData.append("category", category);
     const result = await deleteTimeEntry(formData);
     if (result.success && result.data) {
       onUpdate(result.data);

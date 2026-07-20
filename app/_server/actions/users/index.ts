@@ -18,17 +18,10 @@ export {
   getUsers,
   getUserByNoteUuid,
   getUserByChecklistUuid,
-  getUserByChecklist,
-  getUserByNote,
 } from "./queries";
 
 export { isAuthenticated, isAdmin, canAccessAllContent } from "./auth";
 
 export { updateUserSettings } from "./settings";
 
-export {
-  getUserIndex,
-  findFileRecursively,
-  getUserByItem,
-  getUserByItemUuid,
-} from "./helpers";
+export { getUserIndex, getUserByItemUuid } from "./helpers";

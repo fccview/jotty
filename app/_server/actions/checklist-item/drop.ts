@@ -10,6 +10,7 @@ import { broadcast } from "@/app/_server/ws/broadcast";
 import { applyDrop } from "@/app/_utils/kanban/board-utils";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { Checklist, Result } from "@/app/_types";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
@@ -48,8 +49,7 @@ export const dropItem = async (
     }
 
     const canEdit = await checkUserPermission(
-      list.uuid || list.id,
-      list.category || "Uncategorized",
+      list.uuid!,
       ItemTypes.CHECKLIST,
       username,
       PermissionTypes.EDIT,
@@ -86,7 +86,7 @@ export const dropItem = async (
       "data",
       CHECKLISTS_FOLDER,
       list.owner!,
-      list.category || "Uncategorized",
+      list.category || UNCATEGORIZED,
     );
     await ensureDir(categoryDir);
     await serverWriteFile(
@@ -96,7 +96,7 @@ export const dropItem = async (
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${list.id}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -108,7 +108,7 @@ export const dropItem = async (
       await broadcast({
         type: "checklist",
         action: "updated",
-        entityId: list.id,
+        entityId: list.uuid,
         username,
       });
     } catch (error) {

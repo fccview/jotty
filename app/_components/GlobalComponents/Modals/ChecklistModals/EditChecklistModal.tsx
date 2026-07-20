@@ -7,7 +7,8 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Category, Checklist } from "@/app/_types";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
@@ -39,12 +40,11 @@ export const EditChecklistModal = ({
 
   useEffect(() => {
     const fetchChecklist = async () => {
-      if (!user?.username) return;
+      if (!user?.username || !initialChecklist.uuid) return;
 
       const fetchedChecklist = await getListById(
-        initialChecklist.uuid || initialChecklist.id,
+        initialChecklist.uuid,
         user.username,
-        initialChecklist.category || "Uncategorized"
       );
 
       if (!fetchedChecklist) {
@@ -73,12 +73,7 @@ export const EditChecklistModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", checklist.id);
     formData.append("title", title.trim());
-    formData.append(
-      "originalCategory",
-      checklist.category || "Uncategorized"
-    );
     formData.append("unarchive", unarchive ? "true" : "false");
     if (checklist.uuid) {
       formData.append("uuid", checklist.uuid);
@@ -94,15 +89,8 @@ export const EditChecklistModal = ({
     setIsLoading(false);
 
     if (result.success && result.data) {
-      const updatedChecklist = result.data;
-
-      const categoryPath = buildCategoryPath(
-        updatedChecklist.category || "Uncategorized",
-        updatedChecklist.id
-      );
-
-      if (!unarchive) {
-        router.push(`/checklist/${categoryPath}`);
+      if (!unarchive && result.data.uuid) {
+        router.push(itemHref(ItemTypes.CHECKLIST, result.data.uuid));
       }
 
       onUpdated();

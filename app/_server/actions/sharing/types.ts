@@ -2,7 +2,9 @@ import { SharingPermissions, ItemType } from "@/app/_types/core";
 
 interface SharedItemEntry {
   uuid?: string;
+  /** @deprecated legacy on-disk field, ignored; entries are matched by uuid */
   id?: string;
+  /** @deprecated legacy on-disk field, ignored; entries are matched by uuid */
   category?: string;
   sharer: string;
   permissions: SharingPermissions;
@@ -10,8 +12,6 @@ interface SharedItemEntry {
 
 interface SharingItemUpdate {
   uuid?: string;
-  id?: string;
-  category?: string;
   itemType: ItemType;
   sharer?: string;
 }

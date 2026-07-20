@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { createItem } from "@/app/_server/actions/checklist-item";
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
@@ -26,15 +26,14 @@ export async function POST(
         );
       }
 
-      const list = await getListById(params.listId, user.username);
+      const uuid = await listUuid(request, params.listId, user.username);
+      const list = uuid ? await getListById(uuid, user.username) : undefined;
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
 
       const formData = new FormData();
-      formData.append("listId", list.id);
       formData.append("text", text);
-      formData.append("category", list.category || "Uncategorized");
 
       if (parentIndex !== undefined) {
         const indexPath = parentIndex

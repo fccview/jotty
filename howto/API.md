@@ -103,6 +103,8 @@ All checklists and notes are identified using UUIDs (Universally Unique Identifi
 
 When referencing checklists or notes in API endpoints, you must use their UUID rather than titles or other identifiers.
 
+> **Deprecated: slug/category lookups.** Passing a legacy filename slug as the item id (optionally with a `?category=` query parameter, defaulting to "Uncategorized") still resolves to the right item, but every such request logs a deprecation warning and this fallback **will be removed in a future release**. All `id` fields in API responses are UUIDs. Switch any stored slug/category references to UUIDs now.
+
 ## Organization Features
 
 ### Categories

@@ -32,9 +32,24 @@ const _nameExtraction = (
 ): string => {
   if (!dndId) return "";
   const parts = dndId.split("::");
-  if (type === "item") return parts[2] || "";
+  if (type === "item") return parts[1] || "";
   if (type === "category") return (parts[1] || "").split("/").pop() || "";
   return "";
+};
+
+const _findItemByUuid = async (
+  baseDir: string,
+  uuid: string,
+): Promise<{ id: string; category: string } | null> => {
+  if (!uuid) return null;
+
+  const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
+  const absDir = path.isAbsolute(baseDir)
+    ? baseDir
+    : path.join(process.cwd(), baseDir);
+  const found = await grepFindFileByUuid(absDir, uuid);
+
+  return found ? { id: found.id, category: found.category } : null;
 };
 
 const _reorderList = (
@@ -92,8 +107,15 @@ export const moveNode = async (formData: FormData) => {
     let activeParentPath: string;
 
     if (activeType === "item") {
-      activeName = formData.get("activeId") as string;
-      activeParentPath = formData.get("activeItemCategory") as string;
+      const activeUuid = formData.get("activeUuid") as string;
+      const found = await _findItemByUuid(baseDir, activeUuid);
+
+      if (!found) {
+        return { error: "Item not found" };
+      }
+
+      activeName = found.id;
+      activeParentPath = found.category;
     } else {
       const catPath = formData.get("activeCategoryPath") as string;
       
@@ -130,7 +152,14 @@ export const moveNode = async (formData: FormData) => {
 
       if (targetDndId) {
         if (targetType === activeType) {
-          targetName = _nameExtraction(targetDndId, targetType);
+          const extracted = _nameExtraction(targetDndId, targetType);
+
+          if (targetType === "item") {
+            const target = await _findItemByUuid(baseDir, extracted);
+            targetName = target?.id || null;
+          } else {
+            targetName = extracted;
+          }
         } else {
           crossTypeTarget = true;
         }

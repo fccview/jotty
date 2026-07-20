@@ -48,7 +48,7 @@ export const NoteCard = ({
     transition,
     isDragging,
   } = useSortable({
-    id: note?.uuid || note?.id,
+    id: note.uuid,
     disabled: !isDraggable,
   });
 

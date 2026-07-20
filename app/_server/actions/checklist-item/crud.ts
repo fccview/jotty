@@ -7,11 +7,8 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import {
-  getAllLists,
-  getUserChecklists,
-  getListById,
-} from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import {
   listToMarkdown,
   areAllItemsCompleted,
@@ -41,18 +38,15 @@ export const updateItem = async (
   skipRevalidation = false,
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
     const itemId = formData.get("itemId") as string;
     const completedRaw = formData.get("completed");
     const text = formData.get("text") as string;
     const description = formData.get("description") as string;
-    const category = formData.get("category") as string;
 
     const currentUser = username || (await getUsername());
 
     const canEdit = await checkUserPermission(
-      checklist.uuid || listId,
-      category || "Uncategorized",
+      checklist.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT,
@@ -136,18 +130,18 @@ export const updateItem = async (
     );
     const categoryDir = path.join(
       ownerDir,
-      checklist.category || "Uncategorized",
+      checklist.category || UNCATEGORIZED,
     );
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${checklist.id}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     if (!skipRevalidation) {
       try {
         revalidatePath("/");
-        revalidatePath(`/checklist/${listId}`);
+        revalidatePath(`/checklist/${checklist.uuid}`);
       } catch (error) {
         console.warn(
           "Cache revalidation failed, but data was saved successfully:",
@@ -159,7 +153,7 @@ export const updateItem = async (
     await broadcast({
       type: "checklist",
       action: "updated",
-      entityId: listId,
+      entityId: checklist.uuid,
       username: currentUser,
     });
 
@@ -184,18 +178,15 @@ export const createItem = async (
   skipRevalidation = false,
 ) => {
   try {
-    const listId = formData.get("listId") as string;
     const text = formData.get("text") as string;
     const status = formData.get("status") as string;
     const timeStr = formData.get("time") as string;
-    const category = formData.get("category") as string;
     const description = formData.get("description") as string;
     const currentUser = username || (await getUsername());
     const recurrenceStr = formData.get("recurrence") as string;
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category || "Uncategorized",
+      list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT,
@@ -256,7 +247,7 @@ export const createItem = async (
     let isSharedBoard = false;
     if (isKanbanType(list.type)) {
       const { getUsersWithAccess } = await import("@/app/_server/actions/sharing");
-      const sharedUsers = await getUsersWithAccess(listId, list.uuid);
+      const sharedUsers = await getUsersWithAccess(list.uuid!);
       isSharedBoard = sharedUsers.length > 0;
     }
 
@@ -266,7 +257,7 @@ export const createItem = async (
     }));
 
     const newItem = {
-      id: `${listId}-${Date.now()}`,
+      id: `${list.uuid}-${Date.now()}`,
       text,
       completed: false,
       order: 0,
@@ -310,18 +301,18 @@ export const createItem = async (
       CHECKLISTS_FOLDER,
       list.owner!,
     );
-    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
 
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${list.id}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList as Checklist));
 
     if (!skipRevalidation) {
       try {
         revalidatePath("/");
-        revalidatePath(`/checklist/${listId}`);
+        revalidatePath(`/checklist/${list.uuid}`);
       } catch (error) {
         console.warn(
           "Cache revalidation failed, but data was saved successfully:",
@@ -333,7 +324,7 @@ export const createItem = async (
     await broadcast({
       type: "checklist",
       action: "updated",
-      entityId: listId,
+      entityId: list.uuid,
       username: currentUser,
     });
 
@@ -351,26 +342,17 @@ export const deleteItem = async (
   formData: FormData,
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
-    const category = formData.get("category") as string;
 
-    const lists = await getUserChecklists();
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
-    }
-
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category),
-    );
+    const currentUser = await getUsername();
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       throw new Error("List not found");
     }
 
-    const currentUser = await getUsername();
     const canDelete = await checkUserPermission(
-      list.uuid || listId,
-      category || "Uncategorized",
+      list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.DELETE,
@@ -431,15 +413,15 @@ export const deleteItem = async (
       );
       filePath = path.join(
         ownerDir,
-        list.category || "Uncategorized",
-        `${listId}.md`,
+        list.category || UNCATEGORIZED,
+        `${list.id}.md`,
       );
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(
         userDir,
-        list.category || "Uncategorized",
-        `${listId}.md`,
+        list.category || UNCATEGORIZED,
+        `${list.id}.md`,
       );
     }
 
@@ -447,7 +429,7 @@ export const deleteItem = async (
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -458,7 +440,7 @@ export const deleteItem = async (
     await broadcast({
       type: "checklist",
       action: "updated",
-      entityId: listId,
+      entityId: list.uuid,
       username: currentUser,
     });
 

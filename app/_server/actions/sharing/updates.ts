@@ -1,7 +1,6 @@
 "use server";
 
 import { ItemType } from "@/app/_types/core";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { readShareFile, writeShareFile } from "./io";
 import { SharingItemUpdate } from "./types";
 
@@ -13,18 +12,10 @@ export const updateSharingData = async (
   let hasChanges = false;
 
   if (newItem === null) {
-    const encodedCategory = encodeCategoryPath(
-      previousItem.category || "Uncategorized"
-    );
     Object.keys(sharingData).forEach((username) => {
       const originalLength = sharingData[username].length;
       sharingData[username] = sharingData[username].filter(
-        (entry) =>
-          !(
-            (previousItem.uuid && entry.uuid === previousItem.uuid) ||
-            (entry.id === previousItem.id &&
-              (!entry.category || entry.category === encodedCategory))
-          )
+        (entry) => !(previousItem.uuid && entry.uuid === previousItem.uuid)
       );
       if (sharingData[username].length !== originalLength) {
         hasChanges = true;
@@ -33,64 +24,15 @@ export const updateSharingData = async (
         delete sharingData[username];
       }
     });
-  } else {
-    const prevCategory = previousItem.category
-      ? encodeCategoryPath(previousItem.category)
-      : null;
-    const newCategory = newItem.category
-      ? encodeCategoryPath(newItem.category)
-      : null;
-
+  } else if (newItem.sharer && newItem.sharer !== previousItem.sharer) {
     Object.keys(sharingData).forEach((username) => {
       sharingData[username].forEach((entry) => {
-        let updated = false;
+        const matches = previousItem.uuid
+          ? entry.uuid === previousItem.uuid
+          : entry.sharer === previousItem.sharer;
 
-        if (
-          !previousItem.id &&
-          newItem.sharer &&
-          entry.sharer === previousItem.sharer
-        ) {
-          entry.sharer = newItem.sharer;
-          updated = true;
-        } else if (previousItem.id) {
-          if (
-            entry.id === previousItem.id &&
-            entry.category ===
-            (prevCategory || encodeCategoryPath("Uncategorized")) &&
-            newItem.id !== previousItem.id
-          ) {
-            entry.id = newItem.id;
-            updated = true;
-          }
-
-          if (
-            entry.id === (newItem.id || previousItem.id) &&
-            entry.category ===
-            (prevCategory || encodeCategoryPath("Uncategorized")) &&
-            newCategory &&
-            newCategory !==
-            (prevCategory || encodeCategoryPath("Uncategorized"))
-          ) {
-            entry.category = newCategory;
-            updated = true;
-          }
-
-          if (
-            newItem.sharer &&
-            entry.sharer === previousItem.sharer &&
-            entry.id === (newItem.id || previousItem.id) &&
-            entry.category ===
-            (newCategory ||
-              prevCategory ||
-              encodeCategoryPath("Uncategorized")) &&
-            newItem.sharer !== previousItem.sharer
-          ) {
-            entry.sharer = newItem.sharer;
-            updated = true;
-          }
-        }
-
-        if (updated) {
+        if (matches && entry.sharer === previousItem.sharer) {
+          entry.sharer = newItem.sharer!;
           hasChanges = true;
         }
       });

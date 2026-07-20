@@ -38,11 +38,7 @@ import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
-import {
-  copyTextToClipboard,
-  encodeCategoryPath,
-  buildCategoryPath,
-} from "@/app/_utils/global-utils";
+import { copyTextToClipboard } from "@/app/_utils/global-utils";
 import { sharingInfo } from "@/app/_utils/sharing-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
@@ -163,13 +159,7 @@ export const NoteEditorHeader = ({
   };
 
   const handleCopyId = async () => {
-    const success = await copyTextToClipboard(
-      `${note?.uuid
-        ? note?.uuid
-        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id
-        }`
-      }`
-    );
+    const success = await copyTextToClipboard(note?.uuid || "");
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -216,69 +206,34 @@ export const NoteEditorHeader = ({
 
   const handlePermanentDecryption = async (newContent: string) => {
     const formData = new FormData();
-    formData.append("id", note.id);
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
-    formData.append("originalCategory", note.category || "Uncategorized");
-    if (note.uuid) {
-      formData.append("uuid", note.uuid);
-    }
+    formData.append("uuid", note.uuid!);
 
     const result = await updateNote(formData);
 
     if (result.success && result.data) {
-      const categoryPath = buildCategoryPath(
-        result.data.category || t("notes.uncategorized"),
-        result.data.id
-      );
-      const newPath = `/note/${categoryPath}`;
-      const currentPath = window.location.pathname;
-
-      if (newPath === currentPath) {
-        window.location.reload();
-      } else {
-        router.push(newPath);
-      }
+      window.location.reload();
     }
   };
 
   const handleEncryptionSuccess = async (newContent: string) => {
     const formData = new FormData();
-    formData.append("id", note.id);
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
-    formData.append("originalCategory", note.category || "Uncategorized");
-    if (note.uuid) {
-      formData.append("uuid", note.uuid);
-    }
+    formData.append("uuid", note.uuid!);
 
     const result = await updateNote(formData);
 
     if (result.success && result.data) {
-      const categoryPath = buildCategoryPath(
-        result.data.category || t("notes.uncategorized"),
-        result.data.id
-      );
-      const newPath = `/note/${categoryPath}`;
-      const currentPath = window.location.pathname;
-
-      if (newPath === currentPath) {
-        window.location.reload();
-      } else {
-        router.push(newPath);
-      }
+      window.location.reload();
     }
   };
 
   const { globalSharing } = useAppMode();
-  const encodedCategory = encodeCategoryPath(metadata.category);
-  const itemDetails = sharingInfo(
-    globalSharing,
-    metadata.uuid || metadata.id,
-    encodedCategory
-  );
+  const itemDetails = sharingInfo(globalSharing, metadata.uuid || "");
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
   const sharedWith = itemDetails.sharedWith;
   const isPubliclyShared = itemDetails.isPublic;
@@ -327,12 +282,7 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0"
-                      title={`Copy ID: ${note?.uuid
-                        ? note?.uuid
-                        : `${encodeCategoryPath(
-                          note?.category || t("notes.uncategorized")
-                        )}/${note?.id}`
-                        }`}
+                      title={`Copy ID: ${note?.uuid || ""}`}
                     >
                       {copied ? (
                         <Tick02Icon className="h-3 w-3 text-green-500" />

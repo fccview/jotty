@@ -4,7 +4,6 @@ import { createContext, useContext, useMemo } from "react";
 import { Checklist, Note } from "@/app/_types";
 import { getPermissions } from "@/app/_utils/sharing-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { Modes } from "../_types/enums";
 
 const permissionsCache = new Map<
@@ -46,8 +45,7 @@ export const PermissionsProvider = ({
       const permissions = getPermissions(
         globalSharing,
         user?.username || "",
-        item.uuid || item.id,
-        encodeCategoryPath(item.category || "Uncategorized"),
+        item.uuid!,
         itemType,
       );
       return {
@@ -67,9 +65,9 @@ export const PermissionsProvider = ({
       };
     }
 
-    const cacheKey = `${user?.username || ""}-${item.uuid || item.id}-${encodeCategoryPath(
-      item.category || "Uncategorized",
-    )}-${JSON.stringify(globalSharing || {})}`;
+    const cacheKey = `${user?.username || ""}-${item.uuid}-${JSON.stringify(
+      globalSharing || {},
+    )}`;
     const now = Date.now();
 
     const cached = permissionsCache.get(cacheKey);
@@ -81,8 +79,7 @@ export const PermissionsProvider = ({
     const permissions = getPermissions(
       globalSharing,
       user?.username || "",
-      item.uuid || item.id,
-      encodeCategoryPath(item.category || "Uncategorized"),
+      item.uuid!,
       itemType,
     );
 

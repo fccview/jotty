@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { createItem } from "@/app/_server/actions/checklist-item";
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
@@ -27,7 +27,8 @@ export async function POST(
         );
       }
 
-      const task = await getListById(params.taskId, user.username);
+      const uuid = await listUuid(request, params.taskId, user.username);
+      const task = uuid ? await getListById(uuid, user.username) : undefined;
       if (!task) {
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
@@ -124,9 +125,7 @@ export async function POST(
       }
 
       const formData = new FormData();
-      formData.append("listId", task.id);
       formData.append("text", text);
-      formData.append("category", task.category || "Uncategorized");
       formData.append("status", status || TaskStatus.TODO);
 
       const result = await createItem(task, formData, user.username, true);

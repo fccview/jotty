@@ -12,6 +12,7 @@ import {
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Checklist, Result, TimeEntry } from "@/app/_types";
 import {
   ItemTypes,
@@ -27,18 +28,17 @@ export const updateItemStatus = async (
   usernameOverride?: string
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemId = formData.get("itemId") as string;
     const status = formData.get("status") as string;
     const timeEntriesStr = formData.get("timeEntries") as string;
-    const category = formData.get("category") as string;
     const formDataUsername = formData.get("username") as string;
 
     const username =
       usernameOverride || formDataUsername || (await getUsername());
 
-    if (!listId || !itemId) {
-      return { success: false, error: "List ID and item ID are required" };
+    if (!uuid || !itemId) {
+      return { success: false, error: "List uuid and item ID are required" };
     }
 
     if (!status && !timeEntriesStr) {
@@ -71,14 +71,13 @@ export const updateItemStatus = async (
       }
     }
 
-    const list = await getListById(listId, username, category);
+    const list = await getListById(uuid, username);
     if (!list) {
       return { success: false, error: "List not found" };
     }
 
     const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category,
+      list.uuid!,
       ItemTypes.CHECKLIST,
       username,
       PermissionTypes.EDIT
@@ -120,23 +119,23 @@ export const updateItemStatus = async (
       CHECKLISTS_FOLDER,
       list.owner!
     );
-    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
     await ensureDir(categoryDir);
 
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = path.join(categoryDir, `${list.id}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
         error
       );
     }
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {

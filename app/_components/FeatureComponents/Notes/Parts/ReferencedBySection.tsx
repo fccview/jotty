@@ -1,7 +1,7 @@
 "use client";
 
 import { File02Icon, CheckmarkSquare04Icon } from "hugeicons-react";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 
 interface ReferencingItem {
   type: ItemType;
-  path: string;
+  uuid: string;
   title: string;
   category: string;
 }
@@ -26,8 +26,7 @@ export const ReferencedBySection = ({
   if (referencingItems.length === 0) return null;
 
   const handleItemClick = (item: ReferencingItem) => {
-    const url = `/${item.type}/${encodeCategoryPath(item.path)}`;
-    router.push(url);
+    router.push(itemHref(item.type as ItemTypes, item.uuid));
   };
 
   return (
@@ -42,7 +41,7 @@ export const ReferencedBySection = ({
       <div className="space-y-2">
         {referencingItems.map((item) => (
           <div
-            key={`${item.type}-${item.path}`}
+            key={`${item.type}-${item.uuid}`}
             onClick={() => handleItemClick(item)}
             className="bg-muted/50 border border-border rounded-jotty p-3 cursor-pointer hover:shadow-sm hover:border-primary/30 transition-all duration-200 group"
           >

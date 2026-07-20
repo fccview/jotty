@@ -2,8 +2,9 @@ import { ItemTypes } from "./enums";
 import { EncryptionMethod } from "./encryption";
 
 export interface Note {
+  /** @deprecated file-layer slug (on-disk filename), never identity; use uuid */
   id: string;
-  uuid?: string;
+  uuid: string;
   title: string;
   content: string;
   itemType?: ItemTypes;

@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { ItemType, User } from "@/app/_types";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
+import { publicHref } from "@/app/_utils/global-utils";
 import {
   shareWith,
   unshareWith,
@@ -14,26 +14,20 @@ import {
 } from "../_server/actions/sharing";
 import { SharingPermissions } from "@/app/_types";
 import { getCurrentUser } from "../_server/actions/users";
-import { ItemTypes } from "../_types/enums";
 
 interface ShareModalProps {
   isOpen?: boolean;
-  itemId: string;
   itemType: ItemType;
   itemTitle: string;
-  itemCategory?: string;
   itemOwner: string;
-  itemUuid?: string;
+  itemUuid: string;
   onClose: () => void;
   enabled: boolean;
 }
 
 export const useSharingTools = ({
   isOpen,
-  itemId,
   itemType,
-  itemTitle,
-  itemCategory,
   itemOwner,
   itemUuid,
 }: ShareModalProps) => {
@@ -61,15 +55,6 @@ export const useSharingTools = ({
       setStatus({ isLoading: true, error: null, success: null });
       try {
         const currentUser = await getCurrentUser();
-        const formData = new FormData();
-
-        formData.append("itemId", itemId);
-        formData.append("type", itemType);
-        formData.append("title", itemTitle);
-        formData.append("category", itemCategory || "Uncategorized");
-
-        if (targetUsers) formData.append("targetUsers", targetUsers);
-
         const targetUsersList = targetUsers?.split(",") || [targetUsers || ""];
 
         for (const targetUser of targetUsersList) {
@@ -80,8 +65,7 @@ export const useSharingTools = ({
           };
           const finalPermissions = { ...permissions, canRead: true };
           const result = await shareWith(
-            itemId,
-            itemCategory || "Uncategorized",
+            itemUuid,
             currentUser?.username || "",
             targetUser || "",
             itemType,
@@ -103,7 +87,7 @@ export const useSharingTools = ({
         setStatus((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [itemUuid, itemId, itemType, itemTitle, itemCategory, userPermissions]
+    [itemUuid, itemType, userPermissions]
   );
 
   const _executeUnshare = useCallback(
@@ -116,8 +100,7 @@ export const useSharingTools = ({
 
         for (const targetUser of targetUsersList) {
           await unshareWith(
-            itemUuid || itemId,
-            itemCategory || "Uncategorized",
+            itemUuid,
             currentUser?.username || "",
             targetUser || "",
             itemType
@@ -139,7 +122,7 @@ export const useSharingTools = ({
         setStatus((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [itemUuid, itemId, itemType, itemCategory, itemOwner]
+    [itemUuid, itemType, itemOwner]
   );
 
   const loadInitialState = useCallback(async () => {
@@ -152,20 +135,13 @@ export const useSharingTools = ({
       ]);
       setUsers(usersData);
 
-      const encodedCategory = encodeCategoryPath(
-        itemCategory || "Uncategorized"
-      );
       const sharedUsers: string[] = [];
 
       const permissionsMap: Record<string, SharingPermissions> = {};
 
       Object.entries(sharingData).forEach(([username, items]) => {
         if (username !== "public") {
-          const itemEntry = items.find(
-            (entry) =>
-              entry.uuid === itemUuid ||
-              (entry.id === itemId && entry.category === encodedCategory)
-          );
+          const itemEntry = items.find((entry) => entry.uuid === itemUuid);
 
           if (itemEntry) {
             sharedUsers.push(username);
@@ -179,17 +155,13 @@ export const useSharingTools = ({
       setUserPermissions(permissionsMap);
 
       const publicItems = sharingData.public || [];
-      const isPublic = publicItems.some(
-        (entry) =>
-          entry.uuid === itemUuid ||
-          (entry.id === itemId && entry.category === encodedCategory)
-      );
+      const isPublic = publicItems.some((entry) => entry.uuid === itemUuid);
       setIsPubliclyShared(isPublic);
 
       if (isPublic) {
-        const publicPath =
-          itemType === ItemTypes.CHECKLIST ? "public/checklist" : "public/note";
-        setPublicUrl(`${window.location.origin}/${publicPath}/${itemUuid || itemId}`);
+        setPublicUrl(
+          `${window.location.origin}${publicHref(itemType, itemUuid)}`
+        );
       }
     } catch (error) {
       setStatus({
@@ -273,8 +245,7 @@ export const useSharingTools = ({
     } else {
       if (currentSharing.includes(user)) {
         const result = await updateItemPermissions(
-          itemUuid || itemId,
-          itemCategory || "Uncategorized",
+          itemUuid,
           itemType,
           user,
           newPermissions
@@ -310,8 +281,7 @@ export const useSharingTools = ({
     } else {
       if (currentSharing.includes(user)) {
         const result = await updateItemPermissions(
-          itemUuid || itemId,
-          itemCategory || "Uncategorized",
+          itemUuid,
           itemType,
           user,
           newPermissions
@@ -334,33 +304,14 @@ export const useSharingTools = ({
 
     try {
       if (isPubliclyShared) {
-        await unshareWith(
-          itemUuid || itemId,
-          itemCategory || "Uncategorized",
-          currentUser.username,
-          "public",
-          itemType
-        );
+        await unshareWith(itemUuid, currentUser.username, "public", itemType);
       } else {
-        await shareWith(
-          itemId,
-          itemCategory || "Uncategorized",
-          currentUser.username,
-          "public",
-          itemType
-        );
+        await shareWith(itemUuid, currentUser.username, "public", itemType);
       }
 
       const sharingData = await readShareFile(itemType);
       const publicItems = sharingData.public || [];
-      const encodedCategory = encodeCategoryPath(
-        itemCategory || "Uncategorized"
-      );
-      const isPublic = publicItems.some(
-        (entry) =>
-          entry.uuid === itemUuid ||
-          (entry.id === itemId && entry.category === encodedCategory)
-      );
+      const isPublic = publicItems.some((entry) => entry.uuid === itemUuid);
 
       setIsPubliclyShared(isPublic);
 
@@ -371,9 +322,9 @@ export const useSharingTools = ({
       }));
 
       if (isPublic) {
-        const publicPath =
-          itemType === ItemTypes.CHECKLIST ? "public/checklist" : "public/note";
-        setPublicUrl(`${window.location.origin}/${publicPath}/${itemUuid || itemId}`);
+        setPublicUrl(
+          `${window.location.origin}${publicHref(itemType, itemUuid)}`
+        );
       } else {
         setPublicUrl("");
       }
@@ -399,38 +350,19 @@ export const useSharingTools = ({
 
     try {
       for (const username of currentSharing) {
-        await unshareWith(
-          itemUuid || itemId,
-          itemCategory || "Uncategorized",
-          currentUser.username,
-          username,
-          itemType
-        );
+        await unshareWith(itemUuid, currentUser.username, username, itemType);
       }
 
       if (isPubliclyShared) {
-        await unshareWith(
-          itemUuid || itemId,
-          itemCategory || "Uncategorized",
-          currentUser.username,
-          "public",
-          itemType
-        );
+        await unshareWith(itemUuid, currentUser.username, "public", itemType);
       }
 
       const sharingData = await readShareFile(itemType);
       const sharedUsers: string[] = [];
-      const encodedCategory = encodeCategoryPath(
-        itemCategory || "Uncategorized"
-      );
 
       Object.entries(sharingData).forEach(([username, items]) => {
         if (username !== "public") {
-          const hasItem = items.some(
-            (entry) =>
-              entry.uuid === itemUuid ||
-              (entry.id === itemId && entry.category === encodedCategory)
-          );
+          const hasItem = items.some((entry) => entry.uuid === itemUuid);
           if (hasItem) {
             sharedUsers.push(username);
           }
@@ -438,11 +370,7 @@ export const useSharingTools = ({
       });
 
       const publicItems = sharingData.public || [];
-      const isPublic = publicItems.some(
-        (entry) =>
-          entry.uuid === itemUuid ||
-          (entry.id === itemId && entry.category === encodedCategory)
-      );
+      const isPublic = publicItems.some((entry) => entry.uuid === itemUuid);
 
       setCurrentSharing(sharedUsers);
       setSelectedUsers(sharedUsers);

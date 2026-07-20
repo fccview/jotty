@@ -76,8 +76,9 @@ export interface List {
 }
 
 export interface Checklist {
+  /** @deprecated file-layer slug (on-disk filename), never identity; use uuid */
   id: string;
-  uuid?: string;
+  uuid: string;
   title: string;
   type: ChecklistType;
   category?: string;

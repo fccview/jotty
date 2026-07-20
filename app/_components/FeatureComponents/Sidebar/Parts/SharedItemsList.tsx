@@ -10,7 +10,7 @@ import {
   CheckmarkSquare04Icon,
   TaskDaily01Icon,
 } from "hugeicons-react";
-import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
+import { cn, itemHref } from "@/app/_utils/global-utils";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { capitalize } from "lodash";
@@ -87,9 +87,11 @@ export const SharedItemsList = ({
     });
   };
 
-  const getItemHref = (item: Checklist | Note) => {
-    return `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || "Uncategorized", item.id)}`;
-  };
+  const getItemHref = (item: Checklist | Note) =>
+    itemHref(
+      mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
+      item.uuid!,
+    );
 
   const handleItemClick = (e: React.MouseEvent, item: Checklist | Note) => {
     if (checkWouldBlock()) {

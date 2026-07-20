@@ -10,7 +10,8 @@ import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/CloneCategoryModal";
 import { SwipeNavigationWrapper } from "@/app/_components/FeatureComponents/Notes/Parts/SwipeNavigationWrapper";
 
@@ -57,9 +58,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleCloneConfirm = async (targetCategory: string) => {
     const formData = new FormData();
-    formData.append("id", localNote.id);
     formData.append("uuid", localNote.uuid || "");
-    formData.append("originalCategory", localNote.category || "Uncategorized");
     formData.append("category", targetCategory || "Uncategorized");
     if (localNote.owner) {
       formData.append("user", localNote.owner);
@@ -68,13 +67,8 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
     const { cloneNote } = await import("@/app/_server/actions/note");
     const result = await cloneNote(formData);
 
-    if (result.success && result.data) {
-      router.push(
-        `/note/${buildCategoryPath(
-          result.data.category || "Uncategorized",
-          result.data.id,
-        )}`,
-      );
+    if (result.success && result.data?.uuid) {
+      router.push(itemHref(ItemTypes.NOTE, result.data.uuid));
       router.refresh();
     }
   };
@@ -117,8 +111,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       isEditorInEditMode={viewModel.isEditing}
     >
       <SwipeNavigationWrapper
-        noteId={localNote.id}
-        noteCategory={localNote.category}
+        noteUuid={localNote.uuid || ""}
         enabled={!viewModel.isEditMode}
       >
         <NoteEditor

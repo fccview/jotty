@@ -6,21 +6,14 @@ interface ItemDetails {
   sharedWith: string[];
 }
 
-export const sharingInfo = (
-  data: any,
-  targetId: string,
-  targetCategory: string,
-) => {
+export const sharingInfo = (data: any, targetUuid: string) => {
   let result: ItemDetails = {
     exists: false,
     isPublic: false,
     sharedWith: [] as string[],
   };
 
-  const isMatch = (item: { id?: string; uuid?: string; category?: string }) =>
-    item.uuid === targetId ||
-    (item.id === targetId &&
-      item.category?.toLowerCase() === targetCategory?.toLowerCase());
+  const isMatch = (item: { uuid?: string }) => item.uuid === targetUuid;
 
   for (const categoryKey in data) {
     const categoryObject = data[categoryKey];
@@ -50,16 +43,10 @@ export const sharingInfo = (
 export const getPermissions = (
   data: any,
   username: string,
-  targetId: string,
-  targetCategory: string,
+  targetUuid: string,
   itemType?: Modes,
 ) => {
-  const isMatch = (item: { id?: string; uuid?: string; category?: string }) =>
-    item.uuid === targetId ||
-    (item.id === targetId &&
-      (!targetCategory ||
-        !item.category ||
-        item.category?.toLowerCase() === targetCategory?.toLowerCase()));
+  const isMatch = (item: { uuid?: string }) => item.uuid === targetUuid;
 
   const categoriesToSearch =
     itemType !== undefined ? [itemType] : (Object.keys(data || {}) as string[]);
