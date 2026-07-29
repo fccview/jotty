@@ -22,7 +22,7 @@ vi.mock('@/app/_server/actions/notifications', () => ({
   createNotificationForUser: (...args: unknown[]) => mockCreateNotificationForUser(...args),
 }))
 
-vi.mock('@/app/_server/ws/broadcast', () => ({
+vi.mock('@/app/_server/actions/ws/broadcast', () => ({
   broadcast: (...args: unknown[]) => mockBroadcast(...args),
 }))
 

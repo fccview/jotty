@@ -217,40 +217,16 @@ export const serverDeleteDir = async (dirPath: string) => {
 export const readOrderFile = async (
   dirPath: string,
 ): Promise<OrderData | null> => {
-  try {
-    const filePath = path.join(dirPath, ".order.json");
-    const content = await fs.readFile(filePath, "utf-8");
-    const data = JSON.parse(content) as OrderData;
-    const categories = Array.isArray(data.categories)
-      ? data.categories
-      : undefined;
-    const items = Array.isArray(data.items) ? data.items : undefined;
-    return { categories, items };
-  } catch {
-    return null;
-  }
+  const { readCatOrder } = await import("@/app/_server/actions/share/category-info");
+  return readCatOrder(dirPath);
 };
 
 export const writeOrderFile = async (
   dirPath: string,
   data: OrderData,
 ): Promise<{ success: boolean }> => {
-  try {
-    await fs.mkdir(dirPath, { recursive: true });
-    const filePath = path.join(dirPath, ".order.json");
-    const toWrite: OrderData = {};
-    if (data.categories && data.categories.length > 0) {
-      toWrite.categories = data.categories;
-    }
-    if (data.items && data.items.length > 0) {
-      toWrite.items = data.items;
-    }
-
-    await fs.writeFile(filePath, JSON.stringify(toWrite, null, 2), "utf-8");
-    return { success: true };
-  } catch {
-    return { success: false };
-  }
+  const { writeCatOrder } = await import("@/app/_server/actions/share/category-info");
+  return { success: await writeCatOrder(dirPath, data) };
 };
 
 const STAT_BATCH_SIZE = 4000;

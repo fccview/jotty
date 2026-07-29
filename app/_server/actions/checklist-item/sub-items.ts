@@ -9,17 +9,17 @@ import {
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Checklist, Result } from "@/app/_types";
 import {
   ItemTypes,
   PermissionTypes,
+  Modes,
   TaskStatus,
   isKanbanType,
 } from "@/app/_types/enums";
-import { checkUserPermission } from "../sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 export const createSubItem = async (
   formData: FormData
@@ -35,7 +35,7 @@ export const createSubItem = async (
       throw new Error("List not found");
     }
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -116,16 +116,8 @@ export const createSubItem = async (
       updatedAt: new Date().toISOString(),
     };
 
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      list.owner!
-    );
-    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
-    await ensureDir(categoryDir);
-
-    const filePath = path.join(categoryDir, `${list.id}.md`);
+    const filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
+    await ensureDir(path.dirname(filePath));
 
     await serverWriteFile(filePath, listToMarkdown(updatedList as Checklist));
 

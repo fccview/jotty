@@ -6,12 +6,13 @@ import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
 import { publicHref } from "@/app/_utils/global-utils";
 import {
-  shareWith,
-  unshareWith,
-  readShareFile,
-  getItemPermissions,
-  updateItemPermissions,
-} from "../_server/actions/sharing";
+  shareItem,
+  unshareItem,
+  setItemPublic,
+  optOutItem,
+  inheritItem,
+} from "../_server/actions/share/operations";
+import { itemShares, modeOf } from "../_server/actions/share/queries";
 import { SharingPermissions } from "@/app/_types";
 import { getCurrentUser } from "../_server/actions/users";
 
@@ -38,6 +39,8 @@ export const useSharingTools = ({
     Record<string, SharingPermissions>
   >({});
   const [isPubliclyShared, setIsPubliclyShared] = useState(false);
+  const [inheritedFrom, setInheritedFrom] = useState<string | null>(null);
+  const [isOptedOut, setIsOptedOut] = useState(false);
   const [publicUrl, setPublicUrl] = useState("");
   const [status, setStatus] = useState<{
     isLoading: boolean;
@@ -64,11 +67,10 @@ export const useSharingTools = ({
             canDelete: false,
           };
           const finalPermissions = { ...permissions, canRead: true };
-          const result = await shareWith(
+          const result = await shareItem(
+            await modeOf(itemType),
             itemUuid,
-            currentUser?.username || "",
             targetUser || "",
-            itemType,
             finalPermissions
           );
           if (!result.success) {
@@ -99,12 +101,7 @@ export const useSharingTools = ({
         const currentUser = await getCurrentUser();
 
         for (const targetUser of targetUsersList) {
-          await unshareWith(
-            itemUuid,
-            currentUser?.username || "",
-            targetUser || "",
-            itemType
-          );
+          await unshareItem(await modeOf(itemType), itemUuid, targetUser || "");
         }
 
         return { success: true, data: null };
@@ -129,33 +126,25 @@ export const useSharingTools = ({
     if (!isOpen) return;
     setStatus({ isLoading: true, error: null, success: null });
     try {
-      const [usersData, sharingData] = await Promise.all([
+      const [usersData, shares] = await Promise.all([
         readJsonFile(USERS_FILE),
-        readShareFile(itemType),
+        itemShares(itemUuid, itemType),
       ]);
       setUsers(usersData);
 
-      const sharedUsers: string[] = [];
-
-      const permissionsMap: Record<string, SharingPermissions> = {};
-
-      Object.entries(sharingData).forEach(([username, items]) => {
-        if (username !== "public") {
-          const itemEntry = items.find((entry) => entry.uuid === itemUuid);
-
-          if (itemEntry) {
-            sharedUsers.push(username);
-            permissionsMap[username] = itemEntry.permissions;
-          }
-        }
-      });
+      const sharedUsers = Object.keys(shares.users);
 
       setCurrentSharing(sharedUsers);
       setSelectedUsers(sharedUsers);
-      setUserPermissions(permissionsMap);
+      setUserPermissions(shares.users);
+      setInheritedFrom(shares.inherited ? shares.viaCategory || null : null);
+      setIsOptedOut(
+        !shares.inherited &&
+        sharedUsers.length === 0 &&
+        !shares.isPublic
+      );
 
-      const publicItems = sharingData.public || [];
-      const isPublic = publicItems.some((entry) => entry.uuid === itemUuid);
+      const isPublic = shares.isPublic;
       setIsPubliclyShared(isPublic);
 
       if (isPublic) {
@@ -244,9 +233,9 @@ export const useSharingTools = ({
       }
     } else {
       if (currentSharing.includes(user)) {
-        const result = await updateItemPermissions(
+        const result = await shareItem(
+          await modeOf(itemType),
           itemUuid,
-          itemType,
           user,
           newPermissions
         );
@@ -280,9 +269,9 @@ export const useSharingTools = ({
       }
     } else {
       if (currentSharing.includes(user)) {
-        const result = await updateItemPermissions(
+        const result = await shareItem(
+          await modeOf(itemType),
           itemUuid,
-          itemType,
           user,
           newPermissions
         );
@@ -303,15 +292,10 @@ export const useSharingTools = ({
     setStatus({ isLoading: true, error: null, success: null });
 
     try {
-      if (isPubliclyShared) {
-        await unshareWith(itemUuid, currentUser.username, "public", itemType);
-      } else {
-        await shareWith(itemUuid, currentUser.username, "public", itemType);
-      }
+      await setItemPublic(await modeOf(itemType), itemUuid, !isPubliclyShared);
 
-      const sharingData = await readShareFile(itemType);
-      const publicItems = sharingData.public || [];
-      const isPublic = publicItems.some((entry) => entry.uuid === itemUuid);
+      const shares = await itemShares(itemUuid, itemType);
+      const isPublic = shares.isPublic;
 
       setIsPubliclyShared(isPublic);
 
@@ -342,6 +326,31 @@ export const useSharingTools = ({
     }
   };
 
+  const handleOptOut = async () => {
+    setStatus({ isLoading: true, error: null, success: null });
+
+    try {
+      const mode = await modeOf(itemType);
+      const result = isOptedOut
+        ? await inheritItem(mode, itemUuid)
+        : await optOutItem(mode, itemUuid);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update sharing");
+      }
+
+      await loadInitialState();
+    } catch (error) {
+      setStatus({
+        isLoading: false,
+        success: null,
+        error: error instanceof Error ? error.message : "An error occurred.",
+      });
+    } finally {
+      setStatus((prev) => ({ ...prev, isLoading: false }));
+    }
+  };
+
   const handleRemoveAllSharing = async () => {
     const currentUser = await getCurrentUser();
     if (!currentUser) return;
@@ -349,28 +358,19 @@ export const useSharingTools = ({
     setStatus({ isLoading: true, error: null, success: null });
 
     try {
+      const mode = await modeOf(itemType);
+
       for (const username of currentSharing) {
-        await unshareWith(itemUuid, currentUser.username, username, itemType);
+        await unshareItem(mode, itemUuid, username);
       }
 
       if (isPubliclyShared) {
-        await unshareWith(itemUuid, currentUser.username, "public", itemType);
+        await setItemPublic(mode, itemUuid, false);
       }
 
-      const sharingData = await readShareFile(itemType);
-      const sharedUsers: string[] = [];
-
-      Object.entries(sharingData).forEach(([username, items]) => {
-        if (username !== "public") {
-          const hasItem = items.some((entry) => entry.uuid === itemUuid);
-          if (hasItem) {
-            sharedUsers.push(username);
-          }
-        }
-      });
-
-      const publicItems = sharingData.public || [];
-      const isPublic = publicItems.some((entry) => entry.uuid === itemUuid);
+      const shares = await itemShares(itemUuid, itemType);
+      const sharedUsers = Object.keys(shares.users);
+      const isPublic = shares.isPublic;
 
       setCurrentSharing(sharedUsers);
       setSelectedUsers(sharedUsers);
@@ -423,6 +423,9 @@ export const useSharingTools = ({
     setActiveTab,
     handlePublicToggle,
     isPubliclyShared,
+    inheritedFrom,
+    isOptedOut,
+    handleOptOut,
     publicUrl,
     handleRemoveAllSharing,
     filteredUsers,

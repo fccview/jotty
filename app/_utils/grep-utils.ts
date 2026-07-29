@@ -111,6 +111,27 @@ export const grepFindFilesByField = async (
   }
 };
 
+export const grepFilesByText = async (
+  dir: string,
+  text: string,
+  include: string,
+): Promise<string[]> => {
+  try {
+    const { stdout } = await execFileAsync("grep", [
+      "-rlF",
+      text,
+      dir,
+      `--include=${include}`,
+    ]);
+    return stdout.trim().split("\n").filter(Boolean);
+  } catch (error) {
+    if (!_isNoMatch(error)) {
+      console.error("Error in grepFilesByText:", error);
+    }
+    return [];
+  }
+};
+
 export const grepExtractAllFrontmatters = async (
   dir: string,
 ): Promise<Map<string, Record<string, unknown>>> => {

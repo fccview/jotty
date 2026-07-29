@@ -9,9 +9,9 @@ import {
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { Modes } from "@/app/_types/enums";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 export const reorderItems = async (formData: FormData) => {
   try {
@@ -124,16 +124,8 @@ export const reorderItems = async (formData: FormData) => {
       updatedAt: new Date().toISOString(),
     };
 
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      list.owner!
-    );
-    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
-    await ensureDir(categoryDir);
-
-    const filePath = path.join(categoryDir, `${list.id}.md`);
+    const filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
+    await ensureDir(path.dirname(filePath));
 
     const markdownContent = listToMarkdown(updatedList as any);
 

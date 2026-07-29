@@ -20,8 +20,8 @@ import {
   updateIndexForItem,
   parseInternalLinks,
 } from "@/app/_server/actions/link";
-import { checkUserPermission } from "@/app/_server/actions/sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getListById, getUserChecklists } from "./queries";
 
 export const convertChecklistType = async (formData: FormData) => {
@@ -291,7 +291,7 @@ export const clearAllChecklistItems = async (formData: FormData) => {
       return { error: "Checklist not found" };
     }
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       checklist.uuid!,
       ItemTypes.CHECKLIST,
       actingUser.username,

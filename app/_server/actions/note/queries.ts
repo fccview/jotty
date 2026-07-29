@@ -5,15 +5,17 @@ import fs from "fs/promises";
 import { Note, User, GetNotesOptions } from "@/app/_types";
 import { NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { Modes } from "@/app/_types/enums";
+import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import { toIso } from "@/app/_utils/yaml-metadata-utils";
 import { readNotesRecursively } from "./readers";
+import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
+import { canReachFile } from "@/app/_server/actions/share/access";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import { getOrCompute, metaCacheKey } from "@/app/_server/lib/metadata-cache";
+import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
@@ -79,23 +81,29 @@ export const getNoteById = async (
   let isShared = false;
 
   if (!filePath) {
-    const { getAllSharedItemsForUser } =
-      await import("@/app/_server/actions/sharing");
-    const sharedData = await getAllSharedItemsForUser(username);
-    for (const sharedItem of sharedData.notes) {
-      if (sharedItem.uuid !== uuid) continue;
+    const mounts = await mountsFor(Modes.NOTES, username);
 
-      const sharerDir = path.join(process.cwd(), NOTES_DIR(sharedItem.sharer));
-      const sharedFound = await grepFindFileByUuid(sharerDir, uuid);
+    for (const mount of mounts) {
+      const ownerDir = path.join(process.cwd(), NOTES_DIR(mount.owner));
+      const sharedFound = await grepFindFileByUuid(ownerDir, uuid);
 
-      if (sharedFound) {
-        filePath = sharedFound.filePath;
-        noteId = sharedFound.id;
-        noteCategory = sharedFound.category || UNCATEGORIZED;
-        isShared = true;
-        ownerUsername = sharedItem.sharer;
-        break;
-      }
+      if (!sharedFound) continue;
+
+      const allowed = await canReachFile(
+        Modes.NOTES,
+        sharedFound.filePath,
+        username,
+        PermissionTypes.READ,
+      );
+
+      if (!allowed) continue;
+
+      filePath = sharedFound.filePath;
+      noteId = sharedFound.id;
+      noteCategory = sharedFound.category || UNCATEGORIZED;
+      isShared = true;
+      ownerUsername = mount.owner;
+      break;
     }
   }
 
@@ -169,7 +177,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       ? metaCacheKey(Modes.NOTES, resolvedDir)
       : null;
 
-    const notes: Note[] = ownCacheKey
+    const cached: Note[] = ownCacheKey
       ? await getOrCompute(ownCacheKey, resolvedDir, () =>
         readNotesRecursively(
           resolvedDir,
@@ -195,6 +203,8 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
         undefined,
       );
 
+    const notes: Note[] = [...cached];
+
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
         `[layout notes] readNotesRecursively: ${(performance.now() - t1).toFixed(0)}ms`,
@@ -202,36 +212,31 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     }
 
     const t2 = layoutTiming ? performance.now() : 0;
-    const { getAllSharedItemsForUser } =
-      await import("@/app/_server/actions/sharing");
-    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+    const mounts = await mountsFor(Modes.NOTES, currentUser.username);
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
-        `[layout notes] sharedItems: ${(performance.now() - t2).toFixed(0)}ms`,
+        `[layout notes] mounts: ${(performance.now() - t2).toFixed(0)}ms`,
       );
     }
 
-    for (const sharedItem of sharedData.notes) {
+    for (const mount of mounts) {
       try {
-        const itemIdentifier = sharedItem.uuid;
-        if (!itemIdentifier) continue;
+        const ownerDir = NOTES_DIR(mount.owner);
+        await ensureDir(ownerDir);
 
-        const sharerDir = NOTES_DIR(sharedItem.sharer);
-        await ensureDir(sharerDir);
-
-        const sharerAbsDir = path.isAbsolute(sharerDir)
-          ? sharerDir
-          : path.join(process.cwd(), sharerDir);
-        const sharerCacheKey = canCache
-          ? metaCacheKey(Modes.NOTES, sharerAbsDir)
+        const ownerAbsDir = path.isAbsolute(ownerDir)
+          ? ownerDir
+          : path.join(process.cwd(), ownerDir);
+        const ownerCacheKey = canCache
+          ? metaCacheKey(Modes.NOTES, ownerAbsDir)
           : null;
 
-        const sharerNotes = sharerCacheKey
-          ? await getOrCompute(sharerCacheKey, sharerAbsDir, () =>
+        const ownerNotes = ownerCacheKey
+          ? await getOrCompute(ownerCacheKey, ownerAbsDir, () =>
             readNotesRecursively(
-              sharerDir,
+              ownerDir,
               "",
-              sharedItem.sharer,
+              mount.owner,
               allowArchived,
               isRaw,
               metadataOnly,
@@ -239,28 +244,26 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
             ),
           )
           : await readNotesRecursively(
-            sharerDir,
+            ownerDir,
             "",
-            sharedItem.sharer,
+            mount.owner,
             allowArchived,
             isRaw,
             metadataOnly,
             excerptLength,
           );
 
-        const sharedNote = sharerNotes.find(
-          (note) => note.uuid === itemIdentifier,
+        const shared = await mountedItems(
+          Modes.NOTES,
+          currentUser.username,
+          mount,
+          ownerNotes,
         );
 
-        if (sharedNote) {
-          notes.push({
-            ...sharedNote,
-            isShared: true,
-          });
-        }
+        notes.push(...shared);
       } catch (error) {
         console.error(
-          `Error reading shared note ${sharedItem.uuid}:`,
+          `Error reading shared notes from ${mount.owner}:`,
           error,
         );
         continue;

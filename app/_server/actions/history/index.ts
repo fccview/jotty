@@ -6,7 +6,7 @@ import simpleGit, { SimpleGit } from "simple-git";
 import { lock, unlock } from "proper-lockfile";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { checkUserPermission } from "@/app/_server/actions/sharing";
+import { canReach } from "@/app/_server/actions/share/queries";
 import { PermissionTypes } from "@/app/_types/enums";
 import { getSettings } from "@/app/_server/actions/config";
 import { USERS_FILE } from "@/app/_consts/files";
@@ -276,7 +276,7 @@ export const getHistory = async (
     return { success: false, error: "Not authenticated" };
   }
 
-  const canRead = await checkUserPermission(
+  const canRead = await canReach(
     noteUuid,
     "note",
     currentUser.username,
@@ -370,7 +370,7 @@ export const getVersion = async (
     return { success: false, error: "Invalid commit hash" };
   }
 
-  const canRead = await checkUserPermission(
+  const canRead = await canReach(
     noteUuid,
     "note",
     currentUser.username,
@@ -467,7 +467,7 @@ export const restoreNoteVersion = async (
     return { success: false, error: "Invalid commit hash" };
   }
 
-  const canEdit = await checkUserPermission(
+  const canEdit = await canReach(
     noteUuid,
     "note",
     currentUser.username,

@@ -1,3 +1,46 @@
+import { SharingPermissions } from "./core";
+import { Modes } from "./enums";
+
+export interface CategorySharing {
+  users: Record<string, SharingPermissions>;
+  inherit: boolean;
+}
+
+export interface CategoryOrder {
+  categories?: string[];
+  items?: string[];
+}
+
+export interface CategoryInfo {
+  uuid?: string;
+  sharing?: CategorySharing;
+  order?: CategoryOrder;
+}
+
+export interface ShareGrant {
+  username: string;
+  permissions: SharingPermissions;
+}
+
+export interface EffectiveAccess {
+  owner: string;
+  users: Record<string, SharingPermissions>;
+  isPublic: boolean;
+  inherited: boolean;
+  viaCategory?: string;
+}
+
+export interface SharedMount {
+  owner: string;
+  mode: Modes;
+  categoryUuid: string;
+  categoryPath: string;
+  displayName: string;
+  permissions: SharingPermissions;
+  isImplicit: boolean;
+  itemUuids?: string[];
+}
+
 export interface SharedItem {
   id: string;
   type: "checklist" | "note";
@@ -40,6 +83,33 @@ export interface GlobalSharingReturn {
 
 export interface SharedItemSummary {
   uuid: string;
+}
+
+export interface ShareEntry {
+  uuid: string;
+  sharer: string;
+  permissions: SharingPermissions;
+}
+
+export type SharingData = Record<string, ShareEntry[]>;
+
+export interface ItemShares {
+  users: Record<string, SharingPermissions>;
+  isPublic: boolean;
+  inherited: boolean;
+  viaCategory?: string;
+}
+
+export interface FolderShares {
+  users: Record<string, SharingPermissions>;
+  isPublic: boolean;
+  inherit: boolean;
+  uuid?: string;
+}
+
+export interface GlobalShares {
+  notes: SharingData;
+  checklists: SharingData;
 }
 
 export interface AllSharedItems {

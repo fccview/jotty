@@ -6,8 +6,6 @@ import {
   CheckmarkSquare04Icon,
   TaskDaily01Icon,
   PencilEdit02Icon,
-  UserMultipleIcon,
-  Globe02Icon,
   PinIcon,
   PinOffIcon,
   MoreHorizontalIcon,
@@ -30,7 +28,9 @@ import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
+import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
+import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
@@ -65,10 +65,13 @@ export const SidebarItem = ({
   const itemDetails = sharingInfo(globalSharing, item.uuid || "");
 
   const isPubliclyShared = itemDetails.isPublic;
-  const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
   const isShareable = user?.username === item.owner;
 
-  const sharedWith = itemDetails.sharedWith;
+  const grants = shareGrants(
+    globalSharing,
+    item.uuid || "",
+    mode === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS,
+  );
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
@@ -238,15 +241,13 @@ export const SidebarItem = ({
               <LockKeyIcon className="h-4 w-4 text-primary" />
             </span>
           )}
-          {isShared && (
-            <span title={sharedWith.join(", ")}>
-              <UserMultipleIcon className="h-4 w-4 text-primary" />
-            </span>
-          )}
-          {isPubliclyShared && (
-            <span title={t("checklists.publiclyShared")}>
-              <Globe02Icon className="h-4 w-4 text-primary" />
-            </span>
+          {item.sharedFrom ? (
+            <SharedFromBadge
+              owner={item.sharedFrom}
+              permissions={item.permissions}
+            />
+          ) : (
+            <ShareBadges grants={grants} isPublic={isPubliclyShared} />
           )}
         </div>
       </Link>

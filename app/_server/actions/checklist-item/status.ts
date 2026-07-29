@@ -11,15 +11,15 @@ import {
 } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Checklist, Result, TimeEntry } from "@/app/_types";
 import {
   ItemTypes,
   PermissionTypes,
+  Modes,
 } from "@/app/_types/enums";
-import { checkUserPermission } from "../sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { updateItem } from "@/app/_utils/item-tree-utils";
 import { applyStatus, completeParent } from "@/app/_utils/item-status-utils";
 
@@ -76,7 +76,7 @@ export const updateItemStatus = async (
       return { success: false, error: "List not found" };
     }
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!,
       ItemTypes.CHECKLIST,
       username,
@@ -95,12 +95,12 @@ export const updateItemStatus = async (
 
     const updatedItems = parsedTimeEntries
       ? updateItem(statusItems, itemId, (item) => ({
-          ...item,
-          timeEntries: parsedTimeEntries!.map((entry) => ({
-            ...entry,
-            user: entry.user || username,
-          })),
-        }))
+        ...item,
+        timeEntries: parsedTimeEntries!.map((entry) => ({
+          ...entry,
+          user: entry.user || username,
+        })),
+      }))
       : statusItems;
 
     const itemsWithParentAutoComplete = completeParent(
@@ -113,16 +113,8 @@ export const updateItemStatus = async (
       updatedAt: now,
     };
 
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      list.owner!
-    );
-    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
-    await ensureDir(categoryDir);
-
-    const filePath = path.join(categoryDir, `${list.id}.md`);
+    const filePath = await diskPath(Modes.CHECKLISTS, username, list);
+    await ensureDir(path.dirname(filePath));
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 

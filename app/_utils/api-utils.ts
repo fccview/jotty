@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey } from "@/app/_server/actions/api";
-import { resolveApiId } from "@/app/_server/lib/legacy-lookup";
+import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
 import { Modes } from "@/app/_types/enums";
 
 /**

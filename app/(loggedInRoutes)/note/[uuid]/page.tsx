@@ -35,7 +35,7 @@ export default async function NotePage(props: NotePageProps) {
   const { uuid } = params;
 
   if (!isUuid(uuid)) {
-    const { legacyResolve } = await import("@/app/_server/lib/legacy-lookup");
+    const { legacyResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
     const resolved = await legacyResolve(
       Modes.NOTES,
       UNCATEGORIZED,

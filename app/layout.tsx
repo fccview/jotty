@@ -32,10 +32,10 @@ import { getUserNotes } from "./_server/actions/note";
 
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
-  getAllSharedItems,
-  getAllSharedItemsForUser,
-  readShareFile,
-} from "./_server/actions/sharing";
+  allShared,
+  sharedForUser,
+  globalShares,
+} from "./_server/actions/share/queries";
 import { generateWebManifest } from "./_utils/global-utils";
 import { writeJsonFile } from "./_server/actions/file";
 import path from "path";
@@ -196,16 +196,16 @@ export default async function RootLayout({
         })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
-      ? getAllSharedItems()
+      ? allShared()
       : Promise.resolve({
           notes: [],
           checklists: [],
           public: { notes: [], checklists: [] },
         }),
     user && !isPublicRoute
-      ? getAllSharedItemsForUser(user.username)
+      ? sharedForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
-    user && !isPublicRoute ? readShareFile("all") : Promise.resolve(null),
+    user && !isPublicRoute ? globalShares() : Promise.resolve(null),
     getAvailableLocalesWithNames(),
   ]);
 

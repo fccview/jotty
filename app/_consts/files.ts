@@ -24,7 +24,6 @@ export const ALLOWED_VIDEO_TYPES = [
   "video/quicktime",
 ];
 
-export const SHARING_DIR = path.join("data", "sharing");
 export const USERS_DIR = path.join("data", "users");
 export const DATA_DIR = path.join("data");
 export const HOWTO_DIR = path.join("howto");
@@ -38,7 +37,6 @@ export const NOTES_DIR = (username: string) =>
 export const USERS_FILE = path.join("data", "users", "users.json");
 export const SESSIONS_FILE = path.join(USERS_DIR, "sessions.json");
 export const SESSION_DATA_FILE = path.join(USERS_DIR, "session-data.json");
-export const SHARED_ITEMS_FILE = path.join(SHARING_DIR, "shared-items.json");
 export const EXPORT_TEMP_DIR = path.join(DATA_DIR, "temp_exports");
 
 export const NOTIFICATIONS_DIR = path.join(DATA_DIR, "notifications");

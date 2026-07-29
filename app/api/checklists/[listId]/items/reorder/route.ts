@@ -4,17 +4,17 @@ import { withApiAuth } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile, ensureDir } from "@/app/_server/actions/file";
-import { checkUserPermission } from "@/app/_server/actions/sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { resolveApiId } from "@/app/_server/lib/legacy-lookup";
+import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
 
 export const dynamic = "force-dynamic";
 
-type TreeItem = { id: string; order: number; children?: TreeItem[]; [key: string]: unknown };
+type TreeItem = { id: string; order: number; children?: TreeItem[];[key: string]: unknown };
 type Located = { item: TreeItem; siblings: TreeItem[]; index: number };
 
 const findInTree = (items: TreeItem[], id: string): Located | null => {
@@ -82,7 +82,7 @@ export async function PUT(
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
 
-      const canEdit = await checkUserPermission(
+      const canEdit = await canReach(
         list.uuid!,
         ItemTypes.CHECKLIST,
         user.username,

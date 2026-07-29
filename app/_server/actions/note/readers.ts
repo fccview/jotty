@@ -19,6 +19,8 @@ import {
   grepExtractExcerpt,
 } from "@/app/_utils/grep-utils";
 import type { FileStatsEntry } from "@/app/_server/actions/file";
+import { dirUuids } from "@/app/_server/actions/share/category-info";
+import { orderByUuids } from "@/app/_utils/order-utils";
 import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
 import { promisify } from "util";
@@ -153,14 +155,16 @@ export const readNotesRecursively = async (
     .filter((e) => e.isDirectory() && !excludedDirs.includes(e.name))
     .map((e) => e.name);
 
-  const orderedDirNames: string[] = order?.categories
-    ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
-    : dirNames.sort((a, b) => a.localeCompare(b));
+  const sortedDirNames = dirNames.sort((a, b) => a.localeCompare(b));
+  const dirUuidMap = order?.categories
+    ? await dirUuids(dir, sortedDirNames)
+    : new Map<string, string>();
+
+  const orderedDirNames: string[] = orderByUuids(
+    sortedDirNames,
+    order?.categories,
+    (name) => dirUuidMap.get(name),
+  );
 
   const subDirPromises = orderedDirNames.map(async (dirName) => {
     return readNotesRecursively(
@@ -180,17 +184,9 @@ export const readNotesRecursively = async (
   const categoryPath = basePath;
   const files = entries;
   const mdFiles = files.filter((f) => f.isFile() && f.name.endsWith(".md"));
-  const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
-  const categoryOrder = order;
-
-  const orderedIds: string[] = categoryOrder?.items
-    ? [
-        ...categoryOrder.items.filter((id) => ids.includes(id)),
-        ...ids
-          .filter((id) => !categoryOrder.items!.includes(id))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
-    : ids.sort((a, b) => a.localeCompare(b));
+  const orderedIds: string[] = mdFiles
+    .map((f) => path.basename(f.name, ".md"))
+    .sort((a, b) => a.localeCompare(b));
 
   const filePromises = orderedIds.map(async (id) => {
     const fileName = `${id}.md`;
@@ -222,6 +218,7 @@ export const readNotesRecursively = async (
           updatedAt: toIso(stats.mtime),
           owner,
           isShared: false,
+          sharedWith: metadata?.sharedWith as string | string[] | undefined,
           encrypted: metadata?.encrypted === true,
           tags,
         };
@@ -247,6 +244,7 @@ export const readNotesRecursively = async (
           updatedAt: toIso(stats.mtime),
           owner,
           isShared: false,
+          sharedWith: metadata?.sharedWith as string | string[] | undefined,
           encrypted: metadata?.encrypted === true,
           tags,
         };
@@ -277,6 +275,7 @@ export const readNotesRecursively = async (
             updatedAt: toIso(stats.mtime),
             owner,
             isShared: false,
+            sharedWith: metadata.sharedWith as string | string[] | undefined,
             rawContent: content,
           };
         } else {
@@ -304,7 +303,13 @@ export const readNotesRecursively = async (
     Promise.all(filePromises),
   ]);
 
-  notes.push(...currentDirNotes.filter((n): n is Note => n != null));
+  notes.push(
+    ...orderByUuids(
+      currentDirNotes.filter((n): n is Note => n != null),
+      order?.items,
+      (note) => note.uuid,
+    ),
+  );
   subDirNotes.forEach((sub) => notes.push(...sub));
 
   return notes;

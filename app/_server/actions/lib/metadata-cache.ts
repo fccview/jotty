@@ -1,6 +1,7 @@
 import { Modes } from "@/app/_types/enums";
 import fs from "fs";
 import path from "path";
+import { CATEGORY_INFO_FILE, LEGACY_ORDER_FILE } from "@/app/_consts/sharing";
 
 const store = new Map<string, unknown[]>();
 const pending = new Map<string, Promise<unknown[]>>();
@@ -20,7 +21,11 @@ function startWatcher(dir: string) {
       { recursive: true, persistent: false },
       (_event, filename) => {
         if (!filename) return;
-        if (filename.endsWith(".md") || filename.endsWith("order.json")) {
+        if (
+          filename.endsWith(".md") ||
+          filename.endsWith(CATEGORY_INFO_FILE) ||
+          filename.endsWith(LEGACY_ORDER_FILE)
+        ) {
           invalidateDir(dir);
         }
       },
@@ -45,9 +50,12 @@ export async function getOrCompute<T>(
   dir: string,
   compute: () => Promise<T[]>,
 ): Promise<T[]> {
-  if (store.has(key)) return store.get(key)! as T[];
+  if (store.has(key)) return [...(store.get(key)! as T[])];
 
-  if (pending.has(key)) return pending.get(key)! as Promise<T[]>;
+  if (pending.has(key)) {
+    const inflight = (await pending.get(key)!) as T[];
+    return [...inflight];
+  }
 
   const promise = (async () => {
     try {
@@ -62,7 +70,7 @@ export async function getOrCompute<T>(
   })();
 
   pending.set(key, promise as Promise<unknown[]>);
-  return promise;
+  return [...(await promise)];
 }
 
 export function invalidateCached(key: string) {

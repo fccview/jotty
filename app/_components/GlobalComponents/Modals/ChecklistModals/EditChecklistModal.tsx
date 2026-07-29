@@ -35,8 +35,10 @@ export const EditChecklistModal = ({
   const initialCategory = unarchive ? "" : initialChecklist.category || "";
   const [category, setCategory] = useState(initialCategory);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOwner, setIsOwner] = useState(false);
-  const [checklist, setChecklist] = useState<Checklist | null>(null);
+  const [checklist, setChecklist] = useState<Checklist>(initialChecklist);
+  const [isMissing, setIsMissing] = useState(false);
+
+  const isOwner = Boolean(user?.username && user.username === checklist.owner);
 
   useEffect(() => {
     const fetchChecklist = async () => {
@@ -48,18 +50,17 @@ export const EditChecklistModal = ({
       );
 
       if (!fetchedChecklist) {
-        setChecklist(null);
+        setIsMissing(true);
         return;
       }
 
       setChecklist(fetchedChecklist);
       setTitle(fetchedChecklist.title || initialChecklist.title || "");
-      setIsOwner(user.username === fetchedChecklist.owner);
     };
     fetchChecklist();
   }, [initialChecklist, user?.username]);
 
-  if (!checklist) {
+  if (isMissing) {
     return (
       <Modal isOpen={true} onClose={onClose} title={t("checklists.checklistNotFound")}>
         <p>{t("checklists.checklistNotFound")}</p>

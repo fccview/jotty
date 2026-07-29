@@ -3,12 +3,10 @@
 import { revalidatePath } from "next/cache";
 import path from "path";
 import {
-  getUserModeDir,
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
 import { getListById } from "@/app/_server/actions/checklist";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
 import {
   listToMarkdown,
   areAllItemsCompleted,
@@ -18,7 +16,6 @@ import {
   normalizeTag,
 } from "@/app/_utils/tag-utils";
 import { isAdmin, getUsername } from "@/app/_server/actions/users";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { Checklist, Item, KanbanPriority, Result } from "@/app/_types";
 import {
   ItemTypes,
@@ -26,8 +23,9 @@ import {
   PermissionTypes,
   TaskStatus,
 } from "@/app/_types/enums";
-import { checkUserPermission } from "../sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { updateAllChildren } from "@/app/_utils/item-tree-utils";
 import { isKanbanType } from "@/app/_types/enums";
 
@@ -45,7 +43,7 @@ export const updateItem = async (
 
     const currentUser = username || (await getUsername());
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       checklist.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -87,8 +85,8 @@ export const updateItem = async (
     const existingTags = checklist.tags || [];
     const mergedTags = text
       ? Array.from(
-          new Set([...existingTags.map(normalizeTag), ...textInlineTags]),
-        ).filter(Boolean)
+        new Set([...existingTags.map(normalizeTag), ...textInlineTags]),
+      ).filter(Boolean)
       : existingTags;
 
     const priority = formData.get("priority") as string | null;
@@ -122,19 +120,12 @@ export const updateItem = async (
       updatedAt: now,
     };
 
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      checklist.owner!,
+    const filePath = await diskPath(
+      Modes.CHECKLISTS,
+      currentUser,
+      checklist,
     );
-    const categoryDir = path.join(
-      ownerDir,
-      checklist.category || UNCATEGORIZED,
-    );
-    await ensureDir(categoryDir);
-
-    const filePath = path.join(categoryDir, `${checklist.id}.md`);
+    await ensureDir(path.dirname(filePath));
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
@@ -185,7 +176,7 @@ export const createItem = async (
     const currentUser = username || (await getUsername());
     const recurrenceStr = formData.get("recurrence") as string;
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -246,8 +237,8 @@ export const createItem = async (
 
     let isSharedBoard = false;
     if (isKanbanType(list.type)) {
-      const { getUsersWithAccess } = await import("@/app/_server/actions/sharing");
-      const sharedUsers = await getUsersWithAccess(list.uuid!);
+      const { usersWithAccess } = await import("@/app/_server/actions/share/queries");
+      const sharedUsers = await usersWithAccess(list.uuid!);
       isSharedBoard = sharedUsers.length > 0;
     }
 
@@ -268,16 +259,16 @@ export const createItem = async (
       lastModifiedAt: now,
       ...(isKanbanType(list.type) &&
         defaultStatus && {
-          status: defaultStatus,
-          timeEntries,
-          history: [
-            {
-              status: defaultStatus,
-              timestamp: now,
-              user: currentUser,
-            },
-          ],
-        }),
+        status: defaultStatus,
+        timeEntries,
+        history: [
+          {
+            status: defaultStatus,
+            timestamp: now,
+            user: currentUser,
+          },
+        ],
+      }),
       ...(isSharedBoard && { assignee: currentUser }),
       ...(recurrence && { recurrence }),
     };
@@ -295,17 +286,8 @@ export const createItem = async (
       updatedAt: new Date().toISOString(),
     };
 
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      list.owner!,
-    );
-    const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
-
-    await ensureDir(categoryDir);
-
-    const filePath = path.join(categoryDir, `${list.id}.md`);
+    const filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
+    await ensureDir(path.dirname(filePath));
 
     await serverWriteFile(filePath, listToMarkdown(updatedList as Checklist));
 
@@ -351,7 +333,7 @@ export const deleteItem = async (
       throw new Error("List not found");
     }
 
-    const canDelete = await checkUserPermission(
+    const canDelete = await canReach(
       list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -402,28 +384,7 @@ export const deleteItem = async (
       updatedAt: new Date().toISOString(),
     };
 
-    let filePath: string;
-
-    if (list.isShared) {
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!,
-      );
-      filePath = path.join(
-        ownerDir,
-        list.category || UNCATEGORIZED,
-        `${list.id}.md`,
-      );
-    } else {
-      const userDir = await getUserModeDir(Modes.CHECKLISTS);
-      filePath = path.join(
-        userDir,
-        list.category || UNCATEGORIZED,
-        `${list.id}.md`,
-      );
-    }
+    const filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
 
     await serverWriteFile(filePath, listToMarkdown(updatedList as Checklist));
 

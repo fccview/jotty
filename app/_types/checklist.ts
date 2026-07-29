@@ -1,4 +1,5 @@
 import { ItemTypes } from "./enums";
+import { SharingPermissions } from "./core";
 
 export type ChecklistType = "simple" | "task" | "kanban";
 
@@ -87,6 +88,9 @@ export interface Checklist {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  sharedWith?: string | string[];
+  sharedFrom?: string;
+  permissions?: SharingPermissions;
   itemType?: ItemTypes;
   isDeleted?: boolean;
   rawContent?: string;

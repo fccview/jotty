@@ -4,7 +4,7 @@ import { Checklist, TimeEntry } from "@/app/_types";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getListById } from "@/app/_server/actions/checklist";
-import { checkUserPermission } from "@/app/_server/actions/sharing";
+import { canReach } from "@/app/_server/actions/share/queries";
 import { getFormData } from "@/app/_utils/global-utils";
 import { updateItem, findItem } from "@/app/_utils/item-tree-utils";
 import path from "path";
@@ -14,7 +14,7 @@ import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { Modes } from "@/app/_types/enums";
 import { revalidatePath } from "next/cache";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 const _getFilePath = async (list: Checklist): Promise<string> => {
   const categoryDir = list.category || UNCATEGORIZED;
@@ -43,7 +43,7 @@ async function _saveAndBroadcast(list: Checklist, username: string) {
 
   try {
     revalidatePath("/");
-  } catch {}
+  } catch { }
 }
 
 export const editTimeEntry = async (formData: FormData) => {
@@ -62,7 +62,7 @@ export const editTimeEntry = async (formData: FormData) => {
     const list = await getListById(uuid, currentUser.username);
     if (!list) return { error: "List not found" };
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
     );
     if (!canEdit) return { error: "Permission denied" };
@@ -112,7 +112,7 @@ export const deleteTimeEntry = async (formData: FormData) => {
     const list = await getListById(uuid, currentUser.username);
     if (!list) return { error: "List not found" };
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
     );
     if (!canEdit) return { error: "Permission denied" };

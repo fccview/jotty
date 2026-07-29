@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 import { Modes } from "@/app/_types/enums";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { isItemSharedWith } from "@/app/_server/actions/sharing";
+import { isPublicItem } from "@/app/_server/actions/share/queries";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
@@ -40,7 +40,7 @@ export default async function PublicChecklistPage(
   await CheckForNeedsMigration();
 
   if (!isUuid(uuid)) {
-    const { legacyResolve } = await import("@/app/_server/lib/legacy-lookup");
+    const { legacyResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
     const resolved = await legacyResolve(
       Modes.CHECKLISTS,
       UNCATEGORIZED,
@@ -66,11 +66,7 @@ export default async function PublicChecklistPage(
     !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
   );
 
-  const isPubliclyShared = await isItemSharedWith(
-    checklist.uuid!,
-    "checklist",
-    "public",
-  );
+  const isPubliclyShared = await isPublicItem(checklist.uuid!, "checklist");
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.username === checklist.owner;
   const isPrintView = searchParams?.view_mode === "print";

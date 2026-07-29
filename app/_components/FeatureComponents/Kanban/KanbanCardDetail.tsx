@@ -12,7 +12,7 @@ import {
   updateItemStatus,
 } from "@/app/_server/actions/checklist-item";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
-import { getUsersWithAccess } from "@/app/_server/actions/sharing";
+import { usersWithAccess } from "@/app/_server/actions/share/queries";
 import { getUsers } from "@/app/_server/actions/users";
 import { FloppyDiskIcon, MultiplicationSignIcon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
@@ -128,7 +128,7 @@ export const KanbanCardDetail = ({
   useEffect(() => {
     if (!isOpen) return;
     const _loadUsers = async () => {
-      const sharedWithUsers = await getUsersWithAccess(checklistUuid);
+      const sharedWithUsers = await usersWithAccess(checklistUuid);
       if (sharedWithUsers.length === 0) {
         setBoardIsShared(false);
         return;

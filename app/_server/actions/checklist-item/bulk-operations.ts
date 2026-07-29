@@ -14,7 +14,6 @@ import {
   areAllItemsCompleted
 } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Checklist, Result } from "@/app/_types";
 import {
@@ -24,8 +23,9 @@ import {
   TaskStatus,
   isKanbanType,
 } from "@/app/_types/enums";
-import { checkUserPermission } from "../sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 export const createBulkItems = async (
   formData: FormData
@@ -41,7 +41,7 @@ export const createBulkItems = async (
       throw new Error("List not found");
     }
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -90,17 +90,7 @@ export const createBulkItems = async (
     let filePath: string;
 
     if (list.isShared) {
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!
-      );
-      filePath = path.join(
-        ownerDir,
-        list.category || UNCATEGORIZED,
-        `${list.id}.md`
-      );
+      filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(
@@ -157,7 +147,7 @@ export const bulkToggleItems = async (
       return { success: false, error: "List not found" };
     }
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -268,17 +258,7 @@ export const bulkToggleItems = async (
     let filePath: string;
 
     if (list.isShared) {
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!
-      );
-      filePath = path.join(
-        ownerDir,
-        list.category || UNCATEGORIZED,
-        `${list.id}.md`
-      );
+      filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(
@@ -329,7 +309,7 @@ export const bulkDeleteItems = async (
       return { success: false, error: "List not found" };
     }
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
@@ -353,7 +333,7 @@ export const bulkDeleteItems = async (
             children && children.length > 0 && areAllItemsCompleted(children)
           ) ? true : item.completed;
 
-          return {...item, children, completed};
+          return { ...item, children, completed };
         })
         .filter((item) => item.children?.length > 0 || item.id !== undefined);
     };
@@ -366,17 +346,7 @@ export const bulkDeleteItems = async (
 
     let filePath: string;
     if (list.isShared) {
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!
-      );
-      filePath = path.join(
-        ownerDir,
-        list.category || UNCATEGORIZED,
-        `${list.id}.md`
-      );
+      filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(

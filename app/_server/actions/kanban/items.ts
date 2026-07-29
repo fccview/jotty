@@ -10,8 +10,8 @@ import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
 import { revalidatePath } from "next/cache";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getFormData } from "@/app/_utils/global-utils";
-import { checkUserPermission } from "@/app/_server/actions/sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getListById } from "@/app/_server/actions/checklist";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
 import { findItem, updateItem } from "@/app/_utils/item-tree-utils";
@@ -59,7 +59,7 @@ export const updateKanbanItemPriority = async (formData: FormData) => {
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
     );
     if (!canEdit) return { error: "Permission denied" };
@@ -97,7 +97,7 @@ export const updateKanbanItemScore = async (formData: FormData) => {
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
     );
     if (!canEdit) return { error: "Permission denied" };
@@ -135,7 +135,7 @@ export const assignKanbanItem = async (formData: FormData) => {
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
     );
     if (!canEdit) return { error: "Permission denied" };
@@ -184,7 +184,7 @@ export const setKanbanItemReminder = async (formData: FormData) => {
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!, ItemTypes.CHECKLIST, currentUser.username, PermissionTypes.EDIT
     );
     if (!canEdit) return { error: "Permission denied" };

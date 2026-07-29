@@ -1,6 +1,6 @@
 import { redirect, permanentRedirect } from "next/navigation";
 import { Modes } from "@/app/_types/enums";
-import { legacyResolve } from "@/app/_server/lib/legacy-lookup";
+import { legacyResolve } from "@/app/_server/actions/lib/legacy-lookup";
 import { decodeCategoryPath } from "@/app/_utils/global-utils";
 
 interface LegacyPublicChecklistProps {

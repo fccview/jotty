@@ -10,8 +10,8 @@ import { ChecklistsTypes } from "@/app/_types/enums";
 import { parseMarkdown, listToMarkdown } from "@/app/_utils/checklist-utils";
 import { updateItem } from "@/app/_utils/item-tree-utils";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
-import { getUsersWithAccess } from "@/app/_server/actions/sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { usersWithAccess } from "@/app/_server/actions/share/queries";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 const _execAsync = promisify(exec);
 
@@ -104,7 +104,7 @@ export const scanReminders = async (): Promise<void> => {
           continue;
         }
 
-        const sharees = await getUsersWithAccess(list.uuid);
+        const sharees = await usersWithAccess(list.uuid);
         const recipients = Array.from(new Set([owner, ...sharees]));
 
         let updatedItems = list.items;

@@ -20,8 +20,6 @@ interface SidebarState {
   ) => void;
   isCollapsed: (mode: string, path: string) => boolean;
 
-  sharedItemsCollapsed: boolean;
-  setSharedItemsCollapsed: (collapsed: boolean) => void;
 
   tagsCollapsed: boolean;
   setTagsCollapsed: (collapsed: boolean) => void;
@@ -69,13 +67,7 @@ const migrateOldLocalStorage = (): Partial<SidebarState> => {
       localStorage.removeItem("sidebar-collapsed-categories-notes");
     }
 
-    const oldSharedCollapsed = localStorage.getItem(
-      "sidebar-shared-items-collapsed",
-    );
-    if (oldSharedCollapsed) {
-      migrated.sharedItemsCollapsed = JSON.parse(oldSharedCollapsed);
-      localStorage.removeItem("sidebar-shared-items-collapsed");
-    }
+    localStorage.removeItem("sidebar-shared-items-collapsed");
 
     const oldTagsCollapsed = localStorage.getItem("sidebar-tags-collapsed");
     if (oldTagsCollapsed) {
@@ -167,10 +159,6 @@ export const useSidebarStore = create<SidebarState>()(
         const state = get();
         return (state.collapsedCategories[mode] || []).includes(path);
       },
-
-      sharedItemsCollapsed: false,
-      setSharedItemsCollapsed: (collapsed) =>
-        set({ sharedItemsCollapsed: collapsed }),
 
       tagsCollapsed: true,
       setTagsCollapsed: (collapsed) => set({ tagsCollapsed: collapsed }),

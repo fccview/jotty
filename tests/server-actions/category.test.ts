@@ -39,7 +39,6 @@ import {
   deleteCategory,
   renameCategory,
   getCategories,
-  setCategoryOrder,
 } from '@/app/_server/actions/category'
 
 describe('Category Actions', () => {
@@ -245,58 +244,6 @@ describe('Category Actions', () => {
       expect(result).toEqual({
         error: 'Failed to fetch document categories',
       })
-    })
-  })
-
-  describe('setCategoryOrder', () => {
-    it('should set category order successfully', async () => {
-      const formData = createFormData({
-        mode: Modes.CHECKLISTS,
-        parent: '',
-        categories: JSON.stringify(['cat1', 'cat2', 'cat3']),
-      })
-
-      const result = await setCategoryOrder(formData)
-
-      expect(result).toEqual({ success: true })
-      expect(mockWriteOrderFile).toHaveBeenCalled()
-    })
-
-    it('should preserve existing item order', async () => {
-      mockReadOrderFile.mockResolvedValue({
-        categories: ['old1', 'old2'],
-        items: ['item1', 'item2'],
-      })
-
-      const formData = createFormData({
-        mode: Modes.CHECKLISTS,
-        parent: '',
-        categories: JSON.stringify(['cat1', 'cat2']),
-      })
-
-      await setCategoryOrder(formData)
-
-      expect(mockWriteOrderFile).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          categories: ['cat1', 'cat2'],
-          items: ['item1', 'item2'],
-        })
-      )
-    })
-
-    it('should handle write errors', async () => {
-      mockWriteOrderFile.mockResolvedValue({ success: false })
-
-      const formData = createFormData({
-        mode: Modes.CHECKLISTS,
-        parent: '',
-        categories: JSON.stringify(['cat1']),
-      })
-
-      const result = await setCategoryOrder(formData)
-
-      expect(result).toEqual({ error: 'Failed to write order' })
     })
   })
 })

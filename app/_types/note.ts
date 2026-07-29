@@ -1,5 +1,6 @@
 import { ItemTypes } from "./enums";
 import { EncryptionMethod } from "./encryption";
+import { SharingPermissions } from "./core";
 
 export interface Note {
   /** @deprecated file-layer slug (on-disk filename), never identity; use uuid */
@@ -13,6 +14,9 @@ export interface Note {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  sharedWith?: string | string[];
+  sharedFrom?: string;
+  permissions?: SharingPermissions;
   rawContent?: string;
   encrypted?: boolean;
   encryptedContent?: string;

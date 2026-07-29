@@ -25,7 +25,7 @@ vi.mock("@/app/_server/actions/checklist", () => ({
   getListById: (...args: unknown[]) => mockGetListById(...args),
 }));
 
-vi.mock("@/app/_server/ws/broadcast", () => ({
+vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: (...args: unknown[]) => mockBroadcast(...args),
 }));
 

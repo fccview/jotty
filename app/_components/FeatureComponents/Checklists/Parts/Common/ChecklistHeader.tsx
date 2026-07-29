@@ -7,8 +7,6 @@ import {
   Share08Icon,
   TaskDaily01Icon,
   CheckmarkSquare04Icon,
-  UserMultipleIcon,
-  Globe02Icon,
   GridIcon,
   Tick02Icon,
   MoreHorizontalIcon,
@@ -21,8 +19,10 @@ import { Checklist } from "@/app/_types";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { sharingInfo } from "@/app/_utils/sharing-utils";
-import { ChecklistsTypes } from "@/app/_types/enums";
+import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
+import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
+import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
+import { ChecklistsTypes, Modes } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useState } from "react";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
@@ -64,7 +64,7 @@ export const ChecklistHeader = ({
   const itemDetails = sharingInfo(globalSharing, metadata.uuid || "");
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
 
-  const sharedWith = itemDetails.sharedWith;
+  const grants = shareGrants(globalSharing, metadata.uuid || "", Modes.CHECKLISTS);
   const isPubliclyShared = itemDetails.isPublic;
 
   return (
@@ -98,20 +98,16 @@ export const ChecklistHeader = ({
               )}
             </Button>
 
-            {isPubliclyShared && (
-              <span title={t('checklists.publiclyShared')}>
-                <Globe02Icon className="h-3 w-3 text-primary" />
-              </span>
-            )}
-            {isShared && (
-              <span
-                title={`Shared with ${sharedWith.join(", ")}`}
-                className="cursor-pointer hover:text-primary"
-                onClick={() => setShowSharedWithModal(true)}
-              >
-                <UserMultipleIcon className="h-3 w-3" />
-              </span>
-            )}
+            <SharedFromBadge
+              owner={checklist?.sharedFrom}
+              permissions={checklist?.permissions}
+            />
+            <ShareBadges
+              grants={grants}
+              isPublic={isPubliclyShared}
+              iconClassName="h-3 w-3"
+              onClick={isShared ? () => setShowSharedWithModal(true) : undefined}
+            />
           </div>
         </div>
 

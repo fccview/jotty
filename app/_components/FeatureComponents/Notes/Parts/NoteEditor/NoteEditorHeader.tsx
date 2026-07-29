@@ -8,8 +8,6 @@ import {
   ArrowLeft01Icon,
   Tick02Icon,
   GridIcon,
-  Globe02Icon,
-  UserMultipleIcon,
   Folder02Icon,
   Orbit01Icon,
   FloppyDiskIcon,
@@ -39,7 +37,9 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
 import { copyTextToClipboard } from "@/app/_utils/global-utils";
-import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
+import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
+import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
@@ -235,7 +235,7 @@ export const NoteEditorHeader = ({
   const { globalSharing } = useAppMode();
   const itemDetails = sharingInfo(globalSharing, metadata.uuid || "");
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
-  const sharedWith = itemDetails.sharedWith;
+  const grants = shareGrants(globalSharing, metadata.uuid || "", Modes.NOTES);
   const isPubliclyShared = itemDetails.isPublic;
 
   const canDelete = permissions?.canDelete;
@@ -294,20 +294,17 @@ export const NoteEditorHeader = ({
                     {note?.encrypted && (
                       <LockKeyIcon className="h-4 w-4 text-primary flex-shrink-0" />
                     )}
-                    {isPubliclyShared && (
-                      <span title={t("notes.publiclySharedNote")}>
-                        <Globe02Icon className="h-4 w-4 text-primary" />
-                      </span>
-                    )}
-                    {isShared && (
-                      <span
-                        title={`Shared with ${sharedWith.join(", ")}`}
-                        className="cursor-pointer hover:text-primary"
-                        onClick={() => setShowSharedWithModal(true)}
-                      >
-                        <UserMultipleIcon className="h-3 w-3" />
-                      </span>
-                    )}
+                    <SharedFromBadge
+                      owner={note?.sharedFrom}
+                      permissions={note?.permissions}
+                    />
+                    <ShareBadges
+                      grants={grants}
+                      isPublic={isPubliclyShared}
+                      onClick={
+                        isShared ? () => setShowSharedWithModal(true) : undefined
+                      }
+                    />
                   </div>
                   {category && category !== t("notes.uncategorized") && (
                     <div className="flex items-center gap-1.5 mt-1 text-md lg:text-sm text-muted-foreground">

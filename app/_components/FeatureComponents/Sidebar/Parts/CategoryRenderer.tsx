@@ -20,6 +20,9 @@ import { Modes } from "@/app/_types/enums";
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
 import { useTranslations } from "next-intl";
+import { PUBLIC_USER } from "@/app/_consts/sharing";
+import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
+import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 
 interface CategoryRendererProps {
   category: Category;
@@ -32,6 +35,7 @@ interface CategoryRendererProps {
   onRenameCategory: (categoryName: string) => void;
   onQuickCreate: (categoryName: string) => void;
   onCreateSubcategory: (categoryPath: string) => void;
+  onShareCategory: (categoryPath: string) => void;
   onClose?: () => void;
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
@@ -52,6 +56,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     onRenameCategory,
     onQuickCreate,
     onCreateSubcategory,
+    onShareCategory,
     onClose,
     onEditItem,
     isItemSelected,
@@ -61,8 +66,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
 
   const getItemsInCategory = (categoryPath: string) =>
     allItems.filter(
-      (item) =>
-        (item.category || "Uncategorized") === categoryPath && !item.isShared
+      (item) => (item.category || "Uncategorized") === categoryPath
     );
   const getSubCategories = (parentPath: string) =>
     allCategories.filter((cat) => cat.parent === parentPath);
@@ -84,6 +88,33 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const isCollapsed = collapsedCategories.has(category.path);
   const hasContent = categoryItems.length > 0 || subCategories.length > 0;
 
+  const isMountRoot = Boolean(category.sharedFrom) && category.level === 0;
+  const canWrite = !category.sharedFrom || category.permissions?.canEdit;
+
+  const folderGrants = category.sharedWith || {};
+  const isPublicFolder = Boolean(folderGrants[PUBLIC_USER]);
+  const outgoing = Object.fromEntries(
+    Object.entries(folderGrants).filter(([name]) => name !== PUBLIC_USER),
+  );
+  const isSharedOut = Object.keys(outgoing).length > 0 || isPublicFolder;
+
+  const ownerActions = [
+    { type: "divider" as const },
+    {
+      label: t("sharing.shareFolder"),
+      onClick: () => onShareCategory(category.path),
+    },
+    {
+      label: t("common.renameCategory"),
+      onClick: () => onRenameCategory(category.path),
+    },
+    {
+      label: t("common.deleteCategory"),
+      onClick: () => onDeleteCategory(category.path),
+      variant: "destructive" as const,
+    },
+  ];
+
   const dropdownItems = [
     {
       label: t(mode === Modes.CHECKLISTS ? "checklists.newChecklist" : "notes.newNote"),
@@ -100,16 +131,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
       onClick: () => onCreateSubcategory(category.path),
       icon: <FolderAddIcon className="h-4 w-4" />,
     },
-    { type: "divider" as const },
-    {
-      label: t("common.renameCategory"),
-      onClick: () => onRenameCategory(category.path),
-    },
-    {
-      label: t("common.deleteCategory"),
-      onClick: () => onDeleteCategory(category.path),
-      variant: "destructive" as const,
-    },
+    ...(isMountRoot ? [] : ownerActions),
   ];
 
   const firstChildType = subCategories[0] ? "category" : "item";
@@ -133,6 +155,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
           data={{
             type: "category",
             categoryPath: category.path,
+            accepts: canWrite ? "all" : "none",
           }}
           className="group"
         >
@@ -186,7 +209,25 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                     <Folder01Icon className="h-5 w-5 lg:h-4 lg:w-4 shrink-0" />
                   )}
                   <span className="truncate font-[500]">{category.name}</span>
-                  <span className="text-md lg:text-xs text-muted-foreground ml-auto">
+                  <SharedFromBadge
+                    owner={category.sharedFrom}
+                    permissions={category.permissions}
+                    showAvatar
+                    className="ml-auto"
+                    iconClassName="h-4 w-4 lg:h-3 lg:w-3"
+                  />
+                  <ShareBadges
+                    grants={outgoing}
+                    isPublic={isPublicFolder}
+                    className={cn(!category.sharedFrom && "ml-auto")}
+                    iconClassName="h-4 w-4 lg:h-3 lg:w-3"
+                  />
+                  <span
+                    className={cn(
+                      "text-md lg:text-xs text-muted-foreground",
+                      !isSharedOut && !category.sharedFrom && "ml-auto",
+                    )}
+                  >
                     {getTotalItemsInCategory(category.path)}
                   </span>
                 </button>

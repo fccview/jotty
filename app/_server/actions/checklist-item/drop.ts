@@ -5,15 +5,14 @@ import path from "path";
 import { serverWriteFile, ensureDir } from "@/app/_server/actions/file";
 import { getListById } from "@/app/_server/actions/checklist";
 import { getUsername } from "@/app/_server/actions/users";
-import { checkUserPermission } from "../sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { applyDrop } from "@/app/_utils/kanban/board-utils";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { Checklist, Result } from "@/app/_types";
-import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
+import { ItemTypes, PermissionTypes, Modes } from "@/app/_types/enums";
 
 export const dropItem = async (
   formData: FormData,
@@ -48,7 +47,7 @@ export const dropItem = async (
       return { success: false, error: "List not found" };
     }
 
-    const canEdit = await checkUserPermission(
+    const canEdit = await canReach(
       list.uuid!,
       ItemTypes.CHECKLIST,
       username,
@@ -81,18 +80,9 @@ export const dropItem = async (
       now,
     );
 
-    const categoryDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      list.owner!,
-      list.category || UNCATEGORIZED,
-    );
-    await ensureDir(categoryDir);
-    await serverWriteFile(
-      path.join(categoryDir, `${list.id}.md`),
-      listToMarkdown(updatedList),
-    );
+    const filePath = await diskPath(Modes.CHECKLISTS, username, list);
+    await ensureDir(path.dirname(filePath));
+    await serverWriteFile(filePath, listToMarkdown(updatedList));
 
     try {
       revalidatePath("/");

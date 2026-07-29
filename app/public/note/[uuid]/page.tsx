@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { Modes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { isItemSharedWith } from "@/app/_server/actions/sharing";
+import { isPublicItem } from "@/app/_server/actions/share/queries";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
@@ -35,7 +35,7 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
   const { uuid } = params;
 
   if (!isUuid(uuid)) {
-    const { legacyResolve } = await import("@/app/_server/lib/legacy-lookup");
+    const { legacyResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
     const resolved = await legacyResolve(
       Modes.NOTES,
       UNCATEGORIZED,
@@ -61,11 +61,7 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
     !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
   );
 
-  const isPubliclyShared = await isItemSharedWith(
-    note.uuid!,
-    "note",
-    "public",
-  );
+  const isPubliclyShared = await isPublicItem(note.uuid!, "note");
   const isPrintView = searchParams.view_mode === "print";
 
   const currentUser = await getCurrentUser();

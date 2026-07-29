@@ -23,6 +23,8 @@ import { CategoryRenderer } from "@/app/_components/FeatureComponents/Sidebar/Pa
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/_providers/ToastProvider";
+import { useTranslations } from "next-intl";
 
 interface CategoryListProps {
   categories: Category[];
@@ -34,6 +36,7 @@ interface CategoryListProps {
   onRenameCategory: (categoryName: string) => void;
   onQuickCreate: (categoryName: string) => void;
   onCreateSubcategory: (categoryPath: string) => void;
+  onShareCategory: (categoryPath: string) => void;
   onClose?: () => void;
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
@@ -45,6 +48,16 @@ export const CategoryList = (props: CategoryListProps) => {
   const { categories, mode } = props;
   const [overTimeout, setOverTimeout] = useState<NodeJS.Timeout | null>(null);
   const router = useRouter();
+  const { showToast } = useToast();
+  const t = useTranslations();
+
+  const mountRootFor = (categoryPath: string) =>
+    categories.find(
+      (category) =>
+        category.path === categoryPath &&
+        category.level === 0 &&
+        Boolean(category.sharedFrom),
+    );
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -111,6 +124,21 @@ export const CategoryList = (props: CategoryListProps) => {
       return;
     }
 
+    const nestsAMount =
+      activeNode.type === "category" &&
+      Boolean(mountRootFor(activeNode.categoryPath)) &&
+      (overNode.type === "category" ||
+        Boolean(overNode.parentPath));
+
+    if (nestsAMount) {
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: t("sharing.mountStaysTop"),
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("mode", mode);
 
@@ -133,7 +161,16 @@ export const CategoryList = (props: CategoryListProps) => {
       formData.append("targetCategoryPath", overNode.categoryPath);
     }
 
-    await moveNode(formData);
+    const result = await moveNode(formData);
+
+    if (result?.error) {
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: result.error,
+      });
+      return;
+    }
 
     router.refresh();
   };

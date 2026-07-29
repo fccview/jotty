@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
 import { updateNote, deleteNote } from "@/app/_server/actions/note";
-import { resolveApiId } from "@/app/_server/lib/legacy-lookup";
+import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
 import { Modes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 
 export const dynamic = "force-dynamic";
 
 const _noteUuid = async (
-  request: NextRequest,
-  noteId: string,
-  username: string,
+    request: NextRequest,
+    noteId: string,
+    username: string,
 ): Promise<string | null> =>
-  resolveApiId(
-    Modes.NOTES,
-    noteId,
-    request.nextUrl.searchParams.get("category"),
-    username,
-  );
+    resolveApiId(
+        Modes.NOTES,
+        noteId,
+        request.nextUrl.searchParams.get("category"),
+        username,
+    );
 
 export async function GET(request: NextRequest, props: { params: Promise<{ noteId: string }> }) {
     const params = await props.params;
