@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mockFs, resetAllMocks, createFormData } from "../setup";
 
 const mockGetCurrentUser = vi.fn();
-const mockCheckUserPermission = vi.fn();
+const mockCanReach = vi.fn();
 const mockGetNoteById = vi.fn();
 const mockEnsureRepo = vi.fn();
 const mockGetSettings = vi.fn();
@@ -17,8 +17,8 @@ vi.mock("@/app/_server/actions/users", () => ({
     getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
 }));
 
-vi.mock("@/app/_server/actions/sharing", () => ({
-    checkUserPermission: (...args: any[]) => mockCheckUserPermission(...args),
+vi.mock("@/app/_server/actions/share/queries", () => ({
+    canReach: (...args: any[]) => mockCanReach(...args),
 }));
 
 vi.mock("@/app/_server/actions/note", () => ({
@@ -51,7 +51,7 @@ describe("History Actions", () => {
     beforeEach(() => {
         resetAllMocks();
         mockGetCurrentUser.mockResolvedValue({ username: "testuser" });
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
         mockEnsureRepo.mockResolvedValue(undefined);
         mockGetSettings.mockResolvedValue({ editor: { historyEnabled: true } });
         mockExtractYamlMetadata.mockReturnValue({
@@ -78,16 +78,10 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "old-id",
-                "OldCategory",
                 "testuser"
             );
 
-            expect(mockGetNoteById).toHaveBeenCalledWith(
-                "test-uuid",
-                undefined,
-                "testuser"
-            );
+            expect(mockGetNoteById).toHaveBeenCalledWith("test-uuid", "testuser");
 
             expect(mockGitInstance.raw).toHaveBeenCalledWith(
                 expect.arrayContaining([
@@ -110,8 +104,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "nonexistent-uuid",
-                "note-id",
-                "Category",
                 "testuser"
             );
 
@@ -135,8 +127,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser"
             );
 
@@ -163,8 +153,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser",
                 1,
                 20
@@ -180,8 +168,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser"
             );
 
@@ -190,7 +176,7 @@ describe("History Actions", () => {
         });
 
         it("should check permissions before returning history", async () => {
-            mockCheckUserPermission.mockResolvedValue(false);
+            mockCanReach.mockResolvedValue(false);
             mockGetNoteById.mockResolvedValue({
                 id: "note-id",
                 uuid: "test-uuid",
@@ -199,8 +185,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser"
             );
 
@@ -213,8 +197,6 @@ describe("History Actions", () => {
         it("should validate commit hash format", async () => {
             const result = await getVersion(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser",
                 "invalid-hash"
             );
@@ -236,8 +218,6 @@ describe("History Actions", () => {
 
             const result = await getVersion(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser",
                 "abc1234"
             );
@@ -259,8 +239,6 @@ describe("History Actions", () => {
 
             const result = await getVersion(
                 "test-uuid",
-                "note-id",
-                "NewCategory",
                 "testuser",
                 "abc1234"
             );

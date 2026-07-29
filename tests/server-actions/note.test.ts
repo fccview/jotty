@@ -14,7 +14,7 @@ const mockServerReadFile = vi.fn();
 const mockReadOrderFile = vi.fn();
 const mockGetCurrentUser = vi.fn();
 const mockGetUsername = vi.fn();
-const mockCheckUserPermission = vi.fn();
+const mockCanReach = vi.fn();
 const mockLogContentEvent = vi.fn();
 const mockParseInternalLinks = vi.fn();
 const mockUpdateIndexForItem = vi.fn();
@@ -28,6 +28,8 @@ const mockExtractTitle = vi.fn();
 const mockGetUserByNote = vi.fn();
 const mockGetUserByNoteUuid = vi.fn();
 const mockGetNoteById = vi.fn();
+const mockTargetDir = vi.fn();
+const mockBouncer = vi.fn();
 
 vi.mock("@/app/_server/actions/note/queries", () => ({
   getNoteById: (...args: unknown[]) => mockGetNoteById(...args),
@@ -53,12 +55,13 @@ vi.mock("@/app/_server/actions/users", () => ({
   isAuthenticated: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("@/app/_server/actions/sharing", () => ({
-  checkUserPermission: (...args: any[]) => mockCheckUserPermission(...args),
-  getAllSharedItemsForUser: vi
-    .fn()
-    .mockResolvedValue({ notes: [], checklists: [] }),
-  updateSharingData: vi.fn().mockResolvedValue(undefined),
+vi.mock("@/app/_server/actions/share/queries", () => ({
+  canReach: (...args: any[]) => mockCanReach(...args),
+}));
+
+vi.mock("@/app/_server/actions/share/target", () => ({
+  targetDir: (...args: any[]) => mockTargetDir(...args),
+  bouncer: (...args: any[]) => mockBouncer(...args),
 }));
 
 vi.mock("@/app/_server/actions/log", () => ({
@@ -126,7 +129,17 @@ describe("Note Actions", () => {
       fileRenameMode: "minimal",
     });
     mockGetUsername.mockResolvedValue("testuser");
-    mockCheckUserPermission.mockResolvedValue(true);
+    mockCanReach.mockResolvedValue(true);
+    mockTargetDir.mockImplementation(
+      async (_mode: unknown, username: string, category: string) => ({
+        dir: `/data/notes/${username}/${category}`,
+        owner: username,
+        category,
+        isMount: false,
+        isImplicit: false,
+      }),
+    );
+    mockBouncer.mockResolvedValue({ allowed: true });
     mockLogContentEvent.mockResolvedValue(undefined);
     mockParseInternalLinks.mockResolvedValue([]);
     mockUpdateIndexForItem.mockResolvedValue(undefined);
@@ -301,7 +314,7 @@ describe("Note Actions", () => {
     });
 
     it("should return error when permission denied", async () => {
-      mockCheckUserPermission.mockResolvedValue(false);
+      mockCanReach.mockResolvedValue(false);
 
       const formData = createFormData({
         id: "test-note",

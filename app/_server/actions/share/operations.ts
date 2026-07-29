@@ -17,9 +17,14 @@ import { toSharedWith } from "@/app/_utils/sharing-utils";
 import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 import { getTranslations } from "next-intl/server";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
-import { getUserByNoteUuid, getUserByChecklistUuid } from "@/app/_server/actions/users";
+import {
+  getUserByNoteUuid,
+  getUserByChecklistUuid,
+  getUsername,
+  isAdmin,
+} from "@/app/_server/actions/users";
 import { readCatInfo, writeCatInfo, catDirByUuid, catUuid } from "./category-info";
-import { resolveAccess } from "./access";
+import { resolveAccess, catAccess } from "./access";
 
 const READ_ONLY: SharingPermissions = {
   canRead: true,
@@ -54,6 +59,28 @@ const _itemPath = async (
   const found = await grepFindFileByUuid(absDir, uuid);
 
   return found ? found.filePath : null;
+};
+
+/**
+ * Every sharing write is owner-only. Server Actions are a public endpoint, so
+ * the owner a caller claims (or the receiver it names) can never be trusted.
+ */
+const _gandalf = async (owner: string): Promise<string | null> => {
+  const caller = await getUsername();
+
+  if (!caller) return "Not authenticated";
+  if (caller === owner) return null;
+  if (await isAdmin()) return null;
+
+  await logAudit({
+    level: "WARNING",
+    action: "item_shared",
+    category: "sharing",
+    success: false,
+    metadata: { caller, owner, reason: "not the owner" },
+  });
+
+  return "You shall not pass";
 };
 
 const _notify = async (
@@ -128,6 +155,9 @@ export const shareItem = async (
     const owner = await _ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
 
+    const refusal = await _gandalf(owner);
+    if (refusal) return { success: false, error: refusal };
+
     const filePath = await _itemPath(mode, uuid, owner);
     if (!filePath) return { success: false, error: "Item not found" };
 
@@ -170,6 +200,9 @@ export const unshareItem = async (
     const owner = await _ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
 
+    const refusal = await _gandalf(owner);
+    if (refusal) return { success: false, error: refusal };
+
     const filePath = await _itemPath(mode, uuid, owner);
     if (!filePath) return { success: false, error: "Item not found" };
 
@@ -209,6 +242,9 @@ export const optOutItem = async (
     const owner = await _ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
 
+    const refusal = await _gandalf(owner);
+    if (refusal) return { success: false, error: refusal };
+
     const filePath = await _itemPath(mode, uuid, owner);
     if (!filePath) return { success: false, error: "Item not found" };
 
@@ -245,6 +281,9 @@ export const inheritItem = async (
     const owner = await _ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
 
+    const refusal = await _gandalf(owner);
+    if (refusal) return { success: false, error: refusal };
+
     const filePath = await _itemPath(mode, uuid, owner);
     if (!filePath) return { success: false, error: "Item not found" };
 
@@ -276,6 +315,9 @@ export const shareFolder = async (
   permissions: SharingPermissions = READ_ONLY,
 ): Promise<Result<string>> => {
   try {
+    const refusal = await _gandalf(owner);
+    if (refusal) return { success: false, error: refusal };
+
     const dir = path.join(process.cwd(), _userDir(mode, owner), categoryPath);
     const info = await readCatInfo(dir);
     const uuid = info.uuid || (await catUuid(dir));
@@ -318,6 +360,9 @@ export const unshareFolder = async (
   receiver: string,
 ): Promise<Result<null>> => {
   try {
+    const refusal = await _gandalf(owner);
+    if (refusal) return { success: false, error: refusal };
+
     const baseDir = path.join(process.cwd(), _userDir(mode, owner));
     const dir = await catDirByUuid(baseDir, categoryUuid);
 
@@ -360,6 +405,9 @@ export const setFolderInherit = async (
   inherit: boolean,
 ): Promise<Result<null>> => {
   try {
+    const refusal = await _gandalf(owner);
+    if (refusal) return { success: false, error: refusal };
+
     const dir = path.join(process.cwd(), _userDir(mode, owner), categoryPath);
     const info = await readCatInfo(dir);
     const uuid = info.uuid || (await catUuid(dir));
@@ -415,4 +463,119 @@ export const setFolderPublic = async (
   return info.uuid
     ? unshareFolder(mode, owner, info.uuid, PUBLIC_USER)
     : { success: false, error: "Category not found" };
+};
+
+/**
+ * Recipient-side removal of one's own grant. Access is derived from the owner's
+ * files, so leaving means dropping the caller from the grant that reaches them:
+ * an explicit grant is edited in place, an inherited one is materialised at this
+ * level (minus the caller) so everybody else keeps exactly what they had.
+ */
+export const leaveItem = async (
+  mode: Modes,
+  uuid: string,
+): Promise<Result<null>> => {
+  try {
+    const caller = await getUsername();
+    if (!caller) return { success: false, error: "Not authenticated" };
+
+    const owner = await _ownerOf(mode, uuid);
+    if (!owner) return { success: false, error: "Item not found" };
+    if (owner === caller) {
+      return { success: false, error: "You own this item" };
+    }
+
+    const filePath = await _itemPath(mode, uuid, owner);
+    if (!filePath) return { success: false, error: "Item not found" };
+
+    const access = await resolveAccess(mode, filePath);
+    if (!access?.users[caller]) {
+      return { success: false, error: "Not shared with you" };
+    }
+
+    const next = { ...access.users };
+    delete next[caller];
+
+    const written = await _writeShares(filePath, next);
+    if (!written) return { success: false, error: "Failed to leave share" };
+
+    await logAudit({
+      level: "INFO",
+      action: "item_unshared",
+      category: "sharing",
+      success: true,
+      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
+      resourceId: uuid,
+      metadata: { receiver: caller, left: true, wasInherited: access.inherited },
+    });
+
+    await _notify(mode, uuid, [owner, caller]);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error in leaveItem:", error);
+    return { success: false, error: "Failed to leave share" };
+  }
+};
+
+export const leaveFolder = async (
+  mode: Modes,
+  owner: string,
+  categoryUuid: string,
+): Promise<Result<null>> => {
+  try {
+    const caller = await getUsername();
+    if (!caller) return { success: false, error: "Not authenticated" };
+    if (owner === caller) {
+      return { success: false, error: "You own this folder" };
+    }
+
+    const baseDir = path.join(process.cwd(), _userDir(mode, owner));
+    const dir = await catDirByUuid(baseDir, categoryUuid);
+
+    if (!dir) return { success: false, error: "Category not found" };
+
+    const access = await catAccess(mode, dir);
+    if (!access?.users[caller]) {
+      return { success: false, error: "Not shared with you" };
+    }
+
+    const info = await readCatInfo(dir);
+    const fromAbove = await catAccess(mode, path.dirname(dir));
+    const isInherited = Boolean(fromAbove?.users[caller]);
+
+    const users = isInherited
+      ? { ...access.users }
+      : { ...(info.sharing?.users || {}) };
+
+    delete users[caller];
+
+    const written = await writeCatInfo(dir, {
+      ...info,
+      uuid: info.uuid || categoryUuid,
+      sharing: {
+        users,
+        inherit: isInherited ? false : info.sharing?.inherit !== false,
+      },
+    });
+
+    if (!written) return { success: false, error: "Failed to leave share" };
+
+    await logAudit({
+      level: "INFO",
+      action: "item_unshared",
+      category: "sharing",
+      success: true,
+      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
+      resourceId: categoryUuid,
+      metadata: { receiver: caller, left: true, scope: "category", isInherited },
+    });
+
+    await _notify(mode, categoryUuid, [owner, caller]);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error("Error in leaveFolder:", error);
+    return { success: false, error: "Failed to leave share" };
+  }
 };

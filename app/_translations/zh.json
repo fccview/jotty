@@ -1366,7 +1366,10 @@
     "publicTip": "公开共享",
     "fromUserRead": "只读, 由 {user} 共享",
     "fromUserWrite": "可编辑, 由 {user} 共享",
-    "fromUserDelete": "可编辑和删除, 由 {user} 共享"
+    "fromUserDelete": "可编辑和删除, 由 {user} 共享",
+    "leaveShare": "退出共享",
+    "confirmLeaveItem": "要移除你对\"{itemTitle}\"的访问权限吗？它会从侧边栏消失，需要所有者重新共享。",
+    "confirmLeaveFolder": "要移除你对 {owner} 共享的\"{categoryName}\"的访问权限吗？它会从侧边栏消失，需要 {owner} 重新共享。"
   },
   "encryption": {
     "encrypt": "加密",

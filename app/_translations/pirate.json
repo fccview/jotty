@@ -1366,7 +1366,10 @@
     "publicTip": "Shared with all the seven seas",
     "fromUserRead": "Lookin' only, handed over by {user}",
     "fromUserWrite": "Can scribble, handed over by {user}",
-    "fromUserDelete": "Can scribble 'n scuttle, handed over by {user}"
+    "fromUserDelete": "Can scribble 'n scuttle, handed over by {user}",
+    "leaveShare": "Abandon ship",
+    "confirmLeaveItem": "Strike yer own colours from \"{itemTitle}\"? She vanishes from yer sidebar, an' the cap'n must share her anew to hand her back.",
+    "confirmLeaveFolder": "Strike yer own colours from \"{categoryName}\", shared by {owner}? She vanishes from yer sidebar, an' {owner} must share her anew."
   },
   "encryption": {
     "encrypt": "Bury",

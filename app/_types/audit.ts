@@ -76,7 +76,8 @@ export type AuditAction =
   | "mfa_verification_failed"
   | "mfa_backup_code_used"
   | "mfa_backup_code_failed"
-  | "mfa_backup_codes_regenerated";
+  | "mfa_backup_codes_regenerated"
+  | "legacy_lookup";
 
 export interface AuditMetadata {
   [key: string]: any;

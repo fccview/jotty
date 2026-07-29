@@ -1368,7 +1368,10 @@
     "publicTip": "Herkese acik paylasildi",
     "fromUserRead": "Salt okunur, {user} paylasti",
     "fromUserWrite": "Duzenlenebilir, {user} paylasti",
-    "fromUserDelete": "Duzenlenebilir ve silinebilir, {user} paylasti"
+    "fromUserDelete": "Duzenlenebilir ve silinebilir, {user} paylasti",
+    "leaveShare": "Paylasimdan ayril",
+    "confirmLeaveItem": "\"{itemTitle}\" ogesine kendi erisiminizi kaldirmak istiyor musunuz? Kenar cubugundan kaybolur ve sahibinin tekrar paylasmasi gerekir.",
+    "confirmLeaveFolder": "{owner} tarafindan paylasilan \"{categoryName}\" klasorune kendi erisiminizi kaldirmak istiyor musunuz? Kenar cubugundan kaybolur ve {owner} tekrar paylasmalidir."
   },
   "encryption": {
     "encrypt": "Şifrele",

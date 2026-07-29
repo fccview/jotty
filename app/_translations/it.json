@@ -1341,7 +1341,10 @@
     "publicTip": "Condiviso pubblicamente",
     "fromUserRead": "Sola lettura, condiviso da {user}",
     "fromUserWrite": "Puo modificare, condiviso da {user}",
-    "fromUserDelete": "Puo modificare ed eliminare, condiviso da {user}"
+    "fromUserDelete": "Puo modificare ed eliminare, condiviso da {user}",
+    "leaveShare": "Abbandona condivisione",
+    "confirmLeaveItem": "Vuoi rimuovere il tuo accesso a \"{itemTitle}\"? Sparira dalla barra laterale e il proprietario dovra condividerlo di nuovo per ridartelo.",
+    "confirmLeaveFolder": "Vuoi rimuovere il tuo accesso a \"{categoryName}\", condivisa da {owner}? Sparira dalla barra laterale e {owner} dovra condividerla di nuovo per ridartela."
   },
   "encryption": {
     "encrypt": "Cripta",

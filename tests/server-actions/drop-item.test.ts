@@ -4,7 +4,8 @@ import { resetAllMocks, createFormData } from "../setup";
 const mockEnsureDir = vi.fn();
 const mockServerWriteFile = vi.fn();
 const mockGetUsername = vi.fn();
-const mockCheckUserPermission = vi.fn();
+const mockCanReach = vi.fn();
+const mockDiskPath = vi.fn();
 const mockGetListById = vi.fn();
 const mockBroadcast = vi.fn();
 
@@ -17,8 +18,12 @@ vi.mock("@/app/_server/actions/users", () => ({
   getUsername: (...args: unknown[]) => mockGetUsername(...args),
 }));
 
-vi.mock("@/app/_server/actions/sharing", () => ({
-  checkUserPermission: (...args: unknown[]) => mockCheckUserPermission(...args),
+vi.mock("@/app/_server/actions/share/queries", () => ({
+  canReach: (...args: unknown[]) => mockCanReach(...args),
+}));
+
+vi.mock("@/app/_server/actions/share/target", () => ({
+  diskPath: (...args: unknown[]) => mockDiskPath(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist", () => ({
@@ -70,7 +75,10 @@ describe("dropItem", () => {
     mockEnsureDir.mockResolvedValue(undefined);
     mockServerWriteFile.mockResolvedValue(undefined);
     mockGetUsername.mockResolvedValue("testuser");
-    mockCheckUserPermission.mockResolvedValue(true);
+    mockCanReach.mockResolvedValue(true);
+    mockDiskPath.mockResolvedValue(
+      "/data/checklists/testuser/TestCategory/test-board.md",
+    );
     mockBroadcast.mockResolvedValue(undefined);
     mockGetListById.mockImplementation(async (id: string) =>
       id === BOARD_UUID ? structuredClone(mockBoard) : undefined,
@@ -98,7 +106,7 @@ describe("dropItem", () => {
     expect(mockBroadcast).toHaveBeenCalledWith({
       type: "checklist",
       action: "updated",
-      entityId: "test-board",
+      entityId: BOARD_UUID,
       username: "testuser",
     });
   });
@@ -233,7 +241,7 @@ describe("dropItem", () => {
   });
 
   it("rejects without edit permission", async () => {
-    mockCheckUserPermission.mockResolvedValue(false);
+    mockCanReach.mockResolvedValue(false);
 
     const result = await dropItem(
       createFormData({

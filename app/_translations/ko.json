@@ -1366,7 +1366,10 @@
     "publicTip": "공개 공유됨",
     "fromUserRead": "읽기 전용, {user} 님이 공유함",
     "fromUserWrite": "편집 가능, {user} 님이 공유함",
-    "fromUserDelete": "편집 및 삭제 가능, {user} 님이 공유함"
+    "fromUserDelete": "편집 및 삭제 가능, {user} 님이 공유함",
+    "leaveShare": "공유 나가기",
+    "confirmLeaveItem": "\"{itemTitle}\"에 대한 내 접근 권한을 제거할까요? 사이드바에서 사라지며 소유자가 다시 공유해야 합니다.",
+    "confirmLeaveFolder": "{owner}님이 공유한 \"{categoryName}\"에 대한 내 접근 권한을 제거할까요? 사이드바에서 사라지며 {owner}님이 다시 공유해야 합니다."
   },
   "encryption": {
     "encrypt": "암호화",

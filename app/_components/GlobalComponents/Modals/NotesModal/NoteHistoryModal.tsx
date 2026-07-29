@@ -27,8 +27,6 @@ interface NoteHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   noteUuid: string;
-  noteId: string;
-  noteCategory: string;
   noteOwner: string;
   noteTitle: string;
   currentContent?: string;
@@ -41,8 +39,6 @@ export const NoteHistoryModal = ({
   isOpen,
   onClose,
   noteUuid,
-  noteId,
-  noteCategory,
   noteOwner,
   noteTitle,
   currentContent = "",
@@ -93,8 +89,6 @@ export const NoteHistoryModal = ({
 
         const result = await getHistory(
           noteUuid,
-          noteId,
-          noteCategory,
           noteOwner,
           pageNum,
           20
@@ -118,7 +112,7 @@ export const NoteHistoryModal = ({
         setIsLoadingMore(false);
       }
     },
-    [noteUuid, noteId, noteCategory, noteOwner, t, appSettings, currentUser]
+    [noteUuid, noteOwner, t, appSettings, currentUser]
   );
 
   const fetchVersion = useCallback(
@@ -130,8 +124,6 @@ export const NoteHistoryModal = ({
       try {
         const result = await getVersion(
           noteUuid,
-          noteId,
-          noteCategory,
           noteOwner,
           entry.commitHash
         );
@@ -148,7 +140,7 @@ export const NoteHistoryModal = ({
         setIsLoadingVersion(false);
       }
     },
-    [noteUuid, noteId, noteCategory, noteOwner, t]
+    [noteUuid, noteOwner, t]
   );
 
   useEffect(() => {
@@ -181,8 +173,6 @@ export const NoteHistoryModal = ({
     try {
       const result = await restoreNoteVersion(
         noteUuid,
-        noteId,
-        noteCategory,
         noteOwner,
         restoreTarget.commitHash
       );

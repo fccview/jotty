@@ -50,11 +50,7 @@ describe("Dashboard Actions", () => {
     it("should return error when not authenticated", async () => {
       mockGetCurrentUser.mockResolvedValue(null);
 
-      const result = await togglePin(
-        "list-1",
-        "TestCategory",
-        ItemTypes.CHECKLIST,
-      );
+      const result = await togglePin("list-uuid-1", ItemTypes.CHECKLIST);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Not authenticated");
@@ -65,18 +61,14 @@ describe("Dashboard Actions", () => {
         { username: "testuser", pinnedLists: [] },
       ]);
 
-      const result = await togglePin(
-        "list-1",
-        "TestCategory",
-        ItemTypes.CHECKLIST,
-      );
+      const result = await togglePin("list-uuid-1", ItemTypes.CHECKLIST);
 
       expect(result.success).toBe(true);
       expect(mockWriteJsonFile).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({
             username: "testuser",
-            pinnedLists: ["TestCategory/list-1"],
+            pinnedLists: ["list-uuid-1"],
           }),
         ]),
         expect.any(String),
@@ -85,14 +77,10 @@ describe("Dashboard Actions", () => {
 
     it("should unpin a checklist that is already pinned", async () => {
       mockReadJsonFile.mockResolvedValue([
-        { username: "testuser", pinnedLists: ["TestCategory/list-1"] },
+        { username: "testuser", pinnedLists: ["TestCategory/list-uuid-1"] },
       ]);
 
-      const result = await togglePin(
-        "list-1",
-        "TestCategory",
-        ItemTypes.CHECKLIST,
-      );
+      const result = await togglePin("list-uuid-1", ItemTypes.CHECKLIST);
 
       expect(result.success).toBe(true);
       expect(mockWriteJsonFile).toHaveBeenCalledWith(
@@ -111,14 +99,14 @@ describe("Dashboard Actions", () => {
         { username: "testuser", pinnedNotes: [] },
       ]);
 
-      const result = await togglePin("note-1", "TestCategory", ItemTypes.NOTE);
+      const result = await togglePin("note-uuid-1", ItemTypes.NOTE);
 
       expect(result.success).toBe(true);
       expect(mockWriteJsonFile).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({
             username: "testuser",
-            pinnedNotes: ["TestCategory/note-1"],
+            pinnedNotes: ["note-uuid-1"],
           }),
         ]),
         expect.any(String),
@@ -127,10 +115,10 @@ describe("Dashboard Actions", () => {
 
     it("should unpin a note that is already pinned", async () => {
       mockReadJsonFile.mockResolvedValue([
-        { username: "testuser", pinnedNotes: ["TestCategory/note-1"] },
+        { username: "testuser", pinnedNotes: ["TestCategory/note-uuid-1"] },
       ]);
 
-      const result = await togglePin("note-1", "TestCategory", ItemTypes.NOTE);
+      const result = await togglePin("note-uuid-1", ItemTypes.NOTE);
 
       expect(result.success).toBe(true);
       expect(mockWriteJsonFile).toHaveBeenCalledWith(
@@ -147,11 +135,7 @@ describe("Dashboard Actions", () => {
     it("should handle errors gracefully", async () => {
       mockReadJsonFile.mockRejectedValue(new Error("Read error"));
 
-      const result = await togglePin(
-        "list-1",
-        "TestCategory",
-        ItemTypes.CHECKLIST,
-      );
+      const result = await togglePin("list-uuid-1", ItemTypes.CHECKLIST);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Failed to toggle pin");
@@ -231,6 +215,7 @@ describe("Dashboard Actions", () => {
 
       const checklist = {
         id: "list-1",
+        uuid: "list-uuid-1",
         title: "Test List",
         category: "TestCategory",
         owner: "testuser",
@@ -247,6 +232,7 @@ describe("Dashboard Actions", () => {
 
       const note = {
         id: "note-1",
+        uuid: "note-uuid-1",
         title: "Test Note",
         content: "Test content",
         category: "TestCategory",
@@ -267,6 +253,7 @@ describe("Dashboard Actions", () => {
 
       const checklist = {
         id: "list-1",
+        uuid: "list-uuid-1",
         title: "Test List",
         category: "TestCategory",
         owner: "testuser",
@@ -288,6 +275,7 @@ describe("Dashboard Actions", () => {
 
       const note = {
         id: "note-1",
+        uuid: "note-uuid-1",
         title: "Test Note",
         content: "Test content",
         category: "TestCategory",
@@ -305,6 +293,7 @@ describe("Dashboard Actions", () => {
 
       const checklist = {
         id: "list-1",
+        uuid: "list-uuid-1",
         title: "Test List",
         category: "_Archived",
         owner: "testuser",

@@ -9,8 +9,9 @@ import {
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
+import { canReach } from "@/app/_server/actions/share/queries";
 import { diskPath } from "@/app/_server/actions/share/target";
-import { Modes } from "@/app/_types/enums";
+import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 export const reorderItems = async (formData: FormData) => {
@@ -25,6 +26,17 @@ export const reorderItems = async (formData: FormData) => {
     const list = await getListById(uuid, currentUser);
     if (!list) {
       throw new Error("List not found");
+    }
+
+    const canEdit = await canReach(
+      list.uuid!,
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      throw new Error("Permission denied");
     }
 
     const findItemWithParent = (
@@ -147,6 +159,7 @@ export const reorderItems = async (formData: FormData) => {
 
     return { success: true };
   } catch (error) {
+    console.error("Error reordering items:", error);
     return { success: false, error: "Failed to reorder items" };
   }
 };

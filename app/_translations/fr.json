@@ -1341,7 +1341,10 @@
     "publicTip": "Partage publiquement",
     "fromUserRead": "Lecture seule, partage par {user}",
     "fromUserWrite": "Peut modifier, partage par {user}",
-    "fromUserDelete": "Peut modifier et supprimer, partage par {user}"
+    "fromUserDelete": "Peut modifier et supprimer, partage par {user}",
+    "leaveShare": "Quitter le partage",
+    "confirmLeaveItem": "Retirer votre propre acces a \"{itemTitle}\" ? L'element disparait de votre barre laterale et le proprietaire devra le repartager.",
+    "confirmLeaveFolder": "Retirer votre propre acces a \"{categoryName}\", partage par {owner} ? Le dossier disparait de votre barre laterale et {owner} devra le repartager."
   },
   "encryption": {
     "encrypt": "Chiffrer",

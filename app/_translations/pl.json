@@ -1341,7 +1341,10 @@
     "publicTip": "Udostepnione publicznie",
     "fromUserRead": "Tylko odczyt, udostepnione przez {user}",
     "fromUserWrite": "Moze edytowac, udostepnione przez {user}",
-    "fromUserDelete": "Moze edytowac i usuwac, udostepnione przez {user}"
+    "fromUserDelete": "Moze edytowac i usuwac, udostepnione przez {user}",
+    "leaveShare": "Opusc udostepnienie",
+    "confirmLeaveItem": "Usunac wlasny dostep do \"{itemTitle}\"? Zniknie z paska bocznego, a wlasciciel bedzie musial udostepnic to ponownie.",
+    "confirmLeaveFolder": "Usunac wlasny dostep do \"{categoryName}\" udostepnionego przez {owner}? Folder zniknie z paska bocznego, a {owner} bedzie musial udostepnic go ponownie."
   },
   "encryption": {
     "encrypt": "Zaszyfruj",

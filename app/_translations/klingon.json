@@ -1366,7 +1366,10 @@
     "publicTip": "Hoch lujatlh",
     "fromUserRead": "laD neH, {user} lujatlh",
     "fromUserWrite": "choH laH, {user} lujatlh",
-    "fromUserDelete": "choH 'ej Qaw' laH, {user} lujatlh"
+    "fromUserDelete": "choH 'ej Qaw' laH, {user} lujatlh",
+    "leaveShare": "boQta' yImej",
+    "confirmLeaveItem": "\"{itemTitle}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej ghaj ghaHvaD boQta' chu' 'oH.",
+    "confirmLeaveFolder": "{owner} boQta' \"{categoryName}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej {owner} boQta' chu' 'oH."
   },
   "encryption": {
     "encrypt": "pegh",

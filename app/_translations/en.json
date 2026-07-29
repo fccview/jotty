@@ -1366,7 +1366,10 @@
     "publicTip": "Publicly shared",
     "fromUserRead": "Read only, shared by {user}",
     "fromUserWrite": "Can edit, shared by {user}",
-    "fromUserDelete": "Can edit and delete, shared by {user}"
+    "fromUserDelete": "Can edit and delete, shared by {user}",
+    "leaveShare": "Leave share",
+    "confirmLeaveItem": "Remove your own access to \"{itemTitle}\"? It disappears from your sidebar and the owner has to share it again to give it back.",
+    "confirmLeaveFolder": "Remove your own access to \"{categoryName}\", shared by {owner}? It disappears from your sidebar and {owner} has to share it again to give it back."
   },
   "encryption": {
     "encrypt": "Encrypt",

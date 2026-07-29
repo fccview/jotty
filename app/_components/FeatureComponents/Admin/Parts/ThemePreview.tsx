@@ -25,6 +25,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
 
   const sampleNote = useMemo(() => ({
     id: "preview-note",
+    uuid: "preview-note-uuid",
     title: t('settings.customTheme.sampleNoteTitle'),
     content: t('settings.customTheme.sampleNoteContent'),
     category: t('settings.customTheme.sampleNoteCategory'),

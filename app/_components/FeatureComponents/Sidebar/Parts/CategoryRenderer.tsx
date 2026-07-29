@@ -9,6 +9,7 @@ import {
   CheckmarkSquare04Icon,
   FolderAddIcon,
   Folder02Icon,
+  LogoutSquare02Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -23,6 +24,10 @@ import { useTranslations } from "next-intl";
 import { PUBLIC_USER } from "@/app/_consts/sharing";
 import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
 import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { leaveFolder } from "@/app/_server/actions/share/operations";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface CategoryRendererProps {
   category: Category;
@@ -64,6 +69,9 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     user,
   } = props;
 
+  const router = useRouter();
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+
   const getItemsInCategory = (categoryPath: string) =>
     allItems.filter(
       (item) => (item.category || "Uncategorized") === categoryPath
@@ -88,8 +96,25 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const isCollapsed = collapsedCategories.has(category.path);
   const hasContent = categoryItems.length > 0 || subCategories.length > 0;
 
-  const isMountRoot = Boolean(category.sharedFrom) && category.level === 0;
-  const canWrite = !category.sharedFrom || category.permissions?.canEdit;
+  const isOwned = !category.sharedFrom;
+  const canWrite = isOwned || category.permissions?.canEdit === true;
+  const canRemove = isOwned || category.permissions?.canDelete === true;
+
+  const handleLeaveFolder = async () => {
+    const result = await leaveFolder(
+      mode === Modes.CHECKLISTS ? Modes.CHECKLISTS : Modes.NOTES,
+      category.sharedFrom!,
+      category.uuid!,
+    );
+
+    if (result.success) {
+      router.refresh();
+    } else {
+      console.error("Failed to leave folder share:", result.error);
+    }
+
+    setShowLeaveModal(false);
+  };
 
   const folderGrants = category.sharedWith || {};
   const isPublicFolder = Boolean(folderGrants[PUBLIC_USER]);
@@ -108,30 +133,52 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
       label: t("common.renameCategory"),
       onClick: () => onRenameCategory(category.path),
     },
+    ...(canRemove
+      ? [
+          {
+            label: t("common.deleteCategory"),
+            onClick: () => onDeleteCategory(category.path),
+            variant: "destructive" as const,
+          },
+        ]
+      : []),
+  ];
+
+  const createActions = canWrite
+    ? [
+        {
+          label: t(
+            mode === Modes.CHECKLISTS ? "checklists.newChecklist" : "notes.newNote",
+          ),
+          onClick: () => onQuickCreate(category.path),
+          icon:
+            mode === Modes.CHECKLISTS ? (
+              <CheckmarkSquare04Icon className="h-4 w-4" />
+            ) : (
+              <File02Icon className="h-4 w-4" />
+            ),
+        },
+        {
+          label: t("common.newCategory"),
+          onClick: () => onCreateSubcategory(category.path),
+          icon: <FolderAddIcon className="h-4 w-4" />,
+        },
+      ]
+    : [];
+
+  const leaveAction = [
+    ...(createActions.length > 0 ? [{ type: "divider" as const }] : []),
     {
-      label: t("common.deleteCategory"),
-      onClick: () => onDeleteCategory(category.path),
+      label: t("sharing.leaveShare"),
+      onClick: () => setShowLeaveModal(true),
       variant: "destructive" as const,
+      icon: <LogoutSquare02Icon className="h-4 w-4" />,
     },
   ];
 
   const dropdownItems = [
-    {
-      label: t(mode === Modes.CHECKLISTS ? "checklists.newChecklist" : "notes.newNote"),
-      onClick: () => onQuickCreate(category.path),
-      icon:
-        mode === Modes.CHECKLISTS ? (
-          <CheckmarkSquare04Icon className="h-4 w-4" />
-        ) : (
-          <File02Icon className="h-4 w-4" />
-        ),
-    },
-    {
-      label: t("common.newCategory"),
-      onClick: () => onCreateSubcategory(category.path),
-      icon: <FolderAddIcon className="h-4 w-4" />,
-    },
-    ...(isMountRoot ? [] : ownerActions),
+    ...createActions,
+    ...(isOwned ? ownerActions : leaveAction),
   ];
 
   const firstChildType = subCategories[0] ? "category" : "item";
@@ -314,6 +361,19 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={handleLeaveFolder}
+        title={t("sharing.leaveShare")}
+        message={t("sharing.confirmLeaveFolder", {
+          categoryName: category.name,
+          owner: category.sharedFrom || "",
+        })}
+        confirmText={t("sharing.leaveShare")}
+        variant="destructive"
+      />
     </div>
   );
 };

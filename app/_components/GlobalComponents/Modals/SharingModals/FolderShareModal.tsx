@@ -7,7 +7,7 @@ import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useFolderShare } from "@/app/_hooks/useFolderShare";
 import { Modes } from "@/app/_types/enums";
-import { Search01Icon, Alert02Icon } from "hugeicons-react";
+import { Search01Icon, Alert02Icon, Delete02Icon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 
 interface FolderShareModalProps {
@@ -114,7 +114,14 @@ export const FolderShareModal = ({
                     onClick={() => toggleUser(username)}
                     disabled={isLoading}
                   >
-                    {granted ? t("sharing.removeAccess") : t("sharing.share")}
+                    {granted ? (
+                      <Delete02Icon
+                        aria-label={t("sharing.removeAccess")}
+                        className="h-4 w-4"
+                      />
+                    ) : (
+                      t("sharing.share")
+                    )}
                   </Button>
                 </div>
               </div>

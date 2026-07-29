@@ -12,6 +12,7 @@ import {
   Archive02Icon,
   Delete03Icon,
   LockKeyIcon,
+  LogoutSquare02Icon,
   Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
@@ -26,6 +27,7 @@ import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
+import { leaveItem } from "@/app/_server/actions/share/operations";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
@@ -60,12 +62,16 @@ export const SidebarItem = ({
   const router = useRouter();
   const { checkNavigation, checkWouldBlock } = useNavigationGuard();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const { globalSharing, appSettings } = useAppMode();
   const itemDetails = sharingInfo(globalSharing, item.uuid || "");
 
   const isPubliclyShared = itemDetails.isPublic;
-  const isShareable = user?.username === item.owner;
+  const isOwned = user?.username === item.owner;
+  const isShareable = isOwned;
+  const canEdit = isOwned || item.permissions?.canEdit === true;
+  const canDelete = isOwned || item.permissions?.canDelete === true;
 
   const grants = shareGrants(
     globalSharing,
@@ -97,6 +103,21 @@ export const SidebarItem = ({
     setShowDeleteModal(false);
   };
 
+  const handleLeaveShare = async () => {
+    const result = await leaveItem(
+      mode === Modes.CHECKLISTS ? Modes.CHECKLISTS : Modes.NOTES,
+      item.uuid!,
+    );
+
+    if (result.success) {
+      router.refresh();
+    } else {
+      console.error("Failed to leave share:", result.error);
+    }
+
+    setShowLeaveModal(false);
+  };
+
   const handleTogglePin = async () => {
     if (!user || isTogglingPin) return;
 
@@ -119,13 +140,13 @@ export const SidebarItem = ({
       mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
     if (!pinnedItems) return false;
 
-    return pinnedItems.some(
+    return (pinnedItems as string[]).some(
       (entry) => entry === item.uuid || entry.split("/").pop() === item.uuid,
     );
   };
 
-  const dropdownItems = [
-    ...(onEditItem
+  const editActions = [
+    ...(onEditItem && canEdit
       ? [
           {
             label: t("common.edit"),
@@ -143,7 +164,34 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(onEditItem || isShareable ? [{ type: "divider" as const }] : []),
+  ];
+
+  const removalActions = [
+    ...(canDelete
+      ? [
+          {
+            label: t("common.delete"),
+            onClick: () => setShowDeleteModal(true),
+            variant: "destructive" as const,
+            icon: <Delete03Icon className="h-4 w-4" />,
+          },
+        ]
+      : []),
+    ...(!isOwned
+      ? [
+          {
+            label: t("sharing.leaveShare"),
+            onClick: () => setShowLeaveModal(true),
+            variant: "destructive" as const,
+            icon: <LogoutSquare02Icon className="h-4 w-4" />,
+          },
+        ]
+      : []),
+  ];
+
+  const dropdownItems = [
+    ...editActions,
+    ...(editActions.length > 0 ? [{ type: "divider" as const }] : []),
     {
       label: isItemPinned() ? t("common.unpinFromHome") : t("common.pinToHome"),
       onClick: handleTogglePin,
@@ -154,7 +202,7 @@ export const SidebarItem = ({
       ),
       disabled: isTogglingPin === item.id,
     },
-    ...(item.category !== ARCHIVED_DIR_NAME
+    ...(item.category !== ARCHIVED_DIR_NAME && canEdit
       ? [
           {
             label: t("common.archive"),
@@ -168,13 +216,8 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(onEditItem ? [{ type: "divider" as const }] : []),
-    {
-      label: t("common.delete"),
-      onClick: () => setShowDeleteModal(true),
-      variant: "destructive" as const,
-      icon: <Delete03Icon className="h-4 w-4" />,
-    },
+    ...(removalActions.length > 0 ? [{ type: "divider" as const }] : []),
+    ...removalActions,
   ];
 
   const handleClick = (e: React.MouseEvent) => {
@@ -265,6 +308,16 @@ export const SidebarItem = ({
             <MoreHorizontalIcon className="h-4 w-4" />
           </Button>
         }
+      />
+
+      <ConfirmModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={handleLeaveShare}
+        title={t("sharing.leaveShare")}
+        message={t("sharing.confirmLeaveItem", { itemTitle: item.title })}
+        confirmText={t("sharing.leaveShare")}
+        variant="destructive"
       />
 
       <ConfirmModal

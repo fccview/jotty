@@ -7,8 +7,9 @@ const mockServerWriteFile = vi.fn();
 const mockGetUsername = vi.fn();
 const mockGetCurrentUser = vi.fn();
 const mockIsAdmin = vi.fn();
-const mockCheckUserPermission = vi.fn();
-const mockGetUsersWithAccess = vi.fn();
+const mockCanReach = vi.fn();
+const mockUsersWithAccess = vi.fn();
+const mockDiskPath = vi.fn();
 const mockGetUserChecklists = vi.fn();
 const mockGetListById = vi.fn();
 const mockGetAllLists = vi.fn();
@@ -26,9 +27,13 @@ vi.mock("@/app/_server/actions/users", () => ({
   isAdmin: (...args: any[]) => mockIsAdmin(...args),
 }));
 
-vi.mock("@/app/_server/actions/sharing", () => ({
-  checkUserPermission: (...args: any[]) => mockCheckUserPermission(...args),
-  getUsersWithAccess: (...args: any[]) => mockGetUsersWithAccess(...args),
+vi.mock("@/app/_server/actions/share/queries", () => ({
+  canReach: (...args: any[]) => mockCanReach(...args),
+  usersWithAccess: (...args: any[]) => mockUsersWithAccess(...args),
+}));
+
+vi.mock("@/app/_server/actions/share/target", () => ({
+  diskPath: (...args: any[]) => mockDiskPath(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist", () => ({
@@ -112,8 +117,11 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     mockGetUsername.mockResolvedValue("testuser");
     mockGetCurrentUser.mockResolvedValue({ username: "testuser" });
     mockIsAdmin.mockResolvedValue(false);
-    mockCheckUserPermission.mockResolvedValue(true);
-    mockGetUsersWithAccess.mockResolvedValue([]);
+    mockCanReach.mockResolvedValue(true);
+    mockUsersWithAccess.mockResolvedValue([]);
+    mockDiskPath.mockResolvedValue(
+      "/data/checklists/testuser/TestCategory/test-list.md",
+    );
     mockGetUserChecklists.mockResolvedValue({
       success: true,
       data: [structuredClone(mockChecklist)],
@@ -128,7 +136,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
   describe("updateItem", () => {
     it("should update item text", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "item-1",
         completed: "false",
         text: "Updated item text",
@@ -143,7 +151,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should mark item as completed", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "item-1",
         completed: "true",
         category: "TestCategory",
@@ -160,7 +168,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should update item description", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "item-1",
         completed: "false",
         description: "New description",
@@ -173,10 +181,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should return error when permission denied", async () => {
-      mockCheckUserPermission.mockResolvedValue(false);
+      mockCanReach.mockResolvedValue(false);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "item-1",
         completed: "false",
         category: "TestCategory",
@@ -190,7 +198,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should skip revalidation when flag is set", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "item-1",
         completed: "true",
         category: "TestCategory",
@@ -219,7 +227,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       };
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "parent-1",
         completed: "true",
         category: "TestCategory",
@@ -234,7 +242,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       mockGetListById.mockResolvedValue(mockTaskChecklist);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "task-1",
         completed: "false",
         dueDate: "2024-12-31",
@@ -250,7 +258,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
   describe("createItem", () => {
     it("should create a new item", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         text: "New item",
         category: "TestCategory",
       });
@@ -265,7 +273,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should create item with description", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         text: "New item with desc",
         description: "Item description",
         category: "TestCategory",
@@ -278,10 +286,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should return error when permission denied", async () => {
-      mockCheckUserPermission.mockResolvedValue(false);
+      mockCanReach.mockResolvedValue(false);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         text: "New item",
         category: "TestCategory",
       });
@@ -295,7 +303,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const taskChecklist = { ...mockChecklist, type: "task" as const };
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         text: "New task",
         category: "TestCategory",
       });
@@ -310,7 +318,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       mockGetListById.mockResolvedValue(mockTaskChecklist);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         text: "New task in progress",
         status: "in-progress",
         category: "TestCategory",
@@ -323,7 +331,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should create item with due date", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         text: "Task with deadline",
         dueDate: "2024-12-25",
         category: "TestCategory",
@@ -338,7 +346,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
   describe("deleteItem", () => {
     it("should delete an item", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "item-1",
         category: "TestCategory",
       });
@@ -351,7 +359,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should return success when item does not exist", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "nonexistent-item",
         category: "TestCategory",
       });
@@ -362,12 +370,11 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should handle list not found", async () => {
-      mockGetUserChecklists.mockResolvedValue({ success: true, data: [] });
+      mockGetListById.mockResolvedValue(null);
 
       const formData = createFormData({
-        listId: "nonexistent-list",
+        uuid: "nonexistent-list",
         itemId: "item-1",
-        category: "TestCategory",
       });
 
       const result = await deleteItem(formData);
@@ -397,7 +404,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "parent-1",
         category: "TestCategory",
       });
@@ -417,7 +424,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
     });
 
-    it("should return error when listId or itemId missing", async () => {
+    it("should return error when uuid or itemId missing", async () => {
       const formData = createFormData({
         status: "in-progress",
       });
@@ -425,12 +432,12 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const result = await updateItemStatus(formData);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("List ID and item ID are required");
+      expect(result.error).toBe("List uuid and item ID are required");
     });
 
     it("should return error when neither status nor timeEntries provided", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "task-1",
         category: "TestCategory",
       });
@@ -445,7 +452,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should update item status", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "task-1",
         status: "in-progress",
         category: "TestCategory",
@@ -459,7 +466,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should update to completed status and mark item completed", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "task-1",
         status: "completed",
         category: "TestCategory",
@@ -471,10 +478,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should return error when permission denied", async () => {
-      mockCheckUserPermission.mockResolvedValue(false);
+      mockCanReach.mockResolvedValue(false);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "task-1",
         status: "in-progress",
         category: "TestCategory",
@@ -490,7 +497,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       mockGetListById.mockResolvedValue(null);
 
       const formData = createFormData({
-        listId: "nonexistent-list",
+        uuid: "nonexistent-list",
         itemId: "task-1",
         status: "in-progress",
         category: "TestCategory",
@@ -512,7 +519,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       ];
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "task-1",
         timeEntries: JSON.stringify(timeEntries),
         category: "TestCategory",
@@ -548,7 +555,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       mockGetListById.mockResolvedValue(taskWithChildren);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemId: "parent-task",
         status: "completed",
         category: "TestCategory",
@@ -563,7 +570,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
   describe("createBulkItems", () => {
     it("should create multiple items from text", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemsText: "Item 1\nItem 2\nItem 3",
         category: "TestCategory",
       });
@@ -579,7 +586,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should filter empty lines", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemsText: "Item 1\n\n\nItem 2",
         category: "TestCategory",
       });
@@ -590,12 +597,11 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should handle list not found", async () => {
-      mockGetUserChecklists.mockResolvedValue({ success: true, data: [] });
+      mockGetListById.mockResolvedValue(null);
 
       const formData = createFormData({
-        listId: "nonexistent-list",
+        uuid: "nonexistent-list",
         itemsText: "Item 1",
-        category: "TestCategory",
       });
 
       const result = await createBulkItems(formData);
@@ -605,7 +611,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should trim whitespace from items", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemsText: "  Item with spaces  \n  Another item  ",
         category: "TestCategory",
       });
@@ -619,7 +625,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
   describe("bulkToggleItems", () => {
     it("should toggle multiple items completed state", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemIds: JSON.stringify(["item-1", "item-3"]),
         category: "TestCategory",
       });
@@ -632,7 +638,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should toggle all items when no specific ids provided", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemIds: JSON.stringify([]),
         toggleAll: "true",
         category: "TestCategory",
@@ -647,7 +653,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       mockGetListById.mockResolvedValue(null);
 
       const formData = createFormData({
-        listId: "nonexistent",
+        uuid: "nonexistent",
         itemIds: JSON.stringify(["item-1"]),
         category: "TestCategory",
       });
@@ -662,7 +668,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
   describe("bulkDeleteItems", () => {
     it("should delete multiple items", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemIds: JSON.stringify(["item-1", "item-2"]),
         category: "TestCategory",
       });
@@ -673,7 +679,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       expect(mockServerWriteFile).toHaveBeenCalled();
     });
 
-    it("should handle missing listId by returning no-op", async () => {
+    it("should handle missing uuid by returning no-op", async () => {
       const formData = createFormData({
         itemIds: JSON.stringify(["item-1"]),
         category: "TestCategory",
@@ -686,7 +692,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should succeed with empty itemIds (no-op)", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemIds: JSON.stringify([]),
         category: "TestCategory",
       });
@@ -718,7 +724,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         itemIds: JSON.stringify(["parent-1"]),
         category: "TestCategory",
       });
@@ -732,7 +738,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
   describe("reorderItems", () => {
     it("should reorder items within same level", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         activeItemId: "item-3",
         overItemId: "item-1",
         category: "TestCategory",
@@ -746,7 +752,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should move item to different position", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         activeItemId: "item-1",
         overItemId: "item-3",
         category: "TestCategory",
@@ -761,7 +767,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       mockGetListById.mockResolvedValue(null);
 
       const formData = createFormData({
-        listId: "nonexistent",
+        uuid: "nonexistent",
         itemId: "item-1",
         targetId: "item-2",
         position: "before",
@@ -774,14 +780,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should return generic error when permission denied", async () => {
-      mockCheckUserPermission.mockResolvedValue(false);
-      mockGetUserChecklists.mockResolvedValue({
-        success: false,
-        error: "Failed",
-      });
+      mockCanReach.mockResolvedValue(false);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         activeItemId: "item-1",
         overItemId: "item-2",
         category: "TestCategory",
@@ -808,13 +810,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
           },
         ],
       };
-      mockGetUserChecklists.mockResolvedValue({
-        success: true,
-        data: [checklistWithHierarchy],
-      });
+      mockGetListById.mockResolvedValue(checklistWithHierarchy);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         activeItemId: "parent-1",
         overItemId: "child-1",
         isDropInto: "true",
@@ -830,7 +829,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
   describe("createSubItem", () => {
     it("should create a sub-item under parent", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         parentId: "item-1",
         text: "Sub item",
         category: "TestCategory",
@@ -844,7 +843,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should return error when parent not found", async () => {
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         parentId: "nonexistent-parent",
         text: "Sub item",
         category: "TestCategory",
@@ -857,14 +856,12 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should handle list not found", async () => {
-      mockGetUserChecklists.mockResolvedValue({ success: true, data: [] });
-      mockGetAllLists.mockResolvedValue({ success: true, data: [] });
+      mockGetListById.mockResolvedValue(null);
 
       const formData = createFormData({
-        listId: "nonexistent-list",
+        uuid: "nonexistent-list",
         parentId: "item-1",
         text: "Sub item",
-        category: "TestCategory",
       });
 
       const result = await createSubItem(formData);
@@ -892,17 +889,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
           },
         ],
       };
-      mockGetUserChecklists.mockResolvedValue({
-        success: true,
-        data: [checklistWithChildren],
-      });
-      mockGetAllLists.mockResolvedValue({
-        success: true,
-        data: [checklistWithChildren],
-      });
+      mockGetListById.mockResolvedValue(checklistWithChildren);
 
       const formData = createFormData({
-        listId: "test-list",
+        uuid: "test-uuid-123",
         parentId: "parent-1",
         text: "New sub item",
         category: "TestCategory",
@@ -932,10 +922,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('updateItem - Shared Access', () => {
       it('should allow checking/unchecking items with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           completed: 'true',
           category: 'TestCategory',
@@ -944,14 +934,14 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
         const result = await updateItem(sharedChecklist, formData, 'shared-user');
 
         expect(result.success).toBe(true);
-        expect(mockCheckUserPermission).toHaveBeenCalled();
+        expect(mockCanReach).toHaveBeenCalled();
       });
 
       it('should deny checking items with read-only permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           completed: 'true',
           category: 'TestCategory',
@@ -964,10 +954,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should allow renaming items with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           text: 'Renamed item',
           completed: 'false',
@@ -980,10 +970,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny renaming items with read-only permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           text: 'Renamed item',
           category: 'TestCategory',
@@ -995,10 +985,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should allow updating item description with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           description: 'Updated description',
           completed: 'false',
@@ -1011,10 +1001,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should allow updating due date with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           dueDate: '2024-12-31',
           completed: 'false',
@@ -1027,7 +1017,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should allow toggling parent item with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
         const checklistWithChildren = {
           ...sharedChecklist,
           items: [
@@ -1045,7 +1035,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
         };
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'parent-1',
           completed: 'true',
           category: 'TestCategory',
@@ -1059,10 +1049,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('createItem - Shared Access', () => {
       it('should allow creating items with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           text: 'New shared item',
           category: 'TestCategory',
         });
@@ -1074,10 +1064,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny creating items with read-only permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           text: 'New item',
           category: 'TestCategory',
         });
@@ -1088,10 +1078,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should allow creating items with description with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           text: 'Item with desc',
           description: 'Description text',
           category: 'TestCategory',
@@ -1105,10 +1095,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('deleteItem - Shared Access', () => {
       it('should allow deleting items with delete permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           category: 'TestCategory',
         });
@@ -1119,10 +1109,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny deleting items without delete permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           category: 'TestCategory',
         });
@@ -1133,17 +1123,17 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should check delete permission specifically', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           category: 'TestCategory',
         });
 
         await deleteItem(formData);
 
-        expect(mockCheckUserPermission).toHaveBeenCalled();
+        expect(mockCanReach).toHaveBeenCalled();
       });
     });
 
@@ -1161,10 +1151,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should allow updating status with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'task-1',
           status: 'in-progress',
           category: 'TestCategory',
@@ -1176,10 +1166,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny updating status with read-only permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'task-1',
           status: 'in-progress',
           category: 'TestCategory',
@@ -1192,10 +1182,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should allow updating time entries with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'task-1',
           timeEntries: JSON.stringify([
             { start: '2024-01-01T09:00:00Z', end: '2024-01-01T10:00:00Z', duration: 3600000 },
@@ -1209,10 +1199,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny updating time entries without edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'task-1',
           timeEntries: JSON.stringify([
             { start: '2024-01-01T09:00:00Z', end: '2024-01-01T10:00:00Z', duration: 3600000 },
@@ -1228,10 +1218,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('createBulkItems - Shared Access', () => {
       it('should allow bulk creating items with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemsText: 'Item 1\nItem 2\nItem 3',
           category: 'TestCategory',
         });
@@ -1242,10 +1232,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny bulk creating items with read-only permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemsText: 'Item 1\nItem 2',
           category: 'TestCategory',
         });
@@ -1258,10 +1248,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('bulkToggleItems - Shared Access', () => {
       it('should allow bulk toggling with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemIds: JSON.stringify(['item-1', 'item-2']),
           category: 'TestCategory',
         });
@@ -1272,10 +1262,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny bulk toggling with read-only permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemIds: JSON.stringify(['item-1', 'item-2']),
           category: 'TestCategory',
         });
@@ -1286,10 +1276,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should allow toggling all items with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemIds: JSON.stringify([]),
           toggleAll: 'true',
           category: 'TestCategory',
@@ -1303,10 +1293,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('bulkDeleteItems - Shared Access', () => {
       it('should allow bulk deleting with delete permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemIds: JSON.stringify(['item-1', 'item-2']),
           category: 'TestCategory',
         });
@@ -1317,10 +1307,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny bulk deleting without delete permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemIds: JSON.stringify(['item-1', 'item-2']),
           category: 'TestCategory',
         });
@@ -1333,10 +1323,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('reorderItems - Shared Access', () => {
       it('should allow reordering items with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           activeItemId: 'item-1',
           overItemId: 'item-3',
           category: 'TestCategory',
@@ -1348,14 +1338,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny reordering items with read-only permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
-        mockGetUserChecklists.mockResolvedValue({
-          success: false,
-          error: 'Permission denied',
-        });
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           activeItemId: 'item-1',
           overItemId: 'item-3',
           category: 'TestCategory',
@@ -1369,10 +1355,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('createSubItem - Shared Access', () => {
       it('should allow creating sub-items with edit permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           parentId: 'item-1',
           text: 'New sub-item',
           category: 'TestCategory',
@@ -1384,10 +1370,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should deny creating sub-items with read-only permission', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           parentId: 'item-1',
           text: 'New sub-item',
           category: 'TestCategory',
@@ -1401,7 +1387,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     describe('Edge Cases - Shared Access', () => {
       it('should handle permission check for nested items', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
         const checklistWithNested = {
           ...sharedChecklist,
           items: [
@@ -1426,7 +1412,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
         };
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'grandchild',
           completed: 'true',
           category: 'TestCategory',
@@ -1438,10 +1424,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should verify permission is checked before any item modification', async () => {
-        mockCheckUserPermission.mockResolvedValue(false);
+        mockCanReach.mockResolvedValue(false);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           completed: 'true',
           category: 'TestCategory',
@@ -1450,22 +1436,22 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
         const result = await updateItem(sharedChecklist, formData, 'shared-user');
 
         expect(result.success).toBe(false);
-        expect(mockCheckUserPermission).toHaveBeenCalled();
+        expect(mockCanReach).toHaveBeenCalled();
         expect(mockServerWriteFile).not.toHaveBeenCalled();
       });
 
       it('should handle concurrent item updates with shared access', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData1 = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           completed: 'true',
           category: 'TestCategory',
         });
 
         const formData2 = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-2',
           completed: 'true',
           category: 'TestCategory',
@@ -1481,10 +1467,10 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
 
       it('should maintain item ownership metadata when shared user edits', async () => {
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
 
         const formData = createFormData({
-          listId: 'test-list',
+          uuid: 'test-uuid-123',
           itemId: 'item-1',
           text: 'Updated by shared user',
           completed: 'false',

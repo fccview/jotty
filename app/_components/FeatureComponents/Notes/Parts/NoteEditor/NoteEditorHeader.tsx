@@ -705,8 +705,6 @@ export const NoteEditorHeader = ({
           isOpen={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
           noteUuid={note.uuid || ""}
-          noteId={note.id}
-          noteCategory={note.category || "Uncategorized"}
           noteOwner={note.owner || ""}
           noteTitle={note.title}
           currentContent={note.content || ""}

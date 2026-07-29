@@ -1341,7 +1341,10 @@
     "publicTip": "Openbaar gedeeld",
     "fromUserRead": "Alleen lezen, gedeeld door {user}",
     "fromUserWrite": "Kan bewerken, gedeeld door {user}",
-    "fromUserDelete": "Kan bewerken en verwijderen, gedeeld door {user}"
+    "fromUserDelete": "Kan bewerken en verwijderen, gedeeld door {user}",
+    "leaveShare": "Delen verlaten",
+    "confirmLeaveItem": "Je eigen toegang tot \"{itemTitle}\" verwijderen? Het verdwijnt uit je zijbalk en de eigenaar moet het opnieuw delen.",
+    "confirmLeaveFolder": "Je eigen toegang tot \"{categoryName}\", gedeeld door {owner}, verwijderen? De map verdwijnt uit je zijbalk en {owner} moet hem opnieuw delen."
   },
   "encryption": {
     "encrypt": "Versleutelen",

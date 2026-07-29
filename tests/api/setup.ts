@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import { NextRequest } from "next/server";
+import { Modes } from "@/app/_types/enums";
 
 export const mockUser = {
   username: "testuser",
@@ -31,6 +32,8 @@ export const mockExportAllUsersData = vi.fn();
 export const mockExportWholeDataFolder = vi.fn();
 export const mockGetExportProgress = vi.fn();
 export const mockGetAppSettings = vi.fn();
+export const mockResolveApiId = vi.fn();
+export const mockLegacyResolve = vi.fn();
 
 vi.mock("@/app/_server/actions/api", () => ({
   authenticateApiKey: (...args: any[]) => mockAuthenticateApiKey(...args),
@@ -85,6 +88,11 @@ vi.mock("@/app/_server/actions/config", () => ({
   getAppSettings: (...args: any[]) => mockGetAppSettings(...args),
 }));
 
+vi.mock("@/app/_server/actions/lib/legacy-lookup", () => ({
+  resolveApiId: (...args: any[]) => mockResolveApiId(...args),
+  legacyResolve: (...args: any[]) => mockLegacyResolve(...args),
+}));
+
 export function resetApiMocks() {
   vi.clearAllMocks();
   mockAuthenticateApiKey.mockReset();
@@ -111,6 +119,9 @@ export function resetApiMocks() {
   mockExportWholeDataFolder.mockReset();
   mockGetExportProgress.mockReset();
   mockGetAppSettings.mockReset();
+  mockLegacyResolve.mockReset();
+  mockResolveApiId.mockReset();
+  mockResolveApiId.mockImplementation(async (_mode: Modes, param: string) => param);
 }
 
 export function createMockRequest(
