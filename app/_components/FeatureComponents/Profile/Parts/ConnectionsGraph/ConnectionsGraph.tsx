@@ -85,17 +85,15 @@ const CENTER_PULL_STRENGTH = 0.035;
 const getNodeRadius = (node: ConnectionGraphNode, scale: number) =>
   Math.max(4, Math.min(18, 4 + node.connectionCount * 1.1)) * scale;
 
-const createAxisForce = (
-  axis: "x" | "y",
-  strength: number,
-): AxisForce => {
+const createAxisForce = (axis: "x" | "y", strength: number): AxisForce => {
   let nodes: CanvasNode[] = [];
   const velocity = axis === "x" ? "vx" : "vy";
 
   const force = ((alpha: number) => {
     nodes.forEach((node) => {
       const position = node[axis] || 0;
-      node[velocity] = (node[velocity] || 0) + (0 - position) * strength * alpha;
+      node[velocity] =
+        (node[velocity] || 0) + (0 - position) * strength * alpha;
     });
   }) as AxisForce;
 
@@ -130,9 +128,11 @@ export const ConnectionsGraph = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hasFitGraphRef = useRef(false);
   const labelHitBoxesRef = useRef<LabelHitBox[]>([]);
-  const pointerDownRef = useRef<{ x: number; y: number; pointerId: number } | null>(
-    null,
-  );
+  const pointerDownRef = useRef<{
+    x: number;
+    y: number;
+    pointerId: number;
+  } | null>(null);
   const router = useRouter();
   const [dimensions, setDimensions] = useState({ width: 900, height: 620 });
   const [isCoarsePointer, setIsCoarsePointer] = useState(false);
@@ -185,11 +185,13 @@ export const ConnectionsGraph = ({
 
   useEffect(() => {
     const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
-    const updatePointerMode = () => setIsCoarsePointer(coarsePointerQuery.matches);
+    const updatePointerMode = () =>
+      setIsCoarsePointer(coarsePointerQuery.matches);
 
     updatePointerMode();
     coarsePointerQuery.addEventListener("change", updatePointerMode);
-    return () => coarsePointerQuery.removeEventListener("change", updatePointerMode);
+    return () =>
+      coarsePointerQuery.removeEventListener("change", updatePointerMode);
   }, []);
 
   useEffect(() => {
@@ -326,7 +328,7 @@ export const ConnectionsGraph = ({
         ref={containerRef}
         onPointerDownCapture={handlePointerDownCapture}
         onPointerUpCapture={handlePointerUpCapture}
-        className="h-[62vh] min-h-[460px] overflow-hidden rounded-md border border-border bg-card"
+        className="h-[62vh] min-h-[460px] overflow-hidden rounded-jotty border border-border bg-card"
       >
         <ForceGraph2D
           ref={graphRef}
@@ -373,14 +375,21 @@ export const ConnectionsGraph = ({
           }
           nodeCanvasObject={(node, ctx, globalScale) => {
             const canvasNode = node as CanvasNode;
-            const baseColor = TYPE_COLORS[canvasNode.type] || TYPE_COLORS[ItemTypes.NOTE];
+            const baseColor =
+              TYPE_COLORS[canvasNode.type] || TYPE_COLORS[ItemTypes.NOTE];
             const radius = getNodeRadius(canvasNode, nodeScale);
             const isSelected = selectedNodeId === canvasNode.id;
             const isNeighbor = neighborIds.has(canvasNode.id);
             const dimmed = selectedNodeId && !isNeighbor;
 
             ctx.beginPath();
-            ctx.arc(canvasNode.x || 0, canvasNode.y || 0, radius, 0, 2 * Math.PI);
+            ctx.arc(
+              canvasNode.x || 0,
+              canvasNode.y || 0,
+              radius,
+              0,
+              2 * Math.PI,
+            );
             ctx.fillStyle = dimmed ? "rgba(148,163,184,0.35)" : baseColor;
             ctx.fill();
 
@@ -389,7 +398,6 @@ export const ConnectionsGraph = ({
               ctx.strokeStyle = "#f8fafc";
               ctx.stroke();
             }
-
           }}
           onRenderFramePost={(ctx, globalScale) => {
             labelHitBoxesRef.current = [];
@@ -412,7 +420,8 @@ export const ConnectionsGraph = ({
 
             sortedNodes.forEach((node) => {
               const canvasNode = node as CanvasNode;
-              if (canvasNode.x === undefined || canvasNode.y === undefined) return;
+              if (canvasNode.x === undefined || canvasNode.y === undefined)
+                return;
 
               const isPriority = canvasNode.id === selectedNodeId;
               if (!showLabels && !isPriority) return;
@@ -453,7 +462,13 @@ export const ConnectionsGraph = ({
             );
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.arc(canvasNode.x || 0, canvasNode.y || 0, radius, 0, 2 * Math.PI);
+            ctx.arc(
+              canvasNode.x || 0,
+              canvasNode.y || 0,
+              radius,
+              0,
+              2 * Math.PI,
+            );
             ctx.fill();
           }}
           onNodeClick={(node, event) => {
@@ -484,7 +499,7 @@ export const ConnectionsGraph = ({
         />
       </div>
 
-      <aside className="rounded-md border border-border bg-card p-4">
+      <aside className="rounded-jotty border border-border bg-card p-4">
         {inspectedNode ? (
           <div className="space-y-4">
             <div>
@@ -500,34 +515,46 @@ export const ConnectionsGraph = ({
             </div>
 
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-md bg-secondary p-2">
+              <div className="rounded-jotty bg-secondary p-2">
                 <div className="text-lg font-semibold">
                   {inspectedNode.connectionCount}
                 </div>
-                <div className="text-xs text-muted-foreground">{labels.total}</div>
+                <div className="text-xs text-muted-foreground">
+                  {labels.total}
+                </div>
               </div>
-              <div className="rounded-md bg-secondary p-2">
+              <div className="rounded-jotty bg-secondary p-2">
                 <div className="text-lg font-semibold">
                   {inspectedNode.inboundCount}
                 </div>
-                <div className="text-xs text-muted-foreground">{labels.inbound}</div>
+                <div className="text-xs text-muted-foreground">
+                  {labels.inbound}
+                </div>
               </div>
-              <div className="rounded-md bg-secondary p-2">
+              <div className="rounded-jotty bg-secondary p-2">
                 <div className="text-lg font-semibold">
                   {inspectedNode.outboundCount}
                 </div>
-                <div className="text-xs text-muted-foreground">{labels.outbound}</div>
+                <div className="text-xs text-muted-foreground">
+                  {labels.outbound}
+                </div>
               </div>
             </div>
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between gap-3">
                 <span className="text-muted-foreground">{labels.updated}</span>
-                <span>{inspectedNode.updatedAt ? formatDate(inspectedNode.updatedAt) : labels.unknown}</span>
+                <span>
+                  {inspectedNode.updatedAt
+                    ? formatDate(inspectedNode.updatedAt)
+                    : labels.unknown}
+                </span>
               </div>
               <div className="flex justify-between gap-3">
                 <span className="text-muted-foreground">{labels.uuid}</span>
-                <span className="truncate font-mono text-xs">{inspectedNode.id}</span>
+                <span className="truncate font-mono text-xs">
+                  {inspectedNode.id}
+                </span>
               </div>
             </div>
 

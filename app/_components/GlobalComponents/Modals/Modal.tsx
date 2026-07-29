@@ -108,14 +108,18 @@ export const Modal = ({
           bg-background border border-border shadow-xl
           translate-y-0 lg:translate-y-0 transition-all duration-200
           w-full
-          ${size === "fullscreen"
-            ? "h-[90vh] flex flex-col lg:rounded-jotty rounded-t-xl overflow-hidden lg:w-[95vw]"
-            : "lg:max-w-md lg:rounded-md rounded-t-xl p-6"}
+          ${
+            size === "fullscreen"
+              ? "h-[90vh] flex flex-col lg:rounded-jotty rounded-t-xl overflow-hidden lg:w-[95vw]"
+              : "lg:max-w-md lg:rounded-jotty rounded-t-xl p-6 max-h-[90vh] overflow-y-auto"
+          }
           ${className}
           ${isEnlarged ? enlargedDesktopClasses : ""}
         `}
       >
-        <div className={`jotty-modal-header flex items-center justify-between ${isFullscreenLayout ? "p-3 border-b border-border shrink-0" : "mb-6"}`}>
+        <div
+          className={`jotty-modal-header flex items-center justify-between ${isFullscreenLayout ? "p-3 border-b border-border shrink-0" : "mb-6"}`}
+        >
           <div className="lg:hidden absolute top-2.5 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-muted-foreground/20" />
 
           <div className="jotty-modal-title text-xl font-bold text-foreground flex items-center min-w-0">
@@ -128,7 +132,9 @@ export const Modal = ({
                 size="sm"
                 onClick={() => setIsEnlarged((prev) => !prev)}
                 className="hidden lg:inline-flex h-8 w-8 p-0"
-                aria-label={isEnlarged ? t("common.shrink") : t("common.enlarge")}
+                aria-label={
+                  isEnlarged ? t("common.shrink") : t("common.enlarge")
+                }
               >
                 {isEnlarged ? (
                   <MinimizeScreenIcon className="h-4 w-4" />
@@ -149,7 +155,13 @@ export const Modal = ({
           </div>
         </div>
 
-        <div className={isFullscreenLayout ? "flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden" : ""}>
+        <div
+          className={
+            isFullscreenLayout
+              ? "flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden"
+              : ""
+          }
+        >
           {children}
         </div>
       </div>

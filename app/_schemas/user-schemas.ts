@@ -61,6 +61,9 @@ export const checklistSettingsSchema = z.object({
   showCompletedSuggestions: z.enum(["enable", "disable"], {
     message: "Show completed suggestions must be either 'enable' or 'disable'",
   }),
+  showChecklistEmojis: z.enum(["enable", "disable"], {
+    message: "Show checklist emojis must be either 'enable' or 'disable'",
+  }),
   defaultChecklistFilter: z.enum(
     ["all", "completed", "incomplete", "pinned", "task", "simple"],
     {

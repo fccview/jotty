@@ -248,7 +248,8 @@
     "reconnecting": "正在重新连接...",
     "hide": "隐藏",
     "items": "项目",
-    "thisEntry": "这个条目"
+    "thisEntry": "这个条目",
+    "preview": "预览"
   },
   "history": {
     "noteHistory": "笔记历史",
@@ -914,7 +915,9 @@
     "checklistItemClickActionDescription": "选择单击任务文本时会发生的情况。 \n“标记为完成”切换复选框（默认）； \n“编辑任务名称”打开任务进行内联编辑 - 您仍然需要单击复选框本身来完成它。",
     "checklistItemClickActionToggle": "标记为完整/不完整",
     "checklistItemClickActionEdit": "编辑列表项",
-    "useSystemDefault": "使用系统默认值"
+    "useSystemDefault": "使用系统默认值",
+    "selectShowChecklistEmojis": "选择 Emoji 显示方式",
+    "showChecklistEmojisDescription": "根据清单项目的文字自动在旁边显示 Emoji。"
   },
   "admin": {
     "title": "管理",
@@ -1103,7 +1106,11 @@
     "defaultDateFormat": "默认日期格式",
     "defaultDateFormatDescription": "当用户的日期格式首选项设置为“使用系统默认值”时使用。",
     "defaultTimeFormatDescription": "当用户的时间格式首选项设置为“使用系统默认值”时使用。",
-    "defaultTimeFormat": "默认时间格式"
+    "defaultTimeFormat": "默认时间格式",
+    "borderRadius": "圆角半径",
+    "borderRadiusDescription": "设置整个实例的圆角大小。用户可在快速设置中覆盖此值。",
+    "borderRadiusSaved": "圆角半径已保存",
+    "borderRadiusLoadError": "无法加载圆角半径"
   },
   "errors": {
     "notFound": "未找到",
@@ -1531,7 +1538,10 @@
     "viewMode": "视图模式",
     "viewModeCard": "卡片",
     "viewModeList": "列表",
-    "viewModeGrid": "网格"
+    "viewModeGrid": "网格",
+    "borderRadius": "圆角大小",
+    "useInstanceDefault": "使用实例默认值",
+    "borderRadiusDescription": "拖动时整个应用的圆角会实时更新。"
   },
   "migration": {
     "migrationComplete": "迁移完成",

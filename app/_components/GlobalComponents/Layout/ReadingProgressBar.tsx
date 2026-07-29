@@ -23,7 +23,7 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
         setProgress(Math.min(scrollProgress, 100));
       } else {
         const findScrollableParent = (
-          element: HTMLElement | null
+          element: HTMLElement | null,
         ): HTMLElement | null => {
           if (!element) return null;
 
@@ -66,7 +66,7 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
       };
     } else {
       const findScrollableParent = (
-        element: HTMLElement | null
+        element: HTMLElement | null,
       ): HTMLElement | null => {
         if (!element) return null;
 
@@ -103,7 +103,7 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
       <div
         className={cn(
           "absolute top-0 left-0 right-0 bg-muted mb-6 z-10",
-          fixed ? "h-[10px]" : "h-[2px]"
+          fixed ? "h-[10px]" : "h-[2px]",
         )}
         role="progressbar"
         aria-valuenow={Math.round(progress)}

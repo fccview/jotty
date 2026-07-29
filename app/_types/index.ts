@@ -21,6 +21,7 @@ export type {
   SanitisedUser,
   EnableRecurrence,
   ShowCompletedSuggestions,
+  ShowChecklistEmojis,
   ImageSyntax,
   TableSyntax,
   NotesDefaultEditor,

@@ -146,8 +146,9 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       },
       editorProps: {
         attributes: {
-          class: `prose prose-sm px-6 pt-6 pb-4 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${compactMode ? "!max-w-[900px] mx-auto" : ""
-            }`,
+          class: `prose prose-sm px-6 pt-6 pb-4 sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 w-full max-w-none focus:outline-none ${
+            compactMode ? "!max-w-[900px] mx-auto" : ""
+          }`,
         },
         handleKeyDown: (view, event) => {
           return createKeyDownHandler(editor)(view, event);
@@ -385,8 +386,9 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
         {isMarkdownMode && showPreview ? (
           <div
-            className={`px-6 pt-6 pb-4 overflow-y-auto flex-1 ${compactMode ? "max-w-[900px] mx-auto" : ""
-              }`}
+            className={`px-6 pt-6 pb-4 overflow-y-auto flex-1 ${
+              compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
           >
             <UnifiedMarkdownRenderer content={markdownContent} />
           </div>

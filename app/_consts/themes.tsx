@@ -202,6 +202,11 @@ export const themeInitScript = (customThemesData?: string) => `
     if (settings) {
       const parsed = JSON.parse(settings);
       localStorageTheme = parsed.state?.theme || 'system';
+
+      const radius = parsed.state?.borderRadius;
+      if (typeof radius === 'number' && isFinite(radius)) {
+        document.documentElement.style.setProperty('--jotty-radius', radius + 'rem');
+      }
     }
 
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

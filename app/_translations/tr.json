@@ -248,7 +248,8 @@
     "connected": "Bağlı",
     "offline": "Çevrimdışı",
     "reconnecting": "Yeniden bağlanıyor...",
-    "thisEntry": "bu giriş"
+    "thisEntry": "bu giriş",
+    "preview": "Önizleme"
   },
   "history": {
     "noteHistory": "Not Geçmişi",
@@ -914,7 +915,9 @@
     "checklistItemClickActionDescription": "Bir görevin metnini tıklattığınızda ne olacağını seçin. \n\"Tamamlandı olarak işaretle\" onay kutusunu değiştirir (varsayılan); \n\"Görev adını düzenle\", görevi satır içi düzenleme için açar; bunu tamamlamak için yine de onay kutusunu tıklamanız gerekir.",
     "checklistItemClickActionToggle": "Tamamlandı/tamamlanmadı olarak işaretle",
     "checklistItemClickActionEdit": "Liste öğesini düzenle",
-    "useSystemDefault": "Sistem varsayılanını kullan"
+    "useSystemDefault": "Sistem varsayılanını kullan",
+    "selectShowChecklistEmojis": "Emoji görünürlüğünü seçin",
+    "showChecklistEmojisDescription": "Metnine göre liste öğelerinin yanında otomatik emoji gösterir."
   },
   "admin": {
     "title": "Yönetici",
@@ -1105,7 +1108,11 @@
     "defaultDateFormat": "Varsayılan Tarih Formatı",
     "defaultDateFormatDescription": "Kullanıcının tarih biçimi tercihi \"Sistem varsayılanını kullan\" olarak ayarlandığında kullanılır.",
     "defaultTimeFormatDescription": "Kullanıcının saat biçimi tercihi \"Sistem varsayılanını kullan\" olarak ayarlandığında kullanılır.",
-    "defaultTimeFormat": "Varsayılan Saat Formatı"
+    "defaultTimeFormat": "Varsayılan Saat Formatı",
+    "borderRadius": "Kenar yuvarlaklığı",
+    "borderRadiusDescription": "Tüm örnekte kullanılan köşe yuvarlaklığını ayarlar. Kullanıcılar hızlı ayarlardan bunu geçersiz kılabilir.",
+    "borderRadiusSaved": "Kenar yuvarlaklığı kaydedildi",
+    "borderRadiusLoadError": "Kenar yuvarlaklığı yüklenemedi"
   },
   "errors": {
     "notFound": "Bulunamadı",
@@ -1533,7 +1540,10 @@
     "viewMode": "Görünüm Modu",
     "viewModeCard": "Kartlar",
     "viewModeList": "Liste",
-    "viewModeGrid": "Izgara"
+    "viewModeGrid": "Izgara",
+    "borderRadius": "Köşe yuvarlaklığı",
+    "useInstanceDefault": "Varsayılanı kullan",
+    "borderRadiusDescription": "Sürüklerken köşeler tüm uygulamada güncellenir."
   },
   "migration": {
     "migrationComplete": "Taşıma Tamamlandı",

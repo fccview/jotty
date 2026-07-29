@@ -248,7 +248,8 @@
     "history": "Historial",
     "items": "Elementos",
     "noResults": "Sin resultados",
-    "thisEntry": "esta entrada"
+    "thisEntry": "esta entrada",
+    "preview": "Vista previa"
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -889,7 +890,9 @@
     "checklistItemClickActionDescription": "Elija qué sucede cuando hace clic en el texto de una tarea. \n\"Marcar como completo\" activa la casilla de verificación (predeterminada); \n\"Editar nombre de la tarea\" abre la tarea para su edición en línea; aún deberá hacer clic en la casilla de verificación para completarla.",
     "checklistItemClickActionToggle": "Marcar como completo/incompleto",
     "checklistItemClickActionEdit": "Editar elemento de la lista",
-    "useSystemDefault": "Usar el sistema predeterminado"
+    "useSystemDefault": "Usar el sistema predeterminado",
+    "selectShowChecklistEmojis": "Seleccionar visibilidad de emojis",
+    "showChecklistEmojisDescription": "Muestra un emoji automático junto a los elementos de la lista según su texto."
   },
   "admin": {
     "title": "Administrador",
@@ -1078,7 +1081,11 @@
     "defaultDateFormat": "Formato de fecha predeterminado",
     "defaultDateFormatDescription": "Se utiliza cuando la preferencia de formato de fecha de un usuario está configurada en \"Usar valor predeterminado del sistema\".",
     "defaultTimeFormatDescription": "Se utiliza cuando la preferencia de formato de hora de un usuario está configurada en \"Usar valor predeterminado del sistema\".",
-    "defaultTimeFormat": "Formato de hora predeterminado"
+    "defaultTimeFormat": "Formato de hora predeterminado",
+    "borderRadius": "Radio de borde",
+    "borderRadiusDescription": "Define el redondeo de esquinas de toda la instancia. Los usuarios pueden sobrescribirlo en los ajustes rápidos.",
+    "borderRadiusSaved": "Radio de borde guardado",
+    "borderRadiusLoadError": "No se pudo cargar el radio de borde"
   },
   "errors": {
     "notFound": "No encontrado",
@@ -1507,7 +1514,10 @@
     "viewMode": "Modo de vista",
     "viewModeCard": "Tarjetas",
     "viewModeList": "Lista",
-    "viewModeGrid": "Cuadrícula"
+    "viewModeGrid": "Cuadrícula",
+    "borderRadius": "Redondeo de esquinas",
+    "useInstanceDefault": "Usar el valor predeterminado",
+    "borderRadiusDescription": "Las esquinas se actualizan en toda la aplicación mientras arrastras."
   },
   "migration": {
     "migrationComplete": "Migración Completa",

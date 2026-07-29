@@ -248,7 +248,8 @@
     "history": "Cronologia",
     "items": "Elementi",
     "noResults": "Nessun risultato",
-    "thisEntry": "questa voce"
+    "thisEntry": "questa voce",
+    "preview": "Anteprima"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -889,7 +890,9 @@
     "checklistItemClickActionDescription": "Scegli cosa succede quando fai clic sul testo di un'attività. \n\"Segna come completato\" attiva/disattiva la casella di controllo (impostazione predefinita); \n\"Modifica nome attività\" apre l'attività per la modifica in linea: dovrai comunque fare clic sulla casella di controllo stessa per completarla.",
     "checklistItemClickActionToggle": "Contrassegna come completo/incompleto",
     "checklistItemClickActionEdit": "Modifica elemento elenco",
-    "useSystemDefault": "Utilizza l'impostazione predefinita del sistema"
+    "useSystemDefault": "Utilizza l'impostazione predefinita del sistema",
+    "selectShowChecklistEmojis": "Seleziona visibilità emoji",
+    "showChecklistEmojisDescription": "Mostra un'emoji automatica accanto agli elementi della checklist in base al testo."
   },
   "admin": {
     "title": "Admin",
@@ -1078,7 +1081,11 @@
     "defaultDateFormat": "Formato data predefinito",
     "defaultDateFormatDescription": "Utilizzato quando la preferenza del formato data di un utente è impostata su \"Utilizza impostazione predefinita del sistema\".",
     "defaultTimeFormatDescription": "Utilizzato quando la preferenza del formato dell'ora di un utente è impostata su \"Utilizza impostazione predefinita del sistema\".",
-    "defaultTimeFormat": "Formato ora predefinito"
+    "defaultTimeFormat": "Formato ora predefinito",
+    "borderRadius": "Raggio dei bordi",
+    "borderRadiusDescription": "Imposta l'arrotondamento degli angoli per tutta l'istanza. Gli utenti possono sovrascriverlo nelle impostazioni rapide.",
+    "borderRadiusSaved": "Raggio dei bordi salvato",
+    "borderRadiusLoadError": "Impossibile caricare il raggio dei bordi"
   },
   "errors": {
     "notFound": "Non Trovato",
@@ -1506,7 +1513,10 @@
     "viewMode": "Modalità Visualizzazione",
     "viewModeCard": "Card",
     "viewModeList": "Lista",
-    "viewModeGrid": "Griglia"
+    "viewModeGrid": "Griglia",
+    "borderRadius": "Arrotondamento angoli",
+    "useInstanceDefault": "Usa il valore predefinito",
+    "borderRadiusDescription": "Gli angoli si aggiornano in tutta l'app mentre trascini."
   },
   "migration": {
     "migrationComplete": "Migrazione Completata",

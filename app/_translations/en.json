@@ -248,7 +248,8 @@
     "connected": "Connected",
     "reconnecting": "Reconnecting...",
     "hide": "Hide",
-    "thisEntry": "this entry"
+    "thisEntry": "this entry",
+    "preview": "Preview"
   },
   "history": {
     "noteHistory": "Note History",
@@ -914,7 +915,9 @@
     "selectChecklistItemClickAction": "Select checklist item click action",
     "checklistItemClickActionDescription": "Choose what happens when you click a task's text. \"Mark as complete\" toggles the checkbox  (default); \"Edit task name\" opens the task for inline editing — you'll still need to click the checkbox itself to complete it.",
     "checklistItemClickActionToggle": "Mark as complete/incomplete",
-    "checklistItemClickActionEdit": "Edit list item"
+    "checklistItemClickActionEdit": "Edit list item",
+    "selectShowChecklistEmojis": "Select emoji visibility",
+    "showChecklistEmojisDescription": "Show an automatic emoji next to checklist items based on their text."
   },
   "admin": {
     "title": "Admin",
@@ -1103,7 +1106,11 @@
     "updatingTags": "Updating...",
     "updateTagsTitle": "Scan notes for hashtags and update frontmatter",
     "tagsUpdated": "Processed {processed} files, updated {updated} with new tags",
-    "failedToUpdateTags": "Failed to update tags"
+    "failedToUpdateTags": "Failed to update tags",
+    "borderRadius": "Border radius",
+    "borderRadiusDescription": "Sets the corner rounding used across the whole instance. Users can override it for themselves in quick settings.",
+    "borderRadiusSaved": "Border radius saved",
+    "borderRadiusLoadError": "Could not load the border radius"
   },
   "errors": {
     "notFound": "Not Found",
@@ -1531,7 +1538,10 @@
     "viewMode": "View Mode",
     "viewModeCard": "Cards",
     "viewModeList": "List",
-    "viewModeGrid": "Grid"
+    "viewModeGrid": "Grid",
+    "borderRadius": "Corner rounding",
+    "useInstanceDefault": "Use instance default",
+    "borderRadiusDescription": "Corners update across the whole app as you drag."
   },
   "migration": {
     "migrationComplete": "Migration Complete",

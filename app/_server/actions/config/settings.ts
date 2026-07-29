@@ -7,6 +7,7 @@ import { getCurrentUser, isAdmin } from "../users";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
+import { DEFAULT_BORDER_RADIUS, clampRadius } from "@/app/_consts/styling";
 
 const DATA_SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
 const CONFIG_SETTINGS_PATH = path.join(
@@ -31,6 +32,7 @@ export const getSettings = async () => {
     adminContentAccess: "yes",
     defaultDateFormat: "dd/mm/yyyy",
     defaultTimeFormat: "12-hours",
+    borderRadius: DEFAULT_BORDER_RADIUS,
     editor: {
       enableSlashCommands: true,
       enableBubbleMenu: true,
@@ -55,6 +57,10 @@ export const getSettings = async () => {
       );
       const content = await fs.readFile(configSettingsPath, "utf-8");
       settings = JSON.parse(content);
+    }
+
+    if (typeof settings.borderRadius !== "number") {
+      settings.borderRadius = DEFAULT_BORDER_RADIUS;
     }
 
     if (!settings.editor) {
@@ -219,7 +225,10 @@ export const updateAppSettings = async (
       }
     }
 
+    const existing = await getSettings();
+
     const settings: AppSettings = {
+      ...existing,
       appName,
       appDescription,
       "16x16Icon": icon16x16,
@@ -277,5 +286,70 @@ export const updateAppSettings = async (
       errorMessage: "Failed to save settings",
     });
     return { success: false, error: "Failed to save settings" };
+  }
+};
+
+export const getBorderRadius = async (): Promise<Result<number>> => {
+  try {
+    const settings = await getSettings();
+    return { success: true, data: clampRadius(settings?.borderRadius) };
+  } catch (error) {
+    console.error("Error reading border radius:", error);
+    return { success: false, error: "Failed to read border radius" };
+  }
+};
+
+export const saveBorderRadius = async (
+  radius: number,
+): Promise<Result<number>> => {
+  try {
+    const admin = await isAdmin();
+    if (!admin) {
+      await logAudit({
+        level: "WARNING",
+        action: "app_settings_updated",
+        category: "settings",
+        success: false,
+        errorMessage: "Unauthorized: Admin access required",
+      });
+      return { success: false, error: "Unauthorized: Admin access required" };
+    }
+
+    const borderRadius = clampRadius(radius);
+    const settings = await getSettings();
+
+    const dataDir = path.dirname(DATA_SETTINGS_PATH);
+    try {
+      await fs.access(dataDir);
+    } catch {
+      await fs.mkdir(dataDir, { recursive: true });
+    }
+
+    await fs.writeFile(
+      DATA_SETTINGS_PATH,
+      JSON.stringify({ ...settings, borderRadius }, null, 2),
+    );
+
+    await logAudit({
+      level: "INFO",
+      action: "app_settings_updated",
+      category: "settings",
+      success: true,
+      metadata: { borderRadius },
+    });
+
+    revalidatePath("/", "layout");
+
+    return { success: true, data: borderRadius };
+  } catch (error) {
+    console.error("Error saving border radius:", error);
+    await logAudit({
+      level: "ERROR",
+      action: "app_settings_updated",
+      category: "settings",
+      success: false,
+      errorMessage: "Failed to save border radius",
+    });
+    return { success: false, error: "Failed to save border radius" };
   }
 };

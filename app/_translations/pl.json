@@ -248,7 +248,8 @@
     "disable": "Wyłącz",
     "history": "Historia",
     "items": "Elementy",
-    "thisEntry": "ten wpis"
+    "thisEntry": "ten wpis",
+    "preview": "Podgląd"
   },
   "auth": {
     "loginTitle": "Logowanie",
@@ -889,7 +890,9 @@
     "checklistItemClickActionDescription": "Wybierz, co się stanie, gdy klikniesz tekst zadania. \n„Oznacz jako ukończone” przełącza pole wyboru (domyślnie); \n„Edytuj nazwę zadania” otwiera zadanie do edycji bezpośredniej — nadal będziesz musiał kliknąć samo pole wyboru, aby je ukończyć.",
     "checklistItemClickActionToggle": "Oznacz jako ukończone/niekompletne",
     "checklistItemClickActionEdit": "Edytuj element listy",
-    "useSystemDefault": "Użyj ustawień domyślnych systemu"
+    "useSystemDefault": "Użyj ustawień domyślnych systemu",
+    "selectShowChecklistEmojis": "Wybierz widoczność emotikonów",
+    "showChecklistEmojisDescription": "Pokazuje automatyczne emoji obok pozycji listy na podstawie ich tekstu."
   },
   "admin": {
     "title": "Admin",
@@ -1078,7 +1081,11 @@
     "defaultDateFormat": "Domyślny format daty",
     "defaultDateFormatDescription": "Używane, gdy preferencja użytkownika dotycząca formatu daty jest ustawiona na „Użyj domyślnego formatu systemu”.",
     "defaultTimeFormatDescription": "Używane, gdy preferencja użytkownika dotycząca formatu czasu jest ustawiona na „Użyj domyślnego formatu systemu”.",
-    "defaultTimeFormat": "Domyślny format czasu"
+    "defaultTimeFormat": "Domyślny format czasu",
+    "borderRadius": "Promień zaokrąglenia",
+    "borderRadiusDescription": "Ustawia zaokrąglenie rogów w całej instancji. Użytkownicy mogą je nadpisać w szybkich ustawieniach.",
+    "borderRadiusSaved": "Zapisano promień zaokrąglenia",
+    "borderRadiusLoadError": "Nie udało się wczytać promienia zaokrąglenia"
   },
   "errors": {
     "notFound": "Nie znaleziono",
@@ -1506,7 +1513,10 @@
     "viewMode": "Tryb wyświetlania",
     "viewModeCard": "Karty",
     "viewModeList": "Lista",
-    "viewModeGrid": "Siatka"
+    "viewModeGrid": "Siatka",
+    "borderRadius": "Zaokrąglenie rogów",
+    "useInstanceDefault": "Użyj wartości domyślnej",
+    "borderRadiusDescription": "Rogi aktualizują się w całej aplikacji podczas przeciągania."
   },
   "migration": {
     "migrationComplete": "Migracja zakończona",

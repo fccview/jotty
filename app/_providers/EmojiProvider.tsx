@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, ReactNode } from "react";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
 import { preloadCustomEmojis } from "@/app/_utils/emoji-utils";
 
 interface EmojiContextType {
@@ -17,7 +17,7 @@ interface EmojiProviderProps {
 }
 
 export const EmojiProvider = ({ children }: EmojiProviderProps) => {
-  const { showEmojis } = useSettings();
+  const showEmojis = useShowEmojis();
 
   useEffect(() => {
     if (showEmojis) {

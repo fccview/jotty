@@ -77,7 +77,7 @@ export const ShareMigrationView = ({
               </p>
             </InfoCard>
 
-            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-jotty p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-foreground mb-4">
                 Migration Changes
               </h2>
@@ -172,7 +172,7 @@ export const ShareMigrationView = ({
               </InfoCard>
             )}
 
-            <div className="bg-card border border-border rounded-md p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-jotty p-6 shadow-sm">
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -218,7 +218,9 @@ export const ShareMigrationView = ({
         {isMigrationComplete && (
           <div className="space-y-4">
             <InfoCard
-              icon={<CheckmarkCircle04Icon className="h-5 w-5 text-green-600" />}
+              icon={
+                <CheckmarkCircle04Icon className="h-5 w-5 text-green-600" />
+              }
               title={t("migration.migrationSuccessful")}
               variant={InfoCardVariant.DEFAULT}
             >
@@ -230,7 +232,7 @@ export const ShareMigrationView = ({
             </InfoCard>
 
             {migrationResult.changes.length > 0 && (
-              <div className="bg-card border border-border rounded-md p-6 shadow-sm">
+              <div className="bg-card border border-border rounded-jotty p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
                   What was changed:
                 </h3>

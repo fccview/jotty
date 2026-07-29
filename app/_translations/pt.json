@@ -248,7 +248,8 @@
     "connected": "Ligado",
     "reconnecting": "A reconectar...",
     "hide": "Ocultar",
-    "thisEntry": "esta entrada"
+    "thisEntry": "esta entrada",
+    "preview": "Pré-visualização"
   },
   "history": {
     "noteHistory": "Histórico da nota",
@@ -914,7 +915,9 @@
     "selectChecklistItemClickAction": "Selecionar ação ao clicar em item de lista de verificação",
     "checklistItemClickActionDescription": "Escolha o que acontece quando clica no texto de uma tarefa. \"Marcar como concluída\" alterna a caixa de verificação (predefinido); \"Editar nome da tarefa\" abre a tarefa para edição inline — ainda precisará de clicar na própria caixa de verificação para a concluir.",
     "checklistItemClickActionToggle": "Marcar como concluída/incompleta",
-    "checklistItemClickActionEdit": "Editar item da lista"
+    "checklistItemClickActionEdit": "Editar item da lista",
+    "selectShowChecklistEmojis": "Selecionar visibilidade dos emojis",
+    "showChecklistEmojisDescription": "Mostra um emoji automático junto dos itens da lista com base no texto."
   },
   "admin": {
     "title": "Administrador",
@@ -1103,7 +1106,11 @@
     "updatingTags": "A atualizar...",
     "updateTagsTitle": "Analisar notas para hashtags e atualizar frontmatter",
     "tagsUpdated": "Processados {processed} ficheiros, {updated} atualizados com novas etiquetas",
-    "failedToUpdateTags": "Falha ao atualizar etiquetas"
+    "failedToUpdateTags": "Falha ao atualizar etiquetas",
+    "borderRadius": "Raio da borda",
+    "borderRadiusDescription": "Define o arredondamento dos cantos em toda a instância. Os utilizadores podem substituí-lo nas definições rápidas.",
+    "borderRadiusSaved": "Raio da borda guardado",
+    "borderRadiusLoadError": "Não foi possível carregar o raio da borda"
   },
   "errors": {
     "notFound": "Não encontrado",
@@ -1531,7 +1538,10 @@
     "viewMode": "Modo de visualização",
     "viewModeCard": "Cartões",
     "viewModeList": "Lista",
-    "viewModeGrid": "Grelha"
+    "viewModeGrid": "Grelha",
+    "borderRadius": "Arredondamento dos cantos",
+    "useInstanceDefault": "Usar predefinição da instância",
+    "borderRadiusDescription": "Os cantos atualizam em toda a aplicação enquanto arrasta."
   },
   "migration": {
     "migrationComplete": "Migração concluída",

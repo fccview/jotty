@@ -60,13 +60,7 @@ export const NoteEditorContent = ({
   const isMinimalMode = user?.disableRichEditor === "enable";
 
   const referencingItems = useMemo(() => {
-    return getReferences(
-      linkIndex,
-      noteId,
-      ItemTypes.NOTE,
-      notes,
-      checklists,
-    );
+    return getReferences(linkIndex, noteId, ItemTypes.NOTE, notes, checklists);
   }, [linkIndex, noteId, notes, checklists]);
 
   useEffect(() => {
@@ -173,8 +167,9 @@ export const NoteEditorContent = ({
         <>
           <ReadingProgressBar />
           <div
-            className={`px-6 pt-6 pb-4 ${compactMode ? "max-w-[900px] mx-auto" : ""
-              }`}
+            className={`px-6 pt-6 pb-4 ${
+              compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
           >
             <UnifiedMarkdownRenderer
               content={encrypted ? editorContent : noteContent || ""}

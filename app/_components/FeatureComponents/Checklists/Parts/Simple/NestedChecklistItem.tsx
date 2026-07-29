@@ -18,7 +18,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
 import { Checklist, Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -97,7 +97,7 @@ const NestedChecklistItemComponent = ({
       },
     });
 
-  const { showEmojis } = useSettings();
+  const showEmojis = useShowEmojis();
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);

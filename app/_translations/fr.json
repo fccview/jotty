@@ -248,7 +248,8 @@
     "history": "Historique",
     "items": "Éléments",
     "noResults": "Aucun résultat",
-    "thisEntry": "cette entrée"
+    "thisEntry": "cette entrée",
+    "preview": "Aperçu"
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -889,7 +890,9 @@
     "checklistItemClickActionDescription": "Choisissez ce qui se passe lorsque vous cliquez sur le texte d'une tâche. \n« Marquer comme terminé » coche la case (par défaut) ; \n« Modifier le nom de la tâche » ouvre la tâche pour une modification en ligne ; vous devrez toujours cliquer sur la case à cocher elle-même pour la terminer.",
     "checklistItemClickActionToggle": "Marquer comme complet/incomplet",
     "checklistItemClickActionEdit": "Modifier un élément de liste",
-    "useSystemDefault": "Utiliser les valeurs par défaut du système"
+    "useSystemDefault": "Utiliser les valeurs par défaut du système",
+    "selectShowChecklistEmojis": "Choisir la visibilité des émojis",
+    "showChecklistEmojisDescription": "Affiche un émoji automatique à côté des éléments de liste selon leur texte."
   },
   "admin": {
     "title": "Admin",
@@ -1078,7 +1081,11 @@
     "defaultDateFormat": "Format de date par défaut",
     "defaultDateFormatDescription": "Utilisé lorsque la préférence de format de date d'un utilisateur est définie sur « Utiliser les paramètres par défaut du système ».",
     "defaultTimeFormatDescription": "Utilisé lorsque la préférence de format d'heure d'un utilisateur est définie sur « Utiliser les paramètres par défaut du système ».",
-    "defaultTimeFormat": "Format d'heure par défaut"
+    "defaultTimeFormat": "Format d'heure par défaut",
+    "borderRadius": "Rayon des bords",
+    "borderRadiusDescription": "Définit l'arrondi des coins pour toute l'instance. Les utilisateurs peuvent le remplacer dans les réglages rapides.",
+    "borderRadiusSaved": "Rayon des bords enregistré",
+    "borderRadiusLoadError": "Impossible de charger le rayon des bords"
   },
   "errors": {
     "notFound": "Introuvable",
@@ -1506,7 +1513,10 @@
     "viewMode": "Mode d’affichage",
     "viewModeCard": "Cartes",
     "viewModeList": "Liste",
-    "viewModeGrid": "Grille"
+    "viewModeGrid": "Grille",
+    "borderRadius": "Arrondi des coins",
+    "useInstanceDefault": "Utiliser la valeur par défaut",
+    "borderRadiusDescription": "Les coins se mettent à jour dans toute l'application pendant que vous glissez."
   },
   "migration": {
     "migrationComplete": "Migration terminée",

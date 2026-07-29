@@ -248,7 +248,8 @@
     "reconnecting": "Reconnecting...",
     "hide": "Stow away",
     "items": "Cargo bits",
-    "thisEntry": "this entry"
+    "thisEntry": "this entry",
+    "preview": "Peek"
   },
   "history": {
     "noteHistory": "Log History",
@@ -914,7 +915,9 @@
     "checklistItemClickActionDescription": "Choose what happens when you click a task's text. \"Mark as complete\" toggles the checkbox  (default); \"Edit task name\" opens the task for inline editing — you'll still need to click the checkbox itself to complete it.",
     "checklistItemClickActionToggle": "Mark as complete/incomplete",
     "checklistItemClickActionEdit": "Edit list item",
-    "useSystemDefault": "Use system default"
+    "useSystemDefault": "Use system default",
+    "selectShowChecklistEmojis": "Choose yer rune showin'",
+    "showChecklistEmojisDescription": "Marks each manifest entry with a rune drawn from its words."
   },
   "admin": {
     "title": "Captain",
@@ -1103,7 +1106,11 @@
     "defaultDateFormat": "Default Date Format",
     "defaultDateFormatDescription": "Used when a user's date format preference is set to \"Use system default\".",
     "defaultTimeFormatDescription": "Used when a user's time format preference is set to \"Use system default\".",
-    "defaultTimeFormat": "Default Time Format"
+    "defaultTimeFormat": "Default Time Format",
+    "borderRadius": "Corner roundin'",
+    "borderRadiusDescription": "Sets how round the corners be across the whole ship. Crewmates may set their own in quick settin's.",
+    "borderRadiusSaved": "Corner roundin' stowed away",
+    "borderRadiusLoadError": "Could nay fetch the corner roundin'"
   },
   "errors": {
     "notFound": "Lost at Sea",
@@ -1531,7 +1538,10 @@
     "viewMode": "View Mode",
     "viewModeCard": "Cards",
     "viewModeList": "List",
-    "viewModeGrid": "Grid"
+    "viewModeGrid": "Grid",
+    "borderRadius": "Corner roundin'",
+    "useInstanceDefault": "Follow the cap'n's orders",
+    "borderRadiusDescription": "Every corner on the ship changes as ye haul the slider."
   },
   "migration": {
     "migrationComplete": "Refit Complete",

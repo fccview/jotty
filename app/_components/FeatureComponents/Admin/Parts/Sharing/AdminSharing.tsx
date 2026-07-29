@@ -27,7 +27,6 @@ export const AdminSharing = () => {
   } = useAppMode();
   const colors = useThemeColors();
 
-
   const isSuperAdmin = user?.isSuperAdmin || false;
   const adminContentAccess = appSettings?.adminContentAccess || "yes";
   const hasContentAccess = isSuperAdmin || adminContentAccess !== "no";
@@ -58,7 +57,7 @@ export const AdminSharing = () => {
   return (
     <div className="space-y-8">
       <section className="space-y-6">
-        <div className="rounded-md border bg-card p-6 shadow-sm">
+        <div className="rounded-jotty border bg-card p-6 shadow-sm">
           <div className="space-y-2 mb-6">
             <h3 className="text-lg font-semibold">
               {t("admin.sharingOverview")}

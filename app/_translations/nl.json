@@ -248,7 +248,8 @@
     "items": "Items",
     "restoring": "Herstellen...",
     "retry": "Opnieuw proberen",
-    "thisEntry": "deze invoer"
+    "thisEntry": "deze invoer",
+    "preview": "Voorbeeld"
   },
   "auth": {
     "loginTitle": "Inloggen",
@@ -889,7 +890,9 @@
     "checklistItemClickActionDescription": "Kies wat er gebeurt als u op de tekst van een taak klikt. \n\"Markeren als voltooid\" schakelt het selectievakje in (standaard); \nMet 'Taaknaam bewerken' wordt de taak geopend voor inline bewerken. U moet nog steeds op het selectievakje zelf klikken om deze te voltooien.",
     "checklistItemClickActionToggle": "Markeer als compleet/onvolledig",
     "checklistItemClickActionEdit": "Lijstitem bewerken",
-    "useSystemDefault": "Gebruik systeemstandaard"
+    "useSystemDefault": "Gebruik systeemstandaard",
+    "selectShowChecklistEmojis": "Emoji-zichtbaarheid kiezen",
+    "showChecklistEmojisDescription": "Toont automatisch een emoji naast checklistitems op basis van de tekst."
   },
   "admin": {
     "title": "Beheer",
@@ -1078,7 +1081,11 @@
     "defaultDateFormat": "Standaard datumnotatie",
     "defaultDateFormatDescription": "Wordt gebruikt wanneer de datumnotatievoorkeur van een gebruiker is ingesteld op \"Gebruik systeemstandaard\".",
     "defaultTimeFormatDescription": "Wordt gebruikt wanneer de tijdnotatievoorkeur van een gebruiker is ingesteld op \"Gebruik systeemstandaard\".",
-    "defaultTimeFormat": "Standaard tijdformaat"
+    "defaultTimeFormat": "Standaard tijdformaat",
+    "borderRadius": "Hoekradius",
+    "borderRadiusDescription": "Bepaalt de afronding van hoeken in de hele instantie. Gebruikers kunnen dit overschrijven in snelle instellingen.",
+    "borderRadiusSaved": "Hoekradius opgeslagen",
+    "borderRadiusLoadError": "Kon de hoekradius niet laden"
   },
   "errors": {
     "notFound": "Niet gevonden",
@@ -1506,7 +1513,10 @@
     "viewMode": "Weergavemodus",
     "viewModeCard": "Kaarten",
     "viewModeList": "Lijst",
-    "viewModeGrid": "Raster"
+    "viewModeGrid": "Raster",
+    "borderRadius": "Hoekafronding",
+    "useInstanceDefault": "Standaard van instantie gebruiken",
+    "borderRadiusDescription": "De hoeken passen zich in de hele app aan terwijl je sleept."
   },
   "migration": {
     "migrationComplete": "Migratie voltooid",

@@ -46,6 +46,7 @@ import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { KonamiProvider } from "./_providers/KonamiProvider";
 import { WebSocketProvider } from "./_providers/WebSocketProvider";
 import { isEnvEnabled } from "./_utils/env-utils";
+import { ADMIN_BORDER_RADIUS_VAR, radiusToRem } from "./_consts/styling";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -226,6 +227,11 @@ export default async function RootLayout({
       suppressHydrationWarning
       data-rwmarkable={settings?.isRwMarkable ? "true" : "false"}
       data-user-theme={user?.preferredTheme || ""}
+      style={
+        {
+          [ADMIN_BORDER_RADIUS_VAR]: radiusToRem(settings?.borderRadius),
+        } as React.CSSProperties
+      }
     >
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
