@@ -64,6 +64,11 @@ export const useFolderShare = ({
   }, [reload]);
 
   const runAction = async (action: () => Promise<{ error?: string }>) => {
+    if (!categoryUuid) {
+      setStatus({ isLoading: false, error: "Folder is not ready yet" });
+      return;
+    }
+
     setStatus({ isLoading: true, error: null });
 
     try {
@@ -87,7 +92,7 @@ export const useFolderShare = ({
     runAction(() =>
       grants[username]
         ? unshareFolder(mode, owner, categoryUuid, username)
-        : shareFolder(mode, owner, categoryPath, username, READ_ONLY),
+        : shareFolder(mode, owner, categoryUuid, username, READ_ONLY),
     );
 
   const setPerms = (
@@ -102,12 +107,12 @@ export const useFolderShare = ({
     };
 
     return runAction(() =>
-      shareFolder(mode, owner, categoryPath, username, next),
+      shareFolder(mode, owner, categoryUuid, username, next),
     );
   };
 
   const togglePublic = () =>
-    runAction(() => setFolderPublic(mode, owner, categoryPath, !isPublic));
+    runAction(() => setFolderPublic(mode, owner, categoryUuid, !isPublic));
 
   const filteredUsers = useMemo(
     () =>

@@ -23,7 +23,7 @@ import {
   PermissionTypes,
   TaskStatus,
 } from "@/app/_types/enums";
-import { canReach } from "@/app/_server/actions/share/queries";
+import { canReach, reachableFile } from "@/app/_server/actions/share/queries";
 import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { updateAllChildren } from "@/app/_utils/item-tree-utils";
@@ -43,14 +43,14 @@ export const updateItem = async (
 
     const currentUser = username || (await getUsername());
 
-    const canEdit = await canReach(
-      checklist.uuid!,
+    const filePath = await reachableFile(
+      checklist.uuid,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT,
     );
 
-    if (!canEdit) {
+    if (!filePath) {
       throw new Error("Permission denied");
     }
 
@@ -120,11 +120,6 @@ export const updateItem = async (
       updatedAt: now,
     };
 
-    const filePath = await diskPath(
-      Modes.CHECKLISTS,
-      currentUser,
-      checklist,
-    );
     await ensureDir(path.dirname(filePath));
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
@@ -176,14 +171,14 @@ export const createItem = async (
     const currentUser = username || (await getUsername());
     const recurrenceStr = formData.get("recurrence") as string;
 
-    const canEdit = await canReach(
-      list.uuid!,
+    const filePath = await reachableFile(
+      list.uuid,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT,
     );
 
-    if (!canEdit) {
+    if (!filePath) {
       throw new Error("Permission denied");
     }
 
@@ -238,7 +233,7 @@ export const createItem = async (
     let isSharedBoard = false;
     if (isKanbanType(list.type)) {
       const { usersWithAccess } = await import("@/app/_server/actions/share/queries");
-      const sharedUsers = await usersWithAccess(list.uuid!);
+      const sharedUsers = await usersWithAccess(list.uuid);
       isSharedBoard = sharedUsers.length > 0;
     }
 
@@ -286,7 +281,6 @@ export const createItem = async (
       updatedAt: new Date().toISOString(),
     };
 
-    const filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
     await ensureDir(path.dirname(filePath));
 
     await serverWriteFile(filePath, listToMarkdown(updatedList as Checklist));

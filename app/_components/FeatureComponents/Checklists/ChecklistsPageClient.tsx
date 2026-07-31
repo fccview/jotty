@@ -25,7 +25,7 @@ import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/Chec
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
 import { useChecklistsFilter } from "@/app/_components/FeatureComponents/Checklists/ChecklistsClient";
 import { isKanbanType } from "@/app/_types/enums";
-import { itemHref } from "@/app/_utils/global-utils";
+import { itemHref, isPinnedEntry } from "@/app/_utils/global-utils";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -57,10 +57,7 @@ export const ChecklistsPageClient = ({
     if (checklistFilter === "pinned") {
       const pinnedEntries = user?.pinnedLists || [];
       filtered = filtered.filter((list) =>
-        pinnedEntries.some(
-          (entry) =>
-            entry === list.uuid || entry.split("/").pop() === list.uuid,
-        ),
+        pinnedEntries.some((entry) => isPinnedEntry(entry, list.uuid)),
       );
     } else if (checklistFilter === "completed") {
       filtered = filtered.filter(
@@ -271,10 +268,8 @@ export const ChecklistsPageClient = ({
                   onSelect={(list) =>
                     router.push(itemHref(ItemTypes.CHECKLIST, list.uuid || ""))
                   }
-                  isPinned={user?.pinnedLists?.some(
-                    (entry) =>
-                      entry === list.uuid ||
-                      entry.split("/").pop() === list.uuid,
+                  isPinned={user?.pinnedLists?.some((entry) =>
+                    isPinnedEntry(entry, list.uuid),
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />
@@ -291,10 +286,8 @@ export const ChecklistsPageClient = ({
                   onSelect={(list) =>
                     router.push(itemHref(ItemTypes.CHECKLIST, list.uuid || ""))
                   }
-                  isPinned={user?.pinnedLists?.some(
-                    (entry) =>
-                      entry === list.uuid ||
-                      entry.split("/").pop() === list.uuid,
+                  isPinned={user?.pinnedLists?.some((entry) =>
+                    isPinnedEntry(entry, list.uuid),
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />
@@ -311,10 +304,8 @@ export const ChecklistsPageClient = ({
                   onSelect={(list) =>
                     router.push(itemHref(ItemTypes.CHECKLIST, list.uuid || ""))
                   }
-                  isPinned={user?.pinnedLists?.some(
-                    (entry) =>
-                      entry === list.uuid ||
-                      entry.split("/").pop() === list.uuid,
+                  isPinned={user?.pinnedLists?.some((entry) =>
+                    isPinnedEntry(entry, list.uuid),
                   )}
                   onTogglePin={() => handleTogglePin(list)}
                 />

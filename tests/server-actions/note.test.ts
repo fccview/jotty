@@ -114,6 +114,15 @@ vi.mock("@/app/_utils/encryption-utils", () => ({
 
 import { createNote, deleteNote, updateNote } from "@/app/_server/actions/note";
 
+const EXISTING_NOTE = {
+  id: "test-note",
+  uuid: "test-uuid-123",
+  title: "Test Note",
+  category: "TestCategory",
+  owner: "testuser",
+  content: "Test content",
+};
+
 describe("Note Actions", () => {
   beforeEach(() => {
     resetAllMocks();
@@ -251,7 +260,9 @@ describe("Note Actions", () => {
       expect(result.error).toBe("Failed to create note");
     });
 
-    it("should use user from formData when provided", async () => {
+    it("should use user from formData when there is no session", async () => {
+      mockGetCurrentUser.mockResolvedValue(null);
+
       const formData = createFormData({
         title: "API Note",
         category: "TestCategory",
@@ -266,6 +277,23 @@ describe("Note Actions", () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.owner).toBe("apiuser");
+    });
+
+    it("should ignore a formData user that contradicts the session", async () => {
+      const formData = createFormData({
+        title: "Impersonation Attempt",
+        category: "TestCategory",
+        rawContent: "Content",
+        user: JSON.stringify({
+          username: "victim",
+          fileRenameMode: "minimal",
+        }),
+      });
+
+      const result = await createNote(formData);
+
+      expect(result.success).toBe(true);
+      expect(result.data?.owner).toBe("testuser");
     });
   });
 
@@ -314,16 +342,37 @@ describe("Note Actions", () => {
     });
 
     it("should return error when permission denied", async () => {
+      mockGetNoteById.mockResolvedValue(EXISTING_NOTE);
       mockCanReach.mockResolvedValue(false);
 
       const formData = createFormData({
-        id: "test-note",
+        uuid: "test-uuid-123",
         category: "TestCategory",
       });
 
       const result = await deleteNote(formData);
 
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe("Permission denied");
+      expect(mockServerDeleteFile).not.toHaveBeenCalled();
+    });
+
+    it("should return the bouncer verdict when the folder refuses", async () => {
+      mockGetNoteById.mockResolvedValue(EXISTING_NOTE);
+      mockCanReach.mockResolvedValue(true);
+      mockBouncer.mockResolvedValue({
+        allowed: false,
+        error: "You're not on the list",
+      });
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        category: "TestCategory",
+      });
+
+      const result = await deleteNote(formData);
+
+      expect(result.error).toBe("You're not on the list");
+      expect(mockServerDeleteFile).not.toHaveBeenCalled();
     });
   });
 

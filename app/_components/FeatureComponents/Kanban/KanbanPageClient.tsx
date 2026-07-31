@@ -11,7 +11,7 @@ import {
 } from "hugeicons-react";
 import { Checklist, SanitisedUser } from "@/app/_types";
 import { ItemTypes, TaskStatus } from "@/app/_types/enums";
-import { itemHref } from "@/app/_utils/global-utils";
+import { itemHref, isPinnedEntry } from "@/app/_utils/global-utils";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
@@ -56,10 +56,7 @@ export const KanbanPageClient = ({
     if (taskFilter === "pinned") {
       const pinnedEntries = user?.pinnedLists || [];
       filtered = filtered.filter((list) =>
-        pinnedEntries.some(
-          (entry) =>
-            entry === list.uuid || entry.split("/").pop() === list.uuid,
-        ),
+        pinnedEntries.some((entry) => isPinnedEntry(entry, list.uuid)),
       );
     } else if (taskFilter === "completed") {
       filtered = filtered.filter(
@@ -178,8 +175,8 @@ export const KanbanPageClient = ({
 
   const renderList = (list: Checklist) => {
     const listHref = itemHref(ItemTypes.CHECKLIST, list.uuid || "");
-    const isPinned = user?.pinnedLists?.some(
-      (entry) => entry === list.uuid || entry.split("/").pop() === list.uuid,
+    const isPinned = user?.pinnedLists?.some((entry) =>
+      isPinnedEntry(entry, list.uuid),
     );
 
     if (viewMode === 'list') {

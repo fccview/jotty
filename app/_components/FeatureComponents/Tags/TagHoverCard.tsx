@@ -22,7 +22,10 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
   const handleNoteClick = (e: React.MouseEvent, note: Note) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(itemHref(ItemTypes.NOTE, note.uuid!));
+
+    if (!note.uuid) return;
+
+    router.push(itemHref(ItemTypes.NOTE, note.uuid));
   };
 
   const handleChecklistClick = (
@@ -31,7 +34,10 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
   ) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(itemHref(ItemTypes.CHECKLIST, list.uuid!));
+
+    if (!list.uuid) return;
+
+    router.push(itemHref(ItemTypes.CHECKLIST, list.uuid));
   };
 
   const showSectionLabels = notes.length > 0 && checklists.length > 0;

@@ -4,6 +4,7 @@ import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { SharingPermissions } from "@/app/_types/core";
 import { SharedMount } from "@/app/_types/sharing";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { isPathSafe } from "@/app/_utils/path-utils";
 import { mountsFor, userDirFor } from "./mounts";
 
 export interface TargetLocation {
@@ -21,6 +22,9 @@ const PERMISSION_FIELD: Record<PermissionTypes, keyof SharingPermissions> = {
   [PermissionTypes.EDIT]: "canEdit",
   [PermissionTypes.DELETE]: "canDelete",
 };
+
+const _inside = (base: string, category: string): boolean =>
+  !category || isPathSafe(base, category);
 
 const _matches = (mount: SharedMount, category: string): boolean =>
   category === mount.displayName ||
@@ -48,15 +52,18 @@ export const targetDir = async (
   username: string,
   category: string,
 ): Promise<TargetLocation> => {
+  const home = path.join(process.cwd(), userDirFor(mode, username));
+  const reachable = _inside(home, category);
+
   const own: TargetLocation = {
-    dir: path.join(process.cwd(), userDirFor(mode, username), category),
+    dir: reachable ? path.join(home, category) : home,
     owner: username,
-    category,
+    category: reachable ? category : "",
     isMount: false,
     isImplicit: false,
   };
 
-  if (!category) return own;
+  if (!category || !reachable) return own;
   if (await _isOwned(mode, username, category)) return own;
 
   const mounts = await mountsFor(mode, username);
@@ -69,8 +76,12 @@ export const targetDir = async (
     ? ""
     : [mount.categoryPath, relative].filter(Boolean).join("/");
 
+  const lodgings = path.join(process.cwd(), userDirFor(mode, mount.owner));
+
+  if (!_inside(lodgings, owned)) return own;
+
   return {
-    dir: path.join(process.cwd(), userDirFor(mode, mount.owner), owned),
+    dir: path.join(lodgings, owned),
     owner: mount.owner,
     category: owned,
     isMount: true,

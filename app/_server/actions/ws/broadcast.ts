@@ -1,5 +1,3 @@
-"use server";
-
 import type { WsEvent } from "@/app/_types";
 
 export async function broadcast(event: Omit<WsEvent, "connectionId">): Promise<void> {

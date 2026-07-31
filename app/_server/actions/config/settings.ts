@@ -8,13 +8,33 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
 import { DEFAULT_BORDER_RADIUS, clampRadius } from "@/app/_consts/styling";
+import { runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const DATA_SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
+const SETTINGS_LANE = "app-settings";
 const CONFIG_SETTINGS_PATH = path.join(
   process.cwd(),
   "config",
   "settings.json",
 );
+
+const _persist = async (
+  patch: Partial<AppSettings>,
+): Promise<AppSettings> =>
+  runQueued(SETTINGS_LANE, async () => {
+    const existing = await getSettings();
+    const merged: AppSettings = { ...existing, ...patch };
+
+    const dataDir = path.dirname(DATA_SETTINGS_PATH);
+    try {
+      await fs.access(dataDir);
+    } catch {
+      await fs.mkdir(dataDir, { recursive: true });
+    }
+
+    await fs.writeFile(DATA_SETTINGS_PATH, JSON.stringify(merged, null, 2));
+    return merged;
+  });
 
 export const getSettings = async () => {
   const defaultSettings = {
@@ -59,9 +79,7 @@ export const getSettings = async () => {
       settings = JSON.parse(content);
     }
 
-    if (typeof settings.borderRadius !== "number") {
-      settings.borderRadius = DEFAULT_BORDER_RADIUS;
-    }
+    settings.borderRadius = clampRadius(settings.borderRadius);
 
     if (!settings.editor) {
       settings.editor = defaultSettings.editor;
@@ -225,10 +243,7 @@ export const updateAppSettings = async (
       }
     }
 
-    const existing = await getSettings();
-
-    const settings: AppSettings = {
-      ...existing,
+    await _persist({
       appName,
       appDescription,
       "16x16Icon": icon16x16,
@@ -245,16 +260,7 @@ export const updateAppSettings = async (
       defaultDateFormat: defaultDateFormat,
       defaultTimeFormat: defaultTimeFormat,
       editor: editorSettings,
-    };
-
-    const dataDir = path.dirname(DATA_SETTINGS_PATH);
-    try {
-      await fs.access(dataDir);
-    } catch {
-      await fs.mkdir(dataDir, { recursive: true });
-    }
-
-    await fs.writeFile(DATA_SETTINGS_PATH, JSON.stringify(settings, null, 2));
+    });
 
     await logAudit({
       level: "INFO",
@@ -316,19 +322,7 @@ export const saveBorderRadius = async (
     }
 
     const borderRadius = clampRadius(radius);
-    const settings = await getSettings();
-
-    const dataDir = path.dirname(DATA_SETTINGS_PATH);
-    try {
-      await fs.access(dataDir);
-    } catch {
-      await fs.mkdir(dataDir, { recursive: true });
-    }
-
-    await fs.writeFile(
-      DATA_SETTINGS_PATH,
-      JSON.stringify({ ...settings, borderRadius }, null, 2),
-    );
+    await _persist({ borderRadius });
 
     await logAudit({
       level: "INFO",

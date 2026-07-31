@@ -66,6 +66,16 @@ export const ShareBadges = ({
         className,
       )}
       onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? t("sharing.shareSettings") : undefined}
+      onKeyDown={(event) => {
+        if (!onClick) return;
+        if (event.key !== "Enter" && event.key !== " ") return;
+
+        event.preventDefault();
+        onClick();
+      }}
     >
       {BADGE_ORDER.map((code) => {
         const users = groups.get(code);

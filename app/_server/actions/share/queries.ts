@@ -1,6 +1,7 @@
 "use server";
 
 import path from "path";
+import { cache } from "react";
 import { ItemType, SharingPermissions } from "@/app/_types/core";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import {
@@ -20,20 +21,21 @@ import {
   PUBLIC_USER,
   SHARED_WITH_KEY,
 } from "@/app/_consts/sharing";
-import { isAdmin, getUsername } from "@/app/_server/actions/users";
+import { getUsername, canAccessAllContent } from "@/app/_server/actions/users";
 import {
   grepFindFileByUuid,
-  grepExtractFrontmatter,
   grepFilesByText,
   grepListAllFiles,
 } from "@/app/_utils/grep-utils";
+import { modeFor } from "@/app/_utils/sharing-utils";
 import { canReachFile, resolveAccess, sharersOf } from "./access";
 import { readCatInfo } from "./category-info";
+import { targetDir } from "./target";
 
 const SHARED_MODES = [Modes.NOTES, Modes.CHECKLISTS];
 
 export const modeOf = async (itemType: ItemType): Promise<Modes> =>
-  itemType === ItemTypes.CHECKLIST ? Modes.CHECKLISTS : Modes.NOTES;
+  modeFor(itemType);
 
 const _modeDir = (mode: Modes): string =>
   path.join(process.cwd(), DATA_DIR, mode);
@@ -51,9 +53,9 @@ export const canReach = async (
 ): Promise<boolean> => {
   try {
     if (!username) return false;
-    if (await isAdmin()) return true;
+    if (await canAccessAllContent()) return true;
 
-    const mode = await modeOf(itemType);
+    const mode = modeFor(itemType);
     const filePath = await _fileFor(mode, uuid);
 
     if (!filePath) return false;
@@ -65,12 +67,36 @@ export const canReach = async (
   }
 };
 
+export const reachableFile = async (
+  uuid: string,
+  itemType: ItemType,
+  username: string,
+  permission: PermissionTypes,
+): Promise<string | null> => {
+  try {
+    if (!username) return null;
+
+    const mode = modeFor(itemType);
+    const filePath = await _fileFor(mode, uuid);
+
+    if (!filePath) return null;
+    if (await canAccessAllContent()) return filePath;
+
+    return (await canReachFile(mode, filePath, username, permission))
+      ? filePath
+      : null;
+  } catch (error) {
+    console.error("Error in reachableFile:", error);
+    return null;
+  }
+};
+
 export const isPublicItem = async (
   uuid: string,
   itemType: ItemType,
 ): Promise<boolean> => {
   try {
-    const mode = await modeOf(itemType);
+    const mode = modeFor(itemType);
     const filePath = await _fileFor(mode, uuid);
 
     if (!filePath) return false;
@@ -88,7 +114,7 @@ export const usersWithAccess = async (
   itemType: ItemType = ItemTypes.CHECKLIST,
 ): Promise<string[]> => {
   try {
-    const mode = await modeOf(itemType);
+    const mode = modeFor(itemType);
     const filePath = await _fileFor(mode, uuid);
 
     if (!filePath) return [];
@@ -114,7 +140,7 @@ export const itemShares = async (
   };
 
   try {
-    const mode = await modeOf(itemType);
+    const mode = modeFor(itemType);
     const filePath = await _fileFor(mode, uuid);
 
     if (!filePath) return empty;
@@ -148,7 +174,6 @@ export const folderShares = async (
     const username = await getUsername();
     if (!username) return empty;
 
-    const { targetDir } = await import("./target");
     const target = await targetDir(mode, username, categoryPath);
     const info = await readCatInfo(target.dir);
 
@@ -229,17 +254,14 @@ interface SharedFact {
   isPublic: boolean;
 }
 
-const _factsFor = async (mode: Modes): Promise<SharedFact[]> => {
+const _factsFor = cache(async (mode: Modes): Promise<SharedFact[]> => {
   const files = await _reachableFiles(mode);
   const facts: SharedFact[] = [];
 
   for (const filePath of files) {
-    const [metadata, access] = await Promise.all([
-      grepExtractFrontmatter(filePath),
-      resolveAccess(mode, filePath),
-    ]);
+    const access = await resolveAccess(mode, filePath);
 
-    const uuid = typeof metadata?.uuid === "string" ? metadata.uuid : null;
+    const uuid = access?.uuid;
     if (!uuid || !access) continue;
     if (Object.keys(access.users).length === 0) continue;
 
@@ -252,7 +274,7 @@ const _factsFor = async (mode: Modes): Promise<SharedFact[]> => {
   }
 
   return facts;
-};
+});
 
 const _entriesFor = async (
   mode: Modes,

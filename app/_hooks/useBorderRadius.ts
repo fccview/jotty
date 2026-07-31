@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useToast } from "@/app/_providers/ToastProvider";
 import {
@@ -28,19 +28,27 @@ export const useBorderRadius = () => {
   const [savedRadius, setSavedRadius] = useState(DEFAULT_BORDER_RADIUS);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const savedRadiusRef = useRef<number | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const load = async () => {
       try {
         const result = await getBorderRadius();
+        if (cancelled) return;
+
         if (result.success) {
           const current = clampRadius(result.data);
+          savedRadiusRef.current = current;
           setRadius(current);
           setSavedRadius(current);
         } else {
           throw new Error(result.error || "Failed to load border radius");
         }
       } catch (error) {
+        if (cancelled) return;
+
         console.error("Failed to load border radius:", error);
         showToast({
           type: "error",
@@ -48,12 +56,23 @@ export const useBorderRadius = () => {
           message: t("admin.borderRadiusLoadError"),
         });
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     load();
+
+    return () => {
+      cancelled = true;
+    };
   }, [showToast]);
+
+  useEffect(
+    () => () => {
+      if (savedRadiusRef.current !== null) applyRadius(savedRadiusRef.current);
+    },
+    [],
+  );
 
   const handleRadiusChange = (value: number) => {
     const next = clampRadius(value);
@@ -74,6 +93,7 @@ export const useBorderRadius = () => {
       }
 
       const stored = clampRadius(result.data);
+      savedRadiusRef.current = stored;
       setSavedRadius(stored);
       setRadius(stored);
       applyRadius(stored);

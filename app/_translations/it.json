@@ -1343,15 +1343,15 @@
     "useInherited": "Segui la cartella",
     "publicFolderWarning": "Qualsiasi cosa inserita in questa cartella diventa immediatamente leggibile da chiunque abbia il link.",
     "readTip": "Sola lettura: {users}",
-    "writeTip": "Puo modificare: {users}",
-    "deleteTip": "Puo modificare ed eliminare: {users}",
+    "writeTip": "Può modificare: {users}",
+    "deleteTip": "Può modificare ed eliminare: {users}",
     "publicTip": "Condiviso pubblicamente",
     "fromUserRead": "Sola lettura, condiviso da {user}",
-    "fromUserWrite": "Puo modificare, condiviso da {user}",
-    "fromUserDelete": "Puo modificare ed eliminare, condiviso da {user}",
+    "fromUserWrite": "Può modificare, condiviso da {user}",
+    "fromUserDelete": "Può modificare ed eliminare, condiviso da {user}",
     "leaveShare": "Abbandona condivisione",
-    "confirmLeaveItem": "Vuoi rimuovere il tuo accesso a \"{itemTitle}\"? Sparira dalla barra laterale e il proprietario dovra condividerlo di nuovo per ridartelo.",
-    "confirmLeaveFolder": "Vuoi rimuovere il tuo accesso a \"{categoryName}\", condivisa da {owner}? Sparira dalla barra laterale e {owner} dovra condividerla di nuovo per ridartela."
+    "confirmLeaveItem": "Vuoi rimuovere il tuo accesso a \"{itemTitle}\"? Sparirà dalla barra laterale e il proprietario dovrà condividerlo di nuovo per ridartelo.",
+    "confirmLeaveFolder": "Vuoi rimuovere il tuo accesso a \"{categoryName}\", condivisa da {owner}? Sparirà dalla barra laterale e {owner} dovrà condividerla di nuovo per ridartela."
   },
   "encryption": {
     "encrypt": "Cripta",

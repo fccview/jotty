@@ -5,7 +5,7 @@ import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicV
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
 import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
 import type { Metadata } from "next";
-import { Modes } from "@/app/_types/enums";
+import { Modes, ItemTypes } from "@/app/_types/enums";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { isPublicItem } from "@/app/_server/actions/share/queries";
@@ -33,7 +33,6 @@ export async function generateMetadata(
 export default async function PublicChecklistPage(
   props: PublicChecklistPageProps,
 ) {
-  const searchParams = await props.searchParams;
   const params = await props.params;
   const { uuid } = params;
 
@@ -47,7 +46,7 @@ export default async function PublicChecklistPage(
       decodeURIComponent(uuid),
     );
 
-    if (resolved) {
+    if (resolved && (await isPublicItem(resolved, ItemTypes.CHECKLIST))) {
       permanentRedirect(`/public/checklist/${resolved}`);
     }
 
@@ -66,12 +65,14 @@ export default async function PublicChecklistPage(
     !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
   );
 
-  const isPubliclyShared = await isPublicItem(checklist.uuid!, "checklist");
+  const isPubliclyShared = await isPublicItem(
+    checklist.uuid!,
+    ItemTypes.CHECKLIST,
+  );
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.username === checklist.owner;
-  const isPrintView = searchParams?.view_mode === "print";
 
-  if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
+  if (isPubliclyShared || isOwner) {
     const metadata = {
       id: checklist.id,
       uuid: checklist.uuid,

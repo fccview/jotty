@@ -6,6 +6,7 @@ import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,7 @@ export async function POST(
         }
 
         const newSubItem: any = {
-          id: `${list.id}-sub-${Date.now()}`,
+          id: `${list.uuid}-sub-${Date.now()}`,
           text,
           completed: false,
           order: 0,
@@ -109,7 +110,7 @@ export async function POST(
         );
         const filePath = path.join(
           ownerDir,
-          list.category || "Uncategorized",
+          list.category || UNCATEGORIZED,
           `${list.id}.md`,
         );
 

@@ -37,7 +37,7 @@ const getSystemTheme = (
 
 interface SettingsState {
   theme: Theme;
-  showEmojis: boolean;
+  showEmojis: boolean | null;
   autosaveNotes: boolean;
   showMarkdownPreview: boolean;
   showCompletedSuggestions: boolean;
@@ -45,7 +45,7 @@ interface SettingsState {
   borderRadius: number | null;
   setBorderRadius: (radius: number | null) => void;
   setTheme: (theme: Theme) => void;
-  setShowEmojis: (show: boolean) => void;
+  setShowEmojis: (show: boolean | null) => void;
   setAutosaveNotes: (enabled: boolean) => void;
   setShowMarkdownPreview: (show: boolean) => void;
   setShowCompletedSuggestions: (show: boolean) => void;
@@ -62,7 +62,7 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
   persist(
     (set, get) => ({
       theme: "system",
-      showEmojis: true,
+      showEmojis: null,
       autosaveNotes: true,
       showMarkdownPreview: false,
       showCompletedSuggestions: true,
@@ -100,6 +100,13 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
     }),
     {
       name: "checklist-settings",
+      version: 1,
+      migrate: (persisted, version) => {
+        if (version < 1) {
+          return { ...(persisted as SettingsState), showEmojis: null };
+        }
+        return persisted as SettingsState;
+      },
     }
   )
 );

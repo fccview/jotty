@@ -19,6 +19,7 @@ import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { isKanbanType, ItemTypes } from "../_types/enums";
 import { useTranslations } from "next-intl";
 import { HOMEPAGE_ITEMS_LIMIT } from "@/app/_consts/files";
+import { isPinnedEntry } from "@/app/_utils/global-utils";
 
 interface UseChecklistHomeProps {
   lists: Checklist[];
@@ -92,10 +93,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   const getPinnedLists = () => {
     const pinned = pinnedLists
       .map((entry) =>
-        lists.find(
-          (list) =>
-            entry === list.uuid || entry.split("/").pop() === list.uuid,
-        ),
+        lists.find((list) => isPinnedEntry(entry, list.uuid)),
       )
       .filter(Boolean) as Checklist[];
 
@@ -167,7 +165,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
 
   const isListPinned = (list: Checklist) =>
     pinnedLists.some(
-      (entry) => entry === list.uuid || entry.split("/").pop() === list.uuid,
+      (entry) => isPinnedEntry(entry, list.uuid),
     );
 
   const stats = useMemo(() => {

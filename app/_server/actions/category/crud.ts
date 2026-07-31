@@ -14,6 +14,7 @@ import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
 import { targetDir, bouncer } from "@/app/_server/actions/share/target";
+import { catUuid } from "@/app/_server/actions/share/category-info";
 import { PermissionTypes } from "@/app/_types/enums";
 
 const MOUNT_REFUSAL = "You're not on the list";
@@ -54,7 +55,29 @@ export const createCategory = async (formData: FormData) => {
         return { error: verdict.error };
       }
 
-      await ensureDir(path.join(mountParent.dir, name));
+      if (!isPathSafe(mountParent.dir, name)) {
+        await logAudit({
+          level: "WARNING",
+          action: "category_created",
+          category: mode === Modes.NOTES ? "note" : "checklist",
+          success: false,
+          errorMessage: "Invalid category path",
+          metadata: { categoryName: name, parentCategory: parent, mode },
+        });
+        return { error: "Invalid category path" };
+      }
+
+      const mountDir = path.join(mountParent.dir, name);
+      await ensureDir(mountDir);
+      await catUuid(mountDir);
+
+      await logAudit({
+        level: "INFO",
+        action: "category_created",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: true,
+        metadata: { categoryName: name, parentCategory: parent, mode },
+      });
 
       revalidateTag(
         mode === Modes.NOTES ? "layout-notes" : "layout-checklists",
@@ -68,7 +91,7 @@ export const createCategory = async (formData: FormData) => {
         username: mountParent.owner,
       });
 
-      return { success: true };
+      return { success: true, data: { name, count: 0 } };
     }
 
     const userDir = await getUserModeDir(mode);
@@ -88,6 +111,7 @@ export const createCategory = async (formData: FormData) => {
 
     const categoryDir = path.join(userDir, categoryPath);
     await ensureDir(categoryDir);
+    await catUuid(categoryDir);
 
     await logAudit({
       level: "INFO",

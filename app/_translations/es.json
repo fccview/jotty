@@ -1300,7 +1300,7 @@
     "share": "Compartir",
     "shareWith": "Compartir con",
     "sharedWith": "Compartido con",
-    "shareLink": "Vinculo compartido",
+    "shareLink": "Vínculo compartido",
     "copyLink": "Copiar enlace",
     "linkCopied": "Enlace copiado",
     "publicLink": "Enlace público",
@@ -1345,13 +1345,13 @@
     "readTip": "Solo lectura: {users}",
     "writeTip": "Puede editar: {users}",
     "deleteTip": "Puede editar y eliminar: {users}",
-    "publicTip": "Compartido publicamente",
+    "publicTip": "Compartido públicamente",
     "fromUserRead": "Solo lectura, compartido por {user}",
     "fromUserWrite": "Puede editar, compartido por {user}",
     "fromUserDelete": "Puede editar y eliminar, compartido por {user}",
     "leaveShare": "Salir del recurso compartido",
-    "confirmLeaveItem": "Quieres quitar tu propio acceso a \"{itemTitle}\"? Desaparecera de tu barra lateral y el propietario tendra que compartirlo de nuevo.",
-    "confirmLeaveFolder": "Quieres quitar tu propio acceso a \"{categoryName}\", compartida por {owner}? Desaparecera de tu barra lateral y {owner} tendra que compartirla de nuevo."
+    "confirmLeaveItem": "¿Quieres quitar tu propio acceso a \"{itemTitle}\"? Desaparecerá de tu barra lateral y el propietario tendrá que compartirlo de nuevo.",
+    "confirmLeaveFolder": "¿Quieres quitar tu propio acceso a \"{categoryName}\", compartida por {owner}? Desaparecerá de tu barra lateral y {owner} tendrá que compartirla de nuevo."
   },
   "encryption": {
     "encrypt": "Encriptar",

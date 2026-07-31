@@ -120,7 +120,9 @@ export const NotesHome = ({
 
   const filteredRecent = useMemo(() => {
     if (!selectedFilter) return recent;
-    return displayNotes.filter((note) => !pinned.some((p) => p.id === note.id));
+    return displayNotes.filter(
+      (note) => !pinned.some((p) => Boolean(p.uuid) && p.uuid === note.uuid),
+    );
   }, [displayNotes, recent, selectedFilter, pinned]);
 
   const filterDisplayName = useMemo(() => {
@@ -133,7 +135,7 @@ export const NotesHome = ({
 
   const getNoteSharer = (note: Note) => {
     const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.uuid === note.uuid,
+      (item) => Boolean(item.uuid) && item.uuid === note.uuid,
     );
     return sharedItem?.sharer;
   };

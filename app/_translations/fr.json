@@ -1345,13 +1345,13 @@
     "readTip": "Lecture seule : {users}",
     "writeTip": "Peut modifier : {users}",
     "deleteTip": "Peut modifier et supprimer : {users}",
-    "publicTip": "Partage publiquement",
-    "fromUserRead": "Lecture seule, partage par {user}",
-    "fromUserWrite": "Peut modifier, partage par {user}",
-    "fromUserDelete": "Peut modifier et supprimer, partage par {user}",
+    "publicTip": "Partagé publiquement",
+    "fromUserRead": "Lecture seule, partagé par {user}",
+    "fromUserWrite": "Peut modifier, partagé par {user}",
+    "fromUserDelete": "Peut modifier et supprimer, partagé par {user}",
     "leaveShare": "Quitter le partage",
-    "confirmLeaveItem": "Retirer votre propre acces a \"{itemTitle}\" ? L'element disparait de votre barre laterale et le proprietaire devra le repartager.",
-    "confirmLeaveFolder": "Retirer votre propre acces a \"{categoryName}\", partage par {owner} ? Le dossier disparait de votre barre laterale et {owner} devra le repartager."
+    "confirmLeaveItem": "Retirer votre propre accès à \"{itemTitle}\" ? L'élément disparaît de votre barre latérale et le propriétaire devra le repartager.",
+    "confirmLeaveFolder": "Retirer votre propre accès à \"{categoryName}\", partagé par {owner} ? Le dossier disparaît de votre barre latérale et {owner} devra le repartager."
   },
   "encryption": {
     "encrypt": "Chiffrer",

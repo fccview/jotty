@@ -187,13 +187,13 @@ export const useSidebar = (props: SidebarProps) => {
   useEffect(() => {
     if (!isInitialized) return;
 
-    const itemId = pathname.split("/").pop();
+    const itemUuid = pathname.split("/").pop();
     let currentItem: Partial<Checklist> | Partial<Note> | undefined;
 
     if (mode === Modes.CHECKLISTS) {
-      currentItem = checklists.find((c) => c.id === itemId);
+      currentItem = checklists.find((c) => c.uuid === itemUuid);
     } else {
-      currentItem = notes.find((n) => n.id === itemId);
+      currentItem = notes.find((n) => n.uuid === itemUuid);
     }
 
     if (currentItem && currentItem.category) {

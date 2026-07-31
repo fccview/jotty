@@ -29,6 +29,13 @@ export const createSubItem = async (
     const parentId = formData.get("parentId") as string;
     const text = formData.get("text") as string;
 
+    if (!uuid || !parentId || !text?.trim()) {
+      return {
+        success: false,
+        error: "List uuid, parent item ID and text are required",
+      };
+    }
+
     const currentUser = await getUsername();
     const list = await getListById(uuid, currentUser);
     if (!list) {

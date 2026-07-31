@@ -13,12 +13,15 @@ import {
   grepFilesByText,
   grepExtractFrontmatter,
 } from "@/app/_utils/grep-utils";
+import { runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const _abs = (dirPath: string): string =>
   path.isAbsolute(dirPath) ? dirPath : path.join(process.cwd(), dirPath);
 
 const _infoPath = (dirPath: string): string =>
   path.join(_abs(dirPath), CATEGORY_INFO_FILE);
+
+const _lane = (dirPath: string): string => `catinfo:${_abs(dirPath)}`;
 
 const _legacyOrder = async (dirPath: string): Promise<CategoryOrder | null> => {
   try {
@@ -80,22 +83,24 @@ export const writeCatInfo = async (
 export const patchCatInfo = async (
   dirPath: string,
   patch: Partial<CategoryInfo>,
-): Promise<CategoryInfo> => {
-  const current = await readCatInfo(dirPath);
-  const next: CategoryInfo = { ...current, ...patch };
+): Promise<CategoryInfo> =>
+  runQueued(_lane(dirPath), async () => {
+    const current = await readCatInfo(dirPath);
+    const next: CategoryInfo = { ...current, ...patch };
 
-  await writeCatInfo(dirPath, next);
-  return next;
-};
+    await writeCatInfo(dirPath, next);
+    return next;
+  });
 
-export const catUuid = async (dirPath: string): Promise<string> => {
-  const info = await readCatInfo(dirPath);
-  if (info.uuid) return info.uuid;
+export const catUuid = async (dirPath: string): Promise<string> =>
+  runQueued(_lane(dirPath), async () => {
+    const info = await readCatInfo(dirPath);
+    if (info.uuid) return info.uuid;
 
-  const uuid = randomUUID();
-  await writeCatInfo(dirPath, { ...info, uuid });
-  return uuid;
-};
+    const uuid = randomUUID();
+    await writeCatInfo(dirPath, { ...info, uuid });
+    return uuid;
+  });
 
 export const catDirByUuid = async (
   baseDir: string,
@@ -198,18 +203,19 @@ export const readCatOrder = async (
 export const writeCatOrder = async (
   dirPath: string,
   order: CategoryOrder,
-): Promise<boolean> => {
-  const info = await readCatInfo(dirPath);
-  const next: CategoryInfo = { ...info };
+): Promise<boolean> =>
+  runQueued(_lane(dirPath), async () => {
+    const info = await readCatInfo(dirPath);
+    const next: CategoryInfo = { ...info };
 
-  const categories = order.categories?.length ? order.categories : undefined;
-  const items = order.items?.length ? order.items : undefined;
+    const categories = order.categories?.length ? order.categories : undefined;
+    const items = order.items?.length ? order.items : undefined;
 
-  if (!categories && !items) {
-    delete next.order;
-  } else {
-    next.order = { categories, items };
-  }
+    if (!categories && !items) {
+      delete next.order;
+    } else {
+      next.order = { categories, items };
+    }
 
-  return writeCatInfo(dirPath, next);
-};
+    return writeCatInfo(dirPath, next);
+  });

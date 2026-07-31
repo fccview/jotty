@@ -76,15 +76,21 @@ export function encodeCategoryPath(categoryPath: string): string {
     .join("/");
 }
 
+export const decodeSegment = (segment: string): string => {
+  try {
+    return decodeURIComponent(segment);
+  } catch (error) {
+    console.warn("Malformed URL segment, using it verbatim:", segment, error);
+    return segment;
+  }
+};
+
 export function decodeCategoryPath(encodedPath: string): string {
   if (!encodedPath) {
     return "Uncategorized";
   }
 
-  return encodedPath
-    .split("/")
-    .map((segment) => decodeURIComponent(segment))
-    .join("/");
+  return encodedPath.split("/").map(decodeSegment).join("/");
 }
 
 export const itemHref = (type: ItemType, uuid: string): string =>
@@ -92,6 +98,9 @@ export const itemHref = (type: ItemType, uuid: string): string =>
 
 export const publicHref = (type: ItemType, uuid: string): string =>
   `/public${itemHref(type, uuid)}`;
+
+export const isPinnedEntry = (entry: string, uuid?: string): boolean =>
+  Boolean(uuid) && (entry === uuid || entry.split("/").pop() === uuid);
 
 export const generateWebManifest = (
   appName: string,

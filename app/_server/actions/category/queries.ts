@@ -38,18 +38,24 @@ const _mountTree = async (
   );
 
   const subTree = await buildCategoryTree(ownerDir, mount.displayName, 1);
-  const visible: Category[] = [];
 
-  for (const category of subTree) {
-    const relative = category.path.slice(mount.displayName.length + 1);
-    const access = await catAccess(mode, path.join(ownerDir, relative));
+  const granted = await Promise.all(
+    subTree.map(async (category) => {
+      const relative = category.path.slice(mount.displayName.length + 1);
+      const access = await catAccess(mode, path.join(ownerDir, relative));
 
-    const perms = access?.users[username];
+      return access?.users[username];
+    }),
+  );
 
-    if (perms) {
-      visible.push({ ...category, sharedFrom: mount.owner, permissions: perms });
-    }
-  }
+  const visible = subTree
+    .map((category, index) => ({ category, perms: granted[index] }))
+    .filter(({ perms }) => Boolean(perms))
+    .map(({ category, perms }) => ({
+      ...category,
+      sharedFrom: mount.owner,
+      permissions: perms,
+    }));
 
   return [root, ...visible];
 };

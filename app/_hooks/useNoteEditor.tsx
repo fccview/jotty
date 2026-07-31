@@ -16,6 +16,7 @@ import { logContentEvent, logAudit } from "@/app/_server/actions/log";
 import { itemHref, publicHref } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useToast } from "@/app/_providers/ToastProvider";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
@@ -37,6 +38,7 @@ export const useNoteEditor = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAppMode();
+  const { showToast } = useToast();
   const isMinimalMode = user?.disableRichEditor === "enable";
   const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
   const [title, setTitle] = useState(note.title);
@@ -368,9 +370,20 @@ export const useNoteEditor = ({
 
   const confirmDelete = async () => {
     const formData = new FormData();
-    formData.append("uuid", note.uuid!);
-    await deleteNote(formData);
-    onDelete?.(note.uuid!);
+    formData.append("uuid", note.uuid || "");
+
+    const result = await deleteNote(formData);
+
+    if (!result?.success) {
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: result?.error || t("common.error"),
+      });
+      return;
+    }
+
+    onDelete?.(note.uuid || "");
     router.refresh();
     onBack();
     setShowDeleteModal(false);

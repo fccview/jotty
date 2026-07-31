@@ -26,24 +26,31 @@ import { orderByUuids } from "@/app/_utils/order-utils";
 import { getChecklistType } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { isKanbanType } from "@/app/_types/enums";
+import { singleFlight } from "@/app/_server/actions/lib/concurrency";
 
 const execAsync = promisify(exec);
 
 const debugCrud = isDebugFlag("crud");
 
-const _stampUuid = async (filePath: string): Promise<string | undefined> => {
-  try {
-    const content = await serverReadFile(filePath);
-    if (!content) return undefined;
+const _stampUuid = async (filePath: string): Promise<string | undefined> =>
+  singleFlight(`stamp:${filePath}`, async () => {
+    try {
+      const content = await serverReadFile(filePath);
+      if (!content) return undefined;
 
-    const uuid = generateUuid();
-    await serverWriteFile(filePath, updateYamlMetadata(content, { uuid }));
-    return uuid;
-  } catch (error) {
-    console.warn("Failed to stamp UUID on checklist:", filePath, error);
-    return undefined;
-  }
-};
+      const { metadata } = extractYamlMetadata(content);
+      if (typeof metadata.uuid === "string" && metadata.uuid) {
+        return metadata.uuid;
+      }
+
+      const uuid = generateUuid();
+      await serverWriteFile(filePath, updateYamlMetadata(content, { uuid }));
+      return uuid;
+    } catch (error) {
+      console.warn("Failed to stamp UUID on checklist:", filePath, error);
+      return undefined;
+    }
+  });
 
 export type ChecklistReadResult =
   | Partial<Checklist>

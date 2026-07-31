@@ -11,7 +11,7 @@ import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { togglePin } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "@/app/_types/enums";
-import { itemHref } from "@/app/_utils/global-utils";
+import { itemHref, isPinnedEntry } from "@/app/_utils/global-utils";
 import Masonry from "react-masonry-css";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 import { useTranslations } from "next-intl";
@@ -50,10 +50,7 @@ export const NotesPageClient = ({
     if (noteFilter === "pinned") {
       const pinnedEntries = user?.pinnedNotes || [];
       filtered = filtered.filter((note) =>
-        pinnedEntries.some(
-          (entry) =>
-            entry === note.uuid || entry.split("/").pop() === note.uuid,
-        ),
+        pinnedEntries.some((entry) => isPinnedEntry(entry, note.uuid)),
       );
     } else if (noteFilter === "recent") {
       filtered = filtered
@@ -168,10 +165,8 @@ export const NotesPageClient = ({
                     onSelect={(note) =>
                       router.push(itemHref(ItemTypes.NOTE, note.uuid || ""))
                     }
-                    isPinned={user?.pinnedNotes?.some(
-                      (entry) =>
-                        entry === note.uuid ||
-                        entry.split("/").pop() === note.uuid,
+                    isPinned={user?.pinnedNotes?.some((entry) =>
+                      isPinnedEntry(entry, note.uuid),
                     )}
                     onTogglePin={() => handleTogglePin(note)}
                   />
@@ -189,10 +184,8 @@ export const NotesPageClient = ({
                   onSelect={(note) =>
                     router.push(itemHref(ItemTypes.NOTE, note.uuid || ""))
                   }
-                  isPinned={user?.pinnedNotes?.some(
-                    (entry) =>
-                      entry === note.uuid ||
-                      entry.split("/").pop() === note.uuid,
+                  isPinned={user?.pinnedNotes?.some((entry) =>
+                    isPinnedEntry(entry, note.uuid),
                   )}
                   onTogglePin={() => handleTogglePin(note)}
                 />
@@ -209,10 +202,8 @@ export const NotesPageClient = ({
                   onSelect={(note) =>
                     router.push(itemHref(ItemTypes.NOTE, note.uuid || ""))
                   }
-                  isPinned={user?.pinnedNotes?.some(
-                    (entry) =>
-                      entry === note.uuid ||
-                      entry.split("/").pop() === note.uuid,
+                  isPinned={user?.pinnedNotes?.some((entry) =>
+                    isPinnedEntry(entry, note.uuid),
                   )}
                   onTogglePin={() => handleTogglePin(note)}
                 />

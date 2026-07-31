@@ -25,26 +25,33 @@ import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
 import { promisify } from "util";
 import { exec } from "child_process";
+import { singleFlight } from "@/app/_server/actions/lib/concurrency";
 
 const execAsync = promisify(exec);
 
-const _stampUuid = async (filePath: string): Promise<string | undefined> => {
-  try {
-    const content = await serverReadFile(filePath);
-    if (!content) return undefined;
+const _stampUuid = async (filePath: string): Promise<string | undefined> =>
+  singleFlight(`stamp:${filePath}`, async () => {
+    try {
+      const content = await serverReadFile(filePath);
+      if (!content) return undefined;
 
-    const uuid = generateUuid();
-    await fs.writeFile(
-      filePath,
-      updateYamlMetadata(content, { uuid }),
-      "utf-8",
-    );
-    return uuid;
-  } catch (error) {
-    console.warn("Failed to stamp UUID on note:", filePath, error);
-    return undefined;
-  }
-};
+      const { metadata } = extractYamlMetadata(content);
+      if (typeof metadata.uuid === "string" && metadata.uuid) {
+        return metadata.uuid;
+      }
+
+      const uuid = generateUuid();
+      await fs.writeFile(
+        filePath,
+        updateYamlMetadata(content, { uuid }),
+        "utf-8",
+      );
+      return uuid;
+    } catch (error) {
+      console.warn("Failed to stamp UUID on note:", filePath, error);
+      return undefined;
+    }
+  });
 
 export const readNotesRecursively = async (
   dir: string,

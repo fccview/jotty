@@ -12,7 +12,8 @@ import {
   optOutItem,
   inheritItem,
 } from "../_server/actions/share/operations";
-import { itemShares, modeOf } from "../_server/actions/share/queries";
+import { itemShares } from "../_server/actions/share/queries";
+import { modeFor } from "@/app/_utils/sharing-utils";
 import { SharingPermissions } from "@/app/_types";
 import { getCurrentUser } from "../_server/actions/users";
 
@@ -68,7 +69,7 @@ export const useSharingTools = ({
           };
           const finalPermissions = { ...permissions, canRead: true };
           const result = await shareItem(
-            await modeOf(itemType),
+            modeFor(itemType),
             itemUuid,
             targetUser || "",
             finalPermissions
@@ -101,7 +102,7 @@ export const useSharingTools = ({
         const currentUser = await getCurrentUser();
 
         for (const targetUser of targetUsersList) {
-          await unshareItem(await modeOf(itemType), itemUuid, targetUser || "");
+          await unshareItem(modeFor(itemType), itemUuid, targetUser || "");
         }
 
         return { success: true, data: null };
@@ -234,7 +235,7 @@ export const useSharingTools = ({
     } else {
       if (currentSharing.includes(user)) {
         const result = await shareItem(
-          await modeOf(itemType),
+          modeFor(itemType),
           itemUuid,
           user,
           newPermissions
@@ -270,7 +271,7 @@ export const useSharingTools = ({
     } else {
       if (currentSharing.includes(user)) {
         const result = await shareItem(
-          await modeOf(itemType),
+          modeFor(itemType),
           itemUuid,
           user,
           newPermissions
@@ -292,7 +293,7 @@ export const useSharingTools = ({
     setStatus({ isLoading: true, error: null, success: null });
 
     try {
-      await setItemPublic(await modeOf(itemType), itemUuid, !isPubliclyShared);
+      await setItemPublic(modeFor(itemType), itemUuid, !isPubliclyShared);
 
       const shares = await itemShares(itemUuid, itemType);
       const isPublic = shares.isPublic;
@@ -330,7 +331,7 @@ export const useSharingTools = ({
     setStatus({ isLoading: true, error: null, success: null });
 
     try {
-      const mode = await modeOf(itemType);
+      const mode = modeFor(itemType);
       const result = isOptedOut
         ? await inheritItem(mode, itemUuid)
         : await optOutItem(mode, itemUuid);
@@ -358,7 +359,7 @@ export const useSharingTools = ({
     setStatus({ isLoading: true, error: null, success: null });
 
     try {
-      const mode = await modeOf(itemType);
+      const mode = modeFor(itemType);
 
       for (const username of currentSharing) {
         await unshareItem(mode, itemUuid, username);

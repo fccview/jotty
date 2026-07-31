@@ -16,7 +16,7 @@ import {
   Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { cn, itemHref as itemUrl } from "@/app/_utils/global-utils";
+import { cn, itemHref as itemUrl, isPinnedEntry } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
@@ -24,6 +24,7 @@ import { togglePin } from "@/app/_server/actions/dashboard";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
@@ -119,11 +120,11 @@ export const SidebarItem = ({
   };
 
   const handleTogglePin = async () => {
-    if (!user || isTogglingPin) return;
+    if (!user || isTogglingPin || !item.uuid) return;
 
-    setIsTogglingPin(item.uuid!);
+    setIsTogglingPin(item.uuid);
     try {
-      const result = await togglePin(item.uuid!, itemType);
+      const result = await togglePin(item.uuid, itemType);
       if (result.success) {
         router.refresh();
       }
@@ -141,7 +142,7 @@ export const SidebarItem = ({
     if (!pinnedItems) return false;
 
     return (pinnedItems as string[]).some(
-      (entry) => entry === item.uuid || entry.split("/").pop() === item.uuid,
+      (entry) => isPinnedEntry(entry, item.uuid),
     );
   };
 
@@ -200,7 +201,7 @@ export const SidebarItem = ({
       ) : (
         <PinIcon className="h-4 w-4" />
       ),
-      disabled: isTogglingPin === item.id,
+      disabled: isTogglingPin === item.uuid,
     },
     ...(item.category !== ARCHIVED_DIR_NAME && canEdit
       ? [
@@ -336,7 +337,7 @@ export const SidebarItem = ({
             id: item.id,
             uuid: item.uuid,
             title: item.title,
-            category: item.category || "Uncategorized",
+            category: item.category || UNCATEGORIZED,
             owner: item.owner || "",
             type: mode === Modes.NOTES ? "note" : "checklist",
           }}

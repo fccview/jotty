@@ -24,6 +24,7 @@ export interface ShareGrant {
 
 export interface EffectiveAccess {
   owner: string;
+  uuid?: string;
   users: Record<string, SharingPermissions>;
   isPublic: boolean;
   inherited: boolean;

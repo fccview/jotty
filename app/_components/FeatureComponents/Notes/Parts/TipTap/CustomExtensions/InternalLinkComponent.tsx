@@ -37,29 +37,34 @@ interface InternalLinkComponentProps {
   updateAttributes: (attrs: Record<string, any>) => void;
 }
 
-const _returnNote = async (uuid: string, router: any, note?: Note) => {
+const _returnNote = async (
+  uuid: string,
+  router: any,
+  note?: Note,
+): Promise<boolean> => {
   const finalNote = note || (await getNoteById(uuid));
 
   if (finalNote?.uuid) {
     router.push(itemHref(ItemTypes.NOTE, finalNote.uuid));
-    return;
+    return true;
   }
 
-  return undefined;
+  return false;
 };
 
 const _returnChecklist = async (
   uuid: string,
   router: any,
   checklist?: Checklist,
-) => {
+): Promise<boolean> => {
   const finalChecklist = checklist || (await getListById(uuid));
 
   if (finalChecklist?.uuid) {
     router.push(itemHref(ItemTypes.CHECKLIST, finalChecklist.uuid));
-    return;
+    return true;
   }
-  return undefined;
+
+  return false;
 };
 
 export const InternalLinkComponent = ({
@@ -145,14 +150,12 @@ export const InternalLinkComponent = ({
       }
 
       try {
-        await _returnNote(uuidFromPath, router);
-        return;
+        if (await _returnNote(uuidFromPath, router)) return;
       } catch (error) {
         console.warn("Failed to resolve /jotty/ link:", error);
       }
       try {
-        await _returnChecklist(uuidFromPath, router);
-        return;
+        if (await _returnChecklist(uuidFromPath, router)) return;
       } catch (error) {
         console.warn("Failed to resolve /jotty/ link:", error);
       }

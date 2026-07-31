@@ -1,7 +1,6 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
+import { revalidateTag } from "next/cache";
 import { Modes } from "@/app/_types/enums";
 import { SharingPermissions } from "@/app/_types/core";
 import { DATA_DIR } from "@/app/_consts/files";
@@ -12,6 +11,9 @@ import { updateYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { readCatInfo, writeCatInfo } from "./category-info";
 
 const RENAMED_MODES = [Modes.NOTES, Modes.CHECKLISTS];
+
+const _modeTag = (mode: Modes): string =>
+  mode === Modes.CHECKLISTS ? "layout-checklists" : "layout-notes";
 
 const _swapKey = (
   users: Record<string, SharingPermissions>,
@@ -103,8 +105,13 @@ export const renameGrants = async (
   let touched = 0;
 
   for (const mode of RENAMED_MODES) {
-    touched += await _renameInFiles(mode, oldName, newName);
-    touched += await _renameInCats(mode, oldName, newName);
+    const perMode =
+      (await _renameInFiles(mode, oldName, newName)) +
+      (await _renameInCats(mode, oldName, newName));
+
+    if (perMode > 0) revalidateTag(_modeTag(mode), { expire: 0 });
+
+    touched += perMode;
   }
 
   return touched;

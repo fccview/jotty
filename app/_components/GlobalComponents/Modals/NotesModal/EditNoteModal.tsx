@@ -58,9 +58,13 @@ export const EditNoteModal = ({
       setNote(fetchedNote);
       setHasBody(true);
       setTitle(fetchedNote.title || initialNote.title || "");
+
+      if (!unarchive) {
+        setCategory(fetchedNote.category || "");
+      }
     };
     fetchNote();
-  }, [initialNote, user?.username]);
+  }, [initialNote, user?.username, unarchive]);
 
   if (isMissing) {
     return (

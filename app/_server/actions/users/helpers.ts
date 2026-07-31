@@ -16,8 +16,8 @@ const findUuidInDirectory = async (
   dir: string,
   targetUuid: string
 ): Promise<boolean> => {
-  const { grepCheckUuidExists } = await import("@/app/_utils/grep-utils");
-  return grepCheckUuidExists(dir, targetUuid);
+  const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
+  return (await grepFindFileByUuid(dir, targetUuid)) !== null;
 };
 
 export const getUserByItemUuid = async (

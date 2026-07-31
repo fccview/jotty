@@ -53,6 +53,7 @@ export const RadiusSlider = ({
   disabled = false,
   withPreview = false,
 }: RadiusSliderProps) => {
+  const t = useTranslations();
   const radius = radiusToRem(value);
 
   return (
@@ -66,6 +67,8 @@ export const RadiusSlider = ({
           step={BORDER_RADIUS_STEP}
           value={value}
           disabled={disabled}
+          aria-label={t("settingsModal.borderRadius")}
+          aria-valuetext={radius}
           onChange={(event) => onChange(Number(event.target.value))}
           className="w-full accent-primary disabled:opacity-50"
         />

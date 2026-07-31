@@ -30,6 +30,7 @@ import { getCurrentUser } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
 import { areAllItemsCompleted } from "../_utils/checklist-utils";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 interface UseChecklistProps {
   list: Checklist;
@@ -44,6 +45,7 @@ export const useChecklist = ({
 }: UseChecklistProps) => {
   const t = useTranslations();
   const router = useRouter();
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showBulkPasteModal, setShowBulkPasteModal] = useState(false);
@@ -192,7 +194,18 @@ export const useChecklist = ({
   const confirmDeleteList = async () => {
     const formData = new FormData();
     formData.append("uuid", localList.uuid || "");
-    await deleteList(formData);
+
+    const result = await deleteList(formData);
+
+    if (!result?.success) {
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: result?.error || t("common.error"),
+      });
+      return;
+    }
+
     onDelete?.(localList.uuid || "");
     setShowDeleteModal(false);
   };

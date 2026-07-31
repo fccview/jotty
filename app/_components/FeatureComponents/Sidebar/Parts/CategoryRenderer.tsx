@@ -22,6 +22,7 @@ import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts
 import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
 import { useTranslations } from "next-intl";
 import { PUBLIC_USER } from "@/app/_consts/sharing";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
 import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
@@ -74,7 +75,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
 
   const getItemsInCategory = (categoryPath: string) =>
     allItems.filter(
-      (item) => (item.category || "Uncategorized") === categoryPath
+      (item) => (item.category || UNCATEGORIZED) === categoryPath
     );
   const getSubCategories = (parentPath: string) =>
     allCategories.filter((cat) => cat.parent === parentPath);

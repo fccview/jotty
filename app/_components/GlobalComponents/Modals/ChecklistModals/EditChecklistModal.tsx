@@ -56,9 +56,13 @@ export const EditChecklistModal = ({
 
       setChecklist(fetchedChecklist);
       setTitle(fetchedChecklist.title || initialChecklist.title || "");
+
+      if (!unarchive) {
+        setCategory(fetchedChecklist.category || "");
+      }
     };
     fetchChecklist();
-  }, [initialChecklist, user?.username]);
+  }, [initialChecklist, user?.username, unarchive]);
 
   if (isMissing) {
     return (

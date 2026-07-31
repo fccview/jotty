@@ -1,5 +1,5 @@
-import { Modes, SharePerms } from "../_types/enums";
-import { SharingPermissions } from "../_types/core";
+import { ItemTypes, Modes, SharePerms } from "../_types/enums";
+import { ItemType, SharingPermissions } from "../_types/core";
 import {
   SHARED_WITH_NONE,
   SHARE_CODE_SEPARATOR,
@@ -181,3 +181,6 @@ export const getPermissions = (
 
   return null;
 };
+
+export const modeFor = (itemType: ItemType): Modes =>
+  itemType === ItemTypes.CHECKLIST ? Modes.CHECKLISTS : Modes.NOTES;

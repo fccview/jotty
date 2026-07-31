@@ -23,7 +23,7 @@ import {
   getUsername,
   isAdmin,
 } from "@/app/_server/actions/users";
-import { readCatInfo, writeCatInfo, catDirByUuid, catUuid } from "./category-info";
+import { readCatInfo, writeCatInfo, catDirByUuid } from "./category-info";
 import { resolveAccess, catAccess } from "./access";
 
 const READ_ONLY: SharingPermissions = {
@@ -37,6 +37,17 @@ const _modeTag = (mode: Modes): string =>
 
 const _userDir = (mode: Modes, username: string): string =>
   mode === Modes.CHECKLISTS ? CHECKLISTS_DIR(username) : NOTES_DIR(username);
+
+const _catDir = async (
+  mode: Modes,
+  owner: string,
+  categoryUuid: string,
+): Promise<string | null> => {
+  if (!categoryUuid) return null;
+
+  const baseDir = path.join(process.cwd(), _userDir(mode, owner));
+  return catDirByUuid(baseDir, categoryUuid);
+};
 
 const _ownerOf = async (
   mode: Modes,
@@ -310,7 +321,7 @@ export const inheritItem = async (
 export const shareFolder = async (
   mode: Modes,
   owner: string,
-  categoryPath: string,
+  categoryUuid: string,
   receiver: string,
   permissions: SharingPermissions = READ_ONLY,
 ): Promise<Result<string>> => {
@@ -318,15 +329,15 @@ export const shareFolder = async (
     const refusal = await _gandalf(owner);
     if (refusal) return { success: false, error: refusal };
 
-    const dir = path.join(process.cwd(), _userDir(mode, owner), categoryPath);
-    const info = await readCatInfo(dir);
-    const uuid = info.uuid || (await catUuid(dir));
+    const dir = await _catDir(mode, owner, categoryUuid);
+    if (!dir) return { success: false, error: "Category not found" };
 
+    const info = await readCatInfo(dir);
     const users = { ...(info.sharing?.users || {}), [receiver]: permissions };
 
     const written = await writeCatInfo(dir, {
       ...info,
-      uuid,
+      uuid: categoryUuid,
       sharing: { users, inherit: info.sharing?.inherit !== false },
     });
 
@@ -338,15 +349,18 @@ export const shareFolder = async (
       category: "sharing",
       success: true,
       resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
-      resourceId: uuid,
-      resourceTitle: categoryPath,
+      resourceId: categoryUuid,
+      resourceTitle: path.relative(
+        path.join(process.cwd(), _userDir(mode, owner)),
+        dir,
+      ),
       metadata: { receiver, permissions, scope: "category" },
     });
 
-    await _notify(mode, uuid, [owner, receiver]);
-    await _tell(mode, uuid, owner, receiver);
+    await _notify(mode, categoryUuid, [owner, receiver]);
+    await _tell(mode, categoryUuid, owner, receiver);
 
-    return { success: true, data: uuid };
+    return { success: true, data: categoryUuid };
   } catch (error) {
     console.error("Error in shareFolder:", error);
     return { success: false, error: "Failed to share folder" };
@@ -363,8 +377,7 @@ export const unshareFolder = async (
     const refusal = await _gandalf(owner);
     if (refusal) return { success: false, error: refusal };
 
-    const baseDir = path.join(process.cwd(), _userDir(mode, owner));
-    const dir = await catDirByUuid(baseDir, categoryUuid);
+    const dir = await _catDir(mode, owner, categoryUuid);
 
     if (!dir) return { success: false, error: "Category not found" };
 
@@ -401,26 +414,27 @@ export const unshareFolder = async (
 export const setFolderInherit = async (
   mode: Modes,
   owner: string,
-  categoryPath: string,
+  categoryUuid: string,
   inherit: boolean,
 ): Promise<Result<null>> => {
   try {
     const refusal = await _gandalf(owner);
     if (refusal) return { success: false, error: refusal };
 
-    const dir = path.join(process.cwd(), _userDir(mode, owner), categoryPath);
+    const dir = await _catDir(mode, owner, categoryUuid);
+    if (!dir) return { success: false, error: "Category not found" };
+
     const info = await readCatInfo(dir);
-    const uuid = info.uuid || (await catUuid(dir));
 
     const written = await writeCatInfo(dir, {
       ...info,
-      uuid,
+      uuid: categoryUuid,
       sharing: { users: info.sharing?.users || {}, inherit },
     });
 
     if (!written) return { success: false, error: "Failed to update folder" };
 
-    await _notify(mode, uuid, [owner]);
+    await _notify(mode, categoryUuid, [owner]);
 
     return { success: true, data: null };
   } catch (error) {
@@ -441,28 +455,24 @@ export const setItemPublic = async (
 export const setFolderPublic = async (
   mode: Modes,
   owner: string,
-  categoryPath: string,
+  categoryUuid: string,
   isPublic: boolean,
 ): Promise<Result<null>> => {
-  if (isPublic) {
-    const result = await shareFolder(
-      mode,
-      owner,
-      categoryPath,
-      PUBLIC_USER,
-      READ_ONLY,
-    );
-    return result.success
-      ? { success: true, data: null }
-      : { success: false, error: result.error };
+  if (!isPublic) {
+    return unshareFolder(mode, owner, categoryUuid, PUBLIC_USER);
   }
 
-  const dir = path.join(process.cwd(), _userDir(mode, owner), categoryPath);
-  const info = await readCatInfo(dir);
+  const result = await shareFolder(
+    mode,
+    owner,
+    categoryUuid,
+    PUBLIC_USER,
+    READ_ONLY,
+  );
 
-  return info.uuid
-    ? unshareFolder(mode, owner, info.uuid, PUBLIC_USER)
-    : { success: false, error: "Category not found" };
+  return result.success
+    ? { success: true, data: null }
+    : { success: false, error: result.error };
 };
 
 /**
@@ -530,8 +540,7 @@ export const leaveFolder = async (
       return { success: false, error: "You own this folder" };
     }
 
-    const baseDir = path.join(process.cwd(), _userDir(mode, owner));
-    const dir = await catDirByUuid(baseDir, categoryUuid);
+    const dir = await _catDir(mode, owner, categoryUuid);
 
     if (!dir) return { success: false, error: "Category not found" };
 

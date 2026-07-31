@@ -8,6 +8,7 @@ const mockGrepFindFileByUuid = vi.fn();
 const mockGrepFilesByText = vi.fn();
 const mockGrepListAllFiles = vi.fn();
 const mockIsAdmin = vi.fn();
+const mockCanAccessAllContent = vi.fn();
 const mockGetUsername = vi.fn();
 const mockWriteCatInfo = vi.fn();
 const mockCatDirByUuid = vi.fn();
@@ -58,6 +59,8 @@ vi.mock("@/app/_utils/grep-utils", () => ({
 
 vi.mock("@/app/_server/actions/users", () => ({
   isAdmin: (...args: unknown[]) => mockIsAdmin(...args),
+  canAccessAllContent: (...args: unknown[]) =>
+    mockCanAccessAllContent(...args),
   getUsername: (...args: unknown[]) => mockGetUsername(...args),
   getUserByNoteUuid: (...args: unknown[]) => mockOwnerOfNote(...args),
   getUserByChecklistUuid: (...args: unknown[]) => mockOwnerOfList(...args),
@@ -83,7 +86,10 @@ import {
   leaveItem,
   leaveFolder,
   shareItem,
+  shareFolder,
   unshareFolder,
+  setFolderInherit,
+  setFolderPublic,
 } from "@/app/_server/actions/share/operations";
 import {
   ItemTypes,
@@ -125,6 +131,7 @@ describe("Sharing", () => {
     mockGrepFilesByText.mockResolvedValue([]);
     mockGrepListAllFiles.mockResolvedValue([]);
     mockIsAdmin.mockResolvedValue(false);
+    mockCanAccessAllContent.mockResolvedValue(false);
     mockGetUsername.mockResolvedValue("fccview");
     mockWriteCatInfo.mockResolvedValue(true);
     mockCatDirByUuid.mockResolvedValue(WORK_DIR);
@@ -381,6 +388,7 @@ describe("Sharing", () => {
   describe("canReach", () => {
     it("lets an admin through without touching the tree", async () => {
       mockIsAdmin.mockResolvedValue(true);
+      mockCanAccessAllContent.mockResolvedValue(true);
 
       const allowed = await canReach(
         "some-uuid",
@@ -391,6 +399,21 @@ describe("Sharing", () => {
 
       expect(allowed).toBe(true);
       expect(mockGrepFindFileByUuid).not.toHaveBeenCalled();
+    });
+
+    it("refuses an admin once content access is switched off", async () => {
+      mockIsAdmin.mockResolvedValue(true);
+      mockCanAccessAllContent.mockResolvedValue(false);
+      mockGrepFindFileByUuid.mockResolvedValue({ filePath: WORK_FILE });
+
+      const allowed = await canReach(
+        "note-uuid",
+        ItemTypes.NOTE,
+        "admin",
+        PermissionTypes.READ,
+      );
+
+      expect(allowed).toBe(false);
     });
 
     it("refuses when there is no username", async () => {
@@ -565,6 +588,93 @@ describe("Sharing", () => {
       const sharers = await sharersOf(Modes.NOTES, "jodi");
 
       expect(sharers.sort()).toEqual(["bob", "fccview"]);
+    });
+  });
+
+  describe("folder sharing by uuid", () => {
+    it("resolves the folder from its uuid and writes the grant there", async () => {
+      const result = await shareFolder(
+        Modes.NOTES,
+        "fccview",
+        "work-uuid",
+        "jodi",
+        READ_ONLY,
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockCatDirByUuid).toHaveBeenCalledWith(OWNER_DIR, "work-uuid");
+      expect(mockWriteCatInfo).toHaveBeenCalledWith(
+        WORK_DIR,
+        expect.objectContaining({
+          uuid: "work-uuid",
+          sharing: { users: { jodi: READ_ONLY }, inherit: true },
+        }),
+      );
+    });
+
+    it("cannot be pointed outside the owner's tree by a traversal string", async () => {
+      mockCatDirByUuid.mockResolvedValue(null);
+
+      const result = await shareFolder(
+        Modes.NOTES,
+        "fccview",
+        "../../jodi/Secrets",
+        "fccview",
+        FULL,
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Category not found");
+      expect(mockWriteCatInfo).not.toHaveBeenCalled();
+    });
+
+    it("refuses an empty uuid without touching the disk", async () => {
+      const result = await shareFolder(Modes.NOTES, "fccview", "", "jodi");
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Category not found");
+      expect(mockCatDirByUuid).not.toHaveBeenCalled();
+      expect(mockWriteCatInfo).not.toHaveBeenCalled();
+    });
+
+    it("keeps setFolderInherit scoped to the resolved folder", async () => {
+      const result = await setFolderInherit(
+        Modes.NOTES,
+        "fccview",
+        "work-uuid",
+        false,
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockWriteCatInfo).toHaveBeenCalledWith(
+        WORK_DIR,
+        expect.objectContaining({
+          uuid: "work-uuid",
+          sharing: { users: {}, inherit: false },
+        }),
+      );
+    });
+
+    it("un-publishing a folder drops only the public grant", async () => {
+      mockReadCatInfo.mockResolvedValue({
+        uuid: "work-uuid",
+        sharing: { users: { jodi: READ_ONLY, [PUBLIC_USER]: READ_ONLY } },
+      });
+
+      const result = await setFolderPublic(
+        Modes.NOTES,
+        "fccview",
+        "work-uuid",
+        false,
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockWriteCatInfo).toHaveBeenCalledWith(
+        WORK_DIR,
+        expect.objectContaining({
+          sharing: { users: { jodi: READ_ONLY }, inherit: true },
+        }),
+      );
     });
   });
 

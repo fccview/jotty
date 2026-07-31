@@ -5,7 +5,7 @@ import { PublicNoteView } from "@/app/_components/FeatureComponents/PublicView/P
 import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
-import { Modes } from "@/app/_types/enums";
+import { Modes, ItemTypes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { isPublicItem } from "@/app/_server/actions/share/queries";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
@@ -30,7 +30,6 @@ export async function generateMetadata(
 }
 
 export default async function PublicNotePage(props: PublicNotePageProps) {
-  const searchParams = await props.searchParams;
   const params = await props.params;
   const { uuid } = params;
 
@@ -42,7 +41,7 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
       decodeURIComponent(uuid),
     );
 
-    if (resolved) {
+    if (resolved && (await isPublicItem(resolved, ItemTypes.NOTE))) {
       permanentRedirect(`/public/note/${resolved}`);
     }
 
@@ -61,13 +60,12 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
     !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
   );
 
-  const isPubliclyShared = await isPublicItem(note.uuid!, "note");
-  const isPrintView = searchParams.view_mode === "print";
+  const isPubliclyShared = await isPublicItem(note.uuid!, ItemTypes.NOTE);
 
   const currentUser = await getCurrentUser();
   const isOwner = currentUser?.username === note.owner;
 
-  if (isPubliclyShared || isOwner || (isOwner && isPrintView)) {
+  if (isPubliclyShared || isOwner) {
     const metadata = {
       id: note.id,
       uuid: note.uuid,

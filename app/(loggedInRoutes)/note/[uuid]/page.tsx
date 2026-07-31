@@ -34,12 +34,22 @@ export default async function NotePage(props: NotePageProps) {
   const params = await props.params;
   const { uuid } = params;
 
+  const user = await getCurrentUser();
+
+  if (!user?.username) {
+    redirect("/");
+  }
+
+  const username = user.username;
+  const hasContentAccess = await canAccessAllContent();
+
   if (!isUuid(uuid)) {
     const { legacyResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
     const resolved = await legacyResolve(
       Modes.NOTES,
       UNCATEGORIZED,
       decodeURIComponent(uuid),
+      username,
     );
 
     if (resolved) {
@@ -48,10 +58,6 @@ export default async function NotePage(props: NotePageProps) {
 
     redirect("/");
   }
-
-  const user = await getCurrentUser();
-  const username = user?.username || "";
-  const hasContentAccess = await canAccessAllContent();
 
   await CheckForNeedsMigration();
 

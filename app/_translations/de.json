@@ -1344,13 +1344,13 @@
     "publicFolderWarning": "Alles, was in diesen Ordner gelegt wird, ist sofort für jeden mit dem Link lesbar.",
     "readTip": "Nur lesen: {users}",
     "writeTip": "Kann bearbeiten: {users}",
-    "deleteTip": "Kann bearbeiten und loeschen: {users}",
-    "publicTip": "Oeffentlich geteilt",
+    "deleteTip": "Kann bearbeiten und löschen: {users}",
+    "publicTip": "Öffentlich geteilt",
     "fromUserRead": "Nur lesen, geteilt von {user}",
     "fromUserWrite": "Kann bearbeiten, geteilt von {user}",
-    "fromUserDelete": "Kann bearbeiten und loeschen, geteilt von {user}",
+    "fromUserDelete": "Kann bearbeiten und löschen, geteilt von {user}",
     "leaveShare": "Freigabe verlassen",
-    "confirmLeaveItem": "Deinen eigenen Zugriff auf \"{itemTitle}\" entfernen? Es verschwindet aus deiner Seitenleiste und der Eigentuemer muss es erneut teilen.",
+    "confirmLeaveItem": "Deinen eigenen Zugriff auf \"{itemTitle}\" entfernen? Es verschwindet aus deiner Seitenleiste und der Eigentümer muss es erneut teilen.",
     "confirmLeaveFolder": "Deinen eigenen Zugriff auf \"{categoryName}\" von {owner} entfernen? Der Ordner verschwindet aus deiner Seitenleiste und {owner} muss ihn erneut teilen."
   },
   "encryption": {

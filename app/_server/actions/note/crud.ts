@@ -56,7 +56,7 @@ export const createNote = async (formData: FormData) => {
     const encryptionMethod = detectEncryptionMethod(content) || undefined;
     const encrypted = isEncrypted(content);
 
-    const currentUser = formUser || (await getCurrentUser());
+    const currentUser = (await getCurrentUser()) || formUser;
 
     if (!currentUser?.username) {
       return { error: "Not authenticated" };
@@ -224,7 +224,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const processedContent = settings?.editor?.enableBilateralLinks
       ? await convertInternalLinksToNewFormat(
         contentWithoutMetadata,
-        currentUser,
+        actingUsername,
         note.category
       )
       : contentWithoutMetadata;
@@ -372,7 +372,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       );
     }
 
-    await broadcast({ type: "note", action: "updated", entityId: updatedDoc.uuid, username: currentUser });
+    await broadcast({ type: "note", action: "updated", entityId: updatedDoc.uuid, username: actingUsername });
 
     return {
       success: true,
@@ -497,15 +497,19 @@ export const deleteNote = async (formData: FormData, username?: string) => {
 
     return { success: true };
   } catch (error) {
+    console.error("Error deleting note:", error);
+
     const { uuid } = getFormData(formData, ["uuid"]);
-    const note = await getNoteById(uuid!);
-    await logContentEvent(
-      "note_deleted",
-      "note",
-      uuid!,
-      note?.title || "unknown",
-      false
-    );
+
+    let title = "unknown";
+    try {
+      const note = await getNoteById(uuid!);
+      title = note?.title || "unknown";
+    } catch (lookupError) {
+      console.warn("Failed to re-read note while logging deletion:", lookupError);
+    }
+
+    await logContentEvent("note_deleted", "note", uuid!, title, false);
     return { error: "Failed to delete note" };
   }
 };
@@ -525,6 +529,17 @@ export const cloneNote = async (formData: FormData) => {
 
     if (!currentUser?.username) {
       return { error: "Not authenticated" };
+    }
+
+    const canReadSource = await canReach(
+      note.uuid!,
+      "note",
+      currentUser.username,
+      PermissionTypes.READ
+    );
+
+    if (!canReadSource) {
+      return { error: "Permission denied" };
     }
 
     const isOwnedByCurrentUser =

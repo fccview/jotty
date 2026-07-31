@@ -46,7 +46,7 @@ export const createList = async (formData: FormData) => {
     }
 
     const currentUser = await getCurrentUser();
-    const actingName = username || currentUser?.username;
+    const actingName = currentUser?.username || username;
 
     if (!actingName) {
       return { error: "Not authenticated" };
@@ -313,6 +313,7 @@ export const updateList = async (formData: FormData) => {
       data: { ...updatedList, category: shownCategory },
     };
   } catch (error) {
+    console.error("Error in updateList:", error);
     try {
       const { title, uuid } = getFormData(formData, ["title", "uuid"]);
       await logContentEvent(
@@ -322,7 +323,9 @@ export const updateList = async (formData: FormData) => {
         title || "unknown",
         false
       );
-    } catch { }
+    } catch (logError) {
+      console.error("Failed to log the updateList failure:", logError);
+    }
     return { error: "Failed to update list" };
   }
 };
@@ -453,6 +456,17 @@ export const cloneChecklist = async (formData: FormData) => {
 
     if (!currentUser?.username) {
       return { error: "Not authenticated" };
+    }
+
+    const canReadSource = await canReach(
+      checklist.uuid,
+      ItemTypes.CHECKLIST,
+      currentUser.username,
+      PermissionTypes.READ
+    );
+
+    if (!canReadSource) {
+      return { error: "Permission denied" };
     }
 
     const isOwnedByCurrentUser =

@@ -29,12 +29,22 @@ export default async function ChecklistPage(props: ChecklistPageProps) {
   const params = await props.params;
   const { uuid } = params;
 
+  const userRecord = await getCurrentUser();
+
+  if (!userRecord?.username) {
+    redirect("/");
+  }
+
+  const username = userRecord.username;
+  const hasContentAccess = await canAccessAllContent();
+
   if (!isUuid(uuid)) {
     const { legacyResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
     const resolved = await legacyResolve(
       Modes.CHECKLISTS,
       UNCATEGORIZED,
       decodeURIComponent(uuid),
+      username,
     );
 
     if (resolved) {
@@ -43,10 +53,6 @@ export default async function ChecklistPage(props: ChecklistPageProps) {
 
     redirect("/");
   }
-
-  const userRecord = await getCurrentUser();
-  const username = userRecord?.username || "";
-  const hasContentAccess = await canAccessAllContent();
 
   const categoriesResult = await getCategories(Modes.CHECKLISTS);
 

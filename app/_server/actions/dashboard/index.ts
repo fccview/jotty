@@ -5,9 +5,7 @@ import { updateNote, getNoteById } from "../note";
 import { getCurrentUser, getUserIndex } from "../users";
 import { readJsonFile, writeJsonFile } from "../file";
 import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
-
-const _pinMatches = (entry: string, uuid: string): boolean =>
-  entry === uuid || entry.split("/").pop() === uuid;
+import { isPinnedEntry } from "@/app/_utils/global-utils";
 
 export const togglePin = async (
   uuid: string,
@@ -26,17 +24,17 @@ export const togglePin = async (
 
     if (type === ItemTypes.CHECKLIST) {
       const pinnedLists: string[] = user.pinnedLists || [];
-      const isPinned = pinnedLists.some((entry) => _pinMatches(entry, uuid));
+      const isPinned = pinnedLists.some((entry) => isPinnedEntry(entry, uuid));
 
       user.pinnedLists = isPinned
-        ? pinnedLists.filter((entry) => !_pinMatches(entry, uuid))
+        ? pinnedLists.filter((entry) => !isPinnedEntry(entry, uuid))
         : [...pinnedLists, uuid];
     } else {
       const pinnedNotes: string[] = user.pinnedNotes || [];
-      const isPinned = pinnedNotes.some((entry) => _pinMatches(entry, uuid));
+      const isPinned = pinnedNotes.some((entry) => isPinnedEntry(entry, uuid));
 
       user.pinnedNotes = isPinned
-        ? pinnedNotes.filter((entry) => !_pinMatches(entry, uuid))
+        ? pinnedNotes.filter((entry) => !isPinnedEntry(entry, uuid))
         : [...pinnedNotes, uuid];
     }
 

@@ -15,9 +15,12 @@ import {
 import { toSharedWith } from "@/app/_utils/sharing-utils";
 import {
   extractYamlMetadata,
+  generateUuid,
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
+import { isAdmin } from "@/app/_server/actions/users";
+import { needsMigration } from "@/app/_server/actions/lib/migration-check";
 import {
   readCatInfo,
   writeCatInfo,
@@ -65,6 +68,38 @@ const _uuidOfFile = async (filePath: string): Promise<string | null> => {
   return typeof metadata?.uuid === "string" ? metadata.uuid : null;
 };
 
+const _mdNames = async (dirPath: string): Promise<string[]> => {
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+      .map((entry) => entry.name);
+  } catch {
+    return [];
+  }
+};
+
+const _stampItems = async (dirPath: string): Promise<void> => {
+  for (const name of await _mdNames(dirPath)) {
+    const filePath = path.join(dirPath, name);
+
+    try {
+      const content = await fs.readFile(filePath, "utf-8");
+      const { metadata } = extractYamlMetadata(content);
+
+      if (metadata.uuid) continue;
+
+      await fs.writeFile(
+        filePath,
+        updateYamlMetadata(content, { uuid: generateUuid() }),
+        "utf-8",
+      );
+    } catch (error) {
+      console.error(`Failed to stamp uuid on ${filePath}:`, error);
+    }
+  }
+};
+
 const _convertOrder = async (dirPath: string): Promise<boolean> => {
   const legacyPath = path.join(dirPath, LEGACY_ORDER_FILE);
 
@@ -99,6 +134,15 @@ const _convertOrder = async (dirPath: string): Promise<boolean> => {
       }
     }
 
+    const lostCats = (legacy.categories?.length || 0) - categories.length;
+    const lostItems = (legacy.items?.length || 0) - items.length;
+
+    if (lostCats > 0 || lostItems > 0) {
+      console.warn(
+        `Dropped ${lostCats} category and ${lostItems} item ordering entries in ${dirPath}, their targets no longer exist`,
+      );
+    }
+
     const info = await readCatInfo(dirPath);
     await writeCatInfo(dirPath, {
       ...info,
@@ -125,11 +169,17 @@ const _stampTree = async (
     await catUuid(dirPath);
   }
 
+  const subDirs = await _subDirs(dirPath);
+
+  for (const subDir of subDirs) {
+    await catUuid(subDir);
+  }
+
+  await _stampItems(dirPath);
+
   if (await _convertOrder(dirPath)) {
     changes.push(`Converted ordering in ${path.basename(dirPath)}`);
   }
-
-  const subDirs = await _subDirs(dirPath);
 
   for (const subDir of subDirs) {
     await _stampTree(subDir, false, changes);
@@ -198,6 +248,8 @@ const _migrateShares = async (
     }
   }
 
+  let failures = 0;
+
   for (const [filePath, users] of Array.from(perFile.entries())) {
     try {
       await _applyShares(filePath, users);
@@ -205,8 +257,16 @@ const _migrateShares = async (
         `Moved sharing into ${path.basename(filePath)} (${Object.keys(users).join(", ")})`,
       );
     } catch (error) {
+      failures += 1;
       console.error(`Failed to migrate shares for ${filePath}:`, error);
     }
+  }
+
+  if (failures > 0) {
+    changes.push(
+      `Kept legacy ${mode}/${LEGACY_SHARING_FILE}, ${failures} item(s) could not be written. Re-run once the cause is fixed.`,
+    );
+    return;
   }
 
   await fs.unlink(path.join(_modeDir(mode), LEGACY_SHARING_FILE));
@@ -219,6 +279,10 @@ export const migrateToInlineSharing = async (): Promise<
   const changes: string[] = [];
 
   try {
+    if (!(await isAdmin())) {
+      return { success: false, error: "Unauthorized: Admin access required" };
+    }
+
     for (const mode of MIGRATED_MODES) {
       const userDirs = await _userDirs(mode);
 
@@ -230,6 +294,8 @@ export const migrateToInlineSharing = async (): Promise<
     }
 
     changes.push(`Category metadata now lives in ${CATEGORY_INFO_FILE}`);
+
+    await needsMigration();
 
     return { success: true, data: { migrated: true, changes } };
   } catch (error) {

@@ -23,6 +23,11 @@ export const reorderItems = async (formData: FormData) => {
     const position = (formData.get("position") as string) || "before";
 
     const currentUser = await getUsername();
+
+    if (!uuid || !activeItemId) {
+      return { success: false, error: "List uuid and item ID are required" };
+    }
+
     const list = await getListById(uuid, currentUser);
     if (!list) {
       throw new Error("List not found");

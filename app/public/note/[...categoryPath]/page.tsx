@@ -1,6 +1,7 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { Modes } from "@/app/_types/enums";
+import { Modes, ItemTypes } from "@/app/_types/enums";
 import { legacyResolve } from "@/app/_server/actions/lib/legacy-lookup";
+import { isPublicItem } from "@/app/_server/actions/share/queries";
 import { decodeCategoryPath } from "@/app/_utils/global-utils";
 
 interface LegacyPublicNoteProps {
@@ -11,6 +12,12 @@ interface LegacyPublicNoteProps {
 
 export const dynamic = "force-dynamic";
 
+/**
+ * @deprecated Category+slug is not an identity anymore, uuid is. This route
+ * only exists to 301 pre-uuid public links onto /public/note/[uuid] and will be
+ * deleted a release after note content has been migrated. It is unauthenticated,
+ * so it must only ever confirm items that are actually public.
+ */
 export default async function LegacyPublicNote(props: LegacyPublicNoteProps) {
   const params = await props.params;
   const { categoryPath } = params;
@@ -19,7 +26,7 @@ export default async function LegacyPublicNote(props: LegacyPublicNoteProps) {
 
   const uuid = await legacyResolve(Modes.NOTES, category, id);
 
-  if (uuid) {
+  if (uuid && (await isPublicItem(uuid, ItemTypes.NOTE))) {
     permanentRedirect(`/public/note/${uuid}`);
   }
 

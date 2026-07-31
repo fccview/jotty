@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import {
   Alert02Icon,
   CheckmarkCircle04Icon,
@@ -17,6 +17,10 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
+
+const inlineCode = (chunks: ReactNode) => (
+  <code className="bg-muted px-1 rounded text-xs">{chunks}</code>
+);
 
 interface ShareMigrationViewProps {
   onMigrate: () => void;
@@ -51,8 +55,8 @@ export const ShareMigrationView = ({
           }
           description={
             isMigrationComplete
-              ? "Your sharing data now lives with your notes and folders."
-              : "Sharing moves out of a central file and into your data. Folders can now be shared, and shared folders show up in your own sidebar instead of a separate section."
+              ? t("migration.sharingNowWithData")
+              : t("migration.sharingMovesDescription")
           }
         />
 
@@ -63,35 +67,23 @@ export const ShareMigrationView = ({
               title={t("migration.whatsHappening")}
             >
               <p className="text-md lg:text-sm">
-                Every share in{" "}
-                <code className="bg-muted px-1 rounded text-xs">
-                  .sharing.json
-                </code>{" "}
-                is written into the frontmatter of the item it belongs to, and
-                every folder gets a{" "}
-                <code className="bg-muted px-1 rounded text-xs">
-                  .category-info.json
-                </code>{" "}
-                holding its identity, sharing and ordering. The old files are
-                removed once the data has moved.
+                {t.rich("migration.whatsHappeningBody", { code: inlineCode })}
               </p>
             </InfoCard>
 
             <div className="bg-card border border-border rounded-jotty p-6 shadow-sm">
               <h2 className="text-xl font-semibold text-foreground mb-4">
-                Migration Changes
+                {t("migration.migrationChanges")}
               </h2>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-jotty">
                   <UserMultipleIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-md lg:text-sm font-medium">
-                      Sharing travels with the file
+                      {t("migration.sharingTravelsTitle")}
                     </p>
                     <p className="text-md lg:text-xs text-muted-foreground">
-                      Each shared item records who it is shared with in its own
-                      frontmatter, so moving or renaming it never breaks a
-                      share.
+                      {t("migration.sharingTravelsBody")}
                     </p>
                   </div>
                 </div>
@@ -99,12 +91,10 @@ export const ShareMigrationView = ({
                   <FolderShared01Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-md lg:text-sm font-medium">
-                      Folder sharing
+                      {t("migration.folderSharingTitle")}
                     </p>
                     <p className="text-md lg:text-xs text-muted-foreground">
-                      Share a folder and everything inside it, now and in the
-                      future, is shared too. Recipients see it as a normal
-                      folder in their own sidebar.
+                      {t("migration.folderSharingBody")}
                     </p>
                   </div>
                 </div>
@@ -112,17 +102,12 @@ export const ShareMigrationView = ({
                   <Database01Icon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-md lg:text-sm font-medium">
-                      One file per folder
+                      {t("migration.oneFilePerFolderTitle")}
                     </p>
                     <p className="text-md lg:text-xs text-muted-foreground">
-                      <code className="bg-muted px-1 rounded text-xs">
-                        .order.json
-                      </code>{" "}
-                      is absorbed into{" "}
-                      <code className="bg-muted px-1 rounded text-xs">
-                        .category-info.json
-                      </code>
-                      , with ordering keyed by uuid rather than filename.
+                      {t.rich("migration.oneFilePerFolderBody", {
+                        code: inlineCode,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -130,11 +115,10 @@ export const ShareMigrationView = ({
                   <ShieldUserIcon className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-md lg:text-sm font-medium">
-                      Permissions are unchanged
+                      {t("migration.permissionsUnchangedTitle")}
                     </p>
                     <p className="text-md lg:text-xs text-muted-foreground">
-                      Read, edit and delete carry over exactly as they are
-                      today, per user and per item.
+                      {t("migration.permissionsUnchangedBody")}
                     </p>
                   </div>
                 </div>
@@ -146,20 +130,7 @@ export const ShareMigrationView = ({
               title={t("migration.importantBackupData")}
               variant={InfoCardVariant.WARNING}
             >
-              <p>
-                This migration rewrites frontmatter across your notes and
-                checklists and deletes the legacy{" "}
-                <code className="bg-muted px-1 rounded text-xs">
-                  .sharing.json
-                </code>{" "}
-                and{" "}
-                <code className="bg-muted px-1 rounded text-xs">
-                  .order.json
-                </code>{" "}
-                files. Back up your{" "}
-                <code className="bg-muted px-1 rounded text-xs">data</code>{" "}
-                folder before proceeding.
-              </p>
+              <p>{t.rich("migration.backupWarningBody", { code: inlineCode })}</p>
             </InfoCard>
 
             {error && (
@@ -186,11 +157,9 @@ export const ShareMigrationView = ({
                     htmlFor="backup-confirmation"
                     className="text-md lg:text-sm font-medium text-foreground cursor-pointer"
                   >
-                    I have backed up my data folder and understand the migration
-                    process.
+                    {t("migration.backupConfirmLabel")}
                     <span className="text-md lg:text-xs text-muted-foreground block">
-                      Please confirm you&apos;ve created a backup before
-                      proceeding.
+                      {t("migration.backupConfirmHint")}
                     </span>
                   </label>
                 </div>
@@ -226,7 +195,7 @@ export const ShareMigrationView = ({
             >
               <p className="text-md lg:text-sm">
                 {migrationResult.migrated
-                  ? "Your sharing and ordering data has been migrated."
+                  ? t("migration.sharingDataMigrated")
                   : t("migration.noMigrationNeeded")}
               </p>
             </InfoCard>
@@ -234,7 +203,7 @@ export const ShareMigrationView = ({
             {migrationResult.changes.length > 0 && (
               <div className="bg-card border border-border rounded-jotty p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
-                  What was changed:
+                  {t("migration.whatWasChanged")}
                 </h3>
                 <ul className="space-y-2">
                   {migrationResult.changes.map((change, index) => (

@@ -39,6 +39,9 @@ export const SESSIONS_FILE = path.join(USERS_DIR, "sessions.json");
 export const SESSION_DATA_FILE = path.join(USERS_DIR, "session-data.json");
 export const EXPORT_TEMP_DIR = path.join(DATA_DIR, "temp_exports");
 
+export const DATA_SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION_FILE = path.join(DATA_DIR, ".schema-version");
+
 export const NOTIFICATIONS_DIR = path.join(DATA_DIR, "notifications");
 export const NOTIFICATIONS_FILE = (username: string) =>
   path.join(NOTIFICATIONS_DIR, `${username}.json`);

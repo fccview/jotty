@@ -21,6 +21,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
 import { RadiusSlider } from "@/app/_components/GlobalComponents/FormElements/RadiusSlider";
 import { clampRadius } from "@/app/_consts/styling";
+import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -30,9 +31,9 @@ interface SettingsModalProps {
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const t = useTranslations();
   const { user, appSettings } = useAppMode();
+  const showEmojis = useShowEmojis();
   const {
     theme,
-    showEmojis,
     autosaveNotes,
     showMarkdownPreview,
     showCompletedSuggestions,

@@ -1,3 +1,11 @@
+/**
+ * @deprecated Everything in this module resolves the pre-uuid category+slug
+ * pair. Identity is uuid everywhere else and category+slug is NOT an identity,
+ * it is a display path that changes on rename. Only the legacy redirect pages
+ * and the REST API fallback may import from here, and the whole module goes
+ * away a release after note content has been migrated.
+ */
+
 import path from "path";
 import fs from "fs/promises";
 import { Modes } from "@/app/_types/enums";
@@ -8,6 +16,7 @@ import {
   USERS_FILE,
 } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { isPathSafe, validateNoPathTraversal } from "@/app/_utils/path-utils";
 import { User } from "@/app/_types";
 
 const _modeDir = (mode: Modes, username: string): string =>
@@ -16,7 +25,17 @@ const _modeDir = (mode: Modes, username: string): string =>
     mode === Modes.CHECKLISTS ? CHECKLISTS_DIR(username) : NOTES_DIR(username),
   );
 
+const _safeSegment = (value: string): boolean =>
+  value.length > 0 && !value.includes("\0") && validateNoPathTraversal(value);
+
+const _safeCategory = (category: string): boolean =>
+  category.length > 0 && category.split("/").every(_safeSegment);
+
 const _candidates = (userDir: string, category: string, id: string): string[] => {
+  if (!_safeSegment(id) || !_safeCategory(category)) {
+    return [];
+  }
+
   const paths = [
     path.join(userDir, category, `${id}.md`),
     path.join(userDir, ARCHIVED_DIR_NAME, category, `${id}.md`),
@@ -27,7 +46,7 @@ const _candidates = (userDir: string, category: string, id: string): string[] =>
     paths.push(path.join(userDir, ARCHIVED_DIR_NAME, `${id}.md`));
   }
 
-  return paths;
+  return paths.filter((candidate) => isPathSafe(userDir, candidate));
 };
 
 const _findFile = async (
@@ -56,15 +75,24 @@ const _uuidFor = async (filePath: string): Promise<string | null> => {
     return existing;
   }
 
-  const { generateUuid, updateYamlMetadata } =
+  const { extractYamlMetadata, generateUuid, updateYamlMetadata } =
     await import("@/app/_utils/yaml-metadata-utils");
   const { logAudit } = await import("@/app/_server/actions/log");
+  const { singleFlight } = await import("@/app/_server/actions/lib/concurrency");
 
   try {
-    const content = await fs.readFile(filePath, "utf-8");
-    const stamped = generateUuid();
-    await fs.writeFile(filePath, updateYamlMetadata(content, { uuid: stamped }), "utf-8");
-    return stamped;
+    return await singleFlight(`stamp:${filePath}`, async () => {
+      const content = await fs.readFile(filePath, "utf-8");
+      const { metadata } = extractYamlMetadata(content);
+
+      if (typeof metadata.uuid === "string" && metadata.uuid) {
+        return metadata.uuid;
+      }
+
+      const stamped = generateUuid();
+      await fs.writeFile(filePath, updateYamlMetadata(content, { uuid: stamped }), "utf-8");
+      return stamped;
+    });
   } catch (error) {
     await logAudit({
       level: "WARNING",

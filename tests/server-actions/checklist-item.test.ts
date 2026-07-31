@@ -29,6 +29,8 @@ vi.mock("@/app/_server/actions/users", () => ({
 
 vi.mock("@/app/_server/actions/share/queries", () => ({
   canReach: (...args: any[]) => mockCanReach(...args),
+  reachableFile: async (...args: any[]) =>
+    (await mockCanReach(...args)) ? mockDiskPath(...args) : null,
   usersWithAccess: (...args: any[]) => mockUsersWithAccess(...args),
 }));
 

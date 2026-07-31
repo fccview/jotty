@@ -11,6 +11,7 @@ import {
   IMPLICIT_MOUNT_PREFIX,
 } from "@/app/_consts/sharing";
 import { parseSharedWith } from "@/app/_utils/sharing-utils";
+import { isPathSafe } from "@/app/_utils/path-utils";
 import {
   grepExtractFrontmatter,
   grepFilesByText,
@@ -72,7 +73,7 @@ const _chainGrants = async (
   let current = startDir;
   let via: string | undefined;
 
-  while (current.startsWith(userDir)) {
+  while (isPathSafe(userDir, current)) {
     const info = await readCatInfo(current);
     const sharing = info.sharing;
 
@@ -99,10 +100,12 @@ export const resolveAccess = async (
 
   const metadata = await grepExtractFrontmatter(filePath);
   const explicit = parseSharedWith(metadata?.sharedWith);
+  const uuid = typeof metadata?.uuid === "string" ? metadata.uuid : undefined;
 
   if (explicit) {
     return {
       owner: location.owner,
+      uuid,
       users: explicit.users,
       isPublic: Boolean(explicit.users[PUBLIC_USER]),
       inherited: false,
@@ -120,6 +123,7 @@ export const resolveAccess = async (
 
   return {
     owner: location.owner,
+    uuid,
     users,
     isPublic: Boolean(users[PUBLIC_USER]),
     inherited: true,
@@ -228,8 +232,7 @@ export const listMounts = async (
 
     if (!access || !perms || access.inherited) continue;
 
-    const metadata = await grepExtractFrontmatter(filePath);
-    const uuid = typeof metadata?.uuid === "string" ? metadata.uuid : null;
+    const uuid = access.uuid;
     if (!uuid) continue;
 
     const existing = loose.get(access.owner);

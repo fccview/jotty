@@ -7,6 +7,12 @@ import { UNCATEGORIZED } from "@/app/_consts/notes";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * @deprecated Legacy category+slug fallback for the notes API, the twin of
+ * listUuid in api-utils. Returns the param when it is already a uuid, otherwise
+ * resolves the deprecated pair from ?category= and logs a WARNING. Goes away
+ * with the rest of the slug lookups.
+ */
 const _noteUuid = async (
     request: NextRequest,
     noteId: string,

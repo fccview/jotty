@@ -3,6 +3,8 @@
 import { Item, TimeEntry } from "@/app/_types";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getListById } from "@/app/_server/actions/checklist";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import { getFormData } from "@/app/_utils/global-utils";
 
 interface TempoData {
@@ -83,6 +85,15 @@ export const getTempoData = async (formData: FormData) => {
 
     if (!currentUser) return { error: "Not authenticated" };
     if (!list) return { error: "List not found" };
+
+    const canView = await canReach(
+      list.uuid,
+      ItemTypes.CHECKLIST,
+      currentUser.username,
+      PermissionTypes.READ
+    );
+
+    if (!canView) return { error: "Permission denied" };
 
     const allItems = _collectItems(list.items);
 

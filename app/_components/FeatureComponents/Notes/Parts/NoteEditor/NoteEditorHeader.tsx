@@ -204,26 +204,12 @@ export const NoteEditorHeader = ({
     }
   };
 
-  const handlePermanentDecryption = async (newContent: string) => {
+  const saveAndReload = async (newContent: string) => {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
-    formData.append("uuid", note.uuid!);
-
-    const result = await updateNote(formData);
-
-    if (result.success && result.data) {
-      window.location.reload();
-    }
-  };
-
-  const handleEncryptionSuccess = async (newContent: string) => {
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("content", newContent);
-    formData.append("category", category);
-    formData.append("uuid", note.uuid!);
+    formData.append("uuid", note.uuid || "");
 
     const result = await updateNote(formData);
 
@@ -668,9 +654,7 @@ export const NoteEditorHeader = ({
                   ? handleEditEncrypted
                   : encryptionModalMode === "save"
                     ? handleSaveEncrypted
-                    : encryptionModalMode === "decrypt"
-                      ? handlePermanentDecryption
-                      : handleEncryptionSuccess
+                    : saveAndReload
             }
           />
         ) : (
@@ -692,9 +676,7 @@ export const NoteEditorHeader = ({
                   ? handleEditEncrypted
                   : encryptionModalMode === "save"
                     ? handleSaveEncrypted
-                    : encryptionModalMode === "decrypt"
-                      ? handlePermanentDecryption
-                      : handleEncryptionSuccess
+                    : saveAndReload
             }
           />
         );

@@ -16,6 +16,7 @@ import { Note, Category, SanitisedUser } from "@/app/_types";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
 import { HOMEPAGE_ITEMS_LIMIT } from "@/app/_consts/files";
+import { isPinnedEntry } from "@/app/_utils/global-utils";
 
 interface UseNotesHomeProps {
   notes: Note[];
@@ -90,10 +91,7 @@ export const useNotesHome = ({
   const getPinnedNotes = () => {
     return pinnedNotes
       .map((entry) =>
-        notes.find(
-          (note) =>
-            entry === note.uuid || entry.split("/").pop() === note.uuid,
-        ),
+        notes.find((note) => isPinnedEntry(entry, note.uuid)),
       )
       .filter(Boolean) as Note[];
   };
@@ -127,7 +125,7 @@ export const useNotesHome = ({
 
   const isNotePinned = (note: Note) =>
     pinnedNotes.some(
-      (entry) => entry === note.uuid || entry.split("/").pop() === note.uuid,
+      (entry) => isPinnedEntry(entry, note.uuid),
     );
 
   const stats = useMemo(() => {
