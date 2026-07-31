@@ -1,8 +1,7 @@
 import { redirect, permanentRedirect } from "next/navigation";
 import { Modes, ItemTypes } from "@/app/_types/enums";
-import { legacyResolve } from "@/app/_server/actions/lib/legacy-lookup";
-import { isPublicItem } from "@/app/_server/actions/share/queries";
-import { decodeCategoryPath } from "@/app/_utils/global-utils";
+import { publicResolve } from "@/app/_server/actions/lib/legacy-lookup";
+import { decodeCategoryPath, decodeSegment } from "@/app/_utils/global-utils";
 
 interface LegacyPublicChecklistProps {
   params: Promise<{
@@ -23,12 +22,17 @@ export default async function LegacyPublicChecklist(
 ) {
   const params = await props.params;
   const { categoryPath } = params;
-  const id = decodeURIComponent(categoryPath[categoryPath.length - 1]);
+  const id = decodeSegment(categoryPath[categoryPath.length - 1]);
   const category = decodeCategoryPath(categoryPath.slice(0, -1).join("/"));
 
-  const uuid = await legacyResolve(Modes.CHECKLISTS, category, id);
+  const uuid = await publicResolve(
+    Modes.CHECKLISTS,
+    category,
+    id,
+    ItemTypes.CHECKLIST,
+  );
 
-  if (uuid && (await isPublicItem(uuid, ItemTypes.CHECKLIST))) {
+  if (uuid) {
     permanentRedirect(`/public/checklist/${uuid}`);
   }
 

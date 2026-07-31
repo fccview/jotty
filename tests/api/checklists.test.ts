@@ -4,6 +4,7 @@ import {
   mockAuthenticateApiKey,
   mockGetUserChecklists,
   mockCreateList,
+  mockMakeList,
   mockUpdateList,
   mockDeleteList,
   mockGetListById,
@@ -195,7 +196,7 @@ describe("Checklists API", () => {
         createdAt: "2024-01-01T00:00:00.000Z",
         updatedAt: "2024-01-01T00:00:00.000Z",
       };
-      mockCreateList.mockResolvedValue({ success: true, data: newChecklist });
+      mockMakeList.mockResolvedValue({ success: true, data: newChecklist });
 
       const request = createMockRequest(
         "POST",

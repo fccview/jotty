@@ -11,8 +11,13 @@ import {
   CHECKLISTS_DIR,
 } from "@/app/_consts/files";
 import { mountName, parseSharedWith } from "@/app/_utils/sharing-utils";
-import { getOrCompute } from "@/app/_server/actions/lib/metadata-cache";
+import {
+  getOrCompute,
+  dropByPrefix,
+} from "@/app/_server/actions/lib/metadata-cache";
 import { listMounts, catAccess } from "./access";
+
+const MOUNTS_CACHE_PREFIX = "mounts:";
 
 interface MountableItem {
   uuid?: string;
@@ -40,16 +45,23 @@ const _ownTopNames = async (
   }
 };
 
+const _mountsKey = (mode: Modes, username: string): string =>
+  `${MOUNTS_CACHE_PREFIX}${mode}:${username}`;
+
 const _cachedMounts = async (
   mode: Modes,
   username: string,
 ): Promise<SharedMount[]> => {
   const watched = path.join(process.cwd(), DATA_DIR, mode);
 
-  return getOrCompute(`mounts:${mode}:${username}`, watched, () =>
+  return getOrCompute(_mountsKey(mode, username), watched, () =>
     listMounts(mode, username),
   );
 };
+
+export function dropMounts(mode: Modes) {
+  dropByPrefix(`${MOUNTS_CACHE_PREFIX}${mode}:`);
+}
 
 export const mountsFor = async (
   mode: Modes,

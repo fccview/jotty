@@ -12,10 +12,10 @@ import {
 } from "@dnd-kit/core";
 import { Checklist, ChecklistType, Item, RecurrenceRule } from "@/app/_types";
 import {
-  deleteList,
   convertChecklistType,
   getListById,
 } from "@/app/_server/actions/checklist";
+import { runListDelete } from "@/app/_hooks/lib/delete-list";
 import {
   createItem,
   updateItem,
@@ -192,16 +192,13 @@ export const useChecklist = ({
   };
 
   const confirmDeleteList = async () => {
-    const formData = new FormData();
-    formData.append("uuid", localList.uuid || "");
+    const outcome = await runListDelete(localList.uuid || "");
 
-    const result = await deleteList(formData);
-
-    if (!result?.success) {
+    if (!outcome.ok) {
       showToast({
         type: "error",
         title: t("common.error"),
-        message: result?.error || t("common.error"),
+        message: outcome.error || t("common.error"),
       });
       return;
     }

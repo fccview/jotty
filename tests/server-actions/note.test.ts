@@ -113,6 +113,7 @@ vi.mock("@/app/_utils/encryption-utils", () => ({
 }));
 
 import { createNote, deleteNote, updateNote } from "@/app/_server/actions/note";
+import { makeNote } from "@/app/_server/actions/note/creator";
 
 const EXISTING_NOTE = {
   id: "test-note",
@@ -260,7 +261,7 @@ describe("Note Actions", () => {
       expect(result.error).toBe("Failed to create note");
     });
 
-    it("should use user from formData when there is no session", async () => {
+    it("should refuse forged formData identity when there is no session", async () => {
       mockGetCurrentUser.mockResolvedValue(null);
 
       const formData = createFormData({
@@ -275,11 +276,11 @@ describe("Note Actions", () => {
 
       const result = await createNote(formData);
 
-      expect(result.success).toBe(true);
-      expect(result.data?.owner).toBe("apiuser");
+      expect(result.error).toBe("Not authenticated");
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
     });
 
-    it("should ignore a formData user that contradicts the session", async () => {
+    it("should refuse a formData user that contradicts the session", async () => {
       const formData = createFormData({
         title: "Impersonation Attempt",
         category: "TestCategory",
@@ -292,8 +293,46 @@ describe("Note Actions", () => {
 
       const result = await createNote(formData);
 
+      expect(result.error).toBe("Identity mismatch");
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
+    });
+
+    it("should create for the session user when the claim agrees", async () => {
+      const formData = createFormData({
+        title: "Agreeing Claim",
+        category: "TestCategory",
+        rawContent: "Content",
+        user: JSON.stringify({ username: "testuser" }),
+      });
+
+      const result = await createNote(formData);
+
       expect(result.success).toBe(true);
       expect(result.data?.owner).toBe("testuser");
+    });
+
+    it("should create for an api principal through makeNote", async () => {
+      mockGetCurrentUser.mockResolvedValue(null);
+      mockTargetDir.mockResolvedValue({
+        dir: "/data/notes/apiuser/TestCategory",
+        category: "TestCategory",
+        owner: "apiuser",
+        isMount: false,
+      });
+
+      const formData = createFormData({
+        title: "Api Key Note",
+        category: "TestCategory",
+        rawContent: "Content",
+      });
+
+      const result = await makeNote(
+        { username: "apiuser", fileRenameMode: "minimal" } as never,
+        formData,
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data?.owner).toBe("apiuser");
     });
   });
 

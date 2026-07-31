@@ -1,8 +1,7 @@
 import { redirect, permanentRedirect } from "next/navigation";
 import { Modes, ItemTypes } from "@/app/_types/enums";
-import { legacyResolve } from "@/app/_server/actions/lib/legacy-lookup";
-import { isPublicItem } from "@/app/_server/actions/share/queries";
-import { decodeCategoryPath } from "@/app/_utils/global-utils";
+import { publicResolve } from "@/app/_server/actions/lib/legacy-lookup";
+import { decodeCategoryPath, decodeSegment } from "@/app/_utils/global-utils";
 
 interface LegacyPublicNoteProps {
   params: Promise<{
@@ -21,12 +20,12 @@ export const dynamic = "force-dynamic";
 export default async function LegacyPublicNote(props: LegacyPublicNoteProps) {
   const params = await props.params;
   const { categoryPath } = params;
-  const id = decodeURIComponent(categoryPath[categoryPath.length - 1]);
+  const id = decodeSegment(categoryPath[categoryPath.length - 1]);
   const category = decodeCategoryPath(categoryPath.slice(0, -1).join("/"));
 
-  const uuid = await legacyResolve(Modes.NOTES, category, id);
+  const uuid = await publicResolve(Modes.NOTES, category, id, ItemTypes.NOTE);
 
-  if (uuid && (await isPublicItem(uuid, ItemTypes.NOTE))) {
+  if (uuid) {
     permanentRedirect(`/public/note/${uuid}`);
   }
 

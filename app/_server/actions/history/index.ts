@@ -391,56 +391,52 @@ export const getVersion = async (
       "@/app/_utils/yaml-metadata-utils"
     );
 
-    const _matches = (fileContent: string): boolean => {
-      const { metadata } = extractYamlMetadata(fileContent);
-      return !metadata.uuid || metadata.uuid === noteUuid;
-    };
-
-    const { getNoteById } = await import("@/app/_server/actions/note");
-    const note = await getNoteById(noteUuid, username);
-
     let content: string | null = null;
 
-    if (note) {
-      const currentPath = path.join(
-        note.category || "Uncategorized",
-        `${note.id}.md`
-      );
+    const filesInCommit = await git.raw([
+      "ls-tree",
+      "-r",
+      "--name-only",
+      commitHash,
+    ]);
 
+    const mdFiles = filesInCommit
+      .trim()
+      .split("\n")
+      .filter((f) => f.endsWith(".md") && f.length > 0);
+
+    for (const file of mdFiles) {
       try {
-        const atPath = await git.show([`${commitHash}:${currentPath}`]);
-        if (_matches(atPath)) content = atPath;
-      } catch (error) {
-        console.warn(
-          "Note is not at its current path in that commit, scanning:",
-          error
-        );
+        const fileContent = await git.show([`${commitHash}:${file}`]);
+        const { metadata } = extractYamlMetadata(fileContent);
+        if (metadata.uuid === noteUuid) {
+          content = fileContent;
+          break;
+        }
+      } catch {
+        continue;
       }
     }
 
     if (content === null) {
-      const filesInCommit = await git.raw([
-        "ls-tree",
-        "-r",
-        "--name-only",
-        commitHash,
-      ]);
+      const { getNoteById } = await import("@/app/_server/actions/note");
+      const note = await getNoteById(noteUuid, username);
 
-      const mdFiles = filesInCommit
-        .trim()
-        .split("\n")
-        .filter((f) => f.endsWith(".md") && f.length > 0);
+      if (note) {
+        const currentPath = path.join(
+          note.category || "Uncategorized",
+          `${note.id}.md`
+        );
 
-      for (const file of mdFiles) {
         try {
-          const fileContent = await git.show([`${commitHash}:${file}`]);
-          const { metadata } = extractYamlMetadata(fileContent);
-          if (metadata.uuid === noteUuid) {
-            content = fileContent;
-            break;
-          }
-        } catch {
-          continue;
+          const atPath = await git.show([`${commitHash}:${currentPath}`]);
+          const { metadata } = extractYamlMetadata(atPath);
+          if (!metadata.uuid) content = atPath;
+        } catch (error) {
+          console.warn(
+            "Note is not at its current path in that commit:",
+            error
+          );
         }
       }
     }

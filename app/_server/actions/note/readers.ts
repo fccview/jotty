@@ -213,12 +213,19 @@ export const readNotesRecursively = async (
           ? (metadata.tags as string[])
           : [];
 
+        const uuid =
+          typeof metadata?.uuid === "string"
+            ? metadata.uuid
+            : await _stampUuid(filePath);
+
+        if (!uuid) {
+          console.warn("Skipping note without a resolvable uuid:", filePath);
+          return null;
+        }
+
         return {
           id,
-          uuid:
-            typeof metadata?.uuid === "string"
-              ? metadata.uuid
-              : await _stampUuid(filePath),
+          uuid,
           title: typeof metadata?.title === "string" ? metadata.title : id,
           category: categoryPath,
           createdAt: toIso(stats.birthtime),
@@ -238,12 +245,19 @@ export const readNotesRecursively = async (
           : [];
         const excerpt = await grepExtractExcerpt(filePath, excerptLength);
 
+        const uuid =
+          typeof metadata?.uuid === "string"
+            ? metadata.uuid
+            : await _stampUuid(filePath);
+
+        if (!uuid) {
+          console.warn("Skipping note without a resolvable uuid:", filePath);
+          return null;
+        }
+
         return {
           id,
-          uuid:
-            typeof metadata?.uuid === "string"
-              ? metadata.uuid
-              : await _stampUuid(filePath),
+          uuid,
           title: typeof metadata?.title === "string" ? metadata.title : id,
           content: excerpt,
           category: categoryPath,

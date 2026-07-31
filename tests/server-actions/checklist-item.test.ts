@@ -14,6 +14,7 @@ const mockGetUserChecklists = vi.fn();
 const mockGetListById = vi.fn();
 const mockGetAllLists = vi.fn();
 const mockAreAllItemsCompleted = vi.fn();
+const mockListToMarkdown = vi.fn().mockReturnValue("# Test List\n- [ ] Item");
 
 vi.mock("@/app/_server/actions/file", () => ({
   getUserModeDir: (...args: any[]) => mockGetUserModeDir(...args),
@@ -45,7 +46,7 @@ vi.mock("@/app/_server/actions/checklist", () => ({
 }));
 
 vi.mock("@/app/_utils/checklist-utils", () => ({
-  listToMarkdown: vi.fn().mockReturnValue("# Test List\n- [ ] Item"),
+  listToMarkdown: (...args: any[]) => mockListToMarkdown(...args),
   areAllItemsCompleted: (...args: any[]) => mockAreAllItemsCompleted(...args),
 }));
 
@@ -303,6 +304,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
     it("should create task item with status for task checklists", async () => {
       const taskChecklist = { ...mockChecklist, type: "task" as const };
+      mockGetListById.mockResolvedValue(taskChecklist);
 
       const formData = createFormData({
         uuid: "test-uuid-123",
@@ -1484,6 +1486,94 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
         expect(result.success).toBe(true);
         expect(result.data?.owner).toBe('owner-user');
       });
+    });
+  });
+  describe("canonical persistence", () => {
+    const forgedList = {
+      ...mockChecklist,
+      title: "Hijacked Title",
+      owner: "attacker",
+      category: "AttackerCategory",
+      id: "attacker-file",
+      tags: ["injected"],
+      statuses: [{ id: "pwned", label: "Pwned", color: "red", order: 0 }],
+      items: [
+        { id: "item-1", text: "Replaced text", completed: false, order: 0 },
+      ],
+    };
+
+    beforeEach(() => {
+      mockGetListById.mockResolvedValue(structuredClone(mockChecklist));
+    });
+
+    it("should keep stored fields when updateItem gets a doctored checklist", async () => {
+      const formData = createFormData({
+        itemId: "item-1",
+        completed: "true",
+      });
+
+      const result = await updateItem(forgedList as any, formData);
+
+      expect(result.success).toBe(true);
+
+      const persisted = mockListToMarkdown.mock.calls.at(-1)?.[0];
+      expect(persisted.title).toBe("Test List");
+      expect(persisted.owner).toBe("testuser");
+      expect(persisted.category).toBe("TestCategory");
+      expect(persisted.id).toBe("test-list");
+      expect(persisted.items).toHaveLength(3);
+      expect(persisted.items[0].text).toBe("First item");
+      expect(persisted.items[0].completed).toBe(true);
+    });
+
+    it("should keep stored fields when createItem gets a doctored checklist", async () => {
+      const formData = createFormData({ text: "Fresh item" });
+
+      const result = await createItem(forgedList as any, formData);
+
+      expect(result.success).toBe(true);
+
+      const persisted = mockListToMarkdown.mock.calls.at(-1)?.[0];
+      expect(persisted.title).toBe("Test List");
+      expect(persisted.owner).toBe("testuser");
+      expect(persisted.category).toBe("TestCategory");
+      expect(persisted.items).toHaveLength(4);
+      expect(persisted.items[0].text).toBe("Fresh item");
+      expect(persisted.items[1].text).toBe("First item");
+    });
+
+    it("should look the checklist up by uuid for the acting user", async () => {
+      const formData = createFormData({ itemId: "item-1", text: "Renamed" });
+
+      await updateItem(forgedList as any, formData);
+
+      expect(mockGetListById).toHaveBeenCalledWith("test-uuid-123", "testuser");
+    });
+
+    it("should refuse when there is no session and no api principal", async () => {
+      mockGetUsername.mockResolvedValue("");
+
+      const formData = createFormData({ itemId: "item-1", completed: "true" });
+
+      const result = await updateItem(mockChecklist as any, formData);
+
+      expect(result.success).toBe(false);
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
+    });
+
+    it("should let an api principal act when there is no session", async () => {
+      mockGetUsername.mockResolvedValue("");
+
+      const formData = createFormData({ itemId: "item-1", completed: "true" });
+
+      const result = await updateItem(
+        mockChecklist as any,
+        formData,
+        "apiuser",
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockGetListById).toHaveBeenCalledWith("test-uuid-123", "apiuser");
     });
   });
 });

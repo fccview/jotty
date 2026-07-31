@@ -34,6 +34,11 @@ interface LegacyEntry {
   permissions: SharingPermissions;
 }
 
+interface OrderConversion {
+  converted: boolean;
+  unresolved: string[];
+}
+
 const MIGRATED_MODES = [Modes.NOTES, Modes.CHECKLISTS];
 
 const _modeDir = (mode: Modes): string =>
@@ -100,13 +105,13 @@ const _stampItems = async (dirPath: string): Promise<void> => {
   }
 };
 
-const _convertOrder = async (dirPath: string): Promise<boolean> => {
+const _convertOrder = async (dirPath: string): Promise<OrderConversion> => {
   const legacyPath = path.join(dirPath, LEGACY_ORDER_FILE);
 
   try {
     await fs.access(legacyPath);
   } catch {
-    return false;
+    return { converted: false, unresolved: [] };
   }
 
   try {
@@ -118,29 +123,29 @@ const _convertOrder = async (dirPath: string): Promise<boolean> => {
 
     const categories: string[] = [];
     const items: string[] = [];
+    const unresolved: string[] = [];
 
     if (Array.isArray(legacy.categories) && legacy.categories.length > 0) {
       const map = await dirUuids(dirPath, legacy.categories);
       legacy.categories.forEach((name) => {
         const uuid = map.get(name);
-        if (uuid) categories.push(uuid);
+        if (uuid) {
+          categories.push(uuid);
+        } else {
+          unresolved.push(name);
+        }
       });
     }
 
     if (Array.isArray(legacy.items) && legacy.items.length > 0) {
       for (const id of legacy.items) {
         const uuid = await _uuidOfFile(path.join(dirPath, `${id}.md`));
-        if (uuid) items.push(uuid);
+        if (uuid) {
+          items.push(uuid);
+        } else {
+          unresolved.push(`${id}.md`);
+        }
       }
-    }
-
-    const lostCats = (legacy.categories?.length || 0) - categories.length;
-    const lostItems = (legacy.items?.length || 0) - items.length;
-
-    if (lostCats > 0 || lostItems > 0) {
-      console.warn(
-        `Dropped ${lostCats} category and ${lostItems} item ordering entries in ${dirPath}, their targets no longer exist`,
-      );
     }
 
     const info = await readCatInfo(dirPath);
@@ -152,11 +157,19 @@ const _convertOrder = async (dirPath: string): Promise<boolean> => {
       },
     });
 
+    if (unresolved.length > 0) {
+      console.warn(
+        `Kept ${LEGACY_ORDER_FILE} in ${dirPath}, these ordering targets did not resolve:`,
+        unresolved.join(", "),
+      );
+      return { converted: true, unresolved };
+    }
+
     await fs.unlink(legacyPath);
-    return true;
+    return { converted: true, unresolved: [] };
   } catch (error) {
     console.error(`Failed to convert order file in ${dirPath}:`, error);
-    return false;
+    return { converted: false, unresolved: [] };
   }
 };
 
@@ -177,8 +190,16 @@ const _stampTree = async (
 
   await _stampItems(dirPath);
 
-  if (await _convertOrder(dirPath)) {
+  const conversion = await _convertOrder(dirPath);
+
+  if (conversion.converted) {
     changes.push(`Converted ordering in ${path.basename(dirPath)}`);
+  }
+
+  if (conversion.unresolved.length > 0) {
+    changes.push(
+      `Kept ${LEGACY_ORDER_FILE} in ${path.basename(dirPath)}, unresolved entries: ${conversion.unresolved.join(", ")}`,
+    );
   }
 
   for (const subDir of subDirs) {

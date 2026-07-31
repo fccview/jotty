@@ -15,6 +15,8 @@ export const mockUpdateNote = vi.fn();
 export const mockDeleteNote = vi.fn();
 export const mockGetUserChecklists = vi.fn();
 export const mockCreateList = vi.fn();
+export const mockMakeList = vi.fn();
+export const mockMakeNote = vi.fn();
 export const mockUpdateList = vi.fn();
 export const mockDeleteList = vi.fn();
 export const mockGetListById = vi.fn();
@@ -52,6 +54,14 @@ vi.mock("@/app/_server/actions/checklist", () => ({
   updateList: (...args: any[]) => mockUpdateList(...args),
   deleteList: (...args: any[]) => mockDeleteList(...args),
   getListById: (...args: any[]) => mockGetListById(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist/creator", () => ({
+  makeList: (...args: any[]) => mockMakeList(...args),
+}));
+
+vi.mock("@/app/_server/actions/note/creator", () => ({
+  makeNote: (...args: any[]) => mockMakeNote(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist-item", () => ({
@@ -102,6 +112,8 @@ export function resetApiMocks() {
   mockDeleteNote.mockReset();
   mockGetUserChecklists.mockReset();
   mockCreateList.mockReset();
+  mockMakeList.mockReset();
+  mockMakeNote.mockReset();
   mockUpdateList.mockReset();
   mockDeleteList.mockReset();
   mockGetListById.mockReset();

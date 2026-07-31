@@ -13,6 +13,7 @@ import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
 import { isEnvEnabled } from "@/app/_utils/env-utils";
+import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface PublicChecklistPageProps {
   params: Promise<{
@@ -39,14 +40,15 @@ export default async function PublicChecklistPage(
   await CheckForNeedsMigration();
 
   if (!isUuid(uuid)) {
-    const { legacyResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
-    const resolved = await legacyResolve(
+    const { publicResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
+    const resolved = await publicResolve(
       Modes.CHECKLISTS,
       UNCATEGORIZED,
-      decodeURIComponent(uuid),
+      decodeSegment(uuid),
+      ItemTypes.CHECKLIST,
     );
 
-    if (resolved && (await isPublicItem(resolved, ItemTypes.CHECKLIST))) {
+    if (resolved) {
       permanentRedirect(`/public/checklist/${resolved}`);
     }
 

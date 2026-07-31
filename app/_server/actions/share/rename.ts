@@ -9,6 +9,7 @@ import { parseSharedWith, toSharedWith } from "@/app/_utils/sharing-utils";
 import { grepFilesByText } from "@/app/_utils/grep-utils";
 import { updateYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { readCatInfo, writeCatInfo } from "./category-info";
+import { dropMounts } from "./mounts";
 
 const RENAMED_MODES = [Modes.NOTES, Modes.CHECKLISTS];
 
@@ -109,7 +110,10 @@ export const renameGrants = async (
       (await _renameInFiles(mode, oldName, newName)) +
       (await _renameInCats(mode, oldName, newName));
 
-    if (perMode > 0) revalidateTag(_modeTag(mode), { expire: 0 });
+    if (perMode > 0) {
+      dropMounts(mode);
+      revalidateTag(_modeTag(mode), { expire: 0 });
+    }
 
     touched += perMode;
   }

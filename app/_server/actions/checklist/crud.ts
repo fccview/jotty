@@ -1,7 +1,7 @@
 "use server";
 
 import path from "path";
-import { Checklist, Item, ChecklistType } from "@/app/_types";
+import { Checklist, Item } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
@@ -27,109 +27,27 @@ import { generateUuid, updateYamlMetadata } from "@/app/_utils/yaml-metadata-uti
 import { logContentEvent } from "@/app/_server/actions/log";
 import { getListById, getUserChecklists } from "./queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { claimedName } from "@/app/_server/actions/lib/actor";
+import { makeList } from "./creator";
 
 export const createList = async (formData: FormData) => {
-  try {
-    const title = formData.get("title") as string;
-    const category = (formData.get("category") as string) || UNCATEGORIZED;
-    const type = (formData.get("type") as ChecklistType) || "simple";
-    const userParam = formData.get("user") as string | null;
+  const actor = await getCurrentUser();
 
-    let username: string | undefined;
-    if (userParam) {
-      try {
-        const parsedUser = JSON.parse(userParam);
-        username = parsedUser.username;
-      } catch {
-        username = undefined;
-      }
-    }
-
-    const currentUser = await getCurrentUser();
-    const actingName = currentUser?.username || username;
-
-    if (!actingName) {
-      return { error: "Not authenticated" };
-    }
-
-    const target = await targetDir(Modes.CHECKLISTS, actingName, category);
-    const verdict = await bouncer(target, actingName, PermissionTypes.EDIT);
-
-    if (!verdict.allowed) {
-      return { error: verdict.error };
-    }
-
-    const categoryDir = target.dir;
-    await ensureDir(categoryDir);
-
-    const fileRenameMode = currentUser?.fileRenameMode || "minimal";
-    const filename = await generateUniqueFilename(
-      categoryDir,
-      title,
-      ".md",
-      fileRenameMode
-    );
-    const id = path.basename(filename, ".md");
-    const filePath = path.join(categoryDir, filename);
-
-    const newList: Checklist = {
-      id,
-      uuid: generateUuid(),
-      title,
-      type,
-      category: target.category,
-      items: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      owner: target.owner,
-    };
-
-    await serverWriteFile(filePath, listToMarkdown(newList));
-
-    try {
-      const content = newList.items.map((i) => i.text).join("\n");
-      const links = await parseInternalLinks(content);
-      const indexUsername = target.owner;
-      if (indexUsername) {
-        await updateIndexForItem(
-          indexUsername,
-          ItemTypes.CHECKLIST,
-          newList.uuid!,
-          links
-        );
-      }
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for new checklist:",
-        newList.id,
-        error
-      );
-    }
-
-    await logContentEvent(
-      "checklist_created",
-      "checklist",
-      newList.uuid!,
-      newList.title,
-      true,
-      { category: newList.category }
-    );
-
-    await broadcast({ type: "checklist", action: "created", entityId: newList.uuid, username: currentUser?.username || "" });
-
-    return { success: true, data: newList };
-  } catch (error) {
-    const { title, uuid } = getFormData(formData, ["title", "uuid"]);
-    await logContentEvent(
-      "checklist_created",
-      "checklist",
-      uuid!,
-      title || "unknown",
-      false
-    );
-    console.error("Error creating list:", error);
-    return { error: "Failed to create list" };
+  if (!actor?.username) {
+    return { error: "Not authenticated" };
   }
+
+  const claimed = claimedName(formData);
+
+  if (claimed && claimed !== actor.username) {
+    console.error(
+      "Refusing checklist creation, claimed identity does not match session:",
+      actor.username,
+    );
+    return { error: "Identity mismatch" };
+  }
+
+  return makeList(actor, formData);
 };
 
 export const updateList = async (formData: FormData) => {

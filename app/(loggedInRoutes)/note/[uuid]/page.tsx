@@ -16,6 +16,7 @@ import { isUuid } from "@/app/_consts/identity";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface NotePageProps {
   params: Promise<{
@@ -48,7 +49,7 @@ export default async function NotePage(props: NotePageProps) {
     const resolved = await legacyResolve(
       Modes.NOTES,
       UNCATEGORIZED,
-      decodeURIComponent(uuid),
+      decodeSegment(uuid),
       username,
     );
 

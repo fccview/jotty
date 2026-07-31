@@ -24,6 +24,7 @@ import {
   isAdmin,
 } from "@/app/_server/actions/users";
 import { readCatInfo, writeCatInfo, catDirByUuid } from "./category-info";
+import { dropMounts } from "./mounts";
 import { resolveAccess, catAccess } from "./access";
 
 const READ_ONLY: SharingPermissions = {
@@ -99,6 +100,7 @@ const _notify = async (
   uuid: string,
   affected: string[],
 ): Promise<void> => {
+  dropMounts(mode);
   revalidateTag(_modeTag(mode), { expire: 0 });
 
   await Promise.all(

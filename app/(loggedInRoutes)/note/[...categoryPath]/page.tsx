@@ -2,7 +2,7 @@ import { redirect, permanentRedirect } from "next/navigation";
 import { Modes } from "@/app/_types/enums";
 import { legacyResolve } from "@/app/_server/actions/lib/legacy-lookup";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { decodeCategoryPath } from "@/app/_utils/global-utils";
+import { decodeCategoryPath, decodeSegment } from "@/app/_utils/global-utils";
 
 interface LegacyNotePageProps {
   params: Promise<{
@@ -27,7 +27,7 @@ export default async function LegacyNotePage(props: LegacyNotePageProps) {
 
   const params = await props.params;
   const { categoryPath } = params;
-  const id = decodeURIComponent(categoryPath[categoryPath.length - 1]);
+  const id = decodeSegment(categoryPath[categoryPath.length - 1]);
   const category = decodeCategoryPath(categoryPath.slice(0, -1).join("/"));
 
   const uuid = await legacyResolve(Modes.NOTES, category, id, user.username);

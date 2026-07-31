@@ -12,6 +12,7 @@ import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
 import { isEnvEnabled } from "@/app/_utils/env-utils";
+import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface PublicNotePageProps {
   params: Promise<{
@@ -34,14 +35,15 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
   const { uuid } = params;
 
   if (!isUuid(uuid)) {
-    const { legacyResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
-    const resolved = await legacyResolve(
+    const { publicResolve } = await import("@/app/_server/actions/lib/legacy-lookup");
+    const resolved = await publicResolve(
       Modes.NOTES,
       UNCATEGORIZED,
-      decodeURIComponent(uuid),
+      decodeSegment(uuid),
+      ItemTypes.NOTE,
     );
 
-    if (resolved && (await isPublicItem(resolved, ItemTypes.NOTE))) {
+    if (resolved) {
       permanentRedirect(`/public/note/${resolved}`);
     }
 

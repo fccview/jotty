@@ -5,6 +5,7 @@ import {
   ensureDir,
   getUserModeDir,
   readOrderFile,
+  serverReadDir,
 } from "@/app/_server/actions/file";
 import { Modes } from "@/app/_types/enums";
 import { Category } from "@/app/_types";
@@ -14,28 +15,50 @@ import { getUsername } from "@/app/_server/actions/users";
 import { mountsFor, userDirFor } from "@/app/_server/actions/share/mounts";
 import { catAccess } from "@/app/_server/actions/share/access";
 
+const _mdCount = async (dir: string): Promise<number> => {
+  try {
+    const entries = await serverReadDir(dir);
+    return entries.filter((e) => e.isFile() && e.name.endsWith(".md")).length;
+  } catch (error) {
+    console.warn("Could not count items in shared folder:", dir, error);
+    return 0;
+  }
+};
+
 const _mountTree = async (
   mode: Modes,
   username: string,
   mount: SharedMount,
 ): Promise<Category[]> => {
-  const root: Category = {
-    name: mount.displayName,
-    count: mount.isImplicit ? mount.itemUuids?.length || 0 : 0,
-    path: mount.displayName,
-    level: 0,
-    uuid: mount.categoryUuid,
-    sharedFrom: mount.owner,
-    permissions: mount.permissions,
-  };
-
-  if (mount.isImplicit) return [root];
+  if (mount.isImplicit) {
+    return [
+      {
+        name: mount.displayName,
+        count: mount.itemUuids?.length || 0,
+        path: mount.displayName,
+        level: 0,
+        uuid: mount.categoryUuid,
+        sharedFrom: mount.owner,
+        permissions: mount.permissions,
+      },
+    ];
+  }
 
   const ownerDir = path.join(
     process.cwd(),
     userDirFor(mode, mount.owner),
     mount.categoryPath,
   );
+
+  const root: Category = {
+    name: mount.displayName,
+    count: await _mdCount(ownerDir),
+    path: mount.displayName,
+    level: 0,
+    uuid: mount.categoryUuid,
+    sharedFrom: mount.owner,
+    permissions: mount.permissions,
+  };
 
   const subTree = await buildCategoryTree(ownerDir, mount.displayName, 1);
 

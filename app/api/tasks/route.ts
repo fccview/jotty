@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getUserChecklists, createList } from "@/app/_server/actions/checklist";
+import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { makeList } from "@/app/_server/actions/checklist/creator";
 import { isKanbanType } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";
 import { toApiItem } from "@/app/_utils/api-item";
@@ -92,13 +93,12 @@ export async function POST(request: NextRequest) {
       formData.append("title", title);
       formData.append("category", category);
       formData.append("type", "kanban");
-      formData.append("user", JSON.stringify(user));
 
       if (statuses) {
         formData.append("statuses", JSON.stringify(statuses));
       }
 
-      const result = await createList(formData);
+      const result = await makeList(user, formData);
 
       if (result.error || !result.data) {
         console.error("Create task error:", result.error);

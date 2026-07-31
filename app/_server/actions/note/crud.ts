@@ -39,118 +39,27 @@ import { noteToMarkdown, convertInternalLinksToNewFormat } from "./parsers";
 import { getNoteById } from "./queries";
 import { targetDir, bouncer } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { claimedName } from "@/app/_server/actions/lib/actor";
+import { makeNote } from "./creator";
 
 export const createNote = async (formData: FormData) => {
-  try {
-    const { title, category, rawContent, user } = getFormData(formData, [
-      "title",
-      "category",
-      "rawContent",
-      "user",
-    ]);
-    const formUser = user ? JSON.parse(user as string) : null;
+  const actor = await getCurrentUser();
 
-    const sanitizedContent = sanitizeMarkdown(rawContent);
-    const { contentWithoutMetadata } = stripYaml(sanitizedContent);
-    const content = contentWithoutMetadata;
-    const encryptionMethod = detectEncryptionMethod(content) || undefined;
-    const encrypted = isEncrypted(content);
-
-    const currentUser = (await getCurrentUser()) || formUser;
-
-    if (!currentUser?.username) {
-      return { error: "Not authenticated" };
-    }
-
-    const target = await targetDir(Modes.NOTES, currentUser.username, category);
-
-    if (target.isMount) {
-      const verdict = await bouncer(
-        target,
-        currentUser.username,
-        PermissionTypes.EDIT,
-      );
-
-      if (!verdict.allowed) {
-        return { error: verdict.error };
-      }
-    }
-
-    const categoryDir = target.dir;
-    await ensureDir(categoryDir);
-
-    const fileRenameMode = currentUser?.fileRenameMode || "minimal";
-    const filename = await generateUniqueFilename(
-      categoryDir,
-      title,
-      ".md",
-      fileRenameMode
-    );
-    const id = path.basename(filename, ".md");
-    const filePath = path.join(categoryDir, filename);
-
-    const extractedTags = extractHashtagsFromContent(content);
-
-    const newDoc: Note = {
-      id,
-      uuid: generateUuid(),
-      title,
-      content,
-      category: target.category,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      owner: target.owner,
-      tags: extractedTags.length > 0 ? extractedTags : undefined,
-      encrypted: encrypted || undefined,
-      encryptionMethod,
-    };
-
-    await serverWriteFile(filePath, noteToMarkdown(newDoc));
-
-    const relativePath = path.join(
-      target.category || UNCATEGORIZED,
-      `${id}.md`
-    );
-
-    if (!isEncrypted(content)) {
-      commitNote(target.owner, relativePath, "create", title).catch(() => { });
-    }
-
-    try {
-      const links = (await parseInternalLinks(newDoc.content)) || [];
-      await updateIndexForItem(target.owner, "note", newDoc.uuid!, links);
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for new note:",
-        newDoc.id,
-        error
-      );
-    }
-
-    await logContentEvent(
-      "note_created",
-      "note",
-      newDoc.uuid!,
-      newDoc.title,
-      true,
-      { category: newDoc.category }
-    );
-
-    await broadcast({ type: "note", action: "created", entityId: newDoc.uuid, username: currentUser.username });
-
-    return { success: true, data: newDoc };
-  } catch (error) {
-    const { title } = getFormData(formData, ["title"]);
-    console.error("Error creating note:", error);
-    await logContentEvent(
-      "note_created",
-      "note",
-      "",
-      title || "unknown",
-      false
-    );
-    return { error: "Failed to create note" };
+  if (!actor?.username) {
+    return { error: "Not authenticated" };
   }
+
+  const claimed = claimedName(formData);
+
+  if (claimed && claimed !== actor.username) {
+    console.error(
+      "Refusing note creation, claimed identity does not match session:",
+      actor.username,
+    );
+    return { error: "Identity mismatch" };
+  }
+
+  return makeNote(actor, formData);
 };
 
 export const updateNote = async (formData: FormData, autosaveNotes = false) => {

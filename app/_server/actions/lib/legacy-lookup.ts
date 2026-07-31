@@ -18,6 +18,7 @@ import {
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { isPathSafe, validateNoPathTraversal } from "@/app/_utils/path-utils";
 import { User } from "@/app/_types";
+import { ItemType } from "@/app/_types/core";
 
 const _modeDir = (mode: Modes, username: string): string =>
   path.join(
@@ -178,4 +179,63 @@ export const legacyResolve = async (
   }
 
   return null;
+};
+
+const _everyMatch = async (
+  mode: Modes,
+  category: string,
+  id: string,
+): Promise<string[]> => {
+  const { readJsonFile } = await import("@/app/_server/actions/file");
+  const owners = ((await readJsonFile(USERS_FILE)) as User[]).map(
+    (u) => u.username,
+  );
+
+  const uuids: string[] = [];
+
+  for (const owner of owners) {
+    const filePath = await _findFile(mode, category, id, owner);
+
+    if (!filePath) {
+      continue;
+    }
+
+    const uuid = await _uuidFor(filePath);
+
+    if (uuid) {
+      uuids.push(uuid);
+    }
+  }
+
+  return uuids;
+};
+
+/**
+ * @deprecated Unauthenticated sibling of legacyResolve. A legacy category+slug
+ * pair is not unique across owners, so this weighs every match and only
+ * resolves when exactly one of them is actually public. Anything else is a
+ * collision and gets no answer at all, so nothing about a private item leaks.
+ */
+export const publicResolve = async (
+  mode: Modes,
+  category: string,
+  id: string,
+  itemType: ItemType,
+): Promise<string | null> => {
+  const { isPublicItem } = await import("@/app/_server/actions/share/queries");
+  const candidates = await _everyMatch(mode, category, id);
+  const publicOnes: string[] = [];
+
+  for (const uuid of candidates) {
+    if (await isPublicItem(uuid, itemType)) {
+      publicOnes.push(uuid);
+    }
+  }
+
+  if (publicOnes.length !== 1) {
+    return null;
+  }
+
+  await _logDeprecated(mode, category, id, publicOnes[0]);
+  return publicOnes[0];
 };
