@@ -95,7 +95,10 @@ export function invalidateCached(key: string) {
 }
 
 export function dropByPrefix(prefix: string) {
-  const known = new Set([...store.keys(), ...pending.keys()]);
+  const known = new Set<string>();
+
+  store.forEach((_, key) => known.add(key));
+  pending.forEach((_, key) => known.add(key));
 
   known.forEach((key) => {
     if (key.startsWith(prefix)) drop(key);
