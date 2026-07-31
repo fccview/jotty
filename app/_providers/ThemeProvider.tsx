@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSettings } from "@/app/_utils/settings-store";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
+import { useRadiusOverride } from "@/app/_hooks/useRadiusOverride";
 import { User } from "../_types";
 import { useTranslations } from "next-intl";
 
@@ -20,6 +21,8 @@ export const ThemeProvider = ({
   const [resolvedTheme, setResolvedTheme] = useState<string>(() =>
     getResolvedTheme(isRwMarkable, user.preferredTheme)
   );
+
+  useRadiusOverride();
 
   const themeIDs = BUILT_IN_THEMES.map((theme) => theme.id);
 

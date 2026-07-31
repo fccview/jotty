@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import {
   getListById,
   updateList,
@@ -17,7 +17,8 @@ export async function GET(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const board = await getListById(params.boardId, user.username);
+      const uuid = await listUuid(request, params.boardId, user.username);
+      const board = uuid ? await getListById(uuid, user.username) : undefined;
       if (!board) {
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
@@ -50,7 +51,8 @@ export async function PUT(
       const body = await request.json();
       const { title, category } = body;
 
-      const board = await getListById(params.boardId, user.username);
+      const uuid = await listUuid(request, params.boardId, user.username);
+      const board = uuid ? await getListById(uuid, user.username) : undefined;
       if (!board) {
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
@@ -63,13 +65,12 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("id", board.id);
+      formData.append("uuid", board.uuid!);
       formData.append("title", title ?? board.title);
       formData.append(
         "category",
         category ?? board.category ?? "Uncategorized",
       );
-      formData.append("originalCategory", board.category || "Uncategorized");
       formData.append("apiUser", JSON.stringify(user));
 
       const result = await updateList(formData);
@@ -95,7 +96,8 @@ export async function DELETE(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const board = await getListById(params.boardId, user.username);
+      const uuid = await listUuid(request, params.boardId, user.username);
+      const board = uuid ? await getListById(uuid, user.username) : undefined;
       if (!board) {
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
@@ -108,8 +110,7 @@ export async function DELETE(
       }
 
       const formData = new FormData();
-      formData.append("id", board.id);
-      formData.append("category", board.category || "Uncategorized");
+      formData.append("uuid", board.uuid!);
       formData.append("apiUser", JSON.stringify(user));
 
       const result = await deleteList(formData);

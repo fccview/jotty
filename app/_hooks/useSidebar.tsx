@@ -4,7 +4,7 @@ import { useNavigationGuard } from "../_providers/NavigationGuardProvider";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Checklist, Category, Note, AppMode, SanitisedUser } from "../_types";
 import { ItemTypes, Modes } from "../_types/enums";
-import { buildCategoryPath } from "../_utils/global-utils";
+import { itemHref } from "../_utils/global-utils";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { useSidebarStore } from "../_utils/sidebar-store";
 
@@ -33,8 +33,6 @@ export const useSidebar = (props: SidebarProps) => {
     toggleCategory: storeToggleCategory,
     expandCategoryPath: storeExpandCategoryPath,
     setAllCategoriesCollapsed,
-    sharedItemsCollapsed,
-    setSharedItemsCollapsed,
     tagsCollapsed,
     setTagsCollapsed,
     categoriesSectionCollapsed,
@@ -168,15 +166,14 @@ export const useSidebar = (props: SidebarProps) => {
   };
 
   const isItemSelected = (item: Checklist | Note) => {
-    const expectedPath = buildCategoryPath(
-      item.category || "Uncategorized",
-      item.id
-    )?.toLowerCase();
+    if (!item.uuid) return false;
 
     return (
       pathname?.toLowerCase() ===
-      `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST
-        }/${expectedPath}`.toLowerCase()
+      itemHref(
+        mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST,
+        item.uuid,
+      ).toLowerCase()
     );
   };
 
@@ -190,13 +187,13 @@ export const useSidebar = (props: SidebarProps) => {
   useEffect(() => {
     if (!isInitialized) return;
 
-    const itemId = pathname.split("/").pop();
+    const itemUuid = pathname.split("/").pop();
     let currentItem: Partial<Checklist> | Partial<Note> | undefined;
 
     if (mode === Modes.CHECKLISTS) {
-      currentItem = checklists.find((c) => c.id === itemId);
+      currentItem = checklists.find((c) => c.uuid === itemUuid);
     } else {
-      currentItem = notes.find((n) => n.id === itemId);
+      currentItem = notes.find((n) => n.uuid === itemUuid);
     }
 
     if (currentItem && currentItem.category) {
@@ -213,8 +210,6 @@ export const useSidebar = (props: SidebarProps) => {
     closeModal,
     collapsedCategoriesForMode,
     toggleCategory,
-    sharedItemsCollapsed,
-    setSharedItemsCollapsed,
     tagsCollapsed,
     setTagsCollapsed,
     categoriesSectionCollapsed,

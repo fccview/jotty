@@ -4,15 +4,17 @@ import { withApiAuth } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile, ensureDir } from "@/app/_server/actions/file";
-import { checkUserPermission } from "@/app/_server/actions/sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
-import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
 
 export const dynamic = "force-dynamic";
 
-type TreeItem = { id: string; order: number; children?: TreeItem[]; [key: string]: unknown };
+type TreeItem = { id: string; order: number; children?: TreeItem[];[key: string]: unknown };
 type Located = { item: TreeItem; siblings: TreeItem[]; index: number };
 
 const findInTree = (items: TreeItem[], id: string): Located | null => {
@@ -69,14 +71,19 @@ export async function PUT(
         );
       }
 
-      const list = await getListById(params.listId, user.username);
+      const uuid = await resolveApiId(
+        Modes.CHECKLISTS,
+        params.listId,
+        request.nextUrl.searchParams.get("category"),
+        user.username,
+      );
+      const list = uuid ? await getListById(uuid, user.username) : undefined;
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
 
-      const canEdit = await checkUserPermission(
-        list.uuid || params.listId,
-        list.category || "",
+      const canEdit = await canReach(
+        list.uuid!,
         ItemTypes.CHECKLIST,
         user.username,
         PermissionTypes.EDIT,
@@ -119,13 +126,13 @@ export async function PUT(
       const updatedList = { ...list, items, updatedAt: new Date().toISOString() };
 
       const ownerDir = path.join(process.cwd(), "data", CHECKLISTS_FOLDER, list.owner!);
-      const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
+      const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
       await ensureDir(categoryDir);
       await serverWriteFile(path.join(categoryDir, `${list.id}.md`), listToMarkdown(updatedList as any));
 
       try {
         revalidatePath("/");
-        revalidatePath(`/checklist/${list.id}`);
+        revalidatePath(`/checklist/${list.uuid}`);
       } catch (error) {
         console.warn("Cache revalidation failed, but data was saved successfully:", error);
       }
@@ -134,7 +141,7 @@ export async function PUT(
         await broadcast({
           type: "checklist",
           action: "updated",
-          entityId: list.id,
+          entityId: list.uuid,
           username: user.username,
         });
       } catch (error) {

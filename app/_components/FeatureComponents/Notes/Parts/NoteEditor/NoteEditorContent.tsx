@@ -19,6 +19,7 @@ import {
   isEncrypted,
 } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface NoteEditorContentProps {
   isEditing: boolean;
@@ -30,7 +31,6 @@ interface NoteEditorContentProps {
     isDirty: boolean,
   ) => void;
   noteId?: string;
-  noteCategory?: string;
   encrypted?: boolean;
   onOpenDecryptModal?: () => void;
   onOpenViewModal?: () => void;
@@ -43,7 +43,6 @@ export const NoteEditorContent = ({
   editorContent,
   onEditorContentChange,
   noteId,
-  noteCategory,
   encrypted,
   onOpenDecryptModal,
   onOpenViewModal,
@@ -61,15 +60,8 @@ export const NoteEditorContent = ({
   const isMinimalMode = user?.disableRichEditor === "enable";
 
   const referencingItems = useMemo(() => {
-    return getReferences(
-      linkIndex,
-      noteId,
-      noteCategory,
-      "note",
-      notes,
-      checklists,
-    );
-  }, [linkIndex, noteId, noteCategory, notes, checklists]);
+    return getReferences(linkIndex, noteId, ItemTypes.NOTE, notes, checklists);
+  }, [linkIndex, noteId, notes, checklists]);
 
   useEffect(() => {
     if (
@@ -175,8 +167,9 @@ export const NoteEditorContent = ({
         <>
           <ReadingProgressBar />
           <div
-            className={`px-6 pt-6 pb-4 ${compactMode ? "max-w-[900px] mx-auto" : ""
-              }`}
+            className={`px-6 pt-6 pb-4 ${
+              compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
           >
             <UnifiedMarkdownRenderer
               content={encrypted ? editorContent : noteContent || ""}

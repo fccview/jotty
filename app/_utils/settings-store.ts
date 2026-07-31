@@ -37,13 +37,15 @@ const getSystemTheme = (
 
 interface SettingsState {
   theme: Theme;
-  showEmojis: boolean;
+  showEmojis: boolean | null;
   autosaveNotes: boolean;
   showMarkdownPreview: boolean;
   showCompletedSuggestions: boolean;
   viewMode: 'card' | 'list' | 'grid';
+  borderRadius: number | null;
+  setBorderRadius: (radius: number | null) => void;
   setTheme: (theme: Theme) => void;
-  setShowEmojis: (show: boolean) => void;
+  setShowEmojis: (show: boolean | null) => void;
   setAutosaveNotes: (enabled: boolean) => void;
   setShowMarkdownPreview: (show: boolean) => void;
   setShowCompletedSuggestions: (show: boolean) => void;
@@ -60,12 +62,14 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
   persist(
     (set, get) => ({
       theme: "system",
-      showEmojis: true,
+      showEmojis: null,
       autosaveNotes: true,
       showMarkdownPreview: false,
       showCompletedSuggestions: true,
       compactMode: false,
       viewMode: 'card',
+      borderRadius: null,
+      setBorderRadius: (radius) => set({ borderRadius: radius }),
       setTheme: (theme) => set({ theme }),
       setShowEmojis: (show) => set({ showEmojis: show }),
       setAutosaveNotes: (enabled) => set({ autosaveNotes: enabled }),
@@ -96,6 +100,13 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
     }),
     {
       name: "checklist-settings",
+      version: 1,
+      migrate: (persisted, version) => {
+        if (version < 1) {
+          return { ...(persisted as SettingsState), showEmojis: null };
+        }
+        return persisted as SettingsState;
+      },
     }
   )
 );

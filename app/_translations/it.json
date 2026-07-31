@@ -248,7 +248,8 @@
     "history": "Cronologia",
     "items": "Elementi",
     "noResults": "Nessun risultato",
-    "thisEntry": "questa voce"
+    "thisEntry": "questa voce",
+    "preview": "Anteprima"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -889,7 +890,9 @@
     "checklistItemClickActionDescription": "Scegli cosa succede quando fai clic sul testo di un'attività. \n\"Segna come completato\" attiva/disattiva la casella di controllo (impostazione predefinita); \n\"Modifica nome attività\" apre l'attività per la modifica in linea: dovrai comunque fare clic sulla casella di controllo stessa per completarla.",
     "checklistItemClickActionToggle": "Contrassegna come completo/incompleto",
     "checklistItemClickActionEdit": "Modifica elemento elenco",
-    "useSystemDefault": "Utilizza l'impostazione predefinita del sistema"
+    "useSystemDefault": "Utilizza l'impostazione predefinita del sistema",
+    "selectShowChecklistEmojis": "Seleziona visibilità emoji",
+    "showChecklistEmojisDescription": "Mostra un'emoji automatica accanto agli elementi della checklist in base al testo."
   },
   "admin": {
     "title": "Admin",
@@ -1078,7 +1081,11 @@
     "defaultDateFormat": "Formato data predefinito",
     "defaultDateFormatDescription": "Utilizzato quando la preferenza del formato data di un utente è impostata su \"Utilizza impostazione predefinita del sistema\".",
     "defaultTimeFormatDescription": "Utilizzato quando la preferenza del formato dell'ora di un utente è impostata su \"Utilizza impostazione predefinita del sistema\".",
-    "defaultTimeFormat": "Formato ora predefinito"
+    "defaultTimeFormat": "Formato ora predefinito",
+    "borderRadius": "Raggio dei bordi",
+    "borderRadiusDescription": "Imposta l'arrotondamento degli angoli per tutta l'istanza. Gli utenti possono sovrascriverlo nelle impostazioni rapide.",
+    "borderRadiusSaved": "Raggio dei bordi salvato",
+    "borderRadiusLoadError": "Impossibile caricare il raggio dei bordi"
   },
   "errors": {
     "notFound": "Non Trovato",
@@ -1324,7 +1331,27 @@
     "failedToCopyUrl": "Impossibile copiare l'URL negli appunti",
     "searchUsers": "Cerca utenti...",
     "toggleAllPermissions": "Attiva/Disattiva tutti i permessi",
-    "shareModalTitle": "Condividi {type}"
+    "shareModalTitle": "Condividi {type}",
+    "readOnly": "Sola lettura",
+    "byOwner": "condiviso da {user}",
+    "mountStaysTop": "Le cartelle condivise restano al livello principale",
+    "inheritedVia": "Condiviso tramite {category}, da {user}",
+    "shareFolder": "Condividi questa cartella",
+    "folderShareHint": "Tutto ciò che si trova in questa cartella, ora e in futuro, viene condiviso con le persone che scegli.",
+    "optOut": "Mantieni privato questo elemento",
+    "optOutHint": "Sostituisce la condivisione della cartella solo per questo elemento.",
+    "useInherited": "Segui la cartella",
+    "publicFolderWarning": "Qualsiasi cosa inserita in questa cartella diventa immediatamente leggibile da chiunque abbia il link.",
+    "readTip": "Sola lettura: {users}",
+    "writeTip": "Può modificare: {users}",
+    "deleteTip": "Può modificare ed eliminare: {users}",
+    "publicTip": "Condiviso pubblicamente",
+    "fromUserRead": "Sola lettura, condiviso da {user}",
+    "fromUserWrite": "Può modificare, condiviso da {user}",
+    "fromUserDelete": "Può modificare ed eliminare, condiviso da {user}",
+    "leaveShare": "Abbandona condivisione",
+    "confirmLeaveItem": "Vuoi rimuovere il tuo accesso a \"{itemTitle}\"? Sparirà dalla barra laterale e il proprietario dovrà condividerlo di nuovo per ridartelo.",
+    "confirmLeaveFolder": "Vuoi rimuovere il tuo accesso a \"{categoryName}\", condivisa da {owner}? Sparirà dalla barra laterale e {owner} dovrà condividerla di nuovo per ridartela."
   },
   "encryption": {
     "encrypt": "Cripta",
@@ -1486,7 +1513,10 @@
     "viewMode": "Modalità Visualizzazione",
     "viewModeCard": "Card",
     "viewModeList": "Lista",
-    "viewModeGrid": "Griglia"
+    "viewModeGrid": "Griglia",
+    "borderRadius": "Arrotondamento angoli",
+    "useInstanceDefault": "Usa il valore predefinito",
+    "borderRadiusDescription": "Gli angoli si aggiornano in tutta l'app mentre trascini."
   },
   "migration": {
     "migrationComplete": "Migrazione Completata",

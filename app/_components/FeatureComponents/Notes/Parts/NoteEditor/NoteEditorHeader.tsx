@@ -8,8 +8,6 @@ import {
   ArrowLeft01Icon,
   Tick02Icon,
   GridIcon,
-  Globe02Icon,
-  UserMultipleIcon,
   Folder02Icon,
   Orbit01Icon,
   FloppyDiskIcon,
@@ -38,12 +36,10 @@ import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { Modes } from "@/app/_types/enums";
-import {
-  copyTextToClipboard,
-  encodeCategoryPath,
-  buildCategoryPath,
-} from "@/app/_utils/global-utils";
-import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { copyTextToClipboard } from "@/app/_utils/global-utils";
+import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
+import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
+import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
@@ -163,13 +159,7 @@ export const NoteEditorHeader = ({
   };
 
   const handleCopyId = async () => {
-    const success = await copyTextToClipboard(
-      `${note?.uuid
-        ? note?.uuid
-        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id
-        }`
-      }`
-    );
+    const success = await copyTextToClipboard(note?.uuid || "");
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -214,73 +204,24 @@ export const NoteEditorHeader = ({
     }
   };
 
-  const handlePermanentDecryption = async (newContent: string) => {
+  const saveAndReload = async (newContent: string) => {
     const formData = new FormData();
-    formData.append("id", note.id);
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
-    formData.append("originalCategory", note.category || "Uncategorized");
-    if (note.uuid) {
-      formData.append("uuid", note.uuid);
-    }
+    formData.append("uuid", note.uuid || "");
 
     const result = await updateNote(formData);
 
     if (result.success && result.data) {
-      const categoryPath = buildCategoryPath(
-        result.data.category || t("notes.uncategorized"),
-        result.data.id
-      );
-      const newPath = `/note/${categoryPath}`;
-      const currentPath = window.location.pathname;
-
-      if (newPath === currentPath) {
-        window.location.reload();
-      } else {
-        router.push(newPath);
-      }
-    }
-  };
-
-  const handleEncryptionSuccess = async (newContent: string) => {
-    const formData = new FormData();
-    formData.append("id", note.id);
-    formData.append("title", title);
-    formData.append("content", newContent);
-    formData.append("category", category);
-    formData.append("originalCategory", note.category || "Uncategorized");
-    if (note.uuid) {
-      formData.append("uuid", note.uuid);
-    }
-
-    const result = await updateNote(formData);
-
-    if (result.success && result.data) {
-      const categoryPath = buildCategoryPath(
-        result.data.category || t("notes.uncategorized"),
-        result.data.id
-      );
-      const newPath = `/note/${categoryPath}`;
-      const currentPath = window.location.pathname;
-
-      if (newPath === currentPath) {
-        window.location.reload();
-      } else {
-        router.push(newPath);
-      }
+      window.location.reload();
     }
   };
 
   const { globalSharing } = useAppMode();
-  const encodedCategory = encodeCategoryPath(metadata.category);
-  const itemDetails = sharingInfo(
-    globalSharing,
-    metadata.uuid || metadata.id,
-    encodedCategory
-  );
+  const itemDetails = sharingInfo(globalSharing, metadata.uuid || "");
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
-  const sharedWith = itemDetails.sharedWith;
+  const grants = shareGrants(globalSharing, metadata.uuid || "", Modes.NOTES);
   const isPubliclyShared = itemDetails.isPublic;
 
   const canDelete = permissions?.canDelete;
@@ -327,12 +268,7 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0"
-                      title={`Copy ID: ${note?.uuid
-                        ? note?.uuid
-                        : `${encodeCategoryPath(
-                          note?.category || t("notes.uncategorized")
-                        )}/${note?.id}`
-                        }`}
+                      title={`Copy ID: ${note?.uuid || ""}`}
                     >
                       {copied ? (
                         <Tick02Icon className="h-3 w-3 text-green-500" />
@@ -344,20 +280,17 @@ export const NoteEditorHeader = ({
                     {note?.encrypted && (
                       <LockKeyIcon className="h-4 w-4 text-primary flex-shrink-0" />
                     )}
-                    {isPubliclyShared && (
-                      <span title={t("notes.publiclySharedNote")}>
-                        <Globe02Icon className="h-4 w-4 text-primary" />
-                      </span>
-                    )}
-                    {isShared && (
-                      <span
-                        title={`Shared with ${sharedWith.join(", ")}`}
-                        className="cursor-pointer hover:text-primary"
-                        onClick={() => setShowSharedWithModal(true)}
-                      >
-                        <UserMultipleIcon className="h-3 w-3" />
-                      </span>
-                    )}
+                    <SharedFromBadge
+                      owner={note?.sharedFrom}
+                      permissions={note?.permissions}
+                    />
+                    <ShareBadges
+                      grants={grants}
+                      isPublic={isPubliclyShared}
+                      onClick={
+                        isShared ? () => setShowSharedWithModal(true) : undefined
+                      }
+                    />
                   </div>
                   {category && category !== t("notes.uncategorized") && (
                     <div className="flex items-center gap-1.5 mt-1 text-md lg:text-sm text-muted-foreground">
@@ -721,9 +654,7 @@ export const NoteEditorHeader = ({
                   ? handleEditEncrypted
                   : encryptionModalMode === "save"
                     ? handleSaveEncrypted
-                    : encryptionModalMode === "decrypt"
-                      ? handlePermanentDecryption
-                      : handleEncryptionSuccess
+                    : saveAndReload
             }
           />
         ) : (
@@ -745,9 +676,7 @@ export const NoteEditorHeader = ({
                   ? handleEditEncrypted
                   : encryptionModalMode === "save"
                     ? handleSaveEncrypted
-                    : encryptionModalMode === "decrypt"
-                      ? handlePermanentDecryption
-                      : handleEncryptionSuccess
+                    : saveAndReload
             }
           />
         );
@@ -758,8 +687,6 @@ export const NoteEditorHeader = ({
           isOpen={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
           noteUuid={note.uuid || ""}
-          noteId={note.id}
-          noteCategory={note.category || "Uncategorized"}
           noteOwner={note.owner || ""}
           noteTitle={note.title}
           currentContent={note.content || ""}

@@ -6,6 +6,8 @@ export {
   getSettings,
   getAppSettings,
   updateAppSettings,
+  getBorderRadius,
+  saveBorderRadius,
 } from "./settings";
 
 export {

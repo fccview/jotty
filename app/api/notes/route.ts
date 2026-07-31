@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getUserNotes, createNote } from "@/app/_server/actions/note";
+import { getUserNotes } from "@/app/_server/actions/note";
+import { makeNote } from "@/app/_server/actions/note/creator";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
       }
 
       const transformedNotes = filteredNotes.map((note) => ({
-        id: note.uuid || note.id,
+        id: note.uuid,
         title: note.title,
         category: note.category || "Uncategorized",
         content: note.content,
@@ -76,15 +77,14 @@ export async function POST(request: NextRequest) {
       formData.append("title", title);
       formData.append("rawContent", content);
       formData.append("category", category);
-      formData.append("user", JSON.stringify(user));
 
-      const result = await createNote(formData);
+      const result = await makeNote(user, formData);
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }
 
       const transformedNote = {
-        id: result.data?.uuid || result.data?.id,
+        id: result.data?.uuid,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
         content: result.data?.content || content,

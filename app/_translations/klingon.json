@@ -248,7 +248,8 @@
     "reconnecting": "Reconnecting...",
     "hide": "So'",
     "items": "chelmey",
-    "thisEntry": "this entry"
+    "thisEntry": "this entry",
+    "preview": "leghpre'"
   },
   "history": {
     "noteHistory": "ghItlh Qu' tetlh",
@@ -914,7 +915,9 @@
     "checklistItemClickActionDescription": "Choose what happens when you click a task's text. \"Mark as complete\" toggles the checkbox  (default); \"Edit task name\" opens the task for inline editing — you'll still need to click the checkbox itself to complete it.",
     "checklistItemClickActionToggle": "Mark as complete/incomplete",
     "checklistItemClickActionEdit": "Edit list item",
-    "useSystemDefault": "Use system default"
+    "useSystemDefault": "Use system default",
+    "selectShowChecklistEmojis": "Emoji cha'ghach yIwIv",
+    "showChecklistEmojisDescription": "mu'mey ghop tetlh Segh Emoji cha' pagh."
   },
   "admin": {
     "title": "ra'wI'",
@@ -1103,7 +1106,11 @@
     "defaultDateFormat": "Default Date Format",
     "defaultDateFormatDescription": "Used when a user's date format preference is set to \"Use system default\".",
     "defaultTimeFormatDescription": "Used when a user's time format preference is set to \"Use system default\".",
-    "defaultTimeFormat": "Default Time Format"
+    "defaultTimeFormat": "Default Time Format",
+    "borderRadius": "veH lermoHwI'",
+    "borderRadiusDescription": "Hoch pat veH lermoHghach wIv. lo'wI'pu' chaH DIvI' choH laH.",
+    "borderRadiusSaved": "veH lermoHwI' polta'",
+    "borderRadiusLoadError": "veH lermoHwI' laDlaHbe'"
   },
   "errors": {
     "notFound": "tu'be'lu'",
@@ -1349,7 +1356,27 @@
     "failedToCopyUrl": "URL lan Qapla'be'",
     "searchUsers": "lo'wI'pu' yInej...",
     "toggleAllPermissions": "Hoch chaw' yIchoH",
-    "shareModalTitle": "{type} yIghom"
+    "shareModalTitle": "{type} yIghom",
+    "readOnly": "laD neH",
+    "byOwner": "{user} lo'taHvIS",
+    "mountStaysTop": "ngevwI' qach yotlh 'oH tlhIngan Hol yotlh",
+    "inheritedVia": "{category} lo'taHvIS {user} ngeH",
+    "shareFolder": "qachvam ngeH",
+    "folderShareHint": "qachvamDaq Hoch, DaH je leSpoH, nuvpu' DawIvbogh ngeH.",
+    "optOut": "wa'vam pegh",
+    "optOutHint": "qach ngeH lujmoH wa'vam neH.",
+    "useInherited": "qach tlha'",
+    "publicFolderWarning": "qachvamDaq Hoch lanlu'bogh SibI' Hoch laDlaH.",
+    "readTip": "laD neH: {users}",
+    "writeTip": "choH laH: {users}",
+    "deleteTip": "choH 'ej Qaw' laH: {users}",
+    "publicTip": "Hoch lujatlh",
+    "fromUserRead": "laD neH, {user} lujatlh",
+    "fromUserWrite": "choH laH, {user} lujatlh",
+    "fromUserDelete": "choH 'ej Qaw' laH, {user} lujatlh",
+    "leaveShare": "boQta' yImej",
+    "confirmLeaveItem": "\"{itemTitle}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej ghaj ghaHvaD boQta' chu' 'oH.",
+    "confirmLeaveFolder": "{owner} boQta' \"{categoryName}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej {owner} boQta' chu' 'oH."
   },
   "encryption": {
     "encrypt": "pegh",
@@ -1511,7 +1538,10 @@
     "viewMode": "legh Mode",
     "viewModeCard": "BeQmey",
     "viewModeList": "Tetlh",
-    "viewModeGrid": "Saras"
+    "viewModeGrid": "Saras",
+    "borderRadius": "veH lermoHghach",
+    "useInstanceDefault": "pat DIvI' yIlo'",
+    "borderRadiusDescription": "bIQeqtaHvIS Hoch pat veHmey choH."
   },
   "migration": {
     "migrationComplete": "choH rIn",

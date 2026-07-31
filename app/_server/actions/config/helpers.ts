@@ -12,8 +12,7 @@ import { getSettings } from "./settings";
 
 export const getMedatadaTitle = async (
   appMode: Modes,
-  id: string,
-  category?: string
+  uuid: string
 ): Promise<Metadata> => {
   const user = await getCurrentUser();
   const settings = await getSettings();
@@ -24,8 +23,8 @@ export const getMedatadaTitle = async (
 
   const item =
     appMode === Modes.CHECKLISTS
-      ? await getListById(id, undefined, category)
-      : await getNoteById(id, category);
+      ? await getListById(uuid)
+      : await getNoteById(uuid);
 
   return {
     title: `${item?.title || defaultTitle} - ${appName}`,

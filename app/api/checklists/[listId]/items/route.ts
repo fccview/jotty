@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { createItem } from "@/app/_server/actions/checklist-item";
 import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 
 export const dynamic = "force-dynamic";
 
@@ -26,15 +27,14 @@ export async function POST(
         );
       }
 
-      const list = await getListById(params.listId, user.username);
+      const uuid = await listUuid(request, params.listId, user.username);
+      const list = uuid ? await getListById(uuid, user.username) : undefined;
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
 
       const formData = new FormData();
-      formData.append("listId", list.id);
       formData.append("text", text);
-      formData.append("category", list.category || "Uncategorized");
 
       if (parentIndex !== undefined) {
         const indexPath = parentIndex
@@ -63,7 +63,7 @@ export async function POST(
         }
 
         const newSubItem: any = {
-          id: `${list.id}-sub-${Date.now()}`,
+          id: `${list.uuid}-sub-${Date.now()}`,
           text,
           completed: false,
           order: 0,
@@ -110,7 +110,7 @@ export async function POST(
         );
         const filePath = path.join(
           ownerDir,
-          list.category || "Uncategorized",
+          list.category || UNCATEGORIZED,
           `${list.id}.md`,
         );
 

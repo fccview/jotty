@@ -17,7 +17,6 @@ import {
 } from "@dnd-kit/sortable";
 import { useChecklistHome } from "@/app/_hooks/useChecklistHome";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/app/_utils/settings-store";
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
@@ -135,11 +134,8 @@ export const ChecklistHome = ({
     selectedCategory?.split("/").pop() || selectedCategory;
 
   const getListSharer = (list: Checklist) => {
-    const encodedCategory = encodeCategoryPath(
-      list.category || "Uncategorized",
-    );
     const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.id === list.id && item.category === encodedCategory,
+      (item) => item.uuid === list.uuid,
     );
     return sharedItem?.sharer;
   };
@@ -229,14 +225,14 @@ export const ChecklistHome = ({
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={pinned.map((list) => list.uuid || list.id)}
+                items={pinned.map((list) => list.uuid)}
                 strategy={verticalListSortingStrategy}
               >
                 {viewMode === "card" && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {pinned.map((list) => (
                       <ChecklistCard
-                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        key={`pinned-${list.category}-${list.uuid}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={true}
@@ -252,7 +248,7 @@ export const ChecklistHome = ({
                   <div className="space-y-3">
                     {pinned.map((list) => (
                       <ChecklistListItem
-                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        key={`pinned-${list.category}-${list.uuid}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={true}
@@ -268,7 +264,7 @@ export const ChecklistHome = ({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {pinned.map((list) => (
                       <ChecklistGridItem
-                        key={`pinned-${list.category}-${list.uuid || list.id}`}
+                        key={`pinned-${list.category}-${list.uuid}`}
                         list={list}
                         onSelect={onSelectChecklist!}
                         isPinned={true}

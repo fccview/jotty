@@ -6,6 +6,7 @@ import { useSharingTools } from "@/app/_hooks/useSharingTools";
 import { FeedbackMessage } from "./Parts/SharingFeedbackMessage";
 import { ShareTabs } from "./Parts/ShareTabs";
 import { UsersShareTab } from "./Parts/UsersShareTab";
+import { InheritedNotice } from "./Parts/InheritedNotice";
 import { PublicShareTab } from "./Parts/PublicShareTabs";
 import { ItemType } from "@/app/_types";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
@@ -26,12 +27,10 @@ export const ShareModal = ({
     isOpen,
     onClose,
     enabled: true,
-    itemId: metadata.id,
     itemTitle: metadata.title,
     itemType: metadata.type as ItemType,
-    itemCategory: metadata.category,
     itemOwner: metadata.owner || "",
-    itemUuid: metadata.uuid,
+    itemUuid: metadata.uuid || "",
   });
   const { error, success, activeTab, setActiveTab, resetMessages } = hookResult;
 
@@ -49,7 +48,16 @@ export const ShareModal = ({
         <FeedbackMessage error={error} success={success} />
         <ShareTabs activeTab={activeTab} setActiveTab={handleTabChange} />
         {activeTab === "users" ? (
-          <UsersShareTab {...hookResult} />
+          <>
+            <InheritedNotice
+              inheritedFrom={hookResult.inheritedFrom}
+              itemOwner={metadata.owner || ""}
+              isOptedOut={hookResult.isOptedOut}
+              isLoading={hookResult.isLoading}
+              onToggle={hookResult.handleOptOut}
+            />
+            <UsersShareTab {...hookResult} />
+          </>
         ) : (
           <PublicShareTab
             {...hookResult}

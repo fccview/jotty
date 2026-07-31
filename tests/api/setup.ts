@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import { NextRequest } from "next/server";
+import { Modes } from "@/app/_types/enums";
 
 export const mockUser = {
   username: "testuser",
@@ -14,6 +15,8 @@ export const mockUpdateNote = vi.fn();
 export const mockDeleteNote = vi.fn();
 export const mockGetUserChecklists = vi.fn();
 export const mockCreateList = vi.fn();
+export const mockMakeList = vi.fn();
+export const mockMakeNote = vi.fn();
 export const mockUpdateList = vi.fn();
 export const mockDeleteList = vi.fn();
 export const mockGetListById = vi.fn();
@@ -31,6 +34,8 @@ export const mockExportAllUsersData = vi.fn();
 export const mockExportWholeDataFolder = vi.fn();
 export const mockGetExportProgress = vi.fn();
 export const mockGetAppSettings = vi.fn();
+export const mockResolveApiId = vi.fn();
+export const mockLegacyResolve = vi.fn();
 
 vi.mock("@/app/_server/actions/api", () => ({
   authenticateApiKey: (...args: any[]) => mockAuthenticateApiKey(...args),
@@ -49,6 +54,14 @@ vi.mock("@/app/_server/actions/checklist", () => ({
   updateList: (...args: any[]) => mockUpdateList(...args),
   deleteList: (...args: any[]) => mockDeleteList(...args),
   getListById: (...args: any[]) => mockGetListById(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist/creator", () => ({
+  makeList: (...args: any[]) => mockMakeList(...args),
+}));
+
+vi.mock("@/app/_server/actions/note/creator", () => ({
+  makeNote: (...args: any[]) => mockMakeNote(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist-item", () => ({
@@ -85,6 +98,11 @@ vi.mock("@/app/_server/actions/config", () => ({
   getAppSettings: (...args: any[]) => mockGetAppSettings(...args),
 }));
 
+vi.mock("@/app/_server/actions/lib/legacy-lookup", () => ({
+  resolveApiId: (...args: any[]) => mockResolveApiId(...args),
+  legacyResolve: (...args: any[]) => mockLegacyResolve(...args),
+}));
+
 export function resetApiMocks() {
   vi.clearAllMocks();
   mockAuthenticateApiKey.mockReset();
@@ -94,6 +112,8 @@ export function resetApiMocks() {
   mockDeleteNote.mockReset();
   mockGetUserChecklists.mockReset();
   mockCreateList.mockReset();
+  mockMakeList.mockReset();
+  mockMakeNote.mockReset();
   mockUpdateList.mockReset();
   mockDeleteList.mockReset();
   mockGetListById.mockReset();
@@ -111,6 +131,9 @@ export function resetApiMocks() {
   mockExportWholeDataFolder.mockReset();
   mockGetExportProgress.mockReset();
   mockGetAppSettings.mockReset();
+  mockLegacyResolve.mockReset();
+  mockResolveApiId.mockReset();
+  mockResolveApiId.mockImplementation(async (_mode: Modes, param: string) => param);
 }
 
 export function createMockRequest(

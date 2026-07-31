@@ -9,6 +9,7 @@ import {
   CheckmarkSquare04Icon,
   FolderAddIcon,
   Folder02Icon,
+  LogoutSquare02Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -20,6 +21,14 @@ import { Modes } from "@/app/_types/enums";
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
 import { useTranslations } from "next-intl";
+import { PUBLIC_USER } from "@/app/_consts/sharing";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
+import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { leaveFolder } from "@/app/_server/actions/share/operations";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface CategoryRendererProps {
   category: Category;
@@ -32,6 +41,7 @@ interface CategoryRendererProps {
   onRenameCategory: (categoryName: string) => void;
   onQuickCreate: (categoryName: string) => void;
   onCreateSubcategory: (categoryPath: string) => void;
+  onShareCategory: (categoryPath: string) => void;
   onClose?: () => void;
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
@@ -52,6 +62,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     onRenameCategory,
     onQuickCreate,
     onCreateSubcategory,
+    onShareCategory,
     onClose,
     onEditItem,
     isItemSelected,
@@ -59,10 +70,12 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     user,
   } = props;
 
+  const router = useRouter();
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+
   const getItemsInCategory = (categoryPath: string) =>
     allItems.filter(
-      (item) =>
-        (item.category || "Uncategorized") === categoryPath && !item.isShared
+      (item) => (item.category || UNCATEGORIZED) === categoryPath
     );
   const getSubCategories = (parentPath: string) =>
     allCategories.filter((cat) => cat.parent === parentPath);
@@ -84,40 +97,96 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const isCollapsed = collapsedCategories.has(category.path);
   const hasContent = categoryItems.length > 0 || subCategories.length > 0;
 
-  const dropdownItems = [
-    {
-      label: t(mode === Modes.CHECKLISTS ? "checklists.newChecklist" : "notes.newNote"),
-      onClick: () => onQuickCreate(category.path),
-      icon:
-        mode === Modes.CHECKLISTS ? (
-          <CheckmarkSquare04Icon className="h-4 w-4" />
-        ) : (
-          <File02Icon className="h-4 w-4" />
-        ),
-    },
-    {
-      label: t("common.newCategory"),
-      onClick: () => onCreateSubcategory(category.path),
-      icon: <FolderAddIcon className="h-4 w-4" />,
-    },
+  const isOwned = !category.sharedFrom;
+  const canWrite = isOwned || category.permissions?.canEdit === true;
+  const canRemove = isOwned || category.permissions?.canDelete === true;
+
+  const handleLeaveFolder = async () => {
+    const result = await leaveFolder(
+      mode === Modes.CHECKLISTS ? Modes.CHECKLISTS : Modes.NOTES,
+      category.sharedFrom!,
+      category.uuid!,
+    );
+
+    if (result.success) {
+      router.refresh();
+    } else {
+      console.error("Failed to leave folder share:", result.error);
+    }
+
+    setShowLeaveModal(false);
+  };
+
+  const folderGrants = category.sharedWith || {};
+  const isPublicFolder = Boolean(folderGrants[PUBLIC_USER]);
+  const outgoing = Object.fromEntries(
+    Object.entries(folderGrants).filter(([name]) => name !== PUBLIC_USER),
+  );
+  const isSharedOut = Object.keys(outgoing).length > 0 || isPublicFolder;
+
+  const ownerActions = [
     { type: "divider" as const },
+    {
+      label: t("sharing.shareFolder"),
+      onClick: () => onShareCategory(category.path),
+    },
     {
       label: t("common.renameCategory"),
       onClick: () => onRenameCategory(category.path),
     },
+    ...(canRemove
+      ? [
+          {
+            label: t("common.deleteCategory"),
+            onClick: () => onDeleteCategory(category.path),
+            variant: "destructive" as const,
+          },
+        ]
+      : []),
+  ];
+
+  const createActions = canWrite
+    ? [
+        {
+          label: t(
+            mode === Modes.CHECKLISTS ? "checklists.newChecklist" : "notes.newNote",
+          ),
+          onClick: () => onQuickCreate(category.path),
+          icon:
+            mode === Modes.CHECKLISTS ? (
+              <CheckmarkSquare04Icon className="h-4 w-4" />
+            ) : (
+              <File02Icon className="h-4 w-4" />
+            ),
+        },
+        {
+          label: t("common.newCategory"),
+          onClick: () => onCreateSubcategory(category.path),
+          icon: <FolderAddIcon className="h-4 w-4" />,
+        },
+      ]
+    : [];
+
+  const leaveAction = [
+    ...(createActions.length > 0 ? [{ type: "divider" as const }] : []),
     {
-      label: t("common.deleteCategory"),
-      onClick: () => onDeleteCategory(category.path),
+      label: t("sharing.leaveShare"),
+      onClick: () => setShowLeaveModal(true),
       variant: "destructive" as const,
+      icon: <LogoutSquare02Icon className="h-4 w-4" />,
     },
+  ];
+
+  const dropdownItems = [
+    ...createActions,
+    ...(isOwned ? ownerActions : leaveAction),
   ];
 
   const firstChildType = subCategories[0] ? "category" : "item";
   const firstChildId = subCategories[0]
     ? `category::${subCategories[0].path}`
     : categoryItems[0]
-      ? `item::${categoryItems[0].category || "Uncategorized"}::${categoryItems[0].id
-      }`
+      ? `item::${categoryItems[0].uuid}`
       : undefined;
 
   return (
@@ -134,6 +203,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
           data={{
             type: "category",
             categoryPath: category.path,
+            accepts: canWrite ? "all" : "none",
           }}
           className="group"
         >
@@ -187,7 +257,25 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                     <Folder01Icon className="h-5 w-5 lg:h-4 lg:w-4 shrink-0" />
                   )}
                   <span className="truncate font-[500]">{category.name}</span>
-                  <span className="text-md lg:text-xs text-muted-foreground ml-auto">
+                  <SharedFromBadge
+                    owner={category.sharedFrom}
+                    permissions={category.permissions}
+                    showAvatar
+                    className="ml-auto"
+                    iconClassName="h-4 w-4 lg:h-3 lg:w-3"
+                  />
+                  <ShareBadges
+                    grants={outgoing}
+                    isPublic={isPublicFolder}
+                    className={cn(!category.sharedFrom && "ml-auto")}
+                    iconClassName="h-4 w-4 lg:h-3 lg:w-3"
+                  />
+                  <span
+                    className={cn(
+                      "text-md lg:text-xs text-muted-foreground",
+                      !isSharedOut && !category.sharedFrom && "ml-auto",
+                    )}
+                  >
                     {getTotalItemsInCategory(category.path)}
                   </span>
                 </button>
@@ -242,13 +330,12 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
           ))}
 
           {categoryItems.map((item) => (
-            <div key={`${category.path}-${item.id}`}>
+            <div key={item.uuid}>
               <Draggable
-                id={`item::${item.category || "Uncategorized"}::${item.id}`}
+                id={`item::${item.uuid}`}
                 data={{
                   type: "item",
-                  category: item.category || "Uncategorized",
-                  id: item.id,
+                  uuid: item.uuid,
                 }}
               >
                 <SidebarItem
@@ -262,14 +349,12 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                 />
               </Draggable>
               <DropIndicator
-                id={`drop-after-item::${item.category || "Uncategorized"}::${item.id
-                  }`}
+                id={`drop-after-item::${item.uuid}`}
                 data={{
                   type: "drop-indicator",
                   parentPath: category.path,
                   position: "after",
-                  targetDndId: `item::${item.category || "Uncategorized"}::${item.id
-                    }`,
+                  targetDndId: `item::${item.uuid}`,
                   targetType: "item",
                 }}
               />
@@ -277,6 +362,19 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={handleLeaveFolder}
+        title={t("sharing.leaveShare")}
+        message={t("sharing.confirmLeaveFolder", {
+          categoryName: category.name,
+          owner: category.sharedFrom || "",
+        })}
+        confirmText={t("sharing.leaveShare")}
+        variant="destructive"
+      />
     </div>
   );
 };

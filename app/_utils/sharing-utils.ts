@@ -1,4 +1,83 @@
-import { Modes } from "../_types/enums";
+import { ItemTypes, Modes, SharePerms } from "../_types/enums";
+import { ItemType, SharingPermissions } from "../_types/core";
+import {
+  SHARED_WITH_NONE,
+  SHARE_CODE_SEPARATOR,
+  PUBLIC_USER,
+} from "../_consts/sharing";
+import { sharedWithSchema } from "../_schemas/sharing-schemas";
+
+const CODE_TO_PERMS: Record<SharePerms, SharingPermissions> = {
+  [SharePerms.READ]: { canRead: true, canEdit: false, canDelete: false },
+  [SharePerms.WRITE]: { canRead: true, canEdit: true, canDelete: false },
+  [SharePerms.DELETE]: { canRead: true, canEdit: true, canDelete: true },
+};
+
+export const permsFromCode = (code: string): SharingPermissions | null =>
+  CODE_TO_PERMS[code as SharePerms] || null;
+
+export const codeFromPerms = (perms: SharingPermissions): SharePerms => {
+  if (perms.canDelete) return SharePerms.DELETE;
+  if (perms.canEdit) return SharePerms.WRITE;
+  return SharePerms.READ;
+};
+
+export interface ParsedSharedWith {
+  optedOut: boolean;
+  users: Record<string, SharingPermissions>;
+}
+
+export const parseSharedWith = (value: unknown): ParsedSharedWith | null => {
+  if (value === undefined || value === null) return null;
+
+  const parsed = sharedWithSchema.safeParse(value);
+  if (!parsed.success) return null;
+
+  const entries = Array.isArray(parsed.data)
+    ? parsed.data
+    : parsed.data.split(",");
+
+  if (
+    entries.length === 0 ||
+    (entries.length === 1 && entries[0].trim() === SHARED_WITH_NONE)
+  ) {
+    return { optedOut: true, users: {} };
+  }
+
+  const users: Record<string, SharingPermissions> = {};
+
+  entries.forEach((entry) => {
+    const [username, code] = String(entry).split(SHARE_CODE_SEPARATOR);
+    const perms = permsFromCode(code || SharePerms.READ);
+    if (username && perms) {
+      users[username.trim()] = perms;
+    }
+  });
+
+  return { optedOut: false, users };
+};
+
+export const toSharedWith = (
+  users: Record<string, SharingPermissions>,
+): string => {
+  const entries = Object.entries(users).map(
+    ([username, perms]) =>
+      `${username}${SHARE_CODE_SEPARATOR}${codeFromPerms(perms)}`,
+  );
+
+  return entries.length > 0 ? entries.join(", ") : SHARED_WITH_NONE;
+};
+
+export const isPublicUser = (username: string): boolean =>
+  username === PUBLIC_USER;
+
+export const mountName = (
+  mount: { displayName: string; owner: string },
+  taken: string[],
+): string =>
+  taken.includes(mount.displayName)
+    ? `${mount.displayName} (${mount.owner})`
+    : mount.displayName;
 
 interface ItemDetails {
   exists: boolean;
@@ -6,21 +85,14 @@ interface ItemDetails {
   sharedWith: string[];
 }
 
-export const sharingInfo = (
-  data: any,
-  targetId: string,
-  targetCategory: string,
-) => {
+export const sharingInfo = (data: any, targetUuid: string) => {
   let result: ItemDetails = {
     exists: false,
     isPublic: false,
     sharedWith: [] as string[],
   };
 
-  const isMatch = (item: { id?: string; uuid?: string; category?: string }) =>
-    item.uuid === targetId ||
-    (item.id === targetId &&
-      item.category?.toLowerCase() === targetCategory?.toLowerCase());
+  const isMatch = (item: { uuid?: string }) => item.uuid === targetUuid;
 
   for (const categoryKey in data) {
     const categoryObject = data[categoryKey];
@@ -47,19 +119,44 @@ export const sharingInfo = (
   return result;
 };
 
+export const shareGrants = (
+  data: any,
+  targetUuid: string,
+  itemType?: Modes,
+): Record<string, SharingPermissions> => {
+  const grants: Record<string, SharingPermissions> = {};
+  const buckets =
+    itemType !== undefined ? [itemType] : (Object.keys(data || {}) as string[]);
+
+  for (const bucket of buckets) {
+    const receivers = data?.[bucket];
+
+    if (typeof receivers !== "object" || receivers === null) continue;
+
+    for (const receiver in receivers) {
+      if (receiver === PUBLIC_USER) continue;
+
+      const entries = receivers[receiver];
+      if (!Array.isArray(entries)) continue;
+
+      const found = entries.find(
+        (entry: { uuid?: string }) => entry.uuid === targetUuid,
+      );
+
+      if (found?.permissions) grants[receiver] = found.permissions;
+    }
+  }
+
+  return grants;
+};
+
 export const getPermissions = (
   data: any,
   username: string,
-  targetId: string,
-  targetCategory: string,
+  targetUuid: string,
   itemType?: Modes,
 ) => {
-  const isMatch = (item: { id?: string; uuid?: string; category?: string }) =>
-    item.uuid === targetId ||
-    (item.id === targetId &&
-      (!targetCategory ||
-        !item.category ||
-        item.category?.toLowerCase() === targetCategory?.toLowerCase()));
+  const isMatch = (item: { uuid?: string }) => item.uuid === targetUuid;
 
   const categoriesToSearch =
     itemType !== undefined ? [itemType] : (Object.keys(data || {}) as string[]);
@@ -84,3 +181,6 @@ export const getPermissions = (
 
   return null;
 };
+
+export const modeFor = (itemType: ItemType): Modes =>
+  itemType === ItemTypes.CHECKLIST ? Modes.CHECKLISTS : Modes.NOTES;

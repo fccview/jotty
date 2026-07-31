@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById, updateList, deleteList } from "@/app/_server/actions/checklist";
 
 export const dynamic = "force-dynamic";
@@ -11,16 +11,16 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ listI
       const body = await request.json();
       const { title, category } = body;
 
-      const list = await getListById(params.listId, user.username);
+      const uuid = await listUuid(request, params.listId, user.username);
+      const list = uuid ? await getListById(uuid, user.username) : undefined;
       if (!list) {
         return NextResponse.json({ error: "Checklist not found" }, { status: 404 });
       }
 
       const formData = new FormData();
-      formData.append("id", list.id);
+      formData.append("uuid", list.uuid!);
       formData.append("title", title ?? list.title);
       formData.append("category", category ?? list.category ?? "Uncategorized");
-      formData.append("originalCategory", list.category || "Uncategorized");
       formData.append("apiUser", JSON.stringify(user));
 
       const result = await updateList(formData);
@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ listI
       }
 
       const transformedChecklist = {
-        id: result.data?.uuid || result.data?.id,
+        id: result.data?.uuid,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
         type: result.data?.type || "simple",
@@ -52,15 +52,14 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ li
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const list = await getListById(params.listId, user.username);
+      const uuid = await listUuid(request, params.listId, user.username);
+      const list = uuid ? await getListById(uuid, user.username) : undefined;
       if (!list) {
         return NextResponse.json({ error: "Checklist not found" }, { status: 404 });
       }
 
       const formData = new FormData();
-      formData.append("id", list.id);
-      if (list.uuid) formData.append("uuid", list.uuid);
-      formData.append("category", list.category || "Uncategorized");
+      formData.append("uuid", list.uuid!);
       formData.append("apiUser", JSON.stringify(user));
 
       const result = await deleteList(formData);

@@ -248,7 +248,8 @@
     "history": "Historique",
     "items": "Éléments",
     "noResults": "Aucun résultat",
-    "thisEntry": "cette entrée"
+    "thisEntry": "cette entrée",
+    "preview": "Aperçu"
   },
   "auth": {
     "loginTitle": "Connexion",
@@ -889,7 +890,9 @@
     "checklistItemClickActionDescription": "Choisissez ce qui se passe lorsque vous cliquez sur le texte d'une tâche. \n« Marquer comme terminé » coche la case (par défaut) ; \n« Modifier le nom de la tâche » ouvre la tâche pour une modification en ligne ; vous devrez toujours cliquer sur la case à cocher elle-même pour la terminer.",
     "checklistItemClickActionToggle": "Marquer comme complet/incomplet",
     "checklistItemClickActionEdit": "Modifier un élément de liste",
-    "useSystemDefault": "Utiliser les valeurs par défaut du système"
+    "useSystemDefault": "Utiliser les valeurs par défaut du système",
+    "selectShowChecklistEmojis": "Choisir la visibilité des émojis",
+    "showChecklistEmojisDescription": "Affiche un émoji automatique à côté des éléments de liste selon leur texte."
   },
   "admin": {
     "title": "Admin",
@@ -1078,7 +1081,11 @@
     "defaultDateFormat": "Format de date par défaut",
     "defaultDateFormatDescription": "Utilisé lorsque la préférence de format de date d'un utilisateur est définie sur « Utiliser les paramètres par défaut du système ».",
     "defaultTimeFormatDescription": "Utilisé lorsque la préférence de format d'heure d'un utilisateur est définie sur « Utiliser les paramètres par défaut du système ».",
-    "defaultTimeFormat": "Format d'heure par défaut"
+    "defaultTimeFormat": "Format d'heure par défaut",
+    "borderRadius": "Rayon des bords",
+    "borderRadiusDescription": "Définit l'arrondi des coins pour toute l'instance. Les utilisateurs peuvent le remplacer dans les réglages rapides.",
+    "borderRadiusSaved": "Rayon des bords enregistré",
+    "borderRadiusLoadError": "Impossible de charger le rayon des bords"
   },
   "errors": {
     "notFound": "Introuvable",
@@ -1324,7 +1331,27 @@
     "failedToCopyUrl": "Échec de la copie de l’URL dans le presse‑papiers",
     "searchUsers": "Rechercher des utilisateurs...",
     "toggleAllPermissions": "Basculer toutes les permissions",
-    "shareModalTitle": "Partager {type}"
+    "shareModalTitle": "Partager {type}",
+    "readOnly": "Lecture seule",
+    "byOwner": "partagé par {user}",
+    "mountStaysTop": "Les dossiers partagés restent au niveau supérieur",
+    "inheritedVia": "Partagé via {category}, par {user}",
+    "shareFolder": "Partager ce dossier",
+    "folderShareHint": "Tout ce qui se trouve dans ce dossier, maintenant et plus tard, est partagé avec les personnes que vous choisissez.",
+    "optOut": "Garder cet élément privé",
+    "optOutHint": "Remplace le partage du dossier pour cet élément uniquement.",
+    "useInherited": "Suivre le dossier",
+    "publicFolderWarning": "Tout ce qui est placé dans ce dossier devient immédiatement lisible par quiconque possède le lien.",
+    "readTip": "Lecture seule : {users}",
+    "writeTip": "Peut modifier : {users}",
+    "deleteTip": "Peut modifier et supprimer : {users}",
+    "publicTip": "Partagé publiquement",
+    "fromUserRead": "Lecture seule, partagé par {user}",
+    "fromUserWrite": "Peut modifier, partagé par {user}",
+    "fromUserDelete": "Peut modifier et supprimer, partagé par {user}",
+    "leaveShare": "Quitter le partage",
+    "confirmLeaveItem": "Retirer votre propre accès à \"{itemTitle}\" ? L'élément disparaît de votre barre latérale et le propriétaire devra le repartager.",
+    "confirmLeaveFolder": "Retirer votre propre accès à \"{categoryName}\", partagé par {owner} ? Le dossier disparaît de votre barre latérale et {owner} devra le repartager."
   },
   "encryption": {
     "encrypt": "Chiffrer",
@@ -1486,7 +1513,10 @@
     "viewMode": "Mode d’affichage",
     "viewModeCard": "Cartes",
     "viewModeList": "Liste",
-    "viewModeGrid": "Grille"
+    "viewModeGrid": "Grille",
+    "borderRadius": "Arrondi des coins",
+    "useInstanceDefault": "Utiliser la valeur par défaut",
+    "borderRadiusDescription": "Les coins se mettent à jour dans toute l'application pendant que vous glissez."
   },
   "migration": {
     "migrationComplete": "Migration terminée",

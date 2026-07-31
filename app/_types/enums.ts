@@ -51,6 +51,17 @@ export enum PermissionTypes {
   DELETE = "canDelete",
 }
 
+export enum SharePerms {
+  READ = "r",
+  WRITE = "rw",
+  DELETE = "rwd",
+}
+
+export enum ShareScope {
+  FILE = "file",
+  CATEGORY = "category",
+}
+
 export enum AdminTabs {
   OVERVIEW = "overview",
   USERS = "users",

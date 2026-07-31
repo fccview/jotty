@@ -11,6 +11,7 @@ import {
   Category,
   EnableRecurrence,
   ShowCompletedSuggestions,
+  ShowChecklistEmojis,
   TableSyntax,
   LandingPage,
   NotesDefaultEditor,
@@ -62,6 +63,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
   enableRecurrence: user?.enableRecurrence || "disable",
   showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
+  showChecklistEmojis: user?.showChecklistEmojis || "enable",
   fileRenameMode: user?.fileRenameMode || "minimal",
   preferredDateFormat: user?.preferredDateFormat || "system",
   preferredTimeFormat: user?.preferredTimeFormat || "system",
@@ -167,6 +169,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
   const hasChecklistsChanges = hasChanges([
     "enableRecurrence",
     "showCompletedSuggestions",
+    "showChecklistEmojis",
     "defaultChecklistFilter",
     "checklistItemClickAction",
   ]);
@@ -306,6 +309,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
   ];
 
   const showCompletedSuggestionsOptions = [
+    { id: "enable", name: t('settings.enable') },
+    { id: "disable", name: t('settings.disable') },
+  ];
+
+  const showChecklistEmojisOptions = [
     { id: "enable", name: t('settings.enable') },
     { id: "disable", name: t('settings.disable') },
   ];
@@ -850,6 +858,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                 [
                   "enableRecurrence",
                   "showCompletedSuggestions",
+                  "showChecklistEmojis",
                   "defaultChecklistFilter",
                   "checklistItemClickAction",
                 ],
@@ -898,6 +907,27 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           />
           <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.completedSuggestionsDescription')}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="show-checklist-emojis">
+            {t('settingsModal.showEmojis')}
+          </Label>
+          <Dropdown
+            value={currentSettings.showChecklistEmojis || "enable"}
+            onChange={(value) =>
+              handleSettingChange(
+                "showChecklistEmojis",
+                value as ShowChecklistEmojis
+              )
+            }
+            options={showChecklistEmojisOptions}
+            placeholder={t('settings.selectShowChecklistEmojis')}
+            className="w-full"
+          />
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.showChecklistEmojisDescription')}
           </p>
         </div>
 

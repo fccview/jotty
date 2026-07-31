@@ -1,7 +1,6 @@
 import { LinkIndex } from "../_types";
 import { Checklist, ItemType, Note } from "../_types";
 import { ItemTypes } from "../_types/enums";
-import { encodeCategoryPath } from "./global-utils";
 
 export const createItemMap = (itemsArray: Note[] | Checklist[]) => {
   return itemsArray.reduce(
@@ -25,13 +24,10 @@ export const getReferencingItems = (
       const item = map.get(uuid);
 
       if (item) {
-        const path = `${encodeCategoryPath(item.category || "Uncategorized")}/${item.id
-          }`;
         return {
           type,
-          path,
           title: item.title,
-          uuid: item.uuid || "",
+          uuid: item.uuid,
           category: item.category || "Uncategorized",
           owner: item.owner,
         };
@@ -44,7 +40,6 @@ export const getReferencingItems = (
 export const getReferences = (
   linkIndex: LinkIndex | null,
   itemUuid: string | undefined,
-  itemCategory: string | undefined,
   itemType: ItemType,
   notes: Partial<Note>[],
   checklists: Partial<Checklist>[]
@@ -58,7 +53,7 @@ export const getReferences = (
 
   const items: Array<{
     type: ItemType;
-    path: string;
+    uuid: string;
     title: string;
     category: string;
     owner: string | undefined;

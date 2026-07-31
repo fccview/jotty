@@ -17,8 +17,6 @@ interface KanbanColumnProps {
   title: string;
   items: Item[];
   status: string;
-  checklistId: string;
-  category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
   onOpenDetail: (item: Item) => void;
   isShared: boolean;
@@ -81,8 +79,6 @@ const KanbanColumnComponent = ({
   title,
   items,
   status,
-  checklistId,
-  category,
   isShared,
   onUpdate,
   onOpenDetail,
@@ -222,8 +218,6 @@ const KanbanColumnComponent = ({
               item={item}
               index={index}
               listId={status}
-              checklistId={checklistId}
-              category={category}
               onUpdate={onUpdate}
               onOpenDetail={onOpenDetail}
               isShared={isShared}

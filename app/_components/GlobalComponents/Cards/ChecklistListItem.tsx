@@ -39,7 +39,7 @@ export const ChecklistListItem = ({
     transition,
     isDragging,
   } = useSortable({
-    id: list?.uuid || list.id,
+    id: list.uuid,
     disabled: !isDraggable,
   });
 

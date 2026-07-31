@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import {
   getListById,
   updateList,
@@ -17,7 +17,8 @@ export async function GET(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const task = await getListById(params.taskId, user.username);
+      const uuid = await listUuid(request, params.taskId, user.username);
+      const task = uuid ? await getListById(uuid, user.username) : undefined;
       if (!task) {
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
@@ -30,7 +31,7 @@ export async function GET(
       }
 
       const transformedTask = {
-        id: task.uuid || task.id,
+        id: task.uuid,
         title: task.title,
         category: task.category || "Uncategorized",
         statuses: task.statuses || [
@@ -64,7 +65,8 @@ export async function PUT(
       const body = await request.json();
       const { title, category } = body;
 
-      const task = await getListById(params.taskId, user.username);
+      const uuid = await listUuid(request, params.taskId, user.username);
+      const task = uuid ? await getListById(uuid, user.username) : undefined;
       if (!task) {
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
@@ -77,10 +79,9 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("id", task.id);
+      formData.append("uuid", task.uuid!);
       formData.append("title", title ?? task.title);
       formData.append("category", category ?? task.category ?? "Uncategorized");
-      formData.append("originalCategory", task.category || "Uncategorized");
       formData.append("apiUser", JSON.stringify(user));
 
       const result = await updateList(formData);
@@ -89,7 +90,7 @@ export async function PUT(
       }
 
       const transformedTask = {
-        id: result.data?.uuid || result.data?.id,
+        id: result.data?.uuid,
         title: result.data?.title,
         category: result.data?.category || "Uncategorized",
         statuses: result.data?.statuses || [
@@ -119,7 +120,8 @@ export async function DELETE(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const task = await getListById(params.taskId, user.username);
+      const uuid = await listUuid(request, params.taskId, user.username);
+      const task = uuid ? await getListById(uuid, user.username) : undefined;
       if (!task) {
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
       }
@@ -132,8 +134,7 @@ export async function DELETE(
       }
 
       const formData = new FormData();
-      formData.append("id", task.id);
-      formData.append("category", task.category || "Uncategorized");
+      formData.append("uuid", task.uuid!);
       formData.append("apiUser", JSON.stringify(user));
 
       const result = await deleteList(formData);

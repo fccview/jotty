@@ -3,6 +3,7 @@ import { EncryptionSettings } from "./encryption";
 
 export type EnableRecurrence = "enable" | "disable";
 export type ShowCompletedSuggestions = "enable" | "disable";
+export type ShowChecklistEmojis = "enable" | "disable";
 export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";
@@ -63,6 +64,7 @@ export interface User {
   pinnedNotes?: string[];
   enableRecurrence?: EnableRecurrence;
   showCompletedSuggestions?: ShowCompletedSuggestions;
+  showChecklistEmojis?: ShowChecklistEmojis;
   fileRenameMode?: FileRenameMode;
   preferredDateFormat: PreferredDateFormat;
   preferredTimeFormat: PreferredTimeFormat;

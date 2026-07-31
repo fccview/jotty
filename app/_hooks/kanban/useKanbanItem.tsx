@@ -12,26 +12,23 @@ import {
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { useToast } from "@/app/_providers/ToastProvider";
 
-const TIMER_STORAGE_KEY = (checklistId: string, itemId: string) =>
-  `jotty-timer-${checklistId}-${itemId}`;
+const TIMER_STORAGE_KEY = (checklistUuid: string, itemId: string) =>
+  `jotty-timer-${checklistUuid}-${itemId}`;
 
 const TIMER_SYNC_EVENT = "jotty-timer-sync";
 
 interface UseKanbanItemProps {
   item: Item;
   checklist: Checklist;
-  checklistId: string;
-  category: string;
   onUpdate: (updatedChecklist: Checklist) => void;
 }
 
 export const useKanbanItem = ({
   item,
   checklist,
-  checklistId,
-  category,
   onUpdate,
 }: UseKanbanItemProps) => {
+  const checklistUuid = checklist.uuid || "";
   const t = useTranslations();
   const { showToast } = useToast();
   const [isRunning, setIsRunning] = useState(false);
@@ -57,7 +54,7 @@ export const useKanbanItem = ({
   }, [item.timeEntries]);
 
   useEffect(() => {
-    const storageKey = TIMER_STORAGE_KEY(checklistId, item.id);
+    const storageKey = TIMER_STORAGE_KEY(checklistUuid, item.id);
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
@@ -69,10 +66,10 @@ export const useKanbanItem = ({
         }
       }
     } catch {}
-  }, [checklistId, item.id]);
+  }, [checklistUuid, item.id]);
 
   useEffect(() => {
-    const storageKey = TIMER_STORAGE_KEY(checklistId, item.id);
+    const storageKey = TIMER_STORAGE_KEY(checklistUuid, item.id);
     if (isRunning && startTime) {
       localStorage.setItem(storageKey, JSON.stringify({
         startTime: startTime.toISOString(),
@@ -86,10 +83,10 @@ export const useKanbanItem = ({
     window.dispatchEvent(
       new CustomEvent(TIMER_SYNC_EVENT, { detail: { key: storageKey } })
     );
-  }, [isRunning, startTime, checklistId, item.id]);
+  }, [isRunning, startTime, checklistUuid, item.id]);
 
   useEffect(() => {
-    const storageKey = TIMER_STORAGE_KEY(checklistId, item.id);
+    const storageKey = TIMER_STORAGE_KEY(checklistUuid, item.id);
 
     const _syncFromStorage = () => {
       let parsed: { startTime?: string; isRunning?: boolean } | null = null;
@@ -127,7 +124,7 @@ export const useKanbanItem = ({
       window.removeEventListener("storage", _handleStorage);
       window.removeEventListener(TIMER_SYNC_EVENT, _handleSync);
     };
-  }, [checklistId, item.id]);
+  }, [checklistUuid, item.id]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -156,10 +153,9 @@ export const useKanbanItem = ({
 
     const updatedTimeEntries = [...(item.timeEntries || []), newTimeEntry];
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
     formData.append("timeEntries", JSON.stringify(updatedTimeEntries));
-    formData.append("category", category);
     const result = await updateItemStatus(formData);
 
     setTotalTime(
@@ -199,13 +195,12 @@ export const useKanbanItem = ({
       duration: minutes * 60,
     };
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
     formData.append(
       "timeEntries",
       JSON.stringify([...(item.timeEntries || []), newTimeEntry])
     );
-    formData.append("category", category);
     const result = await updateItemStatus(formData);
     if (result.success && result.data) {
       onUpdate(result.data as Checklist);
@@ -231,10 +226,9 @@ export const useKanbanItem = ({
     setIsEditing(false);
     if (editText.trim() && editText !== item.text) {
       const formData = new FormData();
-      formData.append("listId", checklistId);
+      formData.append("uuid", checklistUuid);
       formData.append("itemId", item.id);
       formData.append("text", editText.trim());
-      formData.append("category", category || "Uncategorized");
 
       const result = await updateItem(checklist, formData);
       if (result.success && result.data) {
@@ -262,10 +256,9 @@ export const useKanbanItem = ({
 
   const handleStatusChange = async (newStatus: string) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
     formData.append("status", newStatus);
-    formData.append("category", category || "Uncategorized");
     const result = await updateItemStatus(formData);
     if (result.success && result.data) {
       onUpdate(result.data as Checklist);
@@ -275,10 +268,9 @@ export const useKanbanItem = ({
 
   const handlePriorityChange = async (priority: KanbanPriority) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
     formData.append("priority", priority);
-    formData.append("category", category || "Uncategorized");
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data as Checklist);
@@ -287,10 +279,9 @@ export const useKanbanItem = ({
 
   const handleScoreChange = async (score: number) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
     formData.append("score", score.toString());
-    formData.append("category", category || "Uncategorized");
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data as Checklist);
@@ -299,10 +290,9 @@ export const useKanbanItem = ({
 
   const handleAssigneeChange = async (assignee: string) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
     formData.append("assignee", assignee);
-    formData.append("category", category || "Uncategorized");
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data as Checklist);
@@ -311,10 +301,9 @@ export const useKanbanItem = ({
 
   const handleReminderSet = async (reminder: KanbanReminder | null) => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
     formData.append("reminder", reminder ? JSON.stringify(reminder) : "");
-    formData.append("category", category || "Uncategorized");
     const result = await updateItem(checklist, formData);
     if (result.success && result.data) {
       onUpdate(result.data as Checklist);
@@ -323,21 +312,21 @@ export const useKanbanItem = ({
 
   const _confirmDelete = async () => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
-    formData.append("category", category || "Uncategorized");
 
     const result = await deleteItem(formData);
     if (result.success) {
       showToast({ type: "success", title: t("common.success"), message: t("kanban.itemDeleted") });
       onUpdate({
-        id: checklistId,
+        id: checklist.id,
+        uuid: checklist.uuid,
         title: "",
         type: "kanban",
         items: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        category,
+        category: checklist.category,
         isDeleted: true,
       });
     }
@@ -346,9 +335,8 @@ export const useKanbanItem = ({
 
   const handleArchive = async () => {
     const formData = new FormData();
-    formData.append("listId", checklistId);
+    formData.append("uuid", checklistUuid);
     formData.append("itemId", item.id);
-    formData.append("category", category || "Uncategorized");
 
     const result = await archiveItem(formData);
     if (result.success && result.data) {

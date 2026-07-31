@@ -4,6 +4,7 @@ import {
   mockAuthenticateApiKey,
   mockGetUserNotes,
   mockCreateNote,
+  mockMakeNote,
   mockUpdateNote,
   mockDeleteNote,
   resetApiMocks,
@@ -86,7 +87,7 @@ describe("Notes API", () => {
         createdAt: "2024-01-01T00:00:00.000Z",
         updatedAt: "2024-01-01T00:00:00.000Z",
       }
-      mockCreateNote.mockResolvedValue({ success: true, data: newNote })
+      mockMakeNote.mockResolvedValue({ success: true, data: newNote })
 
       const request = createMockRequest("POST", "http://localhost:3000/api/notes", {
         title: "Test Note - API",

@@ -2,7 +2,6 @@ import { Checklist, Item } from "@/app/_types";
 import { PencilEdit02Icon, Clock01Icon } from "hugeicons-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
 
@@ -18,14 +17,9 @@ const LastModifiedCreatedInfo = ({
   const { allSharedItems } = useAppMode();
   const { formatDateTimeString } = usePreferredDateTime();
   const t = useTranslations();
-  const encodedCategory = encodeCategoryPath(
-    checklist.category || "Uncategorized"
-  );
 
   const isShared = allSharedItems?.checklists.some(
-    (sharedChecklist) =>
-      sharedChecklist.id === checklist.id &&
-      sharedChecklist.category === encodedCategory
+    (sharedChecklist) => sharedChecklist.uuid === checklist.uuid
   );
   return (
     <>

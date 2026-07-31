@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mockFs, resetAllMocks, createFormData } from "../setup";
 
 const mockGetCurrentUser = vi.fn();
-const mockCheckUserPermission = vi.fn();
+const mockCanReach = vi.fn();
 const mockGetNoteById = vi.fn();
 const mockEnsureRepo = vi.fn();
 const mockGetSettings = vi.fn();
@@ -17,8 +17,8 @@ vi.mock("@/app/_server/actions/users", () => ({
     getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
 }));
 
-vi.mock("@/app/_server/actions/sharing", () => ({
-    checkUserPermission: (...args: any[]) => mockCheckUserPermission(...args),
+vi.mock("@/app/_server/actions/share/queries", () => ({
+    canReach: (...args: any[]) => mockCanReach(...args),
 }));
 
 vi.mock("@/app/_server/actions/note", () => ({
@@ -51,7 +51,7 @@ describe("History Actions", () => {
     beforeEach(() => {
         resetAllMocks();
         mockGetCurrentUser.mockResolvedValue({ username: "testuser" });
-        mockCheckUserPermission.mockResolvedValue(true);
+        mockCanReach.mockResolvedValue(true);
         mockEnsureRepo.mockResolvedValue(undefined);
         mockGetSettings.mockResolvedValue({ editor: { historyEnabled: true } });
         mockExtractYamlMetadata.mockReturnValue({
@@ -78,16 +78,10 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "old-id",
-                "OldCategory",
                 "testuser"
             );
 
-            expect(mockGetNoteById).toHaveBeenCalledWith(
-                "test-uuid",
-                undefined,
-                "testuser"
-            );
+            expect(mockGetNoteById).toHaveBeenCalledWith("test-uuid", "testuser");
 
             expect(mockGitInstance.raw).toHaveBeenCalledWith(
                 expect.arrayContaining([
@@ -110,8 +104,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "nonexistent-uuid",
-                "note-id",
-                "Category",
                 "testuser"
             );
 
@@ -135,8 +127,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser"
             );
 
@@ -163,8 +153,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser",
                 1,
                 20
@@ -180,8 +168,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser"
             );
 
@@ -190,7 +176,7 @@ describe("History Actions", () => {
         });
 
         it("should check permissions before returning history", async () => {
-            mockCheckUserPermission.mockResolvedValue(false);
+            mockCanReach.mockResolvedValue(false);
             mockGetNoteById.mockResolvedValue({
                 id: "note-id",
                 uuid: "test-uuid",
@@ -199,8 +185,6 @@ describe("History Actions", () => {
 
             const result = await getHistory(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser"
             );
 
@@ -213,8 +197,6 @@ describe("History Actions", () => {
         it("should validate commit hash format", async () => {
             const result = await getVersion(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser",
                 "invalid-hash"
             );
@@ -236,8 +218,6 @@ describe("History Actions", () => {
 
             const result = await getVersion(
                 "test-uuid",
-                "note-id",
-                "Category",
                 "testuser",
                 "abc1234"
             );
@@ -259,13 +239,118 @@ describe("History Actions", () => {
 
             const result = await getVersion(
                 "test-uuid",
-                "note-id",
-                "NewCategory",
                 "testuser",
                 "abc1234"
             );
 
             expect(result.success).toBe(true);
+        });
+
+        it("should prefer a strict uuid match over a uuid-less file at the current path", async () => {
+            mockGetNoteById.mockResolvedValue({
+                id: "note-id",
+                uuid: "test-uuid",
+                category: "Category",
+                owner: "testuser",
+            });
+
+            mockGitInstance.raw.mockResolvedValue(
+                "Category/note-id.md\nArchive/moved-note.md"
+            );
+
+            mockGitInstance.show.mockImplementation(async (args: string[]) =>
+                args[0].endsWith("Archive/moved-note.md")
+                    ? "---\nuuid: test-uuid\n---\n\nThe right note"
+                    : "---\ntitle: Someone else\n---\n\nThe wrong note"
+            );
+
+            mockExtractYamlMetadata.mockImplementation((content: string) =>
+                content.includes("uuid: test-uuid")
+                    ? {
+                        metadata: { uuid: "test-uuid" },
+                        contentWithoutMetadata: "The right note",
+                    }
+                    : {
+                        metadata: { title: "Someone else" },
+                        contentWithoutMetadata: "The wrong note",
+                    }
+            );
+
+            const result = await getVersion(
+                "test-uuid",
+                "testuser",
+                "abc1234"
+            );
+
+            expect(result.success).toBe(true);
+            expect(result.data?.content).toBe("The right note");
+        });
+
+        it("should fall back to a uuid-less file at the current path", async () => {
+            mockGetNoteById.mockResolvedValue({
+                id: "note-id",
+                uuid: "test-uuid",
+                category: "Category",
+                owner: "testuser",
+            });
+
+            mockGitInstance.raw.mockResolvedValue("Category/note-id.md");
+            mockGitInstance.show.mockResolvedValue(
+                "---\ntitle: Pre migration\n---\n\nPre migration body"
+            );
+            mockExtractYamlMetadata.mockReturnValue({
+                metadata: { title: "Pre migration" },
+                contentWithoutMetadata: "Pre migration body",
+            });
+
+            const result = await getVersion(
+                "test-uuid",
+                "testuser",
+                "abc1234"
+            );
+
+            expect(result.success).toBe(true);
+            expect(result.data?.content).toBe("Pre migration body");
+        });
+
+        it("should not serve a foreign uuid-stamped file from the current path", async () => {
+            mockGetNoteById.mockResolvedValue({
+                id: "note-id",
+                uuid: "test-uuid",
+                category: "Category",
+                owner: "testuser",
+            });
+
+            mockGitInstance.raw.mockResolvedValue("Category/note-id.md");
+            mockGitInstance.show.mockResolvedValue(
+                "---\nuuid: other-uuid\n---\n\nSomeone else's note"
+            );
+            mockExtractYamlMetadata.mockReturnValue({
+                metadata: { uuid: "other-uuid" },
+                contentWithoutMetadata: "Someone else's note",
+            });
+
+            const result = await getVersion(
+                "test-uuid",
+                "testuser",
+                "abc1234"
+            );
+
+            expect(result.success).toBe(false);
+            expect(result.error).toBe("Note version not found in commit");
+        });
+
+        it("should keep denying readers without permission", async () => {
+            mockCanReach.mockResolvedValue(false);
+
+            const result = await getVersion(
+                "test-uuid",
+                "testuser",
+                "abc1234"
+            );
+
+            expect(result.success).toBe(false);
+            expect(result.error).toBe("Permission denied");
         });
     });
 });

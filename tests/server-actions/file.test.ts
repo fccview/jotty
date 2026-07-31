@@ -290,9 +290,9 @@ describe("File Actions", () => {
   });
 
   describe("readOrderFile", () => {
-    it("should return order data from .order.json", async () => {
+    it("should return the order key from .category-info.json", async () => {
       mockFs.readFile.mockResolvedValue(
-        '{"categories": ["a", "b"], "items": ["1", "2"]}',
+        '{"uuid": "cat-uuid", "order": {"categories": ["a", "b"], "items": ["1", "2"]}}',
       );
 
       const result = await readOrderFile("/some/dir");
@@ -300,7 +300,7 @@ describe("File Actions", () => {
       expect(result).toEqual({ categories: ["a", "b"], items: ["1", "2"] });
     });
 
-    it("should return null when file not found", async () => {
+    it("should return null when no file is found", async () => {
       mockFs.readFile.mockRejectedValue(new Error("ENOENT"));
 
       const result = await readOrderFile("/some/dir");
@@ -308,12 +308,32 @@ describe("File Actions", () => {
       expect(result).toBeNull();
     });
 
-    it("should handle missing arrays gracefully", async () => {
-      mockFs.readFile.mockResolvedValue('{"other": "data"}');
+    it("should return null when the info file carries no order", async () => {
+      mockFs.readFile.mockResolvedValue('{"uuid": "cat-uuid"}');
 
       const result = await readOrderFile("/some/dir");
 
-      expect(result).toEqual({ categories: undefined, items: undefined });
+      expect(result).toBeNull();
+    });
+
+    it("should fall back to a legacy .order.json", async () => {
+      mockFs.readFile
+        .mockRejectedValueOnce(new Error("ENOENT"))
+        .mockResolvedValueOnce(
+          '{"categories": ["a"], "items": ["1", "2"]}',
+        );
+
+      const result = await readOrderFile("/some/dir");
+
+      expect(result).toEqual({ categories: ["a"], items: ["1", "2"] });
+    });
+
+    it("should treat an invalid info file as unordered", async () => {
+      mockFs.readFile.mockResolvedValue('{"order": {"items": "not-an-array"}}');
+
+      const result = await readOrderFile("/some/dir");
+
+      expect(result).toBeNull();
     });
   });
 

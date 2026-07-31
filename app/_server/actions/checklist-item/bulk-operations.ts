@@ -7,7 +7,6 @@ import {
   serverWriteFile,
 } from "@/app/_server/actions/file";
 import {
-  getUserChecklists,
   getListById,
 } from "@/app/_server/actions/checklist";
 import {
@@ -15,7 +14,7 @@ import {
   areAllItemsCompleted
 } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Checklist, Result } from "@/app/_types";
 import {
   ItemTypes,
@@ -24,33 +23,26 @@ import {
   TaskStatus,
   isKanbanType,
 } from "@/app/_types/enums";
-import { checkUserPermission } from "../sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 export const createBulkItems = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemsText = formData.get("itemsText") as string;
-    const category = formData.get("category") as string;
 
-    const lists = await getUserChecklists();
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
-    }
+    const currentUser = await getUsername();
 
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
-    );
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       throw new Error("List not found");
     }
 
-    const currentUser = await getUsername();
-    const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category || "Uncategorized",
+    const canEdit = await canReach(
+      list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT
@@ -68,7 +60,7 @@ export const createBulkItems = async (
       order: item.order + lines.length,
     }));
     const newItems = lines.map((text, index) => ({
-      id: `${listId}-${Date.now()}-${index}`,
+      id: `${list.uuid}-${Date.now()}-${index}`,
       text: text.trim(),
       completed: false,
       order: index,
@@ -98,23 +90,13 @@ export const createBulkItems = async (
     let filePath: string;
 
     if (list.isShared) {
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!
-      );
-      filePath = path.join(
-        ownerDir,
-        list.category || "Uncategorized",
-        `${listId}.md`
-      );
+      filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(
         userDir,
-        list.category || "Uncategorized",
-        `${listId}.md`
+        list.category || UNCATEGORIZED,
+        `${list.id}.md`
       );
     }
 
@@ -129,7 +111,7 @@ export const createBulkItems = async (
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -141,19 +123,18 @@ export const bulkToggleItems = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const completed = formData.get("completed") === "true";
     const itemIdsStr = formData.get("itemIds") as string;
     const completedStatesStr = formData.get("completedStates") as string;
-    const category = formData.get("category") as string;
     let currentUser = formData.get("username") as string;
 
     if (!currentUser) {
       currentUser = await getUsername();
     }
 
-    if (!listId || !itemIdsStr) {
-      return { success: false, error: "List ID and item IDs are required" };
+    if (!uuid || !itemIdsStr) {
+      return { success: false, error: "List uuid and item IDs are required" };
     }
 
     const itemIds = JSON.parse(itemIdsStr);
@@ -161,14 +142,13 @@ export const bulkToggleItems = async (
       ? JSON.parse(completedStatesStr)
       : null;
 
-    const list = await getListById(listId, currentUser, category);
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       return { success: false, error: "List not found" };
     }
 
-    const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category,
+    const canEdit = await canReach(
+      list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT
@@ -278,23 +258,13 @@ export const bulkToggleItems = async (
     let filePath: string;
 
     if (list.isShared) {
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!
-      );
-      filePath = path.join(
-        ownerDir,
-        list.category || "Uncategorized",
-        `${listId}.md`
-      );
+      filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(
         userDir,
-        list.category || "Uncategorized",
-        `${listId}.md`
+        list.category || UNCATEGORIZED,
+        `${list.id}.md`
       );
     }
 
@@ -308,7 +278,7 @@ export const bulkToggleItems = async (
         error
       );
     }
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
@@ -321,28 +291,26 @@ export const bulkDeleteItems = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const itemIdsStr = formData.get("itemIds") as string;
     const itemIdsToDelete = JSON.parse(itemIdsStr) as string[];
-    const category = formData.get("category") as string;
     let currentUser = formData.get("username") as string;
 
     if (!currentUser) {
       currentUser = await getUsername();
     }
 
-    if (!listId || !itemIdsToDelete || itemIdsToDelete.length === 0) {
+    if (!uuid || !itemIdsToDelete || itemIdsToDelete.length === 0) {
       return { success: true };
     }
 
-    const list = await getListById(listId, currentUser, category);
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       return { success: false, error: "List not found" };
     }
 
-    const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category,
+    const canEdit = await canReach(
+      list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT
@@ -365,7 +333,7 @@ export const bulkDeleteItems = async (
             children && children.length > 0 && areAllItemsCompleted(children)
           ) ? true : item.completed;
 
-          return {...item, children, completed};
+          return { ...item, children, completed };
         })
         .filter((item) => item.children?.length > 0 || item.id !== undefined);
     };
@@ -378,23 +346,13 @@ export const bulkDeleteItems = async (
 
     let filePath: string;
     if (list.isShared) {
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!
-      );
-      filePath = path.join(
-        ownerDir,
-        list.category || "Uncategorized",
-        `${listId}.md`
-      );
+      filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
     } else {
       const userDir = await getUserModeDir(Modes.CHECKLISTS);
       filePath = path.join(
         userDir,
-        list.category || "Uncategorized",
-        `${listId}.md`
+        list.category || UNCATEGORIZED,
+        `${list.id}.md`
       );
     }
 
@@ -402,7 +360,7 @@ export const bulkDeleteItems = async (
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -410,7 +368,7 @@ export const bulkDeleteItems = async (
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
     return { success: true };
   } catch (error) {

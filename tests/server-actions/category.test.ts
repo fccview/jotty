@@ -13,6 +13,10 @@ const mockServerDeleteDir = vi.fn()
 const mockReadOrderFile = vi.fn()
 const mockWriteOrderFile = vi.fn()
 const mockLogAudit = vi.fn()
+const mockServerReadDir = vi.fn()
+const mockBuildCategoryTree = vi.fn()
+const mockMountsFor = vi.fn()
+const mockCatAccess = vi.fn()
 
 vi.mock('@/app/_server/actions/file', () => ({
   ensureDir: (...args: any[]) => mockEnsureDir(...args),
@@ -20,6 +24,16 @@ vi.mock('@/app/_server/actions/file', () => ({
   getUserModeDir: (...args: any[]) => mockGetUserModeDir(...args),
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
   writeOrderFile: (...args: any[]) => mockWriteOrderFile(...args),
+  serverReadDir: (...args: any[]) => mockServerReadDir(...args),
+}))
+
+vi.mock('@/app/_server/actions/share/mounts', () => ({
+  mountsFor: (...args: any[]) => mockMountsFor(...args),
+  userDirFor: (_mode: string, username: string) => `data/checklists/${username}`,
+}))
+
+vi.mock('@/app/_server/actions/share/access', () => ({
+  catAccess: (...args: any[]) => mockCatAccess(...args),
 }))
 
 vi.mock('@/app/_server/actions/log', () => ({
@@ -31,7 +45,7 @@ vi.mock('@/app/_server/actions/users', () => ({
 }))
 
 vi.mock('@/app/_utils/category-utils', () => ({
-  buildCategoryTree: vi.fn().mockResolvedValue([]),
+  buildCategoryTree: (...args: any[]) => mockBuildCategoryTree(...args),
 }))
 
 import {
@@ -39,7 +53,6 @@ import {
   deleteCategory,
   renameCategory,
   getCategories,
-  setCategoryOrder,
 } from '@/app/_server/actions/category'
 
 describe('Category Actions', () => {
@@ -51,6 +64,10 @@ describe('Category Actions', () => {
     mockLogAudit.mockResolvedValue(undefined)
     mockReadOrderFile.mockResolvedValue(null)
     mockWriteOrderFile.mockResolvedValue({ success: true })
+    mockServerReadDir.mockResolvedValue([])
+    mockBuildCategoryTree.mockResolvedValue([])
+    mockMountsFor.mockResolvedValue([])
+    mockCatAccess.mockResolvedValue(null)
   })
 
   describe('createCategory', () => {
@@ -248,55 +265,98 @@ describe('Category Actions', () => {
     })
   })
 
-  describe('setCategoryOrder', () => {
-    it('should set category order successfully', async () => {
-      const formData = createFormData({
-        mode: Modes.CHECKLISTS,
-        parent: '',
-        categories: JSON.stringify(['cat1', 'cat2', 'cat3']),
-      })
+  describe('shared mount roots', () => {
+    const explicitMount = {
+      owner: 'bob',
+      displayName: 'Bob Work',
+      categoryPath: 'Work',
+      categoryUuid: 'mount-uuid',
+      permissions: { canEdit: true },
+      isImplicit: false,
+    }
 
-      const result = await setCategoryOrder(formData)
+    const ownerDir = `${process.cwd()}/data/checklists/bob/Work`
 
-      expect(result).toEqual({ success: true })
-      expect(mockWriteOrderFile).toHaveBeenCalled()
-    })
-
-    it('should preserve existing item order', async () => {
-      mockReadOrderFile.mockResolvedValue({
-        categories: ['old1', 'old2'],
-        items: ['item1', 'item2'],
-      })
-
-      const formData = createFormData({
-        mode: Modes.CHECKLISTS,
-        parent: '',
-        categories: JSON.stringify(['cat1', 'cat2']),
-      })
-
-      await setCategoryOrder(formData)
-
-      expect(mockWriteOrderFile).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          categories: ['cat1', 'cat2'],
-          items: ['item1', 'item2'],
-        })
+    beforeEach(() => {
+      mockBuildCategoryTree.mockImplementation(async (dir: string) =>
+        dir === ownerDir
+          ? [
+              {
+                name: 'Sub',
+                count: 1,
+                path: 'Bob Work/Sub',
+                level: 1,
+                uuid: 'sub-uuid',
+              },
+            ]
+          : []
+      )
+      mockServerReadDir.mockImplementation(async (dir: string) =>
+        dir === ownerDir
+          ? [
+              { name: 'one.md', isFile: () => true, isDirectory: () => false },
+              { name: 'two.md', isFile: () => true, isDirectory: () => false },
+              { name: 'Sub', isFile: () => false, isDirectory: () => true },
+              { name: 'notes.txt', isFile: () => true, isDirectory: () => false },
+            ]
+          : []
       )
     })
 
-    it('should handle write errors', async () => {
-      mockWriteOrderFile.mockResolvedValue({ success: false })
+    it('should count direct markdown items in an explicit shared root', async () => {
+      mockMountsFor.mockResolvedValue([explicitMount])
+      mockCatAccess.mockResolvedValue({ users: { testuser: { canEdit: true } } })
 
-      const formData = createFormData({
-        mode: Modes.CHECKLISTS,
-        parent: '',
-        categories: JSON.stringify(['cat1']),
-      })
+      const result = await getCategories(Modes.CHECKLISTS)
+      const root = result.data?.find((c: any) => c.path === 'Bob Work')
 
-      const result = await setCategoryOrder(formData)
+      expect(root?.count).toBe(2)
+    })
 
-      expect(result).toEqual({ error: 'Failed to write order' })
+    it('should not fold a subfolder into the root count', async () => {
+      mockMountsFor.mockResolvedValue([explicitMount])
+      mockCatAccess.mockResolvedValue({ users: { testuser: { canEdit: true } } })
+
+      const result = await getCategories(Modes.CHECKLISTS)
+      const sub = result.data?.find((c: any) => c.path === 'Bob Work/Sub')
+
+      expect(sub?.count).toBe(1)
+      expect(result.data).toHaveLength(2)
+    })
+
+    it('should keep filtering subfolders the viewer has no grant on', async () => {
+      mockMountsFor.mockResolvedValue([explicitMount])
+      mockCatAccess.mockResolvedValue({ users: { someoneelse: { canEdit: true } } })
+
+      const result = await getCategories(Modes.CHECKLISTS)
+
+      expect(result.data).toHaveLength(1)
+      expect(result.data?.[0].count).toBe(2)
+    })
+
+    it('should leave implicit mount counts on their item uuids', async () => {
+      mockMountsFor.mockResolvedValue([
+        {
+          ...explicitMount,
+          isImplicit: true,
+          itemUuids: ['a', 'b', 'c'],
+        },
+      ])
+
+      const result = await getCategories(Modes.CHECKLISTS)
+
+      expect(result.data).toHaveLength(1)
+      expect(result.data?.[0].count).toBe(3)
+      expect(mockServerReadDir).not.toHaveBeenCalledWith(ownerDir)
+    })
+
+    it('should report zero when the shared folder cannot be listed', async () => {
+      mockMountsFor.mockResolvedValue([explicitMount])
+      mockServerReadDir.mockRejectedValue(new Error('EACCES'))
+
+      const result = await getCategories(Modes.CHECKLISTS)
+
+      expect(result.data?.[0].count).toBe(0)
     })
   })
 })

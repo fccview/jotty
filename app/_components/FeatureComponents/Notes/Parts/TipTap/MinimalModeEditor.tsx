@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import {
-  ViewIcon,
-  File02Icon,
-} from "hugeicons-react";
+import { ViewIcon, File02Icon } from "hugeicons-react";
 import { SyntaxHighlightedEditor } from "./SyntaxHighlightedEditor";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
@@ -19,7 +16,11 @@ import { EditorSettingsDropdown } from "./Toolbar/EditorSettingsDropdown";
 interface MinimalModeEditorProps {
   isEditing: boolean;
   noteContent: string;
-  onEditorContentChange: (content: string, isMarkdown: boolean, isDirty: boolean) => void;
+  onEditorContentChange: (
+    content: string,
+    isMarkdown: boolean,
+    isDirty: boolean,
+  ) => void;
   compactMode: boolean;
 }
 
@@ -31,10 +32,11 @@ export const MinimalModeEditor = ({
 }: MinimalModeEditorProps) => {
   const t = useTranslations();
   const { user } = useAppMode();
-  const { showLineNumbers, showRuler, showVisualGuides, visualGuideColumns } = useNotesStore();
+  const { showLineNumbers, showRuler, showVisualGuides, visualGuideColumns } =
+    useNotesStore();
   const { contentWithoutMetadata } = extractYamlMetadata(noteContent);
   const [markdownContent, setMarkdownContent] = useState(
-    contentWithoutMetadata
+    contentWithoutMetadata,
   );
   const [showPreview, setShowPreview] = useState(false);
   const [charWidth, setCharWidth] = useState(0);
@@ -59,7 +61,7 @@ export const MinimalModeEditor = ({
       setMarkdownContent(newContent);
       onEditorContentChange(newContent, true, true);
     },
-    [onEditorContentChange]
+    [onEditorContentChange],
   );
 
   const handleFileDrop = useCallback((files: File[]) => {
@@ -71,8 +73,9 @@ export const MinimalModeEditor = ({
       <>
         <ReadingProgressBar />
         <div
-          className={`px-6 pt-6 pb-4 ${compactMode ? "max-w-[900px] mx-auto" : ""
-            }`}
+          className={`px-6 pt-6 pb-4 ${
+            compactMode ? "max-w-[900px] mx-auto" : ""
+          }`}
         >
           <UnifiedMarkdownRenderer content={noteContent} />
         </div>
@@ -100,7 +103,9 @@ export const MinimalModeEditor = ({
         </div>
       </div>
 
-      <div className={`fixed bottom-[130px] ${user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"} lg:hidden z-40 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}>
+      <div
+        className={`fixed bottom-[130px] ${user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"} lg:hidden z-40 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}
+      >
         <Button
           variant={showPreview ? "default" : "ghost"}
           size="icon"
@@ -132,8 +137,9 @@ export const MinimalModeEditor = ({
       <div className="flex-1 overflow-y-auto jotty-scrollable-content min-h-0">
         {showPreview ? (
           <div
-            className={`px-6 pt-6 pb-4 ${compactMode ? "max-w-[900px] mx-auto" : ""
-              }`}
+            className={`px-6 pt-6 pb-4 ${
+              compactMode ? "max-w-[900px] mx-auto" : ""
+            }`}
           >
             <UnifiedMarkdownRenderer content={markdownContent} />
           </div>

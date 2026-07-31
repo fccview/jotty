@@ -20,7 +20,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
   return (
     <div className="jotty-file-card relative group">
       <div
-        className="bg-card border border-border rounded-md p-3 sm:p-4 cursor-pointer hover:ring-2 hover:ring-ring transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+        className="bg-card border border-border rounded-jotty p-3 sm:p-4 cursor-pointer hover:ring-2 hover:ring-ring transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
         onClick={onSelect}
       >
         <div className="aspect-square bg-muted rounded-jotty overflow-hidden mb-3 relative">
@@ -56,7 +56,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
           onClick={(e) =>
             handleAction(e, () => window.open(file.url, "_blank"))
           }
-          title={t('common.openFile')}
+          title={t("common.openFile")}
         >
           <ViewIcon className="h-4 w-4" />
         </Button>
@@ -72,7 +72,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
               a.click();
             })
           }
-          title={t('common.downloadFile')}
+          title={t("common.downloadFile")}
         >
           <Download01Icon className="h-4 w-4" />
         </Button>
@@ -81,7 +81,7 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
           size="icon"
           className="h-7 w-7 sm:h-8 sm:w-8 bg-destructive/80 backdrop-blur-sm hover:bg-destructive"
           onClick={(e) => handleAction(e, onDelete)}
-          title={t('common.deleteFile')}
+          title={t("common.deleteFile")}
         >
           <Delete03Icon className="h-4 w-4" />
         </Button>

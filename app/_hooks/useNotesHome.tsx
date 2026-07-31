@@ -16,6 +16,7 @@ import { Note, Category, SanitisedUser } from "@/app/_types";
 import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { ItemTypes } from "../_types/enums";
 import { HOMEPAGE_ITEMS_LIMIT } from "@/app/_consts/files";
+import { isPinnedEntry } from "@/app/_utils/global-utils";
 
 interface UseNotesHomeProps {
   notes: Note[];
@@ -69,22 +70,16 @@ export const useNotesHome = ({
     if (!over || active.id === over.id) return;
 
     const pinned = getPinnedNotes();
-    const oldIndex = pinned.findIndex(
-      (note) => (note.uuid || note.id) === active.id,
-    );
-    const newIndex = pinned.findIndex(
-      (note) => (note.uuid || note.id) === over.id,
-    );
+    const oldIndex = pinned.findIndex((note) => note.uuid === active.id);
+    const newIndex = pinned.findIndex((note) => note.uuid === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newOrder = arrayMove(pinned, oldIndex, newIndex);
-    const newPinnedPaths = newOrder.map(
-      (note) => `${note.category || "Uncategorized"}/${note.uuid || note.id}`,
-    );
+    const newPinnedUuids = newOrder.map((note) => note.uuid || "");
 
     try {
-      const result = await updatePinnedOrder(newPinnedPaths, "note");
+      const result = await updatePinnedOrder(newPinnedUuids, ItemTypes.NOTE);
       if (result.success) {
         router.refresh();
       }
@@ -95,21 +90,17 @@ export const useNotesHome = ({
 
   const getPinnedNotes = () => {
     return pinnedNotes
-      .map((path) => {
-        return notes.find((note) => {
-          const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.id}`;
-          const idPath = `${note.category || "Uncategorized"}/${note.id}`;
-          return uuidPath === path || idPath === path;
-        });
-      })
+      .map((entry) =>
+        notes.find((note) => isPinnedEntry(entry, note.uuid)),
+      )
       .filter(Boolean) as Note[];
   };
 
   const getRecentNotes = () => {
     const pinned = getPinnedNotes();
-    const pinnedIds = new Set(pinned.map((note) => note.id));
+    const pinnedUuids = new Set(pinned.map((note) => note.uuid));
     return notes
-      .filter((note) => !pinnedIds.has(note.id))
+      .filter((note) => !pinnedUuids.has(note.uuid))
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -117,15 +108,11 @@ export const useNotesHome = ({
   };
 
   const handleTogglePin = async (note: Note) => {
-    if (isTogglingPin) return;
+    if (isTogglingPin || !note.uuid) return;
 
-    setIsTogglingPin(note.id);
+    setIsTogglingPin(note.uuid);
     try {
-      const result = await togglePin(
-        note.uuid || note.id,
-        note.category || "Uncategorized",
-        ItemTypes.NOTE,
-      );
+      const result = await togglePin(note.uuid, ItemTypes.NOTE);
       if (result.success) {
         router.refresh();
       }
@@ -136,11 +123,10 @@ export const useNotesHome = ({
     }
   };
 
-  const isNotePinned = (note: Note) => {
-    const uuidPath = `${note.category || "Uncategorized"}/${note.uuid || note.id}`;
-    const idPath = `${note.category || "Uncategorized"}/${note.id}`;
-    return pinnedNotes.includes(uuidPath) || pinnedNotes.includes(idPath);
-  };
+  const isNotePinned = (note: Note) =>
+    pinnedNotes.some(
+      (entry) => isPinnedEntry(entry, note.uuid),
+    );
 
   const stats = useMemo(() => {
     const totalNotes = notes.length;
@@ -162,7 +148,7 @@ export const useNotesHome = ({
   const recent = getRecentNotes();
 
   const activeNote = activeId
-    ? pinned.find((note) => (note.uuid || note.id) === activeId)
+    ? pinned.find((note) => note.uuid === activeId)
     : null;
 
   return {

@@ -248,7 +248,8 @@
     "history": "Verlauf",
     "disable": "Deaktivieren",
     "items": "Elemente",
-    "thisEntry": "diesen Eintrag"
+    "thisEntry": "diesen Eintrag",
+    "preview": "Vorschau"
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -889,7 +890,9 @@
     "checklistItemClickActionDescription": "Wählen Sie aus, was passiert, wenn Sie auf den Text einer Aufgabe klicken. \n„Als abgeschlossen markieren“ schaltet das Kontrollkästchen ein (Standard); \n„Aufgabennamen bearbeiten“ öffnet die Aufgabe zur Inline-Bearbeitung – Sie müssen noch das Kontrollkästchen selbst anklicken, um sie abzuschließen.",
     "checklistItemClickActionToggle": "Als vollständig/unvollständig markieren",
     "checklistItemClickActionEdit": "Listenelement bearbeiten",
-    "useSystemDefault": "Systemstandard verwenden"
+    "useSystemDefault": "Systemstandard verwenden",
+    "selectShowChecklistEmojis": "Emoji-Sichtbarkeit wählen",
+    "showChecklistEmojisDescription": "Zeigt anhand des Textes automatisch ein Emoji neben Checklisteneinträgen."
   },
   "admin": {
     "title": "Administration",
@@ -1078,7 +1081,11 @@
     "defaultDateFormat": "Standarddatumsformat",
     "defaultDateFormatDescription": "Wird verwendet, wenn die Datumsformateinstellung eines Benutzers auf „Systemstandard verwenden“ eingestellt ist.",
     "defaultTimeFormatDescription": "Wird verwendet, wenn die Zeitformateinstellung eines Benutzers auf „Systemstandard verwenden“ eingestellt ist.",
-    "defaultTimeFormat": "Standardzeitformat"
+    "defaultTimeFormat": "Standardzeitformat",
+    "borderRadius": "Eckenradius",
+    "borderRadiusDescription": "Legt die Eckenrundung für die gesamte Instanz fest. Nutzer können sie in den Schnelleinstellungen überschreiben.",
+    "borderRadiusSaved": "Eckenradius gespeichert",
+    "borderRadiusLoadError": "Eckenradius konnte nicht geladen werden"
   },
   "errors": {
     "notFound": "Nicht gefunden",
@@ -1324,7 +1331,27 @@
     "failedToCopyUrl": "Die URL konnte nicht in die Zwischenablage kopiert werden",
     "searchUsers": "Benutzer suchen...",
     "toggleAllPermissions": "Alle Berechtigungen umschalten",
-    "shareModalTitle": "{type}-Freigabe"
+    "shareModalTitle": "{type}-Freigabe",
+    "readOnly": "Nur lesen",
+    "byOwner": "geteilt von {user}",
+    "mountStaysTop": "Geteilte Ordner bleiben auf der obersten Ebene",
+    "inheritedVia": "Geteilt über {category}, von {user}",
+    "shareFolder": "Diesen Ordner teilen",
+    "folderShareHint": "Alles in diesem Ordner, jetzt und später, wird mit den von dir gewählten Personen geteilt.",
+    "optOut": "Dieses Element privat halten",
+    "optOutHint": "Überschreibt die Ordnerfreigabe nur für dieses Element.",
+    "useInherited": "Dem Ordner folgen",
+    "publicFolderWarning": "Alles, was in diesen Ordner gelegt wird, ist sofort für jeden mit dem Link lesbar.",
+    "readTip": "Nur lesen: {users}",
+    "writeTip": "Kann bearbeiten: {users}",
+    "deleteTip": "Kann bearbeiten und löschen: {users}",
+    "publicTip": "Öffentlich geteilt",
+    "fromUserRead": "Nur lesen, geteilt von {user}",
+    "fromUserWrite": "Kann bearbeiten, geteilt von {user}",
+    "fromUserDelete": "Kann bearbeiten und löschen, geteilt von {user}",
+    "leaveShare": "Freigabe verlassen",
+    "confirmLeaveItem": "Deinen eigenen Zugriff auf \"{itemTitle}\" entfernen? Es verschwindet aus deiner Seitenleiste und der Eigentümer muss es erneut teilen.",
+    "confirmLeaveFolder": "Deinen eigenen Zugriff auf \"{categoryName}\" von {owner} entfernen? Der Ordner verschwindet aus deiner Seitenleiste und {owner} muss ihn erneut teilen."
   },
   "encryption": {
     "encrypt": "Verschlüsseln",
@@ -1486,7 +1513,10 @@
     "viewMode": "Ansichtsmodus",
     "viewModeCard": "Karten",
     "viewModeList": "Liste",
-    "viewModeGrid": "Raster"
+    "viewModeGrid": "Raster",
+    "borderRadius": "Eckenrundung",
+    "useInstanceDefault": "Standard der Instanz verwenden",
+    "borderRadiusDescription": "Die Ecken ändern sich beim Ziehen in der gesamten App."
   },
   "migration": {
     "migrationComplete": "Migration vollständig",

@@ -5,7 +5,7 @@ import { AppNotification, AppNotificationData } from "@/app/_types";
 import { NOTIFICATIONS_FILE } from "@/app/_consts/files";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { readJsonFile, writeJsonFile, ensureDir } from "@/app/_server/actions/file";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getListById } from "@/app/_server/actions/checklist";
 import { getNoteById } from "@/app/_server/actions/note";
 
@@ -58,13 +58,13 @@ const _resolveLink = async (data?: AppNotificationData): Promise<string | undefi
   try {
     if (data.itemType === "checklist") {
       const list = await getListById(data.itemId);
-      if (list) return `/checklist/${list.category}/${list.id}`;
+      if (list) return `/checklist/${list.uuid}`;
     }
     if (data.itemType === "note") {
       const note = await getNoteById(data.itemId);
-      if (note) return `/note/${note.category}/${note.id}`;
+      if (note) return `/note/${note.uuid}`;
     }
-  } catch {}
+  } catch { }
 
   return undefined;
 };

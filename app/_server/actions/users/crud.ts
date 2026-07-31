@@ -106,25 +106,11 @@ export async function _updateUserCore(
     }
 
     try {
-      const { updateSharingData, updateReceiverUsername } = await import(
-        "@/app/_server/actions/sharing"
+      const { renameGrants } = await import(
+        "@/app/_server/actions/share/rename"
       );
 
-      await updateSharingData(
-        { sharer: targetUsername } as any,
-        { sharer: updates.username } as any
-      );
-
-      await updateReceiverUsername(
-        targetUsername,
-        updates.username,
-        ItemTypes.CHECKLIST
-      );
-      await updateReceiverUsername(
-        targetUsername,
-        updates.username,
-        ItemTypes.NOTE
-      );
+      await renameGrants(targetUsername, updates.username);
     } catch (error) {
       console.warn(
         `Could not update sharing data for username change ${targetUsername} -> ${updates.username}:`,

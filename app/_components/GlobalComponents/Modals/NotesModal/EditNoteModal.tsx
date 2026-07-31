@@ -8,7 +8,8 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { getNoteById, updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
@@ -31,36 +32,41 @@ export const EditNoteModal = ({
   const t = useTranslations();
   const { user } = useAppMode();
   const router = useRouter();
-  const [note, setNote] = useState<Note | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
+  const [note, setNote] = useState<Note>(initialNote);
+  const [isMissing, setIsMissing] = useState(false);
+  const [hasBody, setHasBody] = useState(
+    typeof initialNote.content === "string",
+  );
   const [title, setTitle] = useState(initialNote.title);
   const initialCategory = unarchive ? "" : initialNote.category || "";
   const [category, setCategory] = useState(initialCategory);
   const [isLoading, setIsLoading] = useState(false);
 
+  const isOwner = Boolean(user?.username && user.username === note.owner);
+
   useEffect(() => {
     const fetchNote = async () => {
-      if (!user?.username) return;
+      if (!user?.username || !initialNote.uuid) return;
 
-      const fetchedNote = await getNoteById(
-        initialNote.uuid || initialNote.id,
-        initialNote.category || "Uncategorized",
-        user.username
-      );
+      const fetchedNote = await getNoteById(initialNote.uuid, user.username);
 
       if (!fetchedNote) {
-        setNote(null);
+        setIsMissing(true);
         return;
       }
 
       setNote(fetchedNote);
+      setHasBody(true);
       setTitle(fetchedNote.title || initialNote.title || "");
-      setIsOwner(user.username === fetchedNote.owner);
+
+      if (!unarchive) {
+        setCategory(fetchedNote.category || "");
+      }
     };
     fetchNote();
-  }, [initialNote, user?.username]);
+  }, [initialNote, user?.username, unarchive]);
 
-  if (!note) {
+  if (isMissing) {
     return (
       <Modal isOpen={true} onClose={onClose} title={t("notes.noteNotFound")}>
         <p>{t("notes.noteNotFound")}</p>
@@ -74,7 +80,6 @@ export const EditNoteModal = ({
 
     setIsLoading(true);
     const formData = new FormData();
-    formData.append("id", note.id);
     formData.append("title", title.trim());
     formData.append("content", note.content || "");
     formData.append("unarchive", unarchive ? "true" : "false");
@@ -89,22 +94,13 @@ export const EditNoteModal = ({
       formData.append("category", category || "Uncategorized");
     }
 
-    formData.append("originalCategory", note.category || "Uncategorized");
-
     const result = await updateNote(formData, false);
 
     setIsLoading(false);
 
     if (result.success && result.data) {
-      const updatedNote = result.data;
-
-      const categoryPath = buildCategoryPath(
-        updatedNote.category || t("notes.uncategorized"),
-        updatedNote.id
-      );
-
-      if (!unarchive) {
-        router.push(`/note/${categoryPath}`);
+      if (!unarchive && result.data.uuid) {
+        router.push(itemHref(ItemTypes.NOTE, result.data.uuid));
       }
       onUpdated();
     }
@@ -161,7 +157,7 @@ export const EditNoteModal = ({
           >{t('common.cancel')}</Button>
           <Button
             type="submit"
-            disabled={isLoading || !title.trim()}
+            disabled={isLoading || !title.trim() || !hasBody}
             className="flex-1"
           >
             {isLoading
