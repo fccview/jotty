@@ -3,7 +3,7 @@
 import path from "path";
 import fs from "fs/promises";
 import simpleGit, { SimpleGit } from "simple-git";
-import { lock, unlock } from "proper-lockfile";
+import { lock } from "proper-lockfile";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { canReach } from "@/app/_server/actions/share/queries";
@@ -35,8 +35,28 @@ interface HistoryResult<T> {
 
 type HistoryAction = "create" | "update" | "rename" | "move" | "delete";
 
+const LEGACY_LOCK_FILE = ".historylock";
+const LOCKS_DIR = ".locks";
+const LOCK_STALE_MS = 30000;
+const LOCK_RETRIES = {
+  retries: 5,
+  factor: 2,
+  minTimeout: 100,
+  maxTimeout: 2000,
+};
+
+const _turnstile = new Map<string, Promise<unknown>>();
+
 const USER_NOTES_DIR = (username: string) =>
   path.join(process.cwd(), "data", NOTES_FOLDER, username);
+
+const LOCK_PATH = (username: string) =>
+  path.join(
+    process.cwd(),
+    "data",
+    LOCKS_DIR,
+    `history-${username.replace(/[^a-zA-Z0-9._-]/g, "_")}.lock`
+  );
 
 const GITIGNORE_CONTENT = `.index.json
 .order.json
@@ -55,6 +75,65 @@ const _getGitInstance = (userDir: string): SimpleGit => {
     maxConcurrentProcesses: 1,
     trimmed: true,
   });
+};
+
+const _sweepStale = async (lockPath: string): Promise<void> => {
+  const lockDir = `${lockPath}.lock`;
+
+  try {
+    const stats = await fs.stat(lockDir);
+    if (Date.now() - stats.mtimeMs < LOCK_STALE_MS * 2) return;
+    await fs.rm(lockDir, { recursive: true, force: true });
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== "ENOENT") {
+      console.error("Failed to sweep stale history lock:", error);
+    }
+  }
+};
+
+const _dropLegacyLock = async (userDir: string): Promise<void> => {
+  const legacy = path.join(userDir, LEGACY_LOCK_FILE);
+
+  try {
+    await fs.rm(`${legacy}.lock`, { recursive: true, force: true });
+    await fs.rm(legacy, { force: true });
+  } catch (error) {
+    console.error("Failed to drop legacy history lock:", error);
+  }
+};
+
+const gatekeeper = async <T>(
+  username: string,
+  errand: () => Promise<T>
+): Promise<T> => {
+  const lockPath = LOCK_PATH(username);
+  const queued = _turnstile.get(username) ?? Promise.resolve();
+
+  const turn = queued.catch(() => { }).then(async () => {
+    await fs.mkdir(path.dirname(lockPath), { recursive: true });
+    await fs.writeFile(lockPath, "", { flag: "a" });
+    await _sweepStale(lockPath);
+
+    const release = await lock(lockPath, {
+      stale: LOCK_STALE_MS,
+      retries: LOCK_RETRIES,
+    });
+
+    try {
+      return await errand();
+    } finally {
+      try {
+        await release();
+      } catch (error) {
+        console.error("Failed to release history lock:", error);
+      }
+    }
+  });
+
+  _turnstile.set(username, turn.catch(() => { }));
+
+  return turn;
 };
 
 const _formatCommitMessage = (
@@ -101,6 +180,8 @@ export const ensureRepo = async (username: string): Promise<void> => {
   const userDir = USER_NOTES_DIR(username);
   const gitDir = path.join(userDir, ".git");
 
+  await _dropLegacyLock(userDir);
+
   try {
     await fs.access(gitDir);
   } catch {
@@ -128,37 +209,30 @@ export const commitCategoryRename = async (
     return { success: false };
   }
   const userDir = USER_NOTES_DIR(username);
-  const lockPath = path.join(userDir, ".historylock");
+
   try {
     await fs.access(userDir);
   } catch {
     return { success: false, error: "User directory not found" };
   }
+
   await ensureRepo(username);
+
   try {
-    await fs.writeFile(lockPath, "", { flag: "a" });
-  } catch {
-    return { success: false, error: "Failed to create lock file" };
-  }
-  try {
-    await lock(lockPath, {
-      stale: 30000,
-      retries: { retries: 5, factor: 2, minTimeout: 100, maxTimeout: 2000 },
+    return await gatekeeper(username, async () => {
+      const git = _getGitInstance(userDir);
+      const oldPathNorm = oldPath.replace(/\\/g, "/");
+      const newPathNorm = newPath.replace(/\\/g, "/");
+
+      await git.add(["-u", oldPathNorm]);
+      await git.add(newPathNorm);
+      await git.commit(`[move] Category: ${oldPathNorm} -> ${newPathNorm}`);
+
+      return { success: true };
     });
-    const git = _getGitInstance(userDir);
-    const oldPathNorm = oldPath.replace(/\\/g, "/");
-    const newPathNorm = newPath.replace(/\\/g, "/");
-    await git.add(["-u", oldPathNorm]);
-    await git.add(newPathNorm);
-    await git.commit(`[move] Category: ${oldPathNorm} -> ${newPathNorm}`);
-    return { success: true };
   } catch (error) {
     console.error("Git category rename error:", error);
     return { success: false, error: String(error) };
-  } finally {
-    try {
-      await unlock(lockPath);
-    } catch {}
   }
 };
 
@@ -175,7 +249,6 @@ export const commitNote = async (
   }
 
   const userDir = USER_NOTES_DIR(username);
-  const lockPath = path.join(userDir, ".historylock");
 
   try {
     await fs.access(userDir);
@@ -186,77 +259,53 @@ export const commitNote = async (
   await ensureRepo(username);
 
   try {
-    await fs.writeFile(lockPath, "", { flag: "a" });
-  } catch {
-    return { success: false, error: "Failed to create lock file" };
-  }
+    return await gatekeeper(username, async () => {
+      const git = _getGitInstance(userDir);
+      const message = _formatCommitMessage(action, noteTitle, metadata);
 
-  try {
-    await lock(lockPath, {
-      stale: 30000,
-      retries: {
-        retries: 5,
-        factor: 2,
-        minTimeout: 100,
-        maxTimeout: 2000,
-      },
-    });
+      const status = await git.status();
+      const normalizedPath = relativePath.replace(/\\/g, "/");
 
-    const git = _getGitInstance(userDir);
-    const message = _formatCommitMessage(action, noteTitle, metadata);
-
-    const status = await git.status();
-    const normalizedPath = relativePath.replace(/\\/g, "/");
-
-    if (action === "delete") {
-      const hasDeletedFile = status.deleted.some(
-        (f) => f === normalizedPath || f.endsWith(path.basename(relativePath))
-      );
-      if (!hasDeletedFile) {
-        return { success: true };
-      }
-      await git.add(["-u", relativePath]);
-    } else if (action === "move" && metadata?.oldPath) {
-      const oldPathNormalized = metadata.oldPath.replace(/\\/g, "/");
-
-      try {
-        const oldFileExists = status.files.some(
-          (f) => f.path === oldPathNormalized || f.path === metadata.oldPath
+      if (action === "delete") {
+        const hasDeletedFile = status.deleted.some(
+          (f) => f === normalizedPath || f.endsWith(path.basename(relativePath))
+        );
+        if (!hasDeletedFile) {
+          return { success: true };
+        }
+        await git.add(["-u", relativePath]);
+      } else if (action === "move" && metadata?.oldPath) {
+        const oldPathNormalized = metadata.oldPath.replace(/\\/g, "/");
+        const leftBehind = status.deleted.some(
+          (f) => f === oldPathNormalized || f === metadata.oldPath
         );
 
-        if (oldFileExists) {
-          await git.mv(metadata.oldPath, relativePath);
-        } else {
-          await git.add(relativePath);
+        if (leftBehind) {
+          await git.add(["-u", oldPathNormalized]);
         }
-      } catch (error) {
-        console.warn("Git mv failed, falling back to add:", error);
+
+        await git.add(normalizedPath);
+      } else {
+        const hasChanges = status.files.some(
+          (f) =>
+            f.path === relativePath ||
+            f.path === normalizedPath ||
+            f.path.endsWith(path.basename(relativePath))
+        );
+
+        if (!hasChanges) {
+          return { success: true };
+        }
+
         await git.add(relativePath);
       }
-    } else {
-      const hasChanges = status.files.some(
-        (f) =>
-          f.path === relativePath ||
-          f.path === normalizedPath ||
-          f.path.endsWith(path.basename(relativePath))
-      );
 
-      if (!hasChanges) {
-        return { success: true };
-      }
-
-      await git.add(relativePath);
-    }
-
-    const result = await git.commit(message);
-    return { success: true, data: result.commit };
+      const result = await git.commit(message);
+      return { success: true, data: result.commit };
+    });
   } catch (error) {
     console.error("Git commit error:", error);
     return { success: false, error: String(error) };
-  } finally {
-    try {
-      await unlock(lockPath);
-    } catch { }
   }
 };
 
@@ -534,16 +583,20 @@ export const deleteAllRepos = async (): Promise<HistoryResult<void>> => {
     const dataDir = path.join(process.cwd(), "data", NOTES_FOLDER);
 
     for (const user of users) {
-      const userGitDir = path.join(dataDir, user.username, ".git");
-      const userLockFile = path.join(dataDir, user.username, ".historylock");
-      const userGitignore = path.join(dataDir, user.username, ".gitignore");
+      const userDir = path.join(dataDir, user.username);
+      const userGitDir = path.join(userDir, ".git");
+      const userLockFile = LOCK_PATH(user.username);
+      const userGitignore = path.join(userDir, ".gitignore");
 
       try {
         await fs.rm(userGitDir, { recursive: true, force: true });
       } catch { }
 
+      await _dropLegacyLock(userDir);
+
       try {
-        await fs.unlink(userLockFile);
+        await fs.rm(`${userLockFile}.lock`, { recursive: true, force: true });
+        await fs.rm(userLockFile, { force: true });
       } catch { }
 
       try {

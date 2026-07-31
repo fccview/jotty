@@ -50,6 +50,7 @@ const fileEntry = (name: string) => ({
 });
 
 let legacyOrder: { categories?: string[]; items?: string[] };
+let survivors: string[];
 
 describe("share migration ordering", () => {
   beforeEach(() => {
@@ -63,6 +64,7 @@ describe("share migration ordering", () => {
     mockFs.unlink.mockResolvedValue(undefined);
 
     legacyOrder = { categories: ["Work"], items: ["note-a"] };
+    survivors = [];
 
     mockFs.readdir.mockImplementation(async (dir: string) => {
       if (dir === NOTES_DIR) return [dirEntry("alice")];
@@ -74,6 +76,7 @@ describe("share migration ordering", () => {
 
     mockFs.access.mockImplementation(async (target: string) => {
       if (target === ORDER_FILE) return undefined;
+      if (survivors.includes(target)) return undefined;
       throw new Error("ENOENT");
     });
 
@@ -109,32 +112,54 @@ describe("share migration ordering", () => {
     );
   });
 
-  it("should keep the legacy order file when a category does not resolve", async () => {
+  it("should keep the legacy order file when a category on disk has no uuid", async () => {
     legacyOrder = { categories: ["Work", "Ghost"], items: ["note-a"] };
+    survivors = [path.join(OWNER_DIR, "Ghost")];
 
     const result = await migrateToInlineSharing();
 
     expect(result.success).toBe(true);
     expect(mockFs.unlink).not.toHaveBeenCalledWith(ORDER_FILE);
-    expect(result.data?.changes).toContainEqual(
+    expect(result.data?.residue).toContainEqual(
       expect.stringContaining("Ghost"),
     );
   });
 
-  it("should keep the legacy order file when a markdown item does not resolve", async () => {
+  it("should keep the legacy order file when a markdown item on disk has no uuid", async () => {
     legacyOrder = { categories: ["Work"], items: ["note-a", "vanished"] };
+    survivors = [path.join(OWNER_DIR, "vanished.md")];
 
     const result = await migrateToInlineSharing();
 
     expect(result.success).toBe(true);
     expect(mockFs.unlink).not.toHaveBeenCalledWith(ORDER_FILE);
-    expect(result.data?.changes).toContainEqual(
+    expect(result.data?.residue).toContainEqual(
       expect.stringContaining("vanished.md"),
     );
   });
 
+  it("should drop ordering entries whose targets are gone and finish", async () => {
+    legacyOrder = {
+      categories: ["Work", "Ghost"],
+      items: ["note-a", "vanished"],
+    };
+
+    const result = await migrateToInlineSharing();
+
+    expect(result.success).toBe(true);
+    expect(mockFs.unlink).toHaveBeenCalledWith(ORDER_FILE);
+    expect(result.data?.residue).toEqual([]);
+  });
+
   it("should still persist the entries it could migrate", async () => {
-    legacyOrder = { categories: ["Work", "Ghost"], items: ["note-a", "vanished"] };
+    legacyOrder = {
+      categories: ["Work", "Ghost"],
+      items: ["note-a", "vanished"],
+    };
+    survivors = [
+      path.join(OWNER_DIR, "Ghost"),
+      path.join(OWNER_DIR, "vanished.md"),
+    ];
 
     await migrateToInlineSharing();
 

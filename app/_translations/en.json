@@ -1576,7 +1576,15 @@
     "backupConfirmLabel": "I have backed up my data folder and understand the migration process.",
     "backupConfirmHint": "Please confirm you've created a backup before proceeding.",
     "sharingDataMigrated": "Your sharing and ordering data has been migrated.",
-    "whatWasChanged": "What was changed:"
+    "whatWasChanged": "What was changed:",
+    "migrationPartial": "Migration Finished With Leftovers",
+    "leftoversTitle": "Some legacy files were kept",
+    "leftoversBody": "The migration could not translate everything, so the legacy files below were left on disk untouched. Nothing has been deleted. You can fix the cause and run the migration again, or continue into the app now and deal with it later.",
+    "overrideConfirmLabel": "Continue anyway and stop showing this page.",
+    "overrideConfirmHint": "The leftover files stay on disk, but the app will treat your data as migrated. Any sharing or ordering listed above will not be applied until you migrate again, which you can do at any time from /migration?force=1.",
+    "continueAnyway": "Continue Anyway",
+    "overriding": "Continuing...",
+    "overrideFailed": "Could not skip the migration"
   },
   "toasts": {
     "categoryRenamedSuccessfully": "Category successfully renamed",

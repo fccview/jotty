@@ -10,6 +10,7 @@ import {
   ShieldUserIcon,
 } from "hugeicons-react";
 import { MigrationHeader } from "./MigrationHeader";
+import { MigrationOverride } from "./MigrationOverride";
 import {
   InfoCard,
   InfoCardVariant,
@@ -24,17 +25,22 @@ const inlineCode = (chunks: ReactNode) => (
 
 interface ShareMigrationViewProps {
   onMigrate: () => void;
+  onOverride: () => void;
   isMigrating: boolean;
+  isOverriding: boolean;
   error: string | null;
   migrationResult: {
     migrated: boolean;
     changes: string[];
+    residue: string[];
   } | null;
 }
 
 export const ShareMigrationView = ({
   onMigrate,
+  onOverride,
   isMigrating,
+  isOverriding,
   error,
   migrationResult,
 }: ShareMigrationViewProps) => {
@@ -42,6 +48,7 @@ export const ShareMigrationView = ({
   const [hasBackedUp, setHasBackedUp] = useState(false);
 
   const isMigrationComplete = migrationResult !== null;
+  const hasResidue = (migrationResult?.residue.length || 0) > 0;
 
   return (
     <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4">
@@ -134,13 +141,21 @@ export const ShareMigrationView = ({
             </InfoCard>
 
             {error && (
-              <InfoCard
-                icon={<Alert02Icon className="h-4 w-4 text-destructive" />}
-                title={t("migration.migrationFailed")}
-                variant={InfoCardVariant.DESTRUCTIVE}
-              >
-                <p>{error}</p>
-              </InfoCard>
+              <>
+                <InfoCard
+                  icon={<Alert02Icon className="h-4 w-4 text-destructive" />}
+                  title={t("migration.migrationFailed")}
+                  variant={InfoCardVariant.DESTRUCTIVE}
+                >
+                  <p>{error}</p>
+                </InfoCard>
+
+                <MigrationOverride
+                  residue={[]}
+                  onOverride={onOverride}
+                  isOverriding={isOverriding}
+                />
+              </>
             )}
 
             <div className="bg-card border border-border rounded-jotty p-6 shadow-sm">
@@ -190,7 +205,11 @@ export const ShareMigrationView = ({
               icon={
                 <CheckmarkCircle04Icon className="h-5 w-5 text-green-600" />
               }
-              title={t("migration.migrationSuccessful")}
+              title={
+                hasResidue
+                  ? t("migration.migrationPartial")
+                  : t("migration.migrationSuccessful")
+              }
               variant={InfoCardVariant.DEFAULT}
             >
               <p className="text-md lg:text-sm">
@@ -218,11 +237,19 @@ export const ShareMigrationView = ({
               </div>
             )}
 
-            <div className="flex justify-center pt-2">
-              <Button onClick={() => (window.location.href = "/")} size="lg">
-                {t("migration.returnToApp")}
-              </Button>
-            </div>
+            {hasResidue ? (
+              <MigrationOverride
+                residue={migrationResult.residue}
+                onOverride={onOverride}
+                isOverriding={isOverriding}
+              />
+            ) : (
+              <div className="flex justify-center pt-2">
+                <Button onClick={() => (window.location.href = "/")} size="lg">
+                  {t("migration.returnToApp")}
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

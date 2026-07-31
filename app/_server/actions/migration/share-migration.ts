@@ -39,6 +39,11 @@ interface OrderConversion {
   unresolved: string[];
 }
 
+interface MigrationLog {
+  changes: string[];
+  residue: string[];
+}
+
 const MIGRATED_MODES = [Modes.NOTES, Modes.CHECKLISTS];
 
 const _modeDir = (mode: Modes): string =>
@@ -71,6 +76,15 @@ const _subDirs = async (dirPath: string): Promise<string[]> => {
 const _uuidOfFile = async (filePath: string): Promise<string | null> => {
   const metadata = await grepExtractFrontmatter(filePath);
   return typeof metadata?.uuid === "string" ? metadata.uuid : null;
+};
+
+const _onDisk = async (targetPath: string): Promise<boolean> => {
+  try {
+    await fs.access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 const _mdNames = async (dirPath: string): Promise<string[]> => {
@@ -125,26 +139,38 @@ const _convertOrder = async (dirPath: string): Promise<OrderConversion> => {
     const items: string[] = [];
     const unresolved: string[] = [];
 
+    const vanished: string[] = [];
+
     if (Array.isArray(legacy.categories) && legacy.categories.length > 0) {
       const map = await dirUuids(dirPath, legacy.categories);
-      legacy.categories.forEach((name) => {
+
+      for (const name of legacy.categories) {
         const uuid = map.get(name);
+
         if (uuid) {
           categories.push(uuid);
-        } else {
-          unresolved.push(name);
+          continue;
         }
-      });
+
+        const bucket = (await _onDisk(path.join(dirPath, name)))
+          ? unresolved
+          : vanished;
+        bucket.push(name);
+      }
     }
 
     if (Array.isArray(legacy.items) && legacy.items.length > 0) {
       for (const id of legacy.items) {
-        const uuid = await _uuidOfFile(path.join(dirPath, `${id}.md`));
+        const filePath = path.join(dirPath, `${id}.md`);
+        const uuid = await _uuidOfFile(filePath);
+
         if (uuid) {
           items.push(uuid);
-        } else {
-          unresolved.push(`${id}.md`);
+          continue;
         }
+
+        const bucket = (await _onDisk(filePath)) ? unresolved : vanished;
+        bucket.push(`${id}.md`);
       }
     }
 
@@ -156,6 +182,13 @@ const _convertOrder = async (dirPath: string): Promise<OrderConversion> => {
         items: items.length > 0 ? items : undefined,
       },
     });
+
+    if (vanished.length > 0) {
+      console.warn(
+        `Dropped ordering entries in ${dirPath} whose targets no longer exist:`,
+        vanished.join(", "),
+      );
+    }
 
     if (unresolved.length > 0) {
       console.warn(
@@ -176,7 +209,7 @@ const _convertOrder = async (dirPath: string): Promise<OrderConversion> => {
 const _stampTree = async (
   dirPath: string,
   isRoot: boolean,
-  changes: string[],
+  log: MigrationLog,
 ): Promise<void> => {
   if (!isRoot) {
     await catUuid(dirPath);
@@ -193,17 +226,17 @@ const _stampTree = async (
   const conversion = await _convertOrder(dirPath);
 
   if (conversion.converted) {
-    changes.push(`Converted ordering in ${path.basename(dirPath)}`);
+    log.changes.push(`Converted ordering in ${path.basename(dirPath)}`);
   }
 
   if (conversion.unresolved.length > 0) {
-    changes.push(
+    log.residue.push(
       `Kept ${LEGACY_ORDER_FILE} in ${path.basename(dirPath)}, unresolved entries: ${conversion.unresolved.join(", ")}`,
     );
   }
 
   for (const subDir of subDirs) {
-    await _stampTree(subDir, false, changes);
+    await _stampTree(subDir, false, log);
   }
 };
 
@@ -244,7 +277,7 @@ const _applyShares = async (
 
 const _migrateShares = async (
   mode: Modes,
-  changes: string[],
+  log: MigrationLog,
 ): Promise<void> => {
   const data = await _legacyShares(mode);
   if (!data) return;
@@ -259,7 +292,7 @@ const _migrateShares = async (
       const filePath = await _findByUuid(ownerDir, entry.uuid);
 
       if (!filePath) {
-        changes.push(`Skipped missing ${mode} item ${entry.uuid}`);
+        log.changes.push(`Skipped missing ${mode} item ${entry.uuid}`);
         continue;
       }
 
@@ -274,7 +307,7 @@ const _migrateShares = async (
   for (const [filePath, users] of Array.from(perFile.entries())) {
     try {
       await _applyShares(filePath, users);
-      changes.push(
+      log.changes.push(
         `Moved sharing into ${path.basename(filePath)} (${Object.keys(users).join(", ")})`,
       );
     } catch (error) {
@@ -284,20 +317,20 @@ const _migrateShares = async (
   }
 
   if (failures > 0) {
-    changes.push(
+    log.residue.push(
       `Kept legacy ${mode}/${LEGACY_SHARING_FILE}, ${failures} item(s) could not be written. Re-run once the cause is fixed.`,
     );
     return;
   }
 
   await fs.unlink(path.join(_modeDir(mode), LEGACY_SHARING_FILE));
-  changes.push(`Removed legacy ${mode}/${LEGACY_SHARING_FILE}`);
+  log.changes.push(`Removed legacy ${mode}/${LEGACY_SHARING_FILE}`);
 };
 
 export const migrateToInlineSharing = async (): Promise<
-  Result<{ migrated: boolean; changes: string[] }>
+  Result<{ migrated: boolean; changes: string[]; residue: string[] }>
 > => {
-  const changes: string[] = [];
+  const log: MigrationLog = { changes: [], residue: [] };
 
   try {
     if (!(await isAdmin())) {
@@ -308,17 +341,17 @@ export const migrateToInlineSharing = async (): Promise<
       const userDirs = await _userDirs(mode);
 
       for (const userDir of userDirs) {
-        await _stampTree(userDir, true, changes);
+        await _stampTree(userDir, true, log);
       }
 
-      await _migrateShares(mode, changes);
+      await _migrateShares(mode, log);
     }
 
-    changes.push(`Category metadata now lives in ${CATEGORY_INFO_FILE}`);
+    log.changes.push(`Category metadata now lives in ${CATEGORY_INFO_FILE}`);
 
     await needsMigration();
 
-    return { success: true, data: { migrated: true, changes } };
+    return { success: true, data: { migrated: true, ...log } };
   } catch (error) {
     console.error("Error in migrateToInlineSharing:", error);
     return { success: false, error: "Failed to migrate sharing data" };

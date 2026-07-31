@@ -41,6 +41,8 @@ export const EXPORT_TEMP_DIR = path.join(DATA_DIR, "temp_exports");
 
 export const DATA_SCHEMA_VERSION = 2;
 export const SCHEMA_VERSION_FILE = path.join(DATA_DIR, ".schema-version");
+export const MIGRATION_FORCE_PARAM = "force";
+export const MIGRATION_FORCE_VALUE = "1";
 
 export const NOTIFICATIONS_DIR = path.join(DATA_DIR, "notifications");
 export const NOTIFICATIONS_FILE = (username: string) =>
