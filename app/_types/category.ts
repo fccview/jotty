@@ -10,4 +10,6 @@ export interface Category {
   sharedFrom?: string;
   permissions?: SharingPermissions;
   sharedWith?: Record<string, SharingPermissions>;
+  /** Virtual grouping of loose shared items, named after the sharer. Not a real folder. */
+  isLoose?: boolean;
 }

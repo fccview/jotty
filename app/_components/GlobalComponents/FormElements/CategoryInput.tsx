@@ -78,7 +78,6 @@ export const CategoryInput = ({
             onCategorySelect={onCategoryChange}
             className="flex-1"
             placeholder={t('common.selectCategory')}
-            isInModal
           />
           <Button
             type="button"

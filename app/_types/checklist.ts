@@ -91,6 +91,7 @@ export interface Checklist {
   sharedWith?: string | string[];
   sharedFrom?: string;
   permissions?: SharingPermissions;
+  isLoose?: boolean;
   itemType?: ItemTypes;
   isDeleted?: boolean;
   rawContent?: string;

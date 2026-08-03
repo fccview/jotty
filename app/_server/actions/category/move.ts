@@ -22,6 +22,10 @@ import {
   subCatUuids,
 } from "@/app/_server/actions/share/category-info";
 import { mountsFor, userDirFor } from "@/app/_server/actions/share/mounts";
+import {
+  invalidateCached,
+  metaCacheKey,
+} from "@/app/_server/actions/lib/metadata-cache";
 import { targetDir, bouncer, shownAs } from "@/app/_server/actions/share/target";
 import { SharedMount } from "@/app/_types/sharing";
 import { PermissionTypes } from "@/app/_types/enums";
@@ -52,6 +56,18 @@ const _seededOrder = async (
     ),
     items: orderByUuids(presentItems, order?.items, identity),
   };
+};
+
+/**
+ * Order lives in the owning user's .category-info.json, so a collaborator's
+ * reorder has to evict the owner's cached listing too, otherwise the new order
+ * only surfaces once some unrelated write happens to touch that tree.
+ */
+const forgetLists = (mode: Modes, owners: string[]): void => {
+  Array.from(new Set(owners)).forEach((owner) => {
+    const dir = path.join(process.cwd(), userDirFor(mode, owner));
+    invalidateCached(metaCacheKey(mode, dir));
+  });
 };
 
 const _dndValue = (dndId: string): string =>
@@ -314,13 +330,17 @@ export const moveNode = async (formData: FormData) => {
       return { error: "Cannot move a folder between owners" };
     }
 
-    const entry = await bouncer(destLoc, username, PermissionTypes.EDIT);
+    const entry = await bouncer(
+      destLoc,
+      username,
+      isSameParent ? PermissionTypes.EDIT : PermissionTypes.CREATE,
+    );
 
     if (!entry.allowed) {
       return { error: entry.error };
     }
 
-    if (!isSameParent && sourceLoc.isMount) {
+    if (!isSameParent) {
       const exit = await bouncer(sourceLoc, username, PermissionTypes.DELETE);
 
       if (!exit.allowed) {
@@ -435,6 +455,8 @@ export const moveNode = async (formData: FormData) => {
         mode,
       },
     });
+
+    forgetLists(mode, [sourceLoc.owner, destLoc.owner]);
 
     revalidateTag(mode === Modes.NOTES ? "layout-notes" : "layout-checklists", { expire: 0 });
     revalidatePath("/");

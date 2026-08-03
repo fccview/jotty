@@ -4,7 +4,12 @@ import path from "path";
 import { Checklist, KanbanPriority, KanbanReminder } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
+import {
+  ItemTypes,
+  Modes,
+  NotificationTargets,
+  PermissionTypes,
+} from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
 import { revalidatePath } from "next/cache";
@@ -160,7 +165,11 @@ export const assignKanbanItem = async (formData: FormData) => {
         type: "assignment",
         title: assignedItem?.text || "New task assigned",
         message: `${currentUser.username} assigned you to a task in "${updatedList.title}"`,
-        data: { itemId: updatedList.uuid, itemType: "checklist", taskId: itemId },
+        data: {
+          itemId: updatedList.uuid,
+          itemType: NotificationTargets.CHECKLIST,
+          taskId: itemId,
+        },
       });
     }
 

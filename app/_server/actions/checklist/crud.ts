@@ -22,13 +22,26 @@ import {
   rebuildLinkIndex,
 } from "@/app/_server/actions/link";
 import { canReach } from "@/app/_server/actions/share/queries";
-import { targetDir, bouncer } from "@/app/_server/actions/share/target";
+import {
+  targetDir,
+  bouncer,
+  shownAs,
+} from "@/app/_server/actions/share/target";
 import { generateUuid, updateYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { getListById, getUserChecklists } from "./queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { claimedName } from "@/app/_server/actions/lib/actor";
 import { makeList } from "./creator";
+
+const _listDirFor = (owner: string, category?: string): string =>
+  path.join(
+    process.cwd(),
+    "data",
+    CHECKLISTS_FOLDER,
+    owner,
+    category || UNCATEGORIZED,
+  );
 
 export const createList = async (formData: FormData) => {
   const actor = await getCurrentUser();
@@ -87,51 +100,61 @@ export const updateList = async (formData: FormData) => {
       return { error: "Permission denied" };
     }
 
-    const shownCategory = category || currentList.category || "";
+    const shownSource = await shownAs(
+      Modes.CHECKLISTS,
+      actingUser.username,
+      currentList.owner!,
+      currentList.category || ""
+    );
+    const source = await targetDir(
+      Modes.CHECKLISTS,
+      actingUser.username,
+      shownSource
+    );
+
+    const shownCategory = category || shownSource;
     const target = await targetDir(
       Modes.CHECKLISTS,
       actingUser.username,
       shownCategory
     );
 
-    if (target.owner !== currentList.owner) {
-      return { error: "Cannot move a list between owners" };
-    }
+    const isRelocating =
+      target.owner !== source.owner || target.category !== source.category;
 
     const verdict = await bouncer(
       target,
       actingUser.username,
-      PermissionTypes.EDIT
+      isRelocating ? PermissionTypes.CREATE : PermissionTypes.EDIT
     );
 
     if (!verdict.allowed) {
       return { error: verdict.error };
     }
 
-    const source = await targetDir(
-      Modes.CHECKLISTS,
-      actingUser.username,
-      currentList.category || ""
-    );
+    if (isRelocating) {
+      const exit = await bouncer(
+        source,
+        actingUser.username,
+        PermissionTypes.DELETE
+      );
+
+      if (!exit.allowed) {
+        return { error: exit.error };
+      }
+    }
 
     const updatedList: Checklist = {
       ...currentList,
       title,
       category: target.category,
+      owner: target.owner,
       items: currentList.items,
       updatedAt: new Date().toISOString(),
     };
 
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      currentList.owner!
-    );
-    const categoryDir = path.join(
-      ownerDir,
-      updatedList.category || UNCATEGORIZED
-    );
+    const sourceDir = _listDirFor(source.owner, source.category);
+    const categoryDir = _listDirFor(target.owner, target.category);
     await ensureDir(categoryDir);
 
     const currentId = currentList.id;
@@ -161,17 +184,10 @@ export const updateList = async (formData: FormData) => {
 
     const filePath = path.join(categoryDir, newFilename);
 
-    let oldFilePath: string | null = null;
-    if (
-      (category && category !== currentList.category) ||
-      newId !== currentId
-    ) {
-      oldFilePath = path.join(
-        ownerDir,
-        source.category || UNCATEGORIZED,
-        `${currentId}.md`
-      );
-    }
+    const oldFilePath =
+      isRelocating || newId !== currentId
+        ? path.join(sourceDir, `${currentId}.md`)
+        : null;
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
@@ -182,13 +198,18 @@ export const updateList = async (formData: FormData) => {
         }`;
 
       const oldItemKey = `${source.category || UNCATEGORIZED}/${currentId}`;
-      if (oldItemKey !== newItemKey) {
-        await rebuildLinkIndex(currentList.owner!);
+      if (oldItemKey !== newItemKey || isRelocating) {
+        await rebuildLinkIndex(source.owner);
+
+        if (target.owner !== source.owner) {
+          await rebuildLinkIndex(target.owner);
+        }
+
         revalidatePath("/");
       }
 
       await updateIndexForItem(
-        currentList.owner!,
+        target.owner,
         ItemTypes.CHECKLIST,
         updatedList.uuid!,
         links

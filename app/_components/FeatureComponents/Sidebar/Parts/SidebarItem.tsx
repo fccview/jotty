@@ -178,7 +178,7 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(!isOwned
+    ...(!isOwned && item.isLoose
       ? [
           {
             label: t("sharing.leaveShare"),

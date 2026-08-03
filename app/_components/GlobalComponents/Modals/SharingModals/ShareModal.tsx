@@ -43,7 +43,7 @@ export const ShareModal = ({
 
   return (
     <Modal isOpen={true} onClose={onClose} title={t('sharing.shareModalTitle', { type: metadata.type === ItemTypes.CHECKLIST ? t("common.checklist") : t("common.note") })}>
-      <div className="space-y-4 py-6">
+      <div className="space-y-4 pb-4">
         <h3 className="font-semibold text-lg">{metadata.title}</h3>
         <FeedbackMessage error={error} success={success} />
         <ShareTabs activeTab={activeTab} setActiveTab={handleTabChange} />
@@ -67,7 +67,7 @@ export const ShareModal = ({
         )}
       </div>
 
-      <div className="flex items-center justify-between p-6 border-t border-border bg-muted/20">
+      <div className="-mx-6 -mb-6 flex items-center justify-between gap-2 px-6 py-3 border-t border-border bg-muted/20 rounded-b-jotty">
         <div>
           {activeTab === "users" && hookResult.currentSharing.length > 0 && (
             <Button

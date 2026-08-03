@@ -1,8 +1,10 @@
+import { NotificationTargets } from "./enums";
+
 export type NotificationType = "reminder" | "assignment" | "sharing" | "system";
 
 export interface AppNotificationData {
   itemId: string;
-  itemType: "checklist" | "note";
+  itemType: NotificationTargets;
   taskId?: string;
 }
 

@@ -46,16 +46,14 @@ export const makeNote = async (
 
     const target = await targetDir(Modes.NOTES, actor.username, category);
 
-    if (target.isMount) {
-      const verdict = await bouncer(
-        target,
-        actor.username,
-        PermissionTypes.EDIT,
-      );
+    const verdict = await bouncer(
+      target,
+      actor.username,
+      PermissionTypes.CREATE,
+    );
 
-      if (!verdict.allowed) {
-        return { error: verdict.error };
-      }
+    if (!verdict.allowed) {
+      return { error: verdict.error };
     }
 
     const categoryDir = target.dir;

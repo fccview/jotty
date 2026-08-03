@@ -17,6 +17,7 @@ export interface Note {
   sharedWith?: string | string[];
   sharedFrom?: string;
   permissions?: SharingPermissions;
+  isLoose?: boolean;
   rawContent?: string;
   encrypted?: boolean;
   encryptedContent?: string;

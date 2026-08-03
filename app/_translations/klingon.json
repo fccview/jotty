@@ -1376,7 +1376,9 @@
     "fromUserDelete": "choH 'ej Qaw' laH, {user} lujatlh",
     "leaveShare": "boQta' yImej",
     "confirmLeaveItem": "\"{itemTitle}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej ghaj ghaHvaD boQta' chu' 'oH.",
-    "confirmLeaveFolder": "{owner} boQta' \"{categoryName}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej {owner} boQta' chu' 'oH."
+    "confirmLeaveFolder": "{owner} boQta' \"{categoryName}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej {owner} boQta' chu' 'oH.",
+    "canCreate": "chenmoHlaH",
+    "createHint": "ngaSwI'vaD De' chel 'ej vIH."
   },
   "encryption": {
     "encrypt": "pegh",
@@ -1707,6 +1709,8 @@
     "reminderMessage": "\"{task}\" in \"{board}\" is past its reminder",
     "unread": "laDlu'be'",
     "sharingTitle": "{user} {type} Dajach",
-    "sharingMessage": "{type} yIleghmeH yI'el"
+    "sharingMessage": "{type} yIleghmeH yI'el",
+    "sharingFolderTitle": "{user} {type} ngaSwI' Dajach",
+    "sharingFolderMessage": "“{folder}” yIleghmeH yI'el"
   }
 }

@@ -10,7 +10,7 @@ import {
   CATEGORY_INFO_FILE,
   IMPLICIT_MOUNT_PREFIX,
 } from "@/app/_consts/sharing";
-import { parseSharedWith } from "@/app/_utils/sharing-utils";
+import { granted, parseSharedWith } from "@/app/_utils/sharing-utils";
 import { isPathSafe } from "@/app/_utils/path-utils";
 import {
   grepExtractFrontmatter,
@@ -60,6 +60,7 @@ const _merge = (
           canRead: current.canRead || perms.canRead,
           canEdit: current.canEdit || perms.canEdit,
           canDelete: current.canDelete || perms.canDelete,
+          canCreate: current.canCreate || perms.canCreate,
         }
       : perms;
   });
@@ -149,12 +150,6 @@ export const catAccess = async (
   };
 };
 
-const PERMISSION_FIELD: Record<PermissionTypes, keyof SharingPermissions> = {
-  [PermissionTypes.READ]: "canRead",
-  [PermissionTypes.EDIT]: "canEdit",
-  [PermissionTypes.DELETE]: "canDelete",
-};
-
 export const canReachFile = async (
   mode: Modes,
   filePath: string,
@@ -165,10 +160,7 @@ export const canReachFile = async (
   if (!access) return false;
   if (access.owner === username) return true;
 
-  const perms = access.users[username];
-  if (!perms) return false;
-
-  return perms[PERMISSION_FIELD[permission]] === true;
+  return granted(access.users[username], permission);
 };
 
 export const sharedFiles = async (

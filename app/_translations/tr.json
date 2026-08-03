@@ -1378,7 +1378,9 @@
     "fromUserDelete": "Düzenlenebilir ve silinebilir, {user} paylaştı",
     "leaveShare": "Paylaşımdan ayrıl",
     "confirmLeaveItem": "\"{itemTitle}\" öğesine kendi erişiminizi kaldırmak istiyor musunuz? Kenar çubuğundan kaybolur ve sahibinin tekrar paylaşması gerekir.",
-    "confirmLeaveFolder": "{owner} tarafından paylaşılan \"{categoryName}\" klasörüne kendi erişiminizi kaldırmak istiyor musunuz? Kenar çubuğundan kaybolur ve {owner} tekrar paylaşmalıdır."
+    "confirmLeaveFolder": "{owner} tarafından paylaşılan \"{categoryName}\" klasörüne kendi erişiminizi kaldırmak istiyor musunuz? Kenar çubuğundan kaybolur ve {owner} tekrar paylaşmalıdır.",
+    "canCreate": "Oluşturabilir",
+    "createHint": "Bu klasöre öğe ekleme ve taşıma izni verir."
   },
   "encryption": {
     "encrypt": "Şifrele",
@@ -1705,6 +1707,8 @@
     "reminderMessage": "\"{board}\" içindeki \"{task}\" hatırlatıcısının tarihi geçti",
     "unread": "okunmadı",
     "sharingTitle": "{user} sizinle bir {type} paylaştı",
-    "sharingMessage": "Paylaşılan {type} öğesini görmek için açın"
+    "sharingMessage": "Paylaşılan {type} öğesini görmek için açın",
+    "sharingFolderTitle": "{user} sizinle bir {type} klasörü paylaştı",
+    "sharingFolderMessage": "“{folder}” klasörünü görmek için açın"
   }
 }

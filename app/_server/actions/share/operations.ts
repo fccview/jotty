@@ -2,7 +2,7 @@
 
 import path from "path";
 import { revalidateTag } from "next/cache";
-import { Modes, ItemTypes } from "@/app/_types/enums";
+import { Modes, ItemTypes, NotificationTargets } from "@/app/_types/enums";
 import { Result, SharingPermissions } from "@/app/_types/core";
 import { PUBLIC_USER, SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { NOTES_DIR, CHECKLISTS_DIR } from "@/app/_consts/files";
@@ -115,6 +115,18 @@ const _notify = async (
   );
 };
 
+const ITEM_TARGET: Record<Modes.CHECKLISTS | Modes.NOTES, NotificationTargets> = {
+  [Modes.CHECKLISTS]: NotificationTargets.CHECKLIST,
+  [Modes.NOTES]: NotificationTargets.NOTE,
+};
+
+const FOLDER_TARGET: Record<Modes.CHECKLISTS | Modes.NOTES, NotificationTargets> = {
+  [Modes.CHECKLISTS]: NotificationTargets.CHECKLIST_CATEGORY,
+  [Modes.NOTES]: NotificationTargets.NOTE_CATEGORY,
+};
+
+const _isChecklist = (mode: Modes): boolean => mode === Modes.CHECKLISTS;
+
 const _tell = async (
   mode: Modes,
   uuid: string,
@@ -124,17 +136,49 @@ const _tell = async (
   if (receiver === PUBLIC_USER || receiver === sharer) return;
 
   try {
-    const label = mode === Modes.CHECKLISTS ? "checklist" : "note";
-    const t = await getTranslations("notifications");
+    const t = await getTranslations();
+    const kind = _isChecklist(mode) ? Modes.CHECKLISTS : Modes.NOTES;
+    const label = t(_isChecklist(mode) ? "common.checklist" : "common.note");
 
     await createNotificationForUser(receiver, {
       type: "sharing",
-      title: t("sharingTitle", { user: sharer, type: label }),
-      message: t("sharingMessage", { type: label }),
-      data: { itemId: uuid, itemType: label },
+      title: t("notifications.sharingTitle", { user: sharer, type: label }),
+      message: t("notifications.sharingMessage", { type: label }),
+      data: { itemId: uuid, itemType: ITEM_TARGET[kind] },
     });
   } catch (error) {
     console.error(`Failed to notify ${receiver} about ${uuid}:`, error);
+  }
+};
+
+const _tellFolder = async (
+  mode: Modes,
+  categoryUuid: string,
+  folderName: string,
+  sharer: string,
+  receiver: string,
+): Promise<void> => {
+  if (receiver === PUBLIC_USER || receiver === sharer) return;
+
+  try {
+    const t = await getTranslations();
+    const kind = _isChecklist(mode) ? Modes.CHECKLISTS : Modes.NOTES;
+    const label = t(_isChecklist(mode) ? "common.checklist" : "common.note");
+
+    await createNotificationForUser(receiver, {
+      type: "sharing",
+      title: t("notifications.sharingFolderTitle", {
+        user: sharer,
+        type: label,
+      }),
+      message: t("notifications.sharingFolderMessage", { folder: folderName }),
+      data: { itemId: categoryUuid, itemType: FOLDER_TARGET[kind] },
+    });
+  } catch (error) {
+    console.error(
+      `Failed to notify ${receiver} about folder ${categoryUuid}:`,
+      error,
+    );
   }
 };
 
@@ -360,7 +404,13 @@ export const shareFolder = async (
     });
 
     await _notify(mode, categoryUuid, [owner, receiver]);
-    await _tell(mode, categoryUuid, owner, receiver);
+    await _tellFolder(
+      mode,
+      categoryUuid,
+      path.basename(dir),
+      owner,
+      receiver,
+    );
 
     return { success: true, data: categoryUuid };
   } catch (error) {

@@ -1376,7 +1376,9 @@
     "fromUserDelete": "Pode editar e eliminar, partilhado por {user}",
     "leaveShare": "Sair da partilha",
     "confirmLeaveItem": "Remover o seu próprio acesso a \"{itemTitle}\"? Desaparece da barra lateral e o proprietário terá de partilhar novamente.",
-    "confirmLeaveFolder": "Remover o seu próprio acesso a \"{categoryName}\", partilhada por {owner}? Desaparece da barra lateral e {owner} terá de partilhar novamente."
+    "confirmLeaveFolder": "Remover o seu próprio acesso a \"{categoryName}\", partilhada por {owner}? Desaparece da barra lateral e {owner} terá de partilhar novamente.",
+    "canCreate": "Pode criar",
+    "createHint": "Permite adicionar e mover itens para esta pasta."
   },
   "encryption": {
     "encrypt": "Encriptar",
@@ -1703,6 +1705,8 @@
     "reminderTitle": "Tarefa em atraso",
     "reminderMessage": "\"{task}\" em \"{board}\" ultrapassou o lembrete",
     "sharingTitle": "{user} partilhou um(a) {type} consigo",
-    "sharingMessage": "Abrir para ver o(a) {type} partilhado(a)"
+    "sharingMessage": "Abrir para ver o(a) {type} partilhado(a)",
+    "sharingFolderTitle": "{user} partilhou uma pasta de {type} consigo",
+    "sharingFolderMessage": "Abrir para ver “{folder}”"
   }
 }

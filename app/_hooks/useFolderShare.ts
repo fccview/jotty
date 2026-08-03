@@ -15,6 +15,7 @@ const READ_ONLY: SharingPermissions = {
   canRead: true,
   canEdit: false,
   canDelete: false,
+  canCreate: false,
 };
 
 interface FolderShareArgs {
@@ -100,8 +101,10 @@ export const useFolderShare = ({
     permission: keyof SharingPermissions,
     value: boolean,
   ) => {
-    const next = {
-      ...(grants[username] || READ_ONLY),
+    const current = grants[username] || READ_ONLY;
+    const next: SharingPermissions = {
+      ...current,
+      canCreate: current.canCreate ?? false,
       [permission]: value,
       canRead: true,
     };

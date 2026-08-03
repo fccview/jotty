@@ -1376,7 +1376,9 @@
     "fromUserDelete": "Can scribble 'n scuttle, handed over by {user}",
     "leaveShare": "Abandon ship",
     "confirmLeaveItem": "Strike yer own colours from \"{itemTitle}\"? She vanishes from yer sidebar, an' the cap'n must share her anew to hand her back.",
-    "confirmLeaveFolder": "Strike yer own colours from \"{categoryName}\", shared by {owner}? She vanishes from yer sidebar, an' {owner} must share her anew."
+    "confirmLeaveFolder": "Strike yer own colours from \"{categoryName}\", shared by {owner}? She vanishes from yer sidebar, an' {owner} must share her anew.",
+    "canCreate": "Can Forge",
+    "createHint": "Lets 'em stow new booty an' haul items into this chest."
   },
   "encryption": {
     "encrypt": "Bury",
@@ -1704,6 +1706,8 @@
     "reminderMessage": "\"{task}\" in \"{board}\" is past its reminder",
     "unread": "unread",
     "sharingTitle": "{user} shared a {type} with ye",
-    "sharingMessage": "Open to eyeball the shared {type}"
+    "sharingMessage": "Open to eyeball the shared {type}",
+    "sharingFolderTitle": "{user} shared a {type} chest with ye",
+    "sharingFolderMessage": "Open to eyeball “{folder}”"
   }
 }

@@ -6,6 +6,7 @@ export const sharingPermsSchema = z.object({
   canRead: z.boolean(),
   canEdit: z.boolean(),
   canDelete: z.boolean(),
+  canCreate: z.boolean().optional(),
 });
 
 export const categorySharingSchema = z.object({

@@ -2,12 +2,14 @@
 
 import path from "path";
 import { AppNotification, AppNotificationData } from "@/app/_types";
+import { Modes, NotificationTargets } from "@/app/_types/enums";
 import { NOTIFICATIONS_FILE } from "@/app/_consts/files";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { readJsonFile, writeJsonFile, ensureDir } from "@/app/_server/actions/file";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getListById } from "@/app/_server/actions/checklist";
 import { getNoteById } from "@/app/_server/actions/note";
+import { mountsFor } from "@/app/_server/actions/share/mounts";
 
 const DEDUP_WINDOW_MS = 60 * 60 * 1000;
 
@@ -52,19 +54,48 @@ const _buildNotification = (
   createdAt: new Date().toISOString(),
 });
 
-const _resolveLink = async (data?: AppNotificationData): Promise<string | undefined> => {
+const CATEGORY_MODES: Partial<Record<NotificationTargets, Modes>> = {
+  [NotificationTargets.NOTE_CATEGORY]: Modes.NOTES,
+  [NotificationTargets.CHECKLIST_CATEGORY]: Modes.CHECKLISTS,
+};
+
+const _folderLink = async (
+  mode: Modes,
+  username: string,
+  categoryUuid: string,
+): Promise<string | undefined> => {
+  const mounts = await mountsFor(mode, username);
+  const mount = mounts.find((entry) => entry.categoryUuid === categoryUuid);
+
+  if (!mount) return undefined;
+
+  return `/?mode=${mode}&category=${encodeURIComponent(mount.displayName)}`;
+};
+
+const _resolveLink = async (
+  username: string,
+  data?: AppNotificationData,
+): Promise<string | undefined> => {
   if (!data?.itemId || !data?.itemType) return undefined;
 
   try {
-    if (data.itemType === "checklist") {
+    const folderMode = CATEGORY_MODES[data.itemType];
+
+    if (folderMode) {
+      return _folderLink(folderMode, username, data.itemId);
+    }
+
+    if (data.itemType === NotificationTargets.CHECKLIST) {
       const list = await getListById(data.itemId);
       if (list) return `/checklist/${list.uuid}`;
     }
-    if (data.itemType === "note") {
+    if (data.itemType === NotificationTargets.NOTE) {
       const note = await getNoteById(data.itemId);
       if (note) return `/note/${note.uuid}`;
     }
-  } catch { }
+  } catch (error) {
+    console.error("[notifications] could not resolve link:", error);
+  }
 
   return undefined;
 };
@@ -103,7 +134,7 @@ export const getNotifications = async (): Promise<AppNotification[]> => {
   return Promise.all(
     notifications.map(async (n) => ({
       ...n,
-      link: await _resolveLink(n.data),
+      link: await _resolveLink(user.username, n.data),
     })),
   );
 };

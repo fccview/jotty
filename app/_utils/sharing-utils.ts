@@ -1,4 +1,4 @@
-import { ItemTypes, Modes, SharePerms } from "../_types/enums";
+import { ItemTypes, Modes, PermissionTypes, SharePerms } from "../_types/enums";
 import { ItemType, SharingPermissions } from "../_types/core";
 import {
   SHARED_WITH_NONE,
@@ -15,6 +15,23 @@ const CODE_TO_PERMS: Record<SharePerms, SharingPermissions> = {
 
 export const permsFromCode = (code: string): SharingPermissions | null =>
   CODE_TO_PERMS[code as SharePerms] || null;
+
+/**
+ * Grants written before folder-scoped "create" existed carry no canCreate flag,
+ * so they keep behaving as they always did and follow canEdit.
+ */
+export const granted = (
+  perms: SharingPermissions | undefined,
+  permission: PermissionTypes,
+): boolean => {
+  if (!perms) return false;
+
+  if (permission === PermissionTypes.CREATE && perms.canCreate === undefined) {
+    return perms.canEdit === true;
+  }
+
+  return perms[permission] === true;
+};
 
 export const codeFromPerms = (perms: SharingPermissions): SharePerms => {
   if (perms.canDelete) return SharePerms.DELETE;

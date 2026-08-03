@@ -1351,7 +1351,9 @@
     "fromUserDelete": "Może edytować i usuwać, udostępnione przez {user}",
     "leaveShare": "Opuść udostępnienie",
     "confirmLeaveItem": "Usunąć własny dostęp do \"{itemTitle}\"? Zniknie z paska bocznego, a właściciel będzie musiał udostępnić to ponownie.",
-    "confirmLeaveFolder": "Usunąć własny dostęp do \"{categoryName}\" udostępnionego przez {owner}? Folder zniknie z paska bocznego, a {owner} będzie musiał udostępnić go ponownie."
+    "confirmLeaveFolder": "Usunąć własny dostęp do \"{categoryName}\" udostępnionego przez {owner}? Folder zniknie z paska bocznego, a {owner} będzie musiał udostępnić go ponownie.",
+    "canCreate": "Może tworzyć",
+    "createHint": "Pozwala dodawać i przenosić elementy do tego folderu."
   },
   "encryption": {
     "encrypt": "Zaszyfruj",
@@ -1707,6 +1709,8 @@
     "reminderMessage": "Przypomnienie o zadaniu „{task}” w „{board}” minęło",
     "unread": "nieprzeczyt.",
     "sharingTitle": "{user} udostępnił(a) ci {type}",
-    "sharingMessage": "Otwórz, aby zobaczyć udostępniony {type}"
+    "sharingMessage": "Otwórz, aby zobaczyć udostępniony {type}",
+    "sharingFolderTitle": "{user} udostępnił(a) ci folder {type}",
+    "sharingFolderMessage": "Otwórz, aby zobaczyć „{folder}”"
   }
 }

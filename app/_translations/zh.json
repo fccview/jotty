@@ -1376,7 +1376,9 @@
     "fromUserDelete": "可编辑和删除, 由 {user} 共享",
     "leaveShare": "退出共享",
     "confirmLeaveItem": "要移除你对\"{itemTitle}\"的访问权限吗？它会从侧边栏消失，需要所有者重新共享。",
-    "confirmLeaveFolder": "要移除你对 {owner} 共享的\"{categoryName}\"的访问权限吗？它会从侧边栏消失，需要 {owner} 重新共享。"
+    "confirmLeaveFolder": "要移除你对 {owner} 共享的\"{categoryName}\"的访问权限吗？它会从侧边栏消失，需要 {owner} 重新共享。",
+    "canCreate": "可创建",
+    "createHint": "允许向该文件夹添加和移动项目。"
   },
   "encryption": {
     "encrypt": "加密",
@@ -1707,6 +1709,8 @@
     "reminderMessage": "“{board}”中的“{task}”已超过提醒时间",
     "unread": "未读",
     "sharingTitle": "{user} 与你共享了{type}",
-    "sharingMessage": "打开以查看共享的{type}"
+    "sharingMessage": "打开以查看共享的{type}",
+    "sharingFolderTitle": "{user} 与你共享了{type}文件夹",
+    "sharingFolderMessage": "打开以查看“{folder}”"
   }
 }

@@ -6,7 +6,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import { Item } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { ChecklistsTypes } from "@/app/_types/enums";
+import { ChecklistsTypes, NotificationTargets } from "@/app/_types/enums";
 import { parseMarkdown, listToMarkdown } from "@/app/_utils/checklist-utils";
 import { updateItem } from "@/app/_utils/item-tree-utils";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
@@ -122,7 +122,7 @@ export const scanReminders = async (): Promise<void> => {
               },
               data: {
                 itemId: list.uuid,
-                itemType: "checklist",
+                itemType: NotificationTargets.CHECKLIST,
                 taskId: item.id,
               },
             });
