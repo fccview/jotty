@@ -113,6 +113,7 @@ export const mountedItems = async <T extends MountableItem>(
         isShared: true,
         sharedFrom: mount.owner,
         permissions: mount.permissions,
+        isLoose: true,
       });
       continue;
     }

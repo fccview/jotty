@@ -30,6 +30,7 @@ const mockGetUserByNoteUuid = vi.fn();
 const mockGetNoteById = vi.fn();
 const mockTargetDir = vi.fn();
 const mockBouncer = vi.fn();
+const mockShownAs = vi.fn();
 
 vi.mock("@/app/_server/actions/note/queries", () => ({
   getNoteById: (...args: unknown[]) => mockGetNoteById(...args),
@@ -62,6 +63,7 @@ vi.mock("@/app/_server/actions/share/queries", () => ({
 vi.mock("@/app/_server/actions/share/target", () => ({
   targetDir: (...args: any[]) => mockTargetDir(...args),
   bouncer: (...args: any[]) => mockBouncer(...args),
+  shownAs: (...args: any[]) => mockShownAs(...args),
 }));
 
 vi.mock("@/app/_server/actions/log", () => ({
@@ -148,6 +150,9 @@ describe("Note Actions", () => {
         isMount: false,
         isImplicit: false,
       }),
+    );
+    mockShownAs.mockImplementation(
+      async (_mode: unknown, _username: string, _owner: string, category: string) => category,
     );
     mockBouncer.mockResolvedValue({ allowed: true });
     mockLogContentEvent.mockResolvedValue(undefined);

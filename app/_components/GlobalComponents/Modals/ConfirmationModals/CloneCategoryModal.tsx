@@ -60,7 +60,6 @@ export const CloneCategoryModal = ({
             selectedCategory={selectedCategory}
             onCategorySelect={setSelectedCategory}
             placeholder={t("common.selectCategory")}
-            isInModal
           />
         </div>
 

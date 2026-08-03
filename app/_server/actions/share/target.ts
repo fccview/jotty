@@ -5,6 +5,7 @@ import { SharingPermissions } from "@/app/_types/core";
 import { SharedMount } from "@/app/_types/sharing";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { isPathSafe } from "@/app/_utils/path-utils";
+import { granted } from "@/app/_utils/sharing-utils";
 import { mountsFor, userDirFor } from "./mounts";
 
 export interface TargetLocation {
@@ -16,12 +17,6 @@ export interface TargetLocation {
   permissions?: SharingPermissions;
   mount?: SharedMount;
 }
-
-const PERMISSION_FIELD: Record<PermissionTypes, keyof SharingPermissions> = {
-  [PermissionTypes.READ]: "canRead",
-  [PermissionTypes.EDIT]: "canEdit",
-  [PermissionTypes.DELETE]: "canDelete",
-};
 
 const _inside = (base: string, category: string): boolean =>
   !category || isPathSafe(base, category);
@@ -150,9 +145,7 @@ export const bouncer = async (
     return { allowed: false, error: "You're not on the list" };
   }
 
-  const granted = target.permissions?.[PERMISSION_FIELD[permission]] === true;
-
-  return granted
+  return granted(target.permissions, permission)
     ? { allowed: true }
     : { allowed: false, error: "You're not on the list" };
 };

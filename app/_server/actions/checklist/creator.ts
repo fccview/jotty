@@ -27,7 +27,11 @@ export const makeList = async (
     const type = (formData.get("type") as ChecklistType) || "simple";
 
     const target = await targetDir(Modes.CHECKLISTS, actor.username, category);
-    const verdict = await bouncer(target, actor.username, PermissionTypes.EDIT);
+    const verdict = await bouncer(
+      target,
+      actor.username,
+      PermissionTypes.CREATE,
+    );
 
     if (!verdict.allowed) {
       return { error: verdict.error };

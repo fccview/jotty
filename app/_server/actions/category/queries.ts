@@ -40,6 +40,7 @@ const _mountTree = async (
         uuid: mount.categoryUuid,
         sharedFrom: mount.owner,
         permissions: mount.permissions,
+        isLoose: true,
       },
     ];
   }

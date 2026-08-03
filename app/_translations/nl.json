@@ -1351,7 +1351,9 @@
     "fromUserDelete": "Kan bewerken en verwijderen, gedeeld door {user}",
     "leaveShare": "Delen verlaten",
     "confirmLeaveItem": "Je eigen toegang tot \"{itemTitle}\" verwijderen? Het verdwijnt uit je zijbalk en de eigenaar moet het opnieuw delen.",
-    "confirmLeaveFolder": "Je eigen toegang tot \"{categoryName}\", gedeeld door {owner}, verwijderen? De map verdwijnt uit je zijbalk en {owner} moet hem opnieuw delen."
+    "confirmLeaveFolder": "Je eigen toegang tot \"{categoryName}\", gedeeld door {owner}, verwijderen? De map verdwijnt uit je zijbalk en {owner} moet hem opnieuw delen.",
+    "canCreate": "Kan aanmaken",
+    "createHint": "Laat toe items toe te voegen en te verplaatsen naar deze map."
   },
   "encryption": {
     "encrypt": "Versleutelen",
@@ -1679,7 +1681,9 @@
     "reminderMessage": "\"{task}\" in \"{board}\" is voorbij de herinnering",
     "unread": "ongelezen",
     "sharingTitle": "{user} heeft een {type} met je gedeeld",
-    "sharingMessage": "Open om het gedeelde {type} te bekijken"
+    "sharingMessage": "Open om het gedeelde {type} te bekijken",
+    "sharingFolderTitle": "{user} heeft een {type}-map met je gedeeld",
+    "sharingFolderMessage": "Open om “{folder}” te bekijken"
   },
   "history": {
     "noteHistory": "Notitiegeschiedenis",

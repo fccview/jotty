@@ -1351,7 +1351,9 @@
     "fromUserDelete": "Kann bearbeiten und löschen, geteilt von {user}",
     "leaveShare": "Freigabe verlassen",
     "confirmLeaveItem": "Deinen eigenen Zugriff auf \"{itemTitle}\" entfernen? Es verschwindet aus deiner Seitenleiste und der Eigentümer muss es erneut teilen.",
-    "confirmLeaveFolder": "Deinen eigenen Zugriff auf \"{categoryName}\" von {owner} entfernen? Der Ordner verschwindet aus deiner Seitenleiste und {owner} muss ihn erneut teilen."
+    "confirmLeaveFolder": "Deinen eigenen Zugriff auf \"{categoryName}\" von {owner} entfernen? Der Ordner verschwindet aus deiner Seitenleiste und {owner} muss ihn erneut teilen.",
+    "canCreate": "Kann erstellen",
+    "createHint": "Erlaubt das Hinzufügen und Verschieben von Einträgen in diesen Ordner."
   },
   "encryption": {
     "encrypt": "Verschlüsseln",
@@ -1697,7 +1699,9 @@
     "reminderMessage": "„{task}“ in „{board}“ ist abgelaufen",
     "unread": "ungelesen",
     "sharingTitle": "{user} hat ein {type} mit dir geteilt",
-    "sharingMessage": "Öffnen, um das geteilte {type} anzuzeigen"
+    "sharingMessage": "Öffnen, um das geteilte {type} anzuzeigen",
+    "sharingFolderTitle": "{user} hat einen {type}-Ordner mit dir geteilt",
+    "sharingFolderMessage": "Öffnen, um „{folder}“ anzuzeigen"
   },
   "notFound": {
     "title": "Seite nicht gefunden",

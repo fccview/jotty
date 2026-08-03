@@ -41,7 +41,7 @@ export const FolderShareModal = ({
 
   return (
     <Modal isOpen={true} onClose={onClose} title={t("sharing.shareFolder")}>
-      <div className="space-y-4 py-6">
+      <div className="space-y-4 pb-4">
         <h3 className="font-semibold text-lg">{categoryPath}</h3>
         <p className="text-sm text-muted-foreground">
           {t("sharing.folderShareHint")}
@@ -84,6 +84,20 @@ export const FolderShareModal = ({
                 <div className="flex items-center gap-3 shrink-0">
                   {granted && (
                     <>
+                      <label
+                        className="flex items-center gap-1 text-xs text-muted-foreground"
+                        title={t("sharing.createHint")}
+                      >
+                        {t("sharing.canCreate")}
+                        <Toggle
+                          size="sm"
+                          checked={granted.canCreate === true}
+                          onCheckedChange={(value) =>
+                            setPerms(username, "canCreate", value)
+                          }
+                          disabled={isLoading}
+                        />
+                      </label>
                       <label className="flex items-center gap-1 text-xs text-muted-foreground">
                         {t("sharing.canEdit")}
                         <Toggle
@@ -145,7 +159,7 @@ export const FolderShareModal = ({
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 p-6 border-t border-border bg-muted/20">
+      <div className="-mx-6 -mb-6 flex justify-end gap-2 px-6 py-3 border-t border-border bg-muted/20 rounded-b-jotty">
         <Button variant="outline" onClick={onClose} disabled={isLoading}>
           {t("common.close")}
         </Button>

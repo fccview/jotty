@@ -142,7 +142,6 @@ export const EditNoteModal = ({
               onCategorySelect={setCategory}
               placeholder={t('common.selectCategory')}
               className="w-full"
-              isInModal={true}
             />
           </div>
         )}

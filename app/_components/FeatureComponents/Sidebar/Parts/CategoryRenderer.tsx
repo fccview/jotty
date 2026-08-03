@@ -14,10 +14,16 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import { AppMode, Category, Checklist, Note, SanitisedUser } from "@/app/_types";
+import {
+  AppMode,
+  Category,
+  Checklist,
+  Note,
+  SanitisedUser,
+} from "@/app/_types";
 import { Draggable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Draggable";
 import { SidebarItem } from "@/app/_components/FeatureComponents/Sidebar/Parts/SidebarItem";
-import { Modes } from "@/app/_types/enums";
+import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
 import { useTranslations } from "next-intl";
@@ -29,6 +35,7 @@ import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/Confirma
 import { leaveFolder } from "@/app/_server/actions/share/operations";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { granted } from "@/app/_utils/sharing-utils";
 
 interface CategoryRendererProps {
   category: Category;
@@ -75,7 +82,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
 
   const getItemsInCategory = (categoryPath: string) =>
     allItems.filter(
-      (item) => (item.category || UNCATEGORIZED) === categoryPath
+      (item) => (item.category || UNCATEGORIZED) === categoryPath,
     );
   const getSubCategories = (parentPath: string) =>
     allCategories.filter((cat) => cat.parent === parentPath);
@@ -87,7 +94,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
       directItems +
       subCategories.reduce(
         (total, subCat) => total + getTotalItemsInCategory(subCat.path),
-        0
+        0,
       )
     );
   };
@@ -97,9 +104,14 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const isCollapsed = collapsedCategories.has(category.path);
   const hasContent = categoryItems.length > 0 || subCategories.length > 0;
 
+  const isLoose = Boolean(category.isLoose);
   const isOwned = !category.sharedFrom;
-  const canWrite = isOwned || category.permissions?.canEdit === true;
+  const canWrite =
+    !isLoose && (isOwned || category.permissions?.canEdit === true);
   const canRemove = isOwned || category.permissions?.canDelete === true;
+  const canFill =
+    !isLoose &&
+    (isOwned || granted(category.permissions, PermissionTypes.CREATE));
 
   const handleLeaveFolder = async () => {
     const result = await leaveFolder(
@@ -145,11 +157,13 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
       : []),
   ];
 
-  const createActions = canWrite
+  const createActions = canFill
     ? [
         {
           label: t(
-            mode === Modes.CHECKLISTS ? "checklists.newChecklist" : "notes.newNote",
+            mode === Modes.CHECKLISTS
+              ? "checklists.newChecklist"
+              : "notes.newNote",
           ),
           onClick: () => onQuickCreate(category.path),
           icon:
@@ -211,15 +225,13 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
             <div
               className={cn(
                 "flex items-center justify-between",
-                isOver && "bg-primary/10 rounded-jotty"
+                isOver && "bg-primary/10 rounded-jotty",
               )}
             >
               <div
                 className={cn(
                   "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
-                  hasContent
-                    ? "hover:bg-muted/50"
-                    : "text-muted-foreground"
+                  hasContent ? "hover:bg-muted/50" : "text-muted-foreground",
                 )}
                 style={{ paddingLeft: `${category.level * 16}px` }}
               >
@@ -230,7 +242,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                   }}
                   className={cn(
                     "flex items-center shrink-0",
-                    hasContent ? "cursor-pointer" : "cursor-default"
+                    hasContent ? "cursor-pointer" : "cursor-default",
                   )}
                 >
                   {hasContent ? (

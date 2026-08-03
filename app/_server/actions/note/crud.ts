@@ -37,10 +37,25 @@ import { logContentEvent } from "@/app/_server/actions/log";
 import { commitNote } from "@/app/_server/actions/history";
 import { noteToMarkdown, convertInternalLinksToNewFormat } from "./parsers";
 import { getNoteById } from "./queries";
-import { targetDir, bouncer } from "@/app/_server/actions/share/target";
+import { targetDir, bouncer, shownAs } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { claimedName } from "@/app/_server/actions/lib/actor";
 import { makeNote } from "./creator";
+
+/**
+ * The session is the only identity that counts. The username riding along in
+ * FormData is a leftover from API-key callers that build the payload
+ * server-side, so it is a fallback and never an override.
+ */
+const _noteDirFor = (owner: string, category?: string): string =>
+  path.join(process.cwd(), NOTES_DIR(owner), category || UNCATEGORIZED);
+
+const _namedIn = (user: unknown): string | undefined => {
+  if (typeof user === "string") return user || undefined;
+
+  const named = (user as { username?: unknown })?.username;
+  return typeof named === "string" ? named : undefined;
+};
 
 export const createNote = async (formData: FormData) => {
   const actor = await getCurrentUser();
@@ -73,16 +88,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     ]);
     const settings = await getSettings();
 
-    let currentUser = user;
-
-    if (!currentUser) {
-      currentUser = await getUsername();
-    }
-
-    const actingUsername =
-      typeof currentUser === "string"
-        ? currentUser
-        : (currentUser as { username?: string })?.username;
+    const actingUsername = (await getUsername()) || _namedIn(user);
 
     if (!actingUsername) {
       return { error: "Not authenticated" };
@@ -105,28 +111,45 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       return { error: "Permission denied" };
     }
 
-    const shownCategory = category || note.category || "";
+    const shownSource = await shownAs(
+      Modes.NOTES,
+      actingUsername,
+      note.owner!,
+      note.category || ""
+    );
+    const source = await targetDir(Modes.NOTES, actingUsername, shownSource);
+
+    const shownCategory = category || shownSource;
     const target = await targetDir(
       Modes.NOTES,
       actingUsername,
       shownCategory
     );
 
-    if (target.owner !== note.owner) {
-      return { error: "Cannot move a note between owners" };
-    }
+    const isRelocating =
+      target.owner !== source.owner || target.category !== source.category;
 
-    const verdict = await bouncer(target, actingUsername, PermissionTypes.EDIT);
+    const verdict = await bouncer(
+      target,
+      actingUsername,
+      isRelocating ? PermissionTypes.CREATE : PermissionTypes.EDIT
+    );
 
     if (!verdict.allowed) {
       return { error: verdict.error };
     }
 
-    const source = await targetDir(
-      Modes.NOTES,
-      actingUsername,
-      note.category || ""
-    );
+    if (isRelocating) {
+      const exit = await bouncer(
+        source,
+        actingUsername,
+        PermissionTypes.DELETE
+      );
+
+      if (!exit.allowed) {
+        return { error: exit.error };
+      }
+    }
 
     const sanitizedContent = sanitizeMarkdown(content);
     const { contentWithoutMetadata } = stripYaml(sanitizedContent);
@@ -151,17 +174,15 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       title,
       content: convertedContent,
       category: target.category,
+      owner: target.owner,
       updatedAt: new Date().toISOString(),
       encrypted: isEncrypted(convertedContent),
       encryptionMethod,
       tags: sortedTags.length > 0 ? sortedTags : undefined,
     };
 
-    const ownerDir = NOTES_DIR(note.owner!);
-    const categoryDir = path.join(
-      ownerDir,
-      updatedDoc.category || UNCATEGORIZED
-    );
+    const sourceDir = _noteDirFor(source.owner, source.category);
+    const categoryDir = _noteDirFor(target.owner, target.category);
     await ensureDir(categoryDir);
 
     const currentId = note.id;
@@ -188,17 +209,10 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
     const filePath = path.join(categoryDir, newFilename);
 
-    let oldFilePath: string | null = null;
-    if (
-      (category && category !== note.category) ||
-      newId !== currentId
-    ) {
-      oldFilePath = path.join(
-        ownerDir,
-        source.category || UNCATEGORIZED,
-        `${currentId}.md`
-      );
-    }
+    const oldFilePath =
+      isRelocating || newId !== currentId
+        ? path.join(sourceDir, `${currentId}.md`)
+        : null;
 
     await serverWriteFile(filePath, noteToMarkdown(updatedDoc));
 
@@ -208,10 +222,9 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         `${newId}.md`
       );
 
-      const isCategoryChange = category && category !== note.category;
-      const historyAction = isCategoryChange ? "move" : "update";
+      const historyAction = isRelocating ? "move" : "update";
 
-      const historyMetadata = isCategoryChange
+      const historyMetadata = isRelocating
         ? {
           oldCategory: source.category || UNCATEGORIZED,
           newCategory: updatedDoc.category || UNCATEGORIZED,
@@ -223,7 +236,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         : undefined;
 
       commitNote(
-        note.owner!,
+        target.owner,
         historyRelativePath,
         historyAction,
         title,
@@ -239,12 +252,17 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
 
         const oldItemKey = `${source.category || UNCATEGORIZED}/${currentId}`;
 
-        if (oldItemKey !== newItemKey) {
-          await rebuildLinkIndex(note.owner!);
+        if (oldItemKey !== newItemKey || isRelocating) {
+          await rebuildLinkIndex(source.owner);
+
+          if (target.owner !== source.owner) {
+            await rebuildLinkIndex(target.owner);
+          }
+
           revalidatePath("/");
         }
 
-        await updateIndexForItem(note.owner!, "note", updatedDoc.uuid!, links);
+        await updateIndexForItem(target.owner, "note", updatedDoc.uuid!, links);
       } catch (error) {
         console.warn(
           "Failed to update link index for note:",

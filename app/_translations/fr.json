@@ -1351,7 +1351,9 @@
     "fromUserDelete": "Peut modifier et supprimer, partagé par {user}",
     "leaveShare": "Quitter le partage",
     "confirmLeaveItem": "Retirer votre propre accès à \"{itemTitle}\" ? L'élément disparaît de votre barre latérale et le propriétaire devra le repartager.",
-    "confirmLeaveFolder": "Retirer votre propre accès à \"{categoryName}\", partagé par {owner} ? Le dossier disparaît de votre barre latérale et {owner} devra le repartager."
+    "confirmLeaveFolder": "Retirer votre propre accès à \"{categoryName}\", partagé par {owner} ? Le dossier disparaît de votre barre latérale et {owner} devra le repartager.",
+    "canCreate": "Peut créer",
+    "createHint": "Permet d’ajouter et de déplacer des éléments dans ce dossier."
   },
   "encryption": {
     "encrypt": "Chiffrer",
@@ -1703,6 +1705,8 @@
     "reminderMessage": "\"{task}\" dans \"{board}\" a dépassé son rappel",
     "unread": "non lu(s)",
     "sharingTitle": "{user} a partagé un {type} avec vous",
-    "sharingMessage": "Ouvrez pour voir le {type} partagé"
+    "sharingMessage": "Ouvrez pour voir le {type} partagé",
+    "sharingFolderTitle": "{user} a partagé un dossier {type} avec vous",
+    "sharingFolderMessage": "Ouvrez pour voir « {folder} »"
   }
 }

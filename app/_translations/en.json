@@ -1376,7 +1376,9 @@
     "fromUserDelete": "Can edit and delete, shared by {user}",
     "leaveShare": "Leave share",
     "confirmLeaveItem": "Remove your own access to \"{itemTitle}\"? It disappears from your sidebar and the owner has to share it again to give it back.",
-    "confirmLeaveFolder": "Remove your own access to \"{categoryName}\", shared by {owner}? It disappears from your sidebar and {owner} has to share it again to give it back."
+    "confirmLeaveFolder": "Remove your own access to \"{categoryName}\", shared by {owner}? It disappears from your sidebar and {owner} has to share it again to give it back.",
+    "canCreate": "Can Create",
+    "createHint": "Lets them add new items and move items into this folder."
   },
   "encryption": {
     "encrypt": "Encrypt",
@@ -1728,6 +1730,8 @@
     "reminderTitle": "Task overdue",
     "reminderMessage": "\"{task}\" in \"{board}\" is past its reminder",
     "sharingTitle": "{user} shared a {type} with you",
-    "sharingMessage": "Open to view the shared {type}"
+    "sharingMessage": "Open to view the shared {type}",
+    "sharingFolderTitle": "{user} shared a {type} folder with you",
+    "sharingFolderMessage": "Open to view “{folder}”"
   }
 }
