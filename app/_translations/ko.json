@@ -1129,6 +1129,7 @@
     "networkError": "네트워크 오류",
     "timeout": "요청 시간 초과",
     "permissionDenied": "권한이 거부되었습니다",
+    "requiredPermissions": "이 작업을 수행할 필요한 권한이 없습니다.",
     "loadError": "불러오기 오류",
     "failedToLoadCustomEmojis": "사용자 지정 이모지를 불러오지 못했습니다",
     "emojiDeletedSuccessfully": "이모지가 성공적으로 삭제되었습니다",

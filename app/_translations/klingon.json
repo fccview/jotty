@@ -1129,6 +1129,7 @@
     "networkError": "ghom Qagh",
     "timeout": "poH nung",
     "permissionDenied": "chaw'be'lu'",
+    "requiredPermissions": "Dochvam vIta'laHbe' — chaw' Daghajbe'.",
     "loadError": "Su' Qagh",
     "failedToLoadCustomEmojis": "Custom Emojis Su' Qapla'be'",
     "emojiDeletedSuccessfully": "Emoji Qaw' Qapla'",

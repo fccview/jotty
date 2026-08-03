@@ -1104,6 +1104,7 @@
     "networkError": "Netzwerkfehler",
     "timeout": "Anfrage hat zu lange gedauert",
     "permissionDenied": "Keine Berechtigung",
+    "requiredPermissions": "Du hast nicht die erforderlichen Berechtigungen, um diese Aktion auszuführen.",
     "loadError": "Fehler beim Laden",
     "failedToLoadCustomEmojis": "Benutzerdefinierte Emojis konnten nicht geladen werden",
     "emojiDeletedSuccessfully": "Emoji erfolgreich gelöscht",

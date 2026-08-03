@@ -1129,6 +1129,7 @@
     "networkError": "Erro de rede",
     "timeout": "Tempo limite do pedido esgotado",
     "permissionDenied": "Permissão negada",
+    "requiredPermissions": "Não tens as permissões necessárias para realizar esta ação.",
     "loadError": "Erro de carregamento",
     "failedToLoadCustomEmojis": "Falha ao carregar emojis personalizados",
     "emojiDeletedSuccessfully": "Emoji eliminado com sucesso",

@@ -1129,6 +1129,7 @@
     "networkError": "Network error",
     "timeout": "Request timeout",
     "permissionDenied": "Permission denied",
+    "requiredPermissions": "You don't have the required permissions to perform this action.",
     "loadError": "Load Error",
     "failedToLoadCustomEmojis": "Failed to load custom emojis",
     "emojiDeletedSuccessfully": "Emoji deleted successfully",

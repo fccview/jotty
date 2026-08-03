@@ -1104,6 +1104,7 @@
     "networkError": "Erreur réseau",
     "timeout": "Délai d’attente dépassé",
     "permissionDenied": "Permission refusée",
+    "requiredPermissions": "Vous n'avez pas les permissions requises pour effectuer cette action.",
     "loadError": "Erreur de chargement",
     "failedToLoadCustomEmojis": "Échec du chargement des émojis personnalisés",
     "emojiDeletedSuccessfully": "Émoji supprimé avec succès",

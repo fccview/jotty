@@ -1129,6 +1129,7 @@
     "networkError": "网络错误",
     "timeout": "请求超时",
     "permissionDenied": "权限被拒绝",
+    "requiredPermissions": "您没有执行此操作所需的权限。",
     "loadError": "加载错误",
     "failedToLoadCustomEmojis": "加载自定义 Emoji 失败",
     "emojiDeletedSuccessfully": "Emoji 删除成功",

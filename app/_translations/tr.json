@@ -1131,6 +1131,7 @@
     "networkError": "Ağ hatası",
     "timeout": "İstek zaman aşımına uğradı",
     "permissionDenied": "İzin reddedildi",
+    "requiredPermissions": "Bu işlemi gerçekleştirmek için gerekli izinlere sahip değilsiniz.",
     "loadError": "Yükleme Hatası",
     "failedToLoadCustomEmojis": "Özel emojiler yüklenemedi",
     "emojiDeletedSuccessfully": "Emoji başarıyla silindi",

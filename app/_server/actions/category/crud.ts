@@ -13,11 +13,13 @@ import { getUsername } from "@/app/_server/actions/users";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
-import { targetDir, bouncer } from "@/app/_server/actions/share/target";
+import {
+  targetDir,
+  bouncer,
+  refusalMessage,
+} from "@/app/_server/actions/share/target";
 import { catUuid } from "@/app/_server/actions/share/category-info";
 import { PermissionTypes } from "@/app/_types/enums";
-
-const MOUNT_REFUSAL = "You're not on the list";
 
 const _mountTarget = async (mode: Modes, category: string) => {
   const username = await getUsername();
@@ -161,7 +163,7 @@ export const deleteCategory = async (formData: FormData) => {
         errorMessage: "Shared folders cannot be deleted by the recipient",
         metadata: { categoryPath, mode },
       });
-      return { error: MOUNT_REFUSAL };
+      return { error: await refusalMessage() };
     }
 
     const userDir = await getUserModeDir(mode);
@@ -251,7 +253,7 @@ export const renameCategory = async (formData: FormData) => {
         errorMessage: "Shared folders cannot be renamed by the recipient",
         metadata: { oldPath, newName, mode },
       });
-      return { error: MOUNT_REFUSAL };
+      return { error: await refusalMessage() };
     }
 
     const userDir = await getUserModeDir(mode);

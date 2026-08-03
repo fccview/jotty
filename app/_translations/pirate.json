@@ -1129,6 +1129,7 @@
     "networkError": "Stormy seas (Network)",
     "timeout": "Becalmed (Timeout)",
     "permissionDenied": "Access Denied",
+    "requiredPermissions": "Ye ain't got the rights to do that, matey.",
     "loadError": "Hoist Error",
     "failedToLoadCustomEmojis": "Could not load runes",
     "emojiDeletedSuccessfully": "Rune smashed",

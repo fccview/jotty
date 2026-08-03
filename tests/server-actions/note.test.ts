@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  resetAllMocks,
-  createFormData,
-  mockFs,
-} from "../setup";
+import { resetAllMocks, createFormData, mockFs } from "../setup";
 
 const mockGetUserModeDir = vi.fn();
 const mockEnsureDir = vi.fn();
@@ -92,7 +88,8 @@ vi.mock("@/app/_utils/filename-utils", () => ({
 
 vi.mock("@/app/_utils/yaml-metadata-utils", () => ({
   generateUuid: vi.fn().mockReturnValue("test-uuid-123"),
-  generateYamlFrontmatter: (...args: any[]) => mockGenerateYamlFrontmatter(...args),
+  generateYamlFrontmatter: (...args: any[]) =>
+    mockGenerateYamlFrontmatter(...args),
   extractYamlMetadata: (...args: any[]) => mockExtractYamlMetadata(...args),
   updateYamlMetadata: vi
     .fn()
@@ -152,7 +149,12 @@ describe("Note Actions", () => {
       }),
     );
     mockShownAs.mockImplementation(
-      async (_mode: unknown, _username: string, _owner: string, category: string) => category,
+      async (
+        _mode: unknown,
+        _username: string,
+        _owner: string,
+        category: string,
+      ) => category,
     );
     mockBouncer.mockResolvedValue({ allowed: true });
     mockLogContentEvent.mockResolvedValue(undefined);
@@ -162,7 +164,9 @@ describe("Note Actions", () => {
     mockCommitNote.mockResolvedValue(undefined);
     mockGetSettings.mockResolvedValue({});
     mockExtractHashtagsFromContent.mockReturnValue([]);
-    mockGenerateYamlFrontmatter.mockReturnValue("---\nuuid: test-uuid-123\n---\n");
+    mockGenerateYamlFrontmatter.mockReturnValue(
+      "---\nuuid: test-uuid-123\n---\n",
+    );
     mockExtractYamlMetadata.mockReturnValue({
       metadata: { uuid: "test-uuid-123" },
       contentWithoutMetadata: "Test content",
@@ -405,7 +409,8 @@ describe("Note Actions", () => {
       mockCanReach.mockResolvedValue(true);
       mockBouncer.mockResolvedValue({
         allowed: false,
-        error: "You're not on the list",
+        error:
+          "You don't have the required permissions to perform this action.",
       });
 
       const formData = createFormData({
@@ -415,7 +420,9 @@ describe("Note Actions", () => {
 
       const result = await deleteNote(formData);
 
-      expect(result.error).toBe("You're not on the list");
+      expect(result.error).toBe(
+        "You don't have the required permissions to perform this action.",
+      );
       expect(mockServerDeleteFile).not.toHaveBeenCalled();
     });
   });
@@ -492,12 +499,15 @@ describe("Note Actions", () => {
         expect(mockGenerateYamlFrontmatter).toHaveBeenCalledWith(
           expect.objectContaining({
             tags: ["work"],
-          })
+          }),
         );
       });
 
       it("should extract nested hashtags", async () => {
-        mockExtractHashtagsFromContent.mockReturnValue(["work/project", "personal/health"]);
+        mockExtractHashtagsFromContent.mockReturnValue([
+          "work/project",
+          "personal/health",
+        ]);
 
         const formData = createFormData({
           title: "Nested Tags Note",
@@ -590,7 +600,11 @@ describe("Note Actions", () => {
 
       it("should sort extracted tags alphabetically", async () => {
         setupUpdateNoteMocks();
-        mockExtractHashtagsFromContent.mockReturnValue(["zebra", "alpha", "middle"]);
+        mockExtractHashtagsFromContent.mockReturnValue([
+          "zebra",
+          "alpha",
+          "middle",
+        ]);
 
         const formData = createFormData({
           id: "test-note",
@@ -628,7 +642,10 @@ describe("Note Actions", () => {
 
       it("should extract nested hashtags", async () => {
         setupUpdateNoteMocks();
-        mockExtractHashtagsFromContent.mockReturnValue(["work/project", "personal/health"]);
+        mockExtractHashtagsFromContent.mockReturnValue([
+          "work/project",
+          "personal/health",
+        ]);
 
         const formData = createFormData({
           id: "test-note",
@@ -696,7 +713,7 @@ describe("Note Actions", () => {
         expect(mockGenerateYamlFrontmatter).toHaveBeenCalledWith(
           expect.objectContaining({
             tags: ["save-tag"],
-          })
+          }),
         );
       });
 
@@ -745,7 +762,7 @@ describe("Note Actions", () => {
         expect(mockGenerateYamlFrontmatter).toHaveBeenCalledWith(
           expect.not.objectContaining({
             tags: expect.anything(),
-          })
+          }),
         );
       });
     });

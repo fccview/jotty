@@ -1104,6 +1104,7 @@
     "networkError": "Errore di rete",
     "timeout": "Tempo scaduto",
     "permissionDenied": "Permesso negato",
+    "requiredPermissions": "Non hai i permessi necessari per eseguire questa azione.",
     "loadError": "Errore Caricamento",
     "failedToLoadCustomEmojis": "Impossibile caricare emoji personalizzate",
     "emojiDeletedSuccessfully": "Emoji eliminata con successo",

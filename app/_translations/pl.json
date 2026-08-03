@@ -1104,6 +1104,7 @@
     "networkError": "Błąd sieci",
     "timeout": "Przekroczono limit czasu żądania",
     "permissionDenied": "Zezwolenie odmówione",
+    "requiredPermissions": "Nie masz wymaganych uprawnień, aby wykonać tę czynność.",
     "loadError": "Błąd ładowania",
     "failedToLoadCustomEmojis": "Nie udało się załadować niestandardowych emoji",
     "emojiDeletedSuccessfully": "Emoji usunięte pomyślnie",

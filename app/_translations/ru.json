@@ -1129,6 +1129,7 @@
     "networkError": "Ошибка сети",
     "timeout": "Время ожидания истекло",
     "permissionDenied": "Доступ запрещён",
+    "requiredPermissions": "У вас нет необходимых прав для выполнения этого действия.",
     "loadError": "Ошибка загрузки",
     "failedToLoadCustomEmojis": "Не удалось загрузить пользовательские эмодзи",
     "emojiDeletedSuccessfully": "Эмодзи успешно удалён",

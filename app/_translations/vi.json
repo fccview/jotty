@@ -1122,6 +1122,7 @@
     "networkError": "Lỗi mạng",
     "timeout": "Yêu cầu hết thời gian",
     "permissionDenied": "Quyền bị từ chối",
+    "requiredPermissions": "Bạn không có quyền cần thiết để thực hiện hành động này.",
     "loadError": "Lỗi tải",
     "failedToLoadCustomEmojis": "Không tải được biểu tượng cảm xúc tùy chỉnh",
     "emojiDeletedSuccessfully": "Đã xóa biểu tượng cảm xúc thành công",

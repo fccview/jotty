@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
+import { getTranslations } from "next-intl/server";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { SharingPermissions } from "@/app/_types/core";
 import { SharedMount } from "@/app/_types/sharing";
@@ -127,11 +128,14 @@ export const shownAs = async (
 
   if (!mount) return category;
 
-  const relative = category
-    .slice(mount.categoryPath.length)
-    .replace(/^\//, "");
+  const relative = category.slice(mount.categoryPath.length).replace(/^\//, "");
 
   return relative ? `${mount.displayName}/${relative}` : mount.displayName;
+};
+
+export const refusalMessage = async (): Promise<string> => {
+  const t = await getTranslations("errors");
+  return t("requiredPermissions");
 };
 
 export const bouncer = async (
@@ -142,10 +146,16 @@ export const bouncer = async (
   if (target.owner === username) return { allowed: true };
 
   if (target.isImplicit) {
-    return { allowed: false, error: "You're not on the list" };
+    return {
+      allowed: false,
+      error: await refusalMessage(),
+    };
   }
 
   return granted(target.permissions, permission)
     ? { allowed: true }
-    : { allowed: false, error: "You're not on the list" };
+    : {
+        allowed: false,
+        error: await refusalMessage(),
+      };
 };

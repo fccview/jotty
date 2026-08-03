@@ -1104,6 +1104,7 @@
     "networkError": "Netwerkfout",
     "timeout": "Verzoek time-out",
     "permissionDenied": "Toegang geweigerd",
+    "requiredPermissions": "Je hebt niet de vereiste rechten om deze actie uit te voeren.",
     "loadError": "Laadfout",
     "failedToLoadCustomEmojis": "Aangepaste emoji's laden mislukt",
     "emojiDeletedSuccessfully": "Emoji succesvol verwijderd",

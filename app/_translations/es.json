@@ -1104,6 +1104,7 @@
     "networkError": "Error de red",
     "timeout": "Tiempo de espera agotado",
     "permissionDenied": "Permiso denegado",
+    "requiredPermissions": "No tienes los permisos necesarios para realizar esta acción.",
     "loadError": "Error de carga",
     "failedToLoadCustomEmojis": "No se pudieron cargar los emojis personalizados",
     "emojiDeletedSuccessfully": "Emoji eliminado correctamente",
