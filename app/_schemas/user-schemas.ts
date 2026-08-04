@@ -118,6 +118,11 @@ export const generalSettingsSchema = z.object({
     "system",
   ]),
   preferredTimeFormat: z.enum(["12-hours", "24-hours", "system"]),
+  firstDayOfWeek: z
+    .enum(["sunday", "monday", "saturday"], {
+      message: "First day of week must be 'sunday', 'monday', or 'saturday'",
+    })
+    .optional(),
   handedness: z
     .enum(["right-handed", "left-handed"], {
       message: "Handedness must be either 'right-handed' or 'left-handed'",

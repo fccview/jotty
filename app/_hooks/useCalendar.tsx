@@ -22,6 +22,7 @@ export interface UseCalendarProps {
   minDate?: Date;
   maxDate?: Date;
   initialDate?: Date;
+  weekStart?: number;
 }
 
 export const MONTHS = [
@@ -48,6 +49,7 @@ export function useCalendar({
   minDate,
   maxDate,
   initialDate,
+  weekStart = 0,
 }: UseCalendarProps) {
   const [displayDate, setDisplayDate] = useState(
     initialDate || selectedDate || new Date()
@@ -73,14 +75,13 @@ export function useCalendar({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let firstDayOfWeek = firstDayOfMonth.getDay() - 1;
-    if (firstDayOfWeek === -1) firstDayOfWeek = 6;
+    const leadingDays = (firstDayOfMonth.getDay() - weekStart + 7) % 7;
 
     const daysInMonth = lastDayOfMonth.getDate();
     const calendarDays: CalendarDay[] = [];
 
     const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+    for (let i = leadingDays - 1; i >= 0; i--) {
       const date = new Date(
         currentYear,
         currentMonth - 1,
@@ -176,6 +177,7 @@ export function useCalendar({
     minDate,
     maxDate,
     rangeStart,
+    weekStart,
   ]);
 
   const handlePreviousMonth = () => {

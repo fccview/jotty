@@ -32,6 +32,7 @@ export type {
   FileRenameMode,
   PreferredDateFormat,
   PreferredTimeFormat,
+  FirstDayOfWeek,
   Handedness,
   DisableRichEditor,
   DefaultChecklistFilter,

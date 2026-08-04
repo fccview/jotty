@@ -26,6 +26,7 @@ export type PreferredDateFormat =
   | "yyyy/mm/dd"
   | "system";
 export type PreferredTimeFormat = "12-hours" | "24-hours" | "system";
+export type FirstDayOfWeek = "sunday" | "monday" | "saturday";
 export type Handedness = "right-handed" | "left-handed";
 export type DisableRichEditor = "enable" | "disable";
 export type DefaultChecklistFilter =
@@ -68,6 +69,7 @@ export interface User {
   fileRenameMode?: FileRenameMode;
   preferredDateFormat: PreferredDateFormat;
   preferredTimeFormat: PreferredTimeFormat;
+  firstDayOfWeek?: FirstDayOfWeek;
   handedness?: Handedness;
   disableRichEditor?: DisableRichEditor;
   markdownTheme?: MarkdownTheme;

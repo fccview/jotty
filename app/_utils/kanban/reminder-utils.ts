@@ -1,4 +1,5 @@
 import { Item } from "@/app/_types";
+import { toDateKey, toLocalDateKey } from "@/app/_utils/kanban/calendar-utils";
 
 export const getDueReminders = (items: Item[]): Item[] =>
   items.filter((item) => {
@@ -18,15 +19,19 @@ export const formatReminderTime = (datetime: string): string => {
   return date.toLocaleDateString();
 };
 
+const _endOfDay = (dateStr: string): Date => {
+  const [year, month, day] = toDateKey(dateStr).split("-").map(Number);
+  return new Date(year, month - 1, day, 23, 59, 59, 999);
+};
+
 export const isOverdue = (item: Item): boolean => {
   if (!item.targetDate) return false;
-  return new Date(item.targetDate) < new Date() && !item.completed;
+  return _endOfDay(item.targetDate) < new Date() && !item.completed;
 };
 
 export const isDueToday = (item: Item): boolean => {
   if (!item.targetDate) return false;
-  const today = new Date().toISOString().split("T")[0];
-  return item.targetDate.startsWith(today) && !item.completed;
+  return toDateKey(item.targetDate) === toLocalDateKey(new Date()) && !item.completed;
 };
 
 export const isDueThisWeek = (item: Item): boolean => {
@@ -34,6 +39,7 @@ export const isDueThisWeek = (item: Item): boolean => {
   const now = new Date();
   const weekEnd = new Date(now);
   weekEnd.setDate(weekEnd.getDate() + (7 - weekEnd.getDay()));
-  const target = new Date(item.targetDate);
+  weekEnd.setHours(23, 59, 59, 999);
+  const target = _endOfDay(item.targetDate);
   return target >= now && target <= weekEnd && !item.completed;
 };

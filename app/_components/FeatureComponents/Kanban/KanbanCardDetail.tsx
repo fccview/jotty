@@ -51,6 +51,7 @@ const _toLocalDateTimeValue = (isoStr: string): string => {
 
 const _toLocalDateValue = (isoStr: string): string => {
   if (!isoStr) return "";
+  if (!isoStr.includes("T")) return isoStr;
   const d = new Date(isoStr);
   if (isNaN(d.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -339,40 +340,34 @@ export const KanbanCardDetail = ({
     });
   };
 
-  const _dateKey = (value: string): string =>
-    value.includes("T") ? _toLocalDateValue(value) : value;
-
-  const _dateToIso = (value: string): string =>
-    value
-      ? new Date(value.includes("T") ? value : `${value}T00:00:00`).toISOString()
-      : "";
+  const _dateKey = (value: string): string => _toLocalDateValue(value);
 
   const handleStartDateChange = async (value: string) => {
-    const iso = _dateToIso(value);
-    setStartDateInput(iso);
+    const key = _dateKey(value);
+    setStartDateInput(key);
     const targetKey = _dateKey(targetDateInput);
-    if (value && targetKey && value > targetKey) {
-      setTargetDateInput(iso);
-      await _saveField({ startDate: iso, targetDate: iso });
+    if (key && targetKey && key > targetKey) {
+      setTargetDateInput(key);
+      await _saveField({ startDate: key, targetDate: key });
       return;
     }
-    await _saveField({ startDate: iso });
+    await _saveField({ startDate: key });
   };
 
   const handleTargetDateChange = async (value: string) => {
-    const iso = _dateToIso(value);
-    setTargetDateInput(iso);
-    if (!value) {
+    const key = _dateKey(value);
+    setTargetDateInput(key);
+    if (!key) {
       await _saveField({ targetDate: "" });
       return;
     }
     const startKey = _dateKey(startDateInput);
-    if (startKey && startKey > value) {
-      setStartDateInput(iso);
-      await _saveField({ targetDate: iso, startDate: iso });
+    if (startKey && startKey > key) {
+      setStartDateInput(key);
+      await _saveField({ targetDate: key, startDate: key });
       return;
     }
-    await _saveField({ targetDate: iso });
+    await _saveField({ targetDate: key });
   };
 
   const handleEstimatedTimeSave = async () => {

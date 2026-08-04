@@ -39,6 +39,9 @@ export const GET = withCacheControl(async function GET(
         case ".webp":
           contentType = "image/webp";
           break;
+        case ".avif":
+          contentType = "image/avif";
+          break;
         case ".svg":
           contentType = "image/svg+xml";
           break;

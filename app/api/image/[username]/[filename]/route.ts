@@ -6,6 +6,7 @@ import {
   canAccessAllContent,
 } from "@/app/_server/actions/users";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
+import { imageMime } from "@/app/_consts/files";
 import { withCacheControl } from "@/app/_middleware/caching";
 import { isEnvEnabled } from "@/app/_utils/env-utils";
 import { sharedFrom } from "@/app/_server/actions/share/queries";
@@ -62,25 +63,7 @@ export const GET = withCacheControl(async function GET(
 
     try {
       const fileBuffer = await fs.readFile(resolved.absolutePath);
-      const ext = path.extname(filename).toLowerCase();
-
-      let contentType = "image/jpeg";
-      switch (ext) {
-        case ".png":
-          contentType = "image/png";
-          break;
-        case ".gif":
-          contentType = "image/gif";
-          break;
-        case ".webp":
-          contentType = "image/webp";
-          break;
-        case ".svg":
-          contentType = "image/svg+xml";
-          break;
-        default:
-          contentType = "image/jpeg";
-      }
+      const contentType = imageMime(filename) || "image/jpeg";
 
       return new NextResponse(fileBuffer, {
         headers: {
