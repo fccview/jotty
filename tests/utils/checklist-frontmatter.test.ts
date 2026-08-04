@@ -1,14 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
+import { listToMarkdown, parseMarkdown } from "@/app/_utils/checklist-utils";
+import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
+import { ChecklistsTypes } from "@/app/_types/enums";
 
 vi.unmock("@/app/_utils/checklist-utils");
-
-const { listToMarkdown, parseMarkdown } = await import(
-  "@/app/_utils/checklist-utils"
-);
-const { parseChecklistContent } = await import(
-  "@/app/_utils/client-parser-utils"
-);
-const { ChecklistsTypes } = await import("@/app/_types/enums");
 
 const SHARED_BOARD = [
   "---",
