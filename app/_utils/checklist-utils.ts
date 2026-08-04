@@ -14,6 +14,7 @@ import {
   generateUuid,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
+import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
 export const isItemCompleted = (item: Item, checklistType: string): boolean => {
   if (
@@ -353,6 +354,9 @@ export const parseMarkdown = (
     isShared,
     ...(statuses && { statuses }),
     ...(tags.length > 0 && { tags }),
+    ...(metadata[SHARED_WITH_KEY] !== undefined && {
+      sharedWith: metadata[SHARED_WITH_KEY] as string | string[],
+    }),
   };
 };
 
@@ -543,6 +547,10 @@ export const listToMarkdown = (list: Checklist): string => {
 
   if (list.tags && list.tags.length > 0) {
     metadata.tags = list.tags;
+  }
+
+  if (list.sharedWith !== undefined) {
+    metadata[SHARED_WITH_KEY] = list.sharedWith;
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);

@@ -343,6 +343,10 @@ export const getListById = async (
     owner: ownerUsername,
     isShared,
     ...(parsedData.statuses && { statuses: parsedData.statuses }),
+    ...(parsedData.tags && { tags: parsedData.tags }),
+    ...(parsedData.sharedWith !== undefined && {
+      sharedWith: parsedData.sharedWith,
+    }),
   };
 };
 
