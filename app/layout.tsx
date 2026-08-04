@@ -100,7 +100,6 @@ export const generateMetadata = async (): Promise<Metadata> => {
   return {
     title: appName,
     description: appDescription,
-    manifest: "/api/manifest",
     icons: {
       icon: [
         {
@@ -235,6 +234,11 @@ export default async function RootLayout({
     >
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
+        <link
+          rel="manifest"
+          href="/api/manifest"
+          crossOrigin="use-credentials"
+        />
         <link rel="icon" href="/app-icons/favicon.ico" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
