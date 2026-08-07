@@ -154,7 +154,11 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           return createKeyDownHandler(editor)(view, event);
         },
         handlePaste: (view, event) => {
-          return createPasteHandler(editor, uploadHook.handleFileUpload)(
+          return createPasteHandler(
+            editor,
+            uploadHook.handleFileUpload,
+            user?.removePasteFormatting === "enable",
+          )(
             view,
             event,
           );

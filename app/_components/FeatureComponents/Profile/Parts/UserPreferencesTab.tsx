@@ -23,6 +23,7 @@ import {
   FirstDayOfWeek,
   Handedness,
   DisableRichEditor,
+  RemovePasteFormatting,
   MarkdownTheme,
   DefaultChecklistFilter,
   ChecklistItemClickAction,
@@ -72,6 +73,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   firstDayOfWeek: user?.firstDayOfWeek || DEFAULT_WEEK_START,
   handedness: user?.handedness || "right-handed",
   disableRichEditor: user?.disableRichEditor || "disable",
+  removePasteFormatting: user?.removePasteFormatting || "disable",
   markdownTheme: user?.markdownTheme || "prism",
   defaultChecklistFilter: user?.defaultChecklistFilter || "all",
   checklistItemClickAction: user?.checklistItemClickAction || "toggle",
@@ -164,6 +166,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     "notesDefaultMode",
     "notesAutoSaveInterval",
     "disableRichEditor",
+    "removePasteFormatting",
     "defaultNoteFilter",
     "markdownTheme",
     "codeBlockStyle",
@@ -311,6 +314,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
   const notesDefaultModeOptions = [
     { id: "edit", name: t('settings.edit') },
     { id: "view", name: t('settings.view') },
+  ];
+
+  const removePasteFormattingOptions = [
+    { id: "enable", name: t('settings.enable') },
+    { id: "disable", name: t('settings.disable') },
   ];
 
   const enableRecurrenceOptions = [
@@ -623,6 +631,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                   "notesDefaultEditor",
                   "tableSyntax",
                   "disableRichEditor",
+                  "removePasteFormatting",
                   "defaultNoteFilter",
                   "markdownTheme",
                   "codeBlockStyle",
@@ -735,6 +744,30 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           )}
           <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.chooseTableSyntax')}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="remove-paste-formatting">{t('settings.removeTextFormattingWhenPasting')}</Label>
+          <Dropdown
+            value={currentSettings.removePasteFormatting || "disable"}
+            onChange={(value) =>
+              handleSettingChange(
+                "removePasteFormatting",
+                value as RemovePasteFormatting
+              )
+            }
+            options={removePasteFormattingOptions}
+            placeholder={t('settings.selectPasteFormatting')}
+            className="w-full"
+          />
+          {validationErrors.removePasteFormatting && (
+            <p className="text-md lg:text-sm text-destructive">
+              {validationErrors.removePasteFormatting}
+            </p>
+          )}
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.removePasteFormattingDescription')}
           </p>
         </div>
 

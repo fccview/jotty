@@ -27,6 +27,9 @@ export const editorSettingsSchema = z.object({
   disableRichEditor: z.enum(["enable", "disable"], {
     message: "Disable rich editor must be either 'enable' or 'disable'",
   }),
+  removePasteFormatting: z.enum(["enable", "disable"], {
+    message: "Remove paste formatting must be either 'enable' or 'disable'",
+  }),
   markdownTheme: z.enum(
     [
       "prism",

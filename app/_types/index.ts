@@ -35,6 +35,7 @@ export type {
   FirstDayOfWeek,
   Handedness,
   DisableRichEditor,
+  RemovePasteFormatting,
   DefaultChecklistFilter,
   DefaultNoteFilter,
   QuickCreateNotes,

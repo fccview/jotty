@@ -1,4 +1,21 @@
 import { Editor } from "@tiptap/react";
+import { Fragment, Slice } from "@tiptap/pm/model";
+
+interface ClipboardImage {
+  marker: string;
+  attrs: {
+    src: string;
+    alt: string | null;
+    title: string | null;
+    style: string | null;
+  };
+}
+
+interface PlainTextPasteContent {
+  text: string;
+  images: ClipboardImage[];
+  hasText: boolean;
+}
 
 export const getImageFromClipboard = (
   items: DataTransferItemList
@@ -22,6 +39,88 @@ export const getFileFromClipboard = (
     }
   }
   return null;
+};
+
+const getPlainTextPasteContent = (
+  clipboardData: DataTransfer
+): PlainTextPasteContent | null => {
+  const html = clipboardData.getData("text/html");
+  if (!html) return null;
+
+  const document = new DOMParser().parseFromString(html, "text/html");
+  const hasText = Boolean(document.body.textContent?.trim());
+  const images: ClipboardImage[] = [];
+
+  document.body.querySelectorAll("img[src]").forEach((element, index) => {
+    const src = element.getAttribute("src");
+    if (!src) return;
+
+    const marker = `JOTTY_PASTED_IMAGE_${Date.now()}_${index}`;
+    images.push({
+      marker,
+      attrs: {
+        src,
+        alt: element.getAttribute("alt"),
+        title: element.getAttribute("title"),
+        style: element.getAttribute("style"),
+      },
+    });
+    element.replaceWith(`\n${marker}\n`);
+  });
+
+  document.body.querySelectorAll("br").forEach((element) => {
+    element.replaceWith("\n");
+  });
+  document.body
+    .querySelectorAll("p, div, li, h1, h2, h3, h4, h5, h6, blockquote, tr")
+    .forEach((element) => {
+      element.append("\n");
+    });
+
+  return {
+    text: (document.body.textContent || "")
+      .replace(/\n{3,}/g, "\n\n")
+      .replace(/^\n+|\n+$/g, ""),
+    images,
+    hasText,
+  };
+};
+
+const pastePlainTextWithImages = (
+  view: any,
+  content: PlainTextPasteContent
+): boolean => {
+  const { state } = view;
+  const paragraph = state.schema.nodes.paragraph;
+  const image = state.schema.nodes.image;
+  if (!paragraph || !image) return false;
+
+  const imageByMarker = new Map(
+    content.images.map((clipboardImage) => [
+      clipboardImage.marker,
+      clipboardImage.attrs,
+    ])
+  );
+  const marks = state.selection.$from.marks();
+  const nodes = content.text.split(/(?:\r\n?|\n)+/).map((block: string) => {
+    const imageAttrs = imageByMarker.get(block);
+    if (imageAttrs) return image.create(imageAttrs);
+
+    return paragraph.create(
+      null,
+      block ? state.schema.text(block, marks) : undefined
+    );
+  });
+
+  const slice = Slice.maxOpen(Fragment.fromArray(nodes), true);
+  const transaction = state.tr
+    .replaceSelection(slice)
+    .scrollIntoView()
+    .setMeta("paste", true)
+    .setMeta("uiEvent", "paste");
+
+  view.dispatch(transaction);
+  return true;
 };
 
 export const handleTabInCodeBlock = (
@@ -145,7 +244,8 @@ export const createPasteHandler = (
     file: File,
     callbacks: any,
     showProgress?: boolean
-  ) => Promise<void>
+  ) => Promise<void>,
+  removePasteFormatting = false
 ) => {
   return (view: any, event: ClipboardEvent) => {
     const { clipboardData } = event;
@@ -172,18 +272,40 @@ export const createPasteHandler = (
       },
     };
 
+    const plainTextContent = removePasteFormatting
+      ? getPlainTextPasteContent(clipboardData)
+      : null;
     const imageFile = getImageFromClipboard(items);
+    const file = imageFile ? null : getFileFromClipboard(items);
+    if (
+      plainTextContent &&
+      plainTextContent.images.length > 0 &&
+      (plainTextContent.hasText || (!imageFile && !file)) &&
+      pastePlainTextWithImages(view, plainTextContent)
+    ) {
+      event.preventDefault();
+      return true;
+    }
+
     if (imageFile) {
       event.preventDefault();
       handleFileUpload(imageFile, insertCallbacks, false);
       return true;
     }
 
-    const file = getFileFromClipboard(items);
     if (file) {
       event.preventDefault();
       handleFileUpload(file, insertCallbacks, false);
       return true;
+    }
+
+    if (removePasteFormatting) {
+      const text =
+        clipboardData.getData("text/plain") || plainTextContent?.text || "";
+      if (!text) return false;
+
+      event.preventDefault();
+      return view.pasteText(text);
     }
 
     return false;

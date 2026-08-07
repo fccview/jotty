@@ -29,6 +29,7 @@ export type PreferredTimeFormat = "12-hours" | "24-hours" | "system";
 export type FirstDayOfWeek = "sunday" | "monday" | "saturday";
 export type Handedness = "right-handed" | "left-handed";
 export type DisableRichEditor = "enable" | "disable";
+export type RemovePasteFormatting = "enable" | "disable";
 export type DefaultChecklistFilter =
   | "all"
   | "completed"
@@ -72,6 +73,7 @@ export interface User {
   firstDayOfWeek?: FirstDayOfWeek;
   handedness?: Handedness;
   disableRichEditor?: DisableRichEditor;
+  removePasteFormatting?: RemovePasteFormatting;
   markdownTheme?: MarkdownTheme;
   encryptionSettings?: EncryptionSettings;
   defaultChecklistFilter?: DefaultChecklistFilter;
