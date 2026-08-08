@@ -248,7 +248,8 @@
     "connected": "Connected",
     "reconnecting": "Reconnecting...",
     "hide": "Hide",
-    "thisEntry": "this entry"
+    "thisEntry": "this entry",
+    "preview": "Preview"
   },
   "history": {
     "noteHistory": "Note History",
@@ -770,6 +771,12 @@
     "preferredTimeFormat": "Preferred Time Format",
     "selectTimeFormat": "Select time format",
     "choosePreferredTimeFormat": "Choose your preferred time format.",
+    "firstDayOfWeek": "First Day of the Week",
+    "selectFirstDayOfWeek": "Select first day",
+    "chooseFirstDayOfWeek": "Choose which day your calendars start on.",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "saturday": "Saturday",
     "handedness": "Handedness",
     "selectHandedness": "Select handedness",
     "chooseHandedness": "Choose if you are right-handed or left-handed.",
@@ -914,7 +921,9 @@
     "selectChecklistItemClickAction": "Select checklist item click action",
     "checklistItemClickActionDescription": "Choose what happens when you click a task's text. \"Mark as complete\" toggles the checkbox  (default); \"Edit task name\" opens the task for inline editing — you'll still need to click the checkbox itself to complete it.",
     "checklistItemClickActionToggle": "Mark as complete/incomplete",
-    "checklistItemClickActionEdit": "Edit list item"
+    "checklistItemClickActionEdit": "Edit list item",
+    "selectShowChecklistEmojis": "Select emoji visibility",
+    "showChecklistEmojisDescription": "Show an automatic emoji next to checklist items based on their text."
   },
   "admin": {
     "title": "Admin",
@@ -1103,7 +1112,11 @@
     "updatingTags": "Updating...",
     "updateTagsTitle": "Scan notes for hashtags and update frontmatter",
     "tagsUpdated": "Processed {processed} files, updated {updated} with new tags",
-    "failedToUpdateTags": "Failed to update tags"
+    "failedToUpdateTags": "Failed to update tags",
+    "borderRadius": "Border radius",
+    "borderRadiusDescription": "Sets the corner rounding used across the whole instance. Users can override it for themselves in quick settings.",
+    "borderRadiusSaved": "Border radius saved",
+    "borderRadiusLoadError": "Could not load the border radius"
   },
   "errors": {
     "notFound": "Not Found",
@@ -1122,6 +1135,7 @@
     "networkError": "Network error",
     "timeout": "Request timeout",
     "permissionDenied": "Permission denied",
+    "requiredPermissions": "You don't have the required permissions to perform this action.",
     "loadError": "Load Error",
     "failedToLoadCustomEmojis": "Failed to load custom emojis",
     "emojiDeletedSuccessfully": "Emoji deleted successfully",
@@ -1349,7 +1363,29 @@
     "failedToCopyUrl": "Failed to copy URL to clipboard",
     "searchUsers": "Search users...",
     "toggleAllPermissions": "Toggle all permissions",
-    "shareModalTitle": "Share {type}"
+    "shareModalTitle": "Share {type}",
+    "readOnly": "Read only",
+    "byOwner": "shared by {user}",
+    "mountStaysTop": "Shared folders stay at the top level",
+    "inheritedVia": "Shared via {category}, by {user}",
+    "shareFolder": "Share this folder",
+    "folderShareHint": "Everything in this folder, now and later, is shared with the people you pick.",
+    "optOut": "Keep this one private",
+    "optOutHint": "Overrides the folder share for this item only.",
+    "useInherited": "Follow the folder",
+    "publicFolderWarning": "Anything placed in this folder becomes readable by anyone with the link, immediately.",
+    "readTip": "Read only: {users}",
+    "writeTip": "Can edit: {users}",
+    "deleteTip": "Can edit and delete: {users}",
+    "publicTip": "Publicly shared",
+    "fromUserRead": "Read only, shared by {user}",
+    "fromUserWrite": "Can edit, shared by {user}",
+    "fromUserDelete": "Can edit and delete, shared by {user}",
+    "leaveShare": "Leave share",
+    "confirmLeaveItem": "Remove your own access to \"{itemTitle}\"? It disappears from your sidebar and the owner has to share it again to give it back.",
+    "confirmLeaveFolder": "Remove your own access to \"{categoryName}\", shared by {owner}? It disappears from your sidebar and {owner} has to share it again to give it back.",
+    "canCreate": "Can Create",
+    "createHint": "Lets them add new items and move items into this folder."
   },
   "encryption": {
     "encrypt": "Encrypt",
@@ -1511,7 +1547,10 @@
     "viewMode": "View Mode",
     "viewModeCard": "Cards",
     "viewModeList": "List",
-    "viewModeGrid": "Grid"
+    "viewModeGrid": "Grid",
+    "borderRadius": "Corner rounding",
+    "useInstanceDefault": "Use instance default",
+    "borderRadiusDescription": "Corners update across the whole app as you drag."
   },
   "migration": {
     "migrationComplete": "Migration Complete",
@@ -1529,7 +1568,32 @@
     "automaticBackupIncluded": "Automatic Backup Included",
     "yamlFrontmatterIndustryStandard": "YAML Frontmatter is Industry Standard",
     "noMigrationNeeded": "No migration was needed - your system is already up to date.",
-    "importantBackupData": "Important: Backup Your Data"
+    "importantBackupData": "Important: Backup Your Data",
+    "sharingNowWithData": "Your sharing data now lives with your notes and folders.",
+    "sharingMovesDescription": "Sharing moves out of a central file and into your data. Folders can now be shared, and shared folders show up in your own sidebar instead of a separate section.",
+    "whatsHappeningBody": "Every share in <code>.sharing.json</code> is written into the frontmatter of the item it belongs to, and every folder gets a <code>.category-info.json</code> holding its identity, sharing and ordering. The old files are removed once the data has moved.",
+    "migrationChanges": "Migration Changes",
+    "sharingTravelsTitle": "Sharing travels with the file",
+    "sharingTravelsBody": "Each shared item records who it is shared with in its own frontmatter, so moving or renaming it never breaks a share.",
+    "folderSharingTitle": "Folder sharing",
+    "folderSharingBody": "Share a folder and everything inside it, now and in the future, is shared too. Recipients see it as a normal folder in their own sidebar.",
+    "oneFilePerFolderTitle": "One file per folder",
+    "oneFilePerFolderBody": "<code>.order.json</code> is absorbed into <code>.category-info.json</code>, with ordering keyed by uuid rather than filename.",
+    "permissionsUnchangedTitle": "Permissions are unchanged",
+    "permissionsUnchangedBody": "Read, edit and delete carry over exactly as they are today, per user and per item.",
+    "backupWarningBody": "This migration rewrites frontmatter across your notes and checklists and deletes the legacy <code>.sharing.json</code> and <code>.order.json</code> files. Back up your <code>data</code> folder before proceeding.",
+    "backupConfirmLabel": "I have backed up my data folder and understand the migration process.",
+    "backupConfirmHint": "Please confirm you've created a backup before proceeding.",
+    "sharingDataMigrated": "Your sharing and ordering data has been migrated.",
+    "whatWasChanged": "What was changed:",
+    "migrationPartial": "Migration Finished With Leftovers",
+    "leftoversTitle": "Some legacy files were kept",
+    "leftoversBody": "The migration could not translate everything, so the legacy files below were left on disk untouched. Nothing has been deleted. You can fix the cause and run the migration again, or continue into the app now and deal with it later.",
+    "overrideConfirmLabel": "Continue anyway and stop showing this page.",
+    "overrideConfirmHint": "The leftover files stay on disk, but the app will treat your data as migrated. Any sharing or ordering listed above will not be applied until you migrate again, which you can do at any time from /migration?force=1.",
+    "continueAnyway": "Continue Anyway",
+    "overriding": "Continuing...",
+    "overrideFailed": "Could not skip the migration"
   },
   "toasts": {
     "categoryRenamedSuccessfully": "Category successfully renamed",
@@ -1673,6 +1737,8 @@
     "reminderTitle": "Task overdue",
     "reminderMessage": "\"{task}\" in \"{board}\" is past its reminder",
     "sharingTitle": "{user} shared a {type} with you",
-    "sharingMessage": "Open to view the shared {type}"
+    "sharingMessage": "Open to view the shared {type}",
+    "sharingFolderTitle": "{user} shared a {type} folder with you",
+    "sharingFolderMessage": "Open to view “{folder}”"
   }
 }

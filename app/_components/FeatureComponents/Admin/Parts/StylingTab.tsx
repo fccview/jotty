@@ -11,6 +11,8 @@ import {
   Delete03Icon,
 } from "hugeicons-react";
 import { useStyling } from "@/app/_hooks/useStyling";
+import { useBorderRadius } from "@/app/_hooks/useBorderRadius";
+import { RadiusSlider } from "@/app/_components/GlobalComponents/FormElements/RadiusSlider";
 import { ThemePreview } from "@/app/_components/FeatureComponents/Admin/Parts/ThemePreview";
 import { EmojiManager } from "@/app/_components/FeatureComponents/Admin/Parts/EmojiManager";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
@@ -41,6 +43,16 @@ export const StylingTab = () => {
     handleThemeFormChange,
     getCustomThemes,
   } = useStyling();
+
+  const {
+    radius,
+    isLoading: isLoadingRadius,
+    isSaving: isSavingRadius,
+    hasRadiusChanges,
+    handleRadiusChange,
+    handleResetRadius,
+    handleSaveRadius,
+  } = useBorderRadius();
 
   const [focusedColor, setFocusedColor] = useState<string | null>(null);
 
@@ -82,6 +94,41 @@ export const StylingTab = () => {
                 {t("admin.unsavedCssChanges")}
               </p>
             )}
+          </FormWrapper>
+
+          <FormWrapper
+            title={t("admin.borderRadius")}
+            action={
+              <div className="flex items-center gap-2">
+                {hasRadiusChanges && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleResetRadius}
+                    disabled={isSavingRadius}
+                  >
+                    {t("common.reset")}
+                  </Button>
+                )}
+                <Button
+                  onClick={handleSaveRadius}
+                  disabled={isSavingRadius || !hasRadiusChanges || isLoadingRadius}
+                  size="sm"
+                >
+                  {t("common.save")}
+                </Button>
+              </div>
+            }
+          >
+            <RadiusSlider
+              value={radius}
+              onChange={handleRadiusChange}
+              disabled={isLoadingRadius}
+              withPreview
+            />
+            <p className="text-md lg:text-xs text-muted-foreground">
+              {t("admin.borderRadiusDescription")}
+            </p>
           </FormWrapper>
 
           <FormWrapper

@@ -20,11 +20,15 @@ export interface WeekBarSegment {
   continuesNext: boolean;
 }
 
-export const toDateKey = (dateStr: string): string => dateStr.split("T")[0];
-
 export const toLocalDateKey = (date: Date): string => {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+export const toDateKey = (dateStr: string): string => {
+  if (!dateStr.includes("T")) return dateStr;
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? dateStr.split("T")[0] : toLocalDateKey(parsed);
 };
 
 export const parseItemsForCalendar = (items: Item[]): CalendarEvent[] =>
@@ -67,17 +71,17 @@ export const generateVEVENT = (item: Item, boardTitle: string): string => {
   const startDate = item.startDate ? toDateKey(item.startDate) : endDate;
   const rangeStart = startDate <= endDate ? startDate : endDate;
   const rangeEnd = endDate >= startDate ? endDate : startDate;
-  const isMultiDay = rangeStart !== rangeEnd;
+  const isAllDay = rangeStart !== rangeEnd || !item.targetDate.includes("T");
   const now = _formatICSDateTime(new Date().toISOString());
 
   const lines = [
     "BEGIN:VEVENT",
     `UID:${item.id}@jotty`,
     `DTSTAMP:${now}`,
-    isMultiDay
+    isAllDay
       ? `DTSTART;VALUE=DATE:${rangeStart.replace(/-/g, "")}`
       : `DTSTART:${_formatICSDateTime(item.targetDate)}`,
-    isMultiDay
+    isAllDay
       ? `DTEND;VALUE=DATE:${_addDays(rangeEnd, 1).replace(/-/g, "")}`
       : `DTEND:${_formatICSDateTime(new Date(new Date(item.targetDate).getTime() + 3600000).toISOString())}`,
     `SUMMARY:${_escapeICS(item.text)}`,
@@ -139,11 +143,15 @@ export const getDaysInMonth = (year: number, month: number): Date[] => {
   return days;
 };
 
-export const getCalendarGrid = (year: number, month: number): (Date | null)[][] => {
+export const getCalendarGrid = (
+  year: number,
+  month: number,
+  weekStart: number = 0,
+): (Date | null)[][] => {
   const days = getDaysInMonth(year, month);
-  const firstDay = days[0].getDay();
+  const leadingBlanks = (days[0].getDay() - weekStart + 7) % 7;
   const grid: (Date | null)[][] = [];
-  let week: (Date | null)[] = new Array(firstDay).fill(null);
+  let week: (Date | null)[] = new Array(leadingBlanks).fill(null);
 
   days.forEach((day) => {
     week.push(day);

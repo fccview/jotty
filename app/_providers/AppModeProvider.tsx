@@ -82,6 +82,7 @@ export const AppModeProvider = ({
   const searchParams = useSearchParams();
   const tagParam = searchParams.get("tag");
   const modeParam = searchParams.get("mode");
+  const categoryParam = searchParams.get("category");
 
   if (modeParam === Modes.TAGS || tagParam) {
     modeToSet = Modes.TAGS;
@@ -94,10 +95,16 @@ export const AppModeProvider = ({
   const [mode, setMode] = useState<AppMode>(modeToSet);
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
 
+  const initialFilter = tagParam
+    ? { type: "tag" as const, value: tagParam }
+    : categoryParam
+      ? { type: "category" as const, value: categoryParam }
+      : null;
+
   const [selectedFilter, setSelectedFilter] = useState<{
     type: "category" | "tag";
     value: string;
-  } | null>(tagParam ? { type: "tag", value: tagParam } : null);
+  } | null>(initialFilter);
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 
@@ -123,13 +130,17 @@ export const AppModeProvider = ({
     } else if (modeParam === Modes.NOTES) {
       setMode(Modes.NOTES);
       setStoredMode(Modes.NOTES);
-      setSelectedFilter(null);
+      setSelectedFilter(
+        categoryParam ? { type: "category", value: categoryParam } : null,
+      );
     } else if (modeParam === Modes.CHECKLISTS) {
       setMode(Modes.CHECKLISTS);
       setStoredMode(Modes.CHECKLISTS);
-      setSelectedFilter(null);
+      setSelectedFilter(
+        categoryParam ? { type: "category", value: categoryParam } : null,
+      );
     }
-  }, [modeParam, tagParam, setStoredMode]);
+  }, [modeParam, tagParam, categoryParam, setStoredMode]);
 
   const handleSetMode = (newMode: AppMode) => {
     setMode(newMode);

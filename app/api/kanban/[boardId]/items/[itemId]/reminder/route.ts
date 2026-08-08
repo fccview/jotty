@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist";
 import { setKanbanItemReminder } from "@/app/_server/actions/kanban/items";
 import { isKanbanType } from "@/app/_types/enums";
@@ -23,7 +23,8 @@ export async function PUT(
         );
       }
 
-      const board = await getListById(params.boardId, user.username);
+      const uuid = await listUuid(request, params.boardId, user.username);
+      const board = uuid ? await getListById(uuid, user.username) : undefined;
       if (!board) {
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
@@ -36,10 +37,9 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("listId", board.uuid || board.id);
+      formData.append("uuid", board.uuid!);
       formData.append("itemId", params.itemId);
       formData.append("reminder", JSON.stringify({ datetime }));
-      formData.append("category", board.category || "Uncategorized");
 
       const result = await setKanbanItemReminder(formData);
 
@@ -65,7 +65,8 @@ export async function DELETE(
   const params = await props.params;
   return withApiAuth(request, async (user) => {
     try {
-      const board = await getListById(params.boardId, user.username);
+      const uuid = await listUuid(request, params.boardId, user.username);
+      const board = uuid ? await getListById(uuid, user.username) : undefined;
       if (!board) {
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
@@ -78,10 +79,9 @@ export async function DELETE(
       }
 
       const formData = new FormData();
-      formData.append("listId", board.uuid || board.id);
+      formData.append("uuid", board.uuid!);
       formData.append("itemId", params.itemId);
       formData.append("reminder", "");
-      formData.append("category", board.category || "Uncategorized");
 
       const result = await setKanbanItemReminder(formData);
 

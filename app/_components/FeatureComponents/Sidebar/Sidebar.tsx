@@ -1,5 +1,6 @@
 "use client";
 
+import { FolderShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/FolderShareModal";
 import { SidebarWrapper } from "@/app/_components/GlobalComponents/Sidebar/SidebarWrapper";
 import { DeleteCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/DeleteCategoryModal";
 import { RenameCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/RenameCategoryModal";
@@ -9,7 +10,6 @@ import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/Setting
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { SidebarNavigation } from "./Parts/SidebarNavigation";
 import { CategoryList } from "./Parts/CategoryList";
-import { SharedItemsList } from "./Parts/SharedItemsList";
 import { TagsList } from "./Parts/TagsList";
 import { SidebarActions } from "./Parts/SidebarActions";
 import { ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
@@ -161,15 +161,6 @@ export const Sidebar = (props: SidebarProps) => {
           </div>
         ) : (
           <div className="space-y-4">
-            <SharedItemsList
-              collapsed={sidebar.sharedItemsCollapsed}
-              onToggleCollapsed={() =>
-                sidebar.setSharedItemsCollapsed(!sidebar.sharedItemsCollapsed)
-              }
-              onClose={onClose}
-              isItemSelected={sidebar.isItemSelected}
-              mode={sidebar.mode}
-            />
             {!sidebar.categoriesSectionCollapsed && (
               <CategoryList
                 categories={categories}
@@ -182,6 +173,9 @@ export const Sidebar = (props: SidebarProps) => {
                 }
                 onRenameCategory={(path: string) =>
                   sidebar.openModal("renameCategory", path)
+                }
+                onShareCategory={(path: string) =>
+                  sidebar.openModal("shareCategory", path)
                 }
                 onQuickCreate={onOpenCreateModal}
                 onCreateSubcategory={onOpenCategoryModal}
@@ -210,6 +204,14 @@ export const Sidebar = (props: SidebarProps) => {
           categoryPath={sidebar.modalState.data}
           onClose={sidebar.closeModal}
           onRename={sidebar.handleConfirmRenameCategory}
+        />
+      )}
+      {sidebar.modalState.type === "shareCategory" && (
+        <FolderShareModal
+          isOpen={true}
+          mode={sidebar.mode as Modes}
+          categoryPath={sidebar.modalState.data}
+          onClose={sidebar.closeModal}
         />
       )}
       {sidebar.modalState.type === "settings" && (

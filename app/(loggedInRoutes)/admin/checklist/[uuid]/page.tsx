@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(props: AdminChecklistPageProps): Promise<Metadata> {
   const params = await props.params;
   const { uuid } = params;
-  return getMedatadaTitle(Modes.CHECKLISTS, uuid, "Admin");
+  return getMedatadaTitle(Modes.CHECKLISTS, uuid);
 }
 
 export default async function AdminChecklistPage(props: AdminChecklistPageProps) {

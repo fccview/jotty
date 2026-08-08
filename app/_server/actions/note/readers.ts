@@ -19,12 +19,39 @@ import {
   grepExtractExcerpt,
 } from "@/app/_utils/grep-utils";
 import type { FileStatsEntry } from "@/app/_server/actions/file";
+import { dirUuids } from "@/app/_server/actions/share/category-info";
+import { orderByUuids } from "@/app/_utils/order-utils";
 import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
 import { promisify } from "util";
 import { exec } from "child_process";
+import { singleFlight } from "@/app/_server/actions/lib/concurrency";
 
 const execAsync = promisify(exec);
+
+const _stampUuid = async (filePath: string): Promise<string | undefined> =>
+  singleFlight(`stamp:${filePath}`, async () => {
+    try {
+      const content = await serverReadFile(filePath);
+      if (!content) return undefined;
+
+      const { metadata } = extractYamlMetadata(content);
+      if (typeof metadata.uuid === "string" && metadata.uuid) {
+        return metadata.uuid;
+      }
+
+      const uuid = generateUuid();
+      await fs.writeFile(
+        filePath,
+        updateYamlMetadata(content, { uuid }),
+        "utf-8",
+      );
+      return uuid;
+    } catch (error) {
+      console.warn("Failed to stamp UUID on note:", filePath, error);
+      return undefined;
+    }
+  });
 
 export const readNotesRecursively = async (
   dir: string,
@@ -135,14 +162,16 @@ export const readNotesRecursively = async (
     .filter((e) => e.isDirectory() && !excludedDirs.includes(e.name))
     .map((e) => e.name);
 
-  const orderedDirNames: string[] = order?.categories
-    ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
-    : dirNames.sort((a, b) => a.localeCompare(b));
+  const sortedDirNames = dirNames.sort((a, b) => a.localeCompare(b));
+  const dirUuidMap = order?.categories
+    ? await dirUuids(dir, sortedDirNames)
+    : new Map<string, string>();
+
+  const orderedDirNames: string[] = orderByUuids(
+    sortedDirNames,
+    order?.categories,
+    (name) => dirUuidMap.get(name),
+  );
 
   const subDirPromises = orderedDirNames.map(async (dirName) => {
     return readNotesRecursively(
@@ -162,17 +191,9 @@ export const readNotesRecursively = async (
   const categoryPath = basePath;
   const files = entries;
   const mdFiles = files.filter((f) => f.isFile() && f.name.endsWith(".md"));
-  const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
-  const categoryOrder = order;
-
-  const orderedIds: string[] = categoryOrder?.items
-    ? [
-        ...categoryOrder.items.filter((id) => ids.includes(id)),
-        ...ids
-          .filter((id) => !categoryOrder.items!.includes(id))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
-    : ids.sort((a, b) => a.localeCompare(b));
+  const orderedIds: string[] = mdFiles
+    .map((f) => path.basename(f.name, ".md"))
+    .sort((a, b) => a.localeCompare(b));
 
   const filePromises = orderedIds.map(async (id) => {
     const fileName = `${id}.md`;
@@ -192,15 +213,26 @@ export const readNotesRecursively = async (
           ? (metadata.tags as string[])
           : [];
 
+        const uuid =
+          typeof metadata?.uuid === "string"
+            ? metadata.uuid
+            : await _stampUuid(filePath);
+
+        if (!uuid) {
+          console.warn("Skipping note without a resolvable uuid:", filePath);
+          return null;
+        }
+
         return {
           id,
-          uuid: typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
+          uuid,
           title: typeof metadata?.title === "string" ? metadata.title : id,
           category: categoryPath,
           createdAt: toIso(stats.birthtime),
           updatedAt: toIso(stats.mtime),
           owner,
           isShared: false,
+          sharedWith: metadata?.sharedWith as string | string[] | undefined,
           encrypted: metadata?.encrypted === true,
           tags,
         };
@@ -213,9 +245,19 @@ export const readNotesRecursively = async (
           : [];
         const excerpt = await grepExtractExcerpt(filePath, excerptLength);
 
+        const uuid =
+          typeof metadata?.uuid === "string"
+            ? metadata.uuid
+            : await _stampUuid(filePath);
+
+        if (!uuid) {
+          console.warn("Skipping note without a resolvable uuid:", filePath);
+          return null;
+        }
+
         return {
           id,
-          uuid: typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
+          uuid,
           title: typeof metadata?.title === "string" ? metadata.title : id,
           content: excerpt,
           category: categoryPath,
@@ -223,6 +265,7 @@ export const readNotesRecursively = async (
           updatedAt: toIso(stats.mtime),
           owner,
           isShared: false,
+          sharedWith: metadata?.sharedWith as string | string[] | undefined,
           encrypted: metadata?.encrypted === true,
           tags,
         };
@@ -233,7 +276,15 @@ export const readNotesRecursively = async (
           let uuid = metadata.uuid;
           if (!uuid) {
             uuid = generateUuid();
-            updateYamlMetadata(content, { uuid });
+            try {
+              await fs.writeFile(
+                filePath,
+                updateYamlMetadata(content, { uuid }),
+                "utf-8",
+              );
+            } catch (error) {
+              console.warn("Failed to save UUID to note file:", error);
+            }
           }
           return {
             id,
@@ -245,6 +296,7 @@ export const readNotesRecursively = async (
             updatedAt: toIso(stats.mtime),
             owner,
             isShared: false,
+            sharedWith: metadata.sharedWith as string | string[] | undefined,
             rawContent: content,
           };
         } else {
@@ -272,7 +324,13 @@ export const readNotesRecursively = async (
     Promise.all(filePromises),
   ]);
 
-  notes.push(...currentDirNotes.filter((n): n is Note => n != null));
+  notes.push(
+    ...orderByUuids(
+      currentDirNotes.filter((n): n is Note => n != null),
+      order?.items,
+      (note) => note.uuid,
+    ),
+  );
   subDirNotes.forEach((sub) => notes.push(...sub));
 
   return notes;

@@ -1,6 +1,7 @@
 import { Checklist, ItemType, LinkIndex, Note } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { itemHref } from "@/app/_utils/global-utils";
+import { isUuid } from "@/app/_consts/identity";
 
 export const MAX_GRAPH_NODES = 600;
 export const MAX_TAG_LINK_FANOUT = 8;
@@ -50,14 +51,6 @@ export interface ConnectionGraphFilters {
 
 type ItemLike = Partial<Note> | Partial<Checklist>;
 
-const isUuidLike = (value: string) =>
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value,
-  );
-
-const itemTypePath = (type: ItemType) =>
-  type === ItemTypes.CHECKLIST ? "checklist" : "note";
-
 const fallbackTitle = (type: ItemType, id: string) =>
   `${type === ItemTypes.CHECKLIST ? "Checklist" : "Note"} ${id.slice(0, 8)}`;
 
@@ -83,7 +76,7 @@ export const resolveGraphId = (
   rawId: string,
   uuidByLegacyKey: Map<string, string>,
 ) => {
-  if (isUuidLike(rawId)) return rawId;
+  if (isUuid(rawId)) return rawId;
   return uuidByLegacyKey.get(rawId) || rawId;
 };
 
@@ -232,7 +225,7 @@ export const buildConnectionGraphData = (
       const connectionCount = inboundCount + outboundCount + tagConnectionCount;
       const category = item.category || "Uncategorized";
       const itemId = item.id || uuid;
-      const path = buildCategoryPath(category, itemId);
+      const path = `${category}/${itemId}`;
 
       return {
         id: uuid,
@@ -242,7 +235,7 @@ export const buildConnectionGraphData = (
         category,
         itemId,
         path,
-        url: `/${itemTypePath(type)}/${path}`,
+        url: itemHref(type, uuid),
         tags: item.tags || [],
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,

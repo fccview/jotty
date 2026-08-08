@@ -5,7 +5,7 @@ import { readJsonFile } from "../file";
 import { Result, User } from "@/app/_types";
 import { getSessionId, readSessions } from "../session";
 import { ItemTypes } from "@/app/_types/enums";
-import { getUserByItem, getUserByItemUuid } from "./helpers";
+import { getUserByItemUuid } from "./helpers";
 
 export const getUserByUsername = async (
   username: string
@@ -65,18 +65,4 @@ export const getUserByChecklistUuid = async (
   uuid: string
 ): Promise<Result<User>> => {
   return getUserByItemUuid(uuid, ItemTypes.CHECKLIST);
-};
-
-export const getUserByChecklist = async (
-  checklistID: string,
-  checklistCategory: string
-): Promise<Result<User>> => {
-  return getUserByItem(checklistID, checklistCategory, ItemTypes.CHECKLIST);
-};
-
-export const getUserByNote = async (
-  noteID: string,
-  noteCategory: string
-): Promise<Result<User>> => {
-  return getUserByItem(noteID, noteCategory, ItemTypes.NOTE);
 };

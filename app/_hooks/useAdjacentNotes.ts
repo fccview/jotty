@@ -11,7 +11,7 @@ interface AdjacentNotesResult {
   total: number;
 }
 
-export const useAdjacentNotes = (currentId: string): AdjacentNotesResult => {
+export const useAdjacentNotes = (currentUuid: string): AdjacentNotesResult => {
   const { notes, selectedFilter } = useAppMode();
 
   return useMemo(() => {
@@ -27,7 +27,7 @@ export const useAdjacentNotes = (currentId: string): AdjacentNotesResult => {
       );
     }
 
-    const currentIndex = filteredNotes.findIndex((n) => n.id === currentId);
+    const currentIndex = filteredNotes.findIndex((n) => n.uuid === currentUuid);
 
     if (currentIndex === -1) {
       return { prev: null, next: null, currentIndex: -1, total: filteredNotes.length };
@@ -39,5 +39,5 @@ export const useAdjacentNotes = (currentId: string): AdjacentNotesResult => {
       currentIndex,
       total: filteredNotes.length,
     };
-  }, [notes, selectedFilter, currentId]);
+  }, [notes, selectedFilter, currentUuid]);
 };

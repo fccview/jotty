@@ -21,13 +21,36 @@ import {
 } from "@/app/_utils/yaml-metadata-utils";
 import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
 import type { FileStatsEntry } from "@/app/_server/actions/file";
+import { dirUuids } from "@/app/_server/actions/share/category-info";
+import { orderByUuids } from "@/app/_utils/order-utils";
 import { getChecklistType } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { isKanbanType } from "@/app/_types/enums";
+import { singleFlight } from "@/app/_server/actions/lib/concurrency";
 
 const execAsync = promisify(exec);
 
 const debugCrud = isDebugFlag("crud");
+
+const _stampUuid = async (filePath: string): Promise<string | undefined> =>
+  singleFlight(`stamp:${filePath}`, async () => {
+    try {
+      const content = await serverReadFile(filePath);
+      if (!content) return undefined;
+
+      const { metadata } = extractYamlMetadata(content);
+      if (typeof metadata.uuid === "string" && metadata.uuid) {
+        return metadata.uuid;
+      }
+
+      const uuid = generateUuid();
+      await serverWriteFile(filePath, updateYamlMetadata(content, { uuid }));
+      return uuid;
+    } catch (error) {
+      console.warn("Failed to stamp UUID on checklist:", filePath, error);
+      return undefined;
+    }
+  });
 
 export type ChecklistReadResult =
   | Partial<Checklist>
@@ -153,30 +176,26 @@ export const readListsRecursively = async (
     .filter((e) => e.isDirectory() && !excludedDirs.includes(e.name))
     .map((e) => e.name);
 
-  const orderedDirNames: string[] = order?.categories
-    ? [
-        ...order.categories.filter((n) => dirNames.includes(n)),
-        ...dirNames
-          .filter((n) => !order.categories!.includes(n))
-          .sort((a, b) => a.localeCompare(b)),
-      ]
-    : dirNames.sort((a, b) => a.localeCompare(b));
+  const sortedDirNames = dirNames.sort((a, b) => a.localeCompare(b));
+  const dirUuidMap = order?.categories
+    ? await dirUuids(dir, sortedDirNames)
+    : new Map<string, string>();
+
+  const orderedDirNames: string[] = orderByUuids(
+    sortedDirNames,
+    order?.categories,
+    (name) => dirUuidMap.get(name),
+  );
 
   const categoryPromises = orderedDirNames.map(async (dirName) => {
     const categoryPath = basePath ? `${basePath}/${dirName}` : dirName;
     const categoryDir = path.join(dir, dirName);
     const files = await serverReadDir(categoryDir);
     const mdFiles = files.filter((f) => f.isFile() && f.name.endsWith(".md"));
-    const ids = mdFiles.map((f) => path.basename(f.name, ".md"));
     const categoryOrder = await readOrderFile(categoryDir);
-    const orderedIds: string[] = categoryOrder?.items
-      ? [
-          ...categoryOrder.items.filter((id) => ids.includes(id)),
-          ...ids
-            .filter((id) => !categoryOrder.items!.includes(id))
-            .sort((a, b) => a.localeCompare(b)),
-        ]
-      : ids.sort((a, b) => a.localeCompare(b));
+    const orderedIds: string[] = mdFiles
+      .map((f) => path.basename(f.name, ".md"))
+      .sort((a, b) => a.localeCompare(b));
 
     const filePromises = orderedIds.map(
       async (id): Promise<ChecklistReadResult | null> => {
@@ -201,7 +220,9 @@ export const readListsRecursively = async (
             return {
               id,
               uuid:
-                typeof metadata?.uuid === "string" ? metadata.uuid : undefined,
+                typeof metadata?.uuid === "string"
+                  ? metadata.uuid
+                  : await _stampUuid(filePath),
               title: typeof metadata?.title === "string" ? metadata.title : id,
               type: isKanbanType(metadata?.checklistType as string)
                 ? "kanban"
@@ -212,6 +233,7 @@ export const readListsRecursively = async (
               updatedAt: toIso(stats.mtime),
               owner,
               isShared: false,
+              sharedWith: metadata?.sharedWith as string | string[] | undefined,
               tags,
             };
           }
@@ -240,6 +262,7 @@ export const readListsRecursively = async (
               updatedAt: toIso(stats.mtime),
               owner,
               isShared: false,
+              sharedWith: metadata.sharedWith as string | string[] | undefined,
               rawContent: content,
             };
           }
@@ -275,7 +298,11 @@ export const readListsRecursively = async (
       ),
     ]);
     return [
-      ...currentFiles.filter((n): n is ChecklistReadResult => n != null),
+      ...orderByUuids(
+        currentFiles.filter((n): n is ChecklistReadResult => n != null),
+        categoryOrder?.items,
+        (list) => list.uuid,
+      ),
       ...subLists,
     ];
   });

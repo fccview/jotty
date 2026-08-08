@@ -6,9 +6,4 @@ export {
 
 export { getCategories } from "./queries";
 
-export {
-  setCategoryOrder,
-  setChecklistOrderInCategory,
-} from "./ordering";
-
 export { moveNode } from "./move";

@@ -8,10 +8,12 @@ import {
   getCalendarGrid,
   getItemsGroupedByDate,
 } from "@/app/_utils/kanban/calendar-utils";
+import { useWeekStart } from "@/app/_hooks/useWeekStart";
 
 type CalendarViewMode = "month" | "week" | "day";
 
 export const useCalendarView = (checklist: Checklist) => {
+  const weekStart = useWeekStart();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<CalendarViewMode>("month");
 
@@ -26,8 +28,8 @@ export const useCalendarView = (checklist: Checklist) => {
   );
 
   const calendarGrid = useMemo(
-    () => getCalendarGrid(currentDate.getFullYear(), currentDate.getMonth()),
-    [currentDate],
+    () => getCalendarGrid(currentDate.getFullYear(), currentDate.getMonth(), weekStart),
+    [currentDate, weekStart],
   );
 
   const unscheduledItems = useMemo(
@@ -62,6 +64,7 @@ export const useCalendarView = (checklist: Checklist) => {
 
   return {
     currentDate,
+    weekStart,
     viewMode,
     setViewMode,
     events,

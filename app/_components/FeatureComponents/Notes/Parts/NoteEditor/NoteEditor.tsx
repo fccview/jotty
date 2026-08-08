@@ -62,7 +62,6 @@ export const NoteEditor = ({
             editorContent={viewModel.editorContent}
             onEditorContentChange={viewModel.handleEditorContentChange}
             noteId={note.uuid}
-            noteCategory={note.category}
             encrypted={note.encrypted}
             onOpenDecryptModal={() => decryptModalRef.current?.()}
             onOpenViewModal={() => viewModalRef.current?.()}

@@ -248,7 +248,8 @@
     "history": "Historial",
     "items": "Elementos",
     "noResults": "Sin resultados",
-    "thisEntry": "esta entrada"
+    "thisEntry": "esta entrada",
+    "preview": "Vista previa"
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -745,6 +746,12 @@
     "preferredTimeFormat": "Formato de hora preferido",
     "selectTimeFormat": "Seleccionar formato de hora",
     "choosePreferredTimeFormat": "Elija su formato de hora preferido.",
+    "firstDayOfWeek": "Primer día de la semana",
+    "selectFirstDayOfWeek": "Seleccionar primer día",
+    "chooseFirstDayOfWeek": "Elija el día en que empiezan sus calendarios.",
+    "sunday": "Domingo",
+    "monday": "Lunes",
+    "saturday": "Sábado",
     "handedness": "Lateralidad",
     "selectHandedness": "Seleccionar lateralidad",
     "chooseHandedness": "Elija si es diestro o zurdo.",
@@ -889,7 +896,9 @@
     "checklistItemClickActionDescription": "Elija qué sucede cuando hace clic en el texto de una tarea. \n\"Marcar como completo\" activa la casilla de verificación (predeterminada); \n\"Editar nombre de la tarea\" abre la tarea para su edición en línea; aún deberá hacer clic en la casilla de verificación para completarla.",
     "checklistItemClickActionToggle": "Marcar como completo/incompleto",
     "checklistItemClickActionEdit": "Editar elemento de la lista",
-    "useSystemDefault": "Usar el sistema predeterminado"
+    "useSystemDefault": "Usar el sistema predeterminado",
+    "selectShowChecklistEmojis": "Seleccionar visibilidad de emojis",
+    "showChecklistEmojisDescription": "Muestra un emoji automático junto a los elementos de la lista según su texto."
   },
   "admin": {
     "title": "Administrador",
@@ -1078,7 +1087,11 @@
     "defaultDateFormat": "Formato de fecha predeterminado",
     "defaultDateFormatDescription": "Se utiliza cuando la preferencia de formato de fecha de un usuario está configurada en \"Usar valor predeterminado del sistema\".",
     "defaultTimeFormatDescription": "Se utiliza cuando la preferencia de formato de hora de un usuario está configurada en \"Usar valor predeterminado del sistema\".",
-    "defaultTimeFormat": "Formato de hora predeterminado"
+    "defaultTimeFormat": "Formato de hora predeterminado",
+    "borderRadius": "Radio de borde",
+    "borderRadiusDescription": "Define el redondeo de esquinas de toda la instancia. Los usuarios pueden sobrescribirlo en los ajustes rápidos.",
+    "borderRadiusSaved": "Radio de borde guardado",
+    "borderRadiusLoadError": "No se pudo cargar el radio de borde"
   },
   "errors": {
     "notFound": "No encontrado",
@@ -1097,6 +1110,7 @@
     "networkError": "Error de red",
     "timeout": "Tiempo de espera agotado",
     "permissionDenied": "Permiso denegado",
+    "requiredPermissions": "No tienes los permisos necesarios para realizar esta acción.",
     "loadError": "Error de carga",
     "failedToLoadCustomEmojis": "No se pudieron cargar los emojis personalizados",
     "emojiDeletedSuccessfully": "Emoji eliminado correctamente",
@@ -1293,7 +1307,7 @@
     "share": "Compartir",
     "shareWith": "Compartir con",
     "sharedWith": "Compartido con",
-    "shareLink": "Vinculo compartido",
+    "shareLink": "Vínculo compartido",
     "copyLink": "Copiar enlace",
     "linkCopied": "Enlace copiado",
     "publicLink": "Enlace público",
@@ -1324,7 +1338,29 @@
     "failedToCopyUrl": "No se pudo copiar la URL al portapapeles",
     "searchUsers": "Buscar usuarios...",
     "toggleAllPermissions": "Alternar todos los permisos",
-    "shareModalTitle": "Compartir {type}"
+    "shareModalTitle": "Compartir {type}",
+    "readOnly": "Solo lectura",
+    "byOwner": "compartido por {user}",
+    "mountStaysTop": "Las carpetas compartidas permanecen en el nivel superior",
+    "inheritedVia": "Compartido a través de {category}, por {user}",
+    "shareFolder": "Compartir esta carpeta",
+    "folderShareHint": "Todo lo que haya en esta carpeta, ahora y en el futuro, se comparte con las personas que elijas.",
+    "optOut": "Mantener este elemento privado",
+    "optOutHint": "Anula la compartición de la carpeta solo para este elemento.",
+    "useInherited": "Seguir la carpeta",
+    "publicFolderWarning": "Cualquier cosa colocada en esta carpeta será legible de inmediato por cualquiera que tenga el enlace.",
+    "readTip": "Solo lectura: {users}",
+    "writeTip": "Puede editar: {users}",
+    "deleteTip": "Puede editar y eliminar: {users}",
+    "publicTip": "Compartido públicamente",
+    "fromUserRead": "Solo lectura, compartido por {user}",
+    "fromUserWrite": "Puede editar, compartido por {user}",
+    "fromUserDelete": "Puede editar y eliminar, compartido por {user}",
+    "leaveShare": "Salir del recurso compartido",
+    "confirmLeaveItem": "¿Quieres quitar tu propio acceso a \"{itemTitle}\"? Desaparecerá de tu barra lateral y el propietario tendrá que compartirlo de nuevo.",
+    "confirmLeaveFolder": "¿Quieres quitar tu propio acceso a \"{categoryName}\", compartida por {owner}? Desaparecerá de tu barra lateral y {owner} tendrá que compartirla de nuevo.",
+    "canCreate": "Puede crear",
+    "createHint": "Permite añadir y mover elementos a esta carpeta."
   },
   "encryption": {
     "encrypt": "Encriptar",
@@ -1487,7 +1523,10 @@
     "viewMode": "Modo de vista",
     "viewModeCard": "Tarjetas",
     "viewModeList": "Lista",
-    "viewModeGrid": "Cuadrícula"
+    "viewModeGrid": "Cuadrícula",
+    "borderRadius": "Redondeo de esquinas",
+    "useInstanceDefault": "Usar el valor predeterminado",
+    "borderRadiusDescription": "Las esquinas se actualizan en toda la aplicación mientras arrastras."
   },
   "migration": {
     "migrationComplete": "Migración Completa",
@@ -1674,6 +1713,8 @@
     "reminderMessage": "\"{task}\" en \"{board}\" ya pasó su recordatorio",
     "unread": "sin leer",
     "sharingTitle": "{user} compartió un {type} contigo",
-    "sharingMessage": "Abre para ver el {type} compartido"
+    "sharingMessage": "Abre para ver el {type} compartido",
+    "sharingFolderTitle": "{user} compartió una carpeta de {type} contigo",
+    "sharingFolderMessage": "Abre para ver “{folder}”"
   }
 }

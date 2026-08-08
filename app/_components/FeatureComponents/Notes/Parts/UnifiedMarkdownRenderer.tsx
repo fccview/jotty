@@ -27,7 +27,8 @@ import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkCom
 import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
-import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
+import { decodeCategoryPath, decodeSegment } from "@/app/_utils/global-utils";
+import { isUuid } from "@/app/_consts/identity";
 import { NoteFooterStats } from "@/app/_components/GlobalComponents/Statistics/NoteFooterStats";
 import { useTranslations } from "next-intl";
 import {
@@ -155,6 +156,11 @@ export const UnifiedMarkdownRenderer = ({
   }
 
   const components: Partial<Components> = {
+    table: ({ node, children, ...props }) => (
+      <div className="jotty-x-scroll">
+        <table {...props}>{children}</table>
+      </div>
+    ),
     pre: ({ node, children, ...props }) => {
       const child = Children.toArray(children)[0];
 
@@ -227,7 +233,8 @@ export const UnifiedMarkdownRenderer = ({
             ?.replace("/checklist/", "")
             .replace("/note/", "")
             .split("/");
-          linkItemId = decodeId(pathParts?.[pathParts.length - 1] || "");
+          linkItemId = decodeSegment(pathParts?.[pathParts.length - 1] || "");
+          linkUuid = isUuid(linkItemId) ? linkItemId : null;
           linkCategory = decodeCategoryPath(
             pathParts?.slice(0, -1).join("/") || ""
           );

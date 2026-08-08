@@ -11,6 +11,7 @@ import { removeAllSessionsForUser } from "../session";
 import fs from "fs/promises";
 import { createHash } from "crypto";
 import { ItemTypes } from "@/app/_types/enums";
+import { DEFAULT_WEEK_START } from "@/app/_consts/calendar";
 import { getFormData } from "@/app/_utils/global-utils";
 import { logUserEvent } from "@/app/_server/actions/log";
 import { getUserIndex } from "./helpers";
@@ -106,25 +107,11 @@ export async function _updateUserCore(
     }
 
     try {
-      const { updateSharingData, updateReceiverUsername } = await import(
-        "@/app/_server/actions/sharing"
+      const { renameGrants } = await import(
+        "@/app/_server/actions/share/rename"
       );
 
-      await updateSharingData(
-        { sharer: targetUsername } as any,
-        { sharer: updates.username } as any
-      );
-
-      await updateReceiverUsername(
-        targetUsername,
-        updates.username,
-        ItemTypes.CHECKLIST
-      );
-      await updateReceiverUsername(
-        targetUsername,
-        updates.username,
-        ItemTypes.NOTE
-      );
+      await renameGrants(targetUsername, updates.username);
     } catch (error) {
       console.warn(
         `Could not update sharing data for username change ${targetUsername} -> ${updates.username}:`,
@@ -203,6 +190,7 @@ export const createUser = async (
       lastLogin: new Date().toISOString(),
       preferredDateFormat: "system",
       preferredTimeFormat: "system",
+      firstDayOfWeek: DEFAULT_WEEK_START,
       handedness: "right-handed",
       hideMobileStatusDropdown: "disable",
     };

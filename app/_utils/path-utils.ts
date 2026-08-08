@@ -1,14 +1,12 @@
 import path from "path";
 
 export const isPathSafe = (basePath: string, userPath: string): boolean => {
-  const normalized = path.normalize(userPath).replace(/^(\.\.(\/|\\|$))+/, "");
-  const resolved = path.resolve(basePath, normalized);
-  const basePathNormalized = path.normalize(basePath);
+  if (userPath.includes("\0")) return false;
 
-  return (
-    resolved === basePathNormalized ||
-    resolved.startsWith(basePathNormalized + path.sep)
-  );
+  const resolved = path.resolve(basePath, userPath);
+  const base = path.resolve(basePath);
+
+  return resolved === base || resolved.startsWith(base + path.sep);
 };
 
 export const validateNoPathTraversal = (pathSegment: string): boolean => {

@@ -248,7 +248,8 @@
     "cloneItem": "{item} 복제",
     "selectCategoryForClone": "이 항목을 복사할 카테고리를 선택하세요:",
     "copiedToClipboard": "클립보드에 복사됨",
-    "thisEntry": "이 항목"
+    "thisEntry": "이 항목",
+    "preview": "미리보기"
   },
   "history": {
     "noteHistory": "노트 기록",
@@ -770,6 +771,12 @@
     "preferredTimeFormat": "선호 시간 형식",
     "selectTimeFormat": "시간 형식 선택",
     "choosePreferredTimeFormat": "선호하는 시간 형식을 선택하세요.",
+    "firstDayOfWeek": "주 시작 요일",
+    "selectFirstDayOfWeek": "시작 요일 선택",
+    "chooseFirstDayOfWeek": "달력이 시작되는 요일을 선택하세요.",
+    "sunday": "일요일",
+    "monday": "월요일",
+    "saturday": "토요일",
     "handedness": "주 사용 손",
     "selectHandedness": "주 사용 손 선택",
     "chooseHandedness": "오른손잡이 또는 왼손잡이를 선택하세요.",
@@ -914,7 +921,9 @@
     "checklistItemClickActionDescription": "작업 텍스트를 클릭하면 어떻게 되는지 선택하세요. \n\"완료로 표시\"는 확인란을 전환합니다(기본값). \n\"작업 이름 편집\"은 인라인 편집을 위한 작업을 엽니다. 완료하려면 확인란 자체를 클릭해야 합니다.",
     "checklistItemClickActionToggle": "완료/미완료로 표시",
     "checklistItemClickActionEdit": "목록 항목 편집",
-    "useSystemDefault": "시스템 기본값 사용"
+    "useSystemDefault": "시스템 기본값 사용",
+    "selectShowChecklistEmojis": "이모지 표시 선택",
+    "showChecklistEmojisDescription": "체크리스트 항목의 텍스트에 따라 이모지를 자동으로 표시합니다."
   },
   "admin": {
     "title": "관리자",
@@ -1103,7 +1112,11 @@
     "defaultDateFormat": "기본 날짜 형식",
     "defaultDateFormatDescription": "사용자의 날짜 형식 기본 설정이 \"시스템 기본값 사용\"으로 설정된 경우 사용됩니다.",
     "defaultTimeFormatDescription": "사용자의 시간 형식 기본 설정이 \"시스템 기본값 사용\"으로 설정된 경우 사용됩니다.",
-    "defaultTimeFormat": "기본 시간 형식"
+    "defaultTimeFormat": "기본 시간 형식",
+    "borderRadius": "모서리 반경",
+    "borderRadiusDescription": "인스턴스 전체의 모서리 둥글기를 설정합니다. 사용자는 빠른 설정에서 재정의할 수 있습니다.",
+    "borderRadiusSaved": "모서리 반경이 저장되었습니다",
+    "borderRadiusLoadError": "모서리 반경을 불러오지 못했습니다"
   },
   "errors": {
     "notFound": "찾을 수 없음",
@@ -1122,6 +1135,7 @@
     "networkError": "네트워크 오류",
     "timeout": "요청 시간 초과",
     "permissionDenied": "권한이 거부되었습니다",
+    "requiredPermissions": "이 작업을 수행할 필요한 권한이 없습니다.",
     "loadError": "불러오기 오류",
     "failedToLoadCustomEmojis": "사용자 지정 이모지를 불러오지 못했습니다",
     "emojiDeletedSuccessfully": "이모지가 성공적으로 삭제되었습니다",
@@ -1349,7 +1363,29 @@
     "failedToCopyUrl": "URL을 클립보드에 복사하지 못했습니다",
     "searchUsers": "사용자 검색...",
     "toggleAllPermissions": "모든 권한 전환",
-    "shareModalTitle": "{type} 공유"
+    "shareModalTitle": "{type} 공유",
+    "readOnly": "읽기 전용",
+    "byOwner": "{user} 님이 공유함",
+    "mountStaysTop": "공유 폴더는 최상위 수준에 유지됩니다",
+    "inheritedVia": "{user} 님이 {category} 를 통해 공유함",
+    "shareFolder": "이 폴더 공유",
+    "folderShareHint": "이 폴더에 있는 모든 항목은 지금도 앞으로도 선택한 사람들과 공유됩니다.",
+    "optOut": "이 항목은 비공개로 유지",
+    "optOutHint": "이 항목에만 폴더 공유 설정을 덮어씁니다.",
+    "useInherited": "폴더 설정 따르기",
+    "publicFolderWarning": "이 폴더에 넣은 모든 항목은 링크가 있는 누구나 즉시 읽을 수 있습니다.",
+    "readTip": "읽기 전용: {users}",
+    "writeTip": "편집 가능: {users}",
+    "deleteTip": "편집 및 삭제 가능: {users}",
+    "publicTip": "공개 공유됨",
+    "fromUserRead": "읽기 전용, {user} 님이 공유함",
+    "fromUserWrite": "편집 가능, {user} 님이 공유함",
+    "fromUserDelete": "편집 및 삭제 가능, {user} 님이 공유함",
+    "leaveShare": "공유 나가기",
+    "confirmLeaveItem": "\"{itemTitle}\"에 대한 내 접근 권한을 제거할까요? 사이드바에서 사라지며 소유자가 다시 공유해야 합니다.",
+    "confirmLeaveFolder": "{owner}님이 공유한 \"{categoryName}\"에 대한 내 접근 권한을 제거할까요? 사이드바에서 사라지며 {owner}님이 다시 공유해야 합니다.",
+    "canCreate": "생성 가능",
+    "createHint": "이 폴더에 항목을 추가하거나 옮길 수 있습니다."
   },
   "encryption": {
     "encrypt": "암호화",
@@ -1511,7 +1547,10 @@
     "viewMode": "보기 모드",
     "viewModeCard": "카드",
     "viewModeList": "목록",
-    "viewModeGrid": "그리드"
+    "viewModeGrid": "그리드",
+    "borderRadius": "모서리 둥글기",
+    "useInstanceDefault": "기본값 사용",
+    "borderRadiusDescription": "드래그하는 동안 앱 전체의 모서리가 즉시 바뀝니다."
   },
   "migration": {
     "migrationComplete": "마이그레이션 완료",
@@ -1677,6 +1716,8 @@
     "reminderMessage": "\"{board}\"의 \"{task}\"이(가) 알림을 지나갔습니다.",
     "unread": "읽지 않음",
     "sharingTitle": "{user} 님이 {type}을(를) 공유했습니다",
-    "sharingMessage": "공유된 {type}을(를) 보려면 열기"
+    "sharingMessage": "공유된 {type}을(를) 보려면 열기",
+    "sharingFolderTitle": "{user} 님이 {type} 폴더를 공유했습니다",
+    "sharingFolderMessage": "“{folder}”를 보려면 열기"
   }
 }

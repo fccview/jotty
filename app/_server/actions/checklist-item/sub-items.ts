@@ -6,49 +6,44 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import {
-  getAllLists,
-  getUserChecklists,
-} from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { isAdmin, getUsername } from "@/app/_server/actions/users";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { getUsername } from "@/app/_server/actions/users";
 import { Checklist, Result } from "@/app/_types";
 import {
   ItemTypes,
   PermissionTypes,
+  Modes,
   TaskStatus,
   isKanbanType,
 } from "@/app/_types/enums";
-import { checkUserPermission } from "../sharing";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 export const createSubItem = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const parentId = formData.get("parentId") as string;
     const text = formData.get("text") as string;
-    const category = formData.get("category") as string;
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
+    if (!uuid || !parentId || !text?.trim()) {
+      return {
+        success: false,
+        error: "List uuid, parent item ID and text are required",
+      };
     }
 
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
-    );
+    const currentUser = await getUsername();
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       throw new Error("List not found");
     }
 
-    const currentUser = await getUsername();
-    const canEdit = await checkUserPermission(
-      list.uuid || listId,
-      category || "Uncategorized",
+    const canEdit = await canReach(
+      list.uuid!,
       ItemTypes.CHECKLIST,
       currentUser,
       PermissionTypes.EDIT
@@ -85,7 +80,7 @@ export const createSubItem = async (
     const now = new Date().toISOString();
 
     const newSubItem: any = {
-      id: `${listId}-sub-${Date.now()}`,
+      id: `${list.uuid}-sub-${Date.now()}`,
       text,
       completed: false,
       order: 0,
@@ -128,22 +123,14 @@ export const createSubItem = async (
       updatedAt: new Date().toISOString(),
     };
 
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      list.owner!
-    );
-    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
-    await ensureDir(categoryDir);
-
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
+    await ensureDir(path.dirname(filePath));
 
     await serverWriteFile(filePath, listToMarkdown(updatedList as Checklist));
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -151,7 +138,7 @@ export const createSubItem = async (
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: currentUser });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {

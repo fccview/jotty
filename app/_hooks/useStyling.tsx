@@ -7,7 +7,7 @@ import {
   loadCustomThemes,
   saveCustomThemes,
 } from "@/app/_server/actions/config";
-import { getAllThemes } from "@/app/_consts/themes";
+import { BUILT_IN_THEMES, getAllThemes } from "@/app/_consts/themes";
 
 interface ThemeFormData {
   name: string;
@@ -379,32 +379,8 @@ export const useStyling = () => {
   };
 
   const getCustomThemes = () => {
-    return themes.filter(
-      (theme) =>
-        ![
-          "system",
-          "light",
-          "dark",
-          "rwmarkable-light",
-          "rwmarkable-dark",
-          "fccview",
-          "sakura-blue",
-          "sakura-red",
-          "black-white",
-          "sunset",
-          "ocean",
-          "forest",
-          "nord",
-          "dracula",
-          "monokai",
-          "github-dark",
-          "tokyo-night",
-          "catppuccin",
-          "rose-pine",
-          "gruvbox",
-          "solarized-dark",
-        ].includes(theme.id)
-    );
+    const builtInIds = BUILT_IN_THEMES.map((theme) => theme.id as string);
+    return themes.filter((theme) => !builtInIds.includes(theme.id));
   };
 
   return {

@@ -2,16 +2,14 @@
 
 import { useState, useEffect } from "react";
 import {
-  migrateToNewSharingFormat,
-  migrateToYamlMetadataFormat,
+  forceUnblock,
+  migrateToInlineSharing,
 } from "@/app/_server/actions/migration/index";
-import { logout } from "@/app/_server/actions/auth";
 import { isAdmin as checkIsAdmin } from "@/app/_server/actions/users";
 import { AdminRequiredView } from "@/app/_components/FeatureComponents/Migration/Parts/MIgrationAdminRequired";
-import { SharingMigrationView } from "./Parts/SharingMigrationView";
-import { YamlMetadataMigrationView } from "./Parts/YamlMetadataMigrationView";
+import { ShareMigrationView } from "./Parts/ShareMigrationView";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 
 const LoadingView = () => <Loading />;
 
@@ -21,27 +19,17 @@ export const MigrationPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [migrationType, setMigrationType] = useState<"sharing" | "yaml" | null>(
-    null
-  );
-  const [sharingMigrationResult, setSharingMigrationResult] = useState<{
+  const [isOverriding, setIsOverriding] = useState(false);
+  const [migrationResult, setMigrationResult] = useState<{
     migrated: boolean;
     changes: string[];
-  } | null>(null);
-  const [yamlMigrationResult, setYamlMigrationResult] = useState<{
-    migrated: boolean;
-    changes: string[];
+    residue: string[];
   } | null>(null);
 
   useEffect(() => {
     const initializeMigration = async () => {
       try {
-        const admin = await checkIsAdmin();
-        setIsAdmin(admin);
-
-        if (admin) {
-          setMigrationType("yaml");
-        }
+        setIsAdmin(await checkIsAdmin());
       } catch (error) {
         console.warn("Error checking admin status:", error);
         setIsAdmin(false);
@@ -53,69 +41,58 @@ export const MigrationPage = () => {
     initializeMigration();
   }, []);
 
-  const handleMigrateSharing = async () => {
+  const handleMigrate = async () => {
     setIsMigrating(true);
     setError(null);
-    try {
-      const result = await migrateToNewSharingFormat();
 
-      if (result.success) {
-        setSharingMigrationResult(result.data || null);
-        const yamlResult = await migrateToYamlMetadataFormat();
-        if (yamlResult.success && yamlResult.data?.migrated) {
-          setMigrationType("yaml");
-        }
-      } else {
+    try {
+      const result = await migrateToInlineSharing();
+
+      if (!result.success) {
         throw new Error(result.error || t("migration.migrationFailed"));
       }
+
+      setMigrationResult(result.data || null);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : t("encryption.unexpectedError")
+        err instanceof Error ? err.message : t("encryption.unexpectedError"),
       );
       setIsMigrating(false);
     }
   };
 
-  const handleMigrateYaml = async () => {
-    setIsMigrating(true);
+  const handleOverride = async () => {
+    setIsOverriding(true);
     setError(null);
-    try {
-      const result = await migrateToYamlMetadataFormat();
 
-      if (result.success) {
-        setYamlMigrationResult(result.data || null);
-      } else {
-        throw new Error(result.error || t("migration.migrationFailed"));
+    try {
+      const result = await forceUnblock(migrationResult?.residue || []);
+
+      if (!result.success) {
+        throw new Error(result.error || t("migration.overrideFailed"));
       }
+
+      window.location.href = "/";
     } catch (err) {
+      console.error("Error overriding the migration gate:", err);
       setError(
-        err instanceof Error ? err.message : t("encryption.unexpectedError")
+        err instanceof Error ? err.message : t("encryption.unexpectedError"),
       );
-      setIsMigrating(false);
+      setIsOverriding(false);
     }
   };
 
   if (isLoading) return <LoadingView />;
   if (isAdmin === false) return <AdminRequiredView />;
-  if (migrationType === null) return <LoadingView />;
-
-  if (migrationType === "sharing") {
-    return (
-      <SharingMigrationView
-        onMigrate={handleMigrateSharing}
-        isMigrating={isMigrating}
-        error={error}
-        migrationResult={sharingMigrationResult}
-      />
-    );
-  }
 
   return (
-    <YamlMetadataMigrationView
-      onMigrate={handleMigrateYaml}
+    <ShareMigrationView
+      onMigrate={handleMigrate}
+      onOverride={handleOverride}
       isMigrating={isMigrating}
+      isOverriding={isOverriding}
       error={error}
-      migrationResult={yamlMigrationResult}
+      migrationResult={migrationResult}
     />
   );
 };

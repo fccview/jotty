@@ -248,7 +248,8 @@
     "items": "Items",
     "restoring": "Herstellen...",
     "retry": "Opnieuw proberen",
-    "thisEntry": "deze invoer"
+    "thisEntry": "deze invoer",
+    "preview": "Voorbeeld"
   },
   "auth": {
     "loginTitle": "Inloggen",
@@ -745,6 +746,12 @@
     "preferredTimeFormat": "Voorkeurstijdnotatie",
     "selectTimeFormat": "Selecteer tijdnotatie",
     "choosePreferredTimeFormat": "Kies uw voorkeurstijdnotatie.",
+    "firstDayOfWeek": "Eerste dag van de week",
+    "selectFirstDayOfWeek": "Selecteer eerste dag",
+    "chooseFirstDayOfWeek": "Kies met welke dag je kalenders beginnen.",
+    "sunday": "Zondag",
+    "monday": "Maandag",
+    "saturday": "Zaterdag",
     "handedness": "Handigheid",
     "selectHandedness": "Selecteer handigheid",
     "chooseHandedness": "Kies of u rechts- of linkshandig bent.",
@@ -889,7 +896,9 @@
     "checklistItemClickActionDescription": "Kies wat er gebeurt als u op de tekst van een taak klikt. \n\"Markeren als voltooid\" schakelt het selectievakje in (standaard); \nMet 'Taaknaam bewerken' wordt de taak geopend voor inline bewerken. U moet nog steeds op het selectievakje zelf klikken om deze te voltooien.",
     "checklistItemClickActionToggle": "Markeer als compleet/onvolledig",
     "checklistItemClickActionEdit": "Lijstitem bewerken",
-    "useSystemDefault": "Gebruik systeemstandaard"
+    "useSystemDefault": "Gebruik systeemstandaard",
+    "selectShowChecklistEmojis": "Emoji-zichtbaarheid kiezen",
+    "showChecklistEmojisDescription": "Toont automatisch een emoji naast checklistitems op basis van de tekst."
   },
   "admin": {
     "title": "Beheer",
@@ -1078,7 +1087,11 @@
     "defaultDateFormat": "Standaard datumnotatie",
     "defaultDateFormatDescription": "Wordt gebruikt wanneer de datumnotatievoorkeur van een gebruiker is ingesteld op \"Gebruik systeemstandaard\".",
     "defaultTimeFormatDescription": "Wordt gebruikt wanneer de tijdnotatievoorkeur van een gebruiker is ingesteld op \"Gebruik systeemstandaard\".",
-    "defaultTimeFormat": "Standaard tijdformaat"
+    "defaultTimeFormat": "Standaard tijdformaat",
+    "borderRadius": "Hoekradius",
+    "borderRadiusDescription": "Bepaalt de afronding van hoeken in de hele instantie. Gebruikers kunnen dit overschrijven in snelle instellingen.",
+    "borderRadiusSaved": "Hoekradius opgeslagen",
+    "borderRadiusLoadError": "Kon de hoekradius niet laden"
   },
   "errors": {
     "notFound": "Niet gevonden",
@@ -1097,6 +1110,7 @@
     "networkError": "Netwerkfout",
     "timeout": "Verzoek time-out",
     "permissionDenied": "Toegang geweigerd",
+    "requiredPermissions": "Je hebt niet de vereiste rechten om deze actie uit te voeren.",
     "loadError": "Laadfout",
     "failedToLoadCustomEmojis": "Aangepaste emoji's laden mislukt",
     "emojiDeletedSuccessfully": "Emoji succesvol verwijderd",
@@ -1324,7 +1338,29 @@
     "failedToCopyUrl": "URL kopiëren naar klembord mislukt",
     "searchUsers": "Gebruikers zoeken...",
     "toggleAllPermissions": "Alle rechten wisselen",
-    "shareModalTitle": "{type} delen"
+    "shareModalTitle": "{type} delen",
+    "readOnly": "Alleen lezen",
+    "byOwner": "gedeeld door {user}",
+    "mountStaysTop": "Gedeelde mappen blijven op het hoogste niveau",
+    "inheritedVia": "Gedeeld via {category}, door {user}",
+    "shareFolder": "Deel deze map",
+    "folderShareHint": "Alles in deze map, nu en later, wordt gedeeld met de mensen die je kiest.",
+    "optOut": "Dit item privé houden",
+    "optOutHint": "Overschrijft het delen van de map alleen voor dit item.",
+    "useInherited": "Volg de map",
+    "publicFolderWarning": "Alles wat in deze map wordt geplaatst, is direct leesbaar voor iedereen met de link.",
+    "readTip": "Alleen lezen: {users}",
+    "writeTip": "Kan bewerken: {users}",
+    "deleteTip": "Kan bewerken en verwijderen: {users}",
+    "publicTip": "Openbaar gedeeld",
+    "fromUserRead": "Alleen lezen, gedeeld door {user}",
+    "fromUserWrite": "Kan bewerken, gedeeld door {user}",
+    "fromUserDelete": "Kan bewerken en verwijderen, gedeeld door {user}",
+    "leaveShare": "Delen verlaten",
+    "confirmLeaveItem": "Je eigen toegang tot \"{itemTitle}\" verwijderen? Het verdwijnt uit je zijbalk en de eigenaar moet het opnieuw delen.",
+    "confirmLeaveFolder": "Je eigen toegang tot \"{categoryName}\", gedeeld door {owner}, verwijderen? De map verdwijnt uit je zijbalk en {owner} moet hem opnieuw delen.",
+    "canCreate": "Kan aanmaken",
+    "createHint": "Laat toe items toe te voegen en te verplaatsen naar deze map."
   },
   "encryption": {
     "encrypt": "Versleutelen",
@@ -1486,7 +1522,10 @@
     "viewMode": "Weergavemodus",
     "viewModeCard": "Kaarten",
     "viewModeList": "Lijst",
-    "viewModeGrid": "Raster"
+    "viewModeGrid": "Raster",
+    "borderRadius": "Hoekafronding",
+    "useInstanceDefault": "Standaard van instantie gebruiken",
+    "borderRadiusDescription": "De hoeken passen zich in de hele app aan terwijl je sleept."
   },
   "migration": {
     "migrationComplete": "Migratie voltooid",
@@ -1649,7 +1688,9 @@
     "reminderMessage": "\"{task}\" in \"{board}\" is voorbij de herinnering",
     "unread": "ongelezen",
     "sharingTitle": "{user} heeft een {type} met je gedeeld",
-    "sharingMessage": "Open om het gedeelde {type} te bekijken"
+    "sharingMessage": "Open om het gedeelde {type} te bekijken",
+    "sharingFolderTitle": "{user} heeft een {type}-map met je gedeeld",
+    "sharingFolderMessage": "Open om “{folder}” te bekijken"
   },
   "history": {
     "noteHistory": "Notitiegeschiedenis",

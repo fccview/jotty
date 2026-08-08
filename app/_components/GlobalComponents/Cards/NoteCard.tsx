@@ -48,7 +48,7 @@ export const NoteCard = ({
     transition,
     isDragging,
   } = useSortable({
-    id: note?.uuid || note?.id,
+    id: note.uuid,
     disabled: !isDraggable,
   });
 
@@ -101,9 +101,9 @@ export const NoteCard = ({
   const style = isDragging
     ? { opacity: 0.4 }
     : {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
 
   const cardStyle = {
     ...style,
@@ -118,8 +118,9 @@ export const NoteCard = ({
       ref={setNodeRef}
       style={cardStyle}
       {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-note-card bg-card border border-border rounded-md hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${isDragging ? "border-primary/30" : ""
-        }`}
+      className={`jotty-note-card bg-card border border-border rounded-jotty hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${
+        isDragging ? "border-primary/30" : ""
+      }`}
     >
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between gap-3">
@@ -144,8 +145,9 @@ export const NoteCard = ({
                 e.stopPropagation();
                 onTogglePin(note);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"
-                } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-jotty flex-shrink-0`}
+              className={`${
+                isPinned ? "opacity-100" : "opacity-100 lg:opacity-0"
+              } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-jotty flex-shrink-0`}
               aria-label={isPinned ? t("common.unpin") : t("common.pin")}
             >
               {isPinned ? (
@@ -159,7 +161,9 @@ export const NoteCard = ({
       </div>
 
       <div className="px-4 pb-4 flex-1">
-        <div className={`jotty-note-card-content relative max-h-72 ${fullScrollableContent ? "overflow-y-auto" : "overflow-y-hidden"}`}>
+        <div
+          className={`jotty-note-card-content relative max-h-72 ${fullScrollableContent ? "overflow-y-auto" : "overflow-y-hidden"}`}
+        >
           {isEncrypted ? (
             <div className="flex items-center justify-center py-8">
               <p className="text-md lg:text-sm text-muted-foreground italic">
@@ -169,10 +173,11 @@ export const NoteCard = ({
           ) : showMarkdownPreview ? (
             <div className="text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none">
               <div
-                className={`${fullScrollableContent
-                  ? "max-h-[200px] overflow-y-auto"
-                  : "line-clamp-4"
-                  } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
+                className={`${
+                  fullScrollableContent
+                    ? "max-h-[200px] overflow-y-auto"
+                    : "line-clamp-4"
+                } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
               >
                 <UnifiedMarkdownRenderer content={displayContent} />
               </div>
@@ -187,17 +192,17 @@ export const NoteCard = ({
 
       <div className="px-4 py-3 bg-muted/30 border-t border-border/50">
         <div className="jotty-note-card-footer flex items-center justify-between text-sm lg:text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-2 min-w-0">
             {sharer && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 min-w-0">
                 <UserAvatar username={sharer} size="xs" />
-                <span className="text-md lg:text-xs text-muted-foreground">
+                <span className="text-md lg:text-xs text-muted-foreground truncate">
                   {t("common.sharedBy", { sharer })}
                 </span>
               </div>
             )}
-            {!sharer && categoryName && (
-              <span className="bg-primary/10 text-primary px-2 py-1 rounded-jotty font-medium">
+            {categoryName && (
+              <span className="bg-primary/10 text-primary px-2 py-1 rounded-jotty font-medium truncate max-w-[10rem]">
                 {categoryName}
               </span>
             )}

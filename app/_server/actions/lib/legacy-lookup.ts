@@ -1,0 +1,241 @@
+/**
+ * @deprecated Everything in this module resolves the pre-uuid category+slug
+ * pair. Identity is uuid everywhere else and category+slug is NOT an identity,
+ * it is a display path that changes on rename. Only the legacy redirect pages
+ * and the REST API fallback may import from here, and the whole module goes
+ * away a release after note content has been migrated.
+ */
+
+import path from "path";
+import fs from "fs/promises";
+import { Modes } from "@/app/_types/enums";
+import {
+  ARCHIVED_DIR_NAME,
+  CHECKLISTS_DIR,
+  NOTES_DIR,
+  USERS_FILE,
+} from "@/app/_consts/files";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { isPathSafe, validateNoPathTraversal } from "@/app/_utils/path-utils";
+import { User } from "@/app/_types";
+import { ItemType } from "@/app/_types/core";
+
+const _modeDir = (mode: Modes, username: string): string =>
+  path.join(
+    process.cwd(),
+    mode === Modes.CHECKLISTS ? CHECKLISTS_DIR(username) : NOTES_DIR(username),
+  );
+
+const _safeSegment = (value: string): boolean =>
+  value.length > 0 && !value.includes("\0") && validateNoPathTraversal(value);
+
+const _safeCategory = (category: string): boolean =>
+  category.length > 0 && category.split("/").every(_safeSegment);
+
+const _candidates = (userDir: string, category: string, id: string): string[] => {
+  if (!_safeSegment(id) || !_safeCategory(category)) {
+    return [];
+  }
+
+  const paths = [
+    path.join(userDir, category, `${id}.md`),
+    path.join(userDir, ARCHIVED_DIR_NAME, category, `${id}.md`),
+  ];
+
+  if (category === UNCATEGORIZED) {
+    paths.push(path.join(userDir, `${id}.md`));
+    paths.push(path.join(userDir, ARCHIVED_DIR_NAME, `${id}.md`));
+  }
+
+  return paths.filter((candidate) => isPathSafe(userDir, candidate));
+};
+
+const _findFile = async (
+  mode: Modes,
+  category: string,
+  id: string,
+  username: string,
+): Promise<string | null> => {
+  for (const candidate of _candidates(_modeDir(mode, username), category, id)) {
+    try {
+      await fs.access(candidate);
+      return candidate;
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+};
+
+const _uuidFor = async (filePath: string): Promise<string | null> => {
+  const { grepExtractField } = await import("@/app/_utils/grep-utils");
+  const existing = await grepExtractField(filePath, "uuid");
+
+  if (existing) {
+    return existing;
+  }
+
+  const { extractYamlMetadata, generateUuid, updateYamlMetadata } =
+    await import("@/app/_utils/yaml-metadata-utils");
+  const { logAudit } = await import("@/app/_server/actions/log");
+  const { singleFlight } = await import("@/app/_server/actions/lib/concurrency");
+
+  try {
+    return await singleFlight(`stamp:${filePath}`, async () => {
+      const content = await fs.readFile(filePath, "utf-8");
+      const { metadata } = extractYamlMetadata(content);
+
+      if (typeof metadata.uuid === "string" && metadata.uuid) {
+        return metadata.uuid;
+      }
+
+      const stamped = generateUuid();
+      await fs.writeFile(filePath, updateYamlMetadata(content, { uuid: stamped }), "utf-8");
+      return stamped;
+    });
+  } catch (error) {
+    await logAudit({
+      level: "WARNING",
+      action: "legacy_lookup",
+      category: "system",
+      success: false,
+      errorMessage: "Failed to stamp uuid during legacy lookup",
+      metadata: { filePath, error: String(error) },
+    });
+    return null;
+  }
+};
+
+async function _logDeprecated(
+  mode: Modes,
+  category: string,
+  id: string,
+  uuid: string,
+): Promise<void> {
+  const { logAudit } = await import("@/app/_server/actions/log");
+
+  await logAudit({
+    level: "WARNING",
+    action: "legacy_lookup",
+    category: "system",
+    success: true,
+    errorMessage:
+      "Deprecated category+id lookup used; switch to uuid, support will be removed soon",
+    metadata: { mode, category, id, uuid },
+  });
+}
+
+/**
+ * @deprecated REST API fallback: returns the param untouched when it is a
+ * uuid, otherwise resolves it as a legacy category+id pair (category from the
+ * ?category= query, defaulting to Uncategorized) and logs a deprecation
+ * warning. Will be removed once slug lookups are dropped.
+ */
+export const resolveApiId = async (
+  mode: Modes,
+  param: string,
+  category?: string | null,
+  username?: string,
+): Promise<string | null> => {
+  const { isUuid } = await import("@/app/_consts/identity");
+
+  if (isUuid(param)) {
+    return param;
+  }
+
+  return legacyResolve(mode, category || UNCATEGORIZED, param, username);
+};
+
+/**
+ * @deprecated Resolves a legacy category+id pair to the item uuid. Only the
+ * legacy URL redirect pages and the REST API fallback may use this; every call
+ * is logged as a deprecation warning. Identity is uuid everywhere else.
+ */
+export const legacyResolve = async (
+  mode: Modes,
+  category: string,
+  id: string,
+  username?: string,
+): Promise<string | null> => {
+  const { readJsonFile } = await import("@/app/_server/actions/file");
+  const owners: string[] = username
+    ? [username]
+    : ((await readJsonFile(USERS_FILE)) as User[]).map((u) => u.username);
+
+  for (const owner of owners) {
+    const filePath = await _findFile(mode, category, id, owner);
+
+    if (!filePath) {
+      continue;
+    }
+
+    const uuid = await _uuidFor(filePath);
+
+    if (uuid) {
+      await _logDeprecated(mode, category, id, uuid);
+      return uuid;
+    }
+  }
+
+  return null;
+};
+
+const _everyMatch = async (
+  mode: Modes,
+  category: string,
+  id: string,
+): Promise<string[]> => {
+  const { readJsonFile } = await import("@/app/_server/actions/file");
+  const owners = ((await readJsonFile(USERS_FILE)) as User[]).map(
+    (u) => u.username,
+  );
+
+  const uuids: string[] = [];
+
+  for (const owner of owners) {
+    const filePath = await _findFile(mode, category, id, owner);
+
+    if (!filePath) {
+      continue;
+    }
+
+    const uuid = await _uuidFor(filePath);
+
+    if (uuid) {
+      uuids.push(uuid);
+    }
+  }
+
+  return uuids;
+};
+
+/**
+ * @deprecated Unauthenticated sibling of legacyResolve. A legacy category+slug
+ * pair is not unique across owners, so this weighs every match and only
+ * resolves when exactly one of them is actually public. Anything else is a
+ * collision and gets no answer at all, so nothing about a private item leaks.
+ */
+export const publicResolve = async (
+  mode: Modes,
+  category: string,
+  id: string,
+  itemType: ItemType,
+): Promise<string | null> => {
+  const { isPublicItem } = await import("@/app/_server/actions/share/queries");
+  const candidates = await _everyMatch(mode, category, id);
+  const publicOnes: string[] = [];
+
+  for (const uuid of candidates) {
+    if (await isPublicItem(uuid, itemType)) {
+      publicOnes.push(uuid);
+    }
+  }
+
+  if (publicOnes.length !== 1) {
+    return null;
+  }
+
+  await _logDeprecated(mode, category, id, publicOnes[0]);
+  return publicOnes[0];
+};

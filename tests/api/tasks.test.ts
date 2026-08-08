@@ -4,6 +4,7 @@ import {
   mockAuthenticateApiKey,
   mockGetUserChecklists,
   mockCreateList,
+  mockMakeList,
   mockUpdateList,
   mockDeleteList,
   mockGetListById,
@@ -131,7 +132,7 @@ describe("Tasks API", () => {
         uuid: "new-task-uuid",
         title: "API Test Task Board",
       }
-      mockCreateList.mockResolvedValue({ success: true, data: newTask })
+      mockMakeList.mockResolvedValue({ success: true, data: newTask })
 
       const request = createMockRequest("POST", "http://localhost:3000/api/tasks", {
         title: "API Test Task Board",

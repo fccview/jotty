@@ -37,7 +37,7 @@ export const NoteGridItem = ({
     transition,
     isDragging,
   } = useSortable({
-    id: note?.uuid || note.id,
+    id: note.uuid,
     disabled: !isDraggable,
   });
 
@@ -88,7 +88,7 @@ export const NoteGridItem = ({
             e.stopPropagation();
             onTogglePin(note);
           }}
-          className={`absolute -top-1 -right-1 z-10 ${isPinned ? "opacity-100" : "opacity-0"
+          className={`absolute -top-1 -right-1 z-10 ${isPinned ? "opacity-100" : "opacity-100 lg:opacity-0"
             } group-hover:opacity-100 transition-opacity p-1 bg-background rounded-full border border-border`}
         >
           {isPinned ? (

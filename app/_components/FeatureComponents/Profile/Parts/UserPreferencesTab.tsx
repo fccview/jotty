@@ -11,6 +11,7 @@ import {
   Category,
   EnableRecurrence,
   ShowCompletedSuggestions,
+  ShowChecklistEmojis,
   TableSyntax,
   LandingPage,
   NotesDefaultEditor,
@@ -19,6 +20,7 @@ import {
   FileRenameMode,
   PreferredTimeFormat,
   PreferredDateFormat,
+  FirstDayOfWeek,
   Handedness,
   DisableRichEditor,
   MarkdownTheme,
@@ -33,6 +35,7 @@ import {
   CodeBlockStyle,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
+import { DEFAULT_WEEK_START, WeekDay } from "@/app/_consts/calendar";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
@@ -62,9 +65,11 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
   enableRecurrence: user?.enableRecurrence || "disable",
   showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
+  showChecklistEmojis: user?.showChecklistEmojis || "enable",
   fileRenameMode: user?.fileRenameMode || "minimal",
   preferredDateFormat: user?.preferredDateFormat || "system",
   preferredTimeFormat: user?.preferredTimeFormat || "system",
+  firstDayOfWeek: user?.firstDayOfWeek || DEFAULT_WEEK_START,
   handedness: user?.handedness || "right-handed",
   disableRichEditor: user?.disableRichEditor || "disable",
   markdownTheme: user?.markdownTheme || "prism",
@@ -149,6 +154,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     "fileRenameMode",
     "preferredDateFormat",
     "preferredTimeFormat",
+    "firstDayOfWeek",
     "handedness",
     "hideConnectionIndicator",
   ]);
@@ -167,6 +173,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
   const hasChecklistsChanges = hasChanges([
     "enableRecurrence",
     "showCompletedSuggestions",
+    "showChecklistEmojis",
     "defaultChecklistFilter",
     "checklistItemClickAction",
   ]);
@@ -252,6 +259,12 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     { id: "yyyy/mm/dd", name: "YYYY/MM/DD" },
   ];
 
+  const firstDayOfWeekOptions = [
+    { id: WeekDay.SUNDAY, name: t('settings.sunday') },
+    { id: WeekDay.MONDAY, name: t('settings.monday') },
+    { id: WeekDay.SATURDAY, name: t('settings.saturday') },
+  ];
+
   const timeFormatOptions = [
     { id: "system", name: t('settings.useSystemDefault') },
     { id: "12-hours", name: t('settings.hours12') },
@@ -310,6 +323,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     { id: "disable", name: t('settings.disable') },
   ];
 
+  const showChecklistEmojisOptions = [
+    { id: "enable", name: t('settings.enable') },
+    { id: "disable", name: t('settings.disable') },
+  ];
+
   const fileRenameModeOptions = [
     { id: "dash-case", name: t('settings.dashCase') },
     { id: "minimal", name: t('settings.minimal') },
@@ -357,6 +375,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                   "fileRenameMode",
                   "preferredDateFormat",
                   "preferredTimeFormat",
+                  "firstDayOfWeek",
                   "handedness",
                   "hideConnectionIndicator",
                 ],
@@ -520,6 +539,27 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             )}
             <p className="text-md lg:text-sm text-muted-foreground">
               {t('settings.choosePreferredTimeFormat')}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="first-day-of-week">{t('settings.firstDayOfWeek')}</Label>
+            <Dropdown
+              value={currentSettings.firstDayOfWeek || DEFAULT_WEEK_START}
+              onChange={(value) =>
+                handleSettingChange("firstDayOfWeek", value as FirstDayOfWeek)
+              }
+              options={firstDayOfWeekOptions}
+              placeholder={t('settings.selectFirstDayOfWeek')}
+              className="w-full"
+            />
+            {validationErrors.firstDayOfWeek && (
+              <p className="text-md lg:text-sm text-destructive">
+                {validationErrors.firstDayOfWeek}
+              </p>
+            )}
+            <p className="text-md lg:text-sm text-muted-foreground">
+              {t('settings.chooseFirstDayOfWeek')}
             </p>
           </div>
 
@@ -850,6 +890,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                 [
                   "enableRecurrence",
                   "showCompletedSuggestions",
+                  "showChecklistEmojis",
                   "defaultChecklistFilter",
                   "checklistItemClickAction",
                 ],
@@ -898,6 +939,27 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           />
           <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.completedSuggestionsDescription')}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="show-checklist-emojis">
+            {t('settingsModal.showEmojis')}
+          </Label>
+          <Dropdown
+            value={currentSettings.showChecklistEmojis || "enable"}
+            onChange={(value) =>
+              handleSettingChange(
+                "showChecklistEmojis",
+                value as ShowChecklistEmojis
+              )
+            }
+            options={showChecklistEmojisOptions}
+            placeholder={t('settings.selectShowChecklistEmojis')}
+            className="w-full"
+          />
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.showChecklistEmojisDescription')}
           </p>
         </div>
 

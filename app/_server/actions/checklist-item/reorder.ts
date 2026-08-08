@@ -6,35 +6,42 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import {
-  getAllLists,
-  getUserChecklists,
-} from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { isAdmin, getUsername } from "@/app/_server/actions/users";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { getUsername } from "@/app/_server/actions/users";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { diskPath } from "@/app/_server/actions/share/target";
+import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
 export const reorderItems = async (formData: FormData) => {
   try {
-    const listId = formData.get("listId") as string;
+    const uuid = formData.get("uuid") as string;
     const activeItemId = formData.get("activeItemId") as string;
     const overItemId = formData.get("overItemId") as string;
-    const category = formData.get("category") as string;
     const isDropInto = formData.get("isDropInto") === "true";
     const position = (formData.get("position") as string) || "before";
 
-    const isAdminUser = await isAdmin();
-    const lists = await (isAdminUser ? getAllLists() : getUserChecklists());
-    if (!lists.success || !lists.data) {
-      throw new Error(lists.error || "Failed to fetch lists");
+    const currentUser = await getUsername();
+
+    if (!uuid || !activeItemId) {
+      return { success: false, error: "List uuid and item ID are required" };
     }
 
-    const list = lists.data.find(
-      (l) => l.id === listId && (!category || l.category === category)
-    );
+    const list = await getListById(uuid, currentUser);
     if (!list) {
       throw new Error("List not found");
+    }
+
+    const canEdit = await canReach(
+      list.uuid!,
+      ItemTypes.CHECKLIST,
+      currentUser,
+      PermissionTypes.EDIT
+    );
+
+    if (!canEdit) {
+      throw new Error("Permission denied");
     }
 
     const findItemWithParent = (
@@ -134,16 +141,8 @@ export const reorderItems = async (formData: FormData) => {
       updatedAt: new Date().toISOString(),
     };
 
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      list.owner!
-    );
-    const categoryDir = path.join(ownerDir, list.category || "Uncategorized");
-    await ensureDir(categoryDir);
-
-    const filePath = path.join(categoryDir, `${listId}.md`);
+    const filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
+    await ensureDir(path.dirname(filePath));
 
     const markdownContent = listToMarkdown(updatedList as any);
 
@@ -151,7 +150,7 @@ export const reorderItems = async (formData: FormData) => {
 
     try {
       revalidatePath("/");
-      revalidatePath(`/checklist/${listId}`);
+      revalidatePath(`/checklist/${list.uuid}`);
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
@@ -159,12 +158,13 @@ export const reorderItems = async (formData: FormData) => {
       );
     }
 
-    await broadcast({ type: "checklist", action: "updated", entityId: listId, username: (await getUsername()) });
+    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     return { success: true };
   } catch (error) {
+    console.error("Error reordering items:", error);
     return { success: false, error: "Failed to reorder items" };
   }
 };

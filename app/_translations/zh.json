@@ -248,7 +248,8 @@
     "reconnecting": "正在重新连接...",
     "hide": "隐藏",
     "items": "项目",
-    "thisEntry": "这个条目"
+    "thisEntry": "这个条目",
+    "preview": "预览"
   },
   "history": {
     "noteHistory": "笔记历史",
@@ -770,6 +771,12 @@
     "preferredTimeFormat": "首选时间格式",
     "selectTimeFormat": "选择时间格式",
     "choosePreferredTimeFormat": "选择您的首选时间格式。",
+    "firstDayOfWeek": "每周第一天",
+    "selectFirstDayOfWeek": "选择第一天",
+    "chooseFirstDayOfWeek": "选择日历从星期几开始。",
+    "sunday": "星期日",
+    "monday": "星期一",
+    "saturday": "星期六",
     "handedness": "惯用手",
     "selectHandedness": "选择惯用手",
     "chooseHandedness": "选择您是右撇子还是左撇子。",
@@ -914,7 +921,9 @@
     "checklistItemClickActionDescription": "选择单击任务文本时会发生的情况。 \n“标记为完成”切换复选框（默认）； \n“编辑任务名称”打开任务进行内联编辑 - 您仍然需要单击复选框本身来完成它。",
     "checklistItemClickActionToggle": "标记为完整/不完整",
     "checklistItemClickActionEdit": "编辑列表项",
-    "useSystemDefault": "使用系统默认值"
+    "useSystemDefault": "使用系统默认值",
+    "selectShowChecklistEmojis": "选择 Emoji 显示方式",
+    "showChecklistEmojisDescription": "根据清单项目的文字自动在旁边显示 Emoji。"
   },
   "admin": {
     "title": "管理",
@@ -1103,7 +1112,11 @@
     "defaultDateFormat": "默认日期格式",
     "defaultDateFormatDescription": "当用户的日期格式首选项设置为“使用系统默认值”时使用。",
     "defaultTimeFormatDescription": "当用户的时间格式首选项设置为“使用系统默认值”时使用。",
-    "defaultTimeFormat": "默认时间格式"
+    "defaultTimeFormat": "默认时间格式",
+    "borderRadius": "圆角半径",
+    "borderRadiusDescription": "设置整个实例的圆角大小。用户可在快速设置中覆盖此值。",
+    "borderRadiusSaved": "圆角半径已保存",
+    "borderRadiusLoadError": "无法加载圆角半径"
   },
   "errors": {
     "notFound": "未找到",
@@ -1122,6 +1135,7 @@
     "networkError": "网络错误",
     "timeout": "请求超时",
     "permissionDenied": "权限被拒绝",
+    "requiredPermissions": "您没有执行此操作所需的权限。",
     "loadError": "加载错误",
     "failedToLoadCustomEmojis": "加载自定义 Emoji 失败",
     "emojiDeletedSuccessfully": "Emoji 删除成功",
@@ -1349,7 +1363,29 @@
     "failedToCopyUrl": "复制 URL 到剪贴板失败",
     "searchUsers": "搜索用户...",
     "toggleAllPermissions": "切换所有权限",
-    "shareModalTitle": "共享 {type}"
+    "shareModalTitle": "共享 {type}",
+    "readOnly": "只读",
+    "byOwner": "由 {user} 共享",
+    "mountStaysTop": "共享文件夹保持在顶层",
+    "inheritedVia": "由 {user} 通过 {category} 共享",
+    "shareFolder": "共享此文件夹",
+    "folderShareHint": "此文件夹中的所有内容，无论现在还是以后，都会与你选择的人共享。",
+    "optOut": "将此项保持私密",
+    "optOutHint": "仅针对此项覆盖文件夹共享设置。",
+    "useInherited": "跟随文件夹",
+    "publicFolderWarning": "放入此文件夹的任何内容都会立即对任何拥有链接的人可读。",
+    "readTip": "只读: {users}",
+    "writeTip": "可编辑: {users}",
+    "deleteTip": "可编辑和删除: {users}",
+    "publicTip": "公开共享",
+    "fromUserRead": "只读, 由 {user} 共享",
+    "fromUserWrite": "可编辑, 由 {user} 共享",
+    "fromUserDelete": "可编辑和删除, 由 {user} 共享",
+    "leaveShare": "退出共享",
+    "confirmLeaveItem": "要移除你对\"{itemTitle}\"的访问权限吗？它会从侧边栏消失，需要所有者重新共享。",
+    "confirmLeaveFolder": "要移除你对 {owner} 共享的\"{categoryName}\"的访问权限吗？它会从侧边栏消失，需要 {owner} 重新共享。",
+    "canCreate": "可创建",
+    "createHint": "允许向该文件夹添加和移动项目。"
   },
   "encryption": {
     "encrypt": "加密",
@@ -1511,7 +1547,10 @@
     "viewMode": "视图模式",
     "viewModeCard": "卡片",
     "viewModeList": "列表",
-    "viewModeGrid": "网格"
+    "viewModeGrid": "网格",
+    "borderRadius": "圆角大小",
+    "useInstanceDefault": "使用实例默认值",
+    "borderRadiusDescription": "拖动时整个应用的圆角会实时更新。"
   },
   "migration": {
     "migrationComplete": "迁移完成",
@@ -1677,6 +1716,8 @@
     "reminderMessage": "“{board}”中的“{task}”已超过提醒时间",
     "unread": "未读",
     "sharingTitle": "{user} 与你共享了{type}",
-    "sharingMessage": "打开以查看共享的{type}"
+    "sharingMessage": "打开以查看共享的{type}",
+    "sharingFolderTitle": "{user} 与你共享了{type}文件夹",
+    "sharingFolderMessage": "打开以查看“{folder}”"
   }
 }

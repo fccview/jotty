@@ -47,14 +47,14 @@ const _filterItems = (
 
 export const searchKanbanItems = async (formData: FormData) => {
   try {
-    const { listId, category } = getFormData(formData, ["listId", "category"]);
+    const { uuid } = getFormData(formData, ["uuid"]);
     const query = formData.get("query") as string | null;
     const priority = formData.get("priority") as KanbanPriority | null;
     const assignee = formData.get("assignee") as string | null;
 
     const [currentUser, list] = await Promise.all([
       getCurrentUser(),
-      getListById(listId, undefined, category),
+      getListById(uuid),
     ]);
 
     if (!currentUser) return { error: "Not authenticated" };

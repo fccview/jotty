@@ -1,4 +1,5 @@
 import { ItemTypes } from "./enums";
+import { SharingPermissions } from "./core";
 
 export type ChecklistType = "simple" | "task" | "kanban";
 
@@ -76,8 +77,9 @@ export interface List {
 }
 
 export interface Checklist {
+  /** @deprecated file-layer slug (on-disk filename), never identity; use uuid */
   id: string;
-  uuid?: string;
+  uuid: string;
   title: string;
   type: ChecklistType;
   category?: string;
@@ -86,6 +88,10 @@ export interface Checklist {
   updatedAt: string;
   owner?: string;
   isShared?: boolean;
+  sharedWith?: string | string[];
+  sharedFrom?: string;
+  permissions?: SharingPermissions;
+  isLoose?: boolean;
   itemType?: ItemTypes;
   isDeleted?: boolean;
   rawContent?: string;

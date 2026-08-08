@@ -115,7 +115,15 @@ export const getFileTypeDisplay = (mimeType: string, fileName: string) => {
     if (ext === "txt" || ext === "csv" || ext === "json") return "Text";
     if (ext === "mp4" || ext === "avi" || ext === "mov") return "Video";
     if (ext === "mp3" || ext === "wav" || ext === "flac") return "Audio";
-    if (ext === "jpg" || ext === "jpeg" || ext === "png" || ext === "gif")
+    if (
+      ext === "jpg" ||
+      ext === "jpeg" ||
+      ext === "png" ||
+      ext === "gif" ||
+      ext === "webp" ||
+      ext === "avif" ||
+      ext === "svg"
+    )
       return "Image";
     return ext?.toUpperCase() || "File";
   }

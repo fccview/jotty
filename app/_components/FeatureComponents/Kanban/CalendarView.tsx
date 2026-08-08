@@ -17,21 +17,15 @@ import {
   getWeekBarSegments,
 } from "@/app/_utils/kanban/calendar-utils";
 import { useTranslations } from "next-intl";
+import { WEEKDAY_KEYS, rotateWeek } from "@/app/_consts/calendar";
 
 interface CalendarViewProps {
   checklist: Checklist;
   onItemClick?: (item: Item) => void;
 }
 
-const _getWeekdays = (t: (key: string) => string) => [
-  t("kanban.weekdaysSun"),
-  t("kanban.weekdaysMon"),
-  t("kanban.weekdaysTue"),
-  t("kanban.weekdaysWed"),
-  t("kanban.weekdaysThu"),
-  t("kanban.weekdaysFri"),
-  t("kanban.weekdaysSat"),
-];
+const _getWeekdays = (t: (key: string) => string, weekStart: number) =>
+  rotateWeek(WEEKDAY_KEYS, weekStart).map((key) => t(key));
 
 const _toLocalDate = (d: Date): string => {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -44,6 +38,7 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
   const t = useTranslations();
   const {
     currentDate,
+    weekStart,
     calendarGrid,
     events,
     goToPreviousMonth,
@@ -53,7 +48,7 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
     unscheduledItems,
   } = useCalendarView(checklist);
 
-  const weekdays = _getWeekdays(t);
+  const weekdays = _getWeekdays(t, weekStart);
   const today = _toLocalDate(new Date());
   const monthLabel = currentDate.toLocaleDateString(undefined, {
     month: "long",

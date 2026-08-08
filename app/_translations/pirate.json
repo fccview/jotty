@@ -248,7 +248,8 @@
     "reconnecting": "Reconnecting...",
     "hide": "Stow away",
     "items": "Cargo bits",
-    "thisEntry": "this entry"
+    "thisEntry": "this entry",
+    "preview": "Peek"
   },
   "history": {
     "noteHistory": "Log History",
@@ -770,6 +771,12 @@
     "preferredTimeFormat": "Time Style",
     "selectTimeFormat": "Pick style",
     "choosePreferredTimeFormat": "How to count the bells.",
+    "firstDayOfWeek": "First Day o' the Week",
+    "selectFirstDayOfWeek": "Pick th' first day",
+    "chooseFirstDayOfWeek": "Which day yer charts be startin' on.",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "saturday": "Saturday",
     "handedness": "Hook Hand",
     "selectHandedness": "Pick hand",
     "chooseHandedness": "Left hook or right hook?",
@@ -914,7 +921,9 @@
     "checklistItemClickActionDescription": "Choose what happens when you click a task's text. \"Mark as complete\" toggles the checkbox  (default); \"Edit task name\" opens the task for inline editing — you'll still need to click the checkbox itself to complete it.",
     "checklistItemClickActionToggle": "Mark as complete/incomplete",
     "checklistItemClickActionEdit": "Edit list item",
-    "useSystemDefault": "Use system default"
+    "useSystemDefault": "Use system default",
+    "selectShowChecklistEmojis": "Choose yer rune showin'",
+    "showChecklistEmojisDescription": "Marks each manifest entry with a rune drawn from its words."
   },
   "admin": {
     "title": "Captain",
@@ -1103,7 +1112,11 @@
     "defaultDateFormat": "Default Date Format",
     "defaultDateFormatDescription": "Used when a user's date format preference is set to \"Use system default\".",
     "defaultTimeFormatDescription": "Used when a user's time format preference is set to \"Use system default\".",
-    "defaultTimeFormat": "Default Time Format"
+    "defaultTimeFormat": "Default Time Format",
+    "borderRadius": "Corner roundin'",
+    "borderRadiusDescription": "Sets how round the corners be across the whole ship. Crewmates may set their own in quick settin's.",
+    "borderRadiusSaved": "Corner roundin' stowed away",
+    "borderRadiusLoadError": "Could nay fetch the corner roundin'"
   },
   "errors": {
     "notFound": "Lost at Sea",
@@ -1122,6 +1135,7 @@
     "networkError": "Stormy seas (Network)",
     "timeout": "Becalmed (Timeout)",
     "permissionDenied": "Access Denied",
+    "requiredPermissions": "Ye ain't got the rights to do that, matey.",
     "loadError": "Hoist Error",
     "failedToLoadCustomEmojis": "Could not load runes",
     "emojiDeletedSuccessfully": "Rune smashed",
@@ -1349,7 +1363,29 @@
     "failedToCopyUrl": "Could not scribe coords",
     "searchUsers": "Hunt crew...",
     "toggleAllPermissions": "Toggle Rights",
-    "shareModalTitle": "Divvy {type}"
+    "shareModalTitle": "Divvy {type}",
+    "readOnly": "Read only, matey",
+    "byOwner": "shared by {user}, arr",
+    "mountStaysTop": "Shared holds stay lashed to the top deck",
+    "inheritedVia": "Shared through {category}, by {user}",
+    "shareFolder": "Share this here hold",
+    "folderShareHint": "Every treasure in this hold, now an' forever after, be shared with the crew ye pick.",
+    "optOut": "Keep this one under lock an' key",
+    "optOutHint": "Overrides the hold's sharin' for this booty alone.",
+    "useInherited": "Follow the hold",
+    "publicFolderWarning": "Anythin' ye stow in this hold be readable by any scallywag with the link, quick as a cannon shot.",
+    "readTip": "Lookin' only: {users}",
+    "writeTip": "Can scribble: {users}",
+    "deleteTip": "Can scribble 'n scuttle: {users}",
+    "publicTip": "Shared with all the seven seas",
+    "fromUserRead": "Lookin' only, handed over by {user}",
+    "fromUserWrite": "Can scribble, handed over by {user}",
+    "fromUserDelete": "Can scribble 'n scuttle, handed over by {user}",
+    "leaveShare": "Abandon ship",
+    "confirmLeaveItem": "Strike yer own colours from \"{itemTitle}\"? She vanishes from yer sidebar, an' the cap'n must share her anew to hand her back.",
+    "confirmLeaveFolder": "Strike yer own colours from \"{categoryName}\", shared by {owner}? She vanishes from yer sidebar, an' {owner} must share her anew.",
+    "canCreate": "Can Forge",
+    "createHint": "Lets 'em stow new booty an' haul items into this chest."
   },
   "encryption": {
     "encrypt": "Bury",
@@ -1511,7 +1547,10 @@
     "viewMode": "View Mode",
     "viewModeCard": "Cards",
     "viewModeList": "List",
-    "viewModeGrid": "Grid"
+    "viewModeGrid": "Grid",
+    "borderRadius": "Corner roundin'",
+    "useInstanceDefault": "Follow the cap'n's orders",
+    "borderRadiusDescription": "Every corner on the ship changes as ye haul the slider."
   },
   "migration": {
     "migrationComplete": "Refit Complete",
@@ -1674,6 +1713,8 @@
     "reminderMessage": "\"{task}\" in \"{board}\" is past its reminder",
     "unread": "unread",
     "sharingTitle": "{user} shared a {type} with ye",
-    "sharingMessage": "Open to eyeball the shared {type}"
+    "sharingMessage": "Open to eyeball the shared {type}",
+    "sharingFolderTitle": "{user} shared a {type} chest with ye",
+    "sharingFolderMessage": "Open to eyeball “{folder}”"
   }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import {
   getListById,
   updateChecklistStatuses,
@@ -25,7 +25,8 @@ export async function PUT(
         );
       }
 
-      const board = await getListById(params.boardId, user.username);
+      const uuid = await listUuid(request, params.boardId, user.username);
+      const board = uuid ? await getListById(uuid, user.username) : undefined;
       if (!board) {
         return NextResponse.json({ error: "Board not found" }, { status: 404 });
       }
@@ -38,9 +39,8 @@ export async function PUT(
       }
 
       const formData = new FormData();
-      formData.append("id", board.id);
-      formData.append("statuses", JSON.stringify(statuses));
-      formData.append("category", board.category || "Uncategorized");
+      formData.append("uuid", board.uuid!);
+      formData.append("statusesStr", JSON.stringify(statuses));
       formData.append("apiUser", JSON.stringify(user));
 
       const result = await updateChecklistStatuses(formData);

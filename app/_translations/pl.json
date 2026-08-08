@@ -248,7 +248,8 @@
     "disable": "Wyłącz",
     "history": "Historia",
     "items": "Elementy",
-    "thisEntry": "ten wpis"
+    "thisEntry": "ten wpis",
+    "preview": "Podgląd"
   },
   "auth": {
     "loginTitle": "Logowanie",
@@ -745,6 +746,12 @@
     "preferredTimeFormat": "Preferowany format czasu",
     "selectTimeFormat": "Wybierz format czasu",
     "choosePreferredTimeFormat": "Wybierz preferowany format czasu.",
+    "firstDayOfWeek": "Pierwszy dzień tygodnia",
+    "selectFirstDayOfWeek": "Wybierz pierwszy dzień",
+    "chooseFirstDayOfWeek": "Wybierz, od którego dnia zaczynają się kalendarze.",
+    "sunday": "Niedziela",
+    "monday": "Poniedziałek",
+    "saturday": "Sobota",
     "handedness": "Ręczność",
     "selectHandedness": "Wybierz ręczność",
     "chooseHandedness": "Wybierz, czy jesteś praworęczny czy leworęczny.",
@@ -889,7 +896,9 @@
     "checklistItemClickActionDescription": "Wybierz, co się stanie, gdy klikniesz tekst zadania. \n„Oznacz jako ukończone” przełącza pole wyboru (domyślnie); \n„Edytuj nazwę zadania” otwiera zadanie do edycji bezpośredniej — nadal będziesz musiał kliknąć samo pole wyboru, aby je ukończyć.",
     "checklistItemClickActionToggle": "Oznacz jako ukończone/niekompletne",
     "checklistItemClickActionEdit": "Edytuj element listy",
-    "useSystemDefault": "Użyj ustawień domyślnych systemu"
+    "useSystemDefault": "Użyj ustawień domyślnych systemu",
+    "selectShowChecklistEmojis": "Wybierz widoczność emotikonów",
+    "showChecklistEmojisDescription": "Pokazuje automatyczne emoji obok pozycji listy na podstawie ich tekstu."
   },
   "admin": {
     "title": "Admin",
@@ -1078,7 +1087,11 @@
     "defaultDateFormat": "Domyślny format daty",
     "defaultDateFormatDescription": "Używane, gdy preferencja użytkownika dotycząca formatu daty jest ustawiona na „Użyj domyślnego formatu systemu”.",
     "defaultTimeFormatDescription": "Używane, gdy preferencja użytkownika dotycząca formatu czasu jest ustawiona na „Użyj domyślnego formatu systemu”.",
-    "defaultTimeFormat": "Domyślny format czasu"
+    "defaultTimeFormat": "Domyślny format czasu",
+    "borderRadius": "Promień zaokrąglenia",
+    "borderRadiusDescription": "Ustawia zaokrąglenie rogów w całej instancji. Użytkownicy mogą je nadpisać w szybkich ustawieniach.",
+    "borderRadiusSaved": "Zapisano promień zaokrąglenia",
+    "borderRadiusLoadError": "Nie udało się wczytać promienia zaokrąglenia"
   },
   "errors": {
     "notFound": "Nie znaleziono",
@@ -1097,6 +1110,7 @@
     "networkError": "Błąd sieci",
     "timeout": "Przekroczono limit czasu żądania",
     "permissionDenied": "Zezwolenie odmówione",
+    "requiredPermissions": "Nie masz wymaganych uprawnień, aby wykonać tę czynność.",
     "loadError": "Błąd ładowania",
     "failedToLoadCustomEmojis": "Nie udało się załadować niestandardowych emoji",
     "emojiDeletedSuccessfully": "Emoji usunięte pomyślnie",
@@ -1324,7 +1338,29 @@
     "failedToCopyUrl": "Nie udało się skopiować URL do schowka",
     "searchUsers": "Szukaj użytkowników…",
     "toggleAllPermissions": "Przełącz wszystkie uprawnienia",
-    "shareModalTitle": "Udostępnij {type}"
+    "shareModalTitle": "Udostępnij {type}",
+    "readOnly": "Tylko do odczytu",
+    "byOwner": "udostępnione przez {user}",
+    "mountStaysTop": "Udostępnione foldery pozostają na najwyższym poziomie",
+    "inheritedVia": "Udostępnione przez {category}, przez {user}",
+    "shareFolder": "Udostępnij ten folder",
+    "folderShareHint": "Wszystko w tym folderze, teraz i w przyszłości, jest udostępniane wybranym osobom.",
+    "optOut": "Zachowaj ten element jako prywatny",
+    "optOutHint": "Zastępuje udostępnianie folderu tylko dla tego elementu.",
+    "useInherited": "Podążaj za folderem",
+    "publicFolderWarning": "Wszystko umieszczone w tym folderze staje się natychmiast czytelne dla każdego, kto ma link.",
+    "readTip": "Tylko odczyt: {users}",
+    "writeTip": "Może edytować: {users}",
+    "deleteTip": "Może edytować i usuwać: {users}",
+    "publicTip": "Udostępnione publicznie",
+    "fromUserRead": "Tylko odczyt, udostępnione przez {user}",
+    "fromUserWrite": "Może edytować, udostępnione przez {user}",
+    "fromUserDelete": "Może edytować i usuwać, udostępnione przez {user}",
+    "leaveShare": "Opuść udostępnienie",
+    "confirmLeaveItem": "Usunąć własny dostęp do \"{itemTitle}\"? Zniknie z paska bocznego, a właściciel będzie musiał udostępnić to ponownie.",
+    "confirmLeaveFolder": "Usunąć własny dostęp do \"{categoryName}\" udostępnionego przez {owner}? Folder zniknie z paska bocznego, a {owner} będzie musiał udostępnić go ponownie.",
+    "canCreate": "Może tworzyć",
+    "createHint": "Pozwala dodawać i przenosić elementy do tego folderu."
   },
   "encryption": {
     "encrypt": "Zaszyfruj",
@@ -1486,7 +1522,10 @@
     "viewMode": "Tryb wyświetlania",
     "viewModeCard": "Karty",
     "viewModeList": "Lista",
-    "viewModeGrid": "Siatka"
+    "viewModeGrid": "Siatka",
+    "borderRadius": "Zaokrąglenie rogów",
+    "useInstanceDefault": "Użyj wartości domyślnej",
+    "borderRadiusDescription": "Rogi aktualizują się w całej aplikacji podczas przeciągania."
   },
   "migration": {
     "migrationComplete": "Migracja zakończona",
@@ -1677,6 +1716,8 @@
     "reminderMessage": "Przypomnienie o zadaniu „{task}” w „{board}” minęło",
     "unread": "nieprzeczyt.",
     "sharingTitle": "{user} udostępnił(a) ci {type}",
-    "sharingMessage": "Otwórz, aby zobaczyć udostępniony {type}"
+    "sharingMessage": "Otwórz, aby zobaczyć udostępniony {type}",
+    "sharingFolderTitle": "{user} udostępnił(a) ci folder {type}",
+    "sharingFolderMessage": "Otwórz, aby zobaczyć „{folder}”"
   }
 }

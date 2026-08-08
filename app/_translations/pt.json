@@ -248,7 +248,8 @@
     "connected": "Ligado",
     "reconnecting": "A reconectar...",
     "hide": "Ocultar",
-    "thisEntry": "esta entrada"
+    "thisEntry": "esta entrada",
+    "preview": "Pré-visualização"
   },
   "history": {
     "noteHistory": "Histórico da nota",
@@ -780,6 +781,12 @@
     "preferredTimeFormat": "Formato de hora preferido",
     "selectTimeFormat": "Selecionar formato de hora",
     "choosePreferredTimeFormat": "Escolha o seu formato de hora preferido.",
+    "firstDayOfWeek": "Primeiro dia da semana",
+    "selectFirstDayOfWeek": "Selecionar primeiro dia",
+    "chooseFirstDayOfWeek": "Escolha o dia em que os seus calendários começam.",
+    "sunday": "Domingo",
+    "monday": "Segunda-feira",
+    "saturday": "Sábado",
     "handedness": "Mão dominante",
     "selectHandedness": "Selecionar mão dominante",
     "chooseHandedness": "Escolha se é destro ou esquerdino.",
@@ -914,7 +921,9 @@
     "selectChecklistItemClickAction": "Selecionar ação ao clicar em item de lista de verificação",
     "checklistItemClickActionDescription": "Escolha o que acontece quando clica no texto de uma tarefa. \"Marcar como concluída\" alterna a caixa de verificação (predefinido); \"Editar nome da tarefa\" abre a tarefa para edição inline — ainda precisará de clicar na própria caixa de verificação para a concluir.",
     "checklistItemClickActionToggle": "Marcar como concluída/incompleta",
-    "checklistItemClickActionEdit": "Editar item da lista"
+    "checklistItemClickActionEdit": "Editar item da lista",
+    "selectShowChecklistEmojis": "Selecionar visibilidade dos emojis",
+    "showChecklistEmojisDescription": "Mostra um emoji automático junto dos itens da lista com base no texto."
   },
   "admin": {
     "title": "Administrador",
@@ -1103,7 +1112,11 @@
     "updatingTags": "A atualizar...",
     "updateTagsTitle": "Analisar notas para hashtags e atualizar frontmatter",
     "tagsUpdated": "Processados {processed} ficheiros, {updated} atualizados com novas etiquetas",
-    "failedToUpdateTags": "Falha ao atualizar etiquetas"
+    "failedToUpdateTags": "Falha ao atualizar etiquetas",
+    "borderRadius": "Raio da borda",
+    "borderRadiusDescription": "Define o arredondamento dos cantos em toda a instância. Os utilizadores podem substituí-lo nas definições rápidas.",
+    "borderRadiusSaved": "Raio da borda guardado",
+    "borderRadiusLoadError": "Não foi possível carregar o raio da borda"
   },
   "errors": {
     "notFound": "Não encontrado",
@@ -1122,6 +1135,7 @@
     "networkError": "Erro de rede",
     "timeout": "Tempo limite do pedido esgotado",
     "permissionDenied": "Permissão negada",
+    "requiredPermissions": "Não tens as permissões necessárias para realizar esta ação.",
     "loadError": "Erro de carregamento",
     "failedToLoadCustomEmojis": "Falha ao carregar emojis personalizados",
     "emojiDeletedSuccessfully": "Emoji eliminado com sucesso",
@@ -1349,7 +1363,29 @@
     "failedToCopyUrl": "Falha ao copiar URL para a área de transferência",
     "searchUsers": "Pesquisar utilizadores...",
     "toggleAllPermissions": "Alternar todas as permissões",
-    "shareModalTitle": "Partilhar {type}"
+    "shareModalTitle": "Partilhar {type}",
+    "readOnly": "Somente leitura",
+    "byOwner": "partilhado por {user}",
+    "mountStaysTop": "As pastas partilhadas permanecem no nível superior",
+    "inheritedVia": "Partilhado através de {category}, por {user}",
+    "shareFolder": "Partilhar esta pasta",
+    "folderShareHint": "Tudo o que estiver nesta pasta, agora e no futuro, é partilhado com as pessoas que escolher.",
+    "optOut": "Manter este item privado",
+    "optOutHint": "Substitui a partilha da pasta apenas para este item.",
+    "useInherited": "Seguir a pasta",
+    "publicFolderWarning": "Qualquer coisa colocada nesta pasta torna-se imediatamente legível por qualquer pessoa com a ligação.",
+    "readTip": "Somente leitura: {users}",
+    "writeTip": "Pode editar: {users}",
+    "deleteTip": "Pode editar e eliminar: {users}",
+    "publicTip": "Partilhado publicamente",
+    "fromUserRead": "Somente leitura, partilhado por {user}",
+    "fromUserWrite": "Pode editar, partilhado por {user}",
+    "fromUserDelete": "Pode editar e eliminar, partilhado por {user}",
+    "leaveShare": "Sair da partilha",
+    "confirmLeaveItem": "Remover o seu próprio acesso a \"{itemTitle}\"? Desaparece da barra lateral e o proprietário terá de partilhar novamente.",
+    "confirmLeaveFolder": "Remover o seu próprio acesso a \"{categoryName}\", partilhada por {owner}? Desaparece da barra lateral e {owner} terá de partilhar novamente.",
+    "canCreate": "Pode criar",
+    "createHint": "Permite adicionar e mover itens para esta pasta."
   },
   "encryption": {
     "encrypt": "Encriptar",
@@ -1511,7 +1547,10 @@
     "viewMode": "Modo de visualização",
     "viewModeCard": "Cartões",
     "viewModeList": "Lista",
-    "viewModeGrid": "Grelha"
+    "viewModeGrid": "Grelha",
+    "borderRadius": "Arredondamento dos cantos",
+    "useInstanceDefault": "Usar predefinição da instância",
+    "borderRadiusDescription": "Os cantos atualizam em toda a aplicação enquanto arrasta."
   },
   "migration": {
     "migrationComplete": "Migração concluída",
@@ -1673,6 +1712,8 @@
     "reminderTitle": "Tarefa em atraso",
     "reminderMessage": "\"{task}\" em \"{board}\" ultrapassou o lembrete",
     "sharingTitle": "{user} partilhou um(a) {type} consigo",
-    "sharingMessage": "Abrir para ver o(a) {type} partilhado(a)"
+    "sharingMessage": "Abrir para ver o(a) {type} partilhado(a)",
+    "sharingFolderTitle": "{user} partilhou uma pasta de {type} consigo",
+    "sharingFolderMessage": "Abrir para ver “{folder}”"
   }
 }

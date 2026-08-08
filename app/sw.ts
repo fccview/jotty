@@ -85,7 +85,7 @@ const serwist = new Serwist({
       }),
     },
     {
-      matcher: /\.(?:jpg|jpeg|gif|png|svg|ico|webp)$/i,
+      matcher: /\.(?:jpg|jpeg|gif|png|svg|ico|webp|avif)$/i,
       handler: new StaleWhileRevalidate({
         cacheName: "images",
         plugins: [

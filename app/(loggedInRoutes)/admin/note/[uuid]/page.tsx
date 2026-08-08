@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata(props: AdminNotePageProps): Promise<Metadata> {
   const params = await props.params;
   const { uuid } = params;
-  return getMedatadaTitle(Modes.NOTES, uuid, "Admin");
+  return getMedatadaTitle(Modes.NOTES, uuid);
 }
 
 export default async function AdminNotePage(props: AdminNotePageProps) {

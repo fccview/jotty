@@ -3,6 +3,7 @@ import { EncryptionSettings } from "./encryption";
 
 export type EnableRecurrence = "enable" | "disable";
 export type ShowCompletedSuggestions = "enable" | "disable";
+export type ShowChecklistEmojis = "enable" | "disable";
 export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";
@@ -25,6 +26,7 @@ export type PreferredDateFormat =
   | "yyyy/mm/dd"
   | "system";
 export type PreferredTimeFormat = "12-hours" | "24-hours" | "system";
+export type FirstDayOfWeek = "sunday" | "monday" | "saturday";
 export type Handedness = "right-handed" | "left-handed";
 export type DisableRichEditor = "enable" | "disable";
 export type DefaultChecklistFilter =
@@ -63,9 +65,11 @@ export interface User {
   pinnedNotes?: string[];
   enableRecurrence?: EnableRecurrence;
   showCompletedSuggestions?: ShowCompletedSuggestions;
+  showChecklistEmojis?: ShowChecklistEmojis;
   fileRenameMode?: FileRenameMode;
   preferredDateFormat: PreferredDateFormat;
   preferredTimeFormat: PreferredTimeFormat;
+  firstDayOfWeek?: FirstDayOfWeek;
   handedness?: Handedness;
   disableRichEditor?: DisableRichEditor;
   markdownTheme?: MarkdownTheme;

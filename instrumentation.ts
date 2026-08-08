@@ -117,7 +117,7 @@ export async function register() {
       if (!globalThis.__jottyHasConnectedClients?.()) return;
       try {
         const { scanReminders } = await import(
-          "./app/_server/reminders/scanner"
+          "./app/_server/actions/reminders/scanner"
         );
         await scanReminders();
       } catch (err) {

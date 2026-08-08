@@ -72,20 +72,6 @@ export const grepFindFileByUuid = async (
   return grepFindFileByField(dir, "uuid", uuid);
 };
 
-export const grepCheckUuidExists = async (
-  dir: string,
-  uuid: string,
-): Promise<boolean> => {
-  try {
-    const { stdout } = await execAsync(
-      `grep -rl "uuid: ${uuid}" "${dir}" --include="*.md" 2>/dev/null || true`,
-    );
-    return stdout.trim().length > 0;
-  } catch {
-    return false;
-  }
-};
-
 export const grepFindFilesByField = async (
   dir: string,
   field: string,
@@ -107,6 +93,27 @@ export const grepFindFilesByField = async (
       return { filePath, id, category };
     });
   } catch {
+    return [];
+  }
+};
+
+export const grepFilesByText = async (
+  dir: string,
+  text: string,
+  include: string,
+): Promise<string[]> => {
+  try {
+    const { stdout } = await execFileAsync("grep", [
+      "-rlF",
+      text,
+      dir,
+      `--include=${include}`,
+    ]);
+    return stdout.trim().split("\n").filter(Boolean);
+  } catch (error) {
+    if (!_isNoMatch(error)) {
+      console.error("Error in grepFilesByText:", error);
+    }
     return [];
   }
 };

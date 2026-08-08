@@ -11,14 +11,90 @@ import fs from "fs/promises";
 import { Modes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
 import { logAudit } from "@/app/_server/actions/log";
-import { broadcast } from "@/app/_server/ws/broadcast";
+import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
+import {
+  targetDir,
+  bouncer,
+  refusalMessage,
+} from "@/app/_server/actions/share/target";
+import { catUuid } from "@/app/_server/actions/share/category-info";
+import { PermissionTypes } from "@/app/_types/enums";
+
+const _mountTarget = async (mode: Modes, category: string) => {
+  const username = await getUsername();
+  if (!username || !category) return null;
+
+  const target = await targetDir(mode, username, category);
+  return target.isMount ? target : null;
+};
 
 export const createCategory = async (formData: FormData) => {
   try {
     const name = formData.get("name") as string;
     const parent = formData.get("parent") as string;
     const mode = formData.get("mode") as Modes;
+
+    const mountParent = await _mountTarget(mode, parent);
+
+    if (mountParent) {
+      const username = await getUsername();
+      const verdict = await bouncer(
+        mountParent,
+        username!,
+        PermissionTypes.EDIT,
+      );
+
+      if (!verdict.allowed) {
+        await logAudit({
+          level: "WARNING",
+          action: "category_created",
+          category: mode === Modes.NOTES ? "note" : "checklist",
+          success: false,
+          errorMessage: verdict.error,
+          metadata: { categoryName: name, parentCategory: parent, mode },
+        });
+        return { error: verdict.error };
+      }
+
+      if (!isPathSafe(mountParent.dir, name)) {
+        await logAudit({
+          level: "WARNING",
+          action: "category_created",
+          category: mode === Modes.NOTES ? "note" : "checklist",
+          success: false,
+          errorMessage: "Invalid category path",
+          metadata: { categoryName: name, parentCategory: parent, mode },
+        });
+        return { error: "Invalid category path" };
+      }
+
+      const mountDir = path.join(mountParent.dir, name);
+      await ensureDir(mountDir);
+      await catUuid(mountDir);
+
+      await logAudit({
+        level: "INFO",
+        action: "category_created",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: true,
+        metadata: { categoryName: name, parentCategory: parent, mode },
+      });
+
+      revalidateTag(
+        mode === Modes.NOTES ? "layout-notes" : "layout-checklists",
+        { expire: 0 },
+      );
+
+      await broadcast({
+        type: "category",
+        action: "created",
+        entityId: `${parent}/${name}`,
+        username: mountParent.owner,
+      });
+
+      return { success: true, data: { name, count: 0 } };
+    }
 
     const userDir = await getUserModeDir(mode);
     const categoryPath = parent ? path.join(parent, name) : name;
@@ -37,6 +113,7 @@ export const createCategory = async (formData: FormData) => {
 
     const categoryDir = path.join(userDir, categoryPath);
     await ensureDir(categoryDir);
+    await catUuid(categoryDir);
 
     await logAudit({
       level: "INFO",
@@ -76,6 +153,18 @@ export const deleteCategory = async (formData: FormData) => {
   try {
     const categoryPath = formData.get("path") as string;
     const mode = formData.get("mode") as Modes;
+
+    if (await _mountTarget(mode, categoryPath)) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_deleted",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Shared folders cannot be deleted by the recipient",
+        metadata: { categoryPath, mode },
+      });
+      return { error: await refusalMessage() };
+    }
 
     const userDir = await getUserModeDir(mode);
 
@@ -153,6 +242,18 @@ export const renameCategory = async (formData: FormData) => {
         errorMessage: "Both old path and new name are required",
       });
       return { error: "Both old path and new name are required" };
+    }
+
+    if (await _mountTarget(mode, oldPath)) {
+      await logAudit({
+        level: "WARNING",
+        action: "category_renamed",
+        category: mode === Modes.NOTES ? "note" : "checklist",
+        success: false,
+        errorMessage: "Shared folders cannot be renamed by the recipient",
+        metadata: { oldPath, newName, mode },
+      });
+      return { error: await refusalMessage() };
     }
 
     const userDir = await getUserModeDir(mode);

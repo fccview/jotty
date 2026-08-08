@@ -6,25 +6,24 @@ import { Note } from "@/app/_types";
 import { useAdjacentNotes } from "@/app/_hooks/useAdjacentNotes";
 import { useSwipeNavigation } from "@/app/_hooks/useSwipeNavigation";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
-import { isMobileDevice, buildCategoryPath } from "@/app/_utils/global-utils";
+import { isMobileDevice, itemHref } from "@/app/_utils/global-utils";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface SwipeNavigationWrapperProps {
   children: ReactNode;
-  noteId: string;
-  noteCategory?: string;
+  noteUuid: string;
   enabled: boolean;
 }
 
 const getNoteUrl = (note: Partial<Note> | null, embed = false): string | null => {
-  if (!note?.id) return null;
-  const base = `/note/${buildCategoryPath(note.category || "Uncategorized", note.id)}`;
+  if (!note?.uuid) return null;
+  const base = itemHref(ItemTypes.NOTE, note.uuid);
   return embed ? `${base}?embed=true` : base;
 };
 
 export const SwipeNavigationWrapper = ({
   children,
-  noteId,
-  noteCategory,
+  noteUuid,
   enabled,
 }: SwipeNavigationWrapperProps) => {
   const router = useRouter();
@@ -35,7 +34,7 @@ export const SwipeNavigationWrapper = ({
   const nextRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  const { prev, next } = useAdjacentNotes(noteId);
+  const { prev, next } = useAdjacentNotes(noteUuid);
 
   const prevUrl = getNoteUrl(prev, true);
   const nextUrl = getNoteUrl(next, true);

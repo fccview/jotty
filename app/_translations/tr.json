@@ -248,7 +248,8 @@
     "connected": "Bağlı",
     "offline": "Çevrimdışı",
     "reconnecting": "Yeniden bağlanıyor...",
-    "thisEntry": "bu giriş"
+    "thisEntry": "bu giriş",
+    "preview": "Önizleme"
   },
   "history": {
     "noteHistory": "Not Geçmişi",
@@ -770,6 +771,12 @@
     "preferredTimeFormat": "Tercih Edilen Saat Formatı",
     "selectTimeFormat": "Saat formatı seçin",
     "choosePreferredTimeFormat": "Tercih ettiğiniz saat formatını seçin.",
+    "firstDayOfWeek": "Haftanın İlk Günü",
+    "selectFirstDayOfWeek": "İlk günü seçin",
+    "chooseFirstDayOfWeek": "Takvimlerinizin hangi günle başlayacağını seçin.",
+    "sunday": "Pazar",
+    "monday": "Pazartesi",
+    "saturday": "Cumartesi",
     "handedness": "El Kullanımı",
     "selectHandedness": "Kullanım yönünü seçin",
     "chooseHandedness": "Sağlak mı yoksa solak mı olduğunuzu seçin.",
@@ -914,7 +921,9 @@
     "checklistItemClickActionDescription": "Bir görevin metnini tıklattığınızda ne olacağını seçin. \n\"Tamamlandı olarak işaretle\" onay kutusunu değiştirir (varsayılan); \n\"Görev adını düzenle\", görevi satır içi düzenleme için açar; bunu tamamlamak için yine de onay kutusunu tıklamanız gerekir.",
     "checklistItemClickActionToggle": "Tamamlandı/tamamlanmadı olarak işaretle",
     "checklistItemClickActionEdit": "Liste öğesini düzenle",
-    "useSystemDefault": "Sistem varsayılanını kullan"
+    "useSystemDefault": "Sistem varsayılanını kullan",
+    "selectShowChecklistEmojis": "Emoji görünürlüğünü seçin",
+    "showChecklistEmojisDescription": "Metnine göre liste öğelerinin yanında otomatik emoji gösterir."
   },
   "admin": {
     "title": "Yönetici",
@@ -1105,7 +1114,11 @@
     "defaultDateFormat": "Varsayılan Tarih Formatı",
     "defaultDateFormatDescription": "Kullanıcının tarih biçimi tercihi \"Sistem varsayılanını kullan\" olarak ayarlandığında kullanılır.",
     "defaultTimeFormatDescription": "Kullanıcının saat biçimi tercihi \"Sistem varsayılanını kullan\" olarak ayarlandığında kullanılır.",
-    "defaultTimeFormat": "Varsayılan Saat Formatı"
+    "defaultTimeFormat": "Varsayılan Saat Formatı",
+    "borderRadius": "Kenar yuvarlaklığı",
+    "borderRadiusDescription": "Tüm örnekte kullanılan köşe yuvarlaklığını ayarlar. Kullanıcılar hızlı ayarlardan bunu geçersiz kılabilir.",
+    "borderRadiusSaved": "Kenar yuvarlaklığı kaydedildi",
+    "borderRadiusLoadError": "Kenar yuvarlaklığı yüklenemedi"
   },
   "errors": {
     "notFound": "Bulunamadı",
@@ -1124,6 +1137,7 @@
     "networkError": "Ağ hatası",
     "timeout": "İstek zaman aşımına uğradı",
     "permissionDenied": "İzin reddedildi",
+    "requiredPermissions": "Bu işlemi gerçekleştirmek için gerekli izinlere sahip değilsiniz.",
     "loadError": "Yükleme Hatası",
     "failedToLoadCustomEmojis": "Özel emojiler yüklenemedi",
     "emojiDeletedSuccessfully": "Emoji başarıyla silindi",
@@ -1351,7 +1365,29 @@
     "failedToCopyUrl": "URL panoya kopyalanamadı",
     "searchUsers": "Kullanıcı ara...",
     "toggleAllPermissions": "Tüm izinleri aç/kapat",
-    "shareModalTitle": "{type} Paylaş"
+    "shareModalTitle": "{type} Paylaş",
+    "readOnly": "Salt okunur",
+    "byOwner": "{user} tarafından paylaşıldı",
+    "mountStaysTop": "Paylaşılan klasörler en üst seviyede kalır",
+    "inheritedVia": "{category} üzerinden, {user} tarafından paylaşıldı",
+    "shareFolder": "Bu klasörü paylaş",
+    "folderShareHint": "Bu klasördeki her şey, şimdi ve gelecekte, seçtiğiniz kişilerle paylaşılır.",
+    "optOut": "Bu öğeyi gizli tut",
+    "optOutHint": "Yalnızca bu öğe için klasör paylaşımını geçersiz kılar.",
+    "useInherited": "Klasörü takip et",
+    "publicFolderWarning": "Bu klasöre konulan her şey, bağlantıya sahip herkes tarafından anında okunabilir hale gelir.",
+    "readTip": "Salt okunur: {users}",
+    "writeTip": "Düzenleyebilir: {users}",
+    "deleteTip": "Düzenleyebilir ve silebilir: {users}",
+    "publicTip": "Herkese açık paylaşıldı",
+    "fromUserRead": "Salt okunur, {user} paylaştı",
+    "fromUserWrite": "Düzenlenebilir, {user} paylaştı",
+    "fromUserDelete": "Düzenlenebilir ve silinebilir, {user} paylaştı",
+    "leaveShare": "Paylaşımdan ayrıl",
+    "confirmLeaveItem": "\"{itemTitle}\" öğesine kendi erişiminizi kaldırmak istiyor musunuz? Kenar çubuğundan kaybolur ve sahibinin tekrar paylaşması gerekir.",
+    "confirmLeaveFolder": "{owner} tarafından paylaşılan \"{categoryName}\" klasörüne kendi erişiminizi kaldırmak istiyor musunuz? Kenar çubuğundan kaybolur ve {owner} tekrar paylaşmalıdır.",
+    "canCreate": "Oluşturabilir",
+    "createHint": "Bu klasöre öğe ekleme ve taşıma izni verir."
   },
   "encryption": {
     "encrypt": "Şifrele",
@@ -1513,7 +1549,10 @@
     "viewMode": "Görünüm Modu",
     "viewModeCard": "Kartlar",
     "viewModeList": "Liste",
-    "viewModeGrid": "Izgara"
+    "viewModeGrid": "Izgara",
+    "borderRadius": "Köşe yuvarlaklığı",
+    "useInstanceDefault": "Varsayılanı kullan",
+    "borderRadiusDescription": "Sürüklerken köşeler tüm uygulamada güncellenir."
   },
   "migration": {
     "migrationComplete": "Taşıma Tamamlandı",
@@ -1675,6 +1714,8 @@
     "reminderMessage": "\"{board}\" içindeki \"{task}\" hatırlatıcısının tarihi geçti",
     "unread": "okunmadı",
     "sharingTitle": "{user} sizinle bir {type} paylaştı",
-    "sharingMessage": "Paylaşılan {type} öğesini görmek için açın"
+    "sharingMessage": "Paylaşılan {type} öğesini görmek için açın",
+    "sharingFolderTitle": "{user} sizinle bir {type} klasörü paylaştı",
+    "sharingFolderMessage": "“{folder}” klasörünü görmek için açın"
   }
 }

@@ -9,6 +9,7 @@ import {
   MAX_FILE_SIZE,
   ALLOWED_IMAGE_TYPES,
   ALLOWED_VIDEO_TYPES,
+  IMAGE_MIME_BY_EXT,
 } from "@/app/_consts/files";
 import { getSettings } from "../config";
 
@@ -53,12 +54,7 @@ function _getMimeType(fileName: string): string {
     ".zip": "application/zip",
     ".mp4": "video/mp4",
     ".mp3": "audio/mpeg",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".png": "image/png",
-    ".gif": "image/gif",
-    ".webp": "image/webp",
-    ".svg": "image/svg+xml",
+    ...IMAGE_MIME_BY_EXT,
   };
   return mimeTypeMap[ext] || "application/octet-stream";
 }
@@ -89,7 +85,9 @@ export const uploadUserAvatar = async (formData: FormData) => {
       };
     }
 
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    const avatarMime = file.type || _getMimeType(file.name);
+
+    if (!ALLOWED_IMAGE_TYPES.includes(avatarMime)) {
       return {
         success: false,
         error: "Invalid file type. Only images are allowed.",
@@ -131,7 +129,7 @@ export const uploadUserAvatar = async (formData: FormData) => {
         name: file.name,
         url: fileUrl,
         type: "image",
-        mimeType: file.type,
+        mimeType: avatarMime,
         size: file.size,
         uploadedAt: new Date().toISOString(),
       } as FileItem,
@@ -167,7 +165,8 @@ export const uploadFile = async (formData: FormData) => {
       };
     }
 
-    const fileType = _getFileType(file.type);
+    const mimeType = file.type || _getMimeType(file.name);
+    const fileType = _getFileType(mimeType);
     const userDir = await getUserModeDir(Modes.NOTES);
     const targetDir = path.join(
       userDir,
@@ -214,7 +213,7 @@ export const uploadFile = async (formData: FormData) => {
         name: file.name,
         url: fileUrl,
         type: fileType,
-        mimeType: file.type,
+        mimeType,
         size: file.size,
         uploadedAt: new Date().toISOString(),
       } as FileItem,

@@ -49,6 +49,25 @@ export enum PermissionTypes {
   READ = "canRead",
   EDIT = "canEdit",
   DELETE = "canDelete",
+  CREATE = "canCreate",
+}
+
+export enum NotificationTargets {
+  CHECKLIST = "checklist",
+  NOTE = "note",
+  CHECKLIST_CATEGORY = "checklist-category",
+  NOTE_CATEGORY = "note-category",
+}
+
+export enum SharePerms {
+  READ = "r",
+  WRITE = "rw",
+  DELETE = "rwd",
+}
+
+export enum ShareScope {
+  FILE = "file",
+  CATEGORY = "category",
 }
 
 export enum AdminTabs {

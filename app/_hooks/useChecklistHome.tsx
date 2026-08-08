@@ -19,6 +19,7 @@ import { togglePin, updatePinnedOrder } from "@/app/_server/actions/dashboard";
 import { isKanbanType, ItemTypes } from "../_types/enums";
 import { useTranslations } from "next-intl";
 import { HOMEPAGE_ITEMS_LIMIT } from "@/app/_consts/files";
+import { isPinnedEntry } from "@/app/_utils/global-utils";
 
 interface UseChecklistHomeProps {
   lists: Checklist[];
@@ -68,23 +69,17 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     if (!over || active.id === over.id) return;
 
     const pinned = getPinnedLists();
-    const oldIndex = pinned.findIndex(
-      (list) => (list.uuid || list.id) === active.id,
-    );
-    const newIndex = pinned.findIndex(
-      (list) => (list.uuid || list.id) === over.id,
-    );
+    const oldIndex = pinned.findIndex((list) => list.uuid === active.id);
+    const newIndex = pinned.findIndex((list) => list.uuid === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
 
     const newOrder = arrayMove(pinned, oldIndex, newIndex);
-    const newPinnedPaths = newOrder.map(
-      (list) => `${list.category || "Uncategorized"}/${list.uuid || list.id}`,
-    );
+    const newPinnedUuids = newOrder.map((list) => list.uuid || "");
 
     try {
       const result = await updatePinnedOrder(
-        newPinnedPaths,
+        newPinnedUuids,
         ItemTypes.CHECKLIST,
       );
       if (result.success) {
@@ -97,13 +92,9 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
 
   const getPinnedLists = () => {
     const pinned = pinnedLists
-      .map((path) => {
-        return lists.find((list) => {
-          const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
-          const idPath = `${list.category || "Uncategorized"}/${list.id}`;
-          return uuidPath === path || idPath === path;
-        });
-      })
+      .map((entry) =>
+        lists.find((list) => isPinnedEntry(entry, list.uuid)),
+      )
       .filter(Boolean) as Checklist[];
 
     if (checklistFilter === "completed") {
@@ -146,10 +137,10 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   const getRecentLists = () => {
     const filtered = getFilteredLists();
     const pinned = getPinnedLists();
-    const pinnedIds = new Set(pinned.map((list) => list.id));
+    const pinnedUuids = new Set(pinned.map((list) => list.uuid));
 
     return filtered
-      .filter((list) => !pinnedIds.has(list.id))
+      .filter((list) => !pinnedUuids.has(list.uuid))
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -157,15 +148,11 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   };
 
   const handleTogglePin = async (list: Checklist) => {
-    if (isTogglingPin) return;
+    if (isTogglingPin || !list.uuid) return;
 
-    setIsTogglingPin(list.id);
+    setIsTogglingPin(list.uuid);
     try {
-      const result = await togglePin(
-        list.uuid || list.id,
-        list.category || "Uncategorized",
-        ItemTypes.CHECKLIST,
-      );
+      const result = await togglePin(list.uuid, ItemTypes.CHECKLIST);
       if (result.success) {
         router.refresh();
       }
@@ -176,11 +163,10 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
     }
   };
 
-  const isListPinned = (list: Checklist) => {
-    const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
-    const idPath = `${list.category || "Uncategorized"}/${list.id}`;
-    return pinnedLists.includes(uuidPath) || pinnedLists.includes(idPath);
-  };
+  const isListPinned = (list: Checklist) =>
+    pinnedLists.some(
+      (entry) => isPinnedEntry(entry, list.uuid),
+    );
 
   const stats = useMemo(() => {
     const totalLists = lists.length;
@@ -217,7 +203,7 @@ export const useChecklistHome = ({ lists, user }: UseChecklistHomeProps) => {
   ];
 
   const activeList = activeId
-    ? pinned.find((list) => (list.uuid || list.id) === activeId)
+    ? pinned.find((list) => list.uuid === activeId)
     : null;
 
   return {

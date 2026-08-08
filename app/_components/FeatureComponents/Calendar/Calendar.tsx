@@ -8,12 +8,14 @@ import {
 } from "@/app/_hooks/useCalendar";
 import { cn } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
+import { rotateWeek } from "@/app/_consts/calendar";
+import { useWeekStart } from "@/app/_hooks/useWeekStart";
 
 export interface CalendarProps extends UseCalendarProps {
   className?: string;
 }
 
-const DAYS_OF_WEEK = ["M", "T", "W", "T", "F", "S", "S"];
+const DAYS_OF_WEEK = ["S", "M", "T", "W", "T", "F", "S"];
 
 const MONTH_OPTIONS = MONTHS.map((month, index) => ({
   id: index,
@@ -27,7 +29,9 @@ const YEAR_OPTIONS = Array.from({ length: 11 }, (_, i) => {
 
 export default function Calendar(props: CalendarProps) {
   const t = useTranslations();
+  const weekStart = useWeekStart();
   const { className = "", ...calendarProps } = props;
+  const weekdays = rotateWeek(DAYS_OF_WEEK, weekStart);
 
   const {
     days,
@@ -38,7 +42,7 @@ export default function Calendar(props: CalendarProps) {
     handleDayClick,
     monthName,
     year,
-  } = useCalendar(calendarProps);
+  } = useCalendar({ ...calendarProps, weekStart });
 
   return (
     <div className={className}>
@@ -88,7 +92,7 @@ export default function Calendar(props: CalendarProps) {
           </div>
 
           <div className="mt-6 grid grid-cols-7 text-xs/6 text-muted-foreground">
-            {DAYS_OF_WEEK.map((day, index) => (
+            {weekdays.map((day, index) => (
               <div key={index}>{day}</div>
             ))}
           </div>

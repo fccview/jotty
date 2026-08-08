@@ -8,8 +8,6 @@ import {
   ArrowLeft01Icon,
   Tick02Icon,
   GridIcon,
-  Globe02Icon,
-  UserMultipleIcon,
   Folder02Icon,
   Orbit01Icon,
   FloppyDiskIcon,
@@ -28,6 +26,8 @@ import {
   Clock01Icon,
   GitCompareIcon,
   Copy02Icon,
+  PinIcon,
+  PinOffIcon,
 } from "hugeicons-react";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
@@ -36,14 +36,12 @@ import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/Dropd
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { toggleArchive } from "@/app/_server/actions/dashboard";
-import { Modes } from "@/app/_types/enums";
-import {
-  copyTextToClipboard,
-  encodeCategoryPath,
-  buildCategoryPath,
-} from "@/app/_utils/global-utils";
-import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { toggleArchive, togglePin } from "@/app/_server/actions/dashboard";
+import { ItemTypes, Modes } from "@/app/_types/enums";
+import { copyTextToClipboard, isPinnedEntry } from "@/app/_utils/global-utils";
+import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
+import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
+import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
@@ -109,7 +107,8 @@ export const NoteEditorHeader = ({
     useState(false);
   const [copied, setCopied] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const { user, appSettings } = useAppMode();
+  const [isTogglingPin, setIsTogglingPin] = useState(false);
+  const { user, setUser, appSettings } = useAppMode();
   const router = useRouter();
   const { permissions } = usePermissions();
   const { showToast } = useToast();
@@ -158,18 +157,45 @@ export const NoteEditorHeader = ({
     }
   };
 
+  const isPinned = Boolean(
+    user?.pinnedNotes?.some((entry) => isPinnedEntry(entry, note?.uuid))
+  );
+
+  const handlePinToggle = async () => {
+    const uuid = note?.uuid;
+    if (!uuid || isTogglingPin) return;
+
+    setIsTogglingPin(true);
+    try {
+      const result = await togglePin(uuid, ItemTypes.NOTE);
+      if (result.success) {
+        if (user) {
+          const pinned = user.pinnedNotes || [];
+          setUser({
+            ...user,
+            pinnedNotes: isPinned
+              ? pinned.filter((entry) => !isPinnedEntry(entry, uuid))
+              : [...pinned, uuid],
+          });
+        }
+        router.refresh();
+      } else {
+        showToast({ title: result.error || t("common.error"), type: "error" });
+      }
+    } catch (error) {
+      console.error("Failed to toggle note pin:", error);
+      showToast({ title: t("common.error"), type: "error" });
+    } finally {
+      setIsTogglingPin(false);
+    }
+  };
+
   const handleHistoryClick = () => {
     setShowHistoryModal(true);
   };
 
   const handleCopyId = async () => {
-    const success = await copyTextToClipboard(
-      `${note?.uuid
-        ? note?.uuid
-        : `${encodeCategoryPath(note?.category || "Uncategorized")}/${note?.id
-        }`
-      }`
-    );
+    const success = await copyTextToClipboard(note?.uuid || "");
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -214,73 +240,24 @@ export const NoteEditorHeader = ({
     }
   };
 
-  const handlePermanentDecryption = async (newContent: string) => {
+  const saveAndReload = async (newContent: string) => {
     const formData = new FormData();
-    formData.append("id", note.id);
     formData.append("title", title);
     formData.append("content", newContent);
     formData.append("category", category);
-    formData.append("originalCategory", note.category || "Uncategorized");
-    if (note.uuid) {
-      formData.append("uuid", note.uuid);
-    }
+    formData.append("uuid", note.uuid || "");
 
     const result = await updateNote(formData);
 
     if (result.success && result.data) {
-      const categoryPath = buildCategoryPath(
-        result.data.category || t("notes.uncategorized"),
-        result.data.id
-      );
-      const newPath = `/note/${categoryPath}`;
-      const currentPath = window.location.pathname;
-
-      if (newPath === currentPath) {
-        window.location.reload();
-      } else {
-        router.push(newPath);
-      }
-    }
-  };
-
-  const handleEncryptionSuccess = async (newContent: string) => {
-    const formData = new FormData();
-    formData.append("id", note.id);
-    formData.append("title", title);
-    formData.append("content", newContent);
-    formData.append("category", category);
-    formData.append("originalCategory", note.category || "Uncategorized");
-    if (note.uuid) {
-      formData.append("uuid", note.uuid);
-    }
-
-    const result = await updateNote(formData);
-
-    if (result.success && result.data) {
-      const categoryPath = buildCategoryPath(
-        result.data.category || t("notes.uncategorized"),
-        result.data.id
-      );
-      const newPath = `/note/${categoryPath}`;
-      const currentPath = window.location.pathname;
-
-      if (newPath === currentPath) {
-        window.location.reload();
-      } else {
-        router.push(newPath);
-      }
+      window.location.reload();
     }
   };
 
   const { globalSharing } = useAppMode();
-  const encodedCategory = encodeCategoryPath(metadata.category);
-  const itemDetails = sharingInfo(
-    globalSharing,
-    metadata.uuid || metadata.id,
-    encodedCategory
-  );
+  const itemDetails = sharingInfo(globalSharing, metadata.uuid || "");
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
-  const sharedWith = itemDetails.sharedWith;
+  const grants = shareGrants(globalSharing, metadata.uuid || "", Modes.NOTES);
   const isPubliclyShared = itemDetails.isPublic;
 
   const canDelete = permissions?.canDelete;
@@ -327,12 +304,7 @@ export const NoteEditorHeader = ({
                         handleCopyId();
                       }}
                       className="h-6 w-6 p-0"
-                      title={`Copy ID: ${note?.uuid
-                        ? note?.uuid
-                        : `${encodeCategoryPath(
-                          note?.category || t("notes.uncategorized")
-                        )}/${note?.id}`
-                        }`}
+                      title={`Copy ID: ${note?.uuid || ""}`}
                     >
                       {copied ? (
                         <Tick02Icon className="h-3 w-3 text-green-500" />
@@ -344,20 +316,17 @@ export const NoteEditorHeader = ({
                     {note?.encrypted && (
                       <LockKeyIcon className="h-4 w-4 text-primary flex-shrink-0" />
                     )}
-                    {isPubliclyShared && (
-                      <span title={t("notes.publiclySharedNote")}>
-                        <Globe02Icon className="h-4 w-4 text-primary" />
-                      </span>
-                    )}
-                    {isShared && (
-                      <span
-                        title={`Shared with ${sharedWith.join(", ")}`}
-                        className="cursor-pointer hover:text-primary"
-                        onClick={() => setShowSharedWithModal(true)}
-                      >
-                        <UserMultipleIcon className="h-3 w-3" />
-                      </span>
-                    )}
+                    <SharedFromBadge
+                      owner={note?.sharedFrom}
+                      permissions={note?.permissions}
+                    />
+                    <ShareBadges
+                      grants={grants}
+                      isPublic={isPubliclyShared}
+                      onClick={
+                        isShared ? () => setShowSharedWithModal(true) : undefined
+                      }
+                    />
                   </div>
                   {category && category !== t("notes.uncategorized") && (
                     <div className="flex items-center gap-1.5 mt-1 text-md lg:text-sm text-muted-foreground">
@@ -540,6 +509,16 @@ export const NoteEditorHeader = ({
                       </Button>
                     }
                     items={[
+                      {
+                        type: "item" as const,
+                        label: isPinned ? t("common.unpin") : t("common.pin"),
+                        icon: isPinned ? (
+                          <PinOffIcon className="h-4 w-4" />
+                        ) : (
+                          <PinIcon className="h-4 w-4" />
+                        ),
+                        onClick: handlePinToggle,
+                      },
                       ...(permissions?.isOwner
                         ? [
                           {
@@ -721,9 +700,7 @@ export const NoteEditorHeader = ({
                   ? handleEditEncrypted
                   : encryptionModalMode === "save"
                     ? handleSaveEncrypted
-                    : encryptionModalMode === "decrypt"
-                      ? handlePermanentDecryption
-                      : handleEncryptionSuccess
+                    : saveAndReload
             }
           />
         ) : (
@@ -745,9 +722,7 @@ export const NoteEditorHeader = ({
                   ? handleEditEncrypted
                   : encryptionModalMode === "save"
                     ? handleSaveEncrypted
-                    : encryptionModalMode === "decrypt"
-                      ? handlePermanentDecryption
-                      : handleEncryptionSuccess
+                    : saveAndReload
             }
           />
         );
@@ -758,8 +733,6 @@ export const NoteEditorHeader = ({
           isOpen={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
           noteUuid={note.uuid || ""}
-          noteId={note.id}
-          noteCategory={note.category || "Uncategorized"}
           noteOwner={note.owner || ""}
           noteTitle={note.title}
           currentContent={note.content || ""}

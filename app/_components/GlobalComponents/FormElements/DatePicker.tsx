@@ -5,6 +5,7 @@ import { DayPicker } from "react-day-picker";
 import { Calendar03Icon, Clock01Icon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useWeekStart } from "@/app/_hooks/useWeekStart";
 
 interface DatePickerProps {
   value: string;
@@ -46,6 +47,7 @@ const DatePickerComponent = ({
 }: DatePickerProps) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const weekStart = useWeekStart();
 
   useEffect(() => {
     const _handleClickOutside = (e: MouseEvent) => {
@@ -89,6 +91,7 @@ const DatePickerComponent = ({
             selected={_toDateValue(value)}
             onSelect={_handleSelect}
             defaultMonth={_toDateValue(value)}
+            weekStartsOn={weekStart as 0 | 1 | 2 | 3 | 4 | 5 | 6}
             classNames={{
               root: "text-sm",
               months: "flex flex-col",

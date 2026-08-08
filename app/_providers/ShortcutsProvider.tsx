@@ -14,8 +14,8 @@ import { CreateListModal } from "@/app/_components/GlobalComponents/Modals/Check
 import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/CreateCategoryModal";
 import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/SettingsModals/Settings";
 import { Category, SanitisedUser, User } from "@/app/_types";
-import { Modes } from "@/app/_types/enums";
-import { buildCategoryPath } from "@/app/_utils/global-utils";
+import { ItemTypes, Modes } from "@/app/_types/enums";
+import { itemHref } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "./AppModeProvider";
 import { useNavigationGuard } from "./NavigationGuardProvider";
@@ -79,12 +79,8 @@ export const ShortcutProvider = ({
 
         const result = await createNote(formData);
 
-        if (result.success && result.data) {
-          const categoryPath = buildCategoryPath(
-            result.data.category || "Uncategorized",
-            result.data.id
-          );
-          router.push(`/note/${categoryPath}?editor=true`);
+        if (result.success && result.data?.uuid) {
+          router.push(`${itemHref(ItemTypes.NOTE, result.data.uuid)}?editor=true`);
           router.refresh();
         }
       } else {
@@ -231,15 +227,9 @@ export const ShortcutProvider = ({
         <CreateNoteModal
           onClose={() => setShowCreateNoteModal(false)}
           onCreated={(newNote) => {
-            if (newNote) {
-              const categoryPath = buildCategoryPath(
-                newNote.category || "Uncategorized",
-                newNote.id
-              );
-              const url = newNote.encrypted
-                ? `/note/${categoryPath}`
-                : `/note/${categoryPath}?editor=true`;
-              router.push(url);
+            if (newNote?.uuid) {
+              const href = itemHref(ItemTypes.NOTE, newNote.uuid);
+              router.push(newNote.encrypted ? href : `${href}?editor=true`);
             }
             setShowCreateNoteModal(false);
             router.refresh();
@@ -252,12 +242,8 @@ export const ShortcutProvider = ({
         <CreateListModal
           onClose={() => setShowCreateChecklistModal(false)}
           onCreated={(newChecklist) => {
-            if (newChecklist) {
-              const categoryPath = buildCategoryPath(
-                newChecklist.category || "Uncategorized",
-                newChecklist.id
-              );
-              router.push(`/checklist/${categoryPath}`);
+            if (newChecklist?.uuid) {
+              router.push(itemHref(ItemTypes.CHECKLIST, newChecklist.uuid));
             }
             setShowCreateChecklistModal(false);
             router.refresh();

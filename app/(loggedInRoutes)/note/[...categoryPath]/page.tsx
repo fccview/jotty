@@ -1,22 +1,10 @@
-import { redirect } from "next/navigation";
-import {
-  CheckForNeedsMigration,
-  getNoteById,
-} from "@/app/_server/actions/note";
-import {
-  getCurrentUser,
-  canAccessAllContent,
-} from "@/app/_server/actions/users";
-import { NoteClient } from "@/app/_components/FeatureComponents/Notes/NoteClient";
+import { redirect, permanentRedirect } from "next/navigation";
 import { Modes } from "@/app/_types/enums";
-import { getCategories } from "@/app/_server/actions/category";
-import type { Metadata } from "next";
-import { getMedatadaTitle } from "@/app/_server/actions/config";
-import { decodeCategoryPath, decodeId } from "@/app/_utils/global-utils";
-import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
-import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { legacyResolve } from "@/app/_server/actions/lib/legacy-lookup";
+import { getCurrentUser } from "@/app/_server/actions/users";
+import { decodeCategoryPath, decodeSegment } from "@/app/_utils/global-utils";
 
-interface NotePageProps {
+interface LegacyNotePageProps {
   params: Promise<{
     categoryPath: string[];
   }>;
@@ -24,67 +12,29 @@ interface NotePageProps {
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(props: NotePageProps): Promise<Metadata> {
-  const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
-
-  return getMedatadaTitle(Modes.NOTES, id, category);
-}
-
-export default async function NotePage(props: NotePageProps) {
-  const params = await props.params;
-  const { categoryPath } = params;
-  const id = decodeId(categoryPath[categoryPath.length - 1]);
-  const encodedCategoryPath = categoryPath.slice(0, -1).join("/");
-  const category =
-    categoryPath.length === 1
-      ? "Uncategorized"
-      : decodeCategoryPath(encodedCategoryPath);
+/**
+ * @deprecated Category+slug is not an identity anymore, uuid is. This route
+ * only exists to 301 pre-uuid links onto /note/[uuid] and will be deleted a
+ * release after note content has been migrated. Do not build anything new on
+ * top of it.
+ */
+export default async function LegacyNotePage(props: LegacyNotePageProps) {
   const user = await getCurrentUser();
-  const username = user?.username || "";
-  const hasContentAccess = await canAccessAllContent();
 
-  await CheckForNeedsMigration();
-
-  const categoriesResult = await getCategories(Modes.NOTES);
-
-  let note = await getNoteById(id, category, username);
-
-  if (!note && hasContentAccess) {
-    note = await getNoteById(id, category);
-  }
-
-  if (!note) {
+  if (!user?.username) {
     redirect("/");
   }
 
-  const docsCategories =
-    categoriesResult.success && categoriesResult.data
-      ? categoriesResult.data
-      : [];
+  const params = await props.params;
+  const { categoryPath } = params;
+  const id = decodeSegment(categoryPath[categoryPath.length - 1]);
+  const category = decodeCategoryPath(categoryPath.slice(0, -1).join("/"));
 
-  const metadata = {
-    id: note.id,
-    uuid: note.uuid,
-    title: note.title,
-    category: note.category || "Uncategorized",
-    owner: note.owner,
-    createdAt: note.createdAt,
-    updatedAt: note.updatedAt,
-    type: "note" as const,
-  };
+  const uuid = await legacyResolve(Modes.NOTES, category, id, user.username);
 
-  return (
-    <MetadataProvider metadata={metadata}>
-      <PermissionsProvider item={note}>
-        <NoteClient note={note} categories={docsCategories} />
-      </PermissionsProvider>
-    </MetadataProvider>
-  );
+  if (uuid) {
+    permanentRedirect(`/note/${uuid}`);
+  }
+
+  redirect("/");
 }

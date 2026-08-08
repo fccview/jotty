@@ -10,7 +10,8 @@ import {
   PlayCircleIcon,
 } from "hugeicons-react";
 import { Checklist, SanitisedUser } from "@/app/_types";
-import { TaskStatus } from "@/app/_types/enums";
+import { ItemTypes, TaskStatus } from "@/app/_types/enums";
+import { itemHref, isPinnedEntry } from "@/app/_utils/global-utils";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
@@ -53,12 +54,10 @@ export const KanbanPageClient = ({
     let filtered = [...initialLists];
 
     if (taskFilter === "pinned") {
-      const pinnedPaths = user?.pinnedLists || [];
-      filtered = filtered.filter((list) => {
-        const uuidPath = `${list.category || "Uncategorized"}/${list.uuid || list.id}`;
-        const idPath = `${list.category || "Uncategorized"}/${list.id}`;
-        return pinnedPaths.includes(uuidPath) || pinnedPaths.includes(idPath);
-      });
+      const pinnedEntries = user?.pinnedLists || [];
+      filtered = filtered.filter((list) =>
+        pinnedEntries.some((entry) => isPinnedEntry(entry, list.uuid)),
+      );
     } else if (taskFilter === "completed") {
       filtered = filtered.filter(
         (list) =>
@@ -175,15 +174,17 @@ export const KanbanPageClient = ({
   }
 
   const renderList = (list: Checklist) => {
-    const categoryPath = `${list.category || "Uncategorized"}/${list.id}`;
-    const isPinned = user?.pinnedLists?.includes(categoryPath);
+    const listHref = itemHref(ItemTypes.CHECKLIST, list.uuid || "");
+    const isPinned = user?.pinnedLists?.some((entry) =>
+      isPinnedEntry(entry, list.uuid),
+    );
 
     if (viewMode === 'list') {
       return (
         <ChecklistListItem
-          key={list.id}
+          key={list.uuid}
           list={list}
-          onSelect={() => router.push(`/checklist/${categoryPath}`)}
+          onSelect={() => router.push(listHref)}
           isPinned={isPinned}
           onTogglePin={() => {}}
         />
@@ -193,9 +194,9 @@ export const KanbanPageClient = ({
     if (viewMode === 'grid') {
       return (
         <ChecklistGridItem
-          key={list.id}
+          key={list.uuid}
           list={list}
-          onSelect={() => router.push(`/checklist/${categoryPath}`)}
+          onSelect={() => router.push(listHref)}
           isPinned={isPinned}
           onTogglePin={() => {}}
         />
@@ -204,9 +205,9 @@ export const KanbanPageClient = ({
 
     return (
       <ChecklistCard
-        key={list.id}
+        key={list.uuid}
         list={list}
-        onSelect={() => router.push(`/checklist/${categoryPath}`)}
+        onSelect={() => router.push(listHref)}
         isPinned={isPinned}
         onTogglePin={() => {}}
       />

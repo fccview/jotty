@@ -32,10 +32,10 @@ import { getUserNotes } from "./_server/actions/note";
 
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
-  getAllSharedItems,
-  getAllSharedItemsForUser,
-  readShareFile,
-} from "./_server/actions/sharing";
+  allShared,
+  sharedForUser,
+  globalShares,
+} from "./_server/actions/share/queries";
 import { generateWebManifest } from "./_utils/global-utils";
 import { writeJsonFile } from "./_server/actions/file";
 import path from "path";
@@ -46,6 +46,7 @@ import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { KonamiProvider } from "./_providers/KonamiProvider";
 import { WebSocketProvider } from "./_providers/WebSocketProvider";
 import { isEnvEnabled } from "./_utils/env-utils";
+import { ADMIN_BORDER_RADIUS_VAR, radiusToRem } from "./_consts/styling";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -99,7 +100,6 @@ export const generateMetadata = async (): Promise<Metadata> => {
   return {
     title: appName,
     description: appDescription,
-    manifest: "/api/manifest",
     icons: {
       icon: [
         {
@@ -196,16 +196,16 @@ export default async function RootLayout({
         })
       : Promise.resolve({ success: false, data: [] }),
     user && !isPublicRoute
-      ? getAllSharedItems()
+      ? allShared()
       : Promise.resolve({
           notes: [],
           checklists: [],
           public: { notes: [], checklists: [] },
         }),
     user && !isPublicRoute
-      ? getAllSharedItemsForUser(user.username)
+      ? sharedForUser(user.username)
       : Promise.resolve({ notes: [], checklists: [] }),
-    user && !isPublicRoute ? readShareFile("all") : Promise.resolve(null),
+    user && !isPublicRoute ? globalShares() : Promise.resolve(null),
     getAvailableLocalesWithNames(),
   ]);
 
@@ -226,9 +226,19 @@ export default async function RootLayout({
       suppressHydrationWarning
       data-rwmarkable={settings?.isRwMarkable ? "true" : "false"}
       data-user-theme={user?.preferredTheme || ""}
+      style={
+        {
+          [ADMIN_BORDER_RADIUS_VAR]: radiusToRem(settings?.borderRadius),
+        } as React.CSSProperties
+      }
     >
       <head>
         {process.env.NODE_ENV === "development" && <SuppressWarnings />}
+        <link
+          rel="manifest"
+          href="/api/manifest"
+          crossOrigin="use-credentials"
+        />
         <link rel="icon" href="/app-icons/favicon.ico" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

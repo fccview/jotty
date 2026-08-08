@@ -37,7 +37,7 @@ export const NoteListItem = ({
     transition,
     isDragging,
   } = useSortable({
-    id: note?.uuid || note.id,
+    id: note.uuid,
     disabled: !isDraggable,
   });
 
@@ -113,7 +113,7 @@ export const NoteListItem = ({
                 e.stopPropagation();
                 onTogglePin(note);
               }}
-              className={`${isPinned ? "opacity-100" : "opacity-0"
+              className={`${isPinned ? "opacity-100" : "opacity-100 lg:opacity-0"
                 } group-hover:opacity-100 transition-opacity p-1.5 rounded-jotty flex-shrink-0`}
             >
               {isPinned ? (

@@ -49,7 +49,7 @@ svg {
   }
 
   .rounded-jotty {
-    border-radius: 0.25rem;
+    border-radius: var(--jotty-radius, var(--jotty-radius-admin, 0.25rem));
   }
 }
 
@@ -672,6 +672,19 @@ pre.text-foreground span,
 .jotty-scrollable-content {
     transform: translateZ(0);
     -webkit-overflow-scrolling: touch;
+}
+
+.jotty-x-scroll,
+.tableWrapper {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.jotty-x-scroll > table,
+.tableWrapper > table {
+    width: max-content;
+    min-width: 100%;
 }
 
 .overflow-y-auto::-webkit-scrollbar-button,

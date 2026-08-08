@@ -4,22 +4,23 @@ import path from "path";
 import fs from "fs/promises";
 import { Checklist, User, GetChecklistsOptions } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { USERS_FILE } from "@/app/_consts/files";
-import { Modes } from "@/app/_types/enums";
+import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import {
   extractChecklistType,
-  generateUuid,
   toIso,
-  updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { readListsRecursively, type ChecklistReadResult } from "./readers";
+import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
+import { canReachFile } from "@/app/_server/actions/share/access";
 import { checkAndRefreshRecurringItems } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import { getOrCompute, metaCacheKey } from "@/app/_server/lib/metadata-cache";
+import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
 
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
   const {
@@ -62,20 +63,9 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       ? metaCacheKey(Modes.CHECKLISTS, absUserDir)
       : null;
 
-    let lists: ChecklistReadResult[] = ownCacheKey
+    const cached: ChecklistReadResult[] = ownCacheKey
       ? await getOrCompute(ownCacheKey, absUserDir, () =>
-          readListsRecursively(
-            userDir,
-            "",
-            currentUser.username,
-            allowArchived,
-            isRaw,
-            metadataOnly,
-            undefined,
-            undefined,
-          ),
-        )
-      : await readListsRecursively(
+        readListsRecursively(
           userDir,
           "",
           currentUser.username,
@@ -84,7 +74,20 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
           metadataOnly,
           undefined,
           undefined,
-        );
+        ),
+      )
+      : await readListsRecursively(
+        userDir,
+        "",
+        currentUser.username,
+        allowArchived,
+        isRaw,
+        metadataOnly,
+        undefined,
+        undefined,
+      );
+
+    let lists: ChecklistReadResult[] = [...cached];
 
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
@@ -93,65 +96,58 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     }
 
     const t2 = layoutTiming ? performance.now() : 0;
-    const { getAllSharedItemsForUser } =
-      await import("@/app/_server/actions/sharing");
-    const sharedData = await getAllSharedItemsForUser(currentUser.username);
+    const mounts = await mountsFor(Modes.CHECKLISTS, currentUser.username);
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
-        `[layout checklists] sharedItems: ${(performance.now() - t2).toFixed(0)}ms`,
+        `[layout checklists] mounts: ${(performance.now() - t2).toFixed(0)}ms`,
       );
     }
 
-    for (const sharedItem of sharedData.checklists) {
+    for (const mount of mounts) {
       try {
-        const itemIdentifier = sharedItem.uuid || sharedItem.id;
-        if (!itemIdentifier) continue;
-
-        const sharerDir = path.join(
+        const ownerDir = path.join(
           process.cwd(),
           "data",
           CHECKLISTS_FOLDER,
-          sharedItem.sharer,
+          mount.owner,
         );
-        await ensureDir(sharerDir);
+        await ensureDir(ownerDir);
 
-        const sharerCacheKey = canCache
-          ? metaCacheKey(Modes.CHECKLISTS, sharerDir)
+        const ownerCacheKey = canCache
+          ? metaCacheKey(Modes.CHECKLISTS, ownerDir)
           : null;
 
-        const sharerLists = sharerCacheKey
-          ? await getOrCompute(sharerCacheKey, sharerDir, () =>
-              readListsRecursively(
-                sharerDir,
-                "",
-                sharedItem.sharer,
-                allowArchived,
-                isRaw,
-                metadataOnly,
-              ),
-            )
-          : await readListsRecursively(
-              sharerDir,
+        const ownerLists = ownerCacheKey
+          ? await getOrCompute(ownerCacheKey, ownerDir, () =>
+            readListsRecursively(
+              ownerDir,
               "",
-              sharedItem.sharer,
+              mount.owner,
               allowArchived,
               isRaw,
               metadataOnly,
-            );
+            ),
+          )
+          : await readListsRecursively(
+            ownerDir,
+            "",
+            mount.owner,
+            allowArchived,
+            isRaw,
+            metadataOnly,
+          );
 
-        const sharedChecklist = sharerLists.find(
-          (list) => list.uuid === itemIdentifier || list.id === itemIdentifier,
+        const shared = await mountedItems(
+          Modes.CHECKLISTS,
+          currentUser.username,
+          mount,
+          ownerLists,
         );
 
-        if (sharedChecklist) {
-          lists.push({
-            ...sharedChecklist,
-            isShared: true,
-          });
-        }
+        lists.push(...shared);
       } catch (error) {
         console.error(
-          `Error reading shared checklist ${sharedItem.uuid || sharedItem.id}:`,
+          `Error reading shared checklists from ${mount.owner}:`,
           error,
         );
         continue;
@@ -161,7 +157,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     if (filter) {
       if (filter.type === "category") {
         lists = lists.filter((list: any) => {
-          const listCategory = list.category || "Uncategorized";
+          const listCategory = list.category || UNCATEGORIZED;
           return (
             listCategory === filter.value ||
             listCategory.startsWith(filter.value + "/")
@@ -195,9 +191,8 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       limitNum !== undefined
     ) {
       const pathMatches = (list: ChecklistReadResult, p: string) => {
-        const c = list.category || "Uncategorized";
-        const u = (list as { uuid?: string }).uuid || list.id;
-        return `${c}/${u}` === p || `${c}/${list.id}` === p;
+        const u = (list as { uuid?: string }).uuid;
+        return p === u || p.split("/").pop() === u;
       };
       const pinned: ChecklistReadResult[] = [];
       for (const p of pinnedPaths) {
@@ -257,10 +252,8 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
 };
 
 export const getListById = async (
-  id: string,
+  uuid: string,
   username?: string,
-  category?: string,
-  unarchive?: boolean,
 ): Promise<Checklist | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
   const { serverReadFile } = await import("@/app/_server/actions/file");
@@ -268,12 +261,11 @@ export const getListById = async (
   if (!username) {
     const { getUserByChecklistUuid } =
       await import("@/app/_server/actions/users");
-    const userByUuid = await getUserByChecklistUuid(id);
-    if (userByUuid.success && userByUuid.data) {
-      username = userByUuid.data.username;
-    } else {
+    const userByUuid = await getUserByChecklistUuid(uuid);
+    if (!userByUuid.success || !userByUuid.data) {
       return undefined;
     }
+    username = userByUuid.data.username;
   }
 
   let ownerUsername = username;
@@ -284,79 +276,47 @@ export const getListById = async (
     username,
   );
   let filePath: string | null = null;
-  let listId = id;
-  let listCategory = category || "Uncategorized";
-  const isUuid =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  let listId = uuid;
+  let listCategory = UNCATEGORIZED;
 
-  if (isUuid) {
-    const found = await grepFindFileByUuid(absUserDir, id);
-    if (found) {
-      filePath = found.filePath;
-      listId = found.id;
-      listCategory = found.category;
-    }
-  }
-
-  if (!filePath && category) {
-    const directPath = path.join(absUserDir, category, `${id}.md`);
-    try {
-      await fs.access(directPath);
-      filePath = directPath;
-    } catch {
-      if (unarchive) {
-        const archivedPath = path.join(
-          absUserDir,
-          ".archive",
-          category,
-          `${id}.md`,
-        );
-        try {
-          await fs.access(archivedPath);
-          filePath = archivedPath;
-          listCategory = `.archive/${category}`;
-        } catch {}
-      }
-    }
+  const found = await grepFindFileByUuid(absUserDir, uuid);
+  if (found) {
+    filePath = found.filePath;
+    listId = found.id;
+    listCategory = found.category || UNCATEGORIZED;
   }
 
   let isShared = false;
 
   if (!filePath) {
-    const { getAllSharedItemsForUser } =
-      await import("@/app/_server/actions/sharing");
-    const sharedData = await getAllSharedItemsForUser(username);
-    for (const sharedItem of sharedData.checklists) {
-      if (!sharedItem.uuid && !sharedItem.id) continue;
-      if (sharedItem.uuid !== id && sharedItem.id !== id) continue;
+    const mounts = await mountsFor(Modes.CHECKLISTS, username);
 
-      const sharerDir = path.join(
+    for (const mount of mounts) {
+      const ownerDir = path.join(
         process.cwd(),
         "data",
         CHECKLISTS_FOLDER,
-        sharedItem.sharer,
+        mount.owner,
       );
-      const found = isUuid && (await grepFindFileByUuid(sharerDir, id));
+      const sharedFound = await grepFindFileByUuid(ownerDir, uuid);
 
-      if (found) {
-        filePath = found.filePath;
-        listId = found.id;
-        listCategory = found.category;
-        isShared = true;
-        ownerUsername = sharedItem.sharer;
-        break;
-      }
+      if (!sharedFound) continue;
 
-      if (!isUuid && category) {
-        const sharedPath = path.join(sharerDir, category, `${id}.md`);
-        try {
-          await fs.access(sharedPath);
-          filePath = sharedPath;
-          isShared = true;
-          ownerUsername = sharedItem.sharer;
-          break;
-        } catch {}
-      }
+      const allowed = await canReachFile(
+        Modes.CHECKLISTS,
+        sharedFound.filePath,
+        username,
+        PermissionTypes.READ,
+      );
+
+      if (!allowed) continue;
+
+      filePath = sharedFound.filePath;
+      listId = sharedFound.id;
+      listCategory = sharedFound.category || UNCATEGORIZED;
+      isShared = true;
+      ownerUsername = mount.owner;
+      break;
     }
   }
 
@@ -371,24 +331,9 @@ export const getListById = async (
   const parsedData = parseChecklistContent(rawContent, listId);
   const checklistType = extractChecklistType(rawContent) || "task";
 
-  let finalUuid = parsedData.uuid;
-  if (!finalUuid) {
-    finalUuid = generateUuid();
-    try {
-      const updatedContent = updateYamlMetadata(rawContent, {
-        uuid: finalUuid,
-        title: parsedData.title || listId.replace(/-/g, " "),
-        checklistType: checklistType,
-      });
-      await fs.writeFile(filePath, updatedContent, "utf-8");
-    } catch (error) {
-      console.warn("Failed to save UUID to checklist file:", error);
-    }
-  }
-
   return {
     id: listId,
-    uuid: finalUuid,
+    uuid: parsedData.uuid || uuid,
     title: parsedData.title,
     type: checklistType as Checklist["type"],
     items: parsedData.items,
@@ -398,6 +343,10 @@ export const getListById = async (
     owner: ownerUsername,
     isShared,
     ...(parsedData.statuses && { statuses: parsedData.statuses }),
+    ...(parsedData.tags && { tags: parsedData.tags }),
+    ...(parsedData.sharedWith !== undefined && {
+      sharedWith: parsedData.sharedWith,
+    }),
   };
 };
 

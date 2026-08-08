@@ -6,18 +6,17 @@ import {
   CheckmarkSquare04Icon,
   TaskDaily01Icon,
   PencilEdit02Icon,
-  UserMultipleIcon,
-  Globe02Icon,
   PinIcon,
   PinOffIcon,
   MoreHorizontalIcon,
   Archive02Icon,
   Delete03Icon,
   LockKeyIcon,
+  LogoutSquare02Icon,
   Share08Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { cn, buildCategoryPath } from "@/app/_utils/global-utils";
+import { cn, itemHref as itemUrl, isPinnedEntry } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
@@ -25,13 +24,16 @@ import { togglePin } from "@/app/_server/actions/dashboard";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
+import { leaveItem } from "@/app/_server/actions/share/operations";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { encodeCategoryPath } from "@/app/_utils/global-utils";
-import { sharingInfo } from "@/app/_utils/sharing-utils";
+import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
+import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
+import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
@@ -61,40 +63,39 @@ export const SidebarItem = ({
   const router = useRouter();
   const { checkNavigation, checkWouldBlock } = useNavigationGuard();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const { globalSharing, appSettings } = useAppMode();
-  const encodedCategory = encodeCategoryPath(item.category || "Uncategorized");
-  const itemDetails = sharingInfo(
-    globalSharing,
-    item.uuid || item.id,
-    encodedCategory,
-  );
+  const itemDetails = sharingInfo(globalSharing, item.uuid || "");
 
   const isPubliclyShared = itemDetails.isPublic;
-  const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
-  const isShareable = user?.username === item.owner;
+  const isOwned = user?.username === item.owner;
+  const isShareable = isOwned;
+  const canEdit = isOwned || item.permissions?.canEdit === true;
+  const canDelete = isOwned || item.permissions?.canDelete === true;
 
-  const sharedWith = itemDetails.sharedWith;
+  const grants = shareGrants(
+    globalSharing,
+    item.uuid || "",
+    mode === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS,
+  );
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
-  const itemHref = `/${mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST}/${buildCategoryPath(item.category || "Uncategorized", item.id)}`;
+  const itemType =
+    mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST;
+  const itemHref = itemUrl(itemType, item.uuid!);
 
   const handleDeleteItem = async () => {
     const formData = new FormData();
+    formData.append("uuid", item.uuid!);
 
     if (mode === Modes.CHECKLISTS) {
-      formData.append("id", item.id);
-      formData.append("category", item.category || "Uncategorized");
-      if (item.uuid) formData.append("uuid", item.uuid);
       const result = await deleteList(formData);
       if (result.success) {
         router.refresh();
       }
     } else {
-      formData.append("id", item.id);
-      formData.append("category", item.category || "Uncategorized");
-      if (item.uuid) formData.append("uuid", item.uuid);
       const result = await deleteNote(formData);
       if (result.success) {
         router.refresh();
@@ -103,16 +104,27 @@ export const SidebarItem = ({
     setShowDeleteModal(false);
   };
 
-  const handleTogglePin = async () => {
-    if (!user || isTogglingPin) return;
+  const handleLeaveShare = async () => {
+    const result = await leaveItem(
+      mode === Modes.CHECKLISTS ? Modes.CHECKLISTS : Modes.NOTES,
+      item.uuid!,
+    );
 
-    setIsTogglingPin(item.id);
+    if (result.success) {
+      router.refresh();
+    } else {
+      console.error("Failed to leave share:", result.error);
+    }
+
+    setShowLeaveModal(false);
+  };
+
+  const handleTogglePin = async () => {
+    if (!user || isTogglingPin || !item.uuid) return;
+
+    setIsTogglingPin(item.uuid);
     try {
-      const result = await togglePin(
-        item.uuid || item.id,
-        item.category || "Uncategorized",
-        mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
-      );
+      const result = await togglePin(item.uuid, itemType);
       if (result.success) {
         router.refresh();
       }
@@ -129,14 +141,13 @@ export const SidebarItem = ({
       mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
     if (!pinnedItems) return false;
 
-    const itemPath = `${item.category || "Uncategorized"}/${
-      item.uuid || item.id
-    }`;
-    return pinnedItems.includes(itemPath);
+    return (pinnedItems as string[]).some(
+      (entry) => isPinnedEntry(entry, item.uuid),
+    );
   };
 
-  const dropdownItems = [
-    ...(onEditItem
+  const editActions = [
+    ...(onEditItem && canEdit
       ? [
           {
             label: t("common.edit"),
@@ -154,7 +165,34 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(onEditItem || isShareable ? [{ type: "divider" as const }] : []),
+  ];
+
+  const removalActions = [
+    ...(canDelete
+      ? [
+          {
+            label: t("common.delete"),
+            onClick: () => setShowDeleteModal(true),
+            variant: "destructive" as const,
+            icon: <Delete03Icon className="h-4 w-4" />,
+          },
+        ]
+      : []),
+    ...(!isOwned && item.isLoose
+      ? [
+          {
+            label: t("sharing.leaveShare"),
+            onClick: () => setShowLeaveModal(true),
+            variant: "destructive" as const,
+            icon: <LogoutSquare02Icon className="h-4 w-4" />,
+          },
+        ]
+      : []),
+  ];
+
+  const dropdownItems = [
+    ...editActions,
+    ...(editActions.length > 0 ? [{ type: "divider" as const }] : []),
     {
       label: isItemPinned() ? t("common.unpinFromHome") : t("common.pinToHome"),
       onClick: handleTogglePin,
@@ -163,9 +201,9 @@ export const SidebarItem = ({
       ) : (
         <PinIcon className="h-4 w-4" />
       ),
-      disabled: isTogglingPin === item.id,
+      disabled: isTogglingPin === item.uuid,
     },
-    ...(item.category !== ARCHIVED_DIR_NAME
+    ...(item.category !== ARCHIVED_DIR_NAME && canEdit
       ? [
           {
             label: t("common.archive"),
@@ -179,13 +217,8 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(onEditItem ? [{ type: "divider" as const }] : []),
-    {
-      label: t("common.delete"),
-      onClick: () => setShowDeleteModal(true),
-      variant: "destructive" as const,
-      icon: <Delete03Icon className="h-4 w-4" />,
-    },
+    ...(removalActions.length > 0 ? [{ type: "divider" as const }] : []),
+    ...removalActions,
   ];
 
   const handleClick = (e: React.MouseEvent) => {
@@ -252,15 +285,13 @@ export const SidebarItem = ({
               <LockKeyIcon className="h-4 w-4 text-primary" />
             </span>
           )}
-          {isShared && (
-            <span title={sharedWith.join(", ")}>
-              <UserMultipleIcon className="h-4 w-4 text-primary" />
-            </span>
-          )}
-          {isPubliclyShared && (
-            <span title={t("checklists.publiclyShared")}>
-              <Globe02Icon className="h-4 w-4 text-primary" />
-            </span>
+          {item.sharedFrom ? (
+            <SharedFromBadge
+              owner={item.sharedFrom}
+              permissions={item.permissions}
+            />
+          ) : (
+            <ShareBadges grants={grants} isPublic={isPubliclyShared} />
           )}
         </div>
       </Link>
@@ -281,6 +312,16 @@ export const SidebarItem = ({
       />
 
       <ConfirmModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={handleLeaveShare}
+        title={t("sharing.leaveShare")}
+        message={t("sharing.confirmLeaveItem", { itemTitle: item.title })}
+        confirmText={t("sharing.leaveShare")}
+        variant="destructive"
+      />
+
+      <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleDeleteItem}
@@ -296,7 +337,7 @@ export const SidebarItem = ({
             id: item.id,
             uuid: item.uuid,
             title: item.title,
-            category: item.category || "Uncategorized",
+            category: item.category || UNCATEGORIZED,
             owner: item.owner || "",
             type: mode === Modes.NOTES ? "note" : "checklist",
           }}

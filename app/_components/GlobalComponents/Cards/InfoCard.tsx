@@ -60,16 +60,16 @@ export const InfoCard = ({
   return (
     <div
       className={cn(
-        "jotty-info-card rounded-md p-6 shadow-sm",
+        "jotty-info-card rounded-jotty p-6 shadow-sm",
         variantClasses.bg,
-        variantClasses.border
+        variantClasses.border,
       )}
     >
       <div className="flex items-start gap-3">
         <div
           className={cn(
             "p-2 rounded-jotty flex-shrink-0",
-            variantClasses.iconBg
+            variantClasses.iconBg,
           )}
         >
           {icon}
