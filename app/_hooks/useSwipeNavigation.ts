@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, RefObject } from "react";
+import { eatsSwipe } from "@/app/_utils/gesture-utils";
 
 interface UseSwipeNavigationProps {
   enabled: boolean;
@@ -75,6 +76,7 @@ export const useSwipeNavigation = ({
   };
 
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const touchTargetRef = useRef<EventTarget | null>(null);
   const directionLockedRef = useRef<"horizontal" | "vertical" | null>(null);
   const navigatingRef = useRef(false);
   const swipingRef = useRef(false);
@@ -147,6 +149,7 @@ export const useSwipeNavigation = ({
       y: e.touches[0].clientY,
       time: Date.now(),
     };
+    touchTargetRef.current = e.target;
     directionLockedRef.current = null;
     swipingRef.current = false;
   }, []);
@@ -167,6 +170,13 @@ export const useSwipeNavigation = ({
         touchStartRef.current = null;
         return;
       }
+
+      if (eatsSwipe(touchTargetRef.current, deltaX, wrapperRef.current)) {
+        directionLockedRef.current = "vertical";
+        touchStartRef.current = null;
+        return;
+      }
+
       directionLockedRef.current = "horizontal";
       swipingRef.current = true;
       _setOverlaysVisible(true);
@@ -196,7 +206,7 @@ export const useSwipeNavigation = ({
         applyProgress(progress, direction, null);
       }
     });
-  }, [applyProgress, currentRef]);
+  }, [applyProgress, currentRef, wrapperRef]);
 
   const finishTouch = useCallback((deltaX: number, deltaTime: number) => {
     const velocity = Math.abs(deltaX) / deltaTime;
@@ -233,12 +243,14 @@ export const useSwipeNavigation = ({
     if (!touchStartRef.current || !enabledRef.current || navigatingRef.current) {
       if (swipingRef.current) resetAll(ALL_TRANSITION);
       touchStartRef.current = null;
+      touchTargetRef.current = null;
       directionLockedRef.current = null;
       return;
     }
 
     if (!swipingRef.current) {
       touchStartRef.current = null;
+      touchTargetRef.current = null;
       directionLockedRef.current = null;
       return;
     }
@@ -248,6 +260,7 @@ export const useSwipeNavigation = ({
     const deltaTime = Math.max(Date.now() - touchStartRef.current.time, 1);
 
     touchStartRef.current = null;
+    touchTargetRef.current = null;
     directionLockedRef.current = null;
     finishTouch(deltaX, deltaTime);
   }, [finishTouch, resetAll]);
@@ -258,6 +271,7 @@ export const useSwipeNavigation = ({
       rafRef.current = null;
     }
     touchStartRef.current = null;
+    touchTargetRef.current = null;
     directionLockedRef.current = null;
     if (swipingRef.current) resetAll(ALL_TRANSITION);
   }, [resetAll]);

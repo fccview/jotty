@@ -156,6 +156,11 @@ export const UnifiedMarkdownRenderer = ({
   }
 
   const components: Partial<Components> = {
+    table: ({ node, children, ...props }) => (
+      <div className="jotty-x-scroll">
+        <table {...props}>{children}</table>
+      </div>
+    ),
     pre: ({ node, children, ...props }) => {
       const child = Children.toArray(children)[0];
 

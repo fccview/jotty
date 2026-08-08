@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
+import { eatsSwipe } from "@/app/_utils/gesture-utils";
 
 interface UseSidebarGestureProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const useSidebarGesture = ({
   enabled,
 }: UseSidebarGestureProps) => {
   const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const touchTargetRef = useRef<EventTarget | null>(null);
   const directionLockedRef = useRef<"horizontal" | "vertical" | null>(null);
   const draggingRef = useRef(false);
   const animatingRef = useRef(false);
@@ -105,6 +107,7 @@ export const useSidebarGesture = ({
     if (!isOpenRef.current && !isFromEdge) return;
 
     touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+    touchTargetRef.current = e.target;
     directionLockedRef.current = null;
     draggingRef.current = false;
   }, []);
@@ -125,6 +128,13 @@ export const useSidebarGesture = ({
         touchStartRef.current = null;
         return;
       }
+
+      if (eatsSwipe(touchTargetRef.current, deltaX)) {
+        directionLockedRef.current = "vertical";
+        touchStartRef.current = null;
+        return;
+      }
+
       directionLockedRef.current = "horizontal";
       draggingRef.current = true;
     }
@@ -205,6 +215,7 @@ export const useSidebarGesture = ({
     }
 
     touchStartRef.current = null;
+    touchTargetRef.current = null;
     directionLockedRef.current = null;
     draggingRef.current = false;
   }, [getSidebarWidth, applyPosition, clearStyles, onOpen, onClose]);
@@ -215,6 +226,7 @@ export const useSidebarGesture = ({
       rafRef.current = null;
     }
     touchStartRef.current = null;
+    touchTargetRef.current = null;
     directionLockedRef.current = null;
 
     if (draggingRef.current) {
