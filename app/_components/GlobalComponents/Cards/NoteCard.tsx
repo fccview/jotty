@@ -192,17 +192,17 @@ export const NoteCard = ({
 
       <div className="px-4 py-3 bg-muted/30 border-t border-border/50">
         <div className="jotty-note-card-footer flex items-center justify-between text-sm lg:text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-2 min-w-0">
             {sharer && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 min-w-0">
                 <UserAvatar username={sharer} size="xs" />
-                <span className="text-md lg:text-xs text-muted-foreground">
+                <span className="text-md lg:text-xs text-muted-foreground truncate">
                   {t("common.sharedBy", { sharer })}
                 </span>
               </div>
             )}
-            {!sharer && categoryName && (
-              <span className="bg-primary/10 text-primary px-2 py-1 rounded-jotty font-medium">
+            {categoryName && (
+              <span className="bg-primary/10 text-primary px-2 py-1 rounded-jotty font-medium truncate max-w-[10rem]">
                 {categoryName}
               </span>
             )}
