@@ -146,7 +146,7 @@ export const NoteCard = ({
                 onTogglePin(note);
               }}
               className={`${
-                isPinned ? "opacity-100" : "opacity-0"
+                isPinned ? "opacity-100" : "opacity-100 lg:opacity-0"
               } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-jotty flex-shrink-0`}
               aria-label={isPinned ? t("common.unpin") : t("common.pin")}
             >
