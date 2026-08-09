@@ -89,7 +89,6 @@ My recommended way to run `jotty·page` is with Docker. You can also use:
 
 - The [Proxmox community script](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/jotty.sh) for Proxmox VE
 - The [Unraid template](howto/UNRAID.md) for Unraid Community Applications
-- The [Cloudzy one-click deployment](https://cloudzy.com/marketplace/jotty) for a preconfigured hosted Jotty server
 
 <a id="docker-compose"></a>
 
