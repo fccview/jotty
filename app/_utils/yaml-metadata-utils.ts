@@ -19,6 +19,52 @@ export interface DocumentMetadata {
 
 const YAML_FRONTMATTER_REGEX = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---(?:\r?\n)?/;
 
+export enum OwnedMetaKeys {
+  UUID = "uuid",
+  TITLE = "title",
+  TAGS = "tags",
+  ENCRYPTED = "encrypted",
+  ENCRYPTION_METHOD = "encryptionMethod",
+  CHECKLIST_TYPE = "checklistType",
+  STATUSES = "statuses",
+  SHARED_WITH = "sharedWith",
+  OWNER = "owner",
+  CATEGORY = "category",
+  CREATED_AT = "createdAt",
+  UPDATED_AT = "updatedAt",
+}
+
+export const JOTTY_META_KEYS: string[] = Object.values(OwnedMetaKeys);
+
+/**
+ * Everything in the frontmatter that Jotty does not own, e.g. fields written by
+ * Obsidian, Hugo or whoever else touched the file before it landed here.
+ */
+export const strayMeta = (
+  metadata: DocumentMetadata | undefined,
+): Record<string, unknown> | undefined => {
+  if (!metadata) return undefined;
+
+  const strays = Object.entries(metadata).filter(
+    ([key]) => !JOTTY_META_KEYS.includes(key),
+  );
+
+  return strays.length > 0 ? Object.fromEntries(strays) : undefined;
+};
+
+/**
+ * Merges stray frontmatter from the file on disk with whatever the incoming
+ * payload carried, the payload winning so hand edits are not undone.
+ */
+export const keptMeta = (
+  stored: Record<string, unknown> | undefined,
+  incoming: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined => {
+  if (!stored && !incoming) return undefined;
+
+  return { ...(stored || {}), ...(incoming || {}) };
+};
+
 export const extractYamlMetadata = (
   content: string,
 ): {

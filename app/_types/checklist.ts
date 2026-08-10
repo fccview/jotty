@@ -97,4 +97,5 @@ export interface Checklist {
   rawContent?: string;
   statuses?: KanbanStatus[];
   tags?: string[];
+  extraMetadata?: Record<string, unknown>;
 }

@@ -56,6 +56,52 @@ describe("checklist frontmatter round-trip", () => {
     expect(listToMarkdown(list)).toContain("sharedWith:");
   });
 
+  it("keeps foreign frontmatter across a parse and write back", () => {
+    const imported = [
+      "---",
+      "uuid: board-uuid-2",
+      "title: Imported Board",
+      "checklistType: kanban",
+      "aliases:",
+      "  - groceries",
+      "  - errands",
+      "cssclasses: [compact]",
+      "publish: true",
+      "source:",
+      "  app: obsidian",
+      "---",
+      "- [ ] Card one",
+    ].join("\n");
+
+    const list = parseMarkdown(
+      imported,
+      "imported-board",
+      "Uncategorized",
+      "fccview",
+    );
+
+    expect(list.extraMetadata).toEqual({
+      aliases: ["groceries", "errands"],
+      cssclasses: ["compact"],
+      publish: true,
+      source: { app: "obsidian" },
+    });
+
+    const markdown = listToMarkdown({ ...list, title: "Renamed Board" });
+    const reparsed = parseMarkdown(
+      markdown,
+      "imported-board",
+      "Uncategorized",
+      "fccview",
+    );
+
+    expect(reparsed.extraMetadata).toEqual(list.extraMetadata);
+    expect(reparsed.title).toBe("Renamed Board");
+    expect(reparsed.uuid).toBe("board-uuid-2");
+    expect(parseChecklistContent(markdown, "imported-board").extraMetadata)
+      .toEqual(list.extraMetadata);
+  });
+
   it("omits sharedWith for boards that were never shared", () => {
     const plain = [
       "---",

@@ -11,7 +11,7 @@ import {
 import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { parseRecurrenceFromMarkdown } from "@/app/_utils/recurrence-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
-import { extractYamlMetadata } from "./yaml-metadata-utils";
+import { extractYamlMetadata, strayMeta } from "./yaml-metadata-utils";
 
 export const parseChecklistContent = (
   rawContent: string,
@@ -24,6 +24,7 @@ export const parseChecklistContent = (
   statuses?: KanbanStatus[];
   tags?: string[];
   sharedWith?: string | string[];
+  extraMetadata?: Record<string, unknown>;
 } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
 
@@ -291,6 +292,7 @@ export const parseChecklistContent = (
     ...(metadata[SHARED_WITH_KEY] !== undefined && {
       sharedWith: metadata[SHARED_WITH_KEY] as string | string[],
     }),
+    extraMetadata: strayMeta(metadata),
   };
 };
 
