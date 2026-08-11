@@ -347,6 +347,9 @@ export const getListById = async (
     ...(parsedData.sharedWith !== undefined && {
       sharedWith: parsedData.sharedWith,
     }),
+    ...(parsedData.extraMetadata && {
+      extraMetadata: parsedData.extraMetadata,
+    }),
   };
 };
 

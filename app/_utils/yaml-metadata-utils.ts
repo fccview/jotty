@@ -36,10 +36,6 @@ export enum OwnedMetaKeys {
 
 export const JOTTY_META_KEYS: string[] = Object.values(OwnedMetaKeys);
 
-/**
- * Everything in the frontmatter that Jotty does not own, e.g. fields written by
- * Obsidian, Hugo or whoever else touched the file before it landed here.
- */
 export const strayMeta = (
   metadata: DocumentMetadata | undefined,
 ): Record<string, unknown> | undefined => {
@@ -52,10 +48,6 @@ export const strayMeta = (
   return strays.length > 0 ? Object.fromEntries(strays) : undefined;
 };
 
-/**
- * Merges stray frontmatter from the file on disk with whatever the incoming
- * payload carried, the payload winning so hand edits are not undone.
- */
 export const keptMeta = (
   stored: Record<string, unknown> | undefined,
   incoming: Record<string, unknown> | undefined,
@@ -175,20 +167,10 @@ export const extractChecklistType = (content: string): "kanban" | "simple" => {
   return ChecklistsTypes.SIMPLE;
 };
 
-/**
- * Generates a new UUID
- * @returns UUID string
- */
 export const generateUuid = (): string => {
   return uuidv4();
 };
 
-/**
- * Migrates legacy title and checklist type to YAML metadata format
- * @param content - Original markdown content
- * @param generateNewUuid - Whether to generate a new UUID if none exists
- * @returns Updated content with YAML metadata
- */
 export const migrateToYamlMetadata = (
   content: string,
   generateNewUuid: boolean = true,
@@ -249,21 +231,11 @@ export const migrateToYamlMetadata = (
   return frontmatter + cleanedContent;
 };
 
-/**
- * Extracts UUID from YAML metadata in content
- * @param content - Markdown content
- * @returns UUID string or undefined
- */
 export const extractUuid = (content: string): string | undefined => {
   const { metadata } = extractYamlMetadata(content);
   return metadata.uuid;
 };
 
-/**
- * Checks if content has YAML metadata
- * @param content - Markdown content
- * @returns Boolean indicating if YAML metadata exists
- */
 export const hasYamlMetadata = (content: string): boolean => {
   return YAML_FRONTMATTER_REGEX.test(content);
 };
