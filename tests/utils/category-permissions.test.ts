@@ -14,7 +14,15 @@ describe("category fill permission", () => {
   it("never lets a loose mount take items", () => {
     expect(canFill({ isLoose: true })).toBe(false);
     expect(
-      canFill({ isLoose: true, permissions: { canRead: true, canEdit: true, canCreate: true } }),
+      canFill({
+        isLoose: true,
+        permissions: {
+          canRead: true,
+          canEdit: true,
+          canDelete: false,
+          canCreate: true,
+        },
+      }),
     ).toBe(false);
   });
 
@@ -22,7 +30,12 @@ describe("category fill permission", () => {
     expect(
       canFill({
         ...SHARED_FOLDER,
-        permissions: { canRead: true, canEdit: true, canCreate: false },
+        permissions: {
+          canRead: true,
+          canEdit: true,
+          canDelete: false,
+          canCreate: false,
+        },
       }),
     ).toBe(false);
   });
@@ -31,19 +44,35 @@ describe("category fill permission", () => {
     expect(
       canFill({
         ...SHARED_FOLDER,
-        permissions: { canRead: true, canEdit: false, canCreate: true },
+        permissions: {
+          canRead: true,
+          canEdit: false,
+          canDelete: false,
+          canCreate: true,
+        },
       }),
     ).toBe(true);
   });
 
   it("falls back to edit for grants written before create existed", () => {
     expect(
-      canFill({ ...SHARED_FOLDER, permissions: { canRead: true, canEdit: true } }),
+      canFill({
+        ...SHARED_FOLDER,
+        permissions: { canRead: true, canEdit: true, canDelete: false },
+      }),
     ).toBe(true);
     expect(
-      canFill({ ...SHARED_FOLDER, permissions: { canRead: true, canEdit: false } }),
+      canFill({
+        ...SHARED_FOLDER,
+        permissions: { canRead: true, canEdit: false, canDelete: false },
+      }),
     ).toBe(false);
-    expect(granted({ canRead: true, canEdit: true }, PermissionTypes.CREATE)).toBe(true);
+    expect(
+      granted(
+        { canRead: true, canEdit: true, canDelete: false },
+        PermissionTypes.CREATE,
+      ),
+    ).toBe(true);
   });
 
   it("refuses a shared folder with no grant at all", () => {
