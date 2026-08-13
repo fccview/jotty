@@ -6,6 +6,7 @@ import { ArrowDown01Icon, Folder01Icon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { Category } from "@/app/_types";
 import { CategoryTreeNode } from "./CategoryTreeNode";
+import { canFill } from "@/app/_utils/sharing-utils";
 import { useTranslations } from "next-intl";
 
 const DROPDOWN_MAX_HEIGHT = 240;
@@ -17,6 +18,7 @@ interface CategoryTreeSelectorProps {
   onCategorySelect: (categoryPath: string) => void;
   placeholder?: string;
   className?: string;
+  requireCreate?: boolean;
 }
 
 interface DropdownBox {
@@ -32,6 +34,7 @@ export const CategoryTreeSelector = ({
   onCategorySelect,
   placeholder = "Select category...",
   className,
+  requireCreate = false,
 }: CategoryTreeSelectorProps) => {
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
@@ -55,6 +58,11 @@ export const CategoryTreeSelector = ({
   const getSubCategories = useCallback(
     (parentPath: string) => pickable.filter((cat) => cat.parent === parentPath),
     [pickable]
+  );
+
+  const isBlocked = useCallback(
+    (category: Category) => requireCreate && !canFill(category),
+    [requireCreate]
   );
 
   const selectedCategoryName = useMemo(() => {
@@ -172,6 +180,7 @@ export const CategoryTreeSelector = ({
             expandedCategories={expandedCategories}
             onCategoryClick={handleCategoryClick}
             onToggleExpanded={toggleExpanded}
+            isBlocked={isBlocked}
           />
         ))}
       </div>

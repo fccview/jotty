@@ -516,6 +516,7 @@ export const cloneNote = async (formData: FormData) => {
     const updatedContent = updateYamlMetadata(
       contentWithoutMetadata,
       {
+        ...(note.extraMetadata || {}),
         ...sourceMeta,
         uuid: cloneUuid,
         title: cloneTitle,

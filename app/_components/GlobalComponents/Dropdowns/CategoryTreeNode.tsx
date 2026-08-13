@@ -15,6 +15,7 @@ export interface CategoryTreeNodeProps {
   onCategoryClick: (categoryPath: string) => void;
   onToggleExpanded: (categoryPath: string) => void;
   getSubCategories: (parentPath: string) => Category[];
+  isBlocked?: (category: Category) => boolean;
 }
 
 export const CategoryTreeNode = ({
@@ -25,20 +26,25 @@ export const CategoryTreeNode = ({
   onCategoryClick,
   onToggleExpanded,
   getSubCategories,
+  isBlocked,
 }: CategoryTreeNodeProps) => {
   const subCategories = getSubCategories(category.path);
   const isExpanded = expandedCategories.has(category.path);
   const hasSubCategories = subCategories.length > 0;
+  const blocked = isBlocked?.(category) === true;
 
   return (
     <div key={category.path} className="jotty-category-tree-node select-none">
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty cursor-pointer hover:bg-muted/50",
+          "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty",
+          blocked
+            ? "opacity-40 cursor-not-allowed"
+            : "cursor-pointer hover:bg-muted/50",
           selectedCategory === category.path && "bg-primary/10 text-primary"
         )}
         style={{ paddingLeft: `${12 + level * 20}px` }}
-        onClick={() => onCategoryClick(category.path)}
+        onClick={() => !blocked && onCategoryClick(category.path)}
       >
         <button
           type="button"
@@ -90,6 +96,7 @@ export const CategoryTreeNode = ({
               expandedCategories={expandedCategories}
               onCategoryClick={onCategoryClick}
               onToggleExpanded={onToggleExpanded}
+              isBlocked={isBlocked}
             />
           ))}
         </div>

@@ -306,30 +306,19 @@ export const parseNoteContent = (
   encrypted?: boolean;
   encryptionMethod?: "pgp" | "xchacha";
   tags?: string[];
+  extraMetadata?: Record<string, unknown>;
 } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
 
   const tags = Array.isArray(metadata.tags) ? metadata.tags : undefined;
 
-  if (metadata.title) {
-    return {
-      title: metadata.title,
-      content: contentWithoutMetadata,
-      uuid: metadata.uuid,
-      encrypted: metadata.encrypted || false,
-      encryptionMethod: metadata.encryptionMethod,
-      tags,
-    };
-  }
-
-  const title = id.replace(/-/g, " ");
-
   return {
-    title,
+    title: metadata.title || id.replace(/-/g, " "),
     content: contentWithoutMetadata,
     uuid: metadata.uuid,
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
     tags,
+    extraMetadata: strayMeta(metadata),
   };
 };

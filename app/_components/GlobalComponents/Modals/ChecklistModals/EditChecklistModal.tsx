@@ -137,6 +137,7 @@ export const EditChecklistModal = ({
               onCategorySelect={setCategory}
               className="w-full"
               placeholder={t('common.selectCategory')}
+              requireCreate
             />
           </div>
         )}

@@ -33,6 +33,14 @@ export const granted = (
   return perms[permission] === true;
 };
 
+export const canFill = (category: {
+  sharedFrom?: string;
+  isLoose?: boolean;
+  permissions?: SharingPermissions;
+}): boolean =>
+  !category.isLoose &&
+  (!category.sharedFrom || granted(category.permissions, PermissionTypes.CREATE));
+
 export const codeFromPerms = (perms: SharingPermissions): SharePerms => {
   if (perms.canDelete) return SharePerms.DELETE;
   if (perms.canEdit) return SharePerms.WRITE;

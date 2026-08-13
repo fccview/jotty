@@ -8,6 +8,7 @@ import {
   strayMeta,
   keptMeta,
 } from "@/app/_utils/yaml-metadata-utils";
+import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 
 const IMPORTED_NOTE = [
   "---",
@@ -139,6 +140,44 @@ describe("note frontmatter preservation", () => {
     expect(noteToMarkdown(
       parseMarkdownNote(plain, "plain", "Uncategorized", "fccview"),
     )).not.toContain("aliases");
+  });
+
+  it("keeps unknown keys when a note is read by uuid for editing", () => {
+    const parsed = parseNoteContent(IMPORTED_NOTE, "imported");
+
+    expect(parsed.extraMetadata).toEqual({
+      aliases: ["second brain", "vault note"],
+      cssclasses: ["wide", "dark"],
+      publish: true,
+      weight: 42,
+      frontmatterAuthor: { name: "someone", handle: "@someone" },
+    });
+
+    const metadata = metaOf(
+      noteToMarkdown({
+        id: "imported",
+        uuid: "fixed-uuid",
+        title: "Edited In Jotty",
+        content: parsed.content,
+        category: "Uncategorized",
+        createdAt: "",
+        updatedAt: "",
+        extraMetadata: keptMeta(parsed.extraMetadata, undefined),
+      }),
+    );
+
+    expect(metadata.title).toBe("Edited In Jotty");
+    expect(metadata.publish).toBe(true);
+    expect(metadata.weight).toBe(42);
+    expect(metadata.aliases).toEqual(["second brain", "vault note"]);
+  });
+
+  it("falls back to the id for a title without losing stray keys", () => {
+    const untitled = ["---", "publish: true", "---", "Body"].join("\n");
+    const parsed = parseNoteContent(untitled, "my-note");
+
+    expect(parsed.title).toBe("my note");
+    expect(parsed.extraMetadata).toEqual({ publish: true });
   });
 
   it("prefers incoming stray values over the stored ones", () => {
