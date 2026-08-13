@@ -130,6 +130,9 @@ export const getNoteById = async (
     encrypted: parsedData.encrypted || false,
     encryptionMethod: parsedData.encryptionMethod,
     tags: parsedData.tags || [],
+    ...(parsedData.extraMetadata && {
+      extraMetadata: parsedData.extraMetadata,
+    }),
   };
 };
 

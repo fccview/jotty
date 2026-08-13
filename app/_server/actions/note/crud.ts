@@ -31,6 +31,8 @@ import {
   extractYamlMetadata as stripYaml,
   generateUuid,
   updateYamlMetadata,
+  strayMeta,
+  keptMeta,
 } from "@/app/_utils/yaml-metadata-utils";
 import { getSettings } from "@/app/_server/actions/config";
 import { logContentEvent } from "@/app/_server/actions/log";
@@ -152,7 +154,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     }
 
     const sanitizedContent = sanitizeMarkdown(content);
-    const { contentWithoutMetadata } = stripYaml(sanitizedContent);
+    const { metadata: incomingMeta, contentWithoutMetadata } =
+      stripYaml(sanitizedContent);
     const processedContent = settings?.editor?.enableBilateralLinks
       ? await convertInternalLinksToNewFormat(
         contentWithoutMetadata,
@@ -179,6 +182,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       encrypted: isEncrypted(convertedContent),
       encryptionMethod,
       tags: sortedTags.length > 0 ? sortedTags : undefined,
+      extraMetadata: keptMeta(note.extraMetadata, strayMeta(incomingMeta)),
     };
 
     const sourceDir = _noteDirFor(source.owner, source.category);
@@ -512,6 +516,7 @@ export const cloneNote = async (formData: FormData) => {
     const updatedContent = updateYamlMetadata(
       contentWithoutMetadata,
       {
+        ...(note.extraMetadata || {}),
         ...sourceMeta,
         uuid: cloneUuid,
         title: cloneTitle,

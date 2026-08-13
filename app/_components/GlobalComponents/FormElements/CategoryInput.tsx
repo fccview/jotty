@@ -78,6 +78,7 @@ export const CategoryInput = ({
             onCategorySelect={onCategoryChange}
             className="flex-1"
             placeholder={t('common.selectCategory')}
+            requireCreate
           />
           <Button
             type="button"

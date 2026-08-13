@@ -12,6 +12,7 @@ import {
   extractChecklistType,
   generateYamlFrontmatter,
   generateUuid,
+  strayMeta,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
@@ -357,6 +358,7 @@ export const parseMarkdown = (
     ...(metadata[SHARED_WITH_KEY] !== undefined && {
       sharedWith: metadata[SHARED_WITH_KEY] as string | string[],
     }),
+    extraMetadata: strayMeta(metadata),
   };
 };
 
@@ -447,9 +449,8 @@ const generateItemMarkdown = (
       metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
     }
 
-    itemLine = `${indent}- [${
-      item.completed ? "x" : " "
-    }] ${escapedText} | ${metadata.join(" | ")}`;
+    itemLine = `${indent}- [${item.completed ? "x" : " "
+      }] ${escapedText} | ${metadata.join(" | ")}`;
   } else {
     const itemMetadata: Record<string, any> = {};
     if (item.id) {
@@ -515,9 +516,8 @@ const generateItemMarkdown = (
       metadata.push(...recurrenceParts);
     }
 
-    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${
-      metadata.length ? ` | ${metadata.join(" | ")}` : ""
-    }`;
+    itemLine = `${indent}- [${item.completed ? "x" : " "}] ${escapedText}${metadata.length ? ` | ${metadata.join(" | ")}` : ""
+      }`;
   }
 
   if (item.children && item.children.length > 0) {
@@ -532,7 +532,7 @@ const generateItemMarkdown = (
 };
 
 export const listToMarkdown = (list: Checklist): string => {
-  const metadata: any = {};
+  const metadata: Record<string, unknown> = { ...(list.extraMetadata || {}) };
   metadata.uuid = list.uuid || generateUuid();
   metadata.title = list.title || "Untitled Checklist";
   if (list.type === ChecklistsTypes.KANBAN) metadata.checklistType = "kanban";

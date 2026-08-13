@@ -5,6 +5,7 @@ import {
   extractTitle,
   generateYamlFrontmatter,
   generateUuid,
+  strayMeta,
 } from "@/app/_utils/yaml-metadata-utils";
 
 export const parseMarkdownNote = (
@@ -40,6 +41,7 @@ export const parseMarkdownNote = (
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
     tags: Array.isArray(metadata.tags) ? metadata.tags : [],
+    extraMetadata: strayMeta(metadata),
   };
 };
 
@@ -168,7 +170,7 @@ export const convertInternalLinksToNewFormat = async (
 };
 
 export const noteToMarkdown = (note: Note): string => {
-  const metadata: any = {};
+  const metadata: Record<string, unknown> = { ...(note.extraMetadata || {}) };
   metadata.uuid = note.uuid || generateUuid();
 
   let content = note.content || "";

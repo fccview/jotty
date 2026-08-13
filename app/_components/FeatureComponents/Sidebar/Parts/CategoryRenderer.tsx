@@ -23,7 +23,7 @@ import {
 } from "@/app/_types";
 import { Draggable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Draggable";
 import { SidebarItem } from "@/app/_components/FeatureComponents/Sidebar/Parts/SidebarItem";
-import { Modes, PermissionTypes } from "@/app/_types/enums";
+import { Modes } from "@/app/_types/enums";
 import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
 import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
 import { useTranslations } from "next-intl";
@@ -35,7 +35,7 @@ import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/Confirma
 import { leaveFolder } from "@/app/_server/actions/share/operations";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { granted } from "@/app/_utils/sharing-utils";
+import { canFill } from "@/app/_utils/sharing-utils";
 
 interface CategoryRendererProps {
   category: Category;
@@ -104,14 +104,9 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const isCollapsed = collapsedCategories.has(category.path);
   const hasContent = categoryItems.length > 0 || subCategories.length > 0;
 
-  const isLoose = Boolean(category.isLoose);
   const isOwned = !category.sharedFrom;
-  const canWrite =
-    !isLoose && (isOwned || category.permissions?.canEdit === true);
   const canRemove = isOwned || category.permissions?.canDelete === true;
-  const canFill =
-    !isLoose &&
-    (isOwned || granted(category.permissions, PermissionTypes.CREATE));
+  const canFillCategory = canFill(category);
 
   const handleLeaveFolder = async () => {
     const result = await leaveFolder(
@@ -157,7 +152,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
       : []),
   ];
 
-  const createActions = canFill
+  const createActions = canFillCategory
     ? [
         {
           label: t(
@@ -217,7 +212,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
           data={{
             type: "category",
             categoryPath: category.path,
-            accepts: canWrite ? "all" : "none",
+            accepts: canFillCategory ? "all" : "none",
           }}
           className="group"
         >

@@ -19,6 +19,44 @@ export interface DocumentMetadata {
 
 const YAML_FRONTMATTER_REGEX = /^\uFEFF?---\r?\n([\s\S]*?)\r?\n---(?:\r?\n)?/;
 
+export enum OwnedMetaKeys {
+  UUID = "uuid",
+  TITLE = "title",
+  TAGS = "tags",
+  ENCRYPTED = "encrypted",
+  ENCRYPTION_METHOD = "encryptionMethod",
+  CHECKLIST_TYPE = "checklistType",
+  STATUSES = "statuses",
+  SHARED_WITH = "sharedWith",
+  OWNER = "owner",
+  CATEGORY = "category",
+  CREATED_AT = "createdAt",
+  UPDATED_AT = "updatedAt",
+}
+
+export const JOTTY_META_KEYS: string[] = Object.values(OwnedMetaKeys);
+
+export const strayMeta = (
+  metadata: DocumentMetadata | undefined,
+): Record<string, unknown> | undefined => {
+  if (!metadata) return undefined;
+
+  const strays = Object.entries(metadata).filter(
+    ([key]) => !JOTTY_META_KEYS.includes(key),
+  );
+
+  return strays.length > 0 ? Object.fromEntries(strays) : undefined;
+};
+
+export const keptMeta = (
+  stored: Record<string, unknown> | undefined,
+  incoming: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined => {
+  if (!stored && !incoming) return undefined;
+
+  return { ...(stored || {}), ...(incoming || {}) };
+};
+
 export const extractYamlMetadata = (
   content: string,
 ): {
@@ -129,20 +167,10 @@ export const extractChecklistType = (content: string): "kanban" | "simple" => {
   return ChecklistsTypes.SIMPLE;
 };
 
-/**
- * Generates a new UUID
- * @returns UUID string
- */
 export const generateUuid = (): string => {
   return uuidv4();
 };
 
-/**
- * Migrates legacy title and checklist type to YAML metadata format
- * @param content - Original markdown content
- * @param generateNewUuid - Whether to generate a new UUID if none exists
- * @returns Updated content with YAML metadata
- */
 export const migrateToYamlMetadata = (
   content: string,
   generateNewUuid: boolean = true,
@@ -203,21 +231,11 @@ export const migrateToYamlMetadata = (
   return frontmatter + cleanedContent;
 };
 
-/**
- * Extracts UUID from YAML metadata in content
- * @param content - Markdown content
- * @returns UUID string or undefined
- */
 export const extractUuid = (content: string): string | undefined => {
   const { metadata } = extractYamlMetadata(content);
   return metadata.uuid;
 };
 
-/**
- * Checks if content has YAML metadata
- * @param content - Markdown content
- * @returns Boolean indicating if YAML metadata exists
- */
 export const hasYamlMetadata = (content: string): boolean => {
   return YAML_FRONTMATTER_REGEX.test(content);
 };

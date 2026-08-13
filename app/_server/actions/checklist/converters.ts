@@ -121,6 +121,7 @@ export const convertChecklistType = async (formData: FormData) => {
       updatedAt: new Date().toISOString(),
       ...(list.statuses && { statuses: list.statuses }),
       ...(list.tags && { tags: list.tags }),
+      ...(list.extraMetadata && { extraMetadata: list.extraMetadata }),
     };
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));

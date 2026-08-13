@@ -21,6 +21,8 @@ const mockExtractHashtagsFromContent = vi.fn();
 const mockGenerateYamlFrontmatter = vi.fn();
 const mockExtractYamlMetadata = vi.fn();
 const mockExtractTitle = vi.fn();
+const mockStrayMeta = vi.fn();
+const mockKeptMeta = vi.fn();
 const mockGetUserByNote = vi.fn();
 const mockGetUserByNoteUuid = vi.fn();
 const mockGetNoteById = vi.fn();
@@ -95,6 +97,8 @@ vi.mock("@/app/_utils/yaml-metadata-utils", () => ({
     .fn()
     .mockReturnValue("---\nuuid: test-uuid-123\n---\nTest content"),
   extractTitle: (...args: any[]) => mockExtractTitle(...args),
+  strayMeta: (...args: any[]) => mockStrayMeta(...args),
+  keptMeta: (...args: any[]) => mockKeptMeta(...args),
 }));
 
 vi.mock("@/app/_utils/markdown-utils", () => ({
@@ -172,6 +176,8 @@ describe("Note Actions", () => {
       contentWithoutMetadata: "Test content",
     });
     mockExtractTitle.mockReturnValue("Test Note");
+    mockStrayMeta.mockReturnValue(undefined);
+    mockKeptMeta.mockReturnValue(undefined);
     mockGetUserByNote.mockResolvedValue({ success: false });
     mockGetUserByNoteUuid.mockResolvedValue({ success: false });
   });

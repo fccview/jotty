@@ -15,6 +15,7 @@ import { updateIndexForItem, parseInternalLinks } from "@/app/_server/actions/li
 import {
   extractYamlMetadata as stripYaml,
   generateUuid,
+  strayMeta,
 } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { commitNote } from "@/app/_server/actions/history";
@@ -39,7 +40,7 @@ export const makeNote = async (
     ]);
 
     const sanitizedContent = sanitizeMarkdown(rawContent);
-    const { contentWithoutMetadata } = stripYaml(sanitizedContent);
+    const { metadata, contentWithoutMetadata } = stripYaml(sanitizedContent);
     const content = contentWithoutMetadata;
     const encryptionMethod = detectEncryptionMethod(content) || undefined;
     const encrypted = isEncrypted(content);
@@ -83,6 +84,7 @@ export const makeNote = async (
       tags: extractedTags.length > 0 ? extractedTags : undefined,
       encrypted: encrypted || undefined,
       encryptionMethod,
+      extraMetadata: strayMeta(metadata),
     };
 
     await serverWriteFile(filePath, noteToMarkdown(newDoc));

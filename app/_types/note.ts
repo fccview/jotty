@@ -23,6 +23,7 @@ export interface Note {
   encryptedContent?: string;
   encryptionMethod?: EncryptionMethod;
   tags?: string[];
+  extraMetadata?: Record<string, unknown>;
 }
 
 export interface NoteEditorViewModel {
