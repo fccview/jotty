@@ -42,7 +42,7 @@ export const createCategory = async (formData: FormData) => {
       const verdict = await bouncer(
         mountParent,
         username!,
-        PermissionTypes.EDIT,
+        PermissionTypes.CREATE,
       );
 
       if (!verdict.allowed) {

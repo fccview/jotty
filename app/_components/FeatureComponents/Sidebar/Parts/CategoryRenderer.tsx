@@ -104,10 +104,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
   const isCollapsed = collapsedCategories.has(category.path);
   const hasContent = categoryItems.length > 0 || subCategories.length > 0;
 
-  const isLoose = Boolean(category.isLoose);
   const isOwned = !category.sharedFrom;
-  const canWrite =
-    !isLoose && (isOwned || category.permissions?.canEdit === true);
   const canRemove = isOwned || category.permissions?.canDelete === true;
   const canFillCategory = canFill(category);
 
@@ -215,7 +212,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
           data={{
             type: "category",
             categoryPath: category.path,
-            accepts: canWrite ? "all" : "none",
+            accepts: canFillCategory ? "all" : "none",
           }}
           className="group"
         >
