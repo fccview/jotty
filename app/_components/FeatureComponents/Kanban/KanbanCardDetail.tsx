@@ -470,6 +470,7 @@ export const KanbanCardDetail = ({
                 <UnifiedMarkdownRenderer
                   content={descriptionMarkdown}
                   className="text-card-foreground prose-sm max-w-none leading-relaxed"
+                  showStats={false}
                 />
               ) : (
                 <p className="text-muted-foreground text-sm opacity-50">
