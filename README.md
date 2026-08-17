@@ -355,4 +355,4 @@ I would like to thank the following members for raising issues and help test/deb
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=fccview/jotty&type=date&legend=top-left)](https://www.star-history.com/#fccview/jotty&type=date&legend=top-left)
+[![Star History Chart](https://star-history.dera.page/svg?repos=fccview/jotty&type=date&legend=top-left)](https://star-history.dera.page/#fccview/jotty&type=date&legend=top-left)
