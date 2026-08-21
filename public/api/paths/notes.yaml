@@ -114,7 +114,7 @@
     description: Retrieves a single note by id
     tags:
       - Notes
-    paramaters:
+    parameters:
       - name: noteId
         in: path
         required: true
