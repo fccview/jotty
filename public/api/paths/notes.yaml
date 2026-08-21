@@ -109,6 +109,54 @@
         description: Invalid request (missing title)
 
 /notes/{noteId}:
+  get:
+    summary: Get Note by id
+    description: Retrieves a single note by id
+    tags:
+      - Notes
+    paramaters:
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: UUID of the note
+    responses:
+      '200':
+        description: Note retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    content:
+                      type: string
+                    category:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                    updatedAt:
+                      type: string
+                      format: date-time
+                    owner:
+                      type: string
+      '404':
+        description: Note not found
+      '400':
+        description: Invalid request
   put:
     summary: Update Note
     description: Updates an existing note. All fields are optional - unspecified fields will preserve their current values.
