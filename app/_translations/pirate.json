@@ -1552,7 +1552,11 @@
     "useInstanceDefault": "Follow the cap'n's orders",
     "borderRadiusDescription": "Every corner on the ship changes as ye haul the slider.",
     "kanbanColumnWidth": "Kanban column width",
-    "kanbanColumnWidthDescription": "Set yer own width for the Kanban status columns. Only lasts for this browser voyage, matey."
+    "kanbanColumnWidthDescription": "Set yer own width for the Kanban status columns. The cap'n's default fits the columns to whatever space be on deck.",
+    "kanbanColumnWidthCompact": "Cramped",
+    "kanbanColumnWidthComfortable": "Comfy",
+    "kanbanColumnWidthWide": "Roomy",
+    "kanbanColumnWidthAutoFit": "Ship-fit"
   },
   "migration": {
     "migrationComplete": "Refit Complete",

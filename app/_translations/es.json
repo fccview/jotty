@@ -1528,7 +1528,11 @@
     "useInstanceDefault": "Usar el valor predeterminado",
     "borderRadiusDescription": "Las esquinas se actualizan en toda la aplicación mientras arrastras.",
     "kanbanColumnWidth": "Ancho de columnas de Kanban",
-    "kanbanColumnWidthDescription": "Establece un ancho personalizado para las columnas de estado de Kanban. Solo se aplica a esta sesión del navegador."
+    "kanbanColumnWidthDescription": "Establece un ancho personalizado para las columnas de estado de Kanban. El valor predeterminado de la instancia ajusta las columnas automáticamente al espacio disponible.",
+    "kanbanColumnWidthCompact": "Compacto",
+    "kanbanColumnWidthComfortable": "Confortable",
+    "kanbanColumnWidthWide": "Ancho",
+    "kanbanColumnWidthAutoFit": "Ajuste automático"
   },
   "migration": {
     "migrationComplete": "Migración Completa",

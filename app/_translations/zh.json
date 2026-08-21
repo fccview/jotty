@@ -1552,7 +1552,11 @@
     "useInstanceDefault": "使用实例默认值",
     "borderRadiusDescription": "拖动时整个应用的圆角会实时更新。",
     "kanbanColumnWidth": "看板列宽度",
-    "kanbanColumnWidthDescription": "为看板状态列设置自定义宽度。仅对当前浏览器会话生效。"
+    "kanbanColumnWidthDescription": "为看板状态列设置自定义宽度。实例默认值会自动将列适应可用空间。",
+    "kanbanColumnWidthCompact": "紧凑",
+    "kanbanColumnWidthComfortable": "舒适",
+    "kanbanColumnWidthWide": "宽松",
+    "kanbanColumnWidthAutoFit": "自动适应"
   },
   "migration": {
     "migrationComplete": "迁移完成",

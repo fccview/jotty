@@ -145,6 +145,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         <ColumnWidthSlider
           value={columnWidth}
           onChange={(value) => setKanbanColumnWidth(clampKanbanColumnWidth(value))}
+          isDefault={kanbanColumnWidth === null}
         />
         <p className="text-md lg:text-xs text-muted-foreground mt-2">
           {t("settingsModal.kanbanColumnWidthDescription")}
