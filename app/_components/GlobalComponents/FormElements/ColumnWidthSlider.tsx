@@ -11,17 +11,9 @@ interface ColumnWidthSliderProps {
   value: number;
   onChange: (value: number) => void;
   disabled?: boolean;
-  /**
-   * When true, no custom width has been chosen and the instance default
-   * (auto-fit) is in effect. The slider shows "Auto fit" as the label until
-   * the user drags it, which switches to a custom preset.
-   */
   isDefault?: boolean;
 }
 
-// Map a px value to a friendly named preset.
-// Widths at or below the lower bound read as "Compact", above the upper as "Wide",
-// and everything in between reads as "Comfortable".
 const COMPACT_MAX = 240;
 const COMFORTABLE_MAX = 360;
 
@@ -32,11 +24,6 @@ const widthToPresetKey = (width: number): string => {
   return "settingsModal.kanbanColumnWidthWide";
 };
 
-/**
- * Slider that lets the user pick a custom width for kanban status columns.
- * Shows a friendly named preset (Compact / Comfortable / Wide) instead of a
- * raw pixel value, for better UX.
- */
 export const ColumnWidthSlider = ({
   value,
   onChange,
