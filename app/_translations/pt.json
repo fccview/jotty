@@ -1550,7 +1550,9 @@
     "viewModeGrid": "Grelha",
     "borderRadius": "Arredondamento dos cantos",
     "useInstanceDefault": "Usar predefinição da instância",
-    "borderRadiusDescription": "Os cantos atualizam em toda a aplicação enquanto arrasta."
+    "borderRadiusDescription": "Os cantos atualizam em toda a aplicação enquanto arrasta.",
+    "kanbanColumnWidth": "Largura das colunas Kanban",
+    "kanbanColumnWidthDescription": "Defina uma largura personalizada para as colunas de estado do Kanban. Aplica-se apenas a esta sessão do navegador."
   },
   "migration": {
     "migrationComplete": "Migração concluída",

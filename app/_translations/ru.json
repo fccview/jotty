@@ -1550,7 +1550,9 @@
     "viewModeGrid": "Сетка",
     "borderRadius": "Скругление углов",
     "useInstanceDefault": "Использовать значение по умолчанию",
-    "borderRadiusDescription": "Углы меняются во всём приложении по мере перетаскивания."
+    "borderRadiusDescription": "Углы меняются во всём приложении по мере перетаскивания.",
+    "kanbanColumnWidth": "Ширина колонок Kanban",
+    "kanbanColumnWidthDescription": "Установите свою ширину колонок статусов Kanban. Применяется только к этой сессии браузера."
   },
   "migration": {
     "migrationComplete": "Миграция завершена",

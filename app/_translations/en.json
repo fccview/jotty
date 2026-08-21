@@ -1550,7 +1550,9 @@
     "viewModeGrid": "Grid",
     "borderRadius": "Corner rounding",
     "useInstanceDefault": "Use instance default",
-    "borderRadiusDescription": "Corners update across the whole app as you drag."
+    "borderRadiusDescription": "Corners update across the whole app as you drag.",
+    "kanbanColumnWidth": "Kanban column width",
+    "kanbanColumnWidthDescription": "Set a custom width for kanban status columns. Applies to this browser session only."
   },
   "migration": {
     "migrationComplete": "Migration Complete",

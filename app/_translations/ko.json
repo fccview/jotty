@@ -1550,7 +1550,9 @@
     "viewModeGrid": "그리드",
     "borderRadius": "모서리 둥글기",
     "useInstanceDefault": "기본값 사용",
-    "borderRadiusDescription": "드래그하는 동안 앱 전체의 모서리가 즉시 바뀝니다."
+    "borderRadiusDescription": "드래그하는 동안 앱 전체의 모서리가 즉시 바뀝니다.",
+    "kanbanColumnWidth": "칸반 열 넓이",
+    "kanbanColumnWidthDescription": "칸반 상태 열에 대한 사용자 정의 넓이를 설정합니다. 이 브라우저 세션에만 적용됩니다."
   },
   "migration": {
     "migrationComplete": "마이그레이션 완료",

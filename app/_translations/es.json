@@ -1526,7 +1526,9 @@
     "viewModeGrid": "Cuadrícula",
     "borderRadius": "Redondeo de esquinas",
     "useInstanceDefault": "Usar el valor predeterminado",
-    "borderRadiusDescription": "Las esquinas se actualizan en toda la aplicación mientras arrastras."
+    "borderRadiusDescription": "Las esquinas se actualizan en toda la aplicación mientras arrastras.",
+    "kanbanColumnWidth": "Ancho de columnas de Kanban",
+    "kanbanColumnWidthDescription": "Establece un ancho personalizado para las columnas de estado de Kanban. Solo se aplica a esta sesión del navegador."
   },
   "migration": {
     "migrationComplete": "Migración Completa",

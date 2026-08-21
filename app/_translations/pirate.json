@@ -1550,7 +1550,9 @@
     "viewModeGrid": "Grid",
     "borderRadius": "Corner roundin'",
     "useInstanceDefault": "Follow the cap'n's orders",
-    "borderRadiusDescription": "Every corner on the ship changes as ye haul the slider."
+    "borderRadiusDescription": "Every corner on the ship changes as ye haul the slider.",
+    "kanbanColumnWidth": "Kanban column width",
+    "kanbanColumnWidthDescription": "Set yer own width for the Kanban status columns. Only lasts for this browser voyage, matey."
   },
   "migration": {
     "migrationComplete": "Refit Complete",

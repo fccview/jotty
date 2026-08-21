@@ -1525,7 +1525,9 @@
     "viewModeGrid": "Grille",
     "borderRadius": "Arrondi des coins",
     "useInstanceDefault": "Utiliser la valeur par défaut",
-    "borderRadiusDescription": "Les coins se mettent à jour dans toute l'application pendant que vous glissez."
+    "borderRadiusDescription": "Les coins se mettent à jour dans toute l'application pendant que vous glissez.",
+    "kanbanColumnWidth": "Largeur des colonnes Kanban",
+    "kanbanColumnWidthDescription": "Définissez une largeur personnalisée pour les colonnes de statut Kanban. Ne s'applique qu'à cette session de navigateur."
   },
   "migration": {
     "migrationComplete": "Migration terminée",

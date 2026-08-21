@@ -1550,7 +1550,9 @@
     "viewModeGrid": "Saras",
     "borderRadius": "veH lermoHghach",
     "useInstanceDefault": "pat DIvI' yIlo'",
-    "borderRadiusDescription": "bIQeqtaHvIS Hoch pat veHmey choH."
+    "borderRadiusDescription": "bIQeqtaHvIS Hoch pat veHmey choH.",
+    "kanbanColumnWidth": "Kanban veH jul",
+    "kanbanColumnWidthDescription": "Kanban veHmeyvaD nIj wIv. DIvI' neHbrowser-Sessions neH."
   },
   "migration": {
     "migrationComplete": "choH rIn",

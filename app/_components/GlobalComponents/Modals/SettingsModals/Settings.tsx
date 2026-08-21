@@ -20,7 +20,8 @@ import Link from "next/link";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
 import { RadiusSlider } from "@/app/_components/GlobalComponents/FormElements/RadiusSlider";
-import { clampRadius } from "@/app/_consts/styling";
+import { ColumnWidthSlider } from "@/app/_components/GlobalComponents/FormElements/ColumnWidthSlider";
+import { clampRadius, clampKanbanColumnWidth } from "@/app/_consts/styling";
 import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
 
 interface SettingsModalProps {
@@ -48,9 +49,13 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     compactMode,
     borderRadius,
     setBorderRadius,
+    kanbanColumnWidth,
+    setKanbanColumnWidth,
   } = useSettings();
 
   const radius = borderRadius ?? clampRadius(appSettings?.borderRadius);
+  const columnWidth =
+    kanbanColumnWidth ?? clampKanbanColumnWidth(undefined);
   const [themes, setThemes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -120,6 +125,29 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         />
         <p className="text-md lg:text-xs text-muted-foreground mt-2">
           {t("settingsModal.borderRadiusDescription")}
+        </p>
+      </div>
+
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-md lg:text-sm font-medium">
+            {t("settingsModal.kanbanColumnWidth")}
+          </h3>
+          {kanbanColumnWidth !== null && (
+            <button
+              onClick={() => setKanbanColumnWidth(null)}
+              className="text-md lg:text-xs text-primary hover:underline"
+            >
+              {t("settingsModal.useInstanceDefault")}
+            </button>
+          )}
+        </div>
+        <ColumnWidthSlider
+          value={columnWidth}
+          onChange={(value) => setKanbanColumnWidth(clampKanbanColumnWidth(value))}
+        />
+        <p className="text-md lg:text-xs text-muted-foreground mt-2">
+          {t("settingsModal.kanbanColumnWidthDescription")}
         </p>
       </div>
 

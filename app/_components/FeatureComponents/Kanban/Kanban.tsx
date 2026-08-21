@@ -31,6 +31,8 @@ import { archiveItem, unarchiveItem } from "@/app/_server/actions/checklist-item
 import { useTranslations } from "next-intl";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useSettings } from "@/app/_utils/settings-store";
+import { clampKanbanColumnWidth } from "@/app/_consts/styling";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -68,6 +70,11 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       (sharedChecklist) => sharedChecklist.uuid === checklist.uuid,
     ) || false;
   const { permissions } = usePermissions();
+  const { kanbanColumnWidth } = useSettings();
+  const customColumnWidth =
+    kanbanColumnWidth !== null
+      ? clampKanbanColumnWidth(kanbanColumnWidth)
+      : null;
   const {
     localChecklist,
     setLocalChecklist,
@@ -257,8 +264,14 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
         style={
           columns.length <= 6
             ? ({
-              "--kanban-col-count": columns.length,
-            } as React.CSSProperties)
+                "--kanban-col-count": columns.length,
+                ...(customColumnWidth !== null
+                  ?
+                    {
+                      gridTemplateColumns: `repeat(${columns.length}, ${customColumnWidth}px)`,
+                    }
+                  : {}),
+              } as React.CSSProperties)
             : undefined
         }
       >
@@ -269,7 +282,11 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
             <div
               key={column.id}
               className={columns.length > 6 ? "flex-shrink-0" : "min-w-0"}
-              style={columns.length > 6 ? { width: "280px" } : undefined}
+              style={
+                columns.length > 6
+                  ? { width: `${customColumnWidth ?? 280}px` }
+                  : undefined
+              }
             >
               <KanbanColumn
                 checklist={localChecklist}
@@ -305,6 +322,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       statuses,
       handleArchiveAll,
       permissions?.canEdit,
+      customColumnWidth,
     ],
   );
 

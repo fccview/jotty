@@ -1525,7 +1525,9 @@
     "viewModeGrid": "Raster",
     "borderRadius": "Eckenrundung",
     "useInstanceDefault": "Standard der Instanz verwenden",
-    "borderRadiusDescription": "Die Ecken ändern sich beim Ziehen in der gesamten App."
+    "borderRadiusDescription": "Die Ecken ändern sich beim Ziehen in der gesamten App.",
+    "kanbanColumnWidth": "Kanban-Spaltenbreite",
+    "kanbanColumnWidthDescription": "Lege eine benutzerdefinierte Breite für die Kanban-Statusspalten fest. Gilt nur für diese Browsers-Sitzung."
   },
   "migration": {
     "migrationComplete": "Migration vollständig",
