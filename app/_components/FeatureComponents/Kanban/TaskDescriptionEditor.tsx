@@ -5,10 +5,10 @@ import {
   TiptapEditor,
   TiptapEditorRef,
 } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
-import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalModeEditor";
+import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
 import { convertHtmlToMarkdownUnified } from "@/app/_utils/markdown-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 
 interface TaskDescriptionEditorProps {
   /** Current description content (markdown text, already unsanitized). */
@@ -28,10 +28,8 @@ export const TaskDescriptionEditor = ({
   onContentChange,
 }: TaskDescriptionEditorProps) => {
   const { user, notes, checklists } = useAppMode();
-  const { compactMode } = useSettings();
   const editorRef = useRef<TiptapEditorRef>(null);
-
-  const isMinimalMode = user?.disableRichEditor === "enable";
+  const isMinimalMode = useMinimalMode();
 
   useEffect(() => {
     if (!isMinimalMode && editorRef.current) {
@@ -58,16 +56,16 @@ export const TaskDescriptionEditor = ({
 
   if (isMinimalMode) {
     return (
-      <div className="h-[40vh] min-h-[200px] lg:h-[48vh]">
-        <MinimalModeEditor
-          isEditing
-          noteContent={content}
-          onEditorContentChange={(next, isMarkdown) =>
-            handleEditorContentChange(next, isMarkdown)
-          }
-          compactMode={compactMode}
-        />
-      </div>
+      <MinimalEditorPanel
+        isEditing
+        noteContent={content}
+        onEditorContentChange={(next, isMarkdown) =>
+          handleEditorContentChange(next, isMarkdown)
+        }
+        renderWrapper={(children) => (
+          <div className="h-[40vh] min-h-[200px] lg:h-[48vh]">{children}</div>
+        )}
+      />
     );
   }
 

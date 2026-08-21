@@ -17,6 +17,7 @@ import { itemHref, publicHref } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
@@ -39,7 +40,7 @@ export const useNoteEditor = ({
   const router = useRouter();
   const { user } = useAppMode();
   const { showToast } = useToast();
-  const isMinimalMode = user?.disableRichEditor === "enable";
+  const isMinimalMode = useMinimalMode();
   const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
   const [title, setTitle] = useState(note.title);
   const [category, setCategory] = useState(note.category || "Uncategorized");
