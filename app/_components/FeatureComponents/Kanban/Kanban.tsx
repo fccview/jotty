@@ -33,6 +33,7 @@ import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useSettings } from "@/app/_utils/settings-store";
 import { clampKanbanColumnWidth } from "@/app/_consts/styling";
+import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
 
 interface KanbanBoardProps {
   checklist: Checklist;
@@ -71,8 +72,9 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     ) || false;
   const { permissions } = usePermissions();
   const { kanbanColumnWidth } = useSettings();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const customColumnWidth =
-    kanbanColumnWidth !== null
+    kanbanColumnWidth !== null && isDesktop
       ? clampKanbanColumnWidth(kanbanColumnWidth)
       : null;
   const {
