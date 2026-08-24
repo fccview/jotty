@@ -75,6 +75,8 @@ export const Sidebar = (props: SidebarProps) => {
     sidebarMode = (defaultMode as AppMode) || Modes.CHECKLISTS;
   }
 
+  const displayMode = sidebar.pendingMode ?? sidebarMode;
+
   useEffect(() => {
     if (mode !== sidebarMode) {
       setMode(sidebarMode);
@@ -122,7 +124,7 @@ export const Sidebar = (props: SidebarProps) => {
         }
         navigation={
           <SidebarNavigation
-            mode={sidebarMode}
+            mode={displayMode}
             onModeChange={sidebar.handleModeSwitch}
           />
         }
