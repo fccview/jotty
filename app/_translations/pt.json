@@ -274,7 +274,8 @@
     "failedToDelete": "Falha ao excluir comentário",
     "failedToLoad": "Falha ao carregar comentários",
     "readOnly": "Você precisa de acesso de edição para comentar neste cartão.",
-    "replyTo": "Responder a {author}"
+    "replyTo": "Responder a {author}",
+    "noUsersFound": "Nenhum usuário encontrado"
   },
   "history": {
     "noteHistory": "Histórico da nota",
@@ -1739,6 +1740,8 @@
     "sharingTitle": "{user} partilhou um(a) {type} consigo",
     "sharingMessage": "Abrir para ver o(a) {type} partilhado(a)",
     "sharingFolderTitle": "{user} partilhou uma pasta de {type} consigo",
-    "sharingFolderMessage": "Abrir para ver “{folder}”"
+    "sharingFolderMessage": "Abrir para ver “{folder}”",
+    "mentionTitle": "{user} mencionou você em um comentário",
+    "mentionMessage": "“{board}”"
   }
 }

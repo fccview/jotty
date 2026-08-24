@@ -9,6 +9,8 @@ const mockIsAdmin = vi.fn();
 const mockCanReach = vi.fn();
 const mockGetListById = vi.fn();
 const mockBroadcast = vi.fn();
+const mockGetUsers = vi.fn();
+const mockCreateNotificationForUser = vi.fn();
 
 vi.mock("@/app/_server/actions/file", () => ({
   readJsonFile: (...args: any[]) => mockReadJsonFile(...args),
@@ -19,6 +21,7 @@ vi.mock("@/app/_server/actions/file", () => ({
 vi.mock("@/app/_server/actions/users", () => ({
   getUsername: (...args: any[]) => mockGetUsername(...args),
   isAdmin: (...args: any[]) => mockIsAdmin(...args),
+  getUsers: (...args: any[]) => mockGetUsers(...args),
 }));
 
 vi.mock("@/app/_server/actions/share/queries", () => ({
@@ -31,6 +34,11 @@ vi.mock("@/app/_server/actions/checklist", () => ({
 
 vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: (...args: any[]) => mockBroadcast(...args),
+}));
+
+vi.mock("@/app/_server/actions/notifications", () => ({
+  createNotificationForUser: (...args: any[]) =>
+    mockCreateNotificationForUser(...args),
 }));
 
 import {
@@ -67,6 +75,12 @@ describe("Comments Actions", () => {
     mockWriteJsonFile.mockResolvedValue(undefined);
     mockEnsureDir.mockResolvedValue(undefined);
     mockBroadcast.mockResolvedValue(undefined);
+    mockGetUsers.mockResolvedValue([
+      { username: "alice", isAdmin: false, isSuperAdmin: false, avatarUrl: "" },
+      { username: "bob", isAdmin: false, isSuperAdmin: false, avatarUrl: "" },
+      { username: "testuser", isAdmin: false, isSuperAdmin: false, avatarUrl: "" },
+    ]);
+    mockCreateNotificationForUser.mockResolvedValue({ success: true });
   });
 
   describe("getComments", () => {
@@ -233,6 +247,135 @@ describe("Comments Actions", () => {
       );
 
       expect(mockRevalidatePath).toHaveBeenCalledWith(`/checklist/${BOARD_UUID}`);
+    });
+  });
+  describe("@mention notifications", () => {
+    it("sends a notification when a valid user is @mentioned in a new comment", async () => {
+      mockReadJsonFile.mockResolvedValue({ items: {} });
+
+      const result = await addComment(
+        createFormData({
+          uuid: BOARD_UUID,
+          itemId: ITEM_ID,
+          text: "Hey @alice check this out",
+        }),
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockCreateNotificationForUser).toHaveBeenCalledTimes(1);
+      expect(mockCreateNotificationForUser).toHaveBeenCalledWith(
+        "alice",
+        expect.objectContaining({
+          type: "mention",
+          titleKey: "mentionTitle",
+          messageKey: "mentionMessage",
+          messageVars: { user: "testuser", board: "Test Board" },
+        }),
+      );
+    });
+
+    it("sends notifications to multiple mentioned users", async () => {
+      mockReadJsonFile.mockResolvedValue({ items: {} });
+
+      await addComment(
+        createFormData({
+          uuid: BOARD_UUID,
+          itemId: ITEM_ID,
+          text: "@alice and @bob please review",
+        }),
+      );
+
+      expect(mockCreateNotificationForUser).toHaveBeenCalledTimes(2);
+      expect(mockCreateNotificationForUser).toHaveBeenCalledWith(
+        "alice",
+        expect.objectContaining({ type: "mention" }),
+      );
+      expect(mockCreateNotificationForUser).toHaveBeenCalledWith(
+        "bob",
+        expect.objectContaining({ type: "mention" }),
+      );
+    });
+
+    it("does not send a notification to the comment author even if they @mention themselves", async () => {
+      mockReadJsonFile.mockResolvedValue({ items: {} });
+
+      await addComment(
+        createFormData({
+          uuid: BOARD_UUID,
+          itemId: ITEM_ID,
+          text: "note to @testuser",
+        }),
+      );
+
+      expect(mockCreateNotificationForUser).not.toHaveBeenCalled();
+    });
+
+    it("does not send a notification for non-existent usernames", async () => {
+      mockReadJsonFile.mockResolvedValue({ items: {} });
+
+      await addComment(
+        createFormData({
+          uuid: BOARD_UUID,
+          itemId: ITEM_ID,
+          text: "hey @ghostuser",
+        }),
+      );
+
+      expect(mockCreateNotificationForUser).not.toHaveBeenCalled();
+    });
+
+    it("deduplicates repeated mentions of the same user", async () => {
+      mockReadJsonFile.mockResolvedValue({ items: {} });
+
+      await addComment(
+        createFormData({
+          uuid: BOARD_UUID,
+          itemId: ITEM_ID,
+          text: "@alice @alice @alice",
+        }),
+      );
+
+      expect(mockCreateNotificationForUser).toHaveBeenCalledTimes(1);
+    });
+
+    it("sends a notification when editing a comment to add an @mention", async () => {
+      const existing = {
+        items: {
+          [ITEM_ID]: [
+            { id: "c1", author: "testuser", text: "original", createdAt: "2024-01-01T00:00:00.000Z" },
+          ],
+        },
+      };
+      mockReadJsonFile.mockResolvedValue(existing);
+
+      await editComment(
+        createFormData({
+          uuid: BOARD_UUID,
+          itemId: ITEM_ID,
+          commentId: "c1",
+          text: "updated with @alice",
+        }),
+      );
+
+      expect(mockCreateNotificationForUser).toHaveBeenCalledTimes(1);
+      expect(mockCreateNotificationForUser).toHaveBeenCalledWith(
+        "alice",
+        expect.objectContaining({ type: "mention" }),
+      );
+    });
+
+    it("does not send notifications when there are no mentions", async () => {
+      mockReadJsonFile.mockResolvedValue({ items: {} });
+
+      await addComment(
+        createFormData({
+          uuid: BOARD_UUID,
+          itemId: ITEM_ID,
+          text: "just a regular comment",
+        }),
+      );
+
+      expect(mockCreateNotificationForUser).not.toHaveBeenCalled();
     });
   });
 

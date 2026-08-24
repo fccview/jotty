@@ -274,7 +274,8 @@
     "failedToDelete": "Kommentar konnte nicht gelöscht werden",
     "failedToLoad": "Kommentare konnten nicht geladen werden",
     "readOnly": "Du benötigst Bearbeitungsrechte, um diese Karte zu kommentieren.",
-    "replyTo": "Antwort an {author}"
+    "replyTo": "Antwort an {author}",
+    "noUsersFound": "Keine Benutzer gefunden"
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -1733,7 +1734,9 @@
     "sharingTitle": "{user} hat ein {type} mit dir geteilt",
     "sharingMessage": "Öffnen, um das geteilte {type} anzuzeigen",
     "sharingFolderTitle": "{user} hat einen {type}-Ordner mit dir geteilt",
-    "sharingFolderMessage": "Öffnen, um „{folder}“ anzuzeigen"
+    "sharingFolderMessage": "Öffnen, um „{folder}“ anzuzeigen",
+    "mentionTitle": "{user} hat dich in einem Kommentar erwähnt",
+    "mentionMessage": "„{board}“"
   },
   "notFound": {
     "title": "Seite nicht gefunden",

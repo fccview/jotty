@@ -274,7 +274,8 @@
     "failedToDelete": "Nie udało się usunąć komentarza",
     "failedToLoad": "Nie udało się załadować komentarzy",
     "readOnly": "Aby komentować tę kartę, potrzebujesz uprawnień do edycji.",
-    "replyTo": "Odpowiedz użytkownikowi {author}"
+    "replyTo": "Odpowiedz użytkownikowi {author}",
+    "noUsersFound": "Nie znaleziono użytkowników"
   },
   "auth": {
     "loginTitle": "Logowanie",
@@ -1743,6 +1744,8 @@
     "sharingTitle": "{user} udostępnił(a) ci {type}",
     "sharingMessage": "Otwórz, aby zobaczyć udostępniony {type}",
     "sharingFolderTitle": "{user} udostępnił(a) ci folder {type}",
-    "sharingFolderMessage": "Otwórz, aby zobaczyć „{folder}”"
+    "sharingFolderMessage": "Otwórz, aby zobaczyć „{folder}”",
+    "mentionTitle": "{user} wspomniał o Tobie w komentarzu",
+    "mentionMessage": "„{board}”"
   }
 }

@@ -274,7 +274,8 @@
     "failedToDelete": "댓글 삭제에 실패했습니다",
     "failedToLoad": "댓글을 불러오지 못했습니다",
     "readOnly": "이 카드에 댓글을 작성하려면 편집 권한이 필요합니다.",
-    "replyTo": "{author}에게 답글"
+    "replyTo": "{author}에게 답글",
+    "noUsersFound": "사용자를 찾을 수 없습니다"
   },
   "history": {
     "noteHistory": "노트 기록",
@@ -1743,6 +1744,8 @@
     "sharingTitle": "{user} 님이 {type}을(를) 공유했습니다",
     "sharingMessage": "공유된 {type}을(를) 보려면 열기",
     "sharingFolderTitle": "{user} 님이 {type} 폴더를 공유했습니다",
-    "sharingFolderMessage": "“{folder}”를 보려면 열기"
+    "sharingFolderMessage": "“{folder}”를 보려면 열기",
+    "mentionTitle": "{user}님이 댓글에서 회원님을 언급했습니다",
+    "mentionMessage": "“{board}”"
   }
 }

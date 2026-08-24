@@ -22,12 +22,15 @@ import {
   MultiplicationSignIcon,
   SentIcon,
 } from "hugeicons-react";
+import { MentionTextarea, MentionUser } from "./MentionTextarea";
+import { MentionText } from "./MentionText";
 
 interface KanbanCardDetailCommentsProps {
   uuid: string;
   itemId: string;
   canEdit: boolean;
   currentUsername: string;
+  availableUsers: { username: string; avatarUrl?: string }[];
 }
 
 const MAX_DEPTH = 4;
@@ -38,6 +41,7 @@ interface CommentThreadProps {
   depth: number;
   canEdit: boolean;
   currentUsername: string;
+  availableUsers: MentionUser[];
   onReply: (parentId: string) => void;
   onEdit: (comment: Comment) => void;
   onDelete: (commentId: string) => void;
@@ -56,6 +60,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
   depth,
   canEdit,
   currentUsername,
+  availableUsers,
   onReply,
   onEdit,
   onDelete,
@@ -122,12 +127,14 @@ const CommentThread: React.FC<CommentThreadProps> = ({
 
           {isEditing ? (
             <div className="mt-1 space-y-2">
-              <textarea
+              <MentionTextarea
                 value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                className="w-full px-2 py-1.5 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all min-h-[60px] resize-y"
+                onChange={setEditText}
+                wrapperClassName="w-full"
+                className="px-2 py-1.5 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all min-h-[60px] resize-y"
                 placeholder={t("comments.edit")}
                 autoFocus
+                users={availableUsers}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); _submitEdit(); }
                   else if (e.key === "Escape") { e.preventDefault(); onCancelEdit(); }
@@ -146,7 +153,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
             </div>
           ) : (
             <div className="mt-0.5 text-sm text-card-foreground prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap break-words">
-              {comment.text}
+              <MentionText text={comment.text} />
             </div>
           )}
 
@@ -208,12 +215,14 @@ const CommentThread: React.FC<CommentThreadProps> = ({
               <div className="flex gap-2">
                 <UserAvatar username={currentUsername} size="sm" className="mt-0.5" />
                 <div className="flex-1">
-                  <textarea
+                  <MentionTextarea
                     value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    className="w-full px-2 py-1.5 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all min-h-[50px] resize-y"
+                    onChange={setReplyText}
+                    wrapperClassName="w-full"
+                    className="px-2 py-1.5 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all min-h-[50px] resize-y"
                     placeholder={t("comments.replyPlaceholder")}
                     autoFocus
+                    users={availableUsers}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); _submitReply(); }
                       else if (e.key === "Escape") { e.preventDefault(); onCancelReply(); }
@@ -246,6 +255,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
               depth={depth + 1}
               canEdit={canEdit}
               currentUsername={currentUsername}
+              availableUsers={availableUsers}
               onReply={onReply}
               onEdit={onEdit}
               onDelete={onDelete}
@@ -269,6 +279,7 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
   itemId,
   canEdit,
   currentUsername,
+  availableUsers,
 }) => {
   const t = useTranslations();
   const { formatDateTimeString } = usePreferredDateTime();
@@ -461,6 +472,7 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
               depth={0}
               canEdit={canEdit}
               currentUsername={currentUsername}
+              availableUsers={availableUsers}
               onReply={_handleReply}
               onEdit={_handleEdit}
               onDelete={_handleDelete}
@@ -478,13 +490,15 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
 
       {canEdit ? (
         <div className="flex gap-2">
-          <textarea
+          <MentionTextarea
             value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
+            onChange={setNewComment}
             placeholder={t("comments.addComment")}
-            className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all min-h-[40px] resize-y"
+            wrapperClassName="flex-1"
+            className="px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all min-h-[40px] resize-y"
             rows={1}
             disabled={submitting}
+            users={availableUsers}
             onKeyDown={(e) => {
               if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); _handleAdd(); }
             }}

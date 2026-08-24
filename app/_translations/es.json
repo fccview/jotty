@@ -274,7 +274,8 @@
     "failedToDelete": "Error al eliminar comentario",
     "failedToLoad": "Error al cargar comentarios",
     "readOnly": "Necesitas acceso de edición para comentar en esta tarjeta.",
-    "replyTo": "Responder a {author}"
+    "replyTo": "Responder a {author}",
+    "noUsersFound": "No se encontraron usuarios"
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -1740,6 +1741,8 @@
     "sharingTitle": "{user} compartió un {type} contigo",
     "sharingMessage": "Abre para ver el {type} compartido",
     "sharingFolderTitle": "{user} compartió una carpeta de {type} contigo",
-    "sharingFolderMessage": "Abre para ver “{folder}”"
+    "sharingFolderMessage": "Abre para ver “{folder}”",
+    "mentionTitle": "{user} te mencionó en un comentario",
+    "mentionMessage": "“{board}”"
   }
 }

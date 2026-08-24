@@ -274,7 +274,8 @@
     "failedToDelete": "Reactie verwijderen mislukt",
     "failedToLoad": "Reacties laden mislukt",
     "readOnly": "Je hebt bewerkingsrechten nodig om op deze kaart te reageren.",
-    "replyTo": "Antwoorden aan {author}"
+    "replyTo": "Antwoorden aan {author}",
+    "noUsersFound": "Geen gebruikers gevonden"
   },
   "auth": {
     "loginTitle": "Inloggen",
@@ -1715,7 +1716,9 @@
     "sharingTitle": "{user} heeft een {type} met je gedeeld",
     "sharingMessage": "Open om het gedeelde {type} te bekijken",
     "sharingFolderTitle": "{user} heeft een {type}-map met je gedeeld",
-    "sharingFolderMessage": "Open om “{folder}” te bekijken"
+    "sharingFolderMessage": "Open om “{folder}” te bekijken",
+    "mentionTitle": "{user} noemde je in een reactie",
+    "mentionMessage": "“{board}”"
   },
   "history": {
     "noteHistory": "Notitiegeschiedenis",

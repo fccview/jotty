@@ -274,7 +274,8 @@
     "failedToDelete": "Yorum silinemedi",
     "failedToLoad": "Yorumlar yüklenemedi",
     "readOnly": "Bu karta yorum yapmak için düzenleme erişimi gerekir.",
-    "replyTo": "{author} kullanıcısına yanıtla"
+    "replyTo": "{author} kullanıcısına yanıtla",
+    "noUsersFound": "Kullanıcı bulunamadı"
   },
   "history": {
     "noteHistory": "Not Geçmişi",
@@ -1741,6 +1742,8 @@
     "sharingTitle": "{user} sizinle bir {type} paylaştı",
     "sharingMessage": "Paylaşılan {type} öğesini görmek için açın",
     "sharingFolderTitle": "{user} sizinle bir {type} klasörü paylaştı",
-    "sharingFolderMessage": "“{folder}” klasörünü görmek için açın"
+    "sharingFolderMessage": "“{folder}” klasörünü görmek için açın",
+    "mentionTitle": "{user} bir yorumda sizden bahsetti",
+    "mentionMessage": "“{board}”"
   }
 }

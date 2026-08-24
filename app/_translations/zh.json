@@ -274,7 +274,8 @@
     "failedToDelete": "删除评论失败",
     "failedToLoad": "加载评论失败",
     "readOnly": "您需要编辑权限才能评论此卡片。",
-    "replyTo": "回复 {author}"
+    "replyTo": "回复 {author}",
+    "noUsersFound": "未找到用户"
   },
   "history": {
     "noteHistory": "笔记历史",
@@ -1743,6 +1744,8 @@
     "sharingTitle": "{user} 与你共享了{type}",
     "sharingMessage": "打开以查看共享的{type}",
     "sharingFolderTitle": "{user} 与你共享了{type}文件夹",
-    "sharingFolderMessage": "打开以查看“{folder}”"
+    "sharingFolderMessage": "打开以查看“{folder}”",
+    "mentionTitle": "{user} 在评论中提到了你",
+    "mentionMessage": "“{board}”"
   }
 }

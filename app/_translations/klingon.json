@@ -274,7 +274,8 @@
     "failedToDelete": "QIch DIj Qaw' laHbe'",
     "failedToLoad": "QIch DIj tu' laHbe'",
     "readOnly": "DIj Qab DIj laH. DIj DIj Qab DIj.",
-    "replyTo": "{author} jang"
+    "replyTo": "{author} jang",
+    "noUsersFound": "tlhInganpu' tu'lu'be'"
   },
   "history": {
     "noteHistory": "ghItlh Qu' tetlh",
@@ -1743,6 +1744,8 @@
     "sharingTitle": "{user} {type} Dajach",
     "sharingMessage": "{type} yIleghmeH yI'el",
     "sharingFolderTitle": "{user} {type} ngaSwI' Dajach",
-    "sharingFolderMessage": "“{folder}” yIleghmeH yI'el"
+    "sharingFolderMessage": "“{folder}” yIleghmeH yI'el",
+    "mentionTitle": "{user} QIch DIj SoH tuq",
+    "mentionMessage": "„{board}“"
   }
 }

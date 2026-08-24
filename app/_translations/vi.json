@@ -273,7 +273,8 @@
     "failedToDelete": "Không thể xóa bình luận",
     "failedToLoad": "Không thể tải bình luận",
     "readOnly": "Bạn cần quyền chỉnh sửa để bình luận về thẻ này.",
-    "replyTo": "Trả lời {author}"
+    "replyTo": "Trả lời {author}",
+    "noUsersFound": "Không tìm thấy người dùng"
   },
   "history": {
     "noteHistory": "Lịch sử ghi chú",
@@ -1705,6 +1706,8 @@
     "reminderTitle": "Nhiệm vụ quá hạn",
     "reminderMessage": "\"{task}\" trong \"{board}\" đã hết lời nhắc",
     "sharingTitle": "{user} đã chia sẻ {type} với bạn",
-    "sharingMessage": "Mở để xem {type} được chia sẻ"
+    "sharingMessage": "Mở để xem {type} được chia sẻ",
+    "mentionTitle": "{user} đã nhắc đến bạn trong một bình luận",
+    "mentionMessage": "“{board}”"
   }
 }

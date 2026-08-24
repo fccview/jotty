@@ -131,12 +131,21 @@ export const KanbanCardDetail = ({
     if (!isOpen) return;
     const _loadUsers = async () => {
       const sharedWithUsers = await usersWithAccess(checklistUuid);
+      const allUsers = await getUsers();
+
       if (sharedWithUsers.length === 0) {
         setBoardIsShared(false);
+        // On a non-shared board, still populate available users so the
+        // owner can @mention anyone (e.g. before sharing the board).
+        setAvailableUsers(
+          allUsers.map((u: { username: string; avatarUrl?: string }) => ({
+            username: u.username,
+            avatarUrl: u.avatarUrl,
+          })),
+        );
         return;
       }
       setBoardIsShared(true);
-      const allUsers = await getUsers();
       const allowedUsernames = new Set(sharedWithUsers);
       if (checklist.owner) allowedUsernames.add(checklist.owner);
       const userMap = new Map<string, { username: string; avatarUrl?: string }>();
@@ -536,6 +545,7 @@ export const KanbanCardDetail = ({
                 itemId={item.id}
                 canEdit={!!permissions?.canEdit}
                 currentUsername={user?.username || ""}
+                availableUsers={availableUsers}
               />
             </div>
           )}

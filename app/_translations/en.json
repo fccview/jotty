@@ -553,7 +553,8 @@
     "failedToDelete": "Failed to delete comment",
     "failedToLoad": "Failed to load comments",
     "readOnly": "You need edit access to comment on this card.",
-    "replyTo": "Reply to {author}"
+    "replyTo": "Reply to {author}",
+    "noUsersFound": "No users found"
   },
   "tasks": {
     "title": "Tasks",
@@ -1764,6 +1765,8 @@
     "sharingTitle": "{user} shared a {type} with you",
     "sharingMessage": "Open to view the shared {type}",
     "sharingFolderTitle": "{user} shared a {type} folder with you",
-    "sharingFolderMessage": "Open to view “{folder}”"
+    "sharingFolderMessage": "Open to view “{folder}”",
+    "mentionTitle": "{user} mentioned you in a comment",
+    "mentionMessage": "“{board}”"
   }
 }

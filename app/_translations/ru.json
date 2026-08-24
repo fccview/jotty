@@ -274,7 +274,8 @@
     "failedToDelete": "Не удалось удалить комментарий",
     "failedToLoad": "Не удалось загрузить комментарии",
     "readOnly": "Для комментариев к этой карточке требуется доступ на редактирование.",
-    "replyTo": "Ответить {author}"
+    "replyTo": "Ответить {author}",
+    "noUsersFound": "Пользователи не найдены"
   },
   "history": {
     "noteHistory": "История заметки",
@@ -1739,6 +1740,8 @@
     "sharingTitle": "{user} поделился(-ась) с вами: {type}",
     "sharingMessage": "Откройте, чтобы посмотреть общий {type}",
     "sharingFolderTitle": "{user} поделился(-ась) с вами папкой: {type}",
-    "sharingFolderMessage": "Откройте, чтобы посмотреть «{folder}»"
+    "sharingFolderMessage": "Откройте, чтобы посмотреть «{folder}»",
+    "mentionTitle": "{user} упомянул вас в комментарии",
+    "mentionMessage": "«{board}»"
   }
 }

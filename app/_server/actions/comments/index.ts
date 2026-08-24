@@ -4,11 +4,13 @@ import { revalidatePath } from "next/cache";
 import { Comment, Result } from "@/app/_types";
 import {
   ItemTypes,
+  NotificationTargets,
   PermissionTypes,
 } from "@/app/_types/enums";
 import { getListById } from "@/app/_server/actions/checklist";
 import { canReach } from "@/app/_server/actions/share/queries";
-import { getUsername, isAdmin } from "@/app/_server/actions/users";
+import { getUsername, isAdmin, getUsers } from "@/app/_server/actions/users";
+import { createNotificationForUser } from "@/app/_server/actions/notifications";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import {
   readCommentsFile,
@@ -50,6 +52,53 @@ const _collectDescendantIds = (
     ids.push(..._collectDescendantIds(comments, child.id));
   }
   return ids;
+};
+
+/**
+ * Extracts @mentions from comment text and sends a notification to each
+ * mentioned user (excluding the comment author and non-existent usernames).
+ */
+const _processMentions = async (
+  text: string,
+  author: string,
+  boardUuid: string,
+  boardTitle: string,
+): Promise<void> => {
+  try {
+    const matches = text.match(/@([a-zA-Z0-9_.-]+)/g);
+    if (!matches) return;
+
+    const mentioned = matches
+      .map((m) => m.slice(1)) // strip the leading @
+      .filter((u, i, arr) => arr.indexOf(u) === i); // dedupe
+
+    if (mentioned.length === 0) return;
+
+    const users = await getUsers();
+    const validUsernames = new Set(
+      users.map((u) => u.username).filter(Boolean),
+    );
+
+    for (const username of mentioned) {
+      if (username === author) continue;
+      if (!validUsernames.has(username)) continue;
+
+      await createNotificationForUser(username, {
+        type: "mention",
+        title: "",
+        message: "",
+        titleKey: "mentionTitle",
+        messageKey: "mentionMessage",
+        messageVars: { user: author, board: boardTitle },
+        data: {
+          itemId: boardUuid,
+          itemType: NotificationTargets.CHECKLIST,
+        },
+      });
+    }
+  } catch (error) {
+    console.warn("[comments] mention notification failed:", error);
+  }
 };
 
 export const getComments = async (
@@ -108,6 +157,9 @@ export const addComment = async (
       username,
     });
 
+    const checklist = await getListById(uuid, username);
+    await _processMentions(text, username, uuid, checklist?.title || "");
+
     return { success: true, data: comment };
   } catch (error) {
     const message =
@@ -155,6 +207,9 @@ export const editComment = async (
       entityId: uuid,
       username,
     });
+
+    const checklist = await getListById(uuid, username);
+    await _processMentions(text, username, uuid, checklist?.title || "");
 
     return { success: true, data: target };
   } catch (error) {

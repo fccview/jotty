@@ -274,7 +274,8 @@
     "failedToDelete": "Impossibile eliminare il commento",
     "failedToLoad": "Impossibile caricare i commenti",
     "readOnly": "È necessario l'accesso in modifica per commentare questa scheda.",
-    "replyTo": "Rispondi a {author}"
+    "replyTo": "Rispondi a {author}",
+    "noUsersFound": "Nessun utente trovato"
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -1740,6 +1741,8 @@
     "sharingTitle": "{user} ha condiviso un {type} con te",
     "sharingMessage": "Apri per vedere il {type} condiviso",
     "sharingFolderTitle": "{user} ha condiviso una cartella {type} con te",
-    "sharingFolderMessage": "Apri per vedere “{folder}”"
+    "sharingFolderMessage": "Apri per vedere “{folder}”",
+    "mentionTitle": "{user} ti ha menzionato in un commento",
+    "mentionMessage": "“{board}”"
   }
 }
