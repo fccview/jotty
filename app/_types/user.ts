@@ -44,6 +44,7 @@ export type HideMobileStatusDropdown = "enable" | "disable";
 export type HideTimeTrackingOnCards = "enable" | "disable";
 export type CodeBlockStyle = "default" | "themed";
 export type ChecklistItemClickAction = "toggle" | "edit";
+export type NewItemInsertion = "top" | "bottom";
 
 export interface User {
   username: string;
@@ -84,6 +85,7 @@ export interface User {
   hideMobileStatusDropdown?: HideMobileStatusDropdown;
   hideTimeTrackingOnCards?: HideTimeTrackingOnCards;
   codeBlockStyle?: CodeBlockStyle;
+  newItemInsertion?: NewItemInsertion;
   mfaEnabled?: boolean;
   mfaSecret?: string;
   mfaRecoveryCode?: string;

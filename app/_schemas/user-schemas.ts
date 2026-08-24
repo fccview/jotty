@@ -74,6 +74,9 @@ export const checklistSettingsSchema = z.object({
   checklistItemClickAction: z.enum(["toggle", "edit"], {
     message: "Checklist item click action must be either 'toggle' or 'edit'",
   }),
+  newItemInsertion: z.enum(["top", "bottom"], {
+    message: "New item insertion must be either 'top' or 'bottom'",
+  }),
 });
 
 export const kanbanSettingsSchema = z.object({

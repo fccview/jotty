@@ -6,6 +6,7 @@ const mockEnsureDir = vi.fn();
 const mockServerWriteFile = vi.fn();
 const mockGetUsername = vi.fn();
 const mockGetCurrentUser = vi.fn();
+const mockGetUserByUsername = vi.fn();
 const mockIsAdmin = vi.fn();
 const mockCanReach = vi.fn();
 const mockUsersWithAccess = vi.fn();
@@ -25,6 +26,7 @@ vi.mock("@/app/_server/actions/file", () => ({
 vi.mock("@/app/_server/actions/users", () => ({
   getUsername: (...args: any[]) => mockGetUsername(...args),
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
+  getUserByUsername: (...args: any[]) => mockGetUserByUsername(...args),
   isAdmin: (...args: any[]) => mockIsAdmin(...args),
 }));
 
@@ -119,6 +121,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     mockServerWriteFile.mockResolvedValue(undefined);
     mockGetUsername.mockResolvedValue("testuser");
     mockGetCurrentUser.mockResolvedValue({ username: "testuser" });
+    mockGetUserByUsername.mockResolvedValue(null);
     mockIsAdmin.mockResolvedValue(false);
     mockCanReach.mockResolvedValue(true);
     mockUsersWithAccess.mockResolvedValue([]);
@@ -344,6 +347,55 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const result = await createItem(mockChecklist, formData);
 
       expect(result.success).toBe(true);
+    });
+
+    it("should prepend new item (order 0) by default", async () => {
+      mockGetUserByUsername.mockResolvedValue(null);
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        text: "New top item",
+        category: "TestCategory",
+      });
+
+      const result = await createItem(mockChecklist, formData);
+
+      expect(result.success).toBe(true);
+      expect(result.data?.order).toBe(0);
+
+      const writtenList = mockListToMarkdown.mock.calls.at(-1)?.[0];
+      expect(writtenList.items[0].id).toBe(result.data?.id);
+      expect(writtenList.items[0].order).toBe(0);
+      // existing items shifted down by one
+      expect(writtenList.items[1].order).toBe(1);
+    });
+
+    it("should append new item at the end when newItemInsertion is 'bottom'", async () => {
+      mockGetUserByUsername.mockResolvedValue({
+        username: "testuser",
+        newItemInsertion: "bottom",
+      });
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        text: "New bottom item",
+        category: "TestCategory",
+      });
+
+      const result = await createItem(mockChecklist, formData);
+
+      expect(result.success).toBe(true);
+      // existing max order is 2 (item-3), so new order is 3
+      expect(result.data?.order).toBe(3);
+
+      const writtenList = mockListToMarkdown.mock.calls.at(-1)?.[0];
+      // new item is the last element
+      expect(writtenList.items.at(-1).id).toBe(result.data?.id);
+      expect(writtenList.items.at(-1).order).toBe(3);
+      // existing items keep their original order (not shifted)
+      expect(writtenList.items[0].order).toBe(0);
+      expect(writtenList.items[1].order).toBe(1);
+      expect(writtenList.items[2].order).toBe(2);
     });
   });
 
