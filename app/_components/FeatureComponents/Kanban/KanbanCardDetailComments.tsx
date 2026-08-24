@@ -159,7 +159,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
           )}
 
           {!isEditing && canEdit && (
-            <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
               {depth < MAX_DEPTH && (
                 <button
                   onClick={() => onReply(comment.id)}

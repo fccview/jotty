@@ -253,7 +253,7 @@
   },
   "comments": {
     "title": "댓글",
-    "titleWithCount": "{count, plural, other {#개 댓글}}",
+    "titleWithCount": "{count, plural, other {댓글 #개}}",
     "noComments": "아직 댓글이 없습니다. 대화를 시작해보세요!",
     "addComment": "댓글 추가...",
     "replyPlaceholder": "답글 작성...",

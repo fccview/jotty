@@ -12,6 +12,7 @@ import { canReach } from "@/app/_server/actions/share/queries";
 import { getUsername, isAdmin, getUsers } from "@/app/_server/actions/users";
 import { createNotificationForUser } from "@/app/_server/actions/notifications";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { runQueued } from "@/app/_server/actions/lib/concurrency";
 import {
   readCommentsFile,
   writeCommentsFile,
@@ -41,6 +42,9 @@ const _findComment = (
   comments: Comment[],
   commentId: string,
 ): Comment | undefined => comments.find((c) => c.id === commentId);
+
+const _lane = (owner: string, uuid: string): string =>
+  `comments:${owner}:${uuid}`;
 
 const _collectDescendantIds = (
   comments: Comment[],
@@ -133,12 +137,13 @@ export const addComment = async (
       parentId: parentId || null,
     };
 
-    const data = await readCommentsFile(owner, uuid);
-    const list = data.items[itemId] || [];
-    list.push(comment);
-    data.items[itemId] = list;
-
-    await writeCommentsFile(owner, uuid, data);
+    await runQueued(_lane(owner, uuid), async () => {
+      const data = await readCommentsFile(owner, uuid);
+      const list = data.items[itemId] || [];
+      list.push(comment);
+      data.items[itemId] = list;
+      await writeCommentsFile(owner, uuid, data);
+    });
 
     try {
       revalidatePath(`/checklist/${uuid}`);
@@ -179,17 +184,20 @@ export const editComment = async (
     const { owner, username } = await _resolveOwner(uuid, PermissionTypes.EDIT);
     const admin = await isAdmin();
 
-    const data = await readCommentsFile(owner, uuid);
-    const list = data.items[itemId] || [];
-    const target = _findComment(list, commentId);
+    const target = await runQueued(_lane(owner, uuid), async () => {
+      const data = await readCommentsFile(owner, uuid);
+      const list = data.items[itemId] || [];
+      const target = _findComment(list, commentId);
 
-    if (!target) throw new Error("Comment not found");
-    if (target.author !== username && !admin) throw new Error("Permission denied");
+      if (!target) throw new Error("Comment not found");
+      if (target.author !== username && !admin) throw new Error("Permission denied");
 
-    target.text = text;
-    target.updatedAt = new Date().toISOString();
+      target.text = text;
+      target.updatedAt = new Date().toISOString();
 
-    await writeCommentsFile(owner, uuid, data);
+      await writeCommentsFile(owner, uuid, data);
+      return target;
+    });
 
     try {
       revalidatePath(`/checklist/${uuid}`);
@@ -228,17 +236,19 @@ export const deleteComment = async (
     const { owner, username } = await _resolveOwner(uuid, PermissionTypes.EDIT);
     const admin = await isAdmin();
 
-    const data = await readCommentsFile(owner, uuid);
-    const list = data.items[itemId] || [];
-    const target = _findComment(list, commentId);
+    await runQueued(_lane(owner, uuid), async () => {
+      const data = await readCommentsFile(owner, uuid);
+      const list = data.items[itemId] || [];
+      const target = _findComment(list, commentId);
 
-    if (!target) throw new Error("Comment not found");
-    if (target.author !== username && !admin) throw new Error("Permission denied");
+      if (!target) throw new Error("Comment not found");
+      if (target.author !== username && !admin) throw new Error("Permission denied");
 
-    const removeIds = new Set(_collectDescendantIds(list, commentId));
-    data.items[itemId] = list.filter((c) => !removeIds.has(c.id));
+      const removeIds = new Set(_collectDescendantIds(list, commentId));
+      data.items[itemId] = list.filter((c) => !removeIds.has(c.id));
 
-    await writeCommentsFile(owner, uuid, data);
+      await writeCommentsFile(owner, uuid, data);
+    });
 
     try {
       revalidatePath(`/checklist/${uuid}`);

@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import { Comment } from "@/app/_types";
 import { COMMENTS_FILE } from "@/app/_consts/files";
@@ -13,14 +11,14 @@ export interface CommentsFileData {
   items: Record<string, Comment[]>;
 }
 
-const _EMPTY: CommentsFileData = { items: {} };
+const _emptyCommentsData = (): CommentsFileData => ({ items: {} });
 
 export const readCommentsFile = async (
   owner: string,
   boardUuid: string,
 ): Promise<CommentsFileData> => {
   const data = await readJsonFile(COMMENTS_FILE(owner, boardUuid));
-  if (!data || typeof data !== "object" || !data.items) return { ..._EMPTY };
+  if (!data || typeof data !== "object" || !data.items) return _emptyCommentsData();
   return data as CommentsFileData;
 };
 
