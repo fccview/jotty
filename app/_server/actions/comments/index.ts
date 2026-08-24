@@ -54,10 +54,6 @@ const _collectDescendantIds = (
   return ids;
 };
 
-/**
- * Extracts @mentions from comment text and sends a notification to each
- * mentioned user (excluding the comment author and non-existent usernames).
- */
 const _processMentions = async (
   text: string,
   author: string,
@@ -69,8 +65,8 @@ const _processMentions = async (
     if (!matches) return;
 
     const mentioned = matches
-      .map((m) => m.slice(1)) // strip the leading @
-      .filter((u, i, arr) => arr.indexOf(u) === i); // dedupe
+      .map((m) => m.slice(1))
+      .filter((u, i, arr) => arr.indexOf(u) === i);
 
     if (mentioned.length === 0) return;
 

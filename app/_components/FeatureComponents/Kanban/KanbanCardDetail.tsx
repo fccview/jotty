@@ -135,8 +135,6 @@ export const KanbanCardDetail = ({
 
       if (sharedWithUsers.length === 0) {
         setBoardIsShared(false);
-        // On a non-shared board, still populate available users so the
-        // owner can @mention anyone (e.g. before sharing the board).
         setAvailableUsers(
           allUsers.map((u: { username: string; avatarUrl?: string }) => ({
             username: u.username,

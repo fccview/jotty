@@ -24,11 +24,6 @@ interface MentionTextareaProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
-/**
- * A textarea that detects @mentions and shows an autocomplete dropdown
- * of available users. When a user is selected, the @query is replaced
- * with @username in the text at the cursor position.
- */
 export const MentionTextarea = React.forwardRef<
   HTMLTextAreaElement,
   MentionTextareaProps
