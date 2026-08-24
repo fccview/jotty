@@ -81,7 +81,9 @@ const CommentThread: React.FC<CommentThreadProps> = ({
   const isReplying = replyToId === comment.id;
   const isEditing = editingId === comment.id;
   const canModify = canEdit && comment.author === currentUsername;
-  const replies = allComments.filter((c) => c.parentId === comment.id);
+  const replies = allComments
+    .filter((c) => c.parentId === comment.id)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   useEffect(() => {
     if (isEditing) setEditText(comment.text);
@@ -434,7 +436,9 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
     }
   };
 
-  const topLevelComments = comments.filter((c) => !c.parentId);
+  const topLevelComments = comments
+    .filter((c) => !c.parentId)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
     <div>
