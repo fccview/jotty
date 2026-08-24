@@ -1576,7 +1576,13 @@
     "viewModeGrid": "Saras",
     "borderRadius": "veH lermoHghach",
     "useInstanceDefault": "pat DIvI' yIlo'",
-    "borderRadiusDescription": "bIQeqtaHvIS Hoch pat veHmey choH."
+    "borderRadiusDescription": "bIQeqtaHvIS Hoch pat veHmey choH.",
+    "kanbanColumnWidth": "Kanban veH jul",
+    "kanbanColumnWidthDescription": "Kanban veHmeyvaD nIj wIv. DIvI' nIjDuH veHmey nIjDaj Hoch DIvI' nI.",
+    "kanbanColumnWidthCompact": "QIm",
+    "kanbanColumnWidthComfortable": "QaQ",
+    "kanbanColumnWidthWide": "jen",
+    "kanbanColumnWidthAutoFit": "nIjDuH"
   },
   "migration": {
     "migrationComplete": "choH rIn",

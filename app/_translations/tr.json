@@ -1578,7 +1578,13 @@
     "viewModeGrid": "Izgara",
     "borderRadius": "Köşe yuvarlaklığı",
     "useInstanceDefault": "Varsayılanı kullan",
-    "borderRadiusDescription": "Sürüklerken köşeler tüm uygulamada güncellenir."
+    "borderRadiusDescription": "Sürüklerken köşeler tüm uygulamada güncellenir.",
+    "kanbanColumnWidth": "Kanban sütun genişliği",
+    "kanbanColumnWidthDescription": "Kanban durum sütunları için özel bir genişlik ayarlayın. Örnek varsayılanı sütunları kullanılabilir alana otomatik olarak sığdırır.",
+    "kanbanColumnWidthCompact": "Kompakt",
+    "kanbanColumnWidthComfortable": "Konforli",
+    "kanbanColumnWidthWide": "Genis",
+    "kanbanColumnWidthAutoFit": "Otomatik"
   },
   "migration": {
     "migrationComplete": "Taşıma Tamamlandı",

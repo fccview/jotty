@@ -15,7 +15,6 @@ import { createNotificationForUser } from "@/app/_server/actions/notifications";
 import { usersWithAccess } from "@/app/_server/actions/share/queries";
 import { getUsers } from "@/app/_server/actions/users";
 import { FloppyDiskIcon, MultiplicationSignIcon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
-import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
@@ -26,6 +25,8 @@ import { KanbanCardDetailComments } from "./KanbanCardDetailComments";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { TimeEntriesModal } from "./TimeEntriesModal";
+import { TaskDescriptionEditor } from "./TaskDescriptionEditor";
+import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { formatTimerTime } from "@/app/_utils/kanban/index";
@@ -160,12 +161,10 @@ export const KanbanCardDetail = ({
     _loadUsers();
   }, [isOpen, checklistUuid, checklist.owner]);
 
-  const descriptionHtml = useMemo(() => {
-    const noDescText = `<p class="text-muted-foreground text-sm opacity-50">${t("checklists.noDescription")}</p>`;
-    if (!item.description) return noDescText;
-    const unsanitized = _unsanitizeDescription(item.description);
-    return convertMarkdownToHtml(unsanitized.replace(/\n/g, "  \n")) || noDescText;
-  }, [item.description, t]);
+  const descriptionMarkdown = useMemo(() => {
+    if (!item.description) return "";
+    return _unsanitizeDescription(item.description);
+  }, [item.description]);
 
   const _saveField = async (fields: Record<string, string>) => {
     const formData = new FormData();
@@ -454,15 +453,9 @@ export const KanbanCardDetail = ({
                 <label className="block text-sm font-medium text-foreground mb-2">
                   {t("common.description")}
                 </label>
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all min-h-[120px] text-base resize-y"
-                  placeholder={t("checklists.addDescriptionOptional")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); handleSave(); }
-                    else if (e.key === "Escape") { e.preventDefault(); setEditText(item.text); setEditDescription(_unsanitizeDescription(item.description || "")); setIsEditing(false); }
-                  }}
+                <TaskDescriptionEditor
+                  content={editDescription}
+                  onContentChange={setEditDescription}
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -481,10 +474,17 @@ export const KanbanCardDetail = ({
               className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""}`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
-              <div
-                className="text-card-foreground prose prose-sm dark:prose-invert max-w-none leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-              />
+              {descriptionMarkdown ? (
+                <UnifiedMarkdownRenderer
+                  content={descriptionMarkdown}
+                  className="text-card-foreground prose-sm max-w-none leading-relaxed"
+                  showStats={false}
+                />
+              ) : (
+                <p className="text-muted-foreground text-sm opacity-50">
+                  {t("checklists.noDescription")}
+                </p>
+              )}
             </div>
           )}
 

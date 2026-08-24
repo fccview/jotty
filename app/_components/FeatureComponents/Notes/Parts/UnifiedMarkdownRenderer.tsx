@@ -57,12 +57,15 @@ interface UnifiedMarkdownRendererProps {
   content: string;
   className?: string;
   forceLightMode?: boolean;
+  /** Whether to render the word/char/reading-time footer stats. Defaults to true. */
+  showStats?: boolean;
 }
 
 export const UnifiedMarkdownRenderer = ({
   content,
   className = "",
   forceLightMode = false,
+  showStats = true,
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
@@ -569,7 +572,7 @@ export const UnifiedMarkdownRenderer = ({
           {processedContent}
         </ReactMarkdown>
       </div>
-      <NoteFooterStats content={content} />
+      {showStats && <NoteFooterStats content={content} />}
     </>
   );
 };
