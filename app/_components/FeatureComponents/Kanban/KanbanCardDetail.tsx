@@ -22,6 +22,7 @@ import { useTranslations } from "next-intl";
 import { KanbanPriorityLevel, NotificationTargets } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
+import { KanbanCardDetailComments } from "./KanbanCardDetailComments";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { TimeEntriesModal } from "./TimeEntriesModal";
@@ -82,7 +83,7 @@ export const KanbanCardDetail = ({
   const checklistUuid = checklist.uuid || "";
   const t = useTranslations();
   const { permissions } = usePermissions();
-  const { usersPublicData } = useAppMode();
+  const { user, usersPublicData } = useAppMode();
   const { formatDateTimeString, formatDateString, formatTimeString } =
     usePreferredDateTime();
   const statuses = checklist.statuses || DEFAULT_KANBAN_STATUSES;
@@ -524,6 +525,17 @@ export const KanbanCardDetail = ({
                 onAddSubtask={handleAddSubtask}
                 onAddNestedSubtask={handleAddNestedSubtask}
                 onToggleAll={handleToggleAll}
+              />
+            </div>
+          )}
+
+          {!isEditing && (
+            <div className="border-t border-border pt-4">
+              <KanbanCardDetailComments
+                uuid={checklistUuid}
+                itemId={item.id}
+                canEdit={!!permissions?.canEdit}
+                currentUsername={user?.username || ""}
               />
             </div>
           )}

@@ -40,6 +40,15 @@ export interface KanbanStatus {
   autoComplete?: boolean;
 }
 
+export interface Comment {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+  updatedAt?: string;
+  parentId?: string | null;
+}
+
 export interface Item {
   id: string;
   category?: string;

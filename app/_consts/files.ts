@@ -62,5 +62,10 @@ export const LOGS_DIR = "data/logs";
 export const getUserLogsDir = (username: string) =>
   path.join(LOGS_DIR, username);
 
+export const COMMENTS_DIR = (owner: string) =>
+  path.join(DATA_DIR, CHECKLISTS_FOLDER, owner, ".comments");
+export const COMMENTS_FILE = (owner: string, boardUuid: string) =>
+  path.join(COMMENTS_DIR(owner), `${boardUuid}.json`);
+
 export const HOMEPAGE_ITEMS_LIMIT = 12;
 export const FILTER_PAGE_SIZE = 20;
