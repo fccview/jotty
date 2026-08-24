@@ -1525,7 +1525,13 @@
     "viewModeGrid": "Griglia",
     "borderRadius": "Arrotondamento angoli",
     "useInstanceDefault": "Usa il valore predefinito",
-    "borderRadiusDescription": "Gli angoli si aggiornano in tutta l'app mentre trascini."
+    "borderRadiusDescription": "Gli angoli si aggiornano in tutta l'app mentre trascini.",
+    "kanbanColumnWidth": "Larghezza colonne Kanban",
+    "kanbanColumnWidthDescription": "Imposta una larghezza personalizzata per le colonne di stato Kanban. Il valore predefinito dell'istanza adatta le colonne allo spazio disponibile.",
+    "kanbanColumnWidthCompact": "Compatto",
+    "kanbanColumnWidthComfortable": "Comodo",
+    "kanbanColumnWidthWide": "Largo",
+    "kanbanColumnWidthAutoFit": "Adatta"
   },
   "migration": {
     "migrationComplete": "Migrazione Completata",

@@ -1525,7 +1525,13 @@
     "viewModeGrid": "Siatka",
     "borderRadius": "Zaokrąglenie rogów",
     "useInstanceDefault": "Użyj wartości domyślnej",
-    "borderRadiusDescription": "Rogi aktualizują się w całej aplikacji podczas przeciągania."
+    "borderRadiusDescription": "Rogi aktualizują się w całej aplikacji podczas przeciągania.",
+    "kanbanColumnWidth": "Szerokość kolumn Kanban",
+    "kanbanColumnWidthDescription": "Ustaw niestandardową szerokość kolumn statusów Kanban. Wartość domyślna instancji automatycznie dopasowuje kolumny do dostępnej przestrzeni.",
+    "kanbanColumnWidthCompact": "Kompaktowy",
+    "kanbanColumnWidthComfortable": "Komfortowy",
+    "kanbanColumnWidthWide": "Szeroki",
+    "kanbanColumnWidthAutoFit": "Dopasowanie"
   },
   "migration": {
     "migrationComplete": "Migracja zakończona",

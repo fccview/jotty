@@ -1525,7 +1525,13 @@
     "viewModeGrid": "Raster",
     "borderRadius": "Hoekafronding",
     "useInstanceDefault": "Standaard van instantie gebruiken",
-    "borderRadiusDescription": "De hoeken passen zich in de hele app aan terwijl je sleept."
+    "borderRadiusDescription": "De hoeken passen zich in de hele app aan terwijl je sleept.",
+    "kanbanColumnWidth": "Kanban-kolombreedte",
+    "kanbanColumnWidthDescription": "Stel een aangepaste breedte in voor de Kanban-statuskolommen. De standaardwaarde van de instantie past de kolommen automatisch aan de beschikbare ruimte aan.",
+    "kanbanColumnWidthCompact": "Compact",
+    "kanbanColumnWidthComfortable": "Comfortabel",
+    "kanbanColumnWidthWide": "Breed",
+    "kanbanColumnWidthAutoFit": "Auto-passen"
   },
   "migration": {
     "migrationComplete": "Migratie voltooid",

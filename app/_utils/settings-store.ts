@@ -43,7 +43,9 @@ interface SettingsState {
   showCompletedSuggestions: boolean;
   viewMode: 'card' | 'list' | 'grid';
   borderRadius: number | null;
+  kanbanColumnWidth: number | null;
   setBorderRadius: (radius: number | null) => void;
+  setKanbanColumnWidth: (width: number | null) => void;
   setTheme: (theme: Theme) => void;
   setShowEmojis: (show: boolean | null) => void;
   setAutosaveNotes: (enabled: boolean) => void;
@@ -69,7 +71,9 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
       compactMode: false,
       viewMode: 'card',
       borderRadius: null,
+      kanbanColumnWidth: null,
       setBorderRadius: (radius) => set({ borderRadius: radius }),
+      setKanbanColumnWidth: (width) => set({ kanbanColumnWidth: width }),
       setTheme: (theme) => set({ theme }),
       setShowEmojis: (show) => set({ showEmojis: show }),
       setAutosaveNotes: (enabled) => set({ autosaveNotes: enabled }),
