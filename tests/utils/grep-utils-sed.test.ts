@@ -7,22 +7,6 @@ import {
   grepExtractExcerpt,
 } from "@/app/_utils/grep-utils";
 
-/**
- * @todo fccview is telling you to review this AI generated code
- * and make sure it's up to standards, reusable, modular and consistent with
- * the rest of the codebase.
- */
-
-/**
- * These tests run the REAL shell commands (sed) from grep-utils against real
- * files on disk. They are deliberately NOT mocked, because the whole point is
- * to guard against sed dialect incompatibilities between GNU sed (Linux) and
- * BSD sed (macOS). The previous implementation used GNU-only `{...q}` / `{...d}`
- * block syntax that BSD sed rejects, which silently made grepExtractFrontmatter
- * return null on macOS and broke note sharing (the share was written to disk but
- * never read back, so the recipient never saw it and the permission panel never
- * appeared).
- */
 const tmpRoot = mkdtempSync(path.join(os.tmpdir(), "jotty-grep-sed-"));
 
 const notePath = (name: string): string => path.join(tmpRoot, name);
@@ -33,7 +17,6 @@ afterAll(() => {
 
 describe("grepExtractFrontmatter - sed portability", () => {
   it("reads back sharedWith written into a note's frontmatter (the sharing bug scenario)", async () => {
-    // This is exactly what shareItem writes via updateYamlMetadata + serverWriteFile.
     const file = notePath("shared.md");
     writeFileSync(
       file,
@@ -50,8 +33,6 @@ describe("grepExtractFrontmatter - sed portability", () => {
 
     const metadata = await grepExtractFrontmatter(file);
 
-    // resolveAccess relies on this to find the explicit share. If it returns
-    // null, the share is invisible (the bug).
     expect(metadata).not.toBeNull();
     expect(metadata?.uuid).toBe("0798d08a-5750-4035-aa73-4d45e008f3bb");
     expect(metadata?.title).toBe("dsadsasad");
@@ -71,8 +52,6 @@ describe("grepExtractFrontmatter - sed portability", () => {
     const file = notePath("empty-fm.md");
     writeFileSync(file, ["---", "---", "body text", ""].join("\n"));
 
-    // An empty YAML block parses to undefined, so the function treats it as
-    // "no metadata" - same as having no frontmatter at all.
     const metadata = await grepExtractFrontmatter(file);
 
     expect(metadata).toBeNull();
@@ -142,8 +121,6 @@ describe("grepExtractExcerpt - sed portability", () => {
 
     const excerpt = await grepExtractExcerpt(file, 200);
 
-    // BSD sed previously choked on the `{...d}` block and returned nothing,
-    // so every note preview was blank on macOS.
     expect(excerpt).toContain("This is the body that should survive");
     expect(excerpt).not.toContain("sharedWith");
     expect(excerpt).not.toContain("excerpt-1");
