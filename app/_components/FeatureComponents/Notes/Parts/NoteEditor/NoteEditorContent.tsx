@@ -11,7 +11,8 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useMemo } from "react";
 import { getReferences } from "@/app/_utils/indexes-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { MinimalModeEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalModeEditor";
+import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
+import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import {
@@ -56,8 +57,7 @@ export const NoteEditorContent = ({
   const editor = searchParams?.get("editor");
   const editorRef = useRef<TiptapEditorRef>(null);
   const { permissions } = usePermissions();
-
-  const isMinimalMode = user?.disableRichEditor === "enable";
+  const isMinimalMode = useMinimalMode();
 
   const referencingItems = useMemo(() => {
     return getReferences(linkIndex, noteId, ItemTypes.NOTE, notes, checklists);
@@ -141,14 +141,11 @@ export const NoteEditorContent = ({
 
   if (isMinimalMode) {
     return (
-      <div className="flex-1 h-full pb-10 lg:pb-0">
-        <MinimalModeEditor
-          isEditing={isEditMode ?? false}
-          noteContent={encrypted ? editorContent : noteContent || ""}
-          onEditorContentChange={onEditorContentChange}
-          compactMode={compactMode}
-        />
-      </div>
+      <MinimalEditorPanel
+        isEditing={isEditMode ?? false}
+        noteContent={encrypted ? editorContent : noteContent || ""}
+        onEditorContentChange={onEditorContentChange}
+      />
     );
   }
 
