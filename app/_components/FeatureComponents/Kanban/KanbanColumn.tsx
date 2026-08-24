@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, memo, useState, useRef, useEffect, useCallback } from "react";
+import { useMemo, memo, useState, useRef, useEffect } from "react";
 import { useDropList } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanCard } from "./KanbanCard";
@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import { TaskDaily01Icon, Add01Icon, Archive02Icon } from "hugeicons-react";
 import { Input } from "../../GlobalComponents/FormElements/Input";
 import { ConfirmModal } from "../../GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
-import { useToast } from "@/app/_providers/ToastProvider";
+import { useKanbanColumn } from "@/app/_hooks/kanban/useKanbanColumn";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -92,67 +92,26 @@ const KanbanColumnComponent = ({
   onArchiveAll,
 }: KanbanColumnProps) => {
   const t = useTranslations();
-  const { showToast } = useToast();
   const { setNodeRef, isOver, padBottom } = useDropList({ id });
-  const [showInlineInput, setShowInlineInput] = useState(false);
-  const [isAddingItem, setIsAddingItem] = useState(false);
-  const [showArchiveAllModal, setShowArchiveAllModal] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
-  const [isSorting, setIsSorting] = useState(false);
 
-  const clickTrackerRef = useRef({ count: 0, lastAt: 0 });
-  const sortTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleSortByStatus = useCallback(async () => {
-    if (!onSortByStatus || isSorting) return;
-    setIsSorting(true);
-    try {
-      await onSortByStatus();
-      showToast({
-        type: "success",
-        title: t("common.success"),
-        message: t("kanban.sortedByPriority", { column: title }),
-      });
-    } catch {
-      showToast({
-        type: "error",
-        title: t("common.error"),
-        message: t("kanban.sortFailed"),
-      });
-    } finally {
-      setIsSorting(false);
-    }
-  }, [onSortByStatus, isSorting, showToast, t, title]);
-
-  const handleTitleClick = useCallback(() => {
-    if (!onSortByStatus) return;
-
-    const now = Date.now();
-    const tracker = clickTrackerRef.current;
-    if (now - tracker.lastAt > 500) {
-      tracker.count = 0;
-    }
-    tracker.count += 1;
-    tracker.lastAt = now;
-
-    if (sortTimeoutRef.current) {
-      clearTimeout(sortTimeoutRef.current);
-    }
-
-    if (tracker.count >= 3) {
-      tracker.count = 0;
-      sortTimeoutRef.current = setTimeout(() => {
-        sortTimeoutRef.current = null;
-        void handleSortByStatus();
-      }, 0);
-    }
-  }, [onSortByStatus, handleSortByStatus]);
-
-  useEffect(() => {
-    return () => {
-      if (sortTimeoutRef.current) clearTimeout(sortTimeoutRef.current);
-    };
-  }, []);
+  const {
+    showInlineInput,
+    setShowInlineInput,
+    isAddingItem,
+    showArchiveAllModal,
+    setShowArchiveAllModal,
+    isArchiving,
+    isSorting,
+    handleTitleClick,
+    handleInlineSubmit,
+    handleArchiveAll,
+  } = useKanbanColumn({
+    title,
+    onSortByStatus,
+    onAddItem,
+    onArchiveAll,
+    archivableCount,
+  });
 
   const currentStatus = statuses.find((s) => s.id === status);
   const isAutoComplete = currentStatus?.autoComplete === true;
@@ -187,24 +146,6 @@ const KanbanColumnComponent = ({
       bgColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)` : color,
     };
   }, [color]);
-
-  const handleInlineSubmit = async (text: string) => {
-    if (!onAddItem) return;
-    setIsAddingItem(true);
-    setShowInlineInput(false);
-    await onAddItem(text);
-    setIsAddingItem(false);
-  };
-
-  const handleArchiveAll = async () => {
-    if (!onArchiveAll || archivableCount === 0) return;
-    setIsArchiving(true);
-    try {
-      await onArchiveAll();
-    } finally {
-      setIsArchiving(false);
-    }
-  };
 
   return (
     <div className="flex flex-col h-full my-4 lg:my-0 min-w-0">
