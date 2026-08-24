@@ -4,7 +4,8 @@ import { CHECKLISTS_FOLDER } from "./checklists";
 import { NOTES_FOLDER } from "./notes";
 
 export const ARCHIVED_DIR_NAME = ".archive";
-export const EXCLUDED_DIRS = ["images", "files", "videos", ".git"];
+export const COMMENTS_DIR_NAME = ".comments";
+export const EXCLUDED_DIRS = ["images", "files", "videos", ".git", COMMENTS_DIR_NAME];
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -63,7 +64,7 @@ export const getUserLogsDir = (username: string) =>
   path.join(LOGS_DIR, username);
 
 export const COMMENTS_DIR = (owner: string) =>
-  path.join(DATA_DIR, CHECKLISTS_FOLDER, owner, ".comments");
+  path.join(DATA_DIR, CHECKLISTS_FOLDER, owner, COMMENTS_DIR_NAME);
 export const COMMENTS_FILE = (owner: string, boardUuid: string) =>
   path.join(COMMENTS_DIR(owner), `${boardUuid}.json`);
 
