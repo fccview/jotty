@@ -164,7 +164,7 @@ export const grepExtractFrontmatter = async (
 ): Promise<Record<string, unknown> | null> => {
   try {
     const { stdout } = await execAsync(
-      `sed -n '1{/^---$/!q}; 2,/^---$/{/^---$/q;p}' "${filePath}" 2>/dev/null || true`,
+      `sed -n '1{/^---$/!q;}; 2,/^---$/{/^---$/q;p;}' "${filePath}" 2>/dev/null || true`,
     );
 
     const yamlContent = stdout.trim();
@@ -332,7 +332,7 @@ export const grepExtractExcerpt = async (
   try {
     const cap = length + EXCERPT_BUFFER;
     const { stdout } = await execAsync(
-      `sed '1{/^---$/!{p;d}}; /^---$/,/^---$/d' "${filePath}" 2>/dev/null | head -c ${cap} || true`,
+      `sed '1{/^---$/!{p;d;};}; /^---$/,/^---$/d' "${filePath}" 2>/dev/null | head -c ${cap} || true`,
     );
     return fullCodeBlock(stdout, length);
   } catch {
