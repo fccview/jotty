@@ -34,13 +34,23 @@ const _isDuplicate = (
   if (type === "assignment") return false;
 
   const cutoff = Date.now() - DEDUP_WINDOW_MS;
-  const key = type === "reminder" ? data?.taskId : data?.itemId;
+  const key =
+    type === "reminder"
+      ? data?.taskId
+      : type === "mention"
+        ? data?.commentId
+        : data?.itemId;
   if (!key) return false;
 
   return existing.some((n) => {
     if (n.type !== type) return false;
     if (new Date(n.createdAt).getTime() <= cutoff) return false;
-    const nKey = type === "reminder" ? n.data?.taskId : n.data?.itemId;
+    const nKey =
+      n.type === "reminder"
+        ? n.data?.taskId
+        : n.type === "mention"
+          ? n.data?.commentId
+          : n.data?.itemId;
     return nKey === key;
   });
 };

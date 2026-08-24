@@ -6,6 +6,7 @@ export interface AppNotificationData {
   itemId: string;
   itemType: NotificationTargets;
   taskId?: string;
+  commentId?: string;
 }
 
 export interface AppNotification {

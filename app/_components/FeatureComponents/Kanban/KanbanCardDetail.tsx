@@ -130,6 +130,7 @@ export const KanbanCardDetail = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    if (!permissions?.canEdit) return;
     const _loadUsers = async () => {
       const sharedWithUsers = await usersWithAccess(checklistUuid);
       const allUsers = await getUsers();
@@ -159,7 +160,7 @@ export const KanbanCardDetail = ({
       setAvailableUsers(Array.from(userMap.values()));
     };
     _loadUsers();
-  }, [isOpen, checklistUuid, checklist.owner]);
+  }, [isOpen, permissions?.canEdit, checklistUuid, checklist.owner]);
 
   const descriptionMarkdown = useMemo(() => {
     if (!item.description) return "";

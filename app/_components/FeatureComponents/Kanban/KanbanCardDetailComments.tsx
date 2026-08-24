@@ -52,6 +52,7 @@ interface CommentThreadProps {
   onCancelReply: () => void;
   onCancelEdit: () => void;
   formatDateTimeString: (d: string) => string;
+  submitting: boolean;
 }
 
 const CommentThread: React.FC<CommentThreadProps> = ({
@@ -71,6 +72,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
   onCancelReply,
   onCancelEdit,
   formatDateTimeString,
+  submitting,
 }) => {
   const t = useTranslations();
   const [replyText, setReplyText] = useState("");
@@ -227,6 +229,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
                     autoFocus
                     users={availableUsers}
                     excludeUsername={currentUsername}
+                    disabled={submitting}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); _submitReply(); }
                       else if (e.key === "Escape") { e.preventDefault(); onCancelReply(); }
@@ -237,7 +240,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
                       <MultiplicationSignIcon className="h-3.5 w-3.5 mr-1" />
                       {t("comments.cancel")}
                     </Button>
-                    <Button size="sm" onClick={_submitReply} disabled={!replyText.trim()}>
+                    <Button size="sm" onClick={_submitReply} disabled={!replyText.trim() || submitting}>
                       <SentIcon className="h-3.5 w-3.5 mr-1" />
                       {t("comments.post")}
                     </Button>
@@ -270,6 +273,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
               onCancelReply={onCancelReply}
               onCancelEdit={onCancelEdit}
               formatDateTimeString={formatDateTimeString}
+              submitting={submitting}
             />
           ))}
         </div>
@@ -489,6 +493,7 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
               onCancelReply={_handleCancelReply}
               onCancelEdit={_handleCancelEdit}
               formatDateTimeString={formatDateTimeString}
+              submitting={submitting}
             />
           ))}
         </div>

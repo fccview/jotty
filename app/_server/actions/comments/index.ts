@@ -63,6 +63,7 @@ const _processMentions = async (
   author: string,
   boardUuid: string,
   boardTitle: string,
+  commentId: string,
 ): Promise<void> => {
   try {
     const matches = text.match(/@([a-zA-Z0-9_.-]+)/g);
@@ -83,6 +84,14 @@ const _processMentions = async (
       if (username === author) continue;
       if (!validUsernames.has(username)) continue;
 
+      const canRead = await canReach(
+        boardUuid,
+        ItemTypes.CHECKLIST,
+        username,
+        PermissionTypes.READ,
+      );
+      if (!canRead) continue;
+
       await createNotificationForUser(username, {
         type: "mention",
         title: "",
@@ -93,6 +102,7 @@ const _processMentions = async (
         data: {
           itemId: boardUuid,
           itemType: NotificationTargets.CHECKLIST,
+          commentId,
         },
       });
     }
@@ -137,13 +147,27 @@ export const addComment = async (
       parentId: parentId || null,
     };
 
+    let saved = false;
     await runQueued(_lane(owner, uuid), async () => {
       const data = await readCommentsFile(owner, uuid);
       const list = data.items[itemId] || [];
+
+      if (parentId) {
+        const parentExists = list.some((c) => c.id === parentId && !c.parentId);
+        if (!parentExists) {
+          return;
+        }
+      }
+
       list.push(comment);
       data.items[itemId] = list;
       await writeCommentsFile(owner, uuid, data);
+      saved = true;
     });
+
+    if (!saved) {
+      return { success: false, error: "Parent comment not found" };
+    }
 
     try {
       revalidatePath(`/checklist/${uuid}`);
@@ -159,7 +183,7 @@ export const addComment = async (
     });
 
     const checklist = await getListById(uuid, username);
-    await _processMentions(text, username, uuid, checklist?.title || "");
+    await _processMentions(text, username, uuid, checklist?.title || "", comment.id);
 
     return { success: true, data: comment };
   } catch (error) {
@@ -213,7 +237,7 @@ export const editComment = async (
     });
 
     const checklist = await getListById(uuid, username);
-    await _processMentions(text, username, uuid, checklist?.title || "");
+    await _processMentions(text, username, uuid, checklist?.title || "", commentId);
 
     return { success: true, data: target };
   } catch (error) {
