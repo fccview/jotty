@@ -419,6 +419,7 @@ export const KanbanCardDetail = ({
         size="fullscreen"
         allowEnlarge
         defaultEnlarged
+        storageKey="kanban-card-detail"
         className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
       >
       <div className="kanban-card-detail-body flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:overflow-hidden">
