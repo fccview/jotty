@@ -153,7 +153,7 @@ export const addComment = async (
       const list = data.items[itemId] || [];
 
       if (parentId) {
-        const parentExists = list.some((c) => c.id === parentId && !c.parentId);
+        const parentExists = list.some((c) => c.id === parentId);
         if (!parentExists) {
           return;
         }
