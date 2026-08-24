@@ -9,6 +9,7 @@ import {
 import { Button } from "../Buttons/Button";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
+import { readModalEnlarged, writeModalEnlarged } from "@/app/_utils/modal-store";
 
 interface ModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ interface ModalProps {
   size?: "default" | "fullscreen";
   allowEnlarge?: boolean;
   defaultEnlarged?: boolean;
+  storageKey?: string;
 }
 
 export const Modal = ({
@@ -30,11 +32,14 @@ export const Modal = ({
   size = "default",
   allowEnlarge = false,
   defaultEnlarged = false,
+  storageKey,
 }: ModalProps) => {
   const t = useTranslations();
   const modalRef = useRef<HTMLDivElement>(null);
   const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
-  const [isEnlarged, setIsEnlarged] = useState(defaultEnlarged);
+  const [isEnlarged, setIsEnlarged] = useState(() =>
+    readModalEnlarged(storageKey, defaultEnlarged),
+  );
 
   useEffect(() => {
     let portalRoot = document.getElementById("modal-portal-root");
@@ -91,9 +96,9 @@ export const Modal = ({
 
   useEffect(() => {
     if (isOpen) {
-      setIsEnlarged(defaultEnlarged);
+      setIsEnlarged(readModalEnlarged(storageKey, defaultEnlarged));
     }
-  }, [isOpen, defaultEnlarged]);
+  }, [isOpen, defaultEnlarged, storageKey]);
 
   if (!isOpen || !portalElement) {
     return null;
@@ -142,7 +147,13 @@ export const Modal = ({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsEnlarged((prev) => !prev)}
+                onClick={() =>
+                  setIsEnlarged((prev) => {
+                    const next = !prev;
+                    writeModalEnlarged(storageKey, next);
+                    return next;
+                  })
+                }
                 className="hidden lg:inline-flex h-8 w-8 p-0"
                 aria-label={
                   isEnlarged ? t("common.shrink") : t("common.enlarge")
