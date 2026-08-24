@@ -23,6 +23,10 @@ export {
 } from "./drop";
 
 export {
+  sortColumn,
+} from "./sort";
+
+export {
   createSubItem,
 } from "./sub-items";
 

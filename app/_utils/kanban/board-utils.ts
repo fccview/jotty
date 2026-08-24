@@ -56,6 +56,58 @@ export const visToColIndex = (
   return lastIdx === -1 ? columnItems.length : lastIdx + 1;
 };
 
+const PRIORITY_RANK: Record<string, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+  none: 4,
+};
+const DEFAULT_PRIORITY_RANK = PRIORITY_RANK.none;
+
+export const sortColumnByPriority = (
+  checklist: Checklist,
+  targetStatus: string,
+): Checklist => {
+  const statusList = checklist.statuses || DEFAULT_KANBAN_STATUSES;
+  const firstStatus = _firstStatusId(checklist.statuses);
+  const validIds = statusList.map((s) => s.id);
+
+  const belongsToColumn = (item: Item): boolean => {
+    if (item.isArchived) return false;
+    if (item.status === targetStatus) return true;
+    if (targetStatus === firstStatus) {
+      return !validIds.includes(item.status || "");
+    }
+    return false;
+  };
+
+  const columnItems = checklist.items.filter(belongsToColumn);
+  if (columnItems.length <= 1) {
+    return checklist;
+  }
+
+  columnItems.sort((a, b) => {
+    const ra = PRIORITY_RANK[a.priority || "none"] ?? DEFAULT_PRIORITY_RANK;
+    const rb = PRIORITY_RANK[b.priority || "none"] ?? DEFAULT_PRIORITY_RANK;
+    if (ra !== rb) return ra - rb;
+    return (a.order ?? 0) - (b.order ?? 0);
+  });
+
+  const columnIds = new Set(columnItems.map((i) => i.id));
+
+  const sortedColumn = [...columnItems];
+  const merged: Item[] = checklist.items.map((orig) =>
+    columnIds.has(orig.id) ? sortedColumn.shift()! : orig,
+  );
+
+  return {
+    ...checklist,
+    items: _renumber(merged),
+    updatedAt: new Date().toISOString(),
+  };
+};
+
 export const applyDrop = (
   checklist: Checklist,
   itemId: string,

@@ -90,6 +90,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
     handleAddItem,
     handleBulkPaste,
     handleItemStatusUpdate,
+    handleSortColumn,
   } = useKanbanBoard({ checklist, onUpdate });
 
   const statuses = useMemo(() => {
@@ -302,6 +303,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
                 statusColor={statuses.find((s) => s.id === column.id)?.color}
                 statuses={statuses}
                 onAddItem={permissions?.canEdit ? (text) => handleAddItem(text, undefined, column.status) : undefined}
+                onSortByStatus={permissions?.canEdit ? () => handleSortColumn(column.status) : undefined}
                 archivableCount={columnItems.length}
                 onArchiveAll={
                   permissions?.canEdit
@@ -323,6 +325,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       isShared,
       statuses,
       handleArchiveAll,
+      handleSortColumn,
       permissions?.canEdit,
       customColumnWidth,
     ],

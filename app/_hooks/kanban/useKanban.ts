@@ -7,10 +7,11 @@ import {
   createItem,
   updateItemStatus,
   createBulkItems,
+  sortColumn,
 } from "@/app/_server/actions/checklist-item";
 import { getListById } from "@/app/_server/actions/checklist";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getColumnItems } from "@/app/_utils/kanban/board-utils";
+import { getColumnItems, sortColumnByPriority } from "@/app/_utils/kanban/board-utils";
 import { useDragStore } from "@/app/_utils/dnd/drag-store";
 
 interface UseKanbanBoardProps {
@@ -159,6 +160,42 @@ export const useKanbanBoard = ({
     [onUpdate, refreshChecklist],
   );
 
+  const handleSortColumn = useCallback(
+    async (targetStatus: string) => {
+      if (!localChecklist.uuid) return;
+
+      const snapshot = localChecklist;
+      const optimistic = sortColumnByPriority(localChecklist, targetStatus);
+      if (optimistic === localChecklist) return;
+
+      setLocalChecklist(optimistic);
+      onUpdate(optimistic);
+
+      const formData = new FormData();
+      formData.append("uuid", localChecklist.uuid);
+      formData.append("targetStatus", targetStatus);
+
+      let response: Awaited<ReturnType<typeof sortColumn>>;
+      try {
+        response = await sortColumn(formData);
+      } catch (error) {
+        console.error("sortColumn threw:", error);
+        response = { success: false, error: "sort failed" };
+      }
+
+      if (response.success && response.data) {
+        setLocalChecklist(response.data);
+        onUpdate(response.data);
+        return;
+      }
+
+      console.error("sortColumn failed:", response.error);
+      setLocalChecklist(snapshot);
+      onUpdate(snapshot);
+    },
+    [localChecklist, onUpdate],
+  );
+
   return {
     localChecklist,
     setLocalChecklist,
@@ -173,5 +210,6 @@ export const useKanbanBoard = ({
     handleAddItem,
     handleBulkPaste,
     handleItemStatusUpdate: _handleItemStatusUpdate,
+    handleSortColumn,
   };
 };

@@ -3,10 +3,11 @@ import {
   getColumnItems,
   visToColIndex,
   applyDrop,
+  sortColumnByPriority,
 } from "@/app/_utils/kanban/board-utils";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { TaskStatus } from "@/app/_types/enums";
-import { Checklist, Item } from "@/app/_types";
+import { Checklist, Item, KanbanPriority } from "@/app/_types";
 
 const makeItem = (id: string, status?: string, extra?: Partial<Item>): Item => ({
   id,
@@ -221,5 +222,116 @@ describe("applyDrop", () => {
   it("returns the checklist untouched for an unknown item", () => {
     const board = makeBoard([makeItem("a", TaskStatus.TODO)]);
     expect(applyDrop(board, "nope", TaskStatus.TODO, 0, USER, NOW)).toBe(board);
+  });
+});
+
+describe("sortColumnByPriority", () => {
+  it("sorts a column's items by priority (critical → high → medium → low → none)", () => {
+    const board = makeBoard([
+      makeItem("a", TaskStatus.TODO, { order: 0, priority: "low" }),
+      makeItem("b", TaskStatus.TODO, { order: 1, priority: "critical" }),
+      makeItem("c", TaskStatus.TODO, { order: 2, priority: "medium" }),
+      makeItem("d", TaskStatus.TODO, { order: 3, priority: "high" }),
+      makeItem("e", TaskStatus.TODO, { order: 4, priority: "none" }),
+    ]);
+    const result = sortColumnByPriority(board, TaskStatus.TODO);
+    const todo = getColumnItems(
+      result.items,
+      TaskStatus.TODO,
+      DEFAULT_KANBAN_STATUSES,
+    );
+    expect(todo.map((i) => i.id)).toEqual(["b", "d", "c", "a", "e"]);
+  });
+
+  it("treats missing/unknown priority as none (sorted last)", () => {
+    const board = makeBoard([
+      makeItem("a", TaskStatus.TODO, { order: 0, priority: "high" }),
+      makeItem("b", TaskStatus.TODO, { order: 1 }),
+      makeItem("c", TaskStatus.TODO, { order: 2, priority: "bogus" as unknown as KanbanPriority }),
+      makeItem("d", TaskStatus.TODO, { order: 3, priority: "critical" }),
+    ]);
+    const result = sortColumnByPriority(board, TaskStatus.TODO);
+    const todo = getColumnItems(
+      result.items,
+      TaskStatus.TODO,
+      DEFAULT_KANBAN_STATUSES,
+    );
+    expect(todo.map((i) => i.id)).toEqual(["d", "a", "b", "c"]);
+  });
+
+  it("preserves the relative order of items sharing a priority (stable sort)", () => {
+    const board = makeBoard([
+      makeItem("z", TaskStatus.TODO, { order: 0, priority: "high" }),
+      makeItem("a", TaskStatus.TODO, { order: 1, priority: "high" }),
+      makeItem("y", TaskStatus.TODO, { order: 2, priority: "critical" }),
+      makeItem("b", TaskStatus.TODO, { order: 3, priority: "critical" }),
+    ]);
+    const result = sortColumnByPriority(board, TaskStatus.TODO);
+    const todo = getColumnItems(
+      result.items,
+      TaskStatus.TODO,
+      DEFAULT_KANBAN_STATUSES,
+    );
+    expect(todo.map((i) => i.id)).toEqual(["y", "b", "z", "a"]);
+  });
+
+  it("leaves other columns untouched", () => {
+    const board = makeBoard([
+      makeItem("a", TaskStatus.TODO, { order: 0, priority: "low" }),
+      makeItem("b", TaskStatus.IN_PROGRESS, { order: 1, priority: "critical" }),
+      makeItem("c", TaskStatus.TODO, { order: 2, priority: "critical" }),
+      makeItem("d", TaskStatus.IN_PROGRESS, { order: 3, priority: "low" }),
+    ]);
+    const result = sortColumnByPriority(board, TaskStatus.TODO);
+    const inProgress = getColumnItems(
+      result.items,
+      TaskStatus.IN_PROGRESS,
+      DEFAULT_KANBAN_STATUSES,
+    );
+    expect(inProgress.map((i) => i.id)).toEqual(["b", "d"]);
+  });
+
+  it("is a no-op (returns the same reference) for a single-item column", () => {
+    const board = makeBoard([makeItem("a", TaskStatus.TODO)]);
+    expect(sortColumnByPriority(board, TaskStatus.TODO)).toBe(board);
+  });
+
+  it("renumbers order fields after sorting", () => {
+    const board = makeBoard([
+      makeItem("a", TaskStatus.TODO, { order: 5, priority: "low" }),
+      makeItem("b", TaskStatus.TODO, { order: 3, priority: "high" }),
+      makeItem("c", TaskStatus.TODO, { order: 1, priority: "critical" }),
+    ]);
+    const result = sortColumnByPriority(board, TaskStatus.TODO);
+    expect(result.items.map((i) => i.order)).toEqual([0, 1, 2]);
+  });
+
+  it("excludes archived items from the column being sorted", () => {
+    const board = makeBoard([
+      makeItem("a", TaskStatus.TODO, { order: 0, priority: "low", isArchived: true }),
+      makeItem("b", TaskStatus.TODO, { order: 1, priority: "high" }),
+    ]);
+    const result = sortColumnByPriority(board, TaskStatus.TODO);
+    const todo = getColumnItems(
+      result.items,
+      TaskStatus.TODO,
+      DEFAULT_KANBAN_STATUSES,
+    );
+    expect(todo.map((i) => i.id)).toEqual(["b"]);
+  });
+
+  it("sorts the first column, which also collects unknown-status items", () => {
+    const board: Checklist = {
+      ...makeBoard([]),
+      items: [
+        makeItem("a", "todo", { order: 0, priority: "low" }),
+        makeItem("b", "ghost", { order: 1, priority: "critical" }),
+        makeItem("c", undefined, { order: 2, priority: "high" }),
+        makeItem("d", "todo", { order: 3, priority: "critical" }),
+      ],
+    };
+    const result = sortColumnByPriority(board, "todo");
+    const first = getColumnItems(result.items, "todo", board.statuses);
+    expect(first.map((i) => i.id)).toEqual(["b", "d", "c", "a"]);
   });
 });

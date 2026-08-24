@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, memo, useState, useRef, useEffect } from "react";
+import { useMemo, memo, useState, useRef, useEffect, useCallback } from "react";
 import { useDropList } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanCard } from "./KanbanCard";
@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { TaskDaily01Icon, Add01Icon, Archive02Icon } from "hugeicons-react";
 import { Input } from "../../GlobalComponents/FormElements/Input";
 import { ConfirmModal } from "../../GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 interface KanbanColumnProps {
   checklist: Checklist;
@@ -23,6 +24,7 @@ interface KanbanColumnProps {
   statusColor?: string;
   statuses: KanbanStatus[];
   onAddItem?: (status: string) => Promise<void>;
+  onSortByStatus?: () => Promise<void> | void;
   archivableCount?: number;
   onArchiveAll?: () => Promise<void>;
 }
@@ -85,15 +87,72 @@ const KanbanColumnComponent = ({
   statusColor,
   statuses,
   onAddItem,
+  onSortByStatus,
   archivableCount = items.length,
   onArchiveAll,
 }: KanbanColumnProps) => {
   const t = useTranslations();
+  const { showToast } = useToast();
   const { setNodeRef, isOver, padBottom } = useDropList({ id });
   const [showInlineInput, setShowInlineInput] = useState(false);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [showArchiveAllModal, setShowArchiveAllModal] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isSorting, setIsSorting] = useState(false);
+
+  const clickTrackerRef = useRef({ count: 0, lastAt: 0 });
+  const sortTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSortByStatus = useCallback(async () => {
+    if (!onSortByStatus || isSorting) return;
+    setIsSorting(true);
+    try {
+      await onSortByStatus();
+      showToast({
+        type: "success",
+        title: t("common.success"),
+        message: t("kanban.sortedByPriority", { column: title }),
+      });
+    } catch {
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: t("kanban.sortFailed"),
+      });
+    } finally {
+      setIsSorting(false);
+    }
+  }, [onSortByStatus, isSorting, showToast, t, title]);
+
+  const handleTitleClick = useCallback(() => {
+    if (!onSortByStatus) return;
+
+    const now = Date.now();
+    const tracker = clickTrackerRef.current;
+    if (now - tracker.lastAt > 500) {
+      tracker.count = 0;
+    }
+    tracker.count += 1;
+    tracker.lastAt = now;
+
+    if (sortTimeoutRef.current) {
+      clearTimeout(sortTimeoutRef.current);
+    }
+
+    if (tracker.count >= 3) {
+      tracker.count = 0;
+      sortTimeoutRef.current = setTimeout(() => {
+        sortTimeoutRef.current = null;
+        void handleSortByStatus();
+      }, 0);
+    }
+  }, [onSortByStatus, handleSortByStatus]);
+
+  useEffect(() => {
+    return () => {
+      if (sortTimeoutRef.current) clearTimeout(sortTimeoutRef.current);
+    };
+  }, []);
 
   const currentStatus = statuses.find((s) => s.id === status);
   const isAutoComplete = currentStatus?.autoComplete === true;
@@ -155,7 +214,20 @@ const KanbanColumnComponent = ({
             className="w-3 h-3 rounded-full shrink-0"
             style={{ backgroundColor: color }}
           />
-          <h3 className="font-medium text-md lg:text-sm text-foreground truncate">
+          <h3
+            onClick={handleTitleClick}
+            title={
+              onSortByStatus
+                ? t("kanban.sortByPriorityHint", { column: title })
+                : undefined
+            }
+            className={cn(
+              "font-medium text-md lg:text-sm text-foreground truncate select-none",
+              onSortByStatus &&
+                "cursor-pointer hover:text-primary transition-colors",
+              isSorting && "opacity-50",
+            )}
+          >
             {title}
           </h3>
         </div>
