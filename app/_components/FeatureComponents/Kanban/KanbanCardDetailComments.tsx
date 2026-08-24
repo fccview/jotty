@@ -135,6 +135,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
                 placeholder={t("comments.edit")}
                 autoFocus
                 users={availableUsers}
+                excludeUsername={currentUsername}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); _submitEdit(); }
                   else if (e.key === "Escape") { e.preventDefault(); onCancelEdit(); }
@@ -223,6 +224,7 @@ const CommentThread: React.FC<CommentThreadProps> = ({
                     placeholder={t("comments.replyPlaceholder")}
                     autoFocus
                     users={availableUsers}
+                    excludeUsername={currentUsername}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); _submitReply(); }
                       else if (e.key === "Escape") { e.preventDefault(); onCancelReply(); }
@@ -499,6 +501,7 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
             rows={1}
             disabled={submitting}
             users={availableUsers}
+            excludeUsername={currentUsername}
             onKeyDown={(e) => {
               if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); _handleAdd(); }
             }}

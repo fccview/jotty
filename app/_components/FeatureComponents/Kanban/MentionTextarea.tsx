@@ -20,6 +20,7 @@ interface MentionTextareaProps {
   autoFocus?: boolean;
   rows?: number;
   users: MentionUser[];
+  excludeUsername?: string;
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
@@ -43,6 +44,7 @@ export const MentionTextarea = React.forwardRef<
       autoFocus,
       rows,
       users,
+      excludeUsername,
       onKeyDown,
     },
     forwardedRef,
@@ -63,11 +65,16 @@ export const MentionTextarea = React.forwardRef<
       }
     }, [forwardedRef]);
 
-    const filteredUsers = mentionQuery
-      ? users.filter((u) =>
-          u.username.toLowerCase().includes(mentionQuery.toLowerCase()),
-        )
-      : users;
+    const excludeSet = new Set<string>();
+    if (excludeUsername) excludeSet.add(excludeUsername);
+
+    const filteredUsers = (
+      mentionQuery
+        ? users.filter((u) =>
+            u.username.toLowerCase().includes(mentionQuery.toLowerCase()),
+          )
+        : users
+    ).filter((u) => !excludeSet.has(u.username));
 
     useEffect(() => {
       setSelectedIndex(0);
