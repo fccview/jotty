@@ -251,6 +251,32 @@
     "thisEntry": "esta entrada",
     "preview": "Vista previa"
   },
+  "comments": {
+    "title": "Comentarios",
+    "titleWithCount": "{count, plural, one {# Comentario} other {# Comentarios}}",
+    "noComments": "Aún no hay comentarios. ¡Inicia la conversación!",
+    "addComment": "Añadir un comentario...",
+    "replyPlaceholder": "Escribe una respuesta...",
+    "post": "Publicar",
+    "reply": "Responder",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edited": "editado",
+    "deleteConfirmTitle": "¿Eliminar comentario?",
+    "deleteConfirmMessage": "Esto eliminará el comentario y cualquier respuesta. Esta acción no se puede deshacer.",
+    "commentDeleted": "Comentario eliminado",
+    "commentAdded": "Comentario añadido",
+    "commentUpdated": "Comentario actualizado",
+    "failedToAdd": "Error al añadir comentario",
+    "failedToEdit": "Error al editar comentario",
+    "failedToDelete": "Error al eliminar comentario",
+    "failedToLoad": "Error al cargar comentarios",
+    "readOnly": "Necesitas acceso de edición para comentar en esta tarjeta.",
+    "replyTo": "Responder a {author}",
+    "noUsersFound": "No se encontraron usuarios"
+  },
   "auth": {
     "loginTitle": "Iniciar sesión",
     "setupTitle": "Configuración inicial",
@@ -1721,6 +1747,8 @@
     "sharingTitle": "{user} compartió un {type} contigo",
     "sharingMessage": "Abre para ver el {type} compartido",
     "sharingFolderTitle": "{user} compartió una carpeta de {type} contigo",
-    "sharingFolderMessage": "Abre para ver “{folder}”"
+    "sharingFolderMessage": "Abre para ver “{folder}”",
+    "mentionTitle": "{user} te mencionó en un comentario",
+    "mentionMessage": "“{board}”"
   }
 }

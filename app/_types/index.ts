@@ -11,6 +11,7 @@ export type {
   Item,
   List,
   Checklist,
+  Comment,
 } from "./checklist";
 
 export type { Note, NoteEditorViewModel } from "./note";

@@ -251,6 +251,32 @@
     "thisEntry": "cette entrée",
     "preview": "Aperçu"
   },
+  "comments": {
+    "title": "Commentaires",
+    "titleWithCount": "{count, plural, one {# Commentaire} other {# Commentaires}}",
+    "noComments": "Aucun commentaire pour l'instant. Lancez la conversation !",
+    "addComment": "Ajouter un commentaire...",
+    "replyPlaceholder": "Écrire une réponse...",
+    "post": "Publier",
+    "reply": "Répondre",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edited": "modifié",
+    "deleteConfirmTitle": "Supprimer le commentaire ?",
+    "deleteConfirmMessage": "Cela supprimera le commentaire et toutes les réponses. Cette action est irréversible.",
+    "commentDeleted": "Commentaire supprimé",
+    "commentAdded": "Commentaire ajouté",
+    "commentUpdated": "Commentaire mis à jour",
+    "failedToAdd": "Échec de l'ajout du commentaire",
+    "failedToEdit": "Échec de la modification du commentaire",
+    "failedToDelete": "Échec de la suppression du commentaire",
+    "failedToLoad": "Échec du chargement des commentaires",
+    "readOnly": "Vous avez besoin d'un accès en écriture pour commenter cette carte.",
+    "replyTo": "Répondre à {author}",
+    "noUsersFound": "Aucun utilisateur trouvé"
+  },
   "auth": {
     "loginTitle": "Connexion",
     "setupTitle": "Configuration initiale",
@@ -1720,6 +1746,8 @@
     "sharingTitle": "{user} a partagé un {type} avec vous",
     "sharingMessage": "Ouvrez pour voir le {type} partagé",
     "sharingFolderTitle": "{user} a partagé un dossier {type} avec vous",
-    "sharingFolderMessage": "Ouvrez pour voir « {folder} »"
+    "sharingFolderMessage": "Ouvrez pour voir « {folder} »",
+    "mentionTitle": "{user} vous a mentionné dans un commentaire",
+    "mentionMessage": "« {board} »"
   }
 }

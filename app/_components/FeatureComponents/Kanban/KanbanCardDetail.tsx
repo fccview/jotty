@@ -21,6 +21,7 @@ import { useTranslations } from "next-intl";
 import { KanbanPriorityLevel, NotificationTargets } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
+import { KanbanCardDetailComments } from "./KanbanCardDetailComments";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { TimeEntriesModal } from "./TimeEntriesModal";
@@ -83,7 +84,7 @@ export const KanbanCardDetail = ({
   const checklistUuid = checklist.uuid || "";
   const t = useTranslations();
   const { permissions } = usePermissions();
-  const { usersPublicData } = useAppMode();
+  const { user, usersPublicData } = useAppMode();
   const { formatDateTimeString, formatDateString, formatTimeString } =
     usePreferredDateTime();
   const statuses = checklist.statuses || DEFAULT_KANBAN_STATUSES;
@@ -129,14 +130,22 @@ export const KanbanCardDetail = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    if (!permissions?.canEdit) return;
     const _loadUsers = async () => {
       const sharedWithUsers = await usersWithAccess(checklistUuid);
+      const allUsers = await getUsers();
+
       if (sharedWithUsers.length === 0) {
         setBoardIsShared(false);
+        setAvailableUsers(
+          allUsers.map((u: { username: string; avatarUrl?: string }) => ({
+            username: u.username,
+            avatarUrl: u.avatarUrl,
+          })),
+        );
         return;
       }
       setBoardIsShared(true);
-      const allUsers = await getUsers();
       const allowedUsernames = new Set(sharedWithUsers);
       if (checklist.owner) allowedUsernames.add(checklist.owner);
       const userMap = new Map<string, { username: string; avatarUrl?: string }>();
@@ -151,7 +160,7 @@ export const KanbanCardDetail = ({
       setAvailableUsers(Array.from(userMap.values()));
     };
     _loadUsers();
-  }, [isOpen, checklistUuid, checklist.owner]);
+  }, [isOpen, permissions?.canEdit, checklistUuid, checklist.owner]);
 
   const descriptionMarkdown = useMemo(() => {
     if (!item.description) return "";
@@ -525,6 +534,18 @@ export const KanbanCardDetail = ({
                 onAddSubtask={handleAddSubtask}
                 onAddNestedSubtask={handleAddNestedSubtask}
                 onToggleAll={handleToggleAll}
+              />
+            </div>
+          )}
+
+          {!isEditing && (
+            <div className="border-t border-border pt-4">
+              <KanbanCardDetailComments
+                uuid={checklistUuid}
+                itemId={item.id}
+                canEdit={!!permissions?.canEdit}
+                currentUsername={user?.username || ""}
+                availableUsers={availableUsers}
               />
             </div>
           )}

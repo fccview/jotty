@@ -251,6 +251,32 @@
     "thisEntry": "bu giriş",
     "preview": "Önizleme"
   },
+  "comments": {
+    "title": "Yorumlar",
+    "titleWithCount": "{count, plural, one {# Yorum} other {# Yorum}}",
+    "noComments": "Henüz yorum yok. Sohbeti başlatın!",
+    "addComment": "Yorum ekle...",
+    "replyPlaceholder": "Yanıt yaz...",
+    "post": "Gönder",
+    "reply": "Yanıtla",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "edited": "düzenlendi",
+    "deleteConfirmTitle": "Yorum silinsin mi?",
+    "deleteConfirmMessage": "Bu, yorumu ve tüm yanıtları siler. Bu işlem geri alınamaz.",
+    "commentDeleted": "Yorum silindi",
+    "commentAdded": "Yorum eklendi",
+    "commentUpdated": "Yorum güncellendi",
+    "failedToAdd": "Yorum eklenemedi",
+    "failedToEdit": "Yorum düzenelenemedi",
+    "failedToDelete": "Yorum silinemedi",
+    "failedToLoad": "Yorumlar yüklenemedi",
+    "readOnly": "Bu karta yorum yapmak için düzenleme erişimi gerekir.",
+    "replyTo": "{author} kullanıcısına yanıtla",
+    "noUsersFound": "Kullanıcı bulunamadı"
+  },
   "history": {
     "noteHistory": "Not Geçmişi",
     "restore": "Geri Yükle",
@@ -1722,6 +1748,8 @@
     "sharingTitle": "{user} sizinle bir {type} paylaştı",
     "sharingMessage": "Paylaşılan {type} öğesini görmek için açın",
     "sharingFolderTitle": "{user} sizinle bir {type} klasörü paylaştı",
-    "sharingFolderMessage": "“{folder}” klasörünü görmek için açın"
+    "sharingFolderMessage": "“{folder}” klasörünü görmek için açın",
+    "mentionTitle": "{user} bir yorumda sizden bahsetti",
+    "mentionMessage": "“{board}”"
   }
 }

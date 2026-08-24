@@ -251,6 +251,32 @@
     "thisEntry": "这个条目",
     "preview": "预览"
   },
+  "comments": {
+    "title": "评论",
+    "titleWithCount": "{count, plural, other {# 条评论}}",
+    "noComments": "还没有评论。开始对话吧！",
+    "addComment": "添加评论...",
+    "replyPlaceholder": "写回复...",
+    "post": "发布",
+    "reply": "回复",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "cancel": "取消",
+    "edited": "已编辑",
+    "deleteConfirmTitle": "删除评论？",
+    "deleteConfirmMessage": "这将删除评论及所有回复。此操作无法撤销。",
+    "commentDeleted": "评论已删除",
+    "commentAdded": "评论已添加",
+    "commentUpdated": "评论已更新",
+    "failedToAdd": "添加评论失败",
+    "failedToEdit": "编辑评论失败",
+    "failedToDelete": "删除评论失败",
+    "failedToLoad": "加载评论失败",
+    "readOnly": "您需要编辑权限才能评论此卡片。",
+    "replyTo": "回复 {author}",
+    "noUsersFound": "未找到用户"
+  },
   "history": {
     "noteHistory": "笔记历史",
     "restore": "恢复",
@@ -1724,6 +1750,8 @@
     "sharingTitle": "{user} 与你共享了{type}",
     "sharingMessage": "打开以查看共享的{type}",
     "sharingFolderTitle": "{user} 与你共享了{type}文件夹",
-    "sharingFolderMessage": "打开以查看“{folder}”"
+    "sharingFolderMessage": "打开以查看“{folder}”",
+    "mentionTitle": "{user} 在评论中提到了你",
+    "mentionMessage": "“{board}”"
   }
 }

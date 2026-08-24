@@ -251,6 +251,32 @@
     "thisEntry": "ten wpis",
     "preview": "Podgląd"
   },
+  "comments": {
+    "title": "Komentarze",
+    "titleWithCount": "{count, plural, one {# Komentarz} few {# Komentarze} other {# Komentarzy}}",
+    "noComments": "Brak komentarzy. Rozpocznij rozmowę!",
+    "addComment": "Dodaj komentarz...",
+    "replyPlaceholder": "Napisz odpowiedź...",
+    "post": "Opublikuj",
+    "reply": "Odpowiedz",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "edited": "edytowany",
+    "deleteConfirmTitle": "Usunąć komentarz?",
+    "deleteConfirmMessage": "Spowoduje to usunięcie komentarza i wszystkich odpowiedzi. Tej akcji nie można cofnąć.",
+    "commentDeleted": "Komentarz usunięty",
+    "commentAdded": "Komentarz dodany",
+    "commentUpdated": "Komentarz zaktualizowany",
+    "failedToAdd": "Nie udało się dodać komentarza",
+    "failedToEdit": "Nie udało się edytować komentarza",
+    "failedToDelete": "Nie udało się usunąć komentarza",
+    "failedToLoad": "Nie udało się załadować komentarzy",
+    "readOnly": "Aby komentować tę kartę, potrzebujesz uprawnień do edycji.",
+    "replyTo": "Odpowiedz użytkownikowi {author}",
+    "noUsersFound": "Nie znaleziono użytkowników"
+  },
   "auth": {
     "loginTitle": "Logowanie",
     "setupTitle": "Pierwsza konfiguracja",
@@ -1724,6 +1750,8 @@
     "sharingTitle": "{user} udostępnił(a) ci {type}",
     "sharingMessage": "Otwórz, aby zobaczyć udostępniony {type}",
     "sharingFolderTitle": "{user} udostępnił(a) ci folder {type}",
-    "sharingFolderMessage": "Otwórz, aby zobaczyć „{folder}”"
+    "sharingFolderMessage": "Otwórz, aby zobaczyć „{folder}”",
+    "mentionTitle": "{user} wspomniał o Tobie w komentarzu",
+    "mentionMessage": "„{board}”"
   }
 }
