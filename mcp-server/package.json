@@ -1,0 +1,44 @@
+{
+  "name": "jotty-mcp",
+  "version": "1.0.0",
+  "description": "MCP server that exposes a remote jotty·page instance (checklists, notes, kanban boards, and more) over stdio via its REST API.",
+  "type": "module",
+  "bin": {
+    "jotty-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "smoke": "node scripts/smoke.mjs",
+    "integration": "node scripts/integration.mjs",
+    "integration:http": "node scripts/integration-http.mjs",
+    "live": "node scripts/live-lifecycle.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "jotty",
+    "jotty.page",
+    "checklist",
+    "kanban",
+    "notes"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
