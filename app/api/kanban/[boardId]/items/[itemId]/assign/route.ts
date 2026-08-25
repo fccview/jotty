@@ -34,7 +34,7 @@ export async function PUT(
       formData.append("itemId", params.itemId);
       formData.append("assignee", assignee || "");
 
-      const result = await assignKanbanItem(formData);
+      const result = await assignKanbanItem(formData, user.username);
 
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });

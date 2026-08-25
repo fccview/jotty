@@ -127,14 +127,19 @@ export const updateKanbanItemScore = async (formData: FormData) => {
   }
 };
 
-export const assignKanbanItem = async (formData: FormData) => {
+export const assignKanbanItem = async (
+  formData: FormData,
+  apiUsername?: string,
+) => {
   try {
     const { uuid, itemId, assignee } = getFormData(formData, [
       "uuid", "itemId", "assignee",
     ]);
 
+    // API-key callers pass their username explicitly; web-UI callers rely on
+    // the session cookie via getCurrentUser().
     const [currentUser, list] = await Promise.all([
-      getCurrentUser(),
+      apiUsername ? Promise.resolve({ username: apiUsername }) : getCurrentUser(),
       getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };
@@ -180,14 +185,19 @@ export const assignKanbanItem = async (formData: FormData) => {
   }
 };
 
-export const setKanbanItemReminder = async (formData: FormData) => {
+export const setKanbanItemReminder = async (
+  formData: FormData,
+  apiUsername?: string,
+) => {
   try {
     const { uuid, itemId, reminder: reminderStr } = getFormData(formData, [
       "uuid", "itemId", "reminder",
     ]);
 
+    // API-key callers pass their username explicitly; web-UI callers rely on
+    // the session cookie via getCurrentUser().
     const [currentUser, list] = await Promise.all([
-      getCurrentUser(),
+      apiUsername ? Promise.resolve({ username: apiUsername }) : getCurrentUser(),
       getListById(uuid),
     ]);
     if (!currentUser) return { error: "Not authenticated" };

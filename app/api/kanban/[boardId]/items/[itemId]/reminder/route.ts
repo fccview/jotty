@@ -41,7 +41,7 @@ export async function PUT(
       formData.append("itemId", params.itemId);
       formData.append("reminder", JSON.stringify({ datetime }));
 
-      const result = await setKanbanItemReminder(formData);
+      const result = await setKanbanItemReminder(formData, user.username);
 
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
@@ -83,7 +83,7 @@ export async function DELETE(
       formData.append("itemId", params.itemId);
       formData.append("reminder", "");
 
-      const result = await setKanbanItemReminder(formData);
+      const result = await setKanbanItemReminder(formData, user.username);
 
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
