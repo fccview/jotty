@@ -2,8 +2,8 @@
 
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
-import { updateUserSettings, getCurrentUser, getUsername } from "../users";
-import { findUserRecord } from "../users/records";
+import { getCurrentUser, getUsername } from "../users";
+import { findUserRecord, patchUserFields } from "../users/records";
 import { logAudit } from "../log";
 import { getSettings } from "../config";
 import _sodium from "libsodium-wrappers-sumo";
@@ -190,15 +190,15 @@ export const verifyAndEnableMfa = async (token: string, secret: string): Promise
 
         const encryptedSecret = await _encryptSecret(secret, username);
 
-        const result = await updateUserSettings({
+        const saved = await patchUserFields(username, {
             mfaEnabled: true,
             mfaSecret: encryptedSecret,
             mfaRecoveryCode: hashedRecoveryCode,
             mfaEnrolledAt: new Date().toISOString(),
         });
 
-        if (!result.success) {
-            return { success: false, error: result.error };
+        if (!saved) {
+            return { success: false, error: "Failed to enable MFA" };
         }
 
         await logAudit({
@@ -338,15 +338,15 @@ export const disableMfa = async (code: string): Promise<Result<null>> => {
             return verification;
         }
 
-        const result = await updateUserSettings({
+        const saved = await patchUserFields(username, {
             mfaEnabled: false,
             mfaSecret: undefined,
             mfaRecoveryCode: undefined,
             mfaEnrolledAt: undefined,
         });
 
-        if (!result.success) {
-            return { success: false, error: result.error };
+        if (!saved) {
+            return { success: false, error: "Failed to disable MFA" };
         }
 
         await logAudit({
@@ -386,12 +386,12 @@ export const regenerateRecoveryCode = async (code: string): Promise<Result<{ rec
         const recoveryCode = _generateRecoveryCode();
         const hashedRecoveryCode = _hashRecoveryCode(recoveryCode);
 
-        const result = await updateUserSettings({
+        const saved = await patchUserFields(username, {
             mfaRecoveryCode: hashedRecoveryCode,
         });
 
-        if (!result.success) {
-            return { success: false, error: result.error };
+        if (!saved) {
+            return { success: false, error: "Failed to regenerate recovery code" };
         }
 
         await logAudit({

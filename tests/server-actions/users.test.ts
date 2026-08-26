@@ -571,5 +571,101 @@ describe('Users Actions', () => {
       expect(result.data?.user).not.toHaveProperty('mfaRecoveryCode')
       expect(result.data?.user).not.toHaveProperty('lastLogin')
     })
+
+    it('should ignore privilege fields sent by the caller', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, preferredTheme: 'light' },
+      ])
+
+      const result = await updateUserSettings({
+        preferredTheme: 'dark',
+        isAdmin: true,
+        isSuperAdmin: true,
+      } as any)
+
+      expect(result.success).toBe(true)
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0].isAdmin).toBe(false)
+      expect(written[0].isSuperAdmin).toBeUndefined()
+      expect(written[0].preferredTheme).toBe('dark')
+      expect(result.data?.user.isAdmin).toBe(false)
+    })
+
+    it('should ignore credential fields sent by the caller', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        {
+          username: 'testuser',
+          passwordHash: 'original_hash',
+          apiKey: 'original_key',
+          mfaEnabled: true,
+          mfaSecret: 'original_secret',
+          isAdmin: false,
+        },
+      ])
+
+      const result = await updateUserSettings({
+        passwordHash: 'attacker_hash',
+        apiKey: 'attacker_key',
+        mfaEnabled: false,
+        mfaSecret: 'attacker_secret',
+        username: 'admin',
+      } as any)
+
+      expect(result.success).toBe(true)
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0].passwordHash).toBe('original_hash')
+      expect(written[0].apiKey).toBe('original_key')
+      expect(written[0].mfaEnabled).toBe(true)
+      expect(written[0].mfaSecret).toBe('original_secret')
+      expect(written[0].username).toBe('testuser')
+    })
+
+    it('should keep the stored custom key path when encryption settings change', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        {
+          username: 'testuser',
+          passwordHash: 'hash',
+          isAdmin: false,
+          encryptionSettings: {
+            method: 'pgp',
+            hasKeys: true,
+            autoDecrypt: true,
+            customKeyPath: '/safe/path',
+          },
+        },
+      ])
+
+      const result = await updateUserSettings({
+        encryptionSettings: {
+          method: 'xchacha',
+          hasKeys: true,
+          autoDecrypt: false,
+          customKeyPath: '/etc/passwd',
+        },
+      })
+
+      expect(result.success).toBe(true)
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0].encryptionSettings.customKeyPath).toBe('/safe/path')
+      expect(written[0].encryptionSettings.method).toBe('xchacha')
+      expect(written[0].encryptionSettings.autoDecrypt).toBe(false)
+    })
+
+    it('should audit rejected fields', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false },
+      ])
+
+      await updateUserSettings({ isAdmin: true } as any)
+
+      expect(mockLogAudit).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'user_settings_rejected',
+        success: false,
+        metadata: expect.objectContaining({ rejected: ['isAdmin'] }),
+      }))
+    })
   })
 })

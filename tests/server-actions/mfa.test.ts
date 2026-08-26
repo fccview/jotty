@@ -4,7 +4,7 @@ import { mockFs, resetAllMocks, createFormData } from "../setup";
 const mockGetUsername = vi.fn();
 const mockGetCurrentUser = vi.fn();
 const mockFindUserRecord = vi.fn();
-const mockUpdateUserSettings = vi.fn();
+const mockPatchUserFields = vi.fn();
 const mockReadJsonFile = vi.fn();
 const mockWriteJsonFile = vi.fn();
 const mockLogAudit = vi.fn();
@@ -13,11 +13,11 @@ const mockGetSettings = vi.fn();
 vi.mock("@/app/_server/actions/users", () => ({
   getUsername: (...args: any[]) => mockGetUsername(...args),
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
-  updateUserSettings: (...args: any[]) => mockUpdateUserSettings(...args),
 }));
 
 vi.mock("@/app/_server/actions/users/records", () => ({
   findUserRecord: (...args: any[]) => mockFindUserRecord(...args),
+  patchUserFields: (...args: any[]) => mockPatchUserFields(...args),
 }));
 
 vi.mock("@/app/_server/actions/file", () => ({
@@ -76,7 +76,7 @@ describe("MFA Actions", () => {
       passwordHash: "hashedpassword123",
       mfaEnabled: false,
     });
-    mockUpdateUserSettings.mockResolvedValue({ success: true });
+    mockPatchUserFields.mockResolvedValue({ username: "testuser" });
     mockReadJsonFile.mockResolvedValue([]);
     mockWriteJsonFile.mockResolvedValue(undefined);
     mockLogAudit.mockResolvedValue(undefined);
@@ -142,7 +142,8 @@ describe("MFA Actions", () => {
       expect(result.success).toBe(true);
       expect(result.data?.recoveryCode).toBeDefined();
       expect(result.data?.recoveryCode).toHaveLength(32);
-      expect(mockUpdateUserSettings).toHaveBeenCalledWith(
+      expect(mockPatchUserFields).toHaveBeenCalledWith(
+        "testuser",
         expect.objectContaining({
           mfaEnabled: true,
         }),
