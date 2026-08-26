@@ -1,7 +1,26 @@
+import { lock, unlock } from "proper-lockfile";
+import fs from "fs/promises";
+import path from "path";
 import { USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
 import { User } from "@/app/_types";
 import { getSessionId, readSessions } from "../session";
+
+const LOCK_RETRIES = { retries: 10, minTimeout: 50, maxTimeout: 500 };
+
+const touchUsersFile = async (): Promise<string> => {
+  const usersPath = path.join(process.cwd(), USERS_FILE);
+
+  await fs.mkdir(path.dirname(usersPath), { recursive: true });
+
+  try {
+    await fs.access(usersPath);
+  } catch {
+    await fs.writeFile(usersPath, "[]", "utf-8");
+  }
+
+  return usersPath;
+};
 
 export const findUserRecord = async (
   username: string,
@@ -31,20 +50,40 @@ export const patchUserFields = async (
 ): Promise<User | null> => {
   if (!username) return null;
 
-  const allUsers = await readJsonFile(USERS_FILE);
+  const usersPath = await touchUsersFile();
 
-  if (!Array.isArray(allUsers)) return null;
+  try {
+    await lock(usersPath, { retries: LOCK_RETRIES });
+  } catch (error) {
+    console.error("Failed to lock users file for update:", error);
+    return null;
+  }
 
-  const userIndex = allUsers.findIndex(
-    (user: User) => user.username === username,
-  );
+  try {
+    const allUsers = await readJsonFile(USERS_FILE);
 
-  if (userIndex === -1) return null;
+    if (!Array.isArray(allUsers)) return null;
 
-  const updatedUser: User = { ...allUsers[userIndex], ...updates };
-  allUsers[userIndex] = updatedUser;
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === username,
+    );
 
-  await writeJsonFile(allUsers, USERS_FILE);
+    if (userIndex === -1) return null;
 
-  return updatedUser;
+    const updatedUser: User = { ...allUsers[userIndex], ...updates };
+    allUsers[userIndex] = updatedUser;
+
+    await writeJsonFile(allUsers, USERS_FILE);
+
+    return updatedUser;
+  } catch (error) {
+    console.error("Failed to update user record:", error);
+    return null;
+  } finally {
+    try {
+      await unlock(usersPath);
+    } catch (error) {
+      console.error("Failed to release users file lock:", error);
+    }
+  }
 };
