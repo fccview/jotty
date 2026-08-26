@@ -106,3 +106,8 @@ export type SanitisedUser = Omit<
   User,
   "passwordHash" | "apiKey" | "lastLogin" | "mfaSecret" | "mfaRecoveryCode"
 >;
+
+export type PublicUserInfo = Pick<
+  User,
+  "username" | "isAdmin" | "isSuperAdmin" | "avatarUrl"
+>;

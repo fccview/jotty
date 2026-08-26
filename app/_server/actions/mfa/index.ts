@@ -2,7 +2,8 @@
 
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
-import { getUserByUsername, updateUserSettings, getCurrentUser, getUsername } from "../users";
+import { updateUserSettings, getCurrentUser, getUsername } from "../users";
+import { findUserRecord } from "../users/records";
 import { logAudit } from "../log";
 import { getSettings } from "../config";
 import _sodium from "libsodium-wrappers-sumo";
@@ -23,7 +24,7 @@ const _getSodium = async () => {
 const _encryptSecret = async (secret: string, username: string): Promise<string> => {
     const sod = await _getSodium();
 
-    const user = await getUserByUsername(username);
+    const user = await findUserRecord(username);
     if (!user) {
         throw new Error("User not found");
     }
@@ -63,7 +64,7 @@ const _decryptSecret = async (encryptedSecret: string, username: string): Promis
     const sod = await _getSodium();
     const pkg = JSON.parse(encryptedSecret);
 
-    const user = await getUserByUsername(username);
+    const user = await findUserRecord(username);
     if (!user) {
         throw new Error("User not found");
     }
@@ -231,7 +232,7 @@ export const verifyMfaCode = async (code: string): Promise<Result<null>> => {
             return { success: false, error: "Not authenticated" };
         }
 
-        const user = await getUserByUsername(username);
+        const user = await findUserRecord(username);
 
         if (!user || !user.mfaEnabled || !user.mfaSecret) {
             return { success: false, error: "MFA not enabled" };
@@ -285,7 +286,7 @@ export const verifyRecoveryCode = async (code: string): Promise<Result<null>> =>
             return { success: false, error: "Not authenticated" };
         }
 
-        const user = await getUserByUsername(username);
+        const user = await findUserRecord(username);
 
         if (!user || !user.mfaEnabled || !user.mfaRecoveryCode) {
             return { success: false, error: "MFA not enabled" };
@@ -424,7 +425,7 @@ export const adminDisableUserMfa = async (username: string, recoveryCode: string
             return { success: false, error: "Unauthorized" };
         }
 
-        const targetUser = await getUserByUsername(username);
+        const targetUser = await findUserRecord(username);
         if (!targetUser) {
             return { success: false, error: "User not found" };
         }
@@ -490,7 +491,7 @@ export const getMfaStatus = async (): Promise<Result<{ enabled: boolean; enrolle
             return { success: false, error: "Not authenticated" };
         }
 
-        const user = await getUserByUsername(username);
+        const user = await findUserRecord(username);
 
         if (!user) {
             return { success: false, error: "User not found" };

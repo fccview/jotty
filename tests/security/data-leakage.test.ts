@@ -5,6 +5,15 @@ const mockReadJsonFile = vi.fn()
 const mockWriteJsonFile = vi.fn()
 const mockGetSessionId = vi.fn()
 const mockReadSessions = vi.fn()
+const mockGrepFindFileByUuid = vi.fn()
+
+vi.mock('@/app/_utils/grep-utils', async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>
+  return {
+    ...actual,
+    grepFindFileByUuid: (...args: any[]) => mockGrepFindFileByUuid(...args),
+  }
+})
 
 vi.mock('@/app/_server/actions/file', () => ({
   readJsonFile: () => mockReadJsonFile(),
@@ -104,6 +113,102 @@ describe('Security: Data Leakage Prevention', () => {
     })
   })
 
+  describe('Current User Protection', () => {
+    const currentRecord = {
+      username: 'testuser',
+      passwordHash: 'current_hash',
+      apiKey: 'current_api_key',
+      mfaSecret: 'current_mfa_secret',
+      mfaRecoveryCode: 'current_recovery_code',
+      lastLogin: '2024-06-01T00:00:00.000Z',
+      isAdmin: true,
+      isSuperAdmin: false,
+      avatarUrl: '/uploads/testuser.png',
+      preferredLocale: 'it',
+    }
+
+    const CURRENT_SECRETS = [
+      'current_hash',
+      'current_api_key',
+      'current_mfa_secret',
+      'current_recovery_code',
+    ]
+
+    it('getCurrentUser should never return credentials or secrets', async () => {
+      mockReadJsonFile.mockResolvedValue([currentRecord])
+
+      const { getCurrentUser } = await import('@/app/_server/actions/users')
+      const user = await getCurrentUser()
+
+      expect(user?.username).toBe('testuser')
+      expect(user?.isAdmin).toBe(true)
+      expect(user?.preferredLocale).toBe('it')
+
+      expect(user).not.toHaveProperty('passwordHash')
+      expect(user).not.toHaveProperty('apiKey')
+      expect(user).not.toHaveProperty('mfaSecret')
+      expect(user).not.toHaveProperty('mfaRecoveryCode')
+      expect(user).not.toHaveProperty('lastLogin')
+
+      CURRENT_SECRETS.forEach((secret) => {
+        expect(JSON.stringify(user)).not.toContain(secret)
+      })
+    })
+
+    it('getCurrentUser should hand back a fresh object, not the stored record', async () => {
+      mockReadJsonFile.mockResolvedValue([currentRecord])
+
+      const { getCurrentUser } = await import('@/app/_server/actions/users')
+      const user = await getCurrentUser()
+
+      expect(user).not.toBe(currentRecord)
+      expect(currentRecord.passwordHash).toBe('current_hash')
+    })
+
+    it('getCurrentUser should return null without a session', async () => {
+      mockReadJsonFile.mockResolvedValue([currentRecord])
+      mockReadSessions.mockResolvedValue({})
+
+      const { getCurrentUser } = await import('@/app/_server/actions/users')
+
+      expect(await getCurrentUser()).toBeNull()
+    })
+
+    it('should not expose a browser callable full current user lookup', async () => {
+      const userActions = await import('@/app/_server/actions/users')
+
+      expect(userActions).not.toHaveProperty('getCurrentUserRecord')
+      expect(userActions).not.toHaveProperty('findUserRecord')
+    })
+
+    it('getCurrentUserRecord should still expose secrets to server internals', async () => {
+      mockReadJsonFile.mockResolvedValue([currentRecord])
+
+      const { getCurrentUserRecord } = await import(
+        '@/app/_server/actions/users/records'
+      )
+      const record = await getCurrentUserRecord()
+
+      expect(record?.username).toBe('testuser')
+      expect(record?.passwordHash).toBe('current_hash')
+      expect(record?.apiKey).toBe('current_api_key')
+      expect(record?.mfaSecret).toBe('current_mfa_secret')
+      expect(record?.mfaRecoveryCode).toBe('current_recovery_code')
+      expect(record?.lastLogin).toBe('2024-06-01T00:00:00.000Z')
+    })
+
+    it('getCurrentUserRecord should return null without a session', async () => {
+      mockReadJsonFile.mockResolvedValue([currentRecord])
+      mockReadSessions.mockResolvedValue({})
+
+      const { getCurrentUserRecord } = await import(
+        '@/app/_server/actions/users/records'
+      )
+
+      expect(await getCurrentUserRecord()).toBeNull()
+    })
+  })
+
   describe('Sensitive Field Filtering', () => {
     it('user list should only contain safe fields', async () => {
       mockReadJsonFile.mockResolvedValue([
@@ -138,20 +243,86 @@ describe('Security: Data Leakage Prevention', () => {
   })
 
   describe('Cross-User Data Protection', () => {
+    const victimRecord = {
+      username: 'victim',
+      passwordHash: 'victim_hash',
+      apiKey: 'victim_api_key',
+      mfaSecret: 'victim_mfa_secret',
+      mfaRecoveryCode: 'victim_recovery_code',
+      isAdmin: false,
+      isSuperAdmin: false,
+      avatarUrl: '/uploads/victim.png',
+    }
+
+    const SECRET_VALUES = [
+      'victim_hash',
+      'victim_api_key',
+      'victim_mfa_secret',
+      'victim_recovery_code',
+    ]
+
     it('should not expose other users data in error messages', async () => {
       mockReadJsonFile.mockResolvedValue([
-        { username: 'victim', passwordHash: 'victim_hash', isAdmin: false },
+        victimRecord,
         { username: 'testuser', passwordHash: 'test_hash', isAdmin: false },
       ])
 
-      const { getUserByUsername } = await import('@/app/_server/actions/users')
+      const { getPublicUser } = await import('@/app/_server/actions/users')
 
-      const victim = await getUserByUsername('victim')
+      const victim = await getPublicUser('victim')
 
       if (victim) {
         expect(JSON.stringify(victim)).not.toContain('testuser')
         expect(JSON.stringify(victim)).not.toContain('test_hash')
       }
+    })
+
+    it('getPublicUser should never return another users secrets', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        victimRecord,
+        { username: 'testuser', passwordHash: 'test_hash', isAdmin: false },
+      ])
+
+      const { getPublicUser } = await import('@/app/_server/actions/users')
+
+      const victim = await getPublicUser('victim')
+
+      expect(victim?.username).toBe('victim')
+      expect(victim?.avatarUrl).toBe('/uploads/victim.png')
+      expect(victim).not.toHaveProperty('passwordHash')
+      expect(victim).not.toHaveProperty('apiKey')
+      expect(victim).not.toHaveProperty('mfaSecret')
+      expect(victim).not.toHaveProperty('mfaRecoveryCode')
+
+      SECRET_VALUES.forEach((secret) => {
+        expect(JSON.stringify(victim)).not.toContain(secret)
+      })
+    })
+
+    it('should not expose a browser callable full user lookup', async () => {
+      const userActions = await import('@/app/_server/actions/users')
+
+      expect(userActions).not.toHaveProperty('getUserByUsername')
+    })
+
+    it('owner lookup by item uuid should only return public fields', async () => {
+      mockReadJsonFile.mockResolvedValue([victimRecord])
+      mockGrepFindFileByUuid.mockResolvedValue({ filePath: '/data/victim/note.md' })
+
+      const { getUserByNoteUuid } = await import('@/app/_server/actions/users')
+
+      const result = await getUserByNoteUuid('note-uuid-1')
+
+      expect(result.success).toBe(true)
+      expect(result.data?.username).toBe('victim')
+      expect(result.data).not.toHaveProperty('passwordHash')
+      expect(result.data).not.toHaveProperty('apiKey')
+      expect(result.data).not.toHaveProperty('mfaSecret')
+      expect(result.data).not.toHaveProperty('mfaRecoveryCode')
+
+      SECRET_VALUES.forEach((secret) => {
+        expect(JSON.stringify(result)).not.toContain(secret)
+      })
     })
   })
 

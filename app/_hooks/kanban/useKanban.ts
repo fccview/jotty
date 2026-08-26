@@ -9,7 +9,7 @@ import {
   createBulkItems,
 } from "@/app/_server/actions/checklist-item";
 import { getListById } from "@/app/_server/actions/checklist";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { getUsername } from "@/app/_server/actions/users";
 import { getColumnItems } from "@/app/_utils/kanban/board-utils";
 import { useDragStore } from "@/app/_utils/dnd/drag-store";
 
@@ -105,7 +105,7 @@ export const useKanbanBoard = ({
     formData.append("uuid", localChecklist.uuid || "");
     formData.append("text", text);
 
-    const currentUser = await getCurrentUser();
+    const username = (await getUsername()) || undefined;
 
     if (recurrence) {
       formData.append("recurrence", JSON.stringify(recurrence));
@@ -118,12 +118,12 @@ export const useKanbanBoard = ({
     const result = await createItem(
       localChecklist,
       formData,
-      currentUser?.username,
+      username,
     );
 
     const updatedList = await getListById(
       localChecklist.uuid || "",
-      localChecklist.owner || currentUser?.username,
+      localChecklist.owner || username,
     );
     if (updatedList) {
       setLocalChecklist(updatedList);

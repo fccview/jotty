@@ -20,6 +20,7 @@ export type {
   User,
   Session,
   SanitisedUser,
+  PublicUserInfo,
   EnableRecurrence,
   ShowCompletedSuggestions,
   ShowChecklistEmojis,

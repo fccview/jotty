@@ -50,7 +50,7 @@ vi.mock("@/app/_server/actions/users", () => ({
   getUsername: (...args: any[]) => mockGetUsername(...args),
   getUserByNote: (...args: any[]) => mockGetUserByNote(...args),
   getUserByNoteUuid: (...args: any[]) => mockGetUserByNoteUuid(...args),
-  getUserByUsername: vi.fn().mockResolvedValue(null),
+  getPublicUser: vi.fn().mockResolvedValue(null),
   isAuthenticated: vi.fn().mockResolvedValue(true),
 }));
 

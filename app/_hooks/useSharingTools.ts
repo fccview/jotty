@@ -15,7 +15,7 @@ import {
 import { itemShares } from "../_server/actions/share/queries";
 import { modeFor } from "@/app/_utils/sharing-utils";
 import { SharingPermissions } from "@/app/_types";
-import { getCurrentUser } from "../_server/actions/users";
+import { getUsername } from "../_server/actions/users";
 
 interface ShareModalProps {
   isOpen?: boolean;
@@ -58,7 +58,6 @@ export const useSharingTools = ({
     async (targetUsers?: string) => {
       setStatus({ isLoading: true, error: null, success: null });
       try {
-        const currentUser = await getCurrentUser();
         const targetUsersList = targetUsers?.split(",") || [targetUsers || ""];
 
         for (const targetUser of targetUsersList) {
@@ -99,7 +98,6 @@ export const useSharingTools = ({
 
       try {
         const targetUsersList = targetUsers?.split(",") || [targetUsers || ""];
-        const currentUser = await getCurrentUser();
 
         for (const targetUser of targetUsersList) {
           await unshareItem(modeFor(itemType), itemUuid, targetUser || "");
@@ -287,8 +285,8 @@ export const useSharingTools = ({
   };
 
   const handlePublicToggle = async () => {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return;
+    const username = await getUsername();
+    if (!username) return;
 
     setStatus({ isLoading: true, error: null, success: null });
 
@@ -353,8 +351,8 @@ export const useSharingTools = ({
   };
 
   const handleRemoveAllSharing = async () => {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return;
+    const username = await getUsername();
+    if (!username) return;
 
     setStatus({ isLoading: true, error: null, success: null });
 

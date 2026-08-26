@@ -16,10 +16,6 @@ const CODE_TO_PERMS: Record<SharePerms, SharingPermissions> = {
 export const permsFromCode = (code: string): SharingPermissions | null =>
   CODE_TO_PERMS[code as SharePerms] || null;
 
-/**
- * Grants written before folder-scoped "create" existed carry no canCreate flag,
- * so they keep behaving as they always did and follow canEdit.
- */
 export const granted = (
   perms: SharingPermissions | undefined,
   permission: PermissionTypes,
@@ -39,7 +35,8 @@ export const canFill = (category: {
   permissions?: SharingPermissions;
 }): boolean =>
   !category.isLoose &&
-  (!category.sharedFrom || granted(category.permissions, PermissionTypes.CREATE));
+  (!category.sharedFrom ||
+    granted(category.permissions, PermissionTypes.CREATE));
 
 export const codeFromPerms = (perms: SharingPermissions): SharePerms => {
   if (perms.canDelete) return SharePerms.DELETE;

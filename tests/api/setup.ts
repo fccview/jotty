@@ -27,7 +27,7 @@ export const mockUpdateItemStatus = vi.fn();
 export const mockGetCategories = vi.fn();
 export const mockIsAdmin = vi.fn();
 export const mockServerWriteFile = vi.fn();
-export const mockGetUserByUsername = vi.fn();
+export const mockFindUserRecord = vi.fn();
 export const mockExportAllChecklistsNotes = vi.fn();
 export const mockExportUserChecklistsNotes = vi.fn();
 export const mockExportAllUsersData = vi.fn();
@@ -77,7 +77,10 @@ vi.mock("@/app/_server/actions/category", () => ({
 
 vi.mock("@/app/_server/actions/users", () => ({
   isAdmin: (...args: any[]) => mockIsAdmin(...args),
-  getUserByUsername: (...args: any[]) => mockGetUserByUsername(...args),
+}));
+
+vi.mock("@/app/_server/actions/users/records", () => ({
+  findUserRecord: (...args: any[]) => mockFindUserRecord(...args),
 }));
 
 vi.mock("@/app/_server/actions/file", () => ({
@@ -124,7 +127,7 @@ export function resetApiMocks() {
   mockGetCategories.mockReset();
   mockIsAdmin.mockReset();
   mockServerWriteFile.mockReset();
-  mockGetUserByUsername.mockReset();
+  mockFindUserRecord.mockReset();
   mockExportAllChecklistsNotes.mockReset();
   mockExportUserChecklistsNotes.mockReset();
   mockExportAllUsersData.mockReset();

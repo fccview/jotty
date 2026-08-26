@@ -11,7 +11,7 @@ export {
 } from "./crud";
 
 export {
-  getUserByUsername,
+  getPublicUser,
   getCurrentUser,
   hasUsers,
   getUsername,

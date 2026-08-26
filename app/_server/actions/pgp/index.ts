@@ -11,7 +11,7 @@ import {
   serverReadFile,
   serverDeleteFile,
 } from "@/app/_server/actions/file";
-import { Result, User } from "@/app/_types";
+import { Result, SanitisedUser } from "@/app/_types";
 import { PGPKeyMetadata } from "@/app/_types";
 import { logAudit } from "@/app/_server/actions/log";
 
@@ -463,7 +463,7 @@ export const decryptNoteContent = async (
 
 export const setCustomKeyPath = async (
   customPath: string
-): Promise<Result<{ user: User }>> => {
+): Promise<Result<{ user: SanitisedUser }>> => {
   try {
     const user = await getCurrentUser();
     if (!user?.username) {

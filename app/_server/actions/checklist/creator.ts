@@ -1,5 +1,5 @@
 import path from "path";
-import { Checklist, ChecklistType, User } from "@/app/_types";
+import { Checklist, ChecklistType, SanitisedUser } from "@/app/_types";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { ensureDir, serverWriteFile } from "@/app/_server/actions/file";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
@@ -18,7 +18,7 @@ import { getFormData } from "@/app/_utils/global-utils";
  * read from the FormData.
  */
 export const makeList = async (
-  actor: User,
+  actor: SanitisedUser,
   formData: FormData,
 ): Promise<{ success?: boolean; data?: Checklist; error?: string }> => {
   try {

@@ -2,7 +2,8 @@ import { redirect, permanentRedirect } from "next/navigation";
 import { getNoteById } from "@/app/_server/actions/note";
 import { isUuid } from "@/app/_consts/identity";
 import { PublicNoteView } from "@/app/_components/FeatureComponents/PublicView/PublicNoteView";
-import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
+import { getCurrentUser } from "@/app/_server/actions/users";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { Modes, ItemTypes } from "@/app/_types/enums";
@@ -56,7 +57,7 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
     redirect("/");
   }
 
-  const userRecord = await getUserByUsername(note.owner!);
+  const userRecord = await findUserRecord(note.owner!);
   const user = sanitizeUserForPublic(
     userRecord,
     !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),

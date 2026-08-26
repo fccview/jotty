@@ -2,14 +2,15 @@
 
 import { USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import { Result, User } from "@/app/_types";
+import { Result, SanitisedUser, User } from "@/app/_types";
 import { logUserEvent, logAudit } from "@/app/_server/actions/log";
 import { getUserIndex } from "./helpers";
 import { getCurrentUser } from "./queries";
+import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 export const updateUserSettings = async (
   settings: Partial<User>
-): Promise<Result<{ user: User }>> => {
+): Promise<Result<{ user: SanitisedUser }>> => {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
@@ -46,7 +47,7 @@ export const updateUserSettings = async (
       },
     });
 
-    return { success: true, data: { user: updatedUser } };
+    return { success: true, data: { user: sanitizeUserForClient(updatedUser)! } };
   } catch (error) {
     console.error("Error updating user settings:", error);
     await logAudit({

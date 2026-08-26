@@ -15,7 +15,7 @@ vi.mock('@/app/_server/actions/users', async (importOriginal) => {
     getUsername: () => mockGetUsername(),
     isAuthenticated: () => mockIsAuthenticated(),
     isAdmin: vi.fn().mockResolvedValue(false),
-    getUserByUsername: vi.fn().mockResolvedValue(null),
+    getPublicUser: vi.fn().mockResolvedValue(null),
     getUserByNote: vi.fn().mockResolvedValue({ success: false }),
     getUserByChecklist: vi.fn().mockResolvedValue({ success: false }),
     getUserByNoteUuid: vi.fn().mockResolvedValue({ success: false }),

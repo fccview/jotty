@@ -11,7 +11,6 @@ import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { decodeSegment } from "@/app/_utils/global-utils";
-import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 interface ChecklistPageProps {
   params: Promise<{
@@ -30,13 +29,13 @@ export default async function ChecklistPage(props: ChecklistPageProps) {
   const params = await props.params;
   const { uuid } = params;
 
-  const userRecord = await getCurrentUser();
+  const user = await getCurrentUser();
 
-  if (!userRecord?.username) {
+  if (!user?.username) {
     redirect("/");
   }
 
-  const username = userRecord.username;
+  const username = user.username;
   const hasContentAccess = await canAccessAllContent();
 
   if (!isUuid(uuid)) {
@@ -82,8 +81,6 @@ export default async function ChecklistPage(props: ChecklistPageProps) {
     updatedAt: checklist.updatedAt,
     type: "checklist" as const,
   };
-
-  const user = sanitizeUserForClient(userRecord);
 
   return (
     <MetadataProvider metadata={metadata}>

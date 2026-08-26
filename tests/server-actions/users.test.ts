@@ -26,14 +26,21 @@ vi.mock('@/app/_server/actions/log', () => ({
 
 import {
   createUser,
-  getUserByUsername,
+  getCurrentUser,
+  getPublicUser,
   hasUsers,
   updateProfile,
   deleteUser,
+  deleteAccount,
   getUsers,
   updateUserSettings,
   ensureUser,
 } from '@/app/_server/actions/users'
+import { getCurrentUserRecord } from '@/app/_server/actions/users/records'
+import { createHash } from 'crypto'
+
+const hashOf = (password: string): string =>
+  createHash('sha256').update(password).digest('hex')
 
 describe('Users Actions', () => {
   beforeEach(() => {
@@ -154,25 +161,175 @@ describe('Users Actions', () => {
     })
   })
 
-  describe('getUserByUsername', () => {
+  describe('getPublicUser', () => {
     it('should return null when user not found', async () => {
       mockReadJsonFile.mockResolvedValue([])
 
-      const result = await getUserByUsername('nonexistent')
+      const result = await getPublicUser('nonexistent')
 
       expect(result).toBeNull()
     })
 
-    it('should return user when found', async () => {
+    it('should return public display fields when found', async () => {
       mockReadJsonFile.mockResolvedValue([
-        { username: 'testuser', passwordHash: 'hash', isAdmin: true },
+        {
+          username: 'testuser',
+          passwordHash: 'hash',
+          isAdmin: true,
+          isSuperAdmin: false,
+          avatarUrl: '/uploads/avatar.png',
+        },
       ])
 
-      const result = await getUserByUsername('testuser')
+      const result = await getPublicUser('testuser')
+
+      expect(result).toEqual({
+        username: 'testuser',
+        isAdmin: true,
+        isSuperAdmin: false,
+        avatarUrl: '/uploads/avatar.png',
+      })
+    })
+
+    it('should never expose credentials or mfa secrets', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        {
+          username: 'victim',
+          passwordHash: 'victim_hash',
+          apiKey: 'victim_api_key',
+          mfaSecret: 'victim_mfa_secret',
+          mfaRecoveryCode: 'victim_recovery_code',
+          lastLogin: '2024-01-01',
+          isAdmin: false,
+        },
+      ])
+
+      const result = await getPublicUser('victim')
 
       expect(result).not.toBeNull()
+      expect(result).not.toHaveProperty('passwordHash')
+      expect(result).not.toHaveProperty('apiKey')
+      expect(result).not.toHaveProperty('mfaSecret')
+      expect(result).not.toHaveProperty('mfaRecoveryCode')
+      expect(result).not.toHaveProperty('lastLogin')
+      expect(JSON.stringify(result)).not.toContain('victim_hash')
+      expect(JSON.stringify(result)).not.toContain('victim_api_key')
+      expect(JSON.stringify(result)).not.toContain('victim_mfa_secret')
+      expect(JSON.stringify(result)).not.toContain('victim_recovery_code')
+    })
+  })
+
+  describe('getCurrentUser', () => {
+    const sessionRecord = {
+      username: 'testuser',
+      passwordHash: 'session_hash',
+      apiKey: 'session_api_key',
+      mfaSecret: 'session_mfa_secret',
+      mfaRecoveryCode: 'session_recovery_code',
+      lastLogin: '2024-01-01',
+      isAdmin: true,
+      preferredTheme: 'dark',
+    }
+
+    it('should return the session user without credentials or mfa secrets', async () => {
+      mockReadJsonFile.mockResolvedValue([sessionRecord])
+
+      const result = await getCurrentUser()
+
       expect(result?.username).toBe('testuser')
       expect(result?.isAdmin).toBe(true)
+      expect(result?.preferredTheme).toBe('dark')
+      expect(result).not.toHaveProperty('passwordHash')
+      expect(result).not.toHaveProperty('apiKey')
+      expect(result).not.toHaveProperty('mfaSecret')
+      expect(result).not.toHaveProperty('mfaRecoveryCode')
+      expect(result).not.toHaveProperty('lastLogin')
+    })
+
+    it('should not hand back the stored record itself', async () => {
+      mockReadJsonFile.mockResolvedValue([sessionRecord])
+
+      const result = await getCurrentUser()
+
+      expect(result).not.toBe(sessionRecord)
+      expect(sessionRecord.passwordHash).toBe('session_hash')
+    })
+
+    it('getCurrentUserRecord should keep secrets available server side', async () => {
+      mockReadJsonFile.mockResolvedValue([sessionRecord])
+
+      const record = await getCurrentUserRecord()
+
+      expect(record?.passwordHash).toBe('session_hash')
+      expect(record?.apiKey).toBe('session_api_key')
+      expect(record?.mfaSecret).toBe('session_mfa_secret')
+      expect(record?.mfaRecoveryCode).toBe('session_recovery_code')
+    })
+  })
+
+  describe('credential dependent flows', () => {
+    const passwordRecord = {
+      username: 'testuser',
+      passwordHash: hashOf('correct-horse'),
+      isAdmin: false,
+    }
+
+    it('updateProfile should reject a wrong current password', async () => {
+      mockReadJsonFile.mockResolvedValue([passwordRecord])
+
+      const result = await updateProfile(
+        createFormData({
+          newUsername: 'testuser',
+          currentPassword: 'wrong-password',
+          newPassword: 'brand-new-password',
+        })
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Current password is incorrect')
+      expect(mockWriteJsonFile).not.toHaveBeenCalled()
+    })
+
+    it('updateProfile should accept the correct current password', async () => {
+      mockReadJsonFile.mockResolvedValue([passwordRecord])
+
+      const result = await updateProfile(
+        createFormData({
+          newUsername: 'testuser',
+          currentPassword: 'correct-horse',
+          newPassword: 'brand-new-password',
+        })
+      )
+
+      expect(result.success).toBe(true)
+
+      const [written] = mockWriteJsonFile.mock.calls[0]
+      expect(written[0].passwordHash).toBe(hashOf('brand-new-password'))
+    })
+
+    it('deleteAccount should reject a wrong confirmation password', async () => {
+      mockReadJsonFile.mockResolvedValue([passwordRecord])
+
+      const result = await deleteAccount(
+        createFormData({ confirmPassword: 'wrong-password' })
+      )
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Incorrect password')
+    })
+
+    it('deleteAccount should accept the correct confirmation password', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        passwordRecord,
+        { username: 'someoneelse', passwordHash: 'other', isAdmin: true },
+      ])
+
+      const result = await deleteAccount(
+        createFormData({ confirmPassword: 'correct-horse' })
+      )
+
+      expect(result.success).toBe(true)
+      expect(mockWriteJsonFile).toHaveBeenCalled()
     })
   })
 
@@ -388,6 +545,31 @@ describe('Users Actions', () => {
         action: 'user_settings_updated',
         success: true,
       }))
+    })
+
+    it('should return the updated user without credentials or mfa secrets', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        {
+          username: 'testuser',
+          passwordHash: 'settings_hash',
+          apiKey: 'settings_api_key',
+          mfaSecret: 'settings_mfa_secret',
+          mfaRecoveryCode: 'settings_recovery_code',
+          lastLogin: '2024-01-01',
+          isAdmin: false,
+          preferredDateFormat: 'dd/mm/yyyy',
+        },
+      ])
+
+      const result = await updateUserSettings({ preferredDateFormat: 'mm/dd/yyyy' })
+
+      expect(result.success).toBe(true)
+      expect(result.data?.user.preferredDateFormat).toBe('mm/dd/yyyy')
+      expect(result.data?.user).not.toHaveProperty('passwordHash')
+      expect(result.data?.user).not.toHaveProperty('apiKey')
+      expect(result.data?.user).not.toHaveProperty('mfaSecret')
+      expect(result.data?.user).not.toHaveProperty('mfaRecoveryCode')
+      expect(result.data?.user).not.toHaveProperty('lastLogin')
     })
   })
 })
