@@ -159,13 +159,17 @@ export default async function RootLayout({
   const settings = await getSettings();
   const appName =
     settings?.appName || (settings?.isRwMarkable ? "rwMarkable" : "jotty·page");
-  const noteCategories = await getCategories(Modes.NOTES);
-  const checklistCategories = await getCategories(Modes.CHECKLISTS);
   const user = await getCurrentUser();
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES;
   const users = isPublicRoute || !user ? [] : await getUsers();
+  const noteCategories = user
+    ? await getCategories(Modes.NOTES)
+    : { success: false, data: [] };
+  const checklistCategories = user
+    ? await getCategories(Modes.CHECKLISTS)
+    : { success: false, data: [] };
   const linkIndex = user?.username
     ? await readLinkIndex(user.username)
     : null;
