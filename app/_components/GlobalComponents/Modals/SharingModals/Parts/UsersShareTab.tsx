@@ -1,4 +1,4 @@
-import { PublicUserInfo } from "@/app/_types";
+import { User } from "@/app/_types";
 import {
   Search01Icon,
   UserAdd01Icon,
@@ -46,7 +46,7 @@ export const UsersShareTab = ({
       </div>
       <div className="max-h-48 overflow-y-auto">
         {filteredUsers.length > 0 ? (
-          filteredUsers.map((user: PublicUserInfo) => {
+          filteredUsers.map((user: User) => {
             const isShared = currentSharing.includes(user.username);
             const isSelected = selectedUsers.includes(user.username);
             const permissions = userPermissions[user.username] || {
