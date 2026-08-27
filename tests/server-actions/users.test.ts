@@ -33,6 +33,7 @@ import {
   deleteUser,
   deleteAccount,
   getUsers,
+  getUsersForAdmin,
   updateUserSettings,
   ensureUser,
 } from '@/app/_server/actions/users'
@@ -391,6 +392,50 @@ describe('Users Actions', () => {
         isSuperAdmin: false,
         avatarUrl: undefined,
       })
+    })
+  })
+
+  describe('getUsersForAdmin', () => {
+    it('should return empty array when caller is not admin', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'regularuser', passwordHash: 'hash', isAdmin: false },
+      ])
+      mockReadSessions.mockResolvedValue({ 'session-123': 'regularuser' })
+
+      const result = await getUsersForAdmin()
+
+      expect(result).toEqual([])
+    })
+
+    it('should return sanitized users (no passwordHash/apiKey/mfaSecret) when caller is admin', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'adminuser', passwordHash: 'secret', isAdmin: true, isSuperAdmin: true, avatarUrl: '/admin.png' },
+        { username: 'regularuser', passwordHash: 'secret2', isAdmin: false, isSuperAdmin: false, apiKey: 'ck_test', mfaSecret: 'totp-secret' },
+      ])
+      mockReadSessions.mockResolvedValue({ 'session-123': 'adminuser' })
+
+      const result = await getUsersForAdmin()
+
+      expect(result).toHaveLength(2)
+      expect(result[0].username).toBe('adminuser')
+      expect(result[0].isAdmin).toBe(true)
+      expect(result[0]).not.toHaveProperty('passwordHash')
+      expect(result[0]).not.toHaveProperty('apiKey')
+      expect(result[0]).not.toHaveProperty('mfaSecret')
+      expect(result[1].username).toBe('regularuser')
+      expect(result[1].isAdmin).toBe(false)
+      expect(result[1]).not.toHaveProperty('passwordHash')
+      expect(result[1]).not.toHaveProperty('apiKey')
+      expect(result[1]).not.toHaveProperty('mfaSecret')
+    })
+
+    it('should return empty array when users file is empty', async () => {
+      mockReadJsonFile.mockResolvedValue([])
+      mockReadSessions.mockResolvedValue({ 'session-123': 'adminuser' })
+
+      const result = await getUsersForAdmin()
+
+      expect(result).toEqual([])
     })
   })
 

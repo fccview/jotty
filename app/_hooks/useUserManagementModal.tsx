@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User as UserType } from "@/app/_types";
+import { SanitisedUser as UserType } from "@/app/_types";
 import { useTranslations } from "next-intl";
 import {
   createUser,

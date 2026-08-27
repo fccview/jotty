@@ -6,6 +6,7 @@ import { PublicUserInfo, Result, SanitisedUser, User } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { getUserByItemUuid } from "./helpers";
 import { findUserRecord, getCurrentUserRecord } from "./records";
+import { isAdmin } from "./auth";
 import {
   sanitizeUserForClient,
   toPublicUser,
@@ -48,6 +49,17 @@ export const getUsers = async () => {
     isSuperAdmin,
     avatarUrl,
   }));
+};
+
+export const getUsersForAdmin = async (): Promise<SanitisedUser[]> => {
+  if (!(await isAdmin())) return [];
+
+  const users = (await readJsonFile(USERS_FILE)) || [];
+  if (!Array.isArray(users)) return [];
+
+  return users
+    .map((u: User) => sanitizeUserForClient(u))
+    .filter((u): u is SanitisedUser => u !== null);
 };
 
 export const getUserByNoteUuid = async (

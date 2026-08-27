@@ -16,6 +16,7 @@ export {
   hasUsers,
   getUsername,
   getUsers,
+  getUsersForAdmin,
   getUserByNoteUuid,
   getUserByChecklistUuid,
 } from "./queries";

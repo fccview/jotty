@@ -1,8 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminOverview } from "@/app/_components/FeatureComponents/Admin/Parts/AdminOverview";
-import { isAdmin } from "@/app/_server/actions/users";
-import { readJsonFile } from "@/app/_server/actions/file";
-import { USERS_FILE } from "@/app/_consts/files";
+import { isAdmin, getUsers } from "@/app/_server/actions/users";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllNotes } from "@/app/_server/actions/note";
 
@@ -14,7 +12,7 @@ export default async function AdminOverviewPage() {
     }
 
     const [usersData, listsData, docsData] = await Promise.all([
-        readJsonFile(USERS_FILE),
+        getUsers(),
         getAllLists(),
         getAllNotes(),
     ]);

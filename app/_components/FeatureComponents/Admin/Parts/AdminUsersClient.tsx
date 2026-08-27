@@ -4,15 +4,13 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AdminUsers } from "@/app/_components/FeatureComponents/Admin/Parts/AdminUsers";
 import { UserManagementModal } from "@/app/_components/GlobalComponents/Modals/UserModals/UserManagementModal";
-import { User, Checklist, Note } from "@/app/_types";
-import { deleteUser } from "@/app/_server/actions/users";
-import { readJsonFile } from "@/app/_server/actions/file";
-import { USERS_FILE } from "@/app/_consts/files";
+import { SanitisedUser, Checklist, Note } from "@/app/_types";
+import { deleteUser, getUsersForAdmin } from "@/app/_server/actions/users";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface AdminUsersClientProps {
-  initialUsers: User[];
+  initialUsers: SanitisedUser[];
   initialLists: Checklist[];
   initialDocs: Note[];
   username: string;
@@ -21,22 +19,18 @@ interface AdminUsersClientProps {
 export function AdminUsersClient({ initialUsers, initialLists, initialDocs, username }: AdminUsersClientProps) {
   const t = useTranslations();
   const { showToast } = useToast();
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<SanitisedUser[]>(initialUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [showUserModal, setShowUserModal] = useState(false);
   const [userModalMode, setUserModalMode] = useState<"add" | "edit">("add");
-  const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
+  const [selectedUser, setSelectedUser] = useState<SanitisedUser | undefined>(undefined);
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userToDelete, setUserToDelete] = useState<SanitisedUser | null>(null);
 
   const loadData = async () => {
     try {
-      const [usersData] = await Promise.all([
-        readJsonFile(USERS_FILE),
-      ]);
-
-      setUsers(usersData);
+      setUsers(await getUsersForAdmin());
     } catch (error) {
       console.error("Error loading data:", error);
     }
@@ -48,13 +42,13 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
     setShowUserModal(true);
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: SanitisedUser) => {
     setUserModalMode("edit");
     setSelectedUser(user);
     setShowUserModal(true);
   };
 
-  const handleDeleteUser = (user: User) => {
+  const handleDeleteUser = (user: SanitisedUser) => {
     setUserToDelete(user);
     setShowDeleteModal(true);
   };
