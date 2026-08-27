@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminOverview } from "@/app/_components/FeatureComponents/Admin/Parts/AdminOverview";
-import { isAdmin, getUsers } from "@/app/_server/actions/users";
+import { isAdmin, getUsersForAdmin } from "@/app/_server/actions/users";
 import { getAllLists } from "@/app/_server/actions/checklist";
 import { getAllNotes } from "@/app/_server/actions/note";
 
@@ -12,7 +12,7 @@ export default async function AdminOverviewPage() {
     }
 
     const [usersData, listsData, docsData] = await Promise.all([
-        getUsers(),
+        getUsersForAdmin(),
         getAllLists(),
         getAllNotes(),
     ]);
@@ -25,7 +25,7 @@ export default async function AdminOverviewPage() {
         totalUsers: users.length,
         totalChecklists: allLists.length,
         totalNotes: allDocs.length,
-        adminUsers: users.filter((u: any) => u.isAdmin).length,
+        adminUsers: users.filter((u) => u.isAdmin).length,
     };
 
     return <AdminOverview stats={stats} />;
