@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { ItemType, User } from "@/app/_types";
-import { readJsonFile } from "@/app/_server/actions/file";
-import { USERS_FILE } from "@/app/_consts/files";
+import { ItemType, PublicUserInfo } from "@/app/_types";
+import { getUsers } from "@/app/_server/actions/users";
 import { publicHref } from "@/app/_utils/global-utils";
 import {
   shareItem,
@@ -33,7 +32,7 @@ export const useSharingTools = ({
   itemOwner,
   itemUuid,
 }: ShareModalProps) => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<PublicUserInfo[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [currentSharing, setCurrentSharing] = useState<string[]>([]);
   const [userPermissions, setUserPermissions] = useState<
@@ -126,7 +125,7 @@ export const useSharingTools = ({
     setStatus({ isLoading: true, error: null, success: null });
     try {
       const [usersData, shares] = await Promise.all([
-        readJsonFile(USERS_FILE),
+        getUsers(),
         itemShares(itemUuid, itemType),
       ]);
       setUsers(usersData);
