@@ -272,6 +272,31 @@ describe('Security: Authentication Required', () => {
 
       expect(result).toEqual({ success: false })
     })
+    it('createNotificationForUser should reject cross-user notifications from non-admin callers (IDOR)', async () => {
+      const { createNotificationForUser } = await import('@/app/_server/actions/notifications')
+
+      mockGetCurrentUser.mockResolvedValue({ username: 'attacker', isAdmin: false })
+
+      const result = await createNotificationForUser('victim', {
+        type: 'mention',
+        data: { itemId: 'test', commentId: 'test' },
+      } as any)
+
+      expect(result).toEqual({ success: false })
+    })
+
+    it('createNotificationForUser should allow self-notifications', async () => {
+      const { createNotificationForUser } = await import('@/app/_server/actions/notifications')
+
+      mockGetCurrentUser.mockResolvedValue({ username: 'selfuser', isAdmin: false })
+
+      const result = await createNotificationForUser('selfuser', {
+        type: 'mention',
+        data: { itemId: 'test', commentId: 'test' },
+      } as any)
+
+      expect(result).toEqual({ success: true })
+    })
 
     it('rebuildLinkIndex should reject unauthenticated requests', async () => {
       const { rebuildLinkIndex } = await import('@/app/_server/actions/link')

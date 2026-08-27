@@ -41,8 +41,8 @@ vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: (...args: unknown[]) => mockBroadcast(...args),
 }));
 
-vi.mock("@/app/_server/actions/notifications", () => ({
-  createNotificationForUser: (...args: unknown[]) => mockNotifyUser(...args),
+vi.mock("@/app/_server/actions/notifications/internal", () => ({
+  notifyUser: (...args: unknown[]) => mockNotifyUser(...args),
 }));
 
 vi.mock("next-intl/server", () => ({

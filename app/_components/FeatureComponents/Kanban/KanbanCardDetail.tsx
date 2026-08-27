@@ -11,14 +11,13 @@ import {
   bulkToggleItems,
   updateItemStatus,
 } from "@/app/_server/actions/checklist-item";
-import { createNotificationForUser } from "@/app/_server/actions/notifications";
 import { usersWithAccess } from "@/app/_server/actions/share/queries";
 import { getUsers } from "@/app/_server/actions/users";
 import { FloppyDiskIcon, MultiplicationSignIcon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
-import { KanbanPriorityLevel, NotificationTargets } from "@/app/_types/enums";
+import { KanbanPriorityLevel } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
 import { KanbanCardDetailComments } from "./KanbanCardDetailComments";
@@ -574,18 +573,6 @@ export const KanbanCardDetail = ({
             onAssigneeChange={async (v) => {
               setAssigneeInput(v);
               await _saveField({ assignee: v });
-              if (v) {
-                await createNotificationForUser(v, {
-                  type: "assignment",
-                  title: t("notifications.assignmentTitle"),
-                  message: t("notifications.assignmentMessage", { task: item.text, board: checklist.title }),
-                  data: {
-                    itemId: checklistUuid,
-                    itemType: NotificationTargets.CHECKLIST,
-                    taskId: item.id,
-                  },
-                });
-              }
             }}
             onReminderChange={async (v) => {
               setReminderInput(v);
