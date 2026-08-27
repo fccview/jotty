@@ -19,7 +19,7 @@ import {
   updateIndexForItem,
   parseInternalLinks,
   removeItemFromIndex,
-  rebuildLinkIndex,
+  rebuildLinkIndexInternal,
 } from "@/app/_server/actions/link";
 import { canReach } from "@/app/_server/actions/share/queries";
 import {
@@ -199,10 +199,10 @@ export const updateList = async (formData: FormData) => {
 
       const oldItemKey = `${source.category || UNCATEGORIZED}/${currentId}`;
       if (oldItemKey !== newItemKey || isRelocating) {
-        await rebuildLinkIndex(source.owner);
+        await rebuildLinkIndexInternal(source.owner);
 
         if (target.owner !== source.owner) {
-          await rebuildLinkIndex(target.owner);
+          await rebuildLinkIndexInternal(target.owner);
         }
 
         revalidatePath("/");

@@ -54,6 +54,7 @@ vi.mock("@/app/_server/actions/link", () => ({
   updateIndexForItem: (...args: any[]) => mockUpdateIndexForItem(...args),
   removeItemFromIndex: (...args: any[]) => mockRemoveItemFromIndex(...args),
   rebuildLinkIndex: vi.fn().mockResolvedValue(undefined),
+  rebuildLinkIndexInternal: vi.fn().mockResolvedValue(undefined),
   updateItemCategory: vi.fn().mockResolvedValue(undefined),
 }));
 

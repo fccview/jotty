@@ -264,14 +264,9 @@ export const updateItemCategory = async (
   await writeLinkIndex(username, index);
 };
 
-export const rebuildLinkIndex = async (username: string): Promise<void> => {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) throw new Error("Not authenticated");
-
-  if (username !== currentUser.username && !currentUser.isAdmin) {
-    throw new Error("Unauthorized: can only rebuild your own link index");
-  }
-
+export const rebuildLinkIndexInternal = async (
+  username: string,
+): Promise<void> => {
   const [notesResult, checklistsResult] = await Promise.all([
     getUserNotes({ username }),
     getUserChecklists({ username }),
@@ -360,4 +355,15 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   }
 
   await writeLinkIndex(username, newIndex);
+};
+
+export const rebuildLinkIndex = async (username: string): Promise<void> => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("Not authenticated");
+
+  if (username !== currentUser.username && !currentUser.isAdmin) {
+    throw new Error("Unauthorized: can only rebuild your own link index");
+  }
+
+  await rebuildLinkIndexInternal(username);
 };
