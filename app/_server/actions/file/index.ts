@@ -1,3 +1,5 @@
+"use server";
+
 import { getCurrentUser } from "@/app/_server/actions/users";
 import {
   DATA_DIR,
