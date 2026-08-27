@@ -87,7 +87,7 @@ describe('Auth Actions', () => {
       expect(result).toEqual({ error: 'Passwords do not match' })
     })
 
-    it('should return error when username already exists', async () => {
+    it('should reject registration when users already exist', async () => {
       mockReadJsonFile.mockResolvedValue([
         { username: 'testuser', passwordHash: 'hash', isAdmin: true },
       ])
@@ -100,7 +100,7 @@ describe('Auth Actions', () => {
 
       const result = await register(formData)
 
-      expect(result).toEqual({ error: 'Username already exists' })
+      expect(result).toEqual({ error: 'Registration is closed. Contact an administrator to create an account.' })
     })
 
     it('should create first user as admin and super admin', async () => {
@@ -131,11 +131,10 @@ describe('Auth Actions', () => {
       )
     })
 
-    it('should create subsequent users as non-admin', async () => {
+    it('should reject registration when users already exist (non-duplicate username)', async () => {
       mockReadJsonFile.mockResolvedValue([
         { username: 'existinguser', passwordHash: 'hash', isAdmin: true },
       ])
-      mockFs.mkdir.mockResolvedValue(undefined)
 
       const formData = createFormData({
         username: 'newuser',
@@ -143,21 +142,9 @@ describe('Auth Actions', () => {
         confirmPassword: 'password123',
       })
 
-      try {
-        await register(formData)
-      } catch (e: any) {
-        expect(e.message).toContain('REDIRECT:/')
-      }
+      const result = await register(formData)
 
-      expect(mockWriteJsonFile).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            username: 'newuser',
-            isAdmin: false,
-          }),
-        ]),
-        expect.any(String)
-      )
+      expect(result).toEqual({ error: 'Registration is closed. Contact an administrator to create an account.' })
     })
 
     it('should set session cookie on successful registration', async () => {

@@ -61,7 +61,9 @@ describe('Security: Data Leakage Prevention', () => {
     })
 
     it('createUser should not return passwordHash in response', async () => {
-      mockReadJsonFile.mockResolvedValue([])
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: true },
+      ])
 
       const { createUser } = await import('@/app/_server/actions/users')
       const formData = createFormData({

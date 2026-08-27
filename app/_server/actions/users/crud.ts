@@ -139,6 +139,11 @@ export const createUser = async (
   const username = formData.get("username") as string;
 
   try {
+    const adminUser = await getCurrentUser();
+    if (!adminUser?.isAdmin) {
+      return { success: false, error: "Unauthorized: Admin access required" };
+    }
+
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
     const isAdmin = formData.get("isAdmin") === "true";

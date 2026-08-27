@@ -151,25 +151,17 @@ export const register = async (formData: FormData) => {
 
   const users = (await readJsonFile(USERS_FILE)) || [];
 
-  const isFirstUser = users.length === 0;
-
   if (users.length > 0) {
-    if (
-      users.some(
-        (u: User) => u.username.toLowerCase() === username.toLowerCase(),
-      )
-    ) {
-      return { error: "Username already exists" };
-    }
-  } else {
-    await ensureCorDirsAndFiles();
+    return { error: "Registration is closed. Contact an administrator to create an account." };
   }
+
+  await ensureCorDirsAndFiles();
 
   const newUser: User = {
     username,
     passwordHash: hashPassword(password),
-    isAdmin: isFirstUser,
-    isSuperAdmin: isFirstUser,
+    isAdmin: true,
+    isSuperAdmin: true,
   };
 
   users.push(newUser);
@@ -179,13 +171,9 @@ export const register = async (formData: FormData) => {
 
   let sessions = await readSessions();
 
-  if (isFirstUser) {
-    sessions = {
-      [sessionId]: username,
-    };
-  } else {
-    sessions[sessionId] = username;
-  }
+  sessions = {
+    [sessionId]: username,
+  };
 
   await writeSessions(sessions);
 

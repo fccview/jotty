@@ -56,6 +56,12 @@ describe('Users Actions', () => {
   })
 
   describe('createUser', () => {
+    beforeEach(() => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: true },
+      ])
+    })
+
     it('should return error when fields are missing', async () => {
       const formData = createFormData({
         username: 'newuser',
@@ -110,6 +116,7 @@ describe('Users Actions', () => {
 
     it('should return error when username already exists', async () => {
       mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: true },
         { username: 'existinguser', passwordHash: 'hash', isAdmin: false },
       ])
 
@@ -126,7 +133,9 @@ describe('Users Actions', () => {
     })
 
     it('should create user successfully', async () => {
-      mockReadJsonFile.mockResolvedValue([])
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: true },
+      ])
 
       const formData = createFormData({
         username: 'newuser',
@@ -146,7 +155,9 @@ describe('Users Actions', () => {
     })
 
     it('should create admin user when specified', async () => {
-      mockReadJsonFile.mockResolvedValue([])
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: true },
+      ])
 
       const formData = createFormData({
         username: 'adminuser',

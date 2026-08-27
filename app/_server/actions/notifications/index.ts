@@ -115,6 +115,9 @@ export const createNotificationForUser = async (
   data: Omit<AppNotification, "id" | "createdAt" | "link">,
 ): Promise<{ success: boolean }> => {
   try {
+    const caller = await getCurrentUser();
+    if (!caller?.username) return { success: false };
+
     const existing = await _read(username);
     if (_isDuplicate(existing, data.type, data.data)) return { success: true };
 
