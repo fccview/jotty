@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { Session } from "@/app/_types";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { getUsername } from "@/app/_server/actions/users";
 import { useTranslations } from 'next-intl';
 import {
   getSessionsForUser,
@@ -30,10 +30,10 @@ export const useSessionManager = () => {
   const loadSessions = useCallback(async () => {
     setStatus({ isLoading: true, error: null, success: null });
     try {
-      const currentUser = await getCurrentUser();
+      const username = await getUsername();
       const sessionId = await getSessionId();
-      if (!currentUser) throw new Error("Not authenticated");
-      const result = await getSessionsForUser(currentUser.username);
+      if (!username) throw new Error("Not authenticated");
+      const result = await getSessionsForUser(username);
       const updatedSessions = result?.map((session: SessionData) => {
         return {
           ...session,

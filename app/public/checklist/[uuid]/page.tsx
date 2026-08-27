@@ -3,7 +3,8 @@ import { getListById } from "@/app/_server/actions/checklist";
 import { isUuid } from "@/app/_consts/identity";
 import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
-import { getCurrentUser, getUserByUsername } from "@/app/_server/actions/users";
+import { getCurrentUser } from "@/app/_server/actions/users";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 import type { Metadata } from "next";
 import { Modes, ItemTypes } from "@/app/_types/enums";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
@@ -61,7 +62,7 @@ export default async function PublicChecklistPage(
     redirect("/");
   }
 
-  const userRecord = await getUserByUsername(checklist.owner!);
+  const userRecord = await findUserRecord(checklist.owner!);
   const user = sanitizeUserForPublic(
     userRecord,
     !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),

@@ -11,11 +11,12 @@ export {
 } from "./crud";
 
 export {
-  getUserByUsername,
+  getPublicUser,
   getCurrentUser,
   hasUsers,
   getUsername,
   getUsers,
+  getUsersForAdmin,
   getUserByNoteUuid,
   getUserByChecklistUuid,
 } from "./queries";

@@ -2,7 +2,8 @@
 
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
-import { getUserByUsername, updateUserSettings, getCurrentUser, getUsername } from "../users";
+import { getCurrentUser, getUsername } from "../users";
+import { findUserRecord, patchUserFields } from "../users/records";
 import { logAudit } from "../log";
 import { getSettings } from "../config";
 import _sodium from "libsodium-wrappers-sumo";
@@ -23,7 +24,7 @@ const _getSodium = async () => {
 const _encryptSecret = async (secret: string, username: string): Promise<string> => {
     const sod = await _getSodium();
 
-    const user = await getUserByUsername(username);
+    const user = await findUserRecord(username);
     if (!user) {
         throw new Error("User not found");
     }
@@ -63,7 +64,7 @@ const _decryptSecret = async (encryptedSecret: string, username: string): Promis
     const sod = await _getSodium();
     const pkg = JSON.parse(encryptedSecret);
 
-    const user = await getUserByUsername(username);
+    const user = await findUserRecord(username);
     if (!user) {
         throw new Error("User not found");
     }
@@ -189,15 +190,15 @@ export const verifyAndEnableMfa = async (token: string, secret: string): Promise
 
         const encryptedSecret = await _encryptSecret(secret, username);
 
-        const result = await updateUserSettings({
+        const saved = await patchUserFields(username, {
             mfaEnabled: true,
             mfaSecret: encryptedSecret,
             mfaRecoveryCode: hashedRecoveryCode,
             mfaEnrolledAt: new Date().toISOString(),
         });
 
-        if (!result.success) {
-            return { success: false, error: result.error };
+        if (!saved) {
+            return { success: false, error: "Failed to enable MFA" };
         }
 
         await logAudit({
@@ -231,7 +232,7 @@ export const verifyMfaCode = async (code: string): Promise<Result<null>> => {
             return { success: false, error: "Not authenticated" };
         }
 
-        const user = await getUserByUsername(username);
+        const user = await findUserRecord(username);
 
         if (!user || !user.mfaEnabled || !user.mfaSecret) {
             return { success: false, error: "MFA not enabled" };
@@ -285,7 +286,7 @@ export const verifyRecoveryCode = async (code: string): Promise<Result<null>> =>
             return { success: false, error: "Not authenticated" };
         }
 
-        const user = await getUserByUsername(username);
+        const user = await findUserRecord(username);
 
         if (!user || !user.mfaEnabled || !user.mfaRecoveryCode) {
             return { success: false, error: "MFA not enabled" };
@@ -337,15 +338,15 @@ export const disableMfa = async (code: string): Promise<Result<null>> => {
             return verification;
         }
 
-        const result = await updateUserSettings({
+        const saved = await patchUserFields(username, {
             mfaEnabled: false,
             mfaSecret: undefined,
             mfaRecoveryCode: undefined,
             mfaEnrolledAt: undefined,
         });
 
-        if (!result.success) {
-            return { success: false, error: result.error };
+        if (!saved) {
+            return { success: false, error: "Failed to disable MFA" };
         }
 
         await logAudit({
@@ -385,12 +386,12 @@ export const regenerateRecoveryCode = async (code: string): Promise<Result<{ rec
         const recoveryCode = _generateRecoveryCode();
         const hashedRecoveryCode = _hashRecoveryCode(recoveryCode);
 
-        const result = await updateUserSettings({
+        const saved = await patchUserFields(username, {
             mfaRecoveryCode: hashedRecoveryCode,
         });
 
-        if (!result.success) {
-            return { success: false, error: result.error };
+        if (!saved) {
+            return { success: false, error: "Failed to regenerate recovery code" };
         }
 
         await logAudit({
@@ -424,7 +425,7 @@ export const adminDisableUserMfa = async (username: string, recoveryCode: string
             return { success: false, error: "Unauthorized" };
         }
 
-        const targetUser = await getUserByUsername(username);
+        const targetUser = await findUserRecord(username);
         if (!targetUser) {
             return { success: false, error: "User not found" };
         }
@@ -490,7 +491,7 @@ export const getMfaStatus = async (): Promise<Result<{ enabled: boolean; enrolle
             return { success: false, error: "Not authenticated" };
         }
 
-        const user = await getUserByUsername(username);
+        const user = await findUserRecord(username);
 
         if (!user) {
             return { success: false, error: "User not found" };

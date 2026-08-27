@@ -36,9 +36,8 @@ vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: (...args: any[]) => mockBroadcast(...args),
 }));
 
-vi.mock("@/app/_server/actions/notifications", () => ({
-  createNotificationForUser: (...args: any[]) =>
-    mockCreateNotificationForUser(...args),
+vi.mock("@/app/_server/actions/notifications/internal", () => ({
+  notifyUser: (...args: any[]) => mockCreateNotificationForUser(...args),
 }));
 
 import {

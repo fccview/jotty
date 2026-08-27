@@ -52,11 +52,11 @@ export function useCalendar({
   weekStart = 0,
 }: UseCalendarProps) {
   const [displayDate, setDisplayDate] = useState(
-    initialDate || selectedDate || new Date()
+    initialDate || selectedDate || new Date(),
   );
 
   const [rangeStart, setRangeStart] = useState<Date | undefined>(
-    selectedRange?.start
+    selectedRange?.start,
   );
 
   useEffect(() => {
@@ -66,9 +66,6 @@ export function useCalendar({
   const currentMonth = displayDate.getMonth();
   const currentYear = displayDate.getFullYear();
 
-  /**
-   * Generates the 42-day grid for the calendar.
-   */
   const days = useMemo((): CalendarDay[] => {
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
@@ -85,7 +82,7 @@ export function useCalendar({
       const date = new Date(
         currentYear,
         currentMonth - 1,
-        prevMonthLastDay - i
+        prevMonthLastDay - i,
       );
       calendarDays.push(createCalendarDay(date, false));
     }
@@ -103,12 +100,9 @@ export function useCalendar({
 
     return calendarDays;
 
-    /**
-     * Helper to create a CalendarDay object with all its states.
-     */
     function createCalendarDay(
       date: Date,
-      isCurrentMonth: boolean
+      isCurrentMonth: boolean,
     ): CalendarDay {
       const dateWithoutTime = new Date(date);
       dateWithoutTime.setHours(0, 0, 0, 0);
@@ -182,26 +176,26 @@ export function useCalendar({
 
   const handlePreviousMonth = () => {
     setDisplayDate(
-      (prevDate) => new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1)
+      (prevDate) =>
+        new Date(prevDate.getFullYear(), prevDate.getMonth() - 1, 1),
     );
   };
 
   const handleNextMonth = () => {
     setDisplayDate(
-      (prevDate) => new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1)
+      (prevDate) =>
+        new Date(prevDate.getFullYear(), prevDate.getMonth() + 1, 1),
     );
   };
 
   const handleMonthSelect = (monthIndex: number) => {
     setDisplayDate(
-      (prevDate) => new Date(prevDate.getFullYear(), monthIndex, 1)
+      (prevDate) => new Date(prevDate.getFullYear(), monthIndex, 1),
     );
   };
 
   const handleYearSelect = (year: number) => {
-    setDisplayDate(
-      (prevDate) => new Date(year, prevDate.getMonth(), 1)
-    );
+    setDisplayDate((prevDate) => new Date(year, prevDate.getMonth(), 1));
   };
 
   const handleDayClick = (day: CalendarDay, event: MouseEvent) => {

@@ -45,6 +45,7 @@ export type AuditAction =
   | "settings_updated"
   | "app_settings_updated"
   | "user_settings_updated"
+  | "user_settings_rejected"
   | "theme_changed"
   | "custom_theme_saved"
   | "custom_emoji_saved"

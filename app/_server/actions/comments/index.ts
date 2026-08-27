@@ -10,7 +10,7 @@ import {
 import { getListById } from "@/app/_server/actions/checklist";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { getUsername, isAdmin, getUsers } from "@/app/_server/actions/users";
-import { createNotificationForUser } from "@/app/_server/actions/notifications";
+import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { runQueued } from "@/app/_server/actions/lib/concurrency";
 import {
@@ -92,7 +92,7 @@ const _processMentions = async (
       );
       if (!canRead) continue;
 
-      await createNotificationForUser(username, {
+      await notifyUser(username, {
         type: "mention",
         title: "",
         message: "",

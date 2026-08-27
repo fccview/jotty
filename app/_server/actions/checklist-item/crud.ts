@@ -20,14 +20,16 @@ import { Checklist, Item, KanbanPriority, Result } from "@/app/_types";
 import {
   ItemTypes,
   Modes,
+  NotificationTargets,
   PermissionTypes,
   TaskStatus,
 } from "@/app/_types/enums";
 import { canReach, reachableFile } from "@/app/_server/actions/share/queries";
 import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
-import { updateAllChildren } from "@/app/_utils/item-tree-utils";
+import { updateAllChildren, findItem } from "@/app/_utils/item-tree-utils";
 import { isKanbanType } from "@/app/_types/enums";
+import { notifyUser } from "@/app/_server/actions/notifications/internal";
 
 export const updateItem = async (
   checklist: Checklist,
@@ -143,6 +145,24 @@ export const updateItem = async (
           "Cache revalidation failed, but data was saved successfully:",
           error,
         );
+      }
+    }
+
+    if (assignee && assignee !== currentUser) {
+      const assignedItem = findItem(updatedList.items, itemId);
+      try {
+        await notifyUser(assignee, {
+          type: "assignment",
+          title: assignedItem?.text || "New task assigned",
+          message: `${currentUser} assigned you to a task in "${stored.title}"`,
+          data: {
+            itemId: stored.uuid,
+            itemType: NotificationTargets.CHECKLIST,
+            taskId: itemId,
+          },
+        });
+      } catch (error) {
+        console.warn("[checklist-item] assignment notification failed:", error);
       }
     }
 

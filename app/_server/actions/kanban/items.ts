@@ -18,7 +18,7 @@ import { getFormData } from "@/app/_utils/global-utils";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getListById } from "@/app/_server/actions/checklist";
-import { createNotificationForUser } from "@/app/_server/actions/notifications";
+import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { findItem, updateItem } from "@/app/_utils/item-tree-utils";
 
 const _getFilePath = async (list: Checklist): Promise<string> => {
@@ -161,7 +161,7 @@ export const assignKanbanItem = async (formData: FormData) => {
 
     if (assignee && assignee !== currentUser.username) {
       const assignedItem = findItem(updatedList.items, itemId);
-      await createNotificationForUser(assignee, {
+      await notifyUser(assignee, {
         type: "assignment",
         title: assignedItem?.text || "New task assigned",
         message: `${currentUser.username} assigned you to a task in "${updatedList.title}"`,

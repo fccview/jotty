@@ -5,7 +5,7 @@ import {
   mockGetUserNotes,
   mockGetUserChecklists,
   mockGetCategories,
-  mockGetUserByUsername,
+  mockFindUserRecord,
   resetApiMocks,
   createMockRequest,
   getResponseJson,
@@ -32,7 +32,7 @@ describe("User & Summary API", () => {
         passwordHash: "hash",
         apiKey: "key",
       }
-      mockGetUserByUsername.mockResolvedValue(mockUserData)
+      mockFindUserRecord.mockResolvedValue(mockUserData)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/testuser")
       const response = await GET_USER(request, { params: Promise.resolve({ username: "testuser" }) })
@@ -55,7 +55,7 @@ describe("User & Summary API", () => {
         passwordHash: "hash",
         apiKey: "key",
       }
-      mockGetUserByUsername.mockResolvedValue(mockOtherUser)
+      mockFindUserRecord.mockResolvedValue(mockOtherUser)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/otheruser")
       const response = await GET_USER(request, { params: Promise.resolve({ username: "otheruser" }) })
@@ -81,7 +81,7 @@ describe("User & Summary API", () => {
         passwordHash: "hash",
         apiKey: "key",
       }
-      mockGetUserByUsername.mockResolvedValue(mockOtherUser)
+      mockFindUserRecord.mockResolvedValue(mockOtherUser)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/otheruser")
       const response = await GET_USER(request, { params: Promise.resolve({ username: "otheruser" }) })
@@ -94,7 +94,7 @@ describe("User & Summary API", () => {
     })
 
     it("should return 404 for non-existent user", async () => {
-      mockGetUserByUsername.mockResolvedValue(null)
+      mockFindUserRecord.mockResolvedValue(null)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/user/nonexistent_user_12345")
       const response = await GET_USER(request, { params: Promise.resolve({ username: "nonexistent_user_12345" }) })
