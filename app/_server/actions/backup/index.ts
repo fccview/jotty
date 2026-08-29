@@ -392,6 +392,8 @@ export const restoreBackup = async (
   const tempRestoreDir = path.join(cwd, `${RESTORE_TEMP_PREFIX}-${timestamp}`);
   const rollbackDir = path.join(cwd, `${RESTORE_PREVIOUS_PREFIX}-${timestamp}`);
   const dataDir = path.join(cwd, "data");
+  
+  const preRestoreStatus = await readBackupStatus();
 
   try {
     // 1. Restore into a temp dir.
@@ -446,7 +448,37 @@ export const restoreBackup = async (
       metadata: { snapshotId, rollbackDir: path.basename(rollbackDir) },
     });
 
-    // 5. Invalidate caches: the restore swapped the entire data/ directory,
+    // 5. Restore the backup-status.json that was clobbered by the data swap.
+    //    Preserve the runtime fields captured before the swap, refresh the
+    //    snapshot count from the repo, and probe restic availability so the
+    //    status panel stays accurate after restore.
+    const availability = await resticAvailable();
+    let snapshotCount = preRestoreStatus.snapshotCount;
+    try {
+      const snapshots = await resticSnapshots(config);
+      snapshotCount = snapshots.length;
+    } catch {
+      /* keep pre-restore count if snapshot list fails */
+    }
+    await writeBackupStatus({
+      ...DEFAULT_BACKUP_STATUS,
+      ...preRestoreStatus,
+      lastRun: new Date().toISOString(),
+      lastError: null,
+      snapshotCount,
+      resticAvailable: availability.available,
+      resticVersion: availability.version,
+    });
+
+    // 6. Re-arm the scheduler from the restored settings.json — the restored
+    //    config may have a different schedule than the pre-restore one.
+    try {
+      await rearmSchedulerFromSettings();
+    } catch (err) {
+      console.error("[backup] failed to re-arm scheduler after restore:", err);
+    }
+
+    // 7. Invalidate caches: the restore swapped the entire data/ directory,
     //    so every cached file listing is stale. Without this the sidebar would
     //    show checklists/notes that no longer exist (or miss restored ones).
     //    The fs.watch watchers were attached to the old data/ path and no longer

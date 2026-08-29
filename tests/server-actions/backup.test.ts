@@ -391,6 +391,15 @@ describe("Backup Server Actions", () => {
       expect(mockLogAudit).toHaveBeenCalledWith(
         expect.objectContaining({ action: "backup_restored", success: true }),
       );
+      // backup-status.json is rewritten after the swap so runtime fields
+      // (lastRun, lastSuccess, etc.) are not lost to the restored version.
+      expect(mockFs.writeFile).toHaveBeenCalledWith(
+        expect.stringContaining("backup-status.json"),
+        expect.any(String),
+        "utf-8",
+      );
+      // Scheduler re-armed from the restored settings.json.
+      expect(mockRearmScheduler).toHaveBeenCalled();
       // Cache invalidation: metadata cache dropped for both modes.
       expect(mockDropByPrefix).toHaveBeenCalledWith("checklists-meta:");
       expect(mockDropByPrefix).toHaveBeenCalledWith("notes-meta:");
@@ -422,6 +431,57 @@ describe("Backup Server Actions", () => {
       expect(mockLogAudit).toHaveBeenCalledWith(
         expect.objectContaining({ action: "backup_restored", success: false }),
       );
+    });
+
+    it("should preserve backup status across the data swap", async () => {
+      mockIsAdmin.mockResolvedValue(true);
+      mockGetSettings.mockResolvedValue({
+        backup: {
+          enabled: true, endpoint: "http://x", bucket: "b", region: "", prefix: "jotty",
+          accessKey: "a", secretKey: "s", repoPassword: "pw", schedule: "daily",
+          keepDaily: 7, keepWeekly: 4,
+        },
+      });
+      // Simulate a pre-restore status with real runtime values.
+      const preRestoreStatus = {
+        lastRun: "2024-01-01T00:00:00.000Z",
+        lastSuccess: "2024-01-01T00:00:00.000Z",
+        lastError: null,
+        lastSnapshotId: "oldsnap123",
+        snapshotCount: 5,
+        nextRun: "2024-01-02T00:00:00.000Z",
+        schedulerRunning: true,
+        resticAvailable: true,
+        resticVersion: "restic 0.16.0",
+      };
+      mockFs.readFile.mockResolvedValue(JSON.stringify(preRestoreStatus));
+      mockResticSnapshots.mockResolvedValue([
+        { id: "s1", short_id: "s1", time: "2024-01-01", paths: [], hostname: "", username: "", tags: [] },
+        { id: "s2", short_id: "s2", time: "2024-01-01", paths: [], hostname: "", username: "", tags: [] },
+      ]);
+      mockResticRestore.mockResolvedValue({ success: true, message: "ok" });
+      mockFs.access.mockResolvedValue(undefined);
+      mockFs.rename.mockResolvedValue(undefined);
+      mockFs.rm.mockResolvedValue(undefined);
+
+      const result = await restoreBackup("snap123abc");
+      expect(result.success).toBe(true);
+
+      // writeBackupStatus writes to a .tmp file then renames to final. Verify
+      // the JSON written contains the preserved lastSuccess and refreshed
+      // snapshotCount, and that lastRun is updated to the restore time.
+      const writeCall = mockFs.writeFile.mock.calls.find(
+        (c: any[]) => typeof c[0] === "string" && c[0].includes("backup-status.json"),
+      );
+      expect(writeCall).toBeDefined();
+      const written = JSON.parse(writeCall![1] as string);
+      expect(written.lastSuccess).toBe(preRestoreStatus.lastSuccess);
+      expect(written.lastSnapshotId).toBe(preRestoreStatus.lastSnapshotId);
+      expect(written.schedulerRunning).toBe(true);
+      expect(written.snapshotCount).toBe(2);
+      expect(written.lastError).toBeNull();
+      // lastRun is set to the restore time (now), not the old value.
+      expect(written.lastRun).not.toBe(preRestoreStatus.lastRun);
     });
   });
 });
