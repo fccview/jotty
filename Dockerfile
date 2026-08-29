@@ -27,7 +27,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN apk add --no-cache su-exec git grep sed tzdata
+RUN apk add --no-cache su-exec git grep sed tzdata restic
 
 RUN if ! getent group 1000 > /dev/null 2>&1; then \
         addgroup --system --gid 1000 appgroup; \

@@ -154,6 +154,12 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
             icon: Settings01Icon,
             path: "/settings/admin/site-preferences",
         },
+        {
+            id: "backup",
+            label: t("admin.backups"),
+            icon: ArrowDown01Icon,
+            path: "/settings/admin/backup",
+        },
     ];
 
     const adminItems = hasContentAccess

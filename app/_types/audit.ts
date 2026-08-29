@@ -12,7 +12,8 @@ export type AuditCategory =
   | "system"
   | "file"
   | "upload"
-  | "security";
+  | "security"
+  | "backup";
 
 export type AuditAction =
   | "login"
@@ -78,7 +79,12 @@ export type AuditAction =
   | "mfa_backup_code_used"
   | "mfa_backup_code_failed"
   | "mfa_backup_codes_regenerated"
-  | "legacy_lookup";
+  | "legacy_lookup"
+  | "backup_config_updated"
+  | "backup_created"
+  | "backup_restored"
+  | "backup_failed"
+  | "backup_repository_checked";
 
 export interface AuditMetadata {
   [key: string]: any;

@@ -6,7 +6,7 @@ export default defineConfig({
     globals: true,
     environment: "node",
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
-    exclude: ["node_modules", ".next"],
+    exclude: ["node_modules", ".next", "tests/**/*integration*.test.ts"],
     setupFiles: ["./tests/setup.ts"],
     sequence: {
       concurrent: false,

@@ -124,5 +124,20 @@ export async function register() {
         console.error("[reminders] scan failed:", err);
       }
     }, REMINDER_SCAN_INTERVAL);
+
+    // Start the backup scheduler (restic-powered S3 backups). Reads the current
+    // backup config from settings.json and arms a preset-interval timer. The
+    // scheduler re-reads config on every tick so schedule changes apply without
+    // a restart. Guarded by globalThis so HMR/dev restarts don't double-arm.
+    try {
+      const { startBackupScheduler, readCurrentBackupConfig } = await import(
+        "./app/_server/actions/backup/scheduler"
+      );
+      const backupConfig = await readCurrentBackupConfig();
+      await startBackupScheduler(backupConfig || undefined);
+      console.log("> Backup scheduler initialised");
+    } catch (err) {
+      console.error("[backup] scheduler init failed:", err);
+    }
   }
 }

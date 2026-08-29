@@ -82,6 +82,20 @@ export type {
 } from "./config";
 
 export type {
+  BackupConfig,
+  BackupSchedulePreset,
+  BackupSnapshot,
+  BackupStatus,
+  BackupRunResult,
+  SanitisedBackupConfig,
+} from "./backup";
+export {
+  DEFAULT_BACKUP_CONFIG,
+  DEFAULT_BACKUP_STATUS,
+  SCHEDULE_INTERVAL_MS,
+} from "./backup";
+
+export type {
   AuditLogLevel,
   AuditCategory,
   AuditAction,
