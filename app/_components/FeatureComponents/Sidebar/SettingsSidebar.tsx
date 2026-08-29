@@ -23,6 +23,7 @@ import {
     ArrowRight01Icon,
     AppleReminderIcon,
     TeachingIcon,
+    CloudUploadIcon,
 } from "hugeicons-react";
 
 interface SettingsSidebarProps {
@@ -157,7 +158,7 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
         {
             id: "backup",
             label: t("admin.backups"),
-            icon: ArrowDown01Icon,
+            icon: CloudUploadIcon,
             path: "/settings/admin/backup",
         },
     ];
