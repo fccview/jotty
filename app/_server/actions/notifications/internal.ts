@@ -63,7 +63,6 @@ const _buildNotification = (
 export const readNotificationsForUser = _read;
 export const writeNotificationsForUser = _write;
 
-/** Non-server-action notification writer; only callable from trusted server code. */
 export const notifyUser = async (
   username: string,
   data: Omit<AppNotification, "id" | "createdAt" | "link">,

@@ -61,9 +61,6 @@ export const Modal = ({
         modalRef.current &&
         !modalRef.current.contains(event.target as Node)
       ) {
-        // Don't dismiss the modal when interacting with editor toolbar
-        // dropdowns that are portaled to their own root but belong to editor
-        // UI rendered inside this modal.
         const toolbarDropdownPortal = document.getElementById(
           "toolbar-dropdown-portal-root",
         );

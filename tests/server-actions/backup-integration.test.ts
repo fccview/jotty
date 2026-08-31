@@ -1,25 +1,9 @@
-/**
- * Integration test for the S3 backup feature. This test spins up a local
- * MinIO server via Docker, then exercises the real restic binary through the
- * restic wrapper functions (init, backup, snapshots, forget, restore).
- *
- * Prerequisites:
- *   - Docker must be running
- *   - restic must be installed and on PATH (brew install restic)
- *
- * The test is skipped automatically when Docker or restic is unavailable so CI
- * environments without them don't fail.
- */
-
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
-
-// This test runs under vitest.integration.config.ts which does NOT load the
-// global test setup (which mocks fs/promises). We need real fs + child_process.
 
 const execAsync = promisify(exec);
 
@@ -68,7 +52,6 @@ async function stopMinio() {
   try {
     await run(`docker compose -f ${dockerComposeFile} down -v`, { timeout: 30_000 });
   } catch {
-    /* best effort */
   }
 }
 
@@ -104,7 +87,7 @@ describe.skipIf(!canRun)("backup integration (restic + MinIO)", () => {
   afterAll(async () => {
     await stopMinio();
     if (tempDataDir) {
-      try { await fs.rm(tempDataDir, { recursive: true, force: true }); } catch { /* ignore */ }
+      try { await fs.rm(tempDataDir, { recursive: true, force: true }); } catch {}
     }
   }, 30_000);
 
@@ -148,9 +131,6 @@ describe.skipIf(!canRun)("backup integration (restic + MinIO)", () => {
     const result = await resticModule!.resticRestore(backupConfig, snapId, restoreDir);
     expect(result.success).toBe(true);
 
-    // resticBackup uses a relative path (cwd = parent, target = "data"), so the
-    // snapshot root is `data/`. Restoring recreates `data/` inside the target:
-    // <restoreDir>/data/test.md, <restoreDir>/data/notes/note1.md
     const restoredFile = path.join(restoreDir, "data", "test.md");
     const content = await fs.readFile(restoredFile, "utf-8");
     expect(content).toContain("Hello restic!");

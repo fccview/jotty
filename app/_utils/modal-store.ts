@@ -36,6 +36,5 @@ export const writeModalEnlarged = (
     map[storageKey] = value;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
   } catch {
-    /* ignore quota / privacy mode errors */
   }
 };

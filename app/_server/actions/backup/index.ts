@@ -40,29 +40,16 @@ import { dropByPrefix } from "@/app/_server/actions/lib/metadata-cache";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getCurrentUser } from "@/app/_server/actions/users";
 
-/** Path to the persisted settings file (same as the config action uses). */
 const DATA_SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
 
-/** Mask a secret for read-back: returns a fixed bullet string when set. */
 const maskSecret = (value: string | undefined): string =>
   value && value.length > 0 ? "••••••••" : "";
 
-/**
- * Read the persisted backup config (merged with defaults). Not admin-guarded —
- * the scheduler calls this internally. The admin-facing reader is
- * `getBackupConfig` which sanitises secrets.
- */
 export const getRawBackupConfig = async (): Promise<BackupConfig> => {
   const settings = await getSettings();
   return withDefaults(settings.backup);
 };
 
-/**
- * Return a sanitised backup config to the admin UI. Secrets (secretKey,
- * repoPassword) are replaced with a bullet mask; the UI gets boolean flags
- * indicating whether they are set so it can render "configured" state without
- * ever holding the raw values.
- */
 export const getBackupConfig = async (): Promise<Result<SanitisedBackupConfig>> => {
   const admin = await isAdmin();
   if (!admin) {
@@ -85,12 +72,6 @@ export const getBackupConfig = async (): Promise<Result<SanitisedBackupConfig>> 
   return { success: true, data: sanitised };
 };
 
-/**
- * Persist a backup config patch onto the existing settings.json. Secret
- * fields are handled specially: when the submitted value is the bullet mask
- * (or empty), the existing secret is preserved so the admin can change other
- * fields without re-entering the secret each time.
- */
 export const saveBackupConfig = async (
   patch: Partial<BackupConfig>,
 ): Promise<Result<BackupConfig>> => {
@@ -111,7 +92,6 @@ export const saveBackupConfig = async (
       const settings = await getSettings();
       const existing = withDefaults(settings.backup);
 
-      // Preserve existing secrets when the submitted value is empty or masked.
       const merged: BackupConfig = {
         ...existing,
         ...patch,
@@ -149,13 +129,11 @@ export const saveBackupConfig = async (
         endpoint: result.endpoint,
         bucket: result.bucket,
         schedule: result.schedule,
-        // Never log secrets.
         hasSecretKey: Boolean(result.secretKey),
         hasRepoPassword: Boolean(result.repoPassword),
       },
     });
 
-    // Re-arm the scheduler so the new schedule takes effect immediately.
     try {
       await rearmSchedulerFromSettings();
     } catch (err) {
@@ -177,10 +155,6 @@ export const saveBackupConfig = async (
   }
 };
 
-/**
- * Return the current backup status (last run, next run, restic availability)
- * merged with a fresh restic availability probe so the UI is never stale.
- */
 export const getBackupStatus = async (): Promise<Result<BackupStatus>> => {
   const admin = await isAdmin();
   if (!admin) {
@@ -197,10 +171,6 @@ export const getBackupStatus = async (): Promise<Result<BackupStatus>> => {
   return { success: true, data: status };
 };
 
-/**
- * Run a backup immediately (manual "Backup now"). Admin-only. Runs restic
- * backup + retention + snapshot refresh, records status, and logs audit.
- */
 export const runBackupNow = async (): Promise<Result<BackupRunResult>> => {
   const admin = await isAdmin();
   if (!admin) {
@@ -291,10 +261,6 @@ export const runBackupNow = async (): Promise<Result<BackupRunResult>> => {
   }
 };
 
-/**
- * List snapshots in the configured repository, newest first. Admin-only.
- * Returns an empty array on read errors so the UI degrades gracefully.
- */
 export const listSnapshots = async (): Promise<Result<BackupSnapshot[]>> => {
   const admin = await isAdmin();
   if (!admin) {
@@ -309,11 +275,6 @@ export const listSnapshots = async (): Promise<Result<BackupSnapshot[]>> => {
   return { success: true, data: snapshots };
 };
 
-/**
- * Verify the repository is reachable and credentials are valid
- * (`restic check`). Also initialises the repo if it doesn't exist yet, so the
- * admin can run "Test connection" against a fresh bucket. Admin-only.
- */
 export const checkRepository = async (): Promise<Result<string>> => {
   const admin = await isAdmin();
   if (!admin) {
@@ -332,7 +293,6 @@ export const checkRepository = async (): Promise<Result<string>> => {
     return { success: false, error: availability.error || "restic is not installed" };
   }
 
-  // Try to init first (idempotent), then check.
   const initResult = await resticInit(config);
   if (!initResult.success) {
     await logAudit({
@@ -360,12 +320,6 @@ export const checkRepository = async (): Promise<Result<string>> => {
   return { success: true, data: checkResult.message };
 };
 
-/**
- * Restore a snapshot using the safe-swap strategy: restic restores into a temp
- * dir, the current `data/` is renamed aside as `data.pre-restore-<ts>`, and the
- * restored content is moved into place. The pre-restore folder is kept as a
- * rollback. Admin-only.
- */
 export const restoreBackup = async (
   snapshotId: string,
 ): Promise<Result<{ rollbackDir: string; message: string }>> => {
@@ -396,16 +350,11 @@ export const restoreBackup = async (
   const preRestoreStatus = await readBackupStatus();
 
   try {
-    // 1. Restore into a temp dir.
     const restoreResult = await resticRestore(config, snapshotId, tempRestoreDir);
     if (!restoreResult.success) {
       throw new Error(restoreResult.message);
     }
 
-    // restic restores the backed-up tree into the target. Since we back up
-    // `data/` using a relative path (cwd = parent dir), the snapshot root is
-    // `data/`, so restic recreates `data/` inside the target:
-    // <tempRestoreDir>/data/...
     const restoredDataDir = path.join(tempRestoreDir, "data");
     let restoredExists = false;
     try {
@@ -421,23 +370,18 @@ export const restoreBackup = async (
       );
     }
 
-    // 2. Rename current data/ aside (rollback).
     await fs.rename(dataDir, rollbackDir);
 
-    // 3. Move restored data/ into place.
     try {
       await fs.rename(restoredDataDir, dataDir);
     } catch (moveErr) {
-      // If the move fails, attempt to roll back to the previous data dir.
       try {
         await fs.rename(rollbackDir, dataDir);
       } catch {
-        /* rollback failed — surface original error */
       }
       throw moveErr;
     }
 
-    // 4. Clean up the temp dir (keep the rollback dir).
     await fs.rm(tempRestoreDir, { recursive: true, force: true });
 
     await logAudit({
@@ -448,17 +392,12 @@ export const restoreBackup = async (
       metadata: { snapshotId, rollbackDir: path.basename(rollbackDir) },
     });
 
-    // 5. Restore the backup-status.json that was clobbered by the data swap.
-    //    Preserve the runtime fields captured before the swap, refresh the
-    //    snapshot count from the repo, and probe restic availability so the
-    //    status panel stays accurate after restore.
     const availability = await resticAvailable();
     let snapshotCount = preRestoreStatus.snapshotCount;
     try {
       const snapshots = await resticSnapshots(config);
       snapshotCount = snapshots.length;
     } catch {
-      /* keep pre-restore count if snapshot list fails */
     }
     await writeBackupStatus({
       ...DEFAULT_BACKUP_STATUS,
@@ -470,19 +409,12 @@ export const restoreBackup = async (
       resticVersion: availability.version,
     });
 
-    // 6. Re-arm the scheduler from the restored settings.json — the restored
-    //    config may have a different schedule than the pre-restore one.
     try {
       await rearmSchedulerFromSettings();
     } catch (err) {
       console.error("[backup] failed to re-arm scheduler after restore:", err);
     }
 
-    // 7. Invalidate caches: the restore swapped the entire data/ directory,
-    //    so every cached file listing is stale. Without this the sidebar would
-    //    show checklists/notes that no longer exist (or miss restored ones).
-    //    The fs.watch watchers were attached to the old data/ path and no longer
-    //    fire after the rename swap, so we drop the metadata cache manually.
     dropByPrefix("checklists-meta:");
     dropByPrefix("notes-meta:");
 
@@ -491,7 +423,6 @@ export const restoreBackup = async (
     revalidateTag("layout-notes", { expire: 0 });
     revalidateTag("layout-checklists", { expire: 0 });
 
-    // Broadcast a WS event so connected clients call router.refresh().
     try {
       const currentUser = await getCurrentUser();
       await broadcast({
@@ -500,7 +431,6 @@ export const restoreBackup = async (
         username: currentUser?.username || "system",
       });
     } catch {
-      /* WS broadcast is best-effort */
     }
 
     return {
@@ -520,20 +450,14 @@ export const restoreBackup = async (
       errorMessage: message,
       metadata: { snapshotId },
     });
-    // Best-effort cleanup of the temp dir on failure.
     try {
       await fs.rm(tempRestoreDir, { recursive: true, force: true });
     } catch {
-      /* ignore */
     }
     return { success: false, error: message };
   }
 };
 
-/**
- * Initialise the restic repository (idempotent). Exposed separately so the UI
- * can offer "Create repository" for a brand-new bucket. Admin-only.
- */
 export const initRepository = async (): Promise<Result<string>> => {
   const admin = await isAdmin();
   if (!admin) {

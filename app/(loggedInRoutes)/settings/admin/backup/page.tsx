@@ -10,8 +10,6 @@ export default async function AdminBackupPage() {
         return notFound();
     }
 
-    // Pre-load config, status, and snapshots so the server component can
-    // hydrate the client component with initial data (avoids a loading flash).
     const [configResult, statusResult, snapshotsResult] = await Promise.all([
         getBackupConfig(),
         getBackupStatus(),

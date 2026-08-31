@@ -64,7 +64,6 @@ export const AdminBackupClient = ({
   const [status, setStatus] = useState<BackupStatus | null>(initialStatus || null);
   const [snapshots, setSnapshots] = useState<BackupSnapshot[]>(initialSnapshots);
 
-  // Form-only fields for secrets (the sanitised config never holds raw secrets).
   const [secretKey, setSecretKey] = useState("");
   const [repoPassword, setRepoPassword] = useState("");
 

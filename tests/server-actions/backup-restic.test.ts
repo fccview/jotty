@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
-// We only unit-test the pure helpers here (buildRepository, buildResticEnv,
-// withDefaults, getResticBin). The subprocess-backed functions are exercised
-// end-to-end against a real MinIO + restic in the integration test.
-
 import {
   buildRepository,
   buildResticEnv,
@@ -122,7 +118,6 @@ describe("backup/restic helpers", () => {
       expect(env.RESTIC_REPOSITORY).toBe("s3:https://s3.amazonaws.com/bkt/jotty");
       expect(env.RESTIC_PASSWORD).toBe("repo-pw");
       expect(env.AWS_REGION).toBe("eu-west-1");
-      // Inherits the provided env too.
       expect(env.PATH).toBe("/usr/bin");
     });
 
@@ -145,7 +140,6 @@ describe("backup/restic helpers", () => {
       const result = withDefaults({ endpoint: "http://x", bucket: "b" });
       expect(result.endpoint).toBe("http://x");
       expect(result.bucket).toBe("b");
-      // Untouched fields keep their defaults.
       expect(result.keepDaily).toBe(DEFAULT_BACKUP_CONFIG.keepDaily);
       expect(result.enabled).toBe(false);
     });

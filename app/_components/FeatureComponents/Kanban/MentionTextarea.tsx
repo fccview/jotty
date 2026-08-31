@@ -81,7 +81,6 @@ export const MentionTextarea = React.forwardRef<
       const cursorPos = textarea.selectionStart;
       const textBeforeCursor = value.substring(0, cursorPos);
 
-      // Find the last @ that is either at the start or preceded by whitespace
       const match = textBeforeCursor.match(/(?:^|\s)@([\w.-]*)$/);
       if (match) {
         const atSymbolIndex =
@@ -111,7 +110,6 @@ export const MentionTextarea = React.forwardRef<
       setMentionQuery("");
       setMentionStart(-1);
 
-      // Move cursor to just after the inserted mention + space
       const newCursorPos = mentionStart + username.length + 2;
       requestAnimationFrame(() => {
         if (textareaRef.current) {

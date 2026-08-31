@@ -54,7 +54,6 @@ const _resolveLink = async (
   return undefined;
 };
 
-/** Authorizes the target: self or admin only. Cross-user flows use `notifyUser`. */
 export const createNotificationForUser = async (
   username: string,
   data: Omit<AppNotification, "id" | "createdAt" | "link">,

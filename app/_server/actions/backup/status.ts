@@ -3,11 +3,6 @@ import path from "path";
 import { BackupStatus, DEFAULT_BACKUP_STATUS } from "@/app/_types/backup";
 import { BACKUP_STATUS_FILE } from "@/app/_consts/backup";
 
-/**
- * Read the persisted backup status from `data/backup-status.json`. Returns the
- * default status when the file is missing or unreadable so the UI always has a
- * well-shaped object to render.
- */
 export const readBackupStatus = async (): Promise<BackupStatus> => {
   try {
     const filePath = path.join(process.cwd(), BACKUP_STATUS_FILE);
@@ -19,10 +14,6 @@ export const readBackupStatus = async (): Promise<BackupStatus> => {
   }
 };
 
-/**
- * Persist backup status to `data/backup-status.json` using an atomic
- * rename-to-final pattern (matches writeJsonFile in the file action).
- */
 export const writeBackupStatus = async (
   status: BackupStatus,
 ): Promise<void> => {
@@ -36,17 +27,11 @@ export const writeBackupStatus = async (
     try {
       await fs.unlink(tmpPath);
     } catch {
-      /* ignore */
     }
     throw err;
   }
 };
 
-/**
- * Merge a partial status patch onto the currently-persisted status and write it
- * back atomically. Lets callers update a single field (e.g. lastRun) without
- * reading the whole file first.
- */
 export const updateBackupStatus = async (
   patch: Partial<BackupStatus>,
 ): Promise<BackupStatus> => {

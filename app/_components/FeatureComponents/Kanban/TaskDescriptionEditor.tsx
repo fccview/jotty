@@ -38,7 +38,6 @@ export const TaskDescriptionEditor = ({
       onContentChange(next);
       return;
     }
-    // Visual mode emits HTML; normalise back to markdown for storage.
     const html = next.trim().startsWith("<") ? next : `<p>${next}</p>`;
     onContentChange(convertHtmlToMarkdownUnified(html, user?.tableSyntax));
   };

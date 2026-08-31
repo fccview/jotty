@@ -10,18 +10,6 @@ import {
   RESTIC_BIN_ENV,
 } from "@/app/_consts/backup";
 
-/**
- * Spawn a process and collect stdout/stderr into strings, resolving when the
- * process exits. We use `spawn` (not `execFile`) because `execFile`/`promisify`
- * has been observed to hang indefinitely on some platforms when the child
- * process writes to stdout while also holding an open network socket — the
- * pipe never appears to drain. `spawn` with explicit stream listeners avoids
- * this entirely and works consistently across macOS, Linux, and Docker.
- *
- * On error (non-zero exit, spawn failure, or timeout) we reject with an object
- * that includes `stdout`, `stderr`, and `message`, mirroring the shape that
- * callers previously destructured from `execFile` errors.
- */
 const spawnPromise = (
   bin: string,
   args: string[],
@@ -58,7 +46,6 @@ const spawnPromise = (
     child.stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
 
     child.on("error", (err: Error & { code?: string }) => {
-      // ENOENT means the binary wasn't found — preserve that code for callers.
       finish(err);
     });
 
@@ -86,27 +73,16 @@ const spawnPromise = (
   });
 };
 
-/**
- * Resolve the restic binary path. The admin can override via the `RESTIC_BIN`
- * env var (handy for Docker images that ship restic in a custom location);
- * otherwise we fall back to `restic` resolved against PATH.
- */
 export const getResticBin = (): string => {
   return process.env[RESTIC_BIN_ENV] || RESTIC_BIN_DEFAULT;
 };
 
-/** Outcome of a restic availability probe. */
 export interface ResticAvailability {
   available: boolean;
   version: string | null;
   error: string | null;
 }
 
-/**
- * Probe whether restic is installed and runnable. Returns the version string
- * when found so the UI can display it. Never throws — the caller decides what
- * to do with an unavailable binary.
- */
 export const resticAvailable = async (): Promise<ResticAvailability> => {
   const bin = getResticBin();
   try {
@@ -133,14 +109,6 @@ export const resticAvailable = async (): Promise<ResticAvailability> => {
   }
 };
 
-/**
- * Build the restic repository string in the S3 format restic expects:
- * `s3:<scheme>://<endpoint>/<bucket>/<prefix>`. The endpoint may or may not
- * include a scheme; we preserve it so restic uses the correct protocol (HTTP
- * for local MinIO, HTTPS for cloud S3). Without a scheme restic defaults to
- * HTTPS, which breaks against plain-HTTP endpoints like a local MinIO.
- * We normalise to ensure exactly one `s3:` prefix and no double slashes.
- */
 export const buildRepository = (config: BackupConfig): string => {
   const schemeMatch = config.endpoint.match(/^(https?:)\/\//);
   const scheme = schemeMatch ? schemeMatch[1] : "";
@@ -157,11 +125,6 @@ export const buildRepository = (config: BackupConfig): string => {
     : `s3:${repoPath}`;
 };
 
-/**
- * Build the environment for a restic invocation. We merge the inherited env
- * (so PATH etc. still work) with the S3 + repo credentials. Keeping this in
- * one place means every restic call uses identical auth wiring.
- */
 export const buildResticEnv = (
   config: BackupConfig,
   inherit: NodeJS.ProcessEnv = process.env,
@@ -171,11 +134,9 @@ export const buildResticEnv = (
   AWS_SECRET_ACCESS_KEY: config.secretKey,
   RESTIC_REPOSITORY: buildRepository(config),
   RESTIC_PASSWORD: config.repoPassword,
-  // S3-compatible providers often need the region set; default to "us-east-1".
   AWS_REGION: config.region || "us-east-1",
 });
 
-/** Run a restic subcommand and return stdout (parsed as JSON when requested). */
 const runRestic = async <T = string>(
   args: string[],
   config: BackupConfig,
@@ -193,22 +154,15 @@ const runRestic = async <T = string>(
   try {
     return JSON.parse(stdout) as T;
   } catch {
-    // restic sometimes prints warnings before the JSON; fall back to raw.
     return stdout as unknown as T;
   }
 };
 
-/** Merge partial config onto defaults so missing fields don't crash restic. */
 export const withDefaults = (config: Partial<BackupConfig> | undefined): BackupConfig => ({
   ...DEFAULT_BACKUP_CONFIG,
   ...(config || {}),
 });
 
-/**
- * Initialise a new restic repository (`restic init`). Idempotent in practice —
- * restic returns a non-zero exit if the repo already exists, which we treat as
- * success since the repo is usable either way.
- */
 export const resticInit = async (
   config: BackupConfig,
 ): Promise<{ success: boolean; message: string }> => {
@@ -227,10 +181,6 @@ export const resticInit = async (
   }
 };
 
-/**
- * Check repository integrity (`restic check`). Used by the "Test connection"
- * button to verify credentials + connectivity.
- */
 export const resticCheck = async (
   config: BackupConfig,
 ): Promise<{ success: boolean; message: string }> => {
@@ -245,7 +195,6 @@ export const resticCheck = async (
   }
 };
 
-/** Parsed `restic backup` JSON output (subset of fields we use). */
 interface ResticBackupOutput {
   message_type: string;
   snapshot_id?: string;
@@ -260,18 +209,6 @@ interface ResticBackupOutput {
   };
 }
 
-/**
- * Run a backup of `sourceDir` into the configured repository. Returns the new
- * snapshot id on success.
- *
- * We set restic's working directory to the *parent* of `sourceDir` and pass
- * only the basename (e.g. `data`) as the backup target. This is critical for
- * restore: restic preserves the path you give it in the snapshot. If we pass
- * an absolute path like `/app/data`, restic recreates the entire `/app/data`
- * tree inside the restore target. By using a relative path (`data`), the
- * snapshot root is `data/`, so restoring puts the contents directly into the
- * target directory — which is what the safe-swap restore logic expects.
- */
 export const resticBackup = async (
   config: BackupConfig,
   sourceDir: string,
@@ -302,7 +239,6 @@ export const resticBackup = async (
   }
 };
 
-/** Raw shape of a `restic snapshots --json` entry. */
 interface ResticSnapshotRaw {
   id?: string;
   short_id?: string;
@@ -313,10 +249,6 @@ interface ResticSnapshotRaw {
   tags?: string[];
 }
 
-/**
- * List snapshots in the repository, newest first. Returns an empty array if the
- * repo is empty (restic returns `[]` in that case) or on a read error.
- */
 export const resticSnapshots = async (
   config: BackupConfig,
 ): Promise<BackupSnapshot[]> => {
@@ -343,10 +275,6 @@ export const resticSnapshots = async (
   }
 };
 
-/**
- * Apply retention policy via `restic forget`. Only prunes when at least one
- * keep flag is set. Errors are non-fatal (they don't invalidate the backup).
- */
 export const resticForget = async (
   config: BackupConfig,
   keepDaily: number,
@@ -370,12 +298,6 @@ export const resticForget = async (
   }
 };
 
-/**
- * Restore a snapshot into `targetDir`. Since `resticBackup` uses a relative
- * path (cwd = parent, target = `data`), the snapshot root is `data/`, so restic
- * recreates `data/` inside the target: `<targetDir>/data/...`. The caller
- * validates and swaps the restored `data/` into place.
- */
 export const resticRestore = async (
   config: BackupConfig,
   snapshotId: string,
@@ -396,6 +318,5 @@ export const resticRestore = async (
   }
 };
 
-/** Convenience: return the absolute path restic would restore into. */
 export const resolveRestoreTarget = (baseDir: string): string =>
   path.isAbsolute(baseDir) ? baseDir : path.join(process.cwd(), baseDir);

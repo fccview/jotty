@@ -60,7 +60,5 @@ export interface AppSettings {
     drawioProxyEnabled?: boolean;
     historyEnabled?: boolean;
   };
-  // S3 backup config (restic-powered). Optional so older settings.json files
-  // without it keep working; defaults are merged in.
   backup?: import("./backup").BackupConfig;
 }
