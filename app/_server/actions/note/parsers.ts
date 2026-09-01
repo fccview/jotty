@@ -7,6 +7,7 @@ import {
   generateUuid,
   strayMeta,
 } from "@/app/_utils/yaml-metadata-utils";
+import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
 export const parseMarkdownNote = (
   content: string,
@@ -38,6 +39,9 @@ export const parseMarkdownNote = (
       : new Date().toISOString(),
     owner,
     isShared,
+    ...(metadata[SHARED_WITH_KEY] !== undefined && {
+      sharedWith: metadata[SHARED_WITH_KEY] as string | string[],
+    }),
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
     tags: Array.isArray(metadata.tags) ? metadata.tags : [],
@@ -193,6 +197,10 @@ export const noteToMarkdown = (note: Note): string => {
 
   if (note.tags && note.tags.length > 0) {
     metadata.tags = note.tags;
+  }
+
+  if (note.sharedWith !== undefined) {
+    metadata[SHARED_WITH_KEY] = note.sharedWith;
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);
