@@ -10,8 +10,7 @@ import {
   readSessionData,
   readSessions,
   removeSession,
-  writeSessionData,
-  writeSessions,
+  swapSession,
 } from "../session";
 import {
   ensureCorDirsAndFiles,
@@ -169,13 +168,7 @@ export const register = async (formData: FormData) => {
 
   const sessionId = _generateSessionId();
 
-  let sessions = await readSessions();
-
-  sessions = {
-    [sessionId]: username,
-  };
-
-  await writeSessions(sessions);
+  await createSession(sessionId, username, "local", true);
 
   await _setSessionCookie(sessionId, getSessionCookieName(), 30 * 24 * 60 * 60);
 
@@ -317,12 +310,7 @@ export const logout = async () => {
   const sessionId = (await cookies()).get(cookieName)?.value;
 
   if (sessionId) {
-    const sessions = await readSessionData();
-
     try {
-      delete sessions[sessionId];
-
-      await writeSessionData(sessions);
       await removeSession(sessionId);
 
       (await cookies()).delete(cookieName);
@@ -418,12 +406,7 @@ export const verifyMfaLogin = async (formData: FormData) => {
   const sessionId = _generateSessionId();
   const maxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
 
-  sessions[sessionId] = username;
-  delete sessions[pendingSessionId];
-  await writeSessions(sessions);
-
-  await removeSession(pendingSessionId);
-  await createSession(sessionId, username, "local", rememberMe);
+  await swapSession(pendingSessionId, sessionId, username, "local", rememberMe);
 
   (await cookies()).delete(pendingCookieName);
   await _setSessionCookie(sessionId, getSessionCookieName(), maxAge);

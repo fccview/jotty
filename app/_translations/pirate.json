@@ -1748,7 +1748,7 @@
     "sharingMessage": "Open to eyeball the shared {type}",
     "sharingFolderTitle": "{user} shared a {type} chest with ye",
     "sharingFolderMessage": "Open to eyeball “{folder}”",
-    "mentionTitle": "{user} scribbled yer name in a note",
+    "mentionTitle": "{user} hollered yer name in a scribble",
     "mentionMessage": "“{board}”"
   }
 }

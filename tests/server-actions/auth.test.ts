@@ -14,8 +14,7 @@ vi.mock('@/app/_server/actions/session', () => ({
   readSessionData: vi.fn().mockResolvedValue({}),
   readSessions: vi.fn().mockResolvedValue({}),
   removeSession: vi.fn().mockResolvedValue(undefined),
-  writeSessionData: vi.fn().mockResolvedValue(undefined),
-  writeSessions: vi.fn().mockResolvedValue(undefined),
+  swapSession: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/app/_server/actions/file', () => ({
@@ -40,14 +39,13 @@ vi.mock('@/app/_server/actions/auth/ldap', () => ({
 
 import { register, login, logout } from '@/app/_server/actions/auth'
 import { readJsonFile, writeJsonFile } from '@/app/_server/actions/file'
-import { readSessions, writeSessions, createSession } from '@/app/_server/actions/session'
+import { readSessions, createSession } from '@/app/_server/actions/session'
 import { ensureUser } from '@/app/_server/actions/users'
 import { ldapLogin } from '@/app/_server/actions/auth/ldap'
 
 const mockReadJsonFile = readJsonFile as ReturnType<typeof vi.fn>
 const mockWriteJsonFile = writeJsonFile as ReturnType<typeof vi.fn>
 const mockReadSessions = readSessions as ReturnType<typeof vi.fn>
-const mockWriteSessions = writeSessions as ReturnType<typeof vi.fn>
 const mockCreateSession = createSession as ReturnType<typeof vi.fn>
 const mockEnsureUser = ensureUser as ReturnType<typeof vi.fn>
 const mockLdapLogin = ldapLogin as ReturnType<typeof vi.fn>

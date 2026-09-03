@@ -3,10 +3,13 @@ import { AppNotification, AppNotificationData } from "@/app/_types";
 import { NOTIFICATIONS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile, ensureDir } from "@/app/_server/actions/file";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const DEDUP_WINDOW_MS = 60 * 60 * 1000;
 
 const _getPath = (username: string): string => NOTIFICATIONS_FILE(username);
+
+const _lane = (username: string): string => `notifications:${username}`;
 
 const _read = async (username: string): Promise<AppNotification[]> => {
   const data = await readJsonFile(_getPath(username));
@@ -69,11 +72,17 @@ export const notifyUser = async (
   data: Omit<AppNotification, "id" | "createdAt" | "link">,
 ): Promise<{ success: boolean }> => {
   try {
-    const existing = await _read(username);
-    if (_isDuplicate(existing, data.type, data.data)) return { success: true };
+    const written = await runQueued(_lane(username), async () => {
+      const existing = await _read(username);
+      if (_isDuplicate(existing, data.type, data.data)) return false;
 
-    await _write(username, [_buildNotification(data), ...existing]);
-    await broadcast({ type: "notification", action: "created", username });
+      await _write(username, [_buildNotification(data), ...existing]);
+      return true;
+    });
+
+    if (written) {
+      await broadcast({ type: "notification", action: "created", username });
+    }
     return { success: true };
   } catch (error) {
     console.error("[notifications] notifyUser failed:", error);

@@ -1,9 +1,9 @@
 "use server";
 
 import { USERS_FILE } from "@/app/_consts/files";
-import { readJsonFile, writeJsonFile } from "../file";
+import { readJsonFile } from "../file";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getCurrentUserRecord } from "@/app/_server/actions/users/records";
+import { getCurrentUserRecord, mutateUsers } from "@/app/_server/actions/users/records";
 import { Result, User } from "@/app/_types";
 
 export const generateApiKey = async (): Promise<Result<string>> => {
@@ -13,24 +13,27 @@ export const generateApiKey = async (): Promise<Result<string>> => {
       return { success: false, error: "Not authenticated" };
     }
 
-    const users = await readJsonFile(USERS_FILE);
-    const userIndex = users.findIndex(
-      (u: User) => u.username === currentUser.username
-    );
+    const newApiKey = await mutateUsers((users) => {
+      const userIndex = users.findIndex(
+        (u: User) => u.username === currentUser.username
+      );
 
-    if (userIndex === -1) {
-      return { success: false, error: "User not found" };
+      if (userIndex === -1) return null;
+
+      const prefix = "ck_";
+      const randomBytes = Array.from({ length: 32 }, () =>
+        Math.floor(Math.random() * 16).toString(16)
+      ).join("");
+      const apiKey = prefix + randomBytes;
+
+      users[userIndex].apiKey = apiKey;
+
+      return apiKey;
+    });
+
+    if (!newApiKey) {
+      return { success: false, error: "Failed to generate API key" };
     }
-
-    const prefix = "ck_";
-    const randomBytes = Array.from({ length: 32 }, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    ).join("");
-    const newApiKey = prefix + randomBytes;
-
-    users[userIndex].apiKey = newApiKey;
-
-    await writeJsonFile(users, USERS_FILE);
 
     return { success: true, data: newApiKey };
   } catch (error) {

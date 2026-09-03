@@ -13,12 +13,24 @@ export interface CommentsFileData {
 
 const _emptyCommentsData = (): CommentsFileData => ({ items: {} });
 
+const _looksLikeComments = (items: unknown): items is Record<string, Comment[]> =>
+  typeof items === "object" &&
+  items !== null &&
+  !Array.isArray(items) &&
+  Object.values(items).every((list) => Array.isArray(list));
+
 export const readCommentsFile = async (
   owner: string,
   boardUuid: string,
 ): Promise<CommentsFileData> => {
   const data = await readJsonFile(COMMENTS_FILE(owner, boardUuid));
-  if (!data || typeof data !== "object" || !data.items) return _emptyCommentsData();
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return _emptyCommentsData();
+  }
+  if (data.items === undefined || data.items === null) return _emptyCommentsData();
+  if (!_looksLikeComments(data.items)) {
+    throw new Error("Comments file is malformed");
+  }
   return data as CommentsFileData;
 };
 

@@ -270,7 +270,7 @@
     "commentAdded": "Yorum eklendi",
     "commentUpdated": "Yorum güncellendi",
     "failedToAdd": "Yorum eklenemedi",
-    "failedToEdit": "Yorum düzenelenemedi",
+    "failedToEdit": "Yorum düzenlenemedi",
     "failedToDelete": "Yorum silinemedi",
     "failedToLoad": "Yorumlar yüklenemedi",
     "readOnly": "Bu karta yorum yapmak için düzenleme erişimi gerekir.",

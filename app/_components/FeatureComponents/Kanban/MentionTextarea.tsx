@@ -137,7 +137,8 @@ export const MentionTextarea = React.forwardRef<
         }
         if (e.key === "Enter" || e.key === "Tab") {
           e.preventDefault();
-          _insertMention(filteredUsers[selectedIndex].username);
+          const picked = filteredUsers[selectedIndex];
+          if (picked) _insertMention(picked.username);
           return;
         }
         if (e.key === "Escape") {

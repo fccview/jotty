@@ -43,6 +43,8 @@ import {
   targetDir,
   bouncer,
   shownAs,
+  movePlan,
+  refusalMessage,
 } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { claimedName } from "@/app/_server/actions/lib/actor";
@@ -118,33 +120,35 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       note.owner!,
       note.category || "",
     );
-    const source = await targetDir(Modes.NOTES, actingUsername, shownSource);
 
     const shownCategory = category || shownSource;
-    const target = await targetDir(Modes.NOTES, actingUsername, shownCategory);
-
-    const isRelocating =
-      target.owner !== source.owner || target.category !== source.category;
-
-    const verdict = await bouncer(
-      target,
+    const { home, destination, target, isMoving } = await movePlan(
+      Modes.NOTES,
       actingUsername,
-      isRelocating ? PermissionTypes.CREATE : PermissionTypes.EDIT,
+      note,
+      shownCategory,
     );
 
-    if (!verdict.allowed) {
-      return { error: verdict.error };
-    }
+    if (isMoving) {
+      const verdict = await bouncer(
+        target,
+        actingUsername,
+        PermissionTypes.CREATE,
+      );
 
-    if (isRelocating) {
-      const exit = await bouncer(
-        source,
+      if (!verdict.allowed) {
+        return { error: verdict.error };
+      }
+
+      const canRemove = await canReach(
+        note.uuid!,
+        "note",
         actingUsername,
         PermissionTypes.DELETE,
       );
 
-      if (!exit.allowed) {
-        return { error: exit.error };
+      if (!canRemove) {
+        return { error: await refusalMessage() };
       }
     }
 
@@ -171,8 +175,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       ...note,
       title,
       content: convertedContent,
-      category: target.category,
-      owner: target.owner,
+      category: destination.category,
+      owner: destination.owner,
       updatedAt: new Date().toISOString(),
       encrypted: isEncrypted(convertedContent),
       encryptionMethod,
@@ -180,8 +184,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       extraMetadata: keptMeta(note.extraMetadata, strayMeta(incomingMeta)),
     };
 
-    const sourceDir = _noteDirFor(source.owner, source.category);
-    const categoryDir = _noteDirFor(target.owner, target.category);
+    const sourceDir = _noteDirFor(home.owner, home.category);
+    const categoryDir = _noteDirFor(destination.owner, destination.category);
     await ensureDir(categoryDir);
 
     const currentId = note.id;
@@ -209,7 +213,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const filePath = path.join(categoryDir, newFilename);
 
     const oldFilePath =
-      isRelocating || newId !== currentId
+      isMoving || newId !== currentId
         ? path.join(sourceDir, `${currentId}.md`)
         : null;
 
@@ -221,21 +225,21 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         `${newId}.md`,
       );
 
-      const historyAction = isRelocating ? "move" : "update";
+      const historyAction = isMoving ? "move" : "update";
 
-      const historyMetadata = isRelocating
+      const historyMetadata = isMoving
         ? {
-            oldCategory: source.category || UNCATEGORIZED,
+            oldCategory: home.category || UNCATEGORIZED,
             newCategory: updatedDoc.category || UNCATEGORIZED,
             oldPath: path.join(
-              source.category || UNCATEGORIZED,
+              home.category || UNCATEGORIZED,
               `${currentId}.md`,
             ),
           }
         : undefined;
 
       commitNote(
-        target.owner,
+        destination.owner,
         historyRelativePath,
         historyAction,
         title,
@@ -250,19 +254,24 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
           updatedDoc.id
         }`;
 
-        const oldItemKey = `${source.category || UNCATEGORIZED}/${currentId}`;
+        const oldItemKey = `${home.category || UNCATEGORIZED}/${currentId}`;
 
-        if (oldItemKey !== newItemKey || isRelocating) {
-          await rebuildLinkIndexInternal(source.owner);
+        if (oldItemKey !== newItemKey || isMoving) {
+          await rebuildLinkIndexInternal(home.owner);
 
-          if (target.owner !== source.owner) {
-            await rebuildLinkIndexInternal(target.owner);
+          if (destination.owner !== home.owner) {
+            await rebuildLinkIndexInternal(destination.owner);
           }
 
           revalidatePath("/");
         }
 
-        await updateIndexForItem(target.owner, "note", updatedDoc.uuid!, links);
+        await updateIndexForItem(
+          destination.owner,
+          "note",
+          updatedDoc.uuid!,
+          links,
+        );
       } catch (error) {
         console.warn(
           "Failed to update link index for note:",
@@ -379,20 +388,14 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       return { error: verdict.error };
     }
 
+    const homeCategory = note.category || UNCATEGORIZED;
     const ownerDir = NOTES_DIR(ownerUsername);
-    const filePath = path.join(
-      ownerDir,
-      source.category || UNCATEGORIZED,
-      `${note.id}.md`,
-    );
+    const filePath = path.join(ownerDir, homeCategory, `${note.id}.md`);
 
     await serverDeleteFile(filePath);
 
     if (!note.encrypted) {
-      const deleteRelativePath = path.join(
-        source.category || UNCATEGORIZED,
-        `${note.id}.md`,
-      );
+      const deleteRelativePath = path.join(homeCategory, `${note.id}.md`);
       commitNote(
         ownerUsername,
         deleteRelativePath,

@@ -44,12 +44,13 @@ export const getCurrentUserRecord = async (): Promise<User | null> => {
   return findUserRecord(currentUsername);
 };
 
-export const patchUserFields = async (
-  username: string,
-  updates: Partial<User>,
-): Promise<User | null> => {
-  if (!username) return null;
-
+/**
+ * Every read-modify-write of the users file goes through here. The mutator sees
+ * the freshest records while the lock is held; returning null aborts the write.
+ */
+export const mutateUsers = async <T>(
+  mutator: (users: User[]) => Promise<T | null> | T | null,
+): Promise<T | null> => {
   const usersPath = await touchUsersFile();
 
   try {
@@ -64,18 +65,13 @@ export const patchUserFields = async (
 
     if (!Array.isArray(allUsers)) return null;
 
-    const userIndex = allUsers.findIndex(
-      (user: User) => user.username === username,
-    );
+    const outcome = await mutator(allUsers);
 
-    if (userIndex === -1) return null;
-
-    const updatedUser: User = { ...allUsers[userIndex], ...updates };
-    allUsers[userIndex] = updatedUser;
+    if (outcome === null) return null;
 
     await writeJsonFile(allUsers, USERS_FILE);
 
-    return updatedUser;
+    return outcome;
   } catch (error) {
     console.error("Failed to update user record:", error);
     return null;
@@ -86,4 +82,24 @@ export const patchUserFields = async (
       console.error("Failed to release users file lock:", error);
     }
   }
+};
+
+export const patchUserFields = async (
+  username: string,
+  updates: Partial<User>,
+): Promise<User | null> => {
+  if (!username) return null;
+
+  return mutateUsers((allUsers) => {
+    const userIndex = allUsers.findIndex(
+      (user: User) => user.username === username,
+    );
+
+    if (userIndex === -1) return null;
+
+    const updatedUser: User = { ...allUsers[userIndex], ...updates };
+    allUsers[userIndex] = updatedUser;
+
+    return updatedUser;
+  });
 };

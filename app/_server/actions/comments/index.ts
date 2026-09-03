@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { Comment, Result } from "@/app/_types";
+import { Checklist, Comment, Result } from "@/app/_types";
 import {
   ItemTypes,
   NotificationTargets,
@@ -21,7 +21,7 @@ import {
 const _resolveOwner = async (
   uuid: string,
   permission: PermissionTypes,
-): Promise<{ owner: string; username: string }> => {
+): Promise<{ owner: string; username: string; board: Checklist }> => {
   const username = await getUsername();
   if (!username) throw new Error("Not authenticated");
 
@@ -32,7 +32,20 @@ const _resolveOwner = async (
   if (!checklist) throw new Error("Board not found");
 
   const owner = checklist.owner || username;
-  return { owner, username };
+  return { owner, username, board: checklist };
+};
+
+const _towncrier = async (uuid: string, username: string): Promise<void> => {
+  try {
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: uuid,
+      username,
+    });
+  } catch (error) {
+    console.warn("[comments] broadcast failed, the comment is saved:", error);
+  }
 };
 
 const _newId = (): string =>
@@ -137,7 +150,13 @@ export const addComment = async (
     if (!uuid || !itemId) throw new Error("Missing board or item id");
     if (!text) throw new Error("Comment text cannot be empty");
 
-    const { owner, username } = await _resolveOwner(uuid, PermissionTypes.EDIT);
+    const { owner, username, board } = await _resolveOwner(
+      uuid,
+      PermissionTypes.EDIT,
+    );
+
+    const itemExists = board.items?.some((item) => item.id === itemId);
+    if (!itemExists) throw new Error("Item not found on this board");
 
     const comment: Comment = {
       id: _newId(),
@@ -175,15 +194,9 @@ export const addComment = async (
       console.warn("Cache revalidation failed, but comment was saved:", error);
     }
 
-    await broadcast({
-      type: "checklist",
-      action: "updated",
-      entityId: uuid,
-      username,
-    });
+    await _towncrier(uuid, username);
 
-    const checklist = await getListById(uuid, username);
-    await _processMentions(text, username, uuid, checklist?.title || "", comment.id);
+    await _processMentions(text, username, uuid, board.title || "", comment.id);
 
     return { success: true, data: comment };
   } catch (error) {
@@ -205,7 +218,10 @@ export const editComment = async (
     if (!uuid || !itemId || !commentId) throw new Error("Missing ids");
     if (!text) throw new Error("Comment text cannot be empty");
 
-    const { owner, username } = await _resolveOwner(uuid, PermissionTypes.EDIT);
+    const { owner, username, board } = await _resolveOwner(
+      uuid,
+      PermissionTypes.EDIT,
+    );
     const admin = await isAdmin();
 
     const target = await runQueued(_lane(owner, uuid), async () => {
@@ -229,15 +245,9 @@ export const editComment = async (
       console.warn("Cache revalidation failed, but comment was saved:", error);
     }
 
-    await broadcast({
-      type: "checklist",
-      action: "updated",
-      entityId: uuid,
-      username,
-    });
+    await _towncrier(uuid, username);
 
-    const checklist = await getListById(uuid, username);
-    await _processMentions(text, username, uuid, checklist?.title || "", commentId);
+    await _processMentions(text, username, uuid, board.title || "", commentId);
 
     return { success: true, data: target };
   } catch (error) {
@@ -280,12 +290,7 @@ export const deleteComment = async (
       console.warn("Cache revalidation failed, but comment was deleted:", error);
     }
 
-    await broadcast({
-      type: "checklist",
-      action: "updated",
-      entityId: uuid,
-      username,
-    });
+    await _towncrier(uuid, username);
 
     return { success: true, data: null };
   } catch (error) {

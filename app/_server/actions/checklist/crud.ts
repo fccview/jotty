@@ -26,6 +26,8 @@ import {
   targetDir,
   bouncer,
   shownAs,
+  movePlan,
+  refusalMessage,
 } from "@/app/_server/actions/share/target";
 import { generateUuid, updateYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
@@ -106,55 +108,49 @@ export const updateList = async (formData: FormData) => {
       currentList.owner!,
       currentList.category || ""
     );
-    const source = await targetDir(
-      Modes.CHECKLISTS,
-      actingUser.username,
-      shownSource
-    );
 
     const shownCategory = category || shownSource;
-    const target = await targetDir(
+    const { home, destination, target, isMoving } = await movePlan(
       Modes.CHECKLISTS,
       actingUser.username,
+      currentList,
       shownCategory
     );
 
-    const isRelocating =
-      target.owner !== source.owner || target.category !== source.category;
+    if (isMoving) {
+      const verdict = await bouncer(
+        target,
+        actingUser.username,
+        PermissionTypes.CREATE
+      );
 
-    const verdict = await bouncer(
-      target,
-      actingUser.username,
-      isRelocating ? PermissionTypes.CREATE : PermissionTypes.EDIT
-    );
+      if (!verdict.allowed) {
+        return { error: verdict.error };
+      }
 
-    if (!verdict.allowed) {
-      return { error: verdict.error };
-    }
-
-    if (isRelocating) {
-      const exit = await bouncer(
-        source,
+      const canRemove = await canReach(
+        currentList.uuid!,
+        ItemTypes.CHECKLIST,
         actingUser.username,
         PermissionTypes.DELETE
       );
 
-      if (!exit.allowed) {
-        return { error: exit.error };
+      if (!canRemove) {
+        return { error: await refusalMessage() };
       }
     }
 
     const updatedList: Checklist = {
       ...currentList,
       title,
-      category: target.category,
-      owner: target.owner,
+      category: destination.category,
+      owner: destination.owner,
       items: currentList.items,
       updatedAt: new Date().toISOString(),
     };
 
-    const sourceDir = _listDirFor(source.owner, source.category);
-    const categoryDir = _listDirFor(target.owner, target.category);
+    const sourceDir = _listDirFor(home.owner, home.category);
+    const categoryDir = _listDirFor(destination.owner, destination.category);
     await ensureDir(categoryDir);
 
     const currentId = currentList.id;
@@ -185,7 +181,7 @@ export const updateList = async (formData: FormData) => {
     const filePath = path.join(categoryDir, newFilename);
 
     const oldFilePath =
-      isRelocating || newId !== currentId
+      isMoving || newId !== currentId
         ? path.join(sourceDir, `${currentId}.md`)
         : null;
 
@@ -197,19 +193,19 @@ export const updateList = async (formData: FormData) => {
       const newItemKey = `${updatedList.category || UNCATEGORIZED}/${updatedList.id
         }`;
 
-      const oldItemKey = `${source.category || UNCATEGORIZED}/${currentId}`;
-      if (oldItemKey !== newItemKey || isRelocating) {
-        await rebuildLinkIndexInternal(source.owner);
+      const oldItemKey = `${home.category || UNCATEGORIZED}/${currentId}`;
+      if (oldItemKey !== newItemKey || isMoving) {
+        await rebuildLinkIndexInternal(home.owner);
 
-        if (target.owner !== source.owner) {
-          await rebuildLinkIndexInternal(target.owner);
+        if (destination.owner !== home.owner) {
+          await rebuildLinkIndexInternal(destination.owner);
         }
 
         revalidatePath("/");
       }
 
       await updateIndexForItem(
-        target.owner,
+        destination.owner,
         ItemTypes.CHECKLIST,
         updatedList.uuid!,
         links
@@ -329,7 +325,7 @@ export const deleteList = async (formData: FormData) => {
     );
     const filePath = path.join(
       ownerDir,
-      source.category || UNCATEGORIZED,
+      list.category || UNCATEGORIZED,
       `${list.id}.md`
     );
 

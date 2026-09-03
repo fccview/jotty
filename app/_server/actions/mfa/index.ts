@@ -3,14 +3,12 @@
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
 import { getCurrentUser, getUsername } from "../users";
-import { findUserRecord, patchUserFields } from "../users/records";
+import { findUserRecord, mutateUsers, patchUserFields } from "../users/records";
 import { logAudit } from "../log";
 import { getSettings } from "../config";
 import _sodium from "libsodium-wrappers-sumo";
 import { createHash, randomBytes } from "crypto";
 import { Result } from "@/app/_types";
-import { readJsonFile, writeJsonFile } from "../file";
-import { USERS_FILE } from "@/app/_consts/files";
 
 let sodium: any;
 const _getSodium = async () => {
@@ -448,19 +446,22 @@ export const adminDisableUserMfa = async (username: string, recoveryCode: string
             return { success: false, error: "Invalid recovery code" };
         }
 
-        const users = await readJsonFile(USERS_FILE);
-        const userIndex = users.findIndex((u: any) => u.username === username);
+        const disabled = await mutateUsers((users) => {
+            const userIndex = users.findIndex((u) => u.username === username);
 
-        if (userIndex === -1) {
+            if (userIndex === -1) return null;
+
+            users[userIndex].mfaEnabled = false;
+            users[userIndex].mfaSecret = undefined;
+            users[userIndex].mfaRecoveryCode = undefined;
+            users[userIndex].mfaEnrolledAt = undefined;
+
+            return true;
+        });
+
+        if (!disabled) {
             return { success: false, error: "User not found" };
         }
-
-        users[userIndex].mfaEnabled = false;
-        users[userIndex].mfaSecret = undefined;
-        users[userIndex].mfaRecoveryCode = undefined;
-        users[userIndex].mfaEnrolledAt = undefined;
-
-        await writeJsonFile(users, USERS_FILE);
 
         await logAudit({
             level: "INFO",
