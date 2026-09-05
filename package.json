@@ -124,10 +124,13 @@
     "ws": "8.21.3",
     "immutable": "4.3.9",
     "@babel/core": "7.29.7",
-    "sharp": "0.35.3"
+    "sharp": "0.35.3",
+    "browserslist": "4.28.9",
+    "postcss-selector-parser": "6.1.4",
+    "@tiptap/core": "3.31.3"
   },
   "devDependencies": {
-    "@faker-js/faker": "9.3.0",
+    "@faker-js/faker": "10.6.0",
     "@serwist/turbopack": "9.5.4",
     "@types/archiver": "6.0.3",
     "@types/diff": "5.2.0",
