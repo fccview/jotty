@@ -922,6 +922,11 @@
     "checklistItemClickActionDescription": "Wählen Sie aus, was passiert, wenn Sie auf den Text einer Aufgabe klicken. \n„Als abgeschlossen markieren“ schaltet das Kontrollkästchen ein (Standard); \n„Aufgabennamen bearbeiten“ öffnet die Aufgabe zur Inline-Bearbeitung – Sie müssen noch das Kontrollkästchen selbst anklicken, um sie abzuschließen.",
     "checklistItemClickActionToggle": "Als vollständig/unvollständig markieren",
     "checklistItemClickActionEdit": "Listenelement bearbeiten",
+    "newItemInsertion": "Position neuer Einträge",
+    "selectNewItemInsertion": "Wählen Sie, wo neue Einträge hinzugefügt werden",
+    "newItemInsertionDescription": "Legen Sie fest, ob neue Einträge oben (Standard) oder unten in der Checkliste hinzugefügt werden.",
+    "newItemInsertionTop": "Anfang der Liste",
+    "newItemInsertionBottom": "Ende der Liste",
     "useSystemDefault": "Systemstandard verwenden",
     "selectShowChecklistEmojis": "Emoji-Sichtbarkeit wählen",
     "showChecklistEmojisDescription": "Zeigt anhand des Textes automatisch ein Emoji neben Checklisteneinträgen."

@@ -15,7 +15,7 @@ import {
   extractHashtagsFromContent,
   normalizeTag,
 } from "@/app/_utils/tag-utils";
-import { isAdmin, getUsername } from "@/app/_server/actions/users";
+import { isAdmin, getUsername, getUserByUsername } from "@/app/_server/actions/users";
 import { Checklist, Item, KanbanPriority, Result } from "@/app/_types";
 import {
   ItemTypes,
@@ -282,11 +282,16 @@ export const createItem = async (
       order: item.order + 1,
     }));
 
+    const userRecord = await getUserByUsername(currentUser);
+    const insertAtBottom = userRecord?.newItemInsertion === "bottom";
+
     const newItem = {
       id: `${stored.uuid}-${Date.now()}`,
       text,
       completed: false,
-      order: 0,
+      order: insertAtBottom
+        ? stored.items.reduce((max, item) => Math.max(max, item.order ?? 0), -1) + 1
+        : 0,
       description: description || undefined,
       createdBy: currentUser,
       createdAt: now,
@@ -316,7 +321,9 @@ export const createItem = async (
 
     const updatedList = {
       ...stored,
-      items: [newItem, ...shiftedItems],
+      items: insertAtBottom
+        ? [...stored.items, newItem]
+        : [newItem, ...shiftedItems],
       tags: mergedTags,
       updatedAt: new Date().toISOString(),
     };

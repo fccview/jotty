@@ -946,7 +946,12 @@
     "selectChecklistItemClickAction": "Chọn hành động nhấp vào mục danh sách kiểm tra",
     "checklistItemClickActionDescription": "Chọn điều gì sẽ xảy ra khi bạn nhấp vào văn bản của nhiệm vụ. \"Đánh dấu là hoàn thành\" chuyển đổi hộp kiểm (mặc định); \"Chỉnh sửa tên tác vụ\" sẽ mở tác vụ để chỉnh sửa nội tuyến — bạn vẫn cần phải nhấp vào hộp kiểm để hoàn thành tác vụ đó.",
     "checklistItemClickActionToggle": "Đánh dấu là hoàn thành/chưa hoàn thành",
-    "checklistItemClickActionEdit": "Chỉnh sửa mục danh sách"
+    "checklistItemClickActionEdit": "Chỉnh sửa mục danh sách",
+    "newItemInsertion": "Vị trí thêm mục mới",
+    "selectNewItemInsertion": "Chọn nơi thêm mục mới",
+    "newItemInsertionDescription": "Chọn xem các mục mới được thêm vào đầu (mặc định) hay cuối danh sách kiểm tra.",
+    "newItemInsertionTop": "Đầu danh sách",
+    "newItemInsertionBottom": "Cuối danh sách"
   },
   "admin": {
     "title": "Quản trị viên",
