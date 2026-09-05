@@ -8,7 +8,7 @@ import {
   ArrowRight01Icon,
   ShieldUserIcon,
 } from "hugeicons-react";
-import { Checklist, Note, User as UserType } from "@/app/_types";
+import { Checklist, Note, SanitisedUser as UserType } from "@/app/_types";
 import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
 import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";

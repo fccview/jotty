@@ -251,6 +251,32 @@
     "thisEntry": "esta entrada",
     "preview": "Pré-visualização"
   },
+  "comments": {
+    "title": "Comentários",
+    "titleWithCount": "{count, plural, one {# Comentário} other {# Comentários}}",
+    "noComments": "Ainda não há comentários. Inicie a conversa!",
+    "addComment": "Adicionar um comentário...",
+    "replyPlaceholder": "Escreva uma resposta...",
+    "post": "Publicar",
+    "reply": "Responder",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edited": "editado",
+    "deleteConfirmTitle": "Excluir comentário?",
+    "deleteConfirmMessage": "Isso excluirá o comentário e quaisquer respostas. Esta ação não pode ser desfeita.",
+    "commentDeleted": "Comentário excluído",
+    "commentAdded": "Comentário adicionado",
+    "commentUpdated": "Comentário atualizado",
+    "failedToAdd": "Falha ao adicionar comentário",
+    "failedToEdit": "Falha ao editar comentário",
+    "failedToDelete": "Falha ao excluir comentário",
+    "failedToLoad": "Falha ao carregar comentários",
+    "readOnly": "Você precisa de acesso de edição para comentar neste cartão.",
+    "replyTo": "Responder a {author}",
+    "noUsersFound": "Nenhum usuário encontrado"
+  },
   "history": {
     "noteHistory": "Histórico da nota",
     "restore": "Restaurar",
@@ -1550,7 +1576,13 @@
     "viewModeGrid": "Grelha",
     "borderRadius": "Arredondamento dos cantos",
     "useInstanceDefault": "Usar predefinição da instância",
-    "borderRadiusDescription": "Os cantos atualizam em toda a aplicação enquanto arrasta."
+    "borderRadiusDescription": "Os cantos atualizam em toda a aplicação enquanto arrasta.",
+    "kanbanColumnWidth": "Largura das colunas Kanban",
+    "kanbanColumnWidthDescription": "Defina uma largura personalizada para as colunas de estado do Kanban. A predefinição da instância ajusta as colunas automaticamente ao espaço disponível.",
+    "kanbanColumnWidthCompact": "Compacto",
+    "kanbanColumnWidthComfortable": "Confortavel",
+    "kanbanColumnWidthWide": "Largo",
+    "kanbanColumnWidthAutoFit": "Ajuste auto"
   },
   "migration": {
     "migrationComplete": "Migração concluída",
@@ -1714,6 +1746,8 @@
     "sharingTitle": "{user} partilhou um(a) {type} consigo",
     "sharingMessage": "Abrir para ver o(a) {type} partilhado(a)",
     "sharingFolderTitle": "{user} partilhou uma pasta de {type} consigo",
-    "sharingFolderMessage": "Abrir para ver “{folder}”"
+    "sharingFolderMessage": "Abrir para ver “{folder}”",
+    "mentionTitle": "{user} mencionou você em um comentário",
+    "mentionMessage": "“{board}”"
   }
 }

@@ -1,5 +1,3 @@
-"use server";
-
 import { getCurrentUser } from "@/app/_server/actions/users";
 import {
   DATA_DIR,
@@ -130,12 +128,6 @@ export const getUserModeDir = async (
   if (!user) throw new Error("Not authenticated");
   return path.join(base, DATA_DIR, mode, user.username || "");
 };
-
-/**
- * @todo figure this out eventually, but for now it's too messy and I want this pull request to go through
- * Basically from client compoennt process.cwd is not available so I have added it to the previou functions.
- * From this comment on it's passed in via filePath/dirPath as these are ONLY called from server components.
- */
 
 export const serverReadFile = async (
   filePath: string,

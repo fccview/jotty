@@ -1,3 +1,5 @@
+"use server";
+
 import { AppMode, Checklist, ItemType, Note, Result } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { updateList } from "../checklist";

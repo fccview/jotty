@@ -6,6 +6,7 @@ import {
   MultiplicationSignIcon,
   ArrowRight01Icon,
   Tick02Icon,
+  AtIcon,
 } from "hugeicons-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -33,6 +34,8 @@ const _getTypeIcon = (type: NotificationType) => {
       );
     case "sharing":
       return <Share05Icon className="h-4 w-4 text-primary flex-shrink-0" />;
+    case "mention":
+      return <AtIcon className="h-4 w-4 text-purple-500 flex-shrink-0" />;
     default:
       return (
         <AlertCircleIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -57,7 +60,7 @@ export const NotificationItem = ({
   const t = useTranslations("notifications");
 
   const title = notification.titleKey
-    ? t(notification.titleKey)
+    ? t(notification.titleKey, notification.messageVars)
     : notification.title;
   const message = notification.messageKey
     ? t(notification.messageKey, notification.messageVars)

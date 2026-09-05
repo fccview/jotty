@@ -251,6 +251,32 @@
     "thisEntry": "this entry",
     "preview": "leghpre'"
   },
+  "comments": {
+    "title": "QIch",
+    "titleWithCount": "{count, plural, other {# QIch}}",
+    "noComments": "QIch DIj tu'lu'be'. jatlh choH!",
+    "addComment": "QIch DIj chel...",
+    "replyPlaceholder": "jang qon...",
+    "post": "ngeH",
+    "reply": "jang",
+    "edit": "choH",
+    "delete": "Qaw'",
+    "save": "pol",
+    "cancel": "qIl",
+    "edited": "choHpu'",
+    "deleteConfirmTitle": "QIch DIj Qaw'",
+    "deleteConfirmMessage": "QIch DIj jang je Qaw'. choH laHbe'.",
+    "commentDeleted": "QIch DIj Qaw'pu'",
+    "commentAdded": "QIch DIj chelpu'",
+    "commentUpdated": "QIch DIj choHpu'",
+    "failedToAdd": "QIch DIj chel laHbe'",
+    "failedToEdit": "QIch DIj choH laHbe'",
+    "failedToDelete": "QIch DIj Qaw' laHbe'",
+    "failedToLoad": "QIch DIj tu' laHbe'",
+    "readOnly": "DIj Qab DIj laH. DIj DIj Qab DIj.",
+    "replyTo": "{author} jang",
+    "noUsersFound": "tlhInganpu' tu'lu'be'"
+  },
   "history": {
     "noteHistory": "ghItlh Qu' tetlh",
     "restore": "SabHa'",
@@ -1550,7 +1576,13 @@
     "viewModeGrid": "Saras",
     "borderRadius": "veH lermoHghach",
     "useInstanceDefault": "pat DIvI' yIlo'",
-    "borderRadiusDescription": "bIQeqtaHvIS Hoch pat veHmey choH."
+    "borderRadiusDescription": "bIQeqtaHvIS Hoch pat veHmey choH.",
+    "kanbanColumnWidth": "Kanban veH jul",
+    "kanbanColumnWidthDescription": "Kanban veHmeyvaD nIj wIv. DIvI' nIjDuH veHmey nIjDaj Hoch DIvI' nI.",
+    "kanbanColumnWidthCompact": "QIm",
+    "kanbanColumnWidthComfortable": "QaQ",
+    "kanbanColumnWidthWide": "jen",
+    "kanbanColumnWidthAutoFit": "nIjDuH"
   },
   "migration": {
     "migrationComplete": "choH rIn",
@@ -1718,6 +1750,8 @@
     "sharingTitle": "{user} {type} Dajach",
     "sharingMessage": "{type} yIleghmeH yI'el",
     "sharingFolderTitle": "{user} {type} ngaSwI' Dajach",
-    "sharingFolderMessage": "“{folder}” yIleghmeH yI'el"
+    "sharingFolderMessage": "“{folder}” yIleghmeH yI'el",
+    "mentionTitle": "{user} QIch DIj SoH tuq",
+    "mentionMessage": "„{board}“"
   }
 }

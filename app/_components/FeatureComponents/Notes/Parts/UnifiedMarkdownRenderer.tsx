@@ -57,12 +57,14 @@ interface UnifiedMarkdownRendererProps {
   content: string;
   className?: string;
   forceLightMode?: boolean;
+  showStats?: boolean;
 }
 
 export const UnifiedMarkdownRenderer = ({
   content,
   className = "",
   forceLightMode = false,
+  showStats = true,
 }: UnifiedMarkdownRendererProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
@@ -83,12 +85,12 @@ export const UnifiedMarkdownRenderer = ({
         const themeMode = theme ? theme.trim() : "light";
         return `<div data-drawio="" data-drawio-data="${diagramData.replace(
           /"/g,
-          "&quot;"
+          "&quot;",
         )}" data-drawio-svg="${svgBase64.trim()}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
       } catch (e) {
         return match;
       }
-    }
+    },
   );
 
   processedContent = processedContent.replace(
@@ -100,15 +102,15 @@ export const UnifiedMarkdownRenderer = ({
         const themeMode = theme ? theme.trim() : "light";
         return `<div data-excalidraw="" data-excalidraw-data="${diagramData.replace(
           /"/g,
-          "&quot;"
+          "&quot;",
         )}" data-excalidraw-svg="${svgData.replace(
           /"/g,
-          "&quot;"
+          "&quot;",
         )}" data-excalidraw-theme="${themeMode}">[Excalidraw Diagram]</div>`;
       } catch (e) {
         return match;
       }
-    }
+    },
   );
 
   const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
@@ -119,7 +121,7 @@ export const UnifiedMarkdownRenderer = ({
   });
   processedContent = processedContent.replace(
     /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
-    '<span data-tag="$1">$1</span>'
+    '<span data-tag="$1">$1</span>',
   );
   codeBlocks.forEach((block, i) => {
     processedContent = processedContent.replace(`__CODE_BLOCK_${i}__`, block);
@@ -171,7 +173,9 @@ export const UnifiedMarkdownRenderer = ({
         const rawCode = getRawTextFromChildren(codeElement.props.children);
 
         if (language === "mermaid") {
-          return <MermaidRenderer code={rawCode} forceLightMode={forceLightMode} />;
+          return (
+            <MermaidRenderer code={rawCode} forceLightMode={forceLightMode} />
+          );
         }
 
         let highlightedHtml: string;
@@ -236,7 +240,7 @@ export const UnifiedMarkdownRenderer = ({
           linkItemId = decodeSegment(pathParts?.[pathParts.length - 1] || "");
           linkUuid = isUuid(linkItemId) ? linkItemId : null;
           linkCategory = decodeCategoryPath(
-            pathParts?.slice(0, -1).join("/") || ""
+            pathParts?.slice(0, -1).join("/") || "",
           );
         }
 
@@ -254,7 +258,7 @@ export const UnifiedMarkdownRenderer = ({
               },
             }}
             editor={undefined as any}
-            updateAttributes={() => { }}
+            updateAttributes={() => {}}
           />
         );
       }
@@ -323,10 +327,18 @@ export const UnifiedMarkdownRenderer = ({
         const child = childArray[i];
         if (isValidElement(child)) {
           const childProps = child.props as Record<string, unknown>;
-          const textContent = getRawTextFromChildren(childProps?.children as React.ReactNode);
-          const match = textContent.match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]/i);
+          const textContent = getRawTextFromChildren(
+            childProps?.children as React.ReactNode,
+          );
+          const match = textContent.match(
+            /^\[!(INFO|WARNING|SUCCESS|DANGER)\]/i,
+          );
           if (match) {
-            calloutType = match[1].toLowerCase() as "info" | "warning" | "success" | "danger";
+            calloutType = match[1].toLowerCase() as
+              | "info"
+              | "warning"
+              | "success"
+              | "danger";
             matchIndex = i;
             break;
           }
@@ -341,7 +353,9 @@ export const UnifiedMarkdownRenderer = ({
           danger: AlertCircleIcon,
         }[calloutType];
 
-        const stripCalloutPrefix = (children: React.ReactNode): React.ReactNode => {
+        const stripCalloutPrefix = (
+          children: React.ReactNode,
+        ): React.ReactNode => {
           const childArr = Children.toArray(children);
           let prefixStripped = false;
 
@@ -349,7 +363,9 @@ export const UnifiedMarkdownRenderer = ({
             if (prefixStripped) return child;
 
             if (typeof child === "string") {
-              const match = child.match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i);
+              const match = child.match(
+                /^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i,
+              );
               if (match) {
                 prefixStripped = true;
                 const remaining = child.replace(match[0], "");
@@ -361,10 +377,15 @@ export const UnifiedMarkdownRenderer = ({
             if (isValidElement(child)) {
               const cProps = child.props as Record<string, unknown>;
               if (cProps?.children) {
-                const newChildren = stripCalloutPrefix(cProps.children as React.ReactNode);
+                const newChildren = stripCalloutPrefix(
+                  cProps.children as React.ReactNode,
+                );
                 if (newChildren !== cProps.children) {
                   prefixStripped = true;
-                  return { ...child, props: { ...cProps, children: newChildren } };
+                  return {
+                    ...child,
+                    props: { ...cProps, children: newChildren },
+                  };
                 }
               }
             }
@@ -376,9 +397,11 @@ export const UnifiedMarkdownRenderer = ({
         const modifiedChildren = Children.map(children, (child, index) => {
           if (index === matchIndex && isValidElement(child)) {
             const cProps = child.props as Record<string, unknown>;
-            const newChildren = stripCalloutPrefix(cProps?.children as React.ReactNode);
+            const newChildren = stripCalloutPrefix(
+              cProps?.children as React.ReactNode,
+            );
             const hasContent = Children.toArray(newChildren).some(
-              (c) => (typeof c === "string" && c.trim()) || isValidElement(c)
+              (c) => (typeof c === "string" && c.trim()) || isValidElement(c),
             );
             if (!hasContent) {
               return null;
@@ -391,12 +414,12 @@ export const UnifiedMarkdownRenderer = ({
         return (
           <div className={`callout callout-${calloutType}`}>
             <div className="flex gap-3">
-              <div className={`flex-shrink-0 pt-0.5 callout-icon-${calloutType}`}>
+              <div
+                className={`flex-shrink-0 pt-0.5 callout-icon-${calloutType}`}
+              >
                 <CalloutIcon className="h-5 w-5" />
               </div>
-              <div className="flex-1 min-w-0">
-                {modifiedChildren}
-              </div>
+              <div className="flex-1 min-w-0">{modifiedChildren}</div>
             </div>
           </div>
         );
@@ -466,7 +489,9 @@ export const UnifiedMarkdownRenderer = ({
             props.dataDrawioTheme ||
             node?.properties?.["data-drawio-theme"] ||
             "light";
-        return <DrawioRenderer svgData={decodedSvgData} themeMode={themeMode} />;
+        return (
+          <DrawioRenderer svgData={decodedSvgData} themeMode={themeMode} />
+        );
       }
 
       const isExcalidraw =
@@ -489,7 +514,12 @@ export const UnifiedMarkdownRenderer = ({
             node?.properties?.["data-excalidraw-theme"] ||
             "light";
 
-        return <ExcalidrawRenderer svgData={excalidrawSvgData} themeMode={themeMode} />;
+        return (
+          <ExcalidrawRenderer
+            svgData={excalidrawSvgData}
+            themeMode={themeMode}
+          />
+        );
       }
 
       if (
@@ -501,7 +531,12 @@ export const UnifiedMarkdownRenderer = ({
           props.dataMermaidContent ||
           node?.properties?.["data-mermaid-content"] ||
           "";
-        return <MermaidRenderer code={mermaidContent} forceLightMode={forceLightMode} />;
+        return (
+          <MermaidRenderer
+            code={mermaidContent}
+            forceLightMode={forceLightMode}
+          />
+        );
       }
 
       const isCallout =
@@ -516,24 +551,22 @@ export const UnifiedMarkdownRenderer = ({
           node?.properties?.["data-callout-type"] ||
           "info";
         const { children, ...restProps } = props;
-        const CalloutIcon = {
-          info: Idea01Icon,
-          warning: AlertDiamondIcon,
-          success: Tick02Icon,
-          danger: AlertCircleIcon,
-        }[calloutType] || Idea01Icon;
+        const CalloutIcon =
+          {
+            info: Idea01Icon,
+            warning: AlertDiamondIcon,
+            success: Tick02Icon,
+            danger: AlertCircleIcon,
+          }[calloutType] || Idea01Icon;
         return (
-          <div
-            {...restProps}
-            className={`callout callout-${calloutType}`}
-          >
+          <div {...restProps} className={`callout callout-${calloutType}`}>
             <div className="flex gap-3">
-              <div className={`flex-shrink-0 pt-0.5 callout-icon-${calloutType}`}>
+              <div
+                className={`flex-shrink-0 pt-0.5 callout-icon-${calloutType}`}
+              >
                 <CalloutIcon className="h-5 w-5" />
               </div>
-              <div className="flex-1 min-w-0">
-                {children}
-              </div>
+              <div className="flex-1 min-w-0">{children}</div>
             </div>
           </div>
         );
@@ -569,7 +602,7 @@ export const UnifiedMarkdownRenderer = ({
           {processedContent}
         </ReactMarkdown>
       </div>
-      <NoteFooterStats content={content} />
+      {showStats && <NoteFooterStats content={content} />}
     </>
   );
 };

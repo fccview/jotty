@@ -5,10 +5,6 @@ import { DATA_SCHEMA_VERSION } from "@/app/_consts/files";
 import { isAdmin } from "@/app/_server/actions/users";
 import { stampSchema } from "@/app/_server/actions/lib/migration-check";
 
-/**
- * Lets an admin leave the migration gate after acknowledging that legacy files
- * survived. Nothing is deleted, so the residue stays on disk and recoverable.
- */
 export const forceUnblock = async (
   residue: string[],
 ): Promise<Result<null>> => {

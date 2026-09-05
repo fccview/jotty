@@ -11,20 +11,21 @@ import {
   bulkToggleItems,
   updateItemStatus,
 } from "@/app/_server/actions/checklist-item";
-import { createNotificationForUser } from "@/app/_server/actions/notifications";
 import { usersWithAccess } from "@/app/_server/actions/share/queries";
 import { getUsers } from "@/app/_server/actions/users";
 import { FloppyDiskIcon, MultiplicationSignIcon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
-import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
-import { KanbanPriorityLevel, NotificationTargets } from "@/app/_types/enums";
+import { KanbanPriorityLevel } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
+import { KanbanCardDetailComments } from "./KanbanCardDetailComments";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { TimeEntriesModal } from "./TimeEntriesModal";
+import { TaskDescriptionEditor } from "./TaskDescriptionEditor";
+import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { formatTimerTime } from "@/app/_utils/kanban/index";
@@ -82,7 +83,7 @@ export const KanbanCardDetail = ({
   const checklistUuid = checklist.uuid || "";
   const t = useTranslations();
   const { permissions } = usePermissions();
-  const { usersPublicData } = useAppMode();
+  const { user, usersPublicData } = useAppMode();
   const { formatDateTimeString, formatDateString, formatTimeString } =
     usePreferredDateTime();
   const statuses = checklist.statuses || DEFAULT_KANBAN_STATUSES;
@@ -128,14 +129,22 @@ export const KanbanCardDetail = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    if (!permissions?.canEdit) return;
     const _loadUsers = async () => {
       const sharedWithUsers = await usersWithAccess(checklistUuid);
+      const allUsers = await getUsers();
+
       if (sharedWithUsers.length === 0) {
         setBoardIsShared(false);
+        setAvailableUsers(
+          allUsers.map((u: { username: string; avatarUrl?: string }) => ({
+            username: u.username,
+            avatarUrl: u.avatarUrl,
+          })),
+        );
         return;
       }
       setBoardIsShared(true);
-      const allUsers = await getUsers();
       const allowedUsernames = new Set(sharedWithUsers);
       if (checklist.owner) allowedUsernames.add(checklist.owner);
       const userMap = new Map<string, { username: string; avatarUrl?: string }>();
@@ -150,14 +159,12 @@ export const KanbanCardDetail = ({
       setAvailableUsers(Array.from(userMap.values()));
     };
     _loadUsers();
-  }, [isOpen, checklistUuid, checklist.owner]);
+  }, [isOpen, permissions?.canEdit, checklistUuid, checklist.owner]);
 
-  const descriptionHtml = useMemo(() => {
-    const noDescText = `<p class="text-muted-foreground text-sm opacity-50">${t("checklists.noDescription")}</p>`;
-    if (!item.description) return noDescText;
-    const unsanitized = _unsanitizeDescription(item.description);
-    return convertMarkdownToHtml(unsanitized.replace(/\n/g, "  \n")) || noDescText;
-  }, [item.description, t]);
+  const descriptionMarkdown = useMemo(() => {
+    if (!item.description) return "";
+    return _unsanitizeDescription(item.description);
+  }, [item.description]);
 
   const _saveField = async (fields: Record<string, string>) => {
     const formData = new FormData();
@@ -420,6 +427,7 @@ export const KanbanCardDetail = ({
         size="fullscreen"
         allowEnlarge
         defaultEnlarged
+        storageKey="kanban-card-detail"
         className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
       >
       <div className="kanban-card-detail-body flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:overflow-hidden">
@@ -446,15 +454,9 @@ export const KanbanCardDetail = ({
                 <label className="block text-sm font-medium text-foreground mb-2">
                   {t("common.description")}
                 </label>
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all min-h-[120px] text-base resize-y"
-                  placeholder={t("checklists.addDescriptionOptional")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.ctrlKey) { e.preventDefault(); handleSave(); }
-                    else if (e.key === "Escape") { e.preventDefault(); setEditText(item.text); setEditDescription(_unsanitizeDescription(item.description || "")); setIsEditing(false); }
-                  }}
+                <TaskDescriptionEditor
+                  content={editDescription}
+                  onContentChange={setEditDescription}
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -473,10 +475,17 @@ export const KanbanCardDetail = ({
               className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""}`}
               onClick={() => permissions?.canEdit && setIsEditing(true)}
             >
-              <div
-                className="text-card-foreground prose prose-sm dark:prose-invert max-w-none leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-              />
+              {descriptionMarkdown ? (
+                <UnifiedMarkdownRenderer
+                  content={descriptionMarkdown}
+                  className="text-card-foreground prose-sm max-w-none leading-relaxed"
+                  showStats={false}
+                />
+              ) : (
+                <p className="text-muted-foreground text-sm opacity-50">
+                  {t("checklists.noDescription")}
+                </p>
+              )}
             </div>
           )}
 
@@ -527,6 +536,18 @@ export const KanbanCardDetail = ({
               />
             </div>
           )}
+
+          {!isEditing && (
+            <div className="border-t border-border pt-4">
+              <KanbanCardDetailComments
+                uuid={checklistUuid}
+                itemId={item.id}
+                canEdit={!!permissions?.canEdit}
+                currentUsername={user?.username || ""}
+                availableUsers={availableUsers}
+              />
+            </div>
+          )}
         </div>
 
         <div className="overflow-y-auto p-4 lg:min-h-0 lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6">
@@ -552,18 +573,6 @@ export const KanbanCardDetail = ({
             onAssigneeChange={async (v) => {
               setAssigneeInput(v);
               await _saveField({ assignee: v });
-              if (v) {
-                await createNotificationForUser(v, {
-                  type: "assignment",
-                  title: t("notifications.assignmentTitle"),
-                  message: t("notifications.assignmentMessage", { task: item.text, board: checklist.title }),
-                  data: {
-                    itemId: checklistUuid,
-                    itemType: NotificationTargets.CHECKLIST,
-                    taskId: item.id,
-                  },
-                });
-              }
             }}
             onReminderChange={async (v) => {
               setReminderInput(v);

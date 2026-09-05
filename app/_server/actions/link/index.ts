@@ -1,6 +1,7 @@
 "use server";
 
 import path from "path";
+import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir } from "@/app/_server/actions/file";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
@@ -263,7 +264,9 @@ export const updateItemCategory = async (
   await writeLinkIndex(username, index);
 };
 
-export const rebuildLinkIndex = async (username: string): Promise<void> => {
+export const rebuildLinkIndexInternal = async (
+  username: string,
+): Promise<void> => {
   const [notesResult, checklistsResult] = await Promise.all([
     getUserNotes({ username }),
     getUserChecklists({ username }),
@@ -352,4 +355,15 @@ export const rebuildLinkIndex = async (username: string): Promise<void> => {
   }
 
   await writeLinkIndex(username, newIndex);
+};
+
+export const rebuildLinkIndex = async (username: string): Promise<void> => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("Not authenticated");
+
+  if (username !== currentUser.username && !currentUser.isAdmin) {
+    throw new Error("Unauthorized: can only rebuild your own link index");
+  }
+
+  await rebuildLinkIndexInternal(username);
 };

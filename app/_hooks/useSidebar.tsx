@@ -1,7 +1,13 @@
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useAppMode } from "../_providers/AppModeProvider";
 import { useNavigationGuard } from "../_providers/NavigationGuardProvider";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { Checklist, Category, Note, AppMode, SanitisedUser } from "../_types";
 import { ItemTypes, Modes } from "../_types/enums";
 import { itemHref } from "../_utils/global-utils";
@@ -25,6 +31,7 @@ export const useSidebar = (props: SidebarProps) => {
 
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { mode, setMode, isInitialized, checklists, notes, selectedFilter, setSelectedFilter } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
 
@@ -47,6 +54,9 @@ export const useSidebar = (props: SidebarProps) => {
   }>({ type: null, data: null });
 
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  const [pendingMode, setPendingMode] = useState<AppMode | null>(null);
+  const pendingFromUrl = useRef<string | null>(null);
 
   const collapsedCategoriesForMode = useMemo(() => {
     return new Set(collapsedCategories[mode] || []);
@@ -128,11 +138,24 @@ export const useSidebar = (props: SidebarProps) => {
     [storeToggleTag]
   );
 
+  const urlKey = pathname + "?" + searchParams.toString();
+
   const handleModeSwitch = (newMode: AppMode) =>
     checkNavigation(() => {
       setMode(newMode);
+      setPendingMode(newMode);
+      pendingFromUrl.current = urlKey;
       router.push("/?mode=" + newMode);
     });
+
+  useEffect(() => {
+    if (pendingMode == null) return;
+    const urlMode = searchParams.get("mode") as AppMode | null;
+    if (urlMode === pendingMode || urlKey !== pendingFromUrl.current) {
+      setPendingMode(null);
+      pendingFromUrl.current = null;
+    }
+  }, [urlKey, searchParams, pendingMode]);
 
   const isHomePage = pathname === "/" || pathname === "";
 
@@ -205,6 +228,7 @@ export const useSidebar = (props: SidebarProps) => {
     mode,
     isInitialized,
     handleModeSwitch,
+    pendingMode,
     modalState,
     openModal,
     closeModal,

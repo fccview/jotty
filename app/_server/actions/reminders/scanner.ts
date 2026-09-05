@@ -9,7 +9,7 @@ import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { ChecklistsTypes, NotificationTargets } from "@/app/_types/enums";
 import { parseMarkdown, listToMarkdown } from "@/app/_utils/checklist-utils";
 import { updateItem } from "@/app/_utils/item-tree-utils";
-import { createNotificationForUser } from "@/app/_server/actions/notifications";
+import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { usersWithAccess } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
@@ -110,7 +110,7 @@ export const scanReminders = async (): Promise<void> => {
         let updatedItems = list.items;
         for (const item of dueItems) {
           for (const username of recipients) {
-            await createNotificationForUser(username, {
+            await notifyUser(username, {
               type: "reminder",
               title: "",
               message: "",

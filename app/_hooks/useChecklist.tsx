@@ -26,7 +26,7 @@ import {
   createSubItem,
 } from "@/app/_server/actions/checklist-item";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { getUsername } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
 import { areAllItemsCompleted } from "../_utils/checklist-utils";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
@@ -274,7 +274,7 @@ export const useChecklist = ({
 
   const handleToggleItem = async (itemId: string, completed: boolean) => {
     const now = new Date().toISOString();
-    const currentUser = await getCurrentUser();
+    const username = (await getUsername()) || undefined;
 
     setLocalList((currentList) => {
       const findAndUpdateItem = (
@@ -322,8 +322,8 @@ export const useChecklist = ({
 
       const updatedItems = findAndUpdateItem(currentList.items, itemId, {
         completed,
-        ...(currentUser && {
-          lastModifiedBy: currentUser.username,
+        ...(username && {
+          lastModifiedBy: username,
           lastModifiedAt: now,
         }),
       });
@@ -661,15 +661,15 @@ export const useChecklist = ({
 
     formData.append("text", text);
 
-    const currentUser = await getCurrentUser();
+    const username = (await getUsername()) || undefined;
     if (recurrence) {
       formData.append("recurrence", JSON.stringify(recurrence));
     }
-    const result = await createItem(localList, formData, currentUser?.username);
+    const result = await createItem(localList, formData, username);
 
     const updatedList = await getListById(
       localList.uuid || "",
-      localList.owner || currentUser?.username,
+      localList.owner || username,
     );
 
     if (updatedList) {

@@ -16,7 +16,7 @@ import {
 import { toSharedWith } from "@/app/_utils/sharing-utils";
 import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 import { getTranslations } from "next-intl/server";
-import { createNotificationForUser } from "@/app/_server/actions/notifications";
+import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import {
   getUserByNoteUuid,
   getUserByChecklistUuid,
@@ -140,7 +140,7 @@ const _tell = async (
     const kind = _isChecklist(mode) ? Modes.CHECKLISTS : Modes.NOTES;
     const label = t(_isChecklist(mode) ? "common.checklist" : "common.note");
 
-    await createNotificationForUser(receiver, {
+    await notifyUser(receiver, {
       type: "sharing",
       title: t("notifications.sharingTitle", { user: sharer, type: label }),
       message: t("notifications.sharingMessage", { type: label }),
@@ -165,7 +165,7 @@ const _tellFolder = async (
     const kind = _isChecklist(mode) ? Modes.CHECKLISTS : Modes.NOTES;
     const label = t(_isChecklist(mode) ? "common.checklist" : "common.note");
 
-    await createNotificationForUser(receiver, {
+    await notifyUser(receiver, {
       type: "sharing",
       title: t("notifications.sharingFolderTitle", {
         user: sharer,

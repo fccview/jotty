@@ -24,7 +24,7 @@ import {
   updateIndexForItem,
   parseInternalLinks,
   removeItemFromIndex,
-  rebuildLinkIndex,
+  rebuildLinkIndexInternal,
 } from "@/app/_server/actions/link";
 import { canReach } from "@/app/_server/actions/share/queries";
 import {
@@ -39,16 +39,17 @@ import { logContentEvent } from "@/app/_server/actions/log";
 import { commitNote } from "@/app/_server/actions/history";
 import { noteToMarkdown, convertInternalLinksToNewFormat } from "./parsers";
 import { getNoteById } from "./queries";
-import { targetDir, bouncer, shownAs } from "@/app/_server/actions/share/target";
+import {
+  targetDir,
+  bouncer,
+  shownAs,
+  movePlan,
+  refusalMessage,
+} from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { claimedName } from "@/app/_server/actions/lib/actor";
 import { makeNote } from "./creator";
 
-/**
- * The session is the only identity that counts. The username riding along in
- * FormData is a leftover from API-key callers that build the payload
- * server-side, so it is a fallback and never an override.
- */
 const _noteDirFor = (owner: string, category?: string): string =>
   path.join(process.cwd(), NOTES_DIR(owner), category || UNCATEGORIZED);
 
@@ -106,7 +107,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       note.uuid!,
       "note",
       actingUsername,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
     );
 
     if (!canEdit) {
@@ -117,39 +118,37 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       Modes.NOTES,
       actingUsername,
       note.owner!,
-      note.category || ""
+      note.category || "",
     );
-    const source = await targetDir(Modes.NOTES, actingUsername, shownSource);
 
     const shownCategory = category || shownSource;
-    const target = await targetDir(
+    const { home, destination, target, isMoving } = await movePlan(
       Modes.NOTES,
       actingUsername,
-      shownCategory
+      note,
+      shownCategory,
     );
 
-    const isRelocating =
-      target.owner !== source.owner || target.category !== source.category;
-
-    const verdict = await bouncer(
-      target,
-      actingUsername,
-      isRelocating ? PermissionTypes.CREATE : PermissionTypes.EDIT
-    );
-
-    if (!verdict.allowed) {
-      return { error: verdict.error };
-    }
-
-    if (isRelocating) {
-      const exit = await bouncer(
-        source,
+    if (isMoving) {
+      const verdict = await bouncer(
+        target,
         actingUsername,
-        PermissionTypes.DELETE
+        PermissionTypes.CREATE,
       );
 
-      if (!exit.allowed) {
-        return { error: exit.error };
+      if (!verdict.allowed) {
+        return { error: verdict.error };
+      }
+
+      const canRemove = await canReach(
+        note.uuid!,
+        "note",
+        actingUsername,
+        PermissionTypes.DELETE,
+      );
+
+      if (!canRemove) {
+        return { error: await refusalMessage() };
       }
     }
 
@@ -158,10 +157,10 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       stripYaml(sanitizedContent);
     const processedContent = settings?.editor?.enableBilateralLinks
       ? await convertInternalLinksToNewFormat(
-        contentWithoutMetadata,
-        actingUsername,
-        note.category
-      )
+          contentWithoutMetadata,
+          actingUsername,
+          note.category,
+        )
       : contentWithoutMetadata;
 
     const convertedContent = processedContent;
@@ -176,8 +175,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       ...note,
       title,
       content: convertedContent,
-      category: target.category,
-      owner: target.owner,
+      category: destination.category,
+      owner: destination.owner,
       updatedAt: new Date().toISOString(),
       encrypted: isEncrypted(convertedContent),
       encryptionMethod,
@@ -185,8 +184,8 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       extraMetadata: keptMeta(note.extraMetadata, strayMeta(incomingMeta)),
     };
 
-    const sourceDir = _noteDirFor(source.owner, source.category);
-    const categoryDir = _noteDirFor(target.owner, target.category);
+    const sourceDir = _noteDirFor(home.owner, home.category);
+    const categoryDir = _noteDirFor(destination.owner, destination.category);
     await ensureDir(categoryDir);
 
     const currentId = note.id;
@@ -200,7 +199,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         categoryDir,
         title,
         ".md",
-        fileRenameMode
+        fileRenameMode,
       );
       newId = path.basename(newFilename, ".md");
     } else {
@@ -214,7 +213,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const filePath = path.join(categoryDir, newFilename);
 
     const oldFilePath =
-      isRelocating || newId !== currentId
+      isMoving || newId !== currentId
         ? path.join(sourceDir, `${currentId}.md`)
         : null;
 
@@ -223,55 +222,61 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     if (!autosaveNotes && !updatedDoc.encrypted) {
       const historyRelativePath = path.join(
         updatedDoc.category || UNCATEGORIZED,
-        `${newId}.md`
+        `${newId}.md`,
       );
 
-      const historyAction = isRelocating ? "move" : "update";
+      const historyAction = isMoving ? "move" : "update";
 
-      const historyMetadata = isRelocating
+      const historyMetadata = isMoving
         ? {
-          oldCategory: source.category || UNCATEGORIZED,
-          newCategory: updatedDoc.category || UNCATEGORIZED,
-          oldPath: path.join(
-            source.category || UNCATEGORIZED,
-            `${currentId}.md`
-          ),
-        }
+            oldCategory: home.category || UNCATEGORIZED,
+            newCategory: updatedDoc.category || UNCATEGORIZED,
+            oldPath: path.join(
+              home.category || UNCATEGORIZED,
+              `${currentId}.md`,
+            ),
+          }
         : undefined;
 
       commitNote(
-        target.owner,
+        destination.owner,
         historyRelativePath,
         historyAction,
         title,
-        historyMetadata
-      ).catch(() => { });
+        historyMetadata,
+      ).catch(() => {});
     }
 
     if (settings?.editor?.enableBilateralLinks) {
       try {
         const links = (await parseInternalLinks(updatedDoc.content)) || [];
-        const newItemKey = `${updatedDoc.category || UNCATEGORIZED}/${updatedDoc.id
-          }`;
+        const newItemKey = `${updatedDoc.category || UNCATEGORIZED}/${
+          updatedDoc.id
+        }`;
 
-        const oldItemKey = `${source.category || UNCATEGORIZED}/${currentId}`;
+        const oldItemKey = `${home.category || UNCATEGORIZED}/${currentId}`;
 
-        if (oldItemKey !== newItemKey || isRelocating) {
-          await rebuildLinkIndex(source.owner);
+        if (oldItemKey !== newItemKey || isMoving) {
+          await rebuildLinkIndexInternal(home.owner);
 
-          if (target.owner !== source.owner) {
-            await rebuildLinkIndex(target.owner);
+          if (destination.owner !== home.owner) {
+            await rebuildLinkIndexInternal(destination.owner);
           }
 
           revalidatePath("/");
         }
 
-        await updateIndexForItem(target.owner, "note", updatedDoc.uuid!, links);
+        await updateIndexForItem(
+          destination.owner,
+          "note",
+          updatedDoc.uuid!,
+          links,
+        );
       } catch (error) {
         console.warn(
           "Failed to update link index for note:",
           updatedDoc.id,
-          error
+          error,
         );
       }
     }
@@ -288,7 +293,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
 
@@ -299,11 +304,16 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         note.uuid!,
         updatedDoc.title,
         true,
-        { category: updatedDoc.category }
+        { category: updatedDoc.category },
       );
     }
 
-    await broadcast({ type: "note", action: "updated", entityId: updatedDoc.uuid, username: actingUsername });
+    await broadcast({
+      type: "note",
+      action: "updated",
+      entityId: updatedDoc.uuid,
+      username: actingUsername,
+    });
 
     return {
       success: true,
@@ -316,7 +326,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       "note",
       uuid!,
       title || "unknown",
-      false
+      false,
     );
     return { error: "Failed to update note" };
   }
@@ -328,8 +338,9 @@ export const deleteNote = async (formData: FormData, username?: string) => {
 
     let currentUser: any = null;
     if (username) {
-      const { getUserByUsername } = await import("@/app/_server/actions/users");
-      const userResult = await getUserByUsername(username);
+      const { findUserRecord } =
+        await import("@/app/_server/actions/users/records");
+      const userResult = await findUserRecord(username);
       if (userResult) {
         currentUser = userResult;
       }
@@ -353,7 +364,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       note.uuid!,
       "note",
       currentUser.username,
-      PermissionTypes.DELETE
+      PermissionTypes.DELETE,
     );
 
     if (!canDelete) {
@@ -364,39 +375,33 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     const source = await targetDir(
       Modes.NOTES,
       currentUser.username,
-      note.category || ""
+      note.category || "",
     );
 
     const verdict = await bouncer(
       source,
       currentUser.username,
-      PermissionTypes.DELETE
+      PermissionTypes.DELETE,
     );
 
     if (!verdict.allowed) {
       return { error: verdict.error };
     }
 
+    const homeCategory = note.category || UNCATEGORIZED;
     const ownerDir = NOTES_DIR(ownerUsername);
-    const filePath = path.join(
-      ownerDir,
-      source.category || UNCATEGORIZED,
-      `${note.id}.md`
-    );
+    const filePath = path.join(ownerDir, homeCategory, `${note.id}.md`);
 
     await serverDeleteFile(filePath);
 
     if (!note.encrypted) {
-      const deleteRelativePath = path.join(
-        source.category || UNCATEGORIZED,
-        `${note.id}.md`
-      );
+      const deleteRelativePath = path.join(homeCategory, `${note.id}.md`);
       commitNote(
         ownerUsername,
         deleteRelativePath,
         "delete",
-        note.title || note.id
-      ).catch(() => { });
+        note.title || note.id,
+      ).catch(() => {});
     }
 
     try {
@@ -411,7 +416,7 @@ export const deleteNote = async (formData: FormData, username?: string) => {
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but data was saved successfully:",
-        error
+        error,
       );
     }
 
@@ -421,10 +426,15 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       note.uuid!,
       note.title!,
       true,
-      { category: note.category }
+      { category: note.category },
     );
 
-    await broadcast({ type: "note", action: "deleted", entityId: note.uuid, username: currentUser.username });
+    await broadcast({
+      type: "note",
+      action: "deleted",
+      entityId: note.uuid,
+      username: currentUser.username,
+    });
 
     return { success: true };
   } catch (error) {
@@ -437,7 +447,10 @@ export const deleteNote = async (formData: FormData, username?: string) => {
       const note = await getNoteById(uuid!);
       title = note?.title || "unknown";
     } catch (lookupError) {
-      console.warn("Failed to re-read note while logging deletion:", lookupError);
+      console.warn(
+        "Failed to re-read note while logging deletion:",
+        lookupError,
+      );
     }
 
     await logContentEvent("note_deleted", "note", uuid!, title, false);
@@ -466,7 +479,7 @@ export const cloneNote = async (formData: FormData) => {
       note.uuid!,
       "note",
       currentUser.username,
-      PermissionTypes.READ
+      PermissionTypes.READ,
     );
 
     if (!canReadSource) {
@@ -482,13 +495,13 @@ export const cloneNote = async (formData: FormData) => {
     const target = await targetDir(
       Modes.NOTES,
       currentUser.username,
-      shownCategory
+      shownCategory,
     );
 
     const verdict = await bouncer(
       target,
       currentUser.username,
-      PermissionTypes.EDIT
+      PermissionTypes.EDIT,
     );
 
     if (!verdict.allowed) {
@@ -504,7 +517,7 @@ export const cloneNote = async (formData: FormData) => {
       categoryDir,
       cloneTitle,
       ".md",
-      fileRenameMode
+      fileRenameMode,
     );
     const filePath = path.join(categoryDir, filename);
 
@@ -537,11 +550,16 @@ export const cloneNote = async (formData: FormData) => {
     } catch (error) {
       console.warn(
         "Cache revalidation failed, but note was cloned successfully:",
-        error
+        error,
       );
     }
 
-    await broadcast({ type: "note", action: "created", entityId: cloneUuid, username: currentUser?.username || "" });
+    await broadcast({
+      type: "note",
+      action: "created",
+      entityId: cloneUuid,
+      username: currentUser?.username || "",
+    });
 
     return { success: true, data: clonedNote };
   } catch (error) {

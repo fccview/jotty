@@ -1,4 +1,4 @@
-import { getUserByUsername } from "@/app/_server/actions/users";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ usern
   try {
     const { username } = params;
 
-    const user = await getUserByUsername(username);
+    const user = await findUserRecord(username);
     const avatarUrl = user?.avatarUrl || "";
 
     return NextResponse.json({ avatarUrl });

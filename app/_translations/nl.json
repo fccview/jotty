@@ -251,6 +251,32 @@
     "thisEntry": "deze invoer",
     "preview": "Voorbeeld"
   },
+  "comments": {
+    "title": "Reacties",
+    "titleWithCount": "{count, plural, one {# Reactie} other {# Reacties}}",
+    "noComments": "Nog geen reacties. Start het gesprek!",
+    "addComment": "Reactie toevoegen...",
+    "replyPlaceholder": "Schrijf een antwoord...",
+    "post": "Plaatsen",
+    "reply": "Beantwoorden",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "edited": "bewerkt",
+    "deleteConfirmTitle": "Reactie verwijderen?",
+    "deleteConfirmMessage": "Dit verwijdert de reactie en alle antwoorden. Deze actie kan niet ongedaan worden gemaakt.",
+    "commentDeleted": "Reactie verwijderd",
+    "commentAdded": "Reactie toegevoegd",
+    "commentUpdated": "Reactie bijgewerkt",
+    "failedToAdd": "Reactie toevoegen mislukt",
+    "failedToEdit": "Reactie bewerken mislukt",
+    "failedToDelete": "Reactie verwijderen mislukt",
+    "failedToLoad": "Reacties laden mislukt",
+    "readOnly": "Je hebt bewerkingsrechten nodig om op deze kaart te reageren.",
+    "replyTo": "Antwoorden aan {author}",
+    "noUsersFound": "Geen gebruikers gevonden"
+  },
   "auth": {
     "loginTitle": "Inloggen",
     "setupTitle": "Eerste installatie",
@@ -1525,7 +1551,13 @@
     "viewModeGrid": "Raster",
     "borderRadius": "Hoekafronding",
     "useInstanceDefault": "Standaard van instantie gebruiken",
-    "borderRadiusDescription": "De hoeken passen zich in de hele app aan terwijl je sleept."
+    "borderRadiusDescription": "De hoeken passen zich in de hele app aan terwijl je sleept.",
+    "kanbanColumnWidth": "Kanban-kolombreedte",
+    "kanbanColumnWidthDescription": "Stel een aangepaste breedte in voor de Kanban-statuskolommen. De standaardwaarde van de instantie past de kolommen automatisch aan de beschikbare ruimte aan.",
+    "kanbanColumnWidthCompact": "Compact",
+    "kanbanColumnWidthComfortable": "Comfortabel",
+    "kanbanColumnWidthWide": "Breed",
+    "kanbanColumnWidthAutoFit": "Auto-passen"
   },
   "migration": {
     "migrationComplete": "Migratie voltooid",
@@ -1690,7 +1722,9 @@
     "sharingTitle": "{user} heeft een {type} met je gedeeld",
     "sharingMessage": "Open om het gedeelde {type} te bekijken",
     "sharingFolderTitle": "{user} heeft een {type}-map met je gedeeld",
-    "sharingFolderMessage": "Open om “{folder}” te bekijken"
+    "sharingFolderMessage": "Open om “{folder}” te bekijken",
+    "mentionTitle": "{user} noemde je in een reactie",
+    "mentionMessage": "“{board}”"
   },
   "history": {
     "noteHistory": "Notitiegeschiedenis",

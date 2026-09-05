@@ -1,11 +1,12 @@
 import { NotificationTargets } from "./enums";
 
-export type NotificationType = "reminder" | "assignment" | "sharing" | "system";
+export type NotificationType = "reminder" | "assignment" | "sharing" | "system" | "mention";
 
 export interface AppNotificationData {
   itemId: string;
   itemType: NotificationTargets;
   taskId?: string;
+  commentId?: string;
 }
 
 export interface AppNotification {

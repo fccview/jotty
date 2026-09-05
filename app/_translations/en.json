@@ -530,6 +530,32 @@
     "addTime": "Add Time",
     "enterTimeInMinutes": "Enter your time in minutes"
   },
+  "comments": {
+    "title": "Comments",
+    "titleWithCount": "{count, plural, one {# Comment} other {# Comments}}",
+    "noComments": "No comments yet. Start the conversation!",
+    "addComment": "Add a comment...",
+    "replyPlaceholder": "Write a reply...",
+    "post": "Post",
+    "reply": "Reply",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edited": "edited",
+    "deleteConfirmTitle": "Delete comment?",
+    "deleteConfirmMessage": "This will delete the comment and any replies. This action cannot be undone.",
+    "commentDeleted": "Comment deleted",
+    "commentAdded": "Comment added",
+    "commentUpdated": "Comment updated",
+    "failedToAdd": "Failed to add comment",
+    "failedToEdit": "Failed to edit comment",
+    "failedToDelete": "Failed to delete comment",
+    "failedToLoad": "Failed to load comments",
+    "readOnly": "You need edit access to comment on this card.",
+    "replyTo": "Reply to {author}",
+    "noUsersFound": "No users found"
+  },
   "tasks": {
     "title": "Tasks",
     "addTask": "Add Task",
@@ -1550,7 +1576,13 @@
     "viewModeGrid": "Grid",
     "borderRadius": "Corner rounding",
     "useInstanceDefault": "Use instance default",
-    "borderRadiusDescription": "Corners update across the whole app as you drag."
+    "borderRadiusDescription": "Corners update across the whole app as you drag.",
+    "kanbanColumnWidth": "Kanban column width",
+    "kanbanColumnWidthDescription": "Set a custom width for kanban status columns. The instance default auto-fits columns to the available space.",
+    "kanbanColumnWidthCompact": "Compact",
+    "kanbanColumnWidthComfortable": "Comfortable",
+    "kanbanColumnWidthWide": "Wide",
+    "kanbanColumnWidthAutoFit": "Auto fit"
   },
   "migration": {
     "migrationComplete": "Migration Complete",
@@ -1739,6 +1771,8 @@
     "sharingTitle": "{user} shared a {type} with you",
     "sharingMessage": "Open to view the shared {type}",
     "sharingFolderTitle": "{user} shared a {type} folder with you",
-    "sharingFolderMessage": "Open to view “{folder}”"
+    "sharingFolderMessage": "Open to view “{folder}”",
+    "mentionTitle": "{user} mentioned you in a comment",
+    "mentionMessage": "“{board}”"
   }
 }

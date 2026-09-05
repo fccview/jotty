@@ -6,7 +6,8 @@ import {
   USERS_FILE,
 } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
-import { Result, User } from "@/app/_types";
+import { Result, SanitisedUser, User } from "@/app/_types";
+import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { removeAllSessionsForUser } from "../session";
 import fs from "fs/promises";
 import { createHash } from "crypto";
@@ -15,7 +16,8 @@ import { DEFAULT_WEEK_START } from "@/app/_consts/calendar";
 import { getFormData } from "@/app/_utils/global-utils";
 import { logUserEvent } from "@/app/_server/actions/log";
 import { getUserIndex } from "./helpers";
-import { getUserByUsername, getCurrentUser } from "./queries";
+import { getCurrentUser } from "./queries";
+import { findUserRecord } from "./records";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -68,7 +70,7 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
 export async function _updateUserCore(
   targetUsername: string,
   updates: UserUpdatePayload
-): Promise<Result<Omit<User, "passwordHash">>> {
+): Promise<Result<SanitisedUser>> {
   if (Object.keys(updates).length === 0) {
     return { success: false, error: "No updates provided." };
   }
@@ -128,8 +130,7 @@ export async function _updateUserCore(
   allUsers[userIndex] = updatedUser;
   await writeJsonFile(allUsers, USERS_FILE);
 
-  const { passwordHash: _, ...userWithoutPassword } = updatedUser;
-  return { success: true, data: userWithoutPassword };
+  return { success: true, data: sanitizeUserForClient(updatedUser)! };
 }
 
 export const createUser = async (
@@ -138,6 +139,11 @@ export const createUser = async (
   const username = formData.get("username") as string;
 
   try {
+    const adminUser = await getCurrentUser();
+    if (!adminUser?.isAdmin) {
+      return { success: false, error: "Unauthorized: Admin access required" };
+    }
+
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
     const isAdmin = formData.get("isAdmin") === "true";
@@ -171,7 +177,7 @@ export const createUser = async (
     }
 
     const existingUsers = await readJsonFile(USERS_FILE);
-    const userExists = await getUserByUsername(username);
+    const userExists = await findUserRecord(username);
 
     if (userExists) {
       return {
@@ -258,7 +264,7 @@ export const deleteAccount = async (
       return { success: false, error: "Password confirmation is required" };
     }
 
-    const userRecord = await getUserByUsername(currentUser.username);
+    const userRecord = await findUserRecord(currentUser.username);
 
     if (!userRecord) {
       return { success: false, error: "User not found" };
@@ -318,7 +324,7 @@ export const updateProfile = async (
         };
       }
 
-      const userRecord = await getUserByUsername(currentUser.username);
+      const userRecord = await findUserRecord(currentUser.username);
 
       if (userRecord?.passwordHash) {
         if (!currentPassword) {

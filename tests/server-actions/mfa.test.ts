@@ -3,8 +3,8 @@ import { mockFs, resetAllMocks, createFormData } from "../setup";
 
 const mockGetUsername = vi.fn();
 const mockGetCurrentUser = vi.fn();
-const mockGetUserByUsername = vi.fn();
-const mockUpdateUserSettings = vi.fn();
+const mockFindUserRecord = vi.fn();
+const mockPatchUserFields = vi.fn();
 const mockReadJsonFile = vi.fn();
 const mockWriteJsonFile = vi.fn();
 const mockLogAudit = vi.fn();
@@ -13,8 +13,11 @@ const mockGetSettings = vi.fn();
 vi.mock("@/app/_server/actions/users", () => ({
   getUsername: (...args: any[]) => mockGetUsername(...args),
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
-  getUserByUsername: (...args: any[]) => mockGetUserByUsername(...args),
-  updateUserSettings: (...args: any[]) => mockUpdateUserSettings(...args),
+}));
+
+vi.mock("@/app/_server/actions/users/records", () => ({
+  findUserRecord: (...args: any[]) => mockFindUserRecord(...args),
+  patchUserFields: (...args: any[]) => mockPatchUserFields(...args),
 }));
 
 vi.mock("@/app/_server/actions/file", () => ({
@@ -68,12 +71,12 @@ describe("MFA Actions", () => {
       username: "testuser",
       isAdmin: false,
     });
-    mockGetUserByUsername.mockResolvedValue({
+    mockFindUserRecord.mockResolvedValue({
       username: "testuser",
       passwordHash: "hashedpassword123",
       mfaEnabled: false,
     });
-    mockUpdateUserSettings.mockResolvedValue({ success: true });
+    mockPatchUserFields.mockResolvedValue({ username: "testuser" });
     mockReadJsonFile.mockResolvedValue([]);
     mockWriteJsonFile.mockResolvedValue(undefined);
     mockLogAudit.mockResolvedValue(undefined);
@@ -139,7 +142,8 @@ describe("MFA Actions", () => {
       expect(result.success).toBe(true);
       expect(result.data?.recoveryCode).toBeDefined();
       expect(result.data?.recoveryCode).toHaveLength(32);
-      expect(mockUpdateUserSettings).toHaveBeenCalledWith(
+      expect(mockPatchUserFields).toHaveBeenCalledWith(
+        "testuser",
         expect.objectContaining({
           mfaEnabled: true,
         }),
@@ -165,7 +169,7 @@ describe("MFA Actions", () => {
     });
 
     it("should return error when MFA not enabled", async () => {
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "testuser",
         mfaEnabled: false,
       });
@@ -177,7 +181,7 @@ describe("MFA Actions", () => {
     });
 
     it("should return error when code is invalid", async () => {
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "testuser",
         passwordHash: "hash",
         mfaEnabled: true,
@@ -213,7 +217,7 @@ describe("MFA Actions", () => {
     });
 
     it("should return error when MFA not enabled", async () => {
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "testuser",
         mfaEnabled: false,
       });
@@ -225,7 +229,7 @@ describe("MFA Actions", () => {
     });
 
     it("should return error when recovery code is invalid", async () => {
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "testuser",
         mfaEnabled: true,
         mfaRecoveryCode: "different-hashed-code",
@@ -255,7 +259,7 @@ describe("MFA Actions", () => {
     });
 
     it("should return MFA disabled status", async () => {
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "testuser",
         mfaEnabled: false,
       });
@@ -268,7 +272,7 @@ describe("MFA Actions", () => {
 
     it("should return MFA enabled status with enrollment date", async () => {
       const enrolledAt = "2024-01-01T00:00:00.000Z";
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "testuser",
         mfaEnabled: true,
         mfaEnrolledAt: enrolledAt,
@@ -282,7 +286,7 @@ describe("MFA Actions", () => {
     });
 
     it("should return error when user not found", async () => {
-      mockGetUserByUsername.mockResolvedValue(null);
+      mockFindUserRecord.mockResolvedValue(null);
 
       const result = await getMfaStatus();
 
@@ -309,7 +313,7 @@ describe("MFA Actions", () => {
         username: "admin",
         isAdmin: true,
       });
-      mockGetUserByUsername.mockResolvedValue(null);
+      mockFindUserRecord.mockResolvedValue(null);
 
       const result = await adminDisableUserMfa("nonexistent", "RECOVERY123");
 
@@ -322,7 +326,7 @@ describe("MFA Actions", () => {
         username: "admin",
         isAdmin: true,
       });
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "targetuser",
         mfaEnabled: false,
       });
@@ -338,7 +342,7 @@ describe("MFA Actions", () => {
         username: "admin",
         isAdmin: true,
       });
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "targetuser",
         mfaEnabled: true,
         mfaRecoveryCode: "correct-hashed-code",

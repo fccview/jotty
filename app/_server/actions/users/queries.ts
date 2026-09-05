@@ -2,28 +2,24 @@
 
 import { USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile } from "../file";
-import { Result, User } from "@/app/_types";
-import { getSessionId, readSessions } from "../session";
+import { PublicUserInfo, Result, SanitisedUser, User } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { getUserByItemUuid } from "./helpers";
+import { findUserRecord, getCurrentUserRecord } from "./records";
+import { isAdmin } from "./auth";
+import {
+  sanitizeUserForClient,
+  toPublicUser,
+} from "@/app/_utils/user-sanitize-utils";
 
-export const getUserByUsername = async (
+export const getPublicUser = async (
   username: string
-): Promise<User | null> => {
-  const allUsers = await readJsonFile(USERS_FILE);
-  return allUsers.find((user: User) => user.username === username) || null;
+): Promise<PublicUserInfo | null> => {
+  return toPublicUser(await findUserRecord(username));
 };
 
-export const getCurrentUser = async (
-  username?: string
-): Promise<User | null> => {
-  const sessionId = await getSessionId();
-  const sessions = await readSessions();
-  const currentUsername = sessions[sessionId || ""];
-
-  if (!currentUsername && !username) return null;
-
-  return (await getUserByUsername(currentUsername || username || "")) || null;
+export const getCurrentUser = async (): Promise<SanitisedUser | null> => {
+  return sanitizeUserForClient(await getCurrentUserRecord());
 };
 
 export const hasUsers = async (): Promise<boolean> => {
@@ -40,7 +36,7 @@ export const getUsername = async (): Promise<string> => {
   return user?.username || "";
 };
 
-export const getUsers = async () => {
+export const getUsers = async (): Promise<PublicUserInfo[]> => {
   const users = (await readJsonFile(USERS_FILE)) || [];
 
   if (!users || !Array.isArray(users)) {
@@ -55,14 +51,25 @@ export const getUsers = async () => {
   }));
 };
 
+export const getUsersForAdmin = async (): Promise<SanitisedUser[]> => {
+  if (!(await isAdmin())) return [];
+
+  const users = (await readJsonFile(USERS_FILE)) || [];
+  if (!Array.isArray(users)) return [];
+
+  return users
+    .map((u: User) => sanitizeUserForClient(u))
+    .filter((u): u is SanitisedUser => u !== null);
+};
+
 export const getUserByNoteUuid = async (
   uuid: string
-): Promise<Result<User>> => {
+): Promise<Result<PublicUserInfo>> => {
   return getUserByItemUuid(uuid, ItemTypes.NOTE);
 };
 
 export const getUserByChecklistUuid = async (
   uuid: string
-): Promise<Result<User>> => {
+): Promise<Result<PublicUserInfo>> => {
   return getUserByItemUuid(uuid, ItemTypes.CHECKLIST);
 };

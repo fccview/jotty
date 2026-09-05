@@ -29,6 +29,8 @@ const mockGetNoteById = vi.fn();
 const mockTargetDir = vi.fn();
 const mockBouncer = vi.fn();
 const mockShownAs = vi.fn();
+const mockMovePlan = vi.fn();
+const mockRefusalMessage = vi.fn();
 
 vi.mock("@/app/_server/actions/note/queries", () => ({
   getNoteById: (...args: unknown[]) => mockGetNoteById(...args),
@@ -50,7 +52,7 @@ vi.mock("@/app/_server/actions/users", () => ({
   getUsername: (...args: any[]) => mockGetUsername(...args),
   getUserByNote: (...args: any[]) => mockGetUserByNote(...args),
   getUserByNoteUuid: (...args: any[]) => mockGetUserByNoteUuid(...args),
-  getUserByUsername: vi.fn().mockResolvedValue(null),
+  getPublicUser: vi.fn().mockResolvedValue(null),
   isAuthenticated: vi.fn().mockResolvedValue(true),
 }));
 
@@ -62,6 +64,8 @@ vi.mock("@/app/_server/actions/share/target", () => ({
   targetDir: (...args: any[]) => mockTargetDir(...args),
   bouncer: (...args: any[]) => mockBouncer(...args),
   shownAs: (...args: any[]) => mockShownAs(...args),
+  movePlan: (...args: any[]) => mockMovePlan(...args),
+  refusalMessage: (...args: any[]) => mockRefusalMessage(...args),
 }));
 
 vi.mock("@/app/_server/actions/log", () => ({
@@ -73,6 +77,7 @@ vi.mock("@/app/_server/actions/link", () => ({
   updateIndexForItem: (...args: any[]) => mockUpdateIndexForItem(...args),
   removeItemFromIndex: (...args: any[]) => mockRemoveItemFromIndex(...args),
   rebuildLinkIndex: vi.fn().mockResolvedValue(undefined),
+  rebuildLinkIndexInternal: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/app/_server/actions/history", () => ({
@@ -161,6 +166,36 @@ describe("Note Actions", () => {
       ) => category,
     );
     mockBouncer.mockResolvedValue({ allowed: true });
+    mockRefusalMessage.mockResolvedValue("requiredPermissions");
+    mockMovePlan.mockImplementation(
+      async (
+        _mode: unknown,
+        username: string,
+        item: { owner?: string; category?: string },
+        requested: string,
+      ) => {
+        const home = {
+          owner: item.owner || username,
+          category: item.category || "",
+        };
+        const destination = { owner: username, category: requested };
+
+        return {
+          home,
+          destination,
+          target: {
+            dir: `/data/notes/${username}/${requested}`,
+            owner: username,
+            category: requested,
+            isMount: false,
+            isImplicit: false,
+          },
+          isMoving:
+            destination.owner !== home.owner ||
+            destination.category !== home.category,
+        };
+      },
+    );
     mockLogContentEvent.mockResolvedValue(undefined);
     mockParseInternalLinks.mockResolvedValue([]);
     mockUpdateIndexForItem.mockResolvedValue(undefined);

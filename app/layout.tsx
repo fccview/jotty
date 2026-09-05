@@ -42,7 +42,6 @@ import path from "path";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
-import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { KonamiProvider } from "./_providers/KonamiProvider";
 import { WebSocketProvider } from "./_providers/WebSocketProvider";
 import { isEnvEnabled } from "./_utils/env-utils";
@@ -160,18 +159,21 @@ export default async function RootLayout({
   const settings = await getSettings();
   const appName =
     settings?.appName || (settings?.isRwMarkable ? "rwMarkable" : "jotty·page");
-  const noteCategories = await getCategories(Modes.NOTES);
-  const checklistCategories = await getCategories(Modes.CHECKLISTS);
-  const userRecord = await getCurrentUser();
+  const user = await getCurrentUser();
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES;
-  const users = isPublicRoute || !userRecord ? [] : await getUsers();
-  const linkIndex = userRecord?.username
-    ? await readLinkIndex(userRecord.username)
+  const users = isPublicRoute || !user ? [] : await getUsers();
+  const noteCategories = user
+    ? await getCategories(Modes.NOTES)
+    : { success: false, data: [] };
+  const checklistCategories = user
+    ? await getCategories(Modes.CHECKLISTS)
+    : { success: false, data: [] };
+  const linkIndex = user?.username
+    ? await readLinkIndex(user.username)
     : null;
   const messages = await getMessages();
-  const user = sanitizeUserForClient(userRecord);
 
   const [
     notesResult,

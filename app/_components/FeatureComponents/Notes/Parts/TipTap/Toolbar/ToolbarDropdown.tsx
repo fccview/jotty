@@ -28,7 +28,9 @@ export const ToolbarDropdown = ({
       portalRoot.style.position = "fixed";
       portalRoot.style.top = "0";
       portalRoot.style.left = "0";
-      portalRoot.style.zIndex = "10";
+      // Stack above the modal portal root (z-index 9999) so dropdowns
+      // render on top of modal overlays when the editor is used inside a modal.
+      portalRoot.style.zIndex = "10000";
       portalRoot.style.pointerEvents = "none";
       document.body.appendChild(portalRoot);
     }

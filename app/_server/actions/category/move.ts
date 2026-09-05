@@ -11,7 +11,7 @@ import {
 import fs from "fs/promises";
 import { Modes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
-import { rebuildLinkIndex } from "@/app/_server/actions/link";
+import { rebuildLinkIndexInternal } from "@/app/_server/actions/link";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
@@ -432,10 +432,10 @@ export const moveNode = async (formData: FormData) => {
       }
 
       try {
-        await rebuildLinkIndex(sourceLoc.owner);
+        await rebuildLinkIndexInternal(sourceLoc.owner);
 
         if (destLoc.owner !== sourceLoc.owner) {
-          await rebuildLinkIndex(destLoc.owner);
+          await rebuildLinkIndexInternal(destLoc.owner);
         }
       } catch (error) {
         console.warn("Failed to update link index:", error);

@@ -306,6 +306,7 @@ export const parseNoteContent = (
   encrypted?: boolean;
   encryptionMethod?: "pgp" | "xchacha";
   tags?: string[];
+  sharedWith?: string | string[];
   extraMetadata?: Record<string, unknown>;
 } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
@@ -319,6 +320,9 @@ export const parseNoteContent = (
     encrypted: metadata.encrypted || false,
     encryptionMethod: metadata.encryptionMethod,
     tags,
+    ...(metadata[SHARED_WITH_KEY] !== undefined && {
+      sharedWith: metadata[SHARED_WITH_KEY] as string | string[],
+    }),
     extraMetadata: strayMeta(metadata),
   };
 };

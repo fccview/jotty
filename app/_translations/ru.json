@@ -251,6 +251,32 @@
     "thisEntry": "эта запись",
     "preview": "Предпросмотр"
   },
+  "comments": {
+    "title": "Комментарии",
+    "titleWithCount": "{count, plural, one {# комментарий} few {# комментария} many {# комментариев} other {# комментариев}}",
+    "noComments": "Пока нет комментариев. Начните обсуждение!",
+    "addComment": "Добавить комментарий...",
+    "replyPlaceholder": "Написать ответ...",
+    "post": "Опубликовать",
+    "reply": "Ответить",
+    "edit": "Изменить",
+    "delete": "Удалить",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "edited": "изменено",
+    "deleteConfirmTitle": "Удалить комментарий?",
+    "deleteConfirmMessage": "Это удалит комментарий и все ответы. Действие нельзя отменить.",
+    "commentDeleted": "Комментарий удалён",
+    "commentAdded": "Комментарий добавлен",
+    "commentUpdated": "Комментарий обновлён",
+    "failedToAdd": "Не удалось добавить комментарий",
+    "failedToEdit": "Не удалось изменить комментарий",
+    "failedToDelete": "Не удалось удалить комментарий",
+    "failedToLoad": "Не удалось загрузить комментарии",
+    "readOnly": "Для комментариев к этой карточке требуется доступ на редактирование.",
+    "replyTo": "Ответить {author}",
+    "noUsersFound": "Пользователи не найдены"
+  },
   "history": {
     "noteHistory": "История заметки",
     "restore": "Восстановить",
@@ -1550,7 +1576,13 @@
     "viewModeGrid": "Сетка",
     "borderRadius": "Скругление углов",
     "useInstanceDefault": "Использовать значение по умолчанию",
-    "borderRadiusDescription": "Углы меняются во всём приложении по мере перетаскивания."
+    "borderRadiusDescription": "Углы меняются во всём приложении по мере перетаскивания.",
+    "kanbanColumnWidth": "Ширина колонок Kanban",
+    "kanbanColumnWidthDescription": "Установите свою ширину колонок статусов Kanban. Значение по умолчанию автоматически подгоняет колонки под доступное пространство.",
+    "kanbanColumnWidthCompact": "Компактный",
+    "kanbanColumnWidthComfortable": "Комфортный",
+    "kanbanColumnWidthWide": "Широкий",
+    "kanbanColumnWidthAutoFit": "Авто-подгон"
   },
   "migration": {
     "migrationComplete": "Миграция завершена",
@@ -1714,6 +1746,8 @@
     "sharingTitle": "{user} поделился(-ась) с вами: {type}",
     "sharingMessage": "Откройте, чтобы посмотреть общий {type}",
     "sharingFolderTitle": "{user} поделился(-ась) с вами папкой: {type}",
-    "sharingFolderMessage": "Откройте, чтобы посмотреть «{folder}»"
+    "sharingFolderMessage": "Откройте, чтобы посмотреть «{folder}»",
+    "mentionTitle": "{user} упомянул вас в комментарии",
+    "mentionMessage": "«{board}»"
   }
 }

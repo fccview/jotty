@@ -251,6 +251,32 @@
     "thisEntry": "this entry",
     "preview": "Peek"
   },
+  "comments": {
+    "title": "Scribbles",
+    "titleWithCount": "{count, plural, one {# Scribble} other {# Scribbles}}",
+    "noComments": "No scribbles yet. Start the chatter!",
+    "addComment": "Scribble a note...",
+    "replyPlaceholder": "Write a reply, ye scallywag...",
+    "post": "Post it",
+    "reply": "Answer back",
+    "edit": "Scratch out",
+    "delete": "Keelhaul",
+    "save": "Stash it",
+    "cancel": "Abandon ship",
+    "edited": "scratched",
+    "deleteConfirmTitle": "Keelhaul this scribble?",
+    "deleteConfirmMessage": "This'll keelhaul the scribble and all replies. No turnin' back, matey.",
+    "commentDeleted": "Scribble keelhauled",
+    "commentAdded": "Scribble posted",
+    "commentUpdated": "Scribble scratched anew",
+    "failedToAdd": "Couldn't scribble that",
+    "failedToEdit": "Couldn't scratch that out",
+    "failedToDelete": "Couldn't keelhaul that",
+    "failedToLoad": "Couldn't fetch the scribbles",
+    "readOnly": "Ye need scribblin' rights to chatter on this card.",
+    "replyTo": "Answer back to {author}",
+    "noUsersFound": "No scallywags found"
+  },
   "history": {
     "noteHistory": "Log History",
     "restore": "Restore",
@@ -1550,7 +1576,13 @@
     "viewModeGrid": "Grid",
     "borderRadius": "Corner roundin'",
     "useInstanceDefault": "Follow the cap'n's orders",
-    "borderRadiusDescription": "Every corner on the ship changes as ye haul the slider."
+    "borderRadiusDescription": "Every corner on the ship changes as ye haul the slider.",
+    "kanbanColumnWidth": "Kanban column width",
+    "kanbanColumnWidthDescription": "Set yer own width for the Kanban status columns. The cap'n's default fits the columns to whatever space be on deck.",
+    "kanbanColumnWidthCompact": "Cramped",
+    "kanbanColumnWidthComfortable": "Comfy",
+    "kanbanColumnWidthWide": "Roomy",
+    "kanbanColumnWidthAutoFit": "Ship-fit"
   },
   "migration": {
     "migrationComplete": "Refit Complete",
@@ -1715,6 +1747,8 @@
     "sharingTitle": "{user} shared a {type} with ye",
     "sharingMessage": "Open to eyeball the shared {type}",
     "sharingFolderTitle": "{user} shared a {type} chest with ye",
-    "sharingFolderMessage": "Open to eyeball “{folder}”"
+    "sharingFolderMessage": "Open to eyeball “{folder}”",
+    "mentionTitle": "{user} hollered yer name in a scribble",
+    "mentionMessage": "“{board}”"
   }
 }

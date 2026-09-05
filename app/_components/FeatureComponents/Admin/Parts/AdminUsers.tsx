@@ -9,7 +9,7 @@ import {
     UserIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { User as UserType, Checklist, Note } from "@/app/_types";
+import { SanitisedUser as UserType, Checklist, Note } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";

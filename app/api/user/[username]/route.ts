@@ -1,6 +1,7 @@
-import { getUserByUsername } from "@/app/_server/actions/users";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
+import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ usern
     try {
       const { username } = params;
 
-      const targetUser = await getUserByUsername(username);
+      const targetUser = await findUserRecord(username);
 
       if (!targetUser) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -20,8 +21,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ usern
       const isAdminUser = user.isAdmin;
 
       if (isOwnProfile || isAdminUser) {
-        const { passwordHash, apiKey, ...safeUserData } = targetUser;
-        return NextResponse.json({ user: safeUserData });
+        return NextResponse.json({ user: sanitizeUserForClient(targetUser) });
       }
 
       return NextResponse.json({

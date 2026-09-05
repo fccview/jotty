@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
-import { ExportProgress, ExportResult, User } from "@/app/_types";
+import { ExportProgress, ExportResult, SanitisedUser } from "@/app/_types";
 import { useTranslations } from "next-intl";
 import {
   exportAllChecklistsNotes,
@@ -59,7 +59,7 @@ const exportOptions = (t: any): ExportOption[] => [
 ];
 
 interface ExportContentProps {
-  users: User[];
+  users: SanitisedUser[];
 }
 
 export const ExportContent = ({ users }: ExportContentProps) => {
