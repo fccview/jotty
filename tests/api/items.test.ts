@@ -3,8 +3,8 @@ import {
   mockUser,
   mockAuthenticateApiKey,
   mockGetListById,
-  mockCreateItem,
-  mockUpdateItem,
+  mockAddItem,
+  mockEditItem,
   mockServerWriteFile,
   resetApiMocks,
   createMockRequest,
@@ -61,7 +61,7 @@ describe("Checklist Items API", () => {
   describe("POST /api/checklists/:id/items", () => {
     it("should create a regular item", async () => {
       mockGetListById.mockResolvedValue(mockList)
-      mockCreateItem.mockResolvedValue({ success: true, data: { id: "new-item" } })
+      mockAddItem.mockResolvedValue({ success: true, data: { id: "new-item" } })
 
       const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {
         text: "Test Item - Regular",
@@ -76,7 +76,7 @@ describe("Checklist Items API", () => {
     it("should create a task item with status", async () => {
       const taskList = { ...mockList, type: "task" }
       mockGetListById.mockResolvedValue(taskList)
-      mockCreateItem.mockResolvedValue({ success: true, data: { id: "new-task-item" } })
+      mockAddItem.mockResolvedValue({ success: true, data: { id: "new-task-item" } })
 
       const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {
         text: "Test Item - Task",
@@ -173,7 +173,7 @@ describe("Checklist Items API", () => {
   describe("PUT /api/checklists/:id/items/:index/check", () => {
     it("should check an item", async () => {
       mockGetListById.mockResolvedValue(mockList)
-      mockUpdateItem.mockResolvedValue({ success: true })
+      mockEditItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0/check")
       const response = await CHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
@@ -185,7 +185,7 @@ describe("Checklist Items API", () => {
 
     it("should check a nested item", async () => {
       mockGetListById.mockResolvedValue(mockList)
-      mockUpdateItem.mockResolvedValue({ success: true })
+      mockEditItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0.0/check")
       const response = await CHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0.0" }) })
@@ -232,7 +232,7 @@ describe("Checklist Items API", () => {
   describe("PUT /api/checklists/:id/items/:index/uncheck", () => {
     it("should uncheck an item", async () => {
       mockGetListById.mockResolvedValue(mockList)
-      mockUpdateItem.mockResolvedValue({ success: true })
+      mockEditItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0/uncheck")
       const response = await UNCHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0" }) })
@@ -244,7 +244,7 @@ describe("Checklist Items API", () => {
 
     it("should uncheck a nested item", async () => {
       mockGetListById.mockResolvedValue(mockList)
-      mockUpdateItem.mockResolvedValue({ success: true })
+      mockEditItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/0.0/uncheck")
       const response = await UNCHECK(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex: "0.0" }) })
@@ -291,7 +291,7 @@ describe("Checklist Items API", () => {
   describe("PATCH /api/checklists/:id/items/:index", () => {
     it("should update writable kanban item fields", async () => {
       mockGetListById.mockResolvedValue({ ...mockList, type: "kanban" })
-      mockUpdateItem.mockResolvedValue({ success: true })
+      mockEditItem.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PATCH", "http://localhost:3000/api/checklists/uuid-1/items/0", {
         description: "Implementation notes",
@@ -306,9 +306,9 @@ describe("Checklist Items API", () => {
 
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
-      expect(mockUpdateItem).toHaveBeenCalledOnce()
+      expect(mockEditItem).toHaveBeenCalledOnce()
 
-      const formData = mockUpdateItem.mock.calls[0][1] as FormData
+      const formData = mockEditItem.mock.calls[0][2] as FormData
       expect(formData.get("itemId")).toBe("item-1")
       expect(formData.get("description")).toBe("Implementation notes")
       expect(formData.get("priority")).toBe("high")
@@ -325,7 +325,7 @@ describe("Checklist Items API", () => {
 
       expect(response.status).toBe(400)
       expect(data.error).toBe("Provide at least one field to update")
-      expect(mockUpdateItem).not.toHaveBeenCalled()
+      expect(mockEditItem).not.toHaveBeenCalled()
     })
 
     it("should return 400 for invalid priority", async () => {
@@ -337,7 +337,7 @@ describe("Checklist Items API", () => {
 
       expect(response.status).toBe(400)
       expect(data.error).toContain("'priority' must be one of")
-      expect(mockUpdateItem).not.toHaveBeenCalled()
+      expect(mockEditItem).not.toHaveBeenCalled()
     })
   })
 

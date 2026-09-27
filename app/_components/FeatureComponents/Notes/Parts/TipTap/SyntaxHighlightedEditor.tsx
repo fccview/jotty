@@ -98,6 +98,29 @@ export const SyntaxHighlightedEditor = ({
     onChange(newContent);
   };
 
+  const applyListEdit = (
+    e: React.KeyboardEvent<HTMLTextAreaElement | HTMLDivElement>,
+    textarea: HTMLTextAreaElement,
+    newContent: string | null
+  ) => {
+    if (newContent === null) return;
+    e.preventDefault();
+    const { scrollTop, scrollLeft, selectionStart, selectionEnd } = textarea;
+    onChange(newContent);
+
+    requestAnimationFrame(() => {
+      const ta = document.getElementById(
+        "markdown-editor-textarea"
+      ) as HTMLTextAreaElement;
+      if (ta) {
+        ta.focus({ preventScroll: true });
+        ta.setSelectionRange(selectionStart, selectionEnd);
+        ta.scrollTop = scrollTop;
+        ta.scrollLeft = scrollLeft;
+      }
+    });
+  };
+
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLTextAreaElement | HTMLDivElement>
   ) => {
@@ -135,27 +158,9 @@ export const SyntaxHighlightedEditor = ({
       e.preventDefault();
       onLinkRequest?.(textarea.selectionStart !== textarea.selectionEnd);
     } else if (e.key === "Enter" && !isMod && !e.shiftKey && !e.altKey) {
-      const newContent =
-        MarkdownUtils.handleBulletListEnter(textarea) ??
-        MarkdownUtils.handleOrderedListEnter(textarea);
-      if (newContent !== null) {
-        e.preventDefault();
-        const { scrollTop, scrollLeft, selectionStart, selectionEnd } =
-          textarea;
-        onChange(newContent);
-
-        requestAnimationFrame(() => {
-          const ta = document.getElementById(
-            "markdown-editor-textarea"
-          ) as HTMLTextAreaElement;
-          if (ta) {
-            ta.focus({ preventScroll: true });
-            ta.setSelectionRange(selectionStart, selectionEnd);
-            ta.scrollTop = scrollTop;
-            ta.scrollLeft = scrollLeft;
-          }
-        });
-      }
+      applyListEdit(e, textarea, MarkdownUtils.handleListEnter(textarea));
+    } else if (e.key === "Tab" && !isMod && !e.shiftKey && !e.altKey) {
+      applyListEdit(e, textarea, MarkdownUtils.indentListItem(textarea));
     }
   };
 

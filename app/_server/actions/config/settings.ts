@@ -227,19 +227,15 @@ export const updateAppSettings = async (
       (formData.get("defaultTimeFormat") as "12-hours" | "24-hours") ||
       "12-hours";
 
-    let editorSettings = {
-      enableSlashCommands: true,
-      enableBubbleMenu: true,
-      enableTableToolbar: true,
-      enableBilateralLinks: true,
-    };
+    const existing = await getSettings();
+    let editorSettings: AppSettings["editor"] = existing.editor;
 
-    const editorData = formData.get("editor") as string;
-    if (editorData) {
+    const editorData = formData.get("editor");
+    if (typeof editorData === "string" && editorData) {
       try {
-        editorSettings = JSON.parse(editorData);
+        editorSettings = { ...existing.editor, ...JSON.parse(editorData) };
       } catch (error) {
-        console.warn("Failed to parse editor settings, using defaults");
+        console.warn("Unparseable editor settings, keeping current ones:", error);
       }
     }
 

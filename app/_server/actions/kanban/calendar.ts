@@ -1,7 +1,7 @@
 "use server";
 
 import { getFormData } from "@/app/_utils/global-utils";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { generateICS } from "@/app/_utils/kanban/calendar-utils";
 import { parseItemsForCalendar, CalendarEvent } from "@/app/_utils/kanban/calendar-utils";
 

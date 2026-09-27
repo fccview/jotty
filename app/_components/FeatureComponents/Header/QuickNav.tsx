@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { AppMode, User, SanitisedUser } from "@/app/_types";
-import { Modes } from "@/app/_types/enums";
+import { BottomBarSpaces, Modes } from "@/app/_types/enums";
 import { cn, handleScroll } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
@@ -21,6 +21,7 @@ import { NotificationBell } from "../Notifications/NotificationBell";
 import { logout } from "@/app/_server/actions/auth";
 import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useBottomBarSpace } from "@/app/_hooks/useBottomBarSpace";
 
 interface QuickNavProps {
   showSidebarToggle?: boolean;
@@ -49,6 +50,12 @@ export const QuickNav = ({
   const t = useTranslations();
   const [isScrolled, setIsScrolled] = useState(true);
   const lastScrollY = useRef(0);
+  const navRef = useRef<HTMLElement>(null);
+
+  useBottomBarSpace(navRef, BottomBarSpaces.QUICK_NAV, {
+    enabled: !isEditorInEditMode,
+    frozen: !isScrolled,
+  });
 
   const handleLogout = async () => {
     await logout();
@@ -75,6 +82,7 @@ export const QuickNav = ({
   return (
     <header className="lg:border-b lg:border-border no-print">
       <nav
+        ref={navRef}
         className={cn(
           "jotty-quick-nav fixed z-30 flex items-center justify-between p-2 lg:justify-around transition-[bottom] duration-300 ease-in-out",
           "lg:relative lg:bottom-auto lg:h-auto lg:justify-end lg:px-6 lg:py-5",
@@ -151,7 +159,7 @@ export const QuickNav = ({
               onClick={() =>
                 checkNavigation(() => {
                   onModeChange?.(modeOption);
-                  router.push("/");
+                  router.push(`/?mode=${modeOption}`);
                 })
               }
             />

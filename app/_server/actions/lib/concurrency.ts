@@ -41,3 +41,6 @@ export const runQueued = <T>(
   queues.set(key, tail);
   return result;
 };
+
+export const itemLane = (mode: string, uuid: string): string =>
+  `item:${mode}:${uuid}`;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { createItem } from "@/app/_server/actions/checklist-item";
-import { getListById } from "@/app/_server/actions/checklist";
+import { addItem } from "@/app/_server/actions/checklist-item/editor";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import path from "path";
@@ -128,7 +128,7 @@ export async function POST(
         );
       }
 
-      const result = await createItem(list, formData, user.username, true);
+      const result = await addItem(user, list, formData, true);
 
       if (!result.success) {
         return NextResponse.json(

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getUserNotes } from "@/app/_server/actions/note";
-import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { getUserNotes } from "@/app/_server/actions/note/queries";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { Checklist, Result } from "@/app/_types";
 import { isKanbanType, TaskStatus } from "@/app/_types/enums";
 

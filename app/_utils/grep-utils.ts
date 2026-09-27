@@ -15,6 +15,7 @@ import { exec, execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
 import yaml from "js-yaml";
+import { isPathUuid, pathUuid } from "@/app/_server/actions/lib/read-only";
 
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
@@ -65,12 +66,45 @@ export const grepFindFileByField = async (
   }
 };
 
-export const grepFindFileByUuid = async (
+const _unstampedFiles = async (dir: string): Promise<string[]> => {
+  try {
+    const { stdout } = await execFileAsync("grep", [
+      "-rL",
+      "^uuid: ",
+      dir,
+      "--include=*.md",
+    ]);
+    return stdout.trim().split("\n").filter(Boolean);
+  } catch (error) {
+    const stdout = (error as { stdout?: unknown })?.stdout;
+    return typeof stdout === "string"
+      ? stdout.trim().split("\n").filter(Boolean)
+      : [];
+  }
+};
+
+const _findUnstamped = async (
   dir: string,
   uuid: string,
 ): Promise<GrepFileResult | null> => {
-  return grepFindFileByField(dir, "uuid", uuid);
+  if (!isPathUuid(uuid)) return null;
+
+  const match = (await _unstampedFiles(dir)).find(
+    (filePath) => pathUuid(filePath) === uuid,
+  );
+  if (!match) return null;
+
+  const parts = path.relative(dir, match).split(path.sep);
+  const id = path.basename(parts.pop() || "", ".md");
+  return { filePath: match, id, category: parts.join("/") };
 };
+
+export const grepFindFileByUuid = async (
+  dir: string,
+  uuid: string,
+): Promise<GrepFileResult | null> =>
+  (await grepFindFileByField(dir, "uuid", uuid)) ||
+  (await _findUnstamped(dir, uuid));
 
 export const grepFindFilesByField = async (
   dir: string,

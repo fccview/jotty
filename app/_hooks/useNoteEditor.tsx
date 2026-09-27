@@ -63,12 +63,9 @@ export const useNoteEditor = ({
   const [isPrinting, setIsPrinting] = useState(false);
   const notesDefaultMode = user?.notesDefaultMode || "view";
 
-  const [isEditing, setIsEditing] = useState(() => {
-    if (note.encrypted) return false;
-    const editor = searchParams?.get("editor");
-
-    return notesDefaultMode === "edit" || editor === "true" ? true : false;
-  });
+  const [isEditing, setIsEditing] = useState(
+    () => !note.encrypted && searchParams?.get("editor") === "true"
+  );
   const [status, setStatus] = useState({
     isSaving: false,
     isAutoSaving: false,

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
-import { updateItem, deleteItem } from "@/app/_server/actions/checklist-item";
+import { getListById } from "@/app/_server/actions/checklist/queries";
+import { deleteItem } from "@/app/_server/actions/checklist-item";
+import { editItem } from "@/app/_server/actions/checklist-item/editor";
 import { isKanbanType } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,7 @@ export async function PUT(
       if (reminder !== undefined)
         formData.append("reminder", JSON.stringify(reminder));
 
-      const result = await updateItem(board, formData, user.username);
+      const result = await editItem(user, board, formData);
 
       if (!result.success) {
         return NextResponse.json(

@@ -311,6 +311,28 @@ describe("Note Actions", () => {
       expect(result.error).toBe("Failed to create note");
     });
 
+    it("should refuse a category that escapes the owner's folder instead of filing it at the root", async () => {
+      mockTargetDir.mockResolvedValue({
+        dir: "/data/notes/testuser",
+        owner: "testuser",
+        category: "",
+        isMount: false,
+        isImplicit: false,
+      });
+
+      const formData = createFormData({
+        title: "Escapee",
+        category: "../elsewhere",
+        rawContent: "Content",
+      });
+
+      const result = await createNote(formData);
+
+      expect(result.success).toBeUndefined();
+      expect(result.error).toBeTruthy();
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
+    });
+
     it("should refuse forged formData identity when there is no session", async () => {
       mockGetCurrentUser.mockResolvedValue(null);
 

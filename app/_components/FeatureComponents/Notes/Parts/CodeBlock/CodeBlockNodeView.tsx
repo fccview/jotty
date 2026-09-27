@@ -15,8 +15,7 @@ export const CodeBlockNodeView = ({ node }: any) => {
   return (
     <NodeViewWrapper>
       <Renderer language={node.attrs.language} code={node.textContent}>
-        {/* @ts-ignore */}
-        <NodeViewContent as="code" />
+        <NodeViewContent<"code"> as="code" spellCheck={false} />
       </Renderer>
     </NodeViewWrapper>
   );

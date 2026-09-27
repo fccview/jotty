@@ -17,9 +17,10 @@ import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { findItem, updateItem } from "@/app/_utils/item-tree-utils";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const _getFilePath = async (list: Checklist): Promise<string> => {
   const categoryDir = list.category || UNCATEGORIZED;
@@ -51,7 +52,7 @@ async function _saveAndBroadcast(list: Checklist, username: string) {
   } catch { }
 }
 
-export const updateKanbanItemPriority = async (formData: FormData) => {
+const _updateKanbanItemPriority = async (formData: FormData) => {
   try {
     const { uuid, itemId, priority } = getFormData(formData, [
       "uuid", "itemId", "priority",
@@ -89,7 +90,7 @@ export const updateKanbanItemPriority = async (formData: FormData) => {
   }
 };
 
-export const updateKanbanItemScore = async (formData: FormData) => {
+const _updateKanbanItemScore = async (formData: FormData) => {
   try {
     const { uuid, itemId, score } = getFormData(formData, [
       "uuid", "itemId", "score",
@@ -127,7 +128,7 @@ export const updateKanbanItemScore = async (formData: FormData) => {
   }
 };
 
-export const assignKanbanItem = async (formData: FormData) => {
+const _assignKanbanItem = async (formData: FormData) => {
   try {
     const { uuid, itemId, assignee } = getFormData(formData, [
       "uuid", "itemId", "assignee",
@@ -180,7 +181,7 @@ export const assignKanbanItem = async (formData: FormData) => {
   }
 };
 
-export const setKanbanItemReminder = async (formData: FormData) => {
+const _setKanbanItemReminder = async (formData: FormData) => {
   try {
     const { uuid, itemId, reminder: reminderStr } = getFormData(formData, [
       "uuid", "itemId", "reminder",
@@ -227,3 +228,22 @@ export const setKanbanItemReminder = async (formData: FormData) => {
   }
 };
 
+export const updateKanbanItemPriority = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _updateKanbanItemPriority(formData),
+  );
+
+export const updateKanbanItemScore = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _updateKanbanItemScore(formData),
+  );
+
+export const assignKanbanItem = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _assignKanbanItem(formData),
+  );
+
+export const setKanbanItemReminder = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _setKanbanItemReminder(formData),
+  );

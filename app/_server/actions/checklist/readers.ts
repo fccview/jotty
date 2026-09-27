@@ -26,7 +26,7 @@ import { orderByUuids } from "@/app/_utils/order-utils";
 import { getChecklistType } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { isKanbanType } from "@/app/_types/enums";
-import { stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
 const execAsync = promisify(exec);
@@ -245,7 +245,7 @@ export const readListsRecursively = async (
               rawContent: content,
             };
           }
-          return parseMarkdown(
+          const list = parseMarkdown(
             content,
             id,
             categoryPath,
@@ -257,6 +257,8 @@ export const readListsRecursively = async (
             },
             fileName,
           );
+          if (!lacksUuid(content)) return list;
+          return { ...list, uuid: (await stampUuid(filePath)) || list.uuid };
         } catch {
           return null;
         }

@@ -15,8 +15,8 @@ vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: (...args: unknown[]) => mockBroadcast(...args),
 }));
 
-vi.mock("@/app/_server/actions/note", () => ({ getUserNotes: vi.fn() }));
-vi.mock("@/app/_server/actions/checklist", () => ({ getUserChecklists: vi.fn() }));
+vi.mock("@/app/_server/actions/note/queries", () => ({ getUserNotes: vi.fn() }));
+vi.mock("@/app/_server/actions/checklist/queries", () => ({ getUserChecklists: vi.fn() }));
 
 import { readLinks } from "@/app/_server/actions/relations/parser";
 import {

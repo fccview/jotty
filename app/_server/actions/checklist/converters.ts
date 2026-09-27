@@ -267,18 +267,10 @@ export const clearAllChecklistItems = async (formData: FormData) => {
     const uuid = formData.get("uuid") as string;
     const ownerUsername = formData.get("user") as string | null;
     const type = formData.get("type") as "completed" | "incomplete";
-    const apiUser = formData.get("apiUser") as string | null;
 
-    let actingUser = await getCurrentUser();
-    if (!actingUser && apiUser) {
-      try {
-        actingUser = JSON.parse(apiUser);
-      } catch {
-        return { error: "Invalid user data" };
-      }
-    }
+    const actingUser = await getCurrentUser();
 
-    if (!actingUser || !actingUser.username) {
+    if (!actingUser?.username) {
       return { error: "Not authenticated" };
     }
 

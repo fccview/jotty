@@ -14,11 +14,11 @@ vi.mock("@/app/_server/actions/log", () => ({
   logAudit: (...args: any[]) => mockLogAudit(...args),
 }));
 
-vi.mock("@/app/_server/actions/checklist", () => ({
+vi.mock("@/app/_server/actions/checklist/queries", () => ({
   getListById: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("@/app/_server/actions/note", () => ({
+vi.mock("@/app/_server/actions/note/queries", () => ({
   getNoteById: vi.fn().mockResolvedValue(null),
 }));
 
@@ -184,6 +184,34 @@ describe("Config Actions", () => {
           success: true,
         }),
       );
+    });
+
+    it("should keep stored editor settings when the editor field is unparseable", async () => {
+      mockGetCurrentUser.mockResolvedValue({
+        username: "superadmin",
+        isAdmin: true,
+        isSuperAdmin: true,
+      });
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify({
+          appName: "Jotty",
+          editor: { historyEnabled: true, enableSlashCommands: false },
+        }),
+      );
+      mockFs.access.mockResolvedValue(undefined);
+      mockFs.writeFile.mockResolvedValue(undefined);
+
+      const formData = createFormData({
+        appName: "Jotty",
+        editor: "[object Object]",
+      });
+
+      const result = await updateAppSettings(formData);
+
+      expect(result.success).toBe(true);
+      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1] as string);
+      expect(written.editor.historyEnabled).toBe(true);
+      expect(written.editor.enableSlashCommands).toBe(false);
     });
   });
 

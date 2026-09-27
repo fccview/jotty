@@ -1,5 +1,5 @@
-import { getUserNotes } from "@/app/_server/actions/note";
-import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { getUserNotes } from "@/app/_server/actions/note/queries";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import {
   BrainEdgeKinds,

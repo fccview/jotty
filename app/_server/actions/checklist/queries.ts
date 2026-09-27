@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import { Checklist, User, GetChecklistsOptions } from "@/app/_types";
@@ -391,16 +389,4 @@ export const getAllLists = async (
     console.error("Error in getAllLists:", error);
     return { success: false, error: "Failed to fetch all lists" };
   }
-};
-
-export const getChecklistsForDisplay = async (
-  filter?: { type: "category" | "tag"; value: string } | null,
-  limit: number = 20,
-  offset: number = 0,
-) => {
-  return getUserChecklists({
-    filter: filter || undefined,
-    limit,
-    offset: filter ? offset : undefined,
-  });
 };

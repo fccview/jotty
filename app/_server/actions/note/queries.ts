@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import { Note, User, GetNotesOptions } from "@/app/_types";
@@ -356,16 +354,4 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     console.error("Error in getNotesUnified:", error);
     return { success: false, error: "Failed to fetch notes" };
   }
-};
-
-export const getNotesForDisplay = async (
-  filter?: { type: "category" | "tag"; value: string } | null,
-  limit: number = 20,
-  offset: number = 0,
-) => {
-  return getUserNotes({
-    filter: filter || undefined,
-    limit,
-    offset: filter ? offset : undefined,
-  });
 };

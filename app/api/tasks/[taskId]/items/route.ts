@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { createItem } from "@/app/_server/actions/checklist-item";
-import { getListById } from "@/app/_server/actions/checklist";
+import { addItem } from "@/app/_server/actions/checklist-item/editor";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import { isKanbanType, TaskStatus } from "@/app/_types/enums";
@@ -128,7 +128,7 @@ export async function POST(
       formData.append("text", text);
       formData.append("status", status || TaskStatus.TODO);
 
-      const result = await createItem(task, formData, user.username, true);
+      const result = await addItem(user, task, formData, true);
 
       if (!result.success) {
         return NextResponse.json(

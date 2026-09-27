@@ -18,30 +18,9 @@ import {
 } from "./item-href-utils";
 import { getContrastColor } from "./color-utils";
 import { matchCallout } from "./callout-utils";
+import { base64ToSvg, base64ToText, utf8ToBase64 } from "./base64-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
-
-const utf8ToBase64 = (str: string): string => {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(str, "utf8").toString("base64");
-  }
-  const bytes = new TextEncoder().encode(str);
-  let binary = "";
-  bytes.forEach((b) => { binary += String.fromCharCode(b); });
-  return btoa(binary);
-};
-
-const base64ToUtf8 = (str: string): string => {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(str, "base64").toString("utf8");
-  }
-  const binary = atob(str);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return new TextDecoder().decode(bytes);
-};
 
 const hasComplexTableContent = (table: HTMLElement): boolean => {
   const complexSelectors = ["ul", "ol", "pre", "table", "details", "hr"];
@@ -69,6 +48,20 @@ const hasComplexTableContent = (table: HTMLElement): boolean => {
 };
 
 const WIKILINK_SPAN = /(!?\[\[[^\[\]\n]+\]\])/;
+const EMPTY_PARAGRAPH_MARK = "\u200b";
+
+const isBlankChar = (char: string) =>
+  char === EMPTY_PARAGRAPH_MARK || /\s/.test(char);
+
+const trimBlankTail = (text: string): string => {
+  let end = text.length;
+  while (end > 0 && isBlankChar(text[end - 1])) end--;
+  return text.slice(end).includes(EMPTY_PARAGRAPH_MARK)
+    ? text.slice(0, end)
+    : text;
+};
+
+const normalizeLineEndings = (text: string) => text.replace(/\r\n/g, "\n");
 
 export const createTurndownService = (tableSyntax?: TableSyntax) => {
   const service = new TurndownService({
@@ -82,7 +75,7 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
         if (element.querySelector?.("img")) {
           return content;
         }
-        return "\u200b";
+        return EMPTY_PARAGRAPH_MARK;
       }
       return content;
     },
@@ -490,8 +483,8 @@ const markdownProcessor = unified()
               const themeMode = themeMatch ? themeMatch[1].trim() : "light";
 
               try {
-                const diagramData = base64ToUtf8(dataBase64);
-                const svgData = base64ToUtf8(svgBase64);
+                const diagramData = base64ToText(dataBase64);
+                const svgData = base64ToSvg(svgBase64);
 
                 node.type = "element";
                 node.tagName = "div";
@@ -508,6 +501,7 @@ const markdownProcessor = unified()
                   },
                 ];
               } catch (e) {
+                console.error("Failed to decode draw.io diagram:", e);
               }
             }
           }
@@ -522,8 +516,8 @@ const markdownProcessor = unified()
               const themeMode = themeMatch ? themeMatch[1].trim() : "light";
 
               try {
-                const diagramData = base64ToUtf8(dataBase64);
-                const svgData = svgBase64 ? base64ToUtf8(svgBase64) : "";
+                const diagramData = base64ToText(dataBase64);
+                const svgData = svgBase64 ? base64ToText(svgBase64) : "";
 
                 node.type = "element";
                 node.tagName = "div";
@@ -540,6 +534,7 @@ const markdownProcessor = unified()
                   },
                 ];
               } catch (e) {
+                console.error("Failed to decode excalidraw diagram:", e);
               }
             }
           }
@@ -770,24 +765,30 @@ const markdownProcessor = unified()
   })
   .use(rehypeStringify);
 
+const CODE_STASH_MARK = "\uE000";
+const CODE_STASH_REGEX = new RegExp(
+  `${CODE_STASH_MARK}(\\d+)${CODE_STASH_MARK}`,
+  "g"
+);
+
 export const convertMarkdownToHtml = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
   const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
   const codeBlocks: string[] = [];
-  let processed = markdown.replace(codeBlockRegex, (match) => {
+  const stashed = markdown.replace(codeBlockRegex, (match) => {
     codeBlocks.push(match);
-    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+    return `${CODE_STASH_MARK}${codeBlocks.length - 1}${CODE_STASH_MARK}`;
   });
 
-  processed = processed.replace(
-    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/g,
-    '<span data-tag="$1">$1</span>'
-  );
-
-  codeBlocks.forEach((block, i) => {
-    processed = processed.replace(`__CODE_BLOCK_${i}__`, block);
-  });
+  const processed = stashed
+    .replace(
+      /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/g,
+      '<span data-tag="$1">$1</span>'
+    )
+    .replace(CODE_STASH_REGEX, (match, index: string) =>
+      codeBlocks[Number(index)] ?? match
+    );
 
   const file = markdownProcessor.processSync(processed);
 
@@ -799,7 +800,7 @@ export const convertHtmlToMarkdown = (
   tableSyntax?: TableSyntax
 ): string => {
   const turndownService = createTurndownService(tableSyntax);
-  return turndownService.turndown(html);
+  return trimBlankTail(turndownService.turndown(html));
 };
 
 export const processMarkdownContent = (content: string): string => {
@@ -830,7 +831,7 @@ export const getMarkdownPreviewContent = (
 export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  let result = markdown.replace(
+  let result = trimBlankTail(normalizeLineEndings(markdown)).replace(
     /\\+\[(📎|🎥)\s+([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g,
     "[$1 $2]($3)"
   );

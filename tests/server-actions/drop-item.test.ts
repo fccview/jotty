@@ -26,7 +26,7 @@ vi.mock("@/app/_server/actions/share/target", () => ({
   diskPath: (...args: unknown[]) => mockDiskPath(...args),
 }));
 
-vi.mock("@/app/_server/actions/checklist", () => ({
+vi.mock("@/app/_server/actions/checklist/queries", () => ({
   getListById: (...args: unknown[]) => mockGetListById(...args),
 }));
 

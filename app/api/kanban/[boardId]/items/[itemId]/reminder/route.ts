@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { setKanbanItemReminder } from "@/app/_server/actions/kanban/items";
 import { isKanbanType } from "@/app/_types/enums";
 

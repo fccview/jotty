@@ -3,6 +3,7 @@ import {
   getColumnItems,
   visToColIndex,
   applyDrop,
+  boardColumns,
 } from "@/app/_utils/kanban/board-utils";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { TaskStatus } from "@/app/_types/enums";
@@ -221,5 +222,44 @@ describe("applyDrop", () => {
   it("returns the checklist untouched for an unknown item", () => {
     const board = makeBoard([makeItem("a", TaskStatus.TODO)]);
     expect(applyDrop(board, "nope", TaskStatus.TODO, 0, USER, NOW)).toBe(board);
+  });
+});
+
+describe("boardColumns", () => {
+  it("uses the board's own statuses and labels in board order (#598)", () => {
+    const board = {
+      ...makeBoard([
+        makeItem("a", "backlog"),
+        makeItem("b", "shipped"),
+        makeItem("c", "gone"),
+        makeItem("d", "shipped", { isArchived: true }),
+      ]),
+      statuses: [
+        { id: "shipped", label: "Shipped", order: 1 },
+        { id: "backlog", label: "Backlog", order: 0 },
+      ],
+    };
+
+    const columns = boardColumns(board);
+
+    expect(columns.map((column) => column.status.label)).toEqual([
+      "Backlog",
+      "Shipped",
+    ]);
+    expect(columns.map((column) => column.items.map((item) => item.id))).toEqual([
+      ["a", "c"],
+      ["b"],
+    ]);
+  });
+
+  it("falls back to the default statuses when the board has none", () => {
+    const board = { ...makeBoard([makeItem("a")]), statuses: undefined };
+
+    expect(boardColumns(board).map((column) => column.status.id)).toEqual(
+      [...DEFAULT_KANBAN_STATUSES]
+        .sort((a, b) => a.order - b.order)
+        .map((status) => status.id),
+    );
+    expect(boardColumns(board)[0].items.map((item) => item.id)).toEqual(["a"]);
   });
 });

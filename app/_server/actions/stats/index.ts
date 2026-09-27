@@ -1,7 +1,7 @@
 "use server";
 
-import { getUserNotes } from "@/app/_server/actions/note";
-import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { getUserNotes } from "@/app/_server/actions/note/queries";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";

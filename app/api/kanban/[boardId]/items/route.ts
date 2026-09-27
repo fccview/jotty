@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
-import { createItem } from "@/app/_server/actions/checklist-item";
+import { getListById } from "@/app/_server/actions/checklist/queries";
+import { addItem } from "@/app/_server/actions/checklist-item/editor";
 import { isKanbanType } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +41,7 @@ export async function POST(
       if (status) formData.append("status", status);
       if (description) formData.append("description", description);
 
-      const result = await createItem(board, formData, user.username);
+      const result = await addItem(user, board, formData);
 
       if (!result.success || !result.data) {
         return NextResponse.json(

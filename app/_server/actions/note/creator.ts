@@ -1,4 +1,5 @@
 import path from "path";
+import { getTranslations } from "next-intl/server";
 import { Note, SanitisedUser } from "@/app/_types";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { ensureDir, serverWriteFile } from "@/app/_server/actions/file";
@@ -22,6 +23,7 @@ import { commitNote } from "@/app/_server/actions/history";
 import { targetDir, bouncer } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { noteToMarkdown } from "./parsers";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 
 export const makeNote = async (
   actor: SanitisedUser,
@@ -41,6 +43,13 @@ export const makeNote = async (
     const encrypted = isEncrypted(contentWithoutMetadata);
 
     const target = await targetDir(Modes.NOTES, actor.username, category);
+
+    if (category && !target.isMount && target.category !== category) {
+      console.warn("Refusing note outside its owner's folder:", category);
+      const t = await getTranslations("errors");
+      return { error: t("categoryOutOfBounds") };
+    }
+
     const content = encrypted
       ? contentWithoutMetadata
       : await tidyItemLinks(contentWithoutMetadata, target.owner);
@@ -123,6 +132,6 @@ export const makeNote = async (
       title || "unknown",
       false,
     );
-    return { error: "Failed to create note" };
+    return { error: await failedWith(error, "Failed to create note") };
   }
 };

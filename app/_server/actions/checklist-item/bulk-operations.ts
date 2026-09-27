@@ -6,9 +6,7 @@ import {
   getUserModeDir,
   serverWriteFile,
 } from "@/app/_server/actions/file";
-import {
-  getListById,
-} from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import {
   listToMarkdown,
   areAllItemsCompleted
@@ -26,8 +24,10 @@ import {
 import { canReach } from "@/app/_server/actions/share/queries";
 import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
+import { sessionActor } from "@/app/_server/actions/lib/actor";
 
-export const createBulkItems = async (
+const _createBulkItems = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
@@ -119,7 +119,7 @@ export const createBulkItems = async (
   }
 };
 
-export const bulkToggleItems = async (
+const _bulkToggleItems = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
@@ -127,11 +127,13 @@ export const bulkToggleItems = async (
     const completed = formData.get("completed") === "true";
     const itemIdsStr = formData.get("itemIds") as string;
     const completedStatesStr = formData.get("completedStates") as string;
-    let currentUser = formData.get("username") as string;
+    const actor = await sessionActor(formData.get("username") as string | null);
 
-    if (!currentUser) {
-      currentUser = await getUsername();
+    if ("error" in actor) {
+      return { success: false, error: actor.error };
     }
+
+    const currentUser = actor.username;
 
     if (!uuid || !itemIdsStr) {
       return { success: false, error: "List uuid and item IDs are required" };
@@ -287,18 +289,20 @@ export const bulkToggleItems = async (
   }
 };
 
-export const bulkDeleteItems = async (
+const _bulkDeleteItems = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
     const uuid = formData.get("uuid") as string;
     const itemIdsStr = formData.get("itemIds") as string;
     const itemIdsToDelete = JSON.parse(itemIdsStr) as string[];
-    let currentUser = formData.get("username") as string;
+    const actor = await sessionActor(formData.get("username") as string | null);
 
-    if (!currentUser) {
-      currentUser = await getUsername();
+    if ("error" in actor) {
+      return { success: false, error: actor.error };
     }
+
+    const currentUser = actor.username;
 
     if (!uuid || !itemIdsToDelete || itemIdsToDelete.length === 0) {
       return { success: true };
@@ -376,3 +380,18 @@ export const bulkDeleteItems = async (
     return { success: false, error: "Failed to bulk delete items" };
   }
 };
+
+export const createBulkItems = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _createBulkItems(formData),
+  );
+
+export const bulkToggleItems = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _bulkToggleItems(formData),
+  );
+
+export const bulkDeleteItems = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _bulkDeleteItems(formData),
+  );

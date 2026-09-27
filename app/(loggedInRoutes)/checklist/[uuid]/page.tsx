@@ -1,5 +1,5 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { getCategories } from "@/app/_server/actions/category";
 import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { ChecklistClient } from "@/app/_components/FeatureComponents/Checklists/Parts/ChecklistClient";

@@ -81,6 +81,9 @@ export const getCompletionRate = (
   return Math.round((completed / total) * 100);
 };
 
+const _flatDescription = (text: string): string =>
+  text.replace(/\r?\n/g, "\\n").replace(/\|/g, "∣");
+
 export const parseMarkdown = (
   content: string,
   id: string,
@@ -421,7 +424,7 @@ const generateItemMarkdown = (
     }
 
     if (item.description) {
-      metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
+      metadata.push(`description:${_flatDescription(item.description)}`);
     }
 
     if (item.recurrence) {
@@ -504,7 +507,7 @@ const generateItemMarkdown = (
     const metadata: string[] = [];
 
     if (item.description) {
-      metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
+      metadata.push(`description:${_flatDescription(item.description)}`);
     }
 
     if (Object.keys(itemMetadata).length > 0) {

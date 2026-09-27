@@ -25,7 +25,7 @@ import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
 import { promisify } from "util";
 import { exec } from "child_process";
-import { stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
 const execAsync = promisify(exec);
@@ -272,7 +272,7 @@ export const readNotesRecursively = async (
             rawContent: content,
           };
         } else {
-          return parseMarkdownNote(
+          const note = parseMarkdownNote(
             content,
             id,
             categoryPath,
@@ -284,6 +284,8 @@ export const readNotesRecursively = async (
             },
             fileName,
           );
+          if (!lacksUuid(content)) return note;
+          return { ...note, uuid: (await stampUuid(filePath)) || note.uuid };
         }
       }
     } catch (e) {

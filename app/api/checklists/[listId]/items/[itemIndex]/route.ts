@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
-import { updateItem } from "@/app/_server/actions/checklist-item";
+import { getListById } from "@/app/_server/actions/checklist/queries";
+import { editItem } from "@/app/_server/actions/checklist-item/editor";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import path from "path";
@@ -174,7 +174,7 @@ export async function PATCH(
           estimatedTime === null ? "" : String(estimatedTime),
         );
 
-      const result = await updateItem(list, formData, user.username, true);
+      const result = await editItem(user, list, formData, true);
 
       if (!result.success) {
         return NextResponse.json(

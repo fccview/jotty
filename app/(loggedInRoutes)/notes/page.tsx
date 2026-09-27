@@ -1,4 +1,4 @@
-import { getUserNotes } from "@/app/_server/actions/note";
+import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { NotesPageClient } from "@/app/_components/FeatureComponents/Notes/NotesPageClient";
 import { Note } from "@/app/_types";

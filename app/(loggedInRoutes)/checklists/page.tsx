@@ -1,4 +1,4 @@
-import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { ChecklistsPageClient } from "@/app/_components/FeatureComponents/Checklists/ChecklistsPageClient";
 import { Checklist } from "@/app/_types";

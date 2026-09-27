@@ -44,7 +44,7 @@ vi.mock("@/app/_server/actions/share/target", () => ({
   diskPath: (...args: any[]) => mockDiskPath(...args),
 }));
 
-vi.mock("@/app/_server/actions/checklist", () => ({
+vi.mock("@/app/_server/actions/checklist/queries", () => ({
   getUserChecklists: (...args: any[]) => mockGetUserChecklists(...args),
   getListById: (...args: any[]) => mockGetListById(...args),
   getAllLists: (...args: any[]) => mockGetAllLists(...args),
@@ -66,6 +66,7 @@ import {
   bulkToggleItems,
   bulkDeleteItems,
 } from "@/app/_server/actions/checklist-item";
+import { editItem } from "@/app/_server/actions/checklist-item/editor";
 
 const mockChecklist = {
   id: "test-list",
@@ -1219,7 +1220,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
           category: 'TestCategory',
         });
 
-        const result = await updateItemStatus(formData, 'shared-user');
+        const result = await updateItemStatus(formData);
 
         expect(result.success).toBe(true);
       });
@@ -1234,7 +1235,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
           category: 'TestCategory',
         });
 
-        const result = await updateItemStatus(formData, 'shared-user');
+        const result = await updateItemStatus(formData);
 
         expect(result.success).toBe(false);
         expect(result.error).toBe('Permission denied');
@@ -1252,7 +1253,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
           category: 'TestCategory',
         });
 
-        const result = await updateItemStatus(formData, 'shared-user');
+        const result = await updateItemStatus(formData);
 
         expect(result.success).toBe(true);
       });
@@ -1269,7 +1270,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
           category: 'TestCategory',
         });
 
-        const result = await updateItemStatus(formData, 'shared-user');
+        const result = await updateItemStatus(formData);
 
         expect(result.success).toBe(false);
       });
@@ -1543,6 +1544,61 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       });
     });
   });
+  describe("concurrent writes on one checklist", () => {
+    let disk: typeof mockChecklist;
+
+    const shoppingList = () => ({
+      ...structuredClone(mockChecklist),
+      items: [
+        { id: "item-1", text: "First item", completed: false, order: 0 },
+        { id: "item-2", text: "Second item", completed: true, order: 1 },
+        { id: "item-3", text: "Third item", completed: false, order: 2 },
+      ],
+    });
+
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 5));
+
+    beforeEach(() => {
+      disk = shoppingList();
+      mockGetListById.mockImplementation(async () => {
+        const snapshot = structuredClone(disk);
+        await settle();
+        return snapshot;
+      });
+      mockListToMarkdown.mockImplementation((list: typeof mockChecklist) =>
+        JSON.stringify(list),
+      );
+      mockServerWriteFile.mockImplementation(
+        async (_path: string, content: string) => {
+          await settle();
+          disk = JSON.parse(content);
+        },
+      );
+    });
+
+    it("should keep both ticks when two toggles land at once", async () => {
+      const [first, second] = await Promise.all([
+        updateItem(shoppingList(), createFormData({ itemId: "item-1", completed: "true" })),
+        updateItem(shoppingList(), createFormData({ itemId: "item-3", completed: "true" })),
+      ]);
+
+      expect(first.success && second.success).toBe(true);
+      expect(disk.items.find((item) => item.id === "item-1")?.completed).toBe(true);
+      expect(disk.items.find((item) => item.id === "item-3")?.completed).toBe(true);
+    });
+
+    it("should keep both items when two adds land at once", async () => {
+      await Promise.all([
+        createItem(shoppingList(), createFormData({ text: "Milk" })),
+        createItem(shoppingList(), createFormData({ text: "Eggs" })),
+      ]);
+
+      const texts = disk.items.map((item) => item.text);
+      expect(texts).toEqual(expect.arrayContaining(["Milk", "Eggs"]));
+      expect(disk.items).toHaveLength(5);
+    });
+  });
+
   describe("canonical persistence", () => {
     const forgedList = {
       ...mockChecklist,
@@ -1605,19 +1661,9 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       expect(mockGetListById).toHaveBeenCalledWith("test-uuid-123", "testuser");
     });
 
-    it("should refuse when there is no session and no api principal", async () => {
+    it("should refuse when there is no session, whatever name is passed", async () => {
       mockGetUsername.mockResolvedValue("");
-
-      const formData = createFormData({ itemId: "item-1", completed: "true" });
-
-      const result = await updateItem(mockChecklist as any, formData);
-
-      expect(result.success).toBe(false);
-      expect(mockServerWriteFile).not.toHaveBeenCalled();
-    });
-
-    it("should let an api principal act when there is no session", async () => {
-      mockGetUsername.mockResolvedValue("");
+      mockGetCurrentUser.mockResolvedValue(null);
 
       const formData = createFormData({ itemId: "item-1", completed: "true" });
 
@@ -1625,6 +1671,22 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
         mockChecklist as any,
         formData,
         "apiuser",
+      );
+
+      expect(result.success).toBe(false);
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
+    });
+
+    it("should let an api principal act through the server-only editor", async () => {
+      mockGetUsername.mockResolvedValue("");
+      mockGetCurrentUser.mockResolvedValue(null);
+
+      const formData = createFormData({ itemId: "item-1", completed: "true" });
+
+      const result = await editItem(
+        { username: "apiuser" } as any,
+        mockChecklist as any,
+        formData,
       );
 
       expect(result.success).toBe(true);

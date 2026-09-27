@@ -106,7 +106,7 @@ describe('Security: Authentication Required', () => {
     })
 
     it('getUserNotes should reject unauthenticated requests', async () => {
-      const { getUserNotes } = await import('@/app/_server/actions/note')
+      const { getUserNotes } = await import('@/app/_server/actions/note/queries')
 
       const result = await getUserNotes()
 
@@ -143,7 +143,7 @@ describe('Security: Authentication Required', () => {
     })
 
     it('getUserChecklists should reject unauthenticated requests', async () => {
-      const { getUserChecklists } = await import('@/app/_server/actions/checklist')
+      const { getUserChecklists } = await import('@/app/_server/actions/checklist/queries')
 
       const result = await getUserChecklists()
 

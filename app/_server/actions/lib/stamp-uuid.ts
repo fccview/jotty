@@ -1,7 +1,13 @@
+import path from "path";
 import fs from "fs/promises";
 import { extractYamlMetadata, generateUuid } from "@/app/_utils/yaml-metadata-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import { singleFlight } from "@/app/_server/actions/lib/concurrency";
+import {
+  isWritable,
+  pathUuid,
+  warnReadOnly,
+} from "@/app/_server/actions/lib/read-only";
 
 const FRONTMATTER_OPEN = /^(\uFEFF?---\r?\n)/;
 const FRONTMATTER_BLOCK = /^\uFEFF?---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/;
@@ -36,12 +42,21 @@ const _stampable = (content: string, filePath: string): boolean => {
   return true;
 };
 
+export const lacksUuid = (content: string): boolean =>
+  !UUID_LINE.test(content.match(FRONTMATTER_BLOCK)?.[0] || "");
+
 export const stampUuid = (filePath: string): Promise<string | undefined> =>
   singleFlight(`stamp:${filePath}`, async () => {
     try {
       const content = await fs.readFile(filePath, "utf-8");
       const existing = extractYamlMetadata(content).metadata.uuid;
       if (typeof existing === "string" && existing) return existing;
+
+      if (!(await isWritable(path.dirname(filePath)))) {
+        warnReadOnly(path.dirname(filePath));
+        return pathUuid(filePath);
+      }
+
       if (!_stampable(content, filePath)) return undefined;
 
       const uuid = generateUuid();

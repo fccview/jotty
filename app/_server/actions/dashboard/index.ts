@@ -3,7 +3,8 @@
 import { AppMode, Checklist, ItemType, Note, Result } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { updateList } from "../checklist";
-import { updateNote, getNoteById } from "../note";
+import { updateNote } from "../note";
+import { getNoteById } from "../note/queries";
 import { getCurrentUser, getUserIndex } from "../users";
 import { readJsonFile, writeJsonFile } from "../file";
 import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";

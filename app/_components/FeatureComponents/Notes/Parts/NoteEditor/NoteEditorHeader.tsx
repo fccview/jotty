@@ -57,6 +57,11 @@ import {
 import { useTranslations } from "next-intl";
 import { NoteHistoryModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/NoteHistoryModal";
 import { useToast } from "@/app/_providers/ToastProvider";
+import {
+  QuickBarPortal,
+  QuickBarSlots,
+  quickBarButton,
+} from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteQuickBar";
 
 interface NoteEditorHeaderProps {
   note: Note;
@@ -189,6 +194,20 @@ export const NoteEditorHeader = ({
     } finally {
       setIsTogglingPin(false);
     }
+  };
+
+  const handleSaveClick = () => {
+    if (!isEditingEncrypted) {
+      handleSave();
+      return;
+    }
+    const cached = viewModel.getCachedPassphrase();
+    if (cached) {
+      handleSave(false, cached);
+      return;
+    }
+    setEncryptionModalMode("save");
+    setShowEncryptionModal(true);
   };
 
   const handleHistoryClick = () => {
@@ -364,19 +383,7 @@ export const NoteEditorHeader = ({
                 </Button>
                 <Button
                   size="sm"
-                  onClick={() => {
-                    if (isEditingEncrypted) {
-                      const cached = viewModel.getCachedPassphrase();
-                      if (cached) {
-                        handleSave(false, cached);
-                      } else {
-                        setEncryptionModalMode("save");
-                        setShowEncryptionModal(true);
-                      }
-                    } else {
-                      handleSave();
-                    }
-                  }}
+                  onClick={handleSaveClick}
                   className="hidden lg:flex"
                   disabled={status.isSaving || status.isAutoSaving}
                 >
@@ -396,33 +403,24 @@ export const NoteEditorHeader = ({
                   )}
                 </Button>
 
-                <div
-                  className={`fixed bottom-[20px] ${user?.handedness === "left-handed"
-                    ? "left-[2.5%]"
-                    : "right-[2.5%]"
-                    } lg:hidden z-50 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}
-                >
+                <QuickBarPortal slot={QuickBarSlots.ACTIONS}>
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={handleCancel}
+                    title={t("common.cancel")}
                     aria-label={t("common.cancel")}
+                    className={quickBarButton}
                   >
                     <Cancel01Icon className="h-5 w-5" />
                   </Button>
 
                   <Button
                     size="icon"
-                    onClick={() => {
-                      if (isEditingEncrypted) {
-                        setEncryptionModalMode("save");
-                        setShowEncryptionModal(true);
-                      } else {
-                        handleSave();
-                      }
-                    }}
-                    className="h-10 w-10"
+                    onClick={handleSaveClick}
+                    className={quickBarButton}
                     disabled={status.isSaving || status.isAutoSaving}
+                    title={status.isSaving ? t("common.saving") : t("common.save")}
                     aria-label={
                       status.isSaving ? t("common.saving") : t("common.save")
                     }
@@ -436,7 +434,7 @@ export const NoteEditorHeader = ({
                       <FloppyDiskIcon className="h-5 w-5" />
                     )}
                   </Button>
-                </div>
+                </QuickBarPortal>
               </>
             ) : (
               <>

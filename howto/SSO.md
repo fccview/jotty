@@ -3,17 +3,19 @@
 `jotty·page` works with any OIDC provider (Authentik, Auth0, Keycloak, Okta, etc.) that:
 
 - Supports PKCE (most current providers do)
-- Can be set up as a public client, with no client secret
+- Can be set up as either a public client (no client secret) or a confidential client (with a client secret)
 - Provides the standard OIDC scopes (openid, profile, email)
 
 1. Configure your OIDC provider:
 
-- Client Type: Public
+- Client Type: Public, or Confidential if you set `OIDC_CLIENT_SECRET`
+  - _Some providers, like Authelia, refuse a client secret on a public client. Pick one or the other_
 - Grant Type: Authorization Code with PKCE
 - PKCE Code Challenge Method: S256
   - _S256 is the only PKCE method Jotty supports_
 - Scopes: openid, profile, email
 - Redirect URI: https://YOUR_APP_HOST/api/oidc/callback
+  - _Jotty builds this from `APP_URL` as written, so leave the trailing `/` off `APP_URL` or you get `//api/oidc/callback`_
 - Post-logout URI: https://YOUR_APP_HOST/
 
 2. Get these values from your provider:

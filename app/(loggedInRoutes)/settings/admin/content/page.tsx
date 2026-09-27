@@ -1,6 +1,6 @@
 import { AdminContent } from "@/app/_components/FeatureComponents/Admin/Parts/AdminContent";
-import { getAllLists } from "@/app/_server/actions/checklist";
-import { getAllNotes } from "@/app/_server/actions/note";
+import { getAllLists } from "@/app/_server/actions/checklist/queries";
+import { getAllNotes } from "@/app/_server/actions/note/queries";
 import { canAccessAllContent, getUsersForAdmin } from "@/app/_server/actions/users";
 import { notFound } from "next/navigation";
 

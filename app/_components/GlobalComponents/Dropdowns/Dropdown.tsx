@@ -4,6 +4,13 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowDown01Icon, MoreHorizontalIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { Logo } from "../Layout/Logo/Logo";
+import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
+import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
+import {
+  MenuAlign,
+  MenuSide,
+  menuPlacementClasses,
+} from "@/app/_utils/menu-placement-utils";
 
 interface DropdownOption {
   id: number | string;
@@ -36,6 +43,15 @@ export const Dropdown = ({
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const placement = useMenuPlacement(
+    isOpen && !disabled,
+    dropdownRef,
+    menuRef,
+    direction === "up" ? MenuSide.Up : MenuSide.Down,
+    isDesktop ? MenuAlign.Start : MenuAlign.End,
+  );
 
   const selectedOption = options.find((opt) => opt.id === value);
 
@@ -124,10 +140,13 @@ export const Dropdown = ({
       )}
 
       {isOpen && !disabled && (
-        <div className={cn(
-          "jotty-dropdown-menu absolute right-0 lg:left-0 lg:right-auto z-50 w-full min-w-[200px] bg-card border border-border rounded-jotty shadow-lg max-h-48 overflow-y-auto",
-          direction === "up" ? "bottom-full mb-1" : "mt-1"
-        )}>
+        <div
+          ref={menuRef}
+          className={cn(
+            "jotty-dropdown-menu absolute z-50 w-full min-w-[200px] bg-card border border-border rounded-jotty shadow-lg max-h-48 overflow-y-auto",
+            menuPlacementClasses(placement)
+          )}
+        >
           <div className="py-1">
             {options.map((option) => (
               <button

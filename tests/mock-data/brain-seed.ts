@@ -233,6 +233,7 @@ const _ensureUser = () =>
       ...users,
       {
         username: USERNAME,
+        brainSeedCreated: true,
         passwordHash: createHash("sha256").update(PASSWORD).digest("hex"),
         isAdmin: false,
         createdAt: now,
@@ -253,10 +254,15 @@ const _exists = (target: string) =>
     () => false,
   );
 
+const _seededUser = async () => {
+  const users = JSON.parse(await fs.readFile(USERS_FILE, "utf-8")) as Record<string, unknown>[];
+  return users.some((user) => user.username === USERNAME && user.brainSeedCreated === true);
+};
+
 const _remove = async () => {
   await fs.rm(NOTES_ROOT, { recursive: true, force: true });
   await fs.rm(LISTS_ROOT, { recursive: true, force: true });
-  if (!(await _exists(CREATED_MARKER))) {
+  if (!(await _seededUser()) || !(await _exists(CREATED_MARKER))) {
     console.log(`Removed the ${SEED_CATEGORY} category from ${USERNAME}.`);
     return;
   }

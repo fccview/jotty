@@ -125,7 +125,7 @@ export const ChecklistBody = ({
       {localList.items.length > 0 && (
         <ChecklistProgress checklist={localList} />
       )}
-      <div className="flex-1 overflow-y-auto jotty-scrollable-content p-4">
+      <div className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter p-4">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -134,7 +134,7 @@ export const ChecklistBody = ({
           onDragCancel={onDragCancel}
           onDragOver={onDragOver}
         >
-          <div className="w-full min-h-[200px] space-y-4 overflow-hidden checklist-todo-container">
+          <div className="w-full min-h-[200px] space-y-4 overflow-x-clip checklist-todo-container">
             {incompleteItems.length > 0 && (
               <ChecklistItemsWrapper
                 title={TaskStatusLabels.TODO}

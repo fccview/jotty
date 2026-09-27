@@ -343,7 +343,7 @@ export const getHistory = async (
     await ensureRepo(username);
     const git = _getGitInstance(userDir);
 
-    const { getNoteById } = await import("@/app/_server/actions/note");
+    const { getNoteById } = await import("@/app/_server/actions/note/queries");
     const note = await getNoteById(noteUuid, username);
 
     if (!note) {
@@ -468,7 +468,7 @@ export const getVersion = async (
     }
 
     if (content === null) {
-      const { getNoteById } = await import("@/app/_server/actions/note");
+      const { getNoteById } = await import("@/app/_server/actions/note/queries");
       const note = await getNoteById(noteUuid, username);
 
       if (note) {

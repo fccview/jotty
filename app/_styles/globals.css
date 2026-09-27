@@ -674,6 +674,19 @@ pre.text-foreground span,
     -webkit-overflow-scrolling: touch;
 }
 
+@media (max-width: 1023px) {
+  .jotty-quick-nav-gutter::after {
+    content: "";
+    display: block;
+    flex-shrink: 0;
+    height: var(--jotty-quick-nav-space, 0px);
+  }
+
+  .jotty-note-bar-gutter {
+    padding-bottom: var(--jotty-note-bar-space, 0px);
+  }
+}
+
 .jotty-x-scroll,
 .tableWrapper {
     max-width: 100%;

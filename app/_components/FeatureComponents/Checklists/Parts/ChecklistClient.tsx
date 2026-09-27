@@ -21,6 +21,7 @@ import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
+import { useReturnPath } from "@/app/_hooks/useReturnPath";
 
 interface ChecklistClientProps {
   checklist: Checklist;
@@ -48,6 +49,7 @@ export const ChecklistClient = ({
     useState<string>("");
   const { openCreateChecklistModal, openCreateCategoryModal, openSettings } =
     useShortcut();
+  const returnPath = useReturnPath(`/?mode=${Modes.CHECKLISTS}`);
   const prevChecklistId = useRef(checklist.id);
   const prevUpdatedAt = useRef(checklist.updatedAt);
 
@@ -68,7 +70,7 @@ export const ChecklistClient = ({
 
   const handleBack = () => {
     checkNavigation(() => {
-      router.push("/?mode=checklists");
+      router.push(returnPath);
     });
   };
 
@@ -106,7 +108,7 @@ export const ChecklistClient = ({
 
   const handleDelete = (deletedId: string) => {
     checkNavigation(() => {
-      router.push("/?mode=checklists");
+      router.push(returnPath);
     });
   };
 

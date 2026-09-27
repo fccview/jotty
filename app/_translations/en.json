@@ -402,6 +402,7 @@
     "enterNoteTitle": "Enter note title...",
     "byType": "By type",
     "publiclySharedNote": "Publicly shared",
+    "sharedPubliclyBy": "This note is shared publicly by {owner}",
     "copyRawContent": "Copy markdown",
     "quickSave": "Quick Save",
     "noteNotFound": "Note not found",
@@ -415,9 +416,12 @@
     "readingTime": "{count, plural, one {# minute read} other {# minutes read}}",
     "tags": "Tags",
     "noTagsFound": "No tags found",
-    "searchTags": "Search tags..."
+    "searchTags": "Search tags...",
+    "createNoteFailed": "Could not create the note",
+    "createCategoryFailed": "Could not create the category, the note was not created"
   },
   "checklists": {
+    "sharedPubliclyBy": "This checklist is shared publicly by {owner}",
     "title": "Checklists",
     "allChecklists": "All Checklists",
     "completed": "Completed",
@@ -1157,6 +1161,7 @@
     "tryAgain": "Try again",
     "contactSupport": "Contact support",
     "invalidInput": "Invalid input",
+    "categoryOutOfBounds": "That category is outside your notes, so nothing was created",
     "requiredField": "This field is required",
     "emailInvalid": "Please enter a valid email",
     "passwordTooShort": "Password must be at least 8 characters",
@@ -1196,7 +1201,8 @@
     "anErrorOccurred": "An error occurred.",
     "deleteUserConfirmation": "Delete user \"{username}\"? This cannot be undone.",
     "userDeletedSuccessfully": "User deleted successfully!",
-    "failedToDeleteUser": "Failed to delete user"
+    "failedToDeleteUser": "Failed to delete user",
+    "readOnlyFolder": "This folder is read-only on the server, so the change could not be saved."
   },
   "pwa": {
     "installPromptTitle": "Install App",
@@ -1258,6 +1264,7 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Toggle rich editor mode",
     "toggleMarkdownMode": "Toggle markdown mode",
+    "quickControls": "Editor controls",
     "toggleBold": "Toggle bold",
     "toggleItalic": "Toggle italic",
     "toggleUnderline": "Toggle underline",

@@ -6,7 +6,7 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { Checklist, Result } from "@/app/_types";
@@ -20,8 +20,9 @@ import {
 import { canReach } from "@/app/_server/actions/share/queries";
 import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
-export const createSubItem = async (
+const _createSubItem = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
@@ -146,3 +147,8 @@ export const createSubItem = async (
     return { success: false, error: "Failed to create sub-item" };
   }
 };
+
+export const createSubItem = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _createSubItem(formData),
+  );

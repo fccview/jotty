@@ -3,6 +3,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { Button } from "../Buttons/Button";
+import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
+import {
+  MenuAlign,
+  MenuSide,
+  menuPlacementClasses,
+} from "@/app/_utils/menu-placement-utils";
 
 interface DropdownItem {
   type?: "item" | "divider";
@@ -25,9 +31,15 @@ export const DropdownMenu = ({
   align = "left",
 }: DropdownMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [openUpward, setOpenUpward] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const placement = useMenuPlacement(
+    isOpen,
+    dropdownRef,
+    menuRef,
+    MenuSide.Down,
+    align === "right" ? MenuAlign.End : MenuAlign.Start,
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -60,44 +72,23 @@ export const DropdownMenu = ({
     setIsOpen(false);
   };
 
-  const handleToggle = () => {
-    if (!isOpen && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-
-      let scrollParent: HTMLElement | null = triggerRef.current.parentElement;
-      while (scrollParent) {
-        if (scrollParent.classList.contains('jotty-sidebar-categories') || scrollParent.classList.contains('jotty-sidebar-tags')) {
-          break;
-        }
-        scrollParent = scrollParent.parentElement;
-      }
-
-      if (scrollParent) {
-        const containerRect = scrollParent.getBoundingClientRect();
-        const actualSpaceBelow = containerRect.bottom - rect.bottom;
-        const threshold = 200;
-
-        setOpenUpward(actualSpaceBelow < threshold);
-      }
-    }
-    setIsOpen(!isOpen);
-  };
+  const handleToggle = () => setIsOpen(!isOpen);
 
   return (
     <div
       ref={dropdownRef}
       className="jotty-dropdown-menu relative inline-block"
     >
-      <div ref={triggerRef} onClick={handleToggle} className="cursor-pointer">
+      <div onClick={handleToggle} className="cursor-pointer">
         {trigger}
       </div>
 
       {isOpen && (
         <div
+          ref={menuRef}
           className={cn(
             "absolute min-w-56 w-fit bg-background border border-border rounded-jotty shadow-lg z-50 py-1",
-            openUpward ? "bottom-full mb-1" : "top-full mt-1",
-            align === "right" ? "right-0" : "left-0"
+            menuPlacementClasses(placement)
           )}
         >
           {items.map((item, index) => {

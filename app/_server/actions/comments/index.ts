@@ -7,7 +7,7 @@ import {
   NotificationTargets,
   PermissionTypes,
 } from "@/app/_types/enums";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { getUsername, isAdmin, getUsers } from "@/app/_server/actions/users";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";

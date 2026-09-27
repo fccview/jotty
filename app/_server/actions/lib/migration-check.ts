@@ -9,6 +9,7 @@ import {
   SCHEMA_VERSION_FILE,
 } from "@/app/_consts/files";
 import { LEGACY_ORDER_FILE, LEGACY_SHARING_FILE } from "@/app/_consts/sharing";
+import { isWritable } from "@/app/_server/actions/lib/read-only";
 
 const CHECKED_MODES = [Modes.NOTES, Modes.CHECKLISTS];
 
@@ -42,7 +43,10 @@ const _hasOrderFile = async (dirPath: string): Promise<boolean> => {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
     for (const entry of entries) {
-      if (entry.isFile() && entry.name === LEGACY_ORDER_FILE) return true;
+      if (entry.isFile() && entry.name === LEGACY_ORDER_FILE) {
+        if (await isWritable(dirPath)) return true;
+        continue;
+      }
 
       if (entry.isDirectory() && !excluded.includes(entry.name)) {
         if (await _hasOrderFile(path.join(dirPath, entry.name))) return true;

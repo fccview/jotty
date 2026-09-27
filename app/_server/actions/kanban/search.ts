@@ -2,7 +2,7 @@
 
 import { Checklist, Item, KanbanPriority } from "@/app/_types";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { getFormData } from "@/app/_utils/global-utils";
 
 const _matchesText = (item: Item, query: string): boolean => {

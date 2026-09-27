@@ -1,9 +1,6 @@
 import { redirect } from "next/navigation";
-import {
-  CheckForNeedsMigration,
-  getNoteById,
-  getUserNotes,
-} from "@/app/_server/actions/note";
+import { CheckForNeedsMigration } from "@/app/_server/actions/note";
+import { getNoteById, getUserNotes } from "@/app/_server/actions/note/queries";
 import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { NoteClient } from "@/app/_components/FeatureComponents/Notes/NoteClient";
 import { Modes } from "@/app/_types/enums";

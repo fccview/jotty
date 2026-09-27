@@ -26,8 +26,8 @@ import {
   rgbToHex,
 } from "./_consts/themes";
 import { loadCustomThemes } from "./_server/actions/config";
-import { getUserChecklists } from "./_server/actions/checklist";
-import { getUserNotes } from "./_server/actions/note";
+import { getUserChecklists } from "./_server/actions/checklist/queries";
+import { getUserNotes } from "./_server/actions/note/queries";
 
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {

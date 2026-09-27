@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile, ensureDir } from "@/app/_server/actions/file";
 import { canReach } from "@/app/_server/actions/share/queries";
