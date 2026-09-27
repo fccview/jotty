@@ -675,15 +675,15 @@ pre.text-foreground span,
 }
 
 @media (max-width: 1023px) {
+  .jotty-layout-content {
+    padding-bottom: var(--jotty-note-bar-space, 0px);
+  }
+
   .jotty-quick-nav-gutter::after {
     content: "";
     display: block;
     flex-shrink: 0;
     height: var(--jotty-quick-nav-space, 0px);
-  }
-
-  .jotty-note-bar-gutter {
-    padding-bottom: var(--jotty-note-bar-space, 0px);
   }
 }
 

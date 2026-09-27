@@ -39,7 +39,7 @@ export const FileModal = ({
     handleUpload,
     handleDeleteFile,
     filteredFiles,
-    DeleteModal,
+    deleteModal,
   } = useFileManager();
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export const FileModal = ({
           />
         </div>
       </Modal>
-      <DeleteModal />
+      {deleteModal}
     </>
   );
 };

@@ -73,6 +73,7 @@ const _narrowest = (
   canRead: a.canRead && b.canRead,
   canEdit: a.canEdit && b.canEdit,
   canDelete: a.canDelete && b.canDelete,
+  canCreate: Boolean(a.canCreate && b.canCreate),
 });
 
 const _chainGrants = async (

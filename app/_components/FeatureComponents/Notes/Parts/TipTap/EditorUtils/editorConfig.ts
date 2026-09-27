@@ -97,6 +97,9 @@ export const createEditorExtensions = (
     Highlight.configure({
       multicolor: true,
     }).extend({
+      addKeyboardShortcuts() {
+        return {};
+      },
       addAttributes() {
         return {
           color: {

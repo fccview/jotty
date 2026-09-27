@@ -33,6 +33,7 @@ import { matchCallout } from "@/app/_utils/callout-utils";
 import { CalloutType } from "@/app/_consts/callouts";
 import { base64ToSvg, base64ToText } from "@/app/_utils/base64-utils";
 import { noteUrlTransform } from "@/app/_utils/url-transform-utils";
+import { tagOutsideCode } from "@/app/_utils/markdown-utils";
 
 type WikiLinkComponents = Record<
   typeof WIKILINK_TAG,
@@ -125,19 +126,7 @@ export const UnifiedMarkdownRenderer = ({
     },
   );
 
-  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
-  const codeBlocks: string[] = [];
-  processedContent = processedContent.replace(codeBlockRegex, (match) => {
-    codeBlocks.push(match);
-    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
-  });
-  processedContent = processedContent.replace(
-    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
-    '<span data-tag="$1">$1</span>',
-  );
-  codeBlocks.forEach((block, i) => {
-    processedContent = processedContent.replace(`__CODE_BLOCK_${i}__`, block);
-  });
+  processedContent = tagOutsideCode(processedContent);
 
   useEffect(() => {
     setIsClient(true);

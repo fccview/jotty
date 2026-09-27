@@ -124,7 +124,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
           onClone={handleClone}
         />
       </SwipeNavigationWrapper>
-      <viewModel.DeleteModal />
+      {viewModel.deleteModal}
       {showCloneModal && (
         <CloneCategoryModal
           isOpen={showCloneModal}

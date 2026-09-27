@@ -117,7 +117,7 @@ export const ChecklistClient = ({
     getNewType,
     handleConfirmConversion,
     sensors,
-    DeleteModal,
+    deleteModal,
   } = useChecklist({
     list: localChecklist,
     onUpdate: handleUpdate,
@@ -241,7 +241,7 @@ export const ChecklistClient = ({
         />
       )}
 
-      <DeleteModal />
+      {deleteModal}
       {showCloneModal && (
         <CloneCategoryModal
           isOpen={showCloneModal}

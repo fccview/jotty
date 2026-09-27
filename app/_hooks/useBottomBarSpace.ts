@@ -1,50 +1,42 @@
-import { RefObject, useEffect, useRef } from "react";
+import { RefObject, useEffect } from "react";
 import { BottomBarSpaces } from "@/app/_types/enums";
 
 interface BottomBarSpaceOptions {
   enabled?: boolean;
-  frozen?: boolean;
+  offset?: string;
 }
 
-const occupiedSpace = (bar: HTMLElement) => {
-  if (!bar.offsetHeight) return 0;
-  if (getComputedStyle(bar).position !== "fixed") return 0;
-  return Math.max(0, window.innerHeight - bar.getBoundingClientRect().top);
-};
+const isPinnedBar = (bar: HTMLElement) =>
+  bar.offsetHeight > 0 && getComputedStyle(bar).position === "fixed";
 
 export const useBottomBarSpace = (
   barRef: RefObject<HTMLElement | null>,
   space: BottomBarSpaces,
-  { enabled = true, frozen = false }: BottomBarSpaceOptions = {},
+  { enabled = true, offset = "0px" }: BottomBarSpaceOptions = {},
 ) => {
-  const frozenRef = useRef(frozen);
-
-  useEffect(() => {
-    frozenRef.current = frozen;
-  }, [frozen]);
-
   useEffect(() => {
     const bar = barRef.current;
     const root = document.documentElement;
     if (!enabled || !bar) return;
 
+    let reserved = 0;
+
     const measure = () => {
-      if (frozenRef.current) return;
-      root.style.setProperty(space, `${Math.ceil(occupiedSpace(bar))}px`);
+      if (!isPinnedBar(bar) || bar.offsetHeight <= reserved) return;
+      reserved = bar.offsetHeight;
+      root.style.setProperty(space, `calc(${reserved}px + ${offset})`);
     };
 
     measure();
 
     const observer = new ResizeObserver(measure);
     observer.observe(bar);
-    bar.addEventListener("transitionend", measure);
     window.addEventListener("resize", measure);
 
     return () => {
       observer.disconnect();
-      bar.removeEventListener("transitionend", measure);
       window.removeEventListener("resize", measure);
       root.style.removeProperty(space);
     };
-  }, [barRef, space, enabled]);
+  }, [barRef, space, enabled, offset]);
 };

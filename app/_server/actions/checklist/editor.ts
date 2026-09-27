@@ -199,7 +199,7 @@ export const editList = async (actor: SanitisedUser, formData: FormData) =>
     _editList(actor, formData),
   );
 
-export const dropList = async (
+const _dropList = async (
   currentUser: SanitisedUser,
   formData: FormData,
 ): Promise<{ success?: boolean; error?: string }> => {
@@ -289,8 +289,14 @@ export const dropList = async (
         title || "unknown",
         false
       );
-    } catch { }
+    } catch (logError) {
+      console.error("Failed to log the deleteList failure:", logError);
+    }
     return { error: await failedWith(error, "Failed to delete list") };
   }
 };
 
+export const dropList = async (actor: SanitisedUser, formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _dropList(actor, formData),
+  );

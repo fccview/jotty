@@ -307,7 +307,7 @@ const KanbanCardComponent = ({
           </div>
         </div>
       </div>
-      <kanbanItemHook.DeleteModal />
+      {kanbanItemHook.deleteModal}
     </>
   );
 };

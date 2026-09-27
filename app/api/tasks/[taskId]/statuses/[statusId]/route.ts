@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid, turnAway } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist/queries";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { serverWriteFile } from "@/app/_server/actions/file";
-import path from "path";
-import { isKanbanType } from "@/app/_types/enums";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { restatus } from "@/app/_server/actions/checklist/restatus";
+import { isKanbanType, PermissionTypes } from "@/app/_types/enums";
+import { API_FALLBACK_STATUSES } from "@/app/_consts/kanban";
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +30,7 @@ export async function PUT(
         );
       }
 
-      const currentStatuses = task.statuses || [
-        { id: "todo", label: "To Do", order: 0 },
-        { id: "in_progress", label: "In Progress", order: 1 },
-        { id: "completed", label: "Completed", order: 2 },
-      ];
+      const currentStatuses = task.statuses || API_FALLBACK_STATUSES;
 
       const statusIndex = currentStatuses.findIndex(
         (s) => s.id === params.statusId,
@@ -48,40 +42,36 @@ export async function PUT(
         );
       }
 
-      const updatedStatuses = currentStatuses.map((s) =>
-        s.id === params.statusId
-          ? {
-              ...s,
-              label: label ?? s.label,
-              color: color !== undefined ? color : s.color,
-              order: order !== undefined ? order : s.order,
-            }
-          : s,
+      const refused = await turnAway(
+        user.username,
+        task.uuid!,
+        PermissionTypes.EDIT,
+      );
+      if (refused) return refused;
+
+      const result = await restatus(user, task.uuid!, (latest) =>
+        (latest || API_FALLBACK_STATUSES).map((s) =>
+          s.id === params.statusId
+            ? {
+                ...s,
+                label: label ?? s.label,
+                color: color !== undefined ? color : s.color,
+                order: order !== undefined ? order : s.order,
+              }
+            : s,
+        ),
       );
 
-      const updatedTask = {
-        ...task,
-        statuses: updatedStatuses,
-        updatedAt: new Date().toISOString(),
-      };
-
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        task.owner!,
-      );
-      const filePath = path.join(
-        ownerDir,
-        task.category || "Uncategorized",
-        `${task.id}.md`,
-      );
-
-      await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error || "Failed to update status" },
+          { status: 500 },
+        );
+      }
 
       return NextResponse.json({
         success: true,
-        data: updatedStatuses.find((s) => s.id === params.statusId),
+        data: result.data?.statuses?.find((s) => s.id === params.statusId),
       });
     } catch (error) {
       console.error("API Error:", error);
@@ -113,11 +103,7 @@ export async function DELETE(
         );
       }
 
-      const currentStatuses = task.statuses || [
-        { id: "todo", label: "To Do", order: 0 },
-        { id: "in_progress", label: "In Progress", order: 1 },
-        { id: "completed", label: "Completed", order: 2 },
-      ];
+      const currentStatuses = task.statuses || API_FALLBACK_STATUSES;
 
       const statusIndex = currentStatuses.findIndex(
         (s) => s.id === params.statusId,
@@ -129,48 +115,25 @@ export async function DELETE(
         );
       }
 
-      const updatedStatuses = currentStatuses.filter(
-        (s) => s.id !== params.statusId,
+      const refused = await turnAway(
+        user.username,
+        task.uuid!,
+        PermissionTypes.EDIT,
+      );
+      if (refused) return refused;
+
+      const result = await restatus(user, task.uuid!, (latest) =>
+        (latest || API_FALLBACK_STATUSES).filter(
+          (s) => s.id !== params.statusId,
+        ),
       );
 
-      const sortedStatuses = [...updatedStatuses].sort(
-        (a, b) => a.order - b.order,
-      );
-      const defaultStatusId = sortedStatuses[0]?.id || "todo";
-
-      const updateItemStatus = (items: any[]): any[] => {
-        return items.map((item) => {
-          const updatedItem = { ...item };
-          if (updatedItem.status === params.statusId) {
-            updatedItem.status = defaultStatusId;
-          }
-          if (updatedItem.children) {
-            updatedItem.children = updateItemStatus(updatedItem.children);
-          }
-          return updatedItem;
-        });
-      };
-
-      const updatedTask = {
-        ...task,
-        statuses: updatedStatuses,
-        items: updateItemStatus(task.items),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        task.owner!,
-      );
-      const filePath = path.join(
-        ownerDir,
-        task.category || "Uncategorized",
-        `${task.id}.md`,
-      );
-
-      await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error || "Failed to delete status" },
+          { status: 500 },
+        );
+      }
 
       return NextResponse.json({ success: true });
     } catch (error) {

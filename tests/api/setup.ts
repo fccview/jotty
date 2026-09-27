@@ -43,6 +43,12 @@ export const mockGetExportProgress = vi.fn();
 export const mockGetAppSettings = vi.fn();
 export const mockResolveApiId = vi.fn();
 export const mockLegacyResolve = vi.fn();
+export const mockRemoveItem = vi.fn();
+export const mockGraftItem = vi.fn();
+export const mockRestatus = vi.fn();
+export const mockAssignItem = vi.fn();
+export const mockRemindItem = vi.fn();
+export const mockCanReach = vi.fn();
 
 vi.mock("@/app/_server/actions/api", () => ({
   authenticateApiKey: (...args: any[]) => mockAuthenticateApiKey(...args),
@@ -90,6 +96,27 @@ vi.mock("@/app/_server/actions/checklist/editor", () => ({
 vi.mock("@/app/_server/actions/checklist-item/editor", () => ({
   addItem: (...args: any[]) => mockAddItem(...args),
   editItem: (...args: any[]) => mockEditItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist-item/remover", () => ({
+  removeItem: (...args: any[]) => mockRemoveItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist-item/grafter", () => ({
+  graftItem: (...args: any[]) => mockGraftItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist/restatus", () => ({
+  restatus: (...args: any[]) => mockRestatus(...args),
+}));
+
+vi.mock("@/app/_server/actions/kanban/tweaker", () => ({
+  assignItem: (...args: any[]) => mockAssignItem(...args),
+  remindItem: (...args: any[]) => mockRemindItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/share/queries", () => ({
+  canReach: (...args: any[]) => mockCanReach(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist-item/stamper", () => ({
@@ -176,6 +203,21 @@ export function resetApiMocks() {
   mockLegacyResolve.mockReset();
   mockResolveApiId.mockReset();
   mockResolveApiId.mockImplementation(async (_mode: Modes, param: string) => param);
+  mockRemoveItem.mockReset();
+  mockRemoveItem.mockResolvedValue({ success: true });
+  mockGraftItem.mockReset();
+  mockGraftItem.mockResolvedValue({ success: true });
+  mockRestatus.mockReset();
+  mockRestatus.mockImplementation(
+    async (_user: any, _uuid: string, reshape: (current?: any[]) => any[]) => ({
+      success: true,
+      data: { statuses: reshape(undefined) },
+    }),
+  );
+  mockAssignItem.mockReset();
+  mockRemindItem.mockReset();
+  mockCanReach.mockReset();
+  mockCanReach.mockResolvedValue(true);
 }
 
 export function createMockRequest(

@@ -14,6 +14,11 @@ vi.mock("@/app/_server/actions/log", () => ({
   logAudit: (...args: any[]) => mockLogAudit(...args),
 }));
 
+vi.mock("next-intl/server", () => ({
+  getTranslations: async () => (key: string, values?: Record<string, string>) =>
+    values?.field ? `${key}:${values.field}` : key,
+}));
+
 vi.mock("@/app/_server/actions/checklist/queries", () => ({
   getListById: vi.fn().mockResolvedValue(null),
 }));
@@ -212,6 +217,78 @@ describe("Config Actions", () => {
       const written = JSON.parse(mockFs.writeFile.mock.calls[0][1] as string);
       expect(written.editor.historyEnabled).toBe(true);
       expect(written.editor.enableSlashCommands).toBe(false);
+    });
+
+    describe("editor payload shape", () => {
+      beforeEach(() => {
+        mockGetCurrentUser.mockResolvedValue({
+          username: "superadmin",
+          isAdmin: true,
+          isSuperAdmin: true,
+        });
+        mockFs.readFile.mockResolvedValue(
+          JSON.stringify({
+            appName: "Jotty",
+            editor: { historyEnabled: true, enableSlashCommands: false },
+          }),
+        );
+        mockFs.access.mockResolvedValue(undefined);
+        mockFs.writeFile.mockResolvedValue(undefined);
+      });
+
+      const save = (editor?: string) =>
+        updateAppSettings(
+          createFormData(
+            editor === undefined ? { appName: "Jotty" } : { appName: "Jotty", editor },
+          ),
+        );
+
+      const written = () =>
+        JSON.parse(mockFs.writeFile.mock.calls[0][1] as string);
+
+      it("should refuse a null editor flag and name the field", async () => {
+        const result = await save(JSON.stringify({ enableSlashCommands: null }));
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe("invalidEditorSetting:enableSlashCommands");
+        expect(mockFs.writeFile).not.toHaveBeenCalled();
+      });
+
+      it("should refuse a drawio url that is not a string", async () => {
+        const result = await save(JSON.stringify({ drawioUrl: 42 }));
+
+        expect(result.error).toBe("invalidEditorSetting:drawioUrl");
+        expect(mockFs.writeFile).not.toHaveBeenCalled();
+      });
+
+      it("should refuse an editor payload that is not an object", async () => {
+        const result = await save(JSON.stringify([true]));
+
+        expect(result.error).toBe("invalidEditorSettings");
+        expect(mockFs.writeFile).not.toHaveBeenCalled();
+      });
+
+      it("should merge valid fields and drop unknown ones", async () => {
+        const result = await save(
+          JSON.stringify({ enableBubbleMenu: false, sneaky: "yes" }),
+        );
+
+        expect(result.success).toBe(true);
+        expect(written().editor).toMatchObject({
+          enableBubbleMenu: false,
+          historyEnabled: true,
+          enableSlashCommands: false,
+        });
+        expect(written().editor.sneaky).toBeUndefined();
+      });
+
+      it("should keep stored editor settings when no editor payload is sent", async () => {
+        const result = await save();
+
+        expect(result.success).toBe(true);
+        expect(written().editor.historyEnabled).toBe(true);
+        expect(written().editor.enableSlashCommands).toBe(false);
+      });
     });
   });
 

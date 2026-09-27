@@ -16,10 +16,12 @@ import { logContentEvent, logAudit } from "@/app/_server/actions/log";
 import { itemHref, publicHref } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { isEncrypted } from "@/app/_utils/encryption-utils";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseNoteEditorProps {
@@ -39,6 +41,7 @@ export const useNoteEditor = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAppMode();
+  const { permissions } = usePermissions();
   const { showToast } = useToast();
   const isMinimalMode = useMinimalMode();
   const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
@@ -150,10 +153,18 @@ export const useNoteEditor = ({
     }
   }, [note, isMinimalMode, defaultEditorIsMarkdown]);
 
+  const isEditorVisible =
+    (notesDefaultMode === "edit" ||
+      searchParams?.get("editor") === "true" ||
+      isEditing) &&
+    Boolean(permissions?.canEdit) &&
+    (!note.encrypted || isEditingEncrypted) &&
+    !isEncrypted(editorContent || "");
+
   const editorActivity = useEditorActivityStore();
 
   useEffect(() => {
-    if (isEditing) {
+    if (isEditorVisible) {
       editorActivity.register("note-editor");
     } else {
       editorActivity.unregister("note-editor");
@@ -161,7 +172,7 @@ export const useNoteEditor = ({
     return () => {
       editorActivity.unregister("note-editor");
     };
-  }, [isEditing]);
+  }, [isEditorVisible]);
 
   useEffect(() => {
     if (notesDefaultMode !== "edit" && !isEditing) {
@@ -483,6 +494,7 @@ export const useNoteEditor = ({
     isEditing,
     setIsEditing,
     isEditMode: notesDefaultMode === "edit" || isEditing,
+    isEditorVisible,
     status,
     hasUnsavedChanges,
     handleEdit,
@@ -506,7 +518,7 @@ export const useNoteEditor = ({
     clearPassphraseCache,
     getCachedPassphrase,
     getCachedMethod,
-    DeleteModal: () => (
+    deleteModal: (
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

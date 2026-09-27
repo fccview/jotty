@@ -771,9 +771,7 @@ const CODE_STASH_REGEX = new RegExp(
   "g"
 );
 
-export const convertMarkdownToHtml = (markdown: string): string => {
-  if (!markdown || typeof markdown !== "string") return "";
-
+export const tagOutsideCode = (markdown: string): string => {
   const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
   const codeBlocks: string[] = [];
   const stashed = markdown.replace(codeBlockRegex, (match) => {
@@ -781,16 +779,20 @@ export const convertMarkdownToHtml = (markdown: string): string => {
     return `${CODE_STASH_MARK}${codeBlocks.length - 1}${CODE_STASH_MARK}`;
   });
 
-  const processed = stashed
+  return stashed
     .replace(
-      /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/g,
+      /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
       '<span data-tag="$1">$1</span>'
     )
     .replace(CODE_STASH_REGEX, (match, index: string) =>
       codeBlocks[Number(index)] ?? match
     );
+};
 
-  const file = markdownProcessor.processSync(processed);
+export const convertMarkdownToHtml = (markdown: string): string => {
+  if (!markdown || typeof markdown !== "string") return "";
+
+  const file = markdownProcessor.processSync(tagOutsideCode(markdown));
 
   return String(file);
 };

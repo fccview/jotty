@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist/queries";
-import { deleteItem } from "@/app/_server/actions/checklist-item";
+import { removeItem } from "@/app/_server/actions/checklist-item/remover";
 import { editItem } from "@/app/_server/actions/checklist-item/editor";
 import { isKanbanType } from "@/app/_types/enums";
 
@@ -79,11 +79,7 @@ export async function DELETE(
         );
       }
 
-      const formData = new FormData();
-      formData.append("uuid", board.uuid!);
-      formData.append("itemId", params.itemId);
-
-      const result = await deleteItem(formData);
+      const result = await removeItem(user, board.uuid!, params.itemId);
 
       if (!result.success) {
         return NextResponse.json(

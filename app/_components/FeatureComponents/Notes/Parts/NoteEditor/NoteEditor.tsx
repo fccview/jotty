@@ -41,8 +41,8 @@ export const NoteEditor = ({
     searchParams?.get("editor") === "true";
 
   return (
-    <NoteQuickBar active={viewModel.isEditing}>
-      <div className="jotty-note-bar-gutter flex-1 flex flex-col overflow-hidden bg-background h-full">
+    <NoteQuickBar active={viewModel.isEditorVisible}>
+      <div className="flex-1 flex flex-col overflow-hidden bg-background h-full">
         <NoteEditorHeader
           note={note}
           categories={categories}
@@ -57,9 +57,9 @@ export const NoteEditor = ({
         />
 
         <div className="flex flex-1 w-full relative min-h-0">
-          <div className="jotty-quick-nav-gutter flex-1 overflow-y-auto jotty-scrollable-content min-h-0">
+          <div className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter min-h-0">
             <NoteEditorContent
-              isEditing={viewModel.isEditing}
+              isEditorVisible={viewModel.isEditorVisible}
               noteContent={note.content}
               editorContent={viewModel.editorContent}
               onEditorContentChange={viewModel.handleEditorContentChange}
@@ -67,8 +67,7 @@ export const NoteEditor = ({
               encrypted={note.encrypted}
               onOpenDecryptModal={() => decryptModalRef.current?.()}
               onOpenViewModal={() => viewModalRef.current?.()}
-              isEditingEncrypted={viewModel.isEditingEncrypted}
-            />
+              />
           </div>
 
           {showTOC && (

@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid, turnAway } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist/queries";
 import { editItem } from "@/app/_server/actions/checklist-item/editor";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { serverWriteFile } from "@/app/_server/actions/file";
-import path from "path";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { KanbanPriorityLevel } from "@/app/_types/enums";
+import { removeItem } from "@/app/_server/actions/checklist-item/remover";
+import { KanbanPriorityLevel, PermissionTypes } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
@@ -236,42 +233,21 @@ export async function DELETE(
         return NextResponse.json({ error: "Item not found" }, { status: 404 });
       }
 
-      const filterOutItem = (items: any[], itemId: string): any[] => {
-        return items
-          .filter((item) => item.id !== itemId)
-          .map((item) => {
-            const filteredChildren = item.children
-              ? filterOutItem(item.children, itemId)
-              : undefined;
-            return {
-              ...item,
-              children:
-                filteredChildren && filteredChildren.length > 0
-                  ? filteredChildren
-                  : undefined,
-            };
-          });
-      };
-
-      const updatedList = {
-        ...list,
-        items: filterOutItem(list.items || [], item.id),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner!,
+      const refused = await turnAway(
+        user.username,
+        list.uuid!,
+        PermissionTypes.DELETE,
       );
-      const filePath = path.join(
-        ownerDir,
-        list.category || "Uncategorized",
-        `${list.id}.md`,
-      );
+      if (refused) return refused;
 
-      await serverWriteFile(filePath, listToMarkdown(updatedList as any));
+      const result = await removeItem(user, list.uuid!, item.id);
+
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error || "Failed to delete item" },
+          { status: 500 },
+        );
+      }
 
       return NextResponse.json({ success: true });
     } catch (error) {

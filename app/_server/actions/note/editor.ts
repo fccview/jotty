@@ -271,7 +271,7 @@ export const editNote = async (
     _editNote(actor, formData, autosaveNotes),
   );
 
-export const dropNote = async (
+const _dropNote = async (
   currentUser: SanitisedUser,
   formData: FormData,
 ): Promise<{ success?: boolean; error?: string }> => {
@@ -380,3 +380,7 @@ export const dropNote = async (
   }
 };
 
+export const dropNote = async (actor: SanitisedUser, formData: FormData) =>
+  runQueued(itemLane(Modes.NOTES, formData.get("uuid") as string), () =>
+    _dropNote(actor, formData),
+  );

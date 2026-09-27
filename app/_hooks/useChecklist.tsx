@@ -804,7 +804,7 @@ export const useChecklist = ({
     deletingItemsCount: itemsToDelete.length,
     pendingTogglesCount: pendingToggles.size,
     sensors,
-    DeleteModal: () => (
+    deleteModal: (
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

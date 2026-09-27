@@ -122,8 +122,11 @@ const _mentionsOf = (
 
   const query = `"${words.join(" ").replace(/"/g, '""')}"`;
   const rows = relationsDb()
-    .prepare("SELECT uuid, body FROM texts WHERE texts MATCH ? LIMIT 400")
-    .all(query) as { uuid: string; body: string }[];
+    .prepare(
+      `SELECT uuid, body FROM texts WHERE texts MATCH ?
+       AND uuid IN (SELECT value FROM json_each(?)) LIMIT 400`,
+    )
+    .all(query, JSON.stringify(Array.from(visible.keys()))) as { uuid: string; body: string }[];
 
   const phrase = _phrase(item.title);
   const found: MentionedIn[] = [];

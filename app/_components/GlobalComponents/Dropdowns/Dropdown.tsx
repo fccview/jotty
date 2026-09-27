@@ -24,6 +24,7 @@ interface DropdownProps {
   value: string | number;
   options: DropdownOption[];
   onChange: (value: string) => void;
+  id?: string;
   className?: string;
   disabled?: boolean;
   placeholder?: string;
@@ -35,6 +36,7 @@ export const Dropdown = ({
   value,
   options,
   onChange,
+  id,
   className = "",
   disabled = false,
   placeholder = "",
@@ -93,6 +95,7 @@ export const Dropdown = ({
         </div>
       ) : (
         <button
+          id={id}
           type="button"
           onClick={(e) => {
             e.preventDefault();

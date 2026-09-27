@@ -7,9 +7,7 @@ import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/P
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useMemo } from "react";
-import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
@@ -22,7 +20,7 @@ import { useTranslations } from "next-intl";
 import { ItemTypes } from "@/app/_types/enums";
 
 interface NoteEditorContentProps {
-  isEditing: boolean;
+  isEditorVisible: boolean;
   noteContent?: string;
   editorContent: string;
   onEditorContentChange: (
@@ -34,11 +32,10 @@ interface NoteEditorContentProps {
   encrypted?: boolean;
   onOpenDecryptModal?: () => void;
   onOpenViewModal?: () => void;
-  isEditingEncrypted?: boolean;
 }
 
 export const NoteEditorContent = ({
-  isEditing,
+  isEditorVisible,
   noteContent,
   editorContent,
   onEditorContentChange,
@@ -46,22 +43,17 @@ export const NoteEditorContent = ({
   encrypted,
   onOpenDecryptModal,
   onOpenViewModal,
-  isEditingEncrypted,
 }: NoteEditorContentProps) => {
   const t = useTranslations();
   const { user, notes, checklists } = useAppMode();
   const { compactMode } = useSettings();
-  const searchParams = useSearchParams();
-  const notesDefaultMode = user?.notesDefaultMode || "view";
-  const editor = searchParams?.get("editor");
   const editorRef = useRef<TiptapEditorRef>(null);
-  const { permissions } = usePermissions();
   const isMinimalMode = useMinimalMode();
 
   useEffect(() => {
     if (
       editorRef.current &&
-      (isEditing || notesDefaultMode === "edit" || editor === "true") &&
+      isEditorVisible &&
       !isMinimalMode
     ) {
       editorRef.current.updateAtMentionData(
@@ -73,17 +65,10 @@ export const NoteEditorContent = ({
   }, [
     notes,
     checklists,
-    isEditing,
-    notesDefaultMode,
-    editor,
+    isEditorVisible,
     editorRef,
     isMinimalMode,
   ]);
-
-  const isEditMode =
-    (notesDefaultMode === "edit" || editor === "true" || isEditing) &&
-    permissions?.canEdit &&
-    (!encrypted || isEditingEncrypted);
 
   const isContentEncrypted = isEncrypted(editorContent || "");
 
@@ -137,7 +122,7 @@ export const NoteEditorContent = ({
   if (isMinimalMode) {
     return (
       <MinimalEditorPanel
-        isEditing={isEditMode ?? false}
+        isEditing={isEditorVisible}
         noteContent={encrypted ? editorContent : noteContent || ""}
         onEditorContentChange={onEditorContentChange}
       />
@@ -146,7 +131,7 @@ export const NoteEditorContent = ({
 
   return (
     <div className="flex-1 h-full">
-      {isEditMode ? (
+      {isEditorVisible ? (
         <TiptapEditor
           ref={editorRef}
           content={editorContent}

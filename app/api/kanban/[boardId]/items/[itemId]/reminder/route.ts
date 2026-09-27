@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
 import { getListById } from "@/app/_server/actions/checklist/queries";
-import { setKanbanItemReminder } from "@/app/_server/actions/kanban/items";
+import { remindItem } from "@/app/_server/actions/kanban/tweaker";
 import { isKanbanType } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
@@ -36,12 +36,12 @@ export async function PUT(
         );
       }
 
-      const formData = new FormData();
-      formData.append("uuid", board.uuid!);
-      formData.append("itemId", params.itemId);
-      formData.append("reminder", JSON.stringify({ datetime }));
-
-      const result = await setKanbanItemReminder(formData);
+      const result = await remindItem(
+        user,
+        board.uuid!,
+        params.itemId,
+        JSON.stringify({ datetime }),
+      );
 
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
@@ -78,12 +78,7 @@ export async function DELETE(
         );
       }
 
-      const formData = new FormData();
-      formData.append("uuid", board.uuid!);
-      formData.append("itemId", params.itemId);
-      formData.append("reminder", "");
-
-      const result = await setKanbanItemReminder(formData);
+      const result = await remindItem(user, board.uuid!, params.itemId, "");
 
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });

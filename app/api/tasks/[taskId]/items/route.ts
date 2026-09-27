@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid, turnAway } from "@/app/_utils/api-utils";
 import { addItem } from "@/app/_server/actions/checklist-item/editor";
+import { graftItem } from "@/app/_server/actions/checklist-item/grafter";
 import { getListById } from "@/app/_server/actions/checklist/queries";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { serverWriteFile } from "@/app/_server/actions/file";
-import { isKanbanType, TaskStatus } from "@/app/_types/enums";
-import path from "path";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { isKanbanType, PermissionTypes, TaskStatus } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +37,13 @@ export async function POST(
         );
       }
 
+      const refused = await turnAway(
+        user.username,
+        task.uuid!,
+        PermissionTypes.EDIT,
+      );
+      if (refused) return refused;
+
       if (parentIndex !== undefined) {
         const indexPath = parentIndex
           .toString()
@@ -66,60 +70,20 @@ export async function POST(
           );
         }
 
-        const newSubItem: any = {
-          id: `${task.id}-sub-${Date.now()}`,
-          text,
-          status: status || TaskStatus.TODO,
-          completed: false,
-          order: 0,
-        };
+        const graft = new FormData();
+        graft.append("uuid", task.uuid!);
+        graft.append("parentId", parentItem.id);
+        graft.append("text", text);
+        graft.append("status", status || TaskStatus.TODO);
 
-        const addSubItemToParent = (
-          items: any[],
-          parentId: string,
-        ): boolean => {
-          for (let item of items) {
-            if (item.id === parentId) {
-              if (!item.children) {
-                item.children = [];
-              }
-              item.children.push(newSubItem);
-              return true;
-            }
-            if (item.children && addSubItemToParent(item.children, parentId)) {
-              return true;
-            }
-          }
-          return false;
-        };
+        const grafted = await graftItem(user, graft);
 
-        const updatedItems = JSON.parse(JSON.stringify(task.items));
-        if (!addSubItemToParent(updatedItems, parentItem.id)) {
+        if (!grafted.success) {
           return NextResponse.json(
-            { error: "Failed to add sub-item" },
+            { error: grafted.error || "Failed to add sub-item" },
             { status: 500 },
           );
         }
-
-        const updatedTask = {
-          ...task,
-          items: updatedItems,
-          updatedAt: new Date().toISOString(),
-        };
-
-        const ownerDir = path.join(
-          process.cwd(),
-          "data",
-          CHECKLISTS_FOLDER,
-          task.owner!,
-        );
-        const filePath = path.join(
-          ownerDir,
-          task.category || "Uncategorized",
-          `${task.id}.md`,
-        );
-
-        await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
 
         return NextResponse.json({ success: true });
       }

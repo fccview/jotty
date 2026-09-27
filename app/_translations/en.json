@@ -1161,6 +1161,8 @@
     "tryAgain": "Try again",
     "contactSupport": "Contact support",
     "invalidInput": "Invalid input",
+    "invalidEditorSettings": "Editor settings must be an object, nothing was saved",
+    "invalidEditorSetting": "Editor setting {field} has the wrong type, nothing was saved",
     "categoryOutOfBounds": "That category is outside your notes, so nothing was created",
     "requiredField": "This field is required",
     "emailInvalid": "Please enter a valid email",

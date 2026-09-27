@@ -45,11 +45,10 @@ const _canonical = async (url: string, owner: string): Promise<string | null> =>
   const target = parseItemHref(url);
   if (!target) return null;
 
-  if (target.uuid && target.type) return null;
-
   if (target.uuid) {
     const type = _typeOf(target.uuid);
-    return type ? itemHref(type, target.uuid) : null;
+    if (!type || type === target.type) return null;
+    return itemHref(type, target.uuid);
   }
 
   if (target.legacy && target.type) {

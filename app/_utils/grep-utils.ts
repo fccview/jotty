@@ -14,7 +14,9 @@
 import { exec, execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
+import fs from "fs/promises";
 import yaml from "js-yaml";
+import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isPathUuid, pathUuid } from "@/app/_server/actions/lib/read-only";
 
 const execAsync = promisify(exec);
@@ -66,20 +68,14 @@ export const grepFindFileByField = async (
   }
 };
 
-const _unstampedFiles = async (dir: string): Promise<string[]> => {
+const _storedUuid = async (filePath: string): Promise<string | undefined> => {
   try {
-    const { stdout } = await execFileAsync("grep", [
-      "-rL",
-      "^uuid: ",
-      dir,
-      "--include=*.md",
-    ]);
-    return stdout.trim().split("\n").filter(Boolean);
+    const { uuid } = extractYamlMetadata(await fs.readFile(filePath, "utf-8"))
+      .metadata;
+    return typeof uuid === "string" && uuid ? uuid : undefined;
   } catch (error) {
-    const stdout = (error as { stdout?: unknown })?.stdout;
-    return typeof stdout === "string"
-      ? stdout.trim().split("\n").filter(Boolean)
-      : [];
+    console.error("Failed to read frontmatter for derived uuid:", filePath, error);
+    return undefined;
   }
 };
 
@@ -89,14 +85,12 @@ const _findUnstamped = async (
 ): Promise<GrepFileResult | null> => {
   if (!isPathUuid(uuid)) return null;
 
-  const match = (await _unstampedFiles(dir)).find(
-    (filePath) => pathUuid(filePath) === uuid,
+  const match = (await grepListAllFiles(dir)).find(
+    (file) => pathUuid(file.filePath) === uuid,
   );
-  if (!match) return null;
+  if (!match || (await _storedUuid(match.filePath))) return null;
 
-  const parts = path.relative(dir, match).split(path.sep);
-  const id = path.basename(parts.pop() || "", ".md");
-  return { filePath: match, id, category: parts.join("/") };
+  return match;
 };
 
 export const grepFindFileByUuid = async (

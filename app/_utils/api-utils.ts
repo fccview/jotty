@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey } from "@/app/_server/actions/api";
 import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
-import { Modes } from "@/app/_types/enums";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 
 /**
  * @deprecated Legacy category+id fallback for checklist-family API routes
@@ -43,3 +44,12 @@ export const withApiAuth = async (
   }
 };
 
+
+export const turnAway = async (
+  username: string,
+  uuid: string,
+  permission: PermissionTypes,
+): Promise<NextResponse | null> =>
+  (await canReach(uuid, ItemTypes.CHECKLIST, username, permission))
+    ? null
+    : NextResponse.json({ error: "Forbidden" }, { status: 403 });

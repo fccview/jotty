@@ -120,6 +120,29 @@ describe.skipIf(IS_ROOT)("Read-only mounted category (#580)", () => {
     });
   });
 
+  it("finds an unstamped item whose body has a uuid line", async () => {
+    unlock();
+    writeFileSync(NOTE_PATH, "# Old note\n\nuuid: example\n");
+    lock();
+
+    const found = await grepFindFileByUuid(USER_DIR, pathUuid(NOTE_PATH));
+
+    expect(found?.filePath).toBe(NOTE_PATH);
+  });
+
+  it("does not match a derived uuid when the frontmatter stores one", async () => {
+    unlock();
+    writeFileSync(
+      NOTE_PATH,
+      "---\nuuid: 22222222-2222-4222-8222-222222222222\n---\n# Old note\n",
+    );
+    lock();
+
+    const found = await grepFindFileByUuid(USER_DIR, pathUuid(NOTE_PATH));
+
+    expect(found).toBeNull();
+  });
+
   it("does not scan for derived uuids when the uuid is a random one", async () => {
     const found = await grepFindFileByUuid(
       USER_DIR,

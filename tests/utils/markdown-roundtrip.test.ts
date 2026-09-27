@@ -9,6 +9,7 @@ import {
   convertHtmlToMarkdown,
   convertMarkdownToHtml,
   sanitizeMarkdown,
+  tagOutsideCode,
 } from "@/app/_utils/markdown-utils";
 
 const ZWSP = "​";
@@ -36,6 +37,14 @@ const decodeEntities = (html: string) =>
 
 describe("markdown round trip", () => {
   const markdown = `Before\n\n\`\`\`bash\n${BASH_SNIPPET}\n\`\`\`\n\nAfter #tagged\n`;
+
+  it("tags hashtags without touching the bash block for the view renderer", () => {
+    const tagged = tagOutsideCode(markdown);
+
+    expect(tagged).toBe(
+      `Before\n\n\`\`\`bash\n${BASH_SNIPPET}\n\`\`\`\n\nAfter <span data-tag="tagged">tagged</span>\n`,
+    );
+  });
 
   it("keeps a bash code block with $' intact when rendering to html", () => {
     const html = convertMarkdownToHtml(markdown);

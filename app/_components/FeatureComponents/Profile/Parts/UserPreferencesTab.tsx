@@ -1024,6 +1024,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             {t('settings.newItemInsertion')}
           </Label>
           <Dropdown
+            id="new-item-insertion"
             value={currentSettings.newItemInsertion || "top"}
             onChange={(value) =>
               handleSettingChange(

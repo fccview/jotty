@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
+import { withApiAuth, listUuid, turnAway } from "@/app/_utils/api-utils";
 import { addItem } from "@/app/_server/actions/checklist-item/editor";
+import { graftItem } from "@/app/_server/actions/checklist-item/grafter";
 import { getListById } from "@/app/_server/actions/checklist/queries";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { serverWriteFile } from "@/app/_server/actions/file";
-import path from "path";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { PermissionTypes } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +29,13 @@ export async function POST(
       if (!list) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
+
+      const refused = await turnAway(
+        user.username,
+        list.uuid!,
+        PermissionTypes.EDIT,
+      );
+      if (refused) return refused;
 
       const formData = new FormData();
       formData.append("text", text);
@@ -62,59 +66,19 @@ export async function POST(
           );
         }
 
-        const newSubItem: any = {
-          id: `${list.uuid}-sub-${Date.now()}`,
-          text,
-          completed: false,
-          order: 0,
-        };
+        const graft = new FormData();
+        graft.append("uuid", list.uuid!);
+        graft.append("parentId", parentItem.id);
+        graft.append("text", text);
 
-        const addSubItemToParent = (
-          items: any[],
-          parentId: string,
-        ): boolean => {
-          for (let item of items) {
-            if (item.id === parentId) {
-              if (!item.children) {
-                item.children = [];
-              }
-              item.children.push(newSubItem);
-              return true;
-            }
-            if (item.children && addSubItemToParent(item.children, parentId)) {
-              return true;
-            }
-          }
-          return false;
-        };
+        const grafted = await graftItem(user, graft);
 
-        const updatedItems = JSON.parse(JSON.stringify(list.items));
-        if (!addSubItemToParent(updatedItems, parentItem.id)) {
+        if (!grafted.success) {
           return NextResponse.json(
-            { error: "Failed to add sub-item" },
+            { error: grafted.error || "Failed to add sub-item" },
             { status: 500 },
           );
         }
-
-        const updatedList = {
-          ...list,
-          items: updatedItems,
-          updatedAt: new Date().toISOString(),
-        };
-
-        const ownerDir = path.join(
-          process.cwd(),
-          "data",
-          CHECKLISTS_FOLDER,
-          list.owner!,
-        );
-        const filePath = path.join(
-          ownerDir,
-          list.category || UNCATEGORIZED,
-          `${list.id}.md`,
-        );
-
-        await serverWriteFile(filePath, listToMarkdown(updatedList as any));
 
         return NextResponse.json({ success: true });
       }
