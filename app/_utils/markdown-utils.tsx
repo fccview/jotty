@@ -17,6 +17,7 @@ import {
   parseItemHref,
 } from "./item-href-utils";
 import { getContrastColor } from "./color-utils";
+import { matchCallout } from "./callout-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
@@ -706,10 +707,10 @@ const markdownProcessor = unified()
           if (firstChild && firstChild.children?.length > 0) {
             const textNode = firstChild.children[0];
             if (textNode?.type === "text") {
-              const match = String(textNode.value).match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i);
-              if (match) {
-                const calloutType = match[1].toLowerCase();
-                textNode.value = String(textNode.value).replace(match[0], "");
+              const callout = matchCallout(String(textNode.value));
+              if (callout) {
+                const calloutType = callout.type;
+                textNode.value = String(textNode.value).replace(callout.marker, "");
                 if (!textNode.value && firstChild.children.length === 1) {
                   node.children = node.children.filter((c: any) => c !== firstChild);
                 }

@@ -629,6 +629,17 @@ describe('Users Actions', () => {
       }))
     })
 
+    it('should save where new checklist items go', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, newItemInsertion: 'top' },
+      ])
+
+      const result = await updateUserSettings({ newItemInsertion: 'bottom' })
+
+      expect(result.success).toBe(true)
+      expect(result.data?.user.newItemInsertion).toBe('bottom')
+    })
+
     it('should return the updated user without credentials or mfa secrets', async () => {
       mockReadJsonFile.mockResolvedValue([
         {

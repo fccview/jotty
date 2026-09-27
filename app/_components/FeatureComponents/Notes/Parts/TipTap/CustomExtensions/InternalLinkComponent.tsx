@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { NodeViewWrapper } from "@tiptap/react";
 import { File02Icon, CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
 import { useRouter } from "next/navigation";
@@ -19,6 +20,7 @@ import { isKanbanType, ItemTypes } from "@/app/_types/enums";
 interface InternalLinkAttrs {
   href: string;
   title: string;
+  alias?: string;
   type?: string;
   category?: string;
   uuid?: string;
@@ -27,6 +29,7 @@ interface InternalLinkAttrs {
 
 interface InternalLinkComponentProps {
   node: { attrs: InternalLinkAttrs };
+  showCategory?: boolean;
 }
 
 type LinkedItem = Partial<Note> | Partial<Checklist>;
@@ -46,12 +49,13 @@ const _fetchItem = async (uuid: string, type?: ItemTypes): Promise<Note | Checkl
   return null;
 };
 
-export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
+export const InternalLinkComponent = ({ node, showCategory = true }: InternalLinkComponentProps) => {
   const t = useTranslations();
   const router = useRouter();
-  const { href, title, uuid: attrUuid, category } = node.attrs;
+  const { href, title, alias, uuid: attrUuid, category } = node.attrs;
   const { appSettings, notes, checklists } = useAppMode();
   const [showPopup, setShowPopup] = useState(false);
+  const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null);
   const [loadedItem, setLoadedItem] = useState<Note | Checklist | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -111,21 +115,34 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
     router.push(href);
   };
 
-  const label = item?.title || title;
+  const label = alias || item?.title || title;
   const shownCategory = item?.category || target?.legacy?.category || category;
+  const folder = shownCategory?.split("/").filter(Boolean).pop();
+  const unreachable = !item && !isLoading;
+  const Icon = isChecklist(item)
+    ? isKanbanType(item.type)
+      ? TaskDaily01Icon
+      : CheckmarkSquare04Icon
+    : File02Icon;
 
   return (
     <NodeViewWrapper
       as="span"
       onClick={handleClick}
-      onMouseEnter={() => setShowPopup(true)}
+      onMouseEnter={(event: React.MouseEvent<HTMLElement>) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        setAnchor({ top: rect.bottom, left: rect.left });
+        setShowPopup(true);
+      }}
       onMouseLeave={() => setShowPopup(false)}
-      className="inline-flex items-center gap-1.5 mx-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/15 transition-colors cursor-pointer group relative"
+      title={unreachable ? t("relations.unreachable") : shownCategory || undefined}
+      className={`inline cursor-pointer hover:underline ${unreachable ? "text-muted-foreground" : "text-primary"}`}
     >
-      {showPopup && (
+      {showPopup && anchor && typeof document !== "undefined" && createPortal(
         <span
           data-link-preview=""
-          className="block absolute top-[110%] left-0 min-w-[300px] max-w-[400px] z-10"
+          style={{ top: anchor.top, left: anchor.left }}
+          className="block fixed pt-1.5 min-w-[300px] max-w-[400px] z-50"
         >
           {isLoading ? (
             <span className="block bg-card border border-border rounded-jotty p-4 text-muted-foreground text-sm">
@@ -140,34 +157,15 @@ export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
               {label}
             </span>
           )}
-        </span>
+        </span>,
+        document.body,
       )}
-      <span className="flex-shrink-0">
-        {isChecklist(item) ? (
-          isKanbanType(item.type) ? (
-            <TaskDaily01Icon className="h-5 w-5" />
-          ) : (
-            <CheckmarkSquare04Icon className="h-5 w-5" />
-          )
-        ) : (
-          <File02Icon className="h-5 w-5" />
-        )}
-      </span>
-      <span className="text-md lg:text-sm font-medium text-foreground">
+      <Icon className="inline h-[1em] w-[1em] mr-1 align-[-0.125em]" />
+      <span className="font-medium">
         {appSettings?.parseContent === "yes" ? label : capitalize(label.replace(/-/g, " "))}
       </span>
-      {shownCategory && (
-        <>
-          ·
-          <span className="text-md lg:text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-jotty">
-            {shownCategory}
-          </span>
-        </>
-      )}
-      {!item && !isLoading && (
-        <span className="text-md lg:text-xs text-muted-foreground">
-          {t("relations.unreachable")}
-        </span>
+      {showCategory && folder && !unreachable && (
+        <span className="ml-1 text-[0.85em] text-muted-foreground">· {folder}</span>
       )}
     </NodeViewWrapper>
   );

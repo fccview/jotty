@@ -16,6 +16,7 @@ import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkCom
 interface WikiLinkProps {
   target?: string;
   label?: string;
+  showCategory?: boolean;
 }
 
 interface Candidate {
@@ -32,15 +33,11 @@ const byAge = (a: Candidate, b: Candidate) =>
   (a.createdAt || "").localeCompare(b.createdAt || "") ||
   (a.uuid || "").localeCompare(b.uuid || "");
 
-export const WikiLink = ({ target = "", label }: WikiLinkProps) => {
-  const t = useTranslations();
-  const router = useRouter();
+export const useWikiMatch = (target: string): Candidate | null => {
   const { notes, checklists, user } = useAppMode();
   const { wikis } = useRelations();
-  const metadata = useOptionalMetadata();
-  const [isCreating, setIsCreating] = useState(false);
 
-  const match = useMemo(() => {
+  return useMemo(() => {
     const key = titleKey(target);
     const candidates: Candidate[] = [
       ...notes.map((item) => ({ ...item, type: ItemTypes.NOTE })),
@@ -59,16 +56,28 @@ export const WikiLink = ({ target = "", label }: WikiLinkProps) => {
         .sort(byAge)[0] || null
     );
   }, [notes, checklists, target, wikis, user?.username]);
+};
+
+export const WikiLink = ({ target = "", label, showCategory = true }: WikiLinkProps) => {
+  const t = useTranslations();
+  const router = useRouter();
+  const { user } = useAppMode();
+  const metadata = useOptionalMetadata();
+  const [isCreating, setIsCreating] = useState(false);
+
+  const match = useWikiMatch(target);
 
   if (!user) return <span>{label || target}</span>;
 
   if (match) {
     return (
       <InternalLinkComponent
+        showCategory={showCategory}
         node={{
           attrs: {
             href: itemHref(match.type, match.uuid!),
-            title: label || target,
+            title: target,
+            alias: label,
             type: match.type,
             uuid: match.uuid!,
           },
@@ -99,15 +108,19 @@ export const WikiLink = ({ target = "", label }: WikiLinkProps) => {
   };
 
   return (
-    <button
-      type="button"
+    <span
+      role="button"
+      tabIndex={0}
+      aria-disabled={isCreating}
       onClick={createFromGhost}
-      disabled={isCreating}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") createFromGhost();
+      }}
       title={t("relations.createFromWikilink", { title: target })}
-      className="inline-flex items-center gap-1.5 mx-1 px-2 py-0.5 border border-dashed border-muted-foreground/50 text-muted-foreground rounded-jotty hover:border-primary hover:text-primary transition-colors"
+      className="inline cursor-pointer text-muted-foreground underline decoration-dashed underline-offset-4 hover:text-primary transition-colors"
     >
-      <FileAddIcon className="h-4 w-4" />
-      <span className="text-md lg:text-sm">{label || target}</span>
-    </button>
+      <FileAddIcon className="inline h-[1em] w-[1em] mr-1 align-[-0.125em]" />
+      {label || target}
+    </span>
   );
 };

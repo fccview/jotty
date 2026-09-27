@@ -29,6 +29,7 @@ export const EDITABLE_SETTING_KEYS: ReadonlyArray<keyof User> = [
   "hideMobileStatusDropdown",
   "hideTimeTrackingOnCards",
   "codeBlockStyle",
+  "newItemInsertion",
 ] as const;
 
 export const EDITABLE_ENCRYPTION_KEYS = [

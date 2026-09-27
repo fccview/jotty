@@ -29,6 +29,8 @@ import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { currentOrigins, parseItemHref } from "@/app/_utils/item-href-utils";
 import { remarkWikilinks, WIKILINK_TAG } from "@/app/_utils/wikilink-utils";
 import { WikiLink } from "./WikiLink";
+import { matchCallout } from "@/app/_utils/callout-utils";
+import { CalloutType } from "@/app/_consts/callouts";
 
 type WikiLinkComponents = Record<
   typeof WIKILINK_TAG,
@@ -298,7 +300,7 @@ export const UnifiedMarkdownRenderer = ({
     },
     blockquote({ node, children, ...props }) {
       const childArray = Children.toArray(children);
-      let calloutType: "info" | "warning" | "success" | "danger" | null = null;
+      let calloutType: CalloutType | null = null;
       let matchIndex = -1;
 
       for (let i = 0; i < childArray.length; i++) {
@@ -308,15 +310,9 @@ export const UnifiedMarkdownRenderer = ({
           const textContent = getRawTextFromChildren(
             childProps?.children as React.ReactNode,
           );
-          const match = textContent.match(
-            /^\[!(INFO|WARNING|SUCCESS|DANGER)\]/i,
-          );
-          if (match) {
-            calloutType = match[1].toLowerCase() as
-              | "info"
-              | "warning"
-              | "success"
-              | "danger";
+          const callout = matchCallout(textContent);
+          if (callout) {
+            calloutType = callout.type;
             matchIndex = i;
             break;
           }
@@ -341,12 +337,10 @@ export const UnifiedMarkdownRenderer = ({
             if (prefixStripped) return child;
 
             if (typeof child === "string") {
-              const match = child.match(
-                /^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i,
-              );
-              if (match) {
+              const callout = matchCallout(child);
+              if (callout) {
                 prefixStripped = true;
-                const remaining = child.replace(match[0], "");
+                const remaining = child.replace(callout.marker, "");
                 return remaining || null;
               }
               return child;

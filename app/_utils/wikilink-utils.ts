@@ -9,13 +9,13 @@ export const remarkWikilinks = () => (tree: Root) => {
     [
       new RegExp(WIKILINK_REGEX.source, "g"),
       (_match: string, target: string, alias?: string) => {
-        const label = (alias || target).trim();
+        const label = alias?.trim() || undefined;
         return {
           type: "text",
-          value: label,
+          value: label || target.trim(),
           data: {
             hName: WIKILINK_TAG,
-            hProperties: { target: target.trim(), label },
+            hProperties: { target: target.trim(), ...(label ? { label } : {}) },
           },
         };
       },

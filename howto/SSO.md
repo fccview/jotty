@@ -1,17 +1,17 @@
 # SSO with OIDC
 
-`jotty·page` supports any OIDC provider (Authentik, Auth0, Keycloak, Okta, etc.) with these requirements:
+`jotty·page` works with any OIDC provider (Authentik, Auth0, Keycloak, Okta, etc.) that:
 
-- Supports PKCE (most modern providers do)
-- Can be configured as a public client (no client secret needed)
-- Provides standard OIDC scopes (openid, profile, email)
+- Supports PKCE (most current providers do)
+- Can be set up as a public client, with no client secret
+- Provides the standard OIDC scopes (openid, profile, email)
 
-1. Configure your OIDC Provider:
+1. Configure your OIDC provider:
 
 - Client Type: Public
 - Grant Type: Authorization Code with PKCE
 - PKCE Code Challenge Method: S256
-  - _**note** S256 is the only PKCE method Jotty supports_
+  - _S256 is the only PKCE method Jotty supports_
 - Scopes: openid, profile, email
 - Redirect URI: https://YOUR_APP_HOST/api/oidc/callback
 - Post-logout URI: https://YOUR_APP_HOST/
@@ -44,88 +44,87 @@ services:
       # - INTERNAL_API_URL=http://localhost:3000 # Use if getting 403 errors after SSO login
 ```
 
-**Note**: When OIDC_CLIENT_SECRET is set, jotty·page switches to confidential client mode using client authentication instead of PKCE. This is more secure but requires provider support.
+When `OIDC_CLIENT_SECRET` is set, jotty·page switches to confidential client mode and authenticates with the client secret instead of PKCE. It's more secure, but your provider has to support it.
 
-Dev verified Providers:
+Providers I've tested myself:
 
 - Auth0 (`OIDC_ISSUER=https://YOUR_TENANT.REGION.auth0.com`)
 - Authentik (`OIDC_ISSUER=https://YOUR_DOMAIN/application/o/APP_SLUG/`)
 
-Other providers will likely work, but I can at least guarantee these do as I have test them both locally.  
-Community verified Providers:
+Other providers will probably work, but these two I've run locally and can vouch for.
+
+Providers the community has confirmed:
 
 - [Pocket ID](https://github.com/fccview/jotty/issues/6#issuecomment-3350380435)(`OIDC_ISSUER: https://my-pocket-id.domain.com`)
 - [Authelia](https://github.com/fccview/jotty/issues/6#issuecomment-3369291122) (`OIDC_ISSUER: https://my-authelia.domain.com`)
 - [Google](https://github.com/fccview/jotty/issues/6#issuecomment-3437686494) (`OIDC_ISSUER: https://accounts.google.com`)
 - [Entra ID (Azure AD)](https://github.com/fccview/jotty/issues/6#issuecomment-3464237999) (`OIDC_ISSUER: https://login.microsoftonline.com/{tenant-id}/v2.0`)
 
-Provider's specific notes:
+Provider-specific notes:
 
-- **Google** provider doesn't support usage of `groups` with OIDC authentication, so do NOT set the `OIDC_ADMIN_GROUPS` environment variable.
-- **Entra ID** provider allows usage of admin groups with `OIDC_ADMIN_GROUPS={Entra Group ID}` variable. For that, ensure to include optional `groups` claim in the 'Token Configuration' pane of your 'Enterprise Registration' AND define the environment variable to `OIDC_GROUPS_SCOPE="no"` or `OIDC_GROUPS_SCOPE=""`. Alternatively, use `OIDC_ADMIN_ROLES=role-name` to make use of Application Groups configured in Entra.
+- **Google** doesn't support `groups` with OIDC, so do NOT set `OIDC_ADMIN_GROUPS`.
+- **Entra ID** supports admin groups with `OIDC_ADMIN_GROUPS={Entra Group ID}`. For that to work, add the optional `groups` claim in the 'Token Configuration' pane of your 'Enterprise Registration' AND set `OIDC_GROUPS_SCOPE="no"` or `OIDC_GROUPS_SCOPE=""`. Or use `OIDC_ADMIN_ROLES=role-name` to use Application Groups configured in Entra.
 
-p.s. **First user to sign in via SSO when no local users exist becomes admin automatically.**
+If there are no local users yet, **the first person to sign in through SSO becomes admin.**
 
 ## Troubleshooting
 
-### 403 Forbidden Error After SSO Login (Behind Reverse Proxy)
+### 403 Forbidden error after SSO login (behind a reverse proxy)
 
-If you successfully authenticate via SSO but get redirected back to the login page, and your logs show:
+You log in through SSO fine, land back on the login page, and your logs show:
 
 ```
 MIDDLEWARE - sessionCheck: Response { ... status: 403 ... }
 MIDDLEWARE - session is not ok
 ```
 
-This means the app is trying to validate your session by calling its own API through the external URL, but your reverse proxy is blocking it.
+The app is checking your session by calling its own API through the external URL, and your reverse proxy is blocking that call.
 
-**Solution**: Set the `INTERNAL_API_URL` environment variable:
+Set `INTERNAL_API_URL`:
 
 ```yaml
 environment:
   - INTERNAL_API_URL=http://localhost:3000
 ```
 
-This tells the app to use `localhost` for internal API calls instead of going through the reverse proxy. The default value is already `http://localhost:3000`, but explicitly setting it can help in some edge cases.
+That makes the app call itself on `localhost` instead of going out through the reverse proxy. The default is already `http://localhost:3000`, but setting it explicitly fixes some odd setups.
 
-**Why this happens**: When `APP_URL` is set to your external domain (e.g., `https://jotty.domain.com`), the middleware tries to validate sessions by making a fetch request to `https://jotty.domain.com/api/auth/check-session`. This request goes through your reverse proxy, which may block it with a 403 Forbidden response due to security policies or misconfigurations.
+Why it happens: with `APP_URL` set to your external domain (e.g. `https://jotty.domain.com`), the middleware checks sessions by fetching `https://jotty.domain.com/api/auth/check-session`. That request goes through your reverse proxy, and a security policy or a misconfiguration there can answer it with a 403.
 
-### My Super Admin/System Owner User Is Not Using SSO
+### My superadmin (system owner) user is not using SSO
 
-The first user to register in the system is the "Super Admin", referred to as "System Owner" in the web interface.
+The first user to register on an instance is the superadmin, called "System Owner" in the web interface.
 
-If this user is not an SSO user, or if you need to change the super admin to a different user, you can update their
-super admin status using the `update-super-admin.sh` script below.
+If that user isn't an SSO user, or you want to hand superadmin to someone else, use the `update-super-admin.sh` script below.
 
-> Run from the server **outside** of the Docker container, if using Docker.
-> You need write permissions to the `users.json` file. You will if running this as `root`.
+> [!WARNING]
+> Run it on the server, **outside** the Docker container if you use Docker.
+> You need write access to `users.json`. Running as `root` gives you that.
 
-1. Locate your `data` volume location on the server filesystem and the `users.json` file. e.g. if using the example `docker-compose.yml`, under
-   `volumes` you will see `./data:/app/data:rw`. The `data` volume is under the location of your compose file, making
-   the full path to `users.json`:
+1. Find your `data` volume on the server and the `users.json` inside it. With the example `docker-compose.yml`, `volumes`
+   has `./data:/app/data:rw`, so `data` sits next to your compose file and the full path is:
    `<compose_location>/data/users.json`
 
-2. Run the `update-super-admin.sh` script with the appropriate arguments to update the super admin user:
+2. Run `update-super-admin.sh` with the new superadmin and the path to `users.json`:
 
    ```bash
    wget -qO- https://raw.githubusercontent.com/fccview/jotty/main/scripts/update-super-admin.sh | bash -s -- <new super admin> <users.json location>
    ```
 
-   Alternatively download the script and run it directly.
+   You can also download the script and run it directly.
 
-   Omit the arguments (`wget -qO- ... | bash`) for help text.
+   Leave the arguments off (`wget -qO- ... | bash`) to get the help text.
 
-   The old Super Admin user will be left as an Admin. The new Super Admin has the ability to delete the old user if
-   you choose to do so.
+   The old superadmin stays on as an admin. The new superadmin can delete that user if you want.
 
-## Advanced: Using Docker Secrets
+## Advanced: using Docker secrets
 
 <details>
-<summary>Docker Secrets configuration</summary>
+<summary>Docker secrets configuration</summary>
 
-For enhanced security in production environments, you can store OIDC credentials in files instead of environment variables. This prevents secrets from appearing in `docker inspect` output.
+You can keep OIDC credentials in files instead of environment variables, so they don't show up in `docker inspect` output.
 
-**Example docker-compose.yml:**
+Example `docker-compose.yml`:
 
 ```yaml
 services:
@@ -147,7 +146,7 @@ secrets:
     file: ./secrets/oidc_client_secret.txt
 ```
 
-**Create the secret files:**
+Create the secret files:
 
 ```bash
 mkdir secrets
@@ -156,6 +155,6 @@ echo "your_client_secret" > secrets/oidc_client_secret.txt
 chmod 600 secrets/*
 ```
 
-**Note:** You can mix and match - use `OIDC_CLIENT_ID` directly and `OIDC_CLIENT_SECRET_FILE` for the secret, or vice versa. The `_FILE` variants take priority if both are set. Most users can skip this and use regular environment variables.
+You can mix the two, e.g. `OIDC_CLIENT_ID` as a plain variable and `OIDC_CLIENT_SECRET_FILE` for the secret, or the other way round. If both forms are set, the `_FILE` one wins. Most people can skip all of this and use plain environment variables.
 
 </details>

@@ -16,8 +16,7 @@ import {
 } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-
-export type CalloutType = "info" | "warning" | "success" | "danger";
+import { CalloutType } from "@/app/_consts/callouts";
 
 const CalloutIcons: Record<CalloutType, typeof Idea01Icon> = {
   info: Idea01Icon,

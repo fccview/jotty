@@ -258,7 +258,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       <div
         className={
           columns.length <= 6
-            ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
+            ? "min-h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
             : "min-h-0 min-w-0 flex gap-4 p-2 sm:p-4"
         }
         style={

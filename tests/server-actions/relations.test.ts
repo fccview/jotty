@@ -24,7 +24,9 @@ import {
   forgetItemTree,
   indexItemFile,
   reconcileRelations,
+  refreshItemPaths,
 } from "@/app/_server/actions/relations/indexer";
+import { throttledBatch } from "@/app/_server/actions/relations/watcher";
 import { backlinksFor, graphFor, VisibleItem } from "@/app/_server/actions/relations/queries";
 import {
   closeRelationsDb,
@@ -397,6 +399,66 @@ describe("relations", () => {
         `\`Milk Run\` and [[Milk Run]] and [Milk Run](/x) then the [milk run](/note/${B}) itself`,
       );
       expect(wrapMention("nothing here", "Milk Run", `/note/${B}`)).toBeNull();
+    });
+  });
+
+  describe("watching", () => {
+    it("indexes the first change after a settle and batches the rest into one pass a minute", async () => {
+      vi.useFakeTimers();
+      try {
+        const flush = vi.fn().mockResolvedValue(0);
+        const batch = throttledBatch(flush, 60_000, 1_000);
+
+        batch.add("/a.md");
+        await vi.advanceTimersByTimeAsync(1_000);
+        expect(flush).toHaveBeenCalledTimes(1);
+        expect(flush).toHaveBeenLastCalledWith(["/a.md"]);
+
+        for (let edit = 0; edit < 10; edit++) {
+          batch.add("/a.md");
+          batch.add(`/b${edit % 2}.md`);
+          await vi.advanceTimersByTimeAsync(3_000);
+        }
+        expect(flush).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(60_000);
+        expect(flush).toHaveBeenCalledTimes(2);
+        expect([...flush.mock.calls[1][0]].sort()).toEqual(["/a.md", "/b0.md", "/b1.md"]);
+        batch.stop();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("re-reads only paths whose file actually changed", async () => {
+      const aPath = itemPath("notes", "alice", "a.md");
+      write(aPath, note(A, "Alpha", `[Beta](/note/${B})`));
+      mockBroadcast.mockClear();
+
+      expect(await refreshItemPaths([aPath])).toBe(0);
+      expect(mockBroadcast).not.toHaveBeenCalled();
+
+      nodeFs.writeFileSync(aPath, note(A, "Alpha", "no links now"));
+      nodeFs.utimesSync(aPath, new Date(), new Date(Date.now() + 5_000));
+      expect(await refreshItemPaths([aPath])).toBe(1);
+
+      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Beta" }]);
+      expect(backlinksFor(B, visible).backlinks).toEqual([]);
+
+      nodeFs.rmSync(aPath);
+      expect(await refreshItemPaths([aPath])).toBe(1);
+      expect(mockBroadcast).toHaveBeenCalledWith(expect.objectContaining({ type: "relations" }));
+    });
+
+    it("picks up a category folder moved outside Jotty", async () => {
+      const from = itemPath("notes", "alice", "Old");
+      const to = itemPath("notes", "alice", "New");
+      write(path.join(from, "a.md"), note(A, "Alpha", `[Beta](/note/${B})`));
+      nodeFs.renameSync(from, to);
+
+      await refreshItemPaths([from, to]);
+      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Beta" }]);
+      expect(backlinksFor(B, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
     });
   });
 

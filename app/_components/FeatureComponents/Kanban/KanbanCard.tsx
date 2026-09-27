@@ -1,5 +1,6 @@
 "use client";
 
+import { plainItemText } from "@/app/_utils/item-href-utils";
 import { useDragItem } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
@@ -172,7 +173,7 @@ const KanbanCardComponent = ({
           style={style}
           {...handleProps}
           tabIndex={0}
-          aria-label={item.text}
+          aria-label={plainItemText(item.text)}
           onDoubleClick={() => onOpenDetail(item)}
           className={cn(
             "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing min-w-0",

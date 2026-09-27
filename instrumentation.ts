@@ -113,6 +113,8 @@ export async function register() {
       (globalThis as any).__jottyRelationsStarted = true;
       import("./app/_server/actions/relations/indexer")
         .then(({ reconcileRelations }) => reconcileRelations())
+        .then(() => import("./app/_server/actions/relations/watcher"))
+        .then(({ watchRelations }) => watchRelations())
         .catch((err) => console.error("[relations] startup reconcile failed:", err));
     }
 

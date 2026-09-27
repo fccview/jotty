@@ -1,6 +1,6 @@
 # File persistence
 
-There is no database. A missed lock, a half-written file, or a loop that stats 800 notes is a real outage for a real person.
+Your files are the database. The only other store is a derived SQLite index of relationships, which can always be rebuilt from them. A missed lock, a half-written file, or a loop that stats 800 notes is a real outage for a real person.
 
 ## Layout
 
@@ -11,12 +11,12 @@ data/
   users/session-data.json
   notes/<username>/            markdown notes in category folders
   checklists/<username>/       markdown lists in category folders
-  notes/<username>/.index.json link index, keyed by uuid
   <any folder>/.category-info.json   folder uuid, sharing, order
   notifications/<username>.json
   encryption/<username>/       PGP key files, never the passphrase
   logs/
   .schema-version
+  .relations.db                derived links index (SQLite, WAL). Disposable.
 ```
 
 `.sharing.json` and `.order.json` are leftovers. Current code reads them during migration. New writes go to `.category-info.json`.
@@ -27,7 +27,7 @@ Schema version is `DATA_SCHEMA_VERSION` in `app/_consts/files.ts`. Old shapes st
 
 Notes and checklists are both `.md` with YAML frontmatter. Checklists are not JSON. `noteToMarkdown` / `listToMarkdown` write them. Readers parse them.
 
-Frontmatter carries `uuid`, `title`, timestamps, tags, encryption flags, checklist type. Body is markdown. Encrypted body is opaque ciphertext. Do not index it.
+Frontmatter carries `uuid`, `title`, `createdAt`, tags, encryption flags, checklist type. Body is markdown. Encrypted body is opaque ciphertext. Do not index it.
 
 ## Helpers
 
@@ -35,10 +35,11 @@ Frontmatter carries `uuid`, `title`, timestamps, tags, encryption flags, checkli
 
 - `ensureDir`
 - `readJsonFile` / `writeJsonFile` (atomic temp + rename)
-- `serverReadFile` / `serverWriteFile` / `serverDeleteFile`
+- `serverReadFile` / `serverWriteFile` / `serverDeleteFile` / `serverDeleteDir` / `serverRenamePath`
 - `getUserModeDir`
+- `stampUuid` in `lib/stamp-uuid.ts` for giving an item file its uuid
 
-`writeCatInfo` is also atomic. `serverWriteFile` is a straight write. Prefer the atomic helpers for JSON. Do not invent a third writer.
+`serverWriteFile` is atomic (temp file + rename), stamps `createdAt` on item files that lack it, invalidates the metadata cache and updates the relations index. Delete, rename and move go through the helpers above for the same reasons. A raw `fs.writeFile` or `fs.rename` on an item file skips all of that. Do not invent another writer.
 
 Paths: `path.join(process.cwd(), ...)`. Constants in `app/_consts/files.ts`. Never a relative `"data/..."` you hope is cwd.
 
@@ -67,11 +68,15 @@ Jotty is one Node process. Those in-process maps are enough until someone cluste
 
 ## Indexes
 
-`.index.json` under notes is the **link** index, keyed by item uuid. Create, update, delete, and move must call `updateIndexForItem` / `removeItemFromIndex`. It does not rebuild itself.
+`data/.relations.db` is the **relations** index, in `app/_server/actions/relations/`. It holds items, links between them, wikilink bindings and plain note text for "Mentioned in". It is derived and disposable: a missing, corrupt or old-schema file is discarded and rebuilt from the markdown on start, with the UI showing "Indexing relationships...". Bump `RELATIONS_SCHEMA_VERSION` when its shape changes. No migration, it just rebuilds.
+
+- Writes keep it current through the file helpers (`trackItemWrite` and friends in `relations/tracking.ts`). Use the helpers and you get it for free.
+- Changes made outside Jotty are caught by a recursive `fs.watch` on the notes and checklists roots, throttled to one pass a minute, which only stats the paths that changed. If the watcher can't start, reads fall back to a full mtime reconcile at most once a minute.
+- Encrypted notes are indexed by uuid and title only. Their body is never parsed.
+- `bindings` remembers which uuid each `[[wikilink]]` text first resolved to, per source note. That memory survives edits and rebuilds, and is lost only if the file is deleted.
+- Queries are permission scoped through `visibleItems(username)`. Never return rows the viewer can't see.
 
 Folder order and sharing live in `.category-info.json` (`order.items` is a uuid list).
-
-If you add a write path and forget the index, search and the graph go stale with nothing in the logs.
 
 ## Path containment
 
@@ -83,4 +88,4 @@ Username is not a path segment you trust from the client either. Session usernam
 
 ## Data on this machine
 
-The `data/` directory in a running instance holds real notes. Tests use mocks and temp dirs. `yarn mock:data:notes` / `yarn mock:data:lists` fill a named user for local poking. Do not empty, reshape, or "fix" `data/` to make a test pass.
+The `data/` directory in a running instance holds real notes. Tests use mocks and temp dirs. `yarn mock:data:notes` / `yarn mock:data:lists` fill a named user for local poking. `yarn mock:data:brain --user=<name>` writes a linked set under a `Brain Seed` category, and `--remove` deletes only that category. Do not empty, reshape, or "fix" `data/` to make a test pass.

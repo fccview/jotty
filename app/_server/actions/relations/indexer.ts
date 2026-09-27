@@ -285,6 +285,51 @@ const _reconcile = async (force = false): Promise<number> => {
   return changed;
 };
 
+const _statOf = (target: string) => fs.stat(target).catch(() => null);
+
+const _refreshPath = async (target: string, indexed: Map<string, number>): Promise<boolean> => {
+  const absPath = path.resolve(target);
+  const stats = await _statOf(absPath);
+
+  if (!stats) {
+    if (indexed.has(absPath)) {
+      forgetItemFile(absPath);
+      return true;
+    }
+    const before = indexed.size;
+    forgetItemTree(absPath);
+    return _indexedMtimes().size !== before;
+  }
+
+  if (stats.isDirectory()) {
+    await indexItemTree(absPath);
+    await forgetMissing(absPath);
+    return true;
+  }
+
+  if (!itemFileInfo(absPath)) return false;
+  const mtime = Math.floor(stats.mtimeMs);
+  if (indexed.get(absPath) === mtime) return false;
+  await _indexFromDisk(absPath, mtime);
+  return true;
+};
+
+export const refreshItemPaths = async (targets: string[]): Promise<number> => {
+  const indexed = _indexedMtimes();
+  let changed = 0;
+  for (const target of targets) {
+    try {
+      if (await _refreshPath(target, indexed)) changed++;
+    } catch (error) {
+      console.error(`Relations could not refresh ${target}:`, error);
+    }
+  }
+  if (changed > 0) {
+    await broadcast({ type: "relations", action: "updated", username: RELATIONS_ACTOR });
+  }
+  return changed;
+};
+
 export const reconcileRelations = (force = false): Promise<number> =>
   singleFlight(`relations:reconcile:${force}`, async () => {
     try {
@@ -331,7 +376,9 @@ declare global {
 export const ensureRelations = (): RelationsStatus => {
   const status = relationsStatus();
   const checkedAt = globalThis.__jottyRelationsCheckedAt || 0;
-  if (status === RelationsStatus.BUILDING || Date.now() - checkedAt > RECONCILE_EVERY_MS) {
+  const watched = Boolean(globalThis.__jottyRelationsWatch?.healthy);
+  const stale = !watched && Date.now() - checkedAt > RECONCILE_EVERY_MS;
+  if (status === RelationsStatus.BUILDING || stale) {
     globalThis.__jottyRelationsCheckedAt = Date.now();
     void reconcileRelations();
   }

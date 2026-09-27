@@ -1,5 +1,5 @@
 import { isUuid } from "@/app/_consts/identity";
-import { LEGACY_LINK_PREFIX } from "@/app/_consts/relations";
+import { LEGACY_LINK_PREFIX, WIKILINK_REGEX } from "@/app/_consts/relations";
 import { ItemTypes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
 
@@ -94,3 +94,10 @@ export const canonicalItemHref = (
 
 export const currentOrigins = (): string[] =>
   typeof window === "undefined" ? [] : [window.location.origin];
+
+const MARKDOWN_LINK = /\[((?:[^\[\]\\]|\\.)*)\]\([^()\s]+\)/g;
+
+export const plainItemText = (text: string): string =>
+  text
+    .replace(MARKDOWN_LINK, (_whole, label: string) => label.replace(/\\(.)/g, "$1"))
+    .replace(WIKILINK_REGEX, (_whole, target: string, label?: string) => (label || target).trim());
