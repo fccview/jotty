@@ -1,15 +1,18 @@
-import { Checklist, Item } from "@/app/_types";
+import { Checklist } from "@/app/_types";
 import { CheckmarkSquare04Icon } from "hugeicons-react";
 import { TaskStatusSection } from "./TaskStatusSection";
 import { useMemo } from "react";
-import { isKanbanType, TaskStatus } from "@/app/_types/enums";
+import { isKanbanType } from "@/app/_types/enums";
+import { boardColumns } from "@/app/_utils/kanban/board-utils";
 import { NestedChecklistItem } from "../../Checklists/Parts/Simple/NestedChecklistItem";
 import { useTranslations } from "next-intl";
 
 export const PublicChecklistBody = ({
   checklist,
+  ownerShowsEmojis,
 }: {
   checklist: Checklist;
+  ownerShowsEmojis?: boolean;
 }) => {
   const t = useTranslations();
   const { totalCount } = useMemo(() => {
@@ -20,20 +23,10 @@ export const PublicChecklistBody = ({
     };
   }, [checklist.items]);
 
-  const taskItemsByStatus = useMemo(() => {
-    if (!isKanbanType(checklist.type)) return null;
-    const initialAcc: Record<string, Item[]> = {
-      todo: [],
-      in_progress: [],
-      paused: [],
-      completed: [],
-    };
-    return checklist.items.reduce((acc, item) => {
-      const status = item.status || TaskStatus.TODO;
-      if (acc[status]) acc[status].push(item);
-      return acc;
-    }, initialAcc);
-  }, [checklist.items, checklist.type]);
+  const statusColumns = useMemo(
+    () => (isKanbanType(checklist.type) ? boardColumns(checklist) : null),
+    [checklist],
+  );
 
   if (totalCount === 0) {
     return (
@@ -49,13 +42,14 @@ export const PublicChecklistBody = ({
     );
   }
 
-  if (isKanbanType(checklist.type) && taskItemsByStatus) {
-    return Object.entries(taskItemsByStatus).map(([status, items]) => (
+  if (statusColumns) {
+    return statusColumns.map(({ status, items }) => (
       <TaskStatusSection
-        key={status}
+        key={status.id}
         status={status}
         items={items}
         checklist={checklist}
+        ownerShowsEmojis={ownerShowsEmojis}
       />
     ));
   }
@@ -71,6 +65,7 @@ export const PublicChecklistBody = ({
           onToggle={() => {}}
           onDelete={() => {}}
           isPublicView={true}
+          ownerShowsEmojis={ownerShowsEmojis}
           isDeletingItem={false}
           isDragDisabled={true}
           checklist={checklist}

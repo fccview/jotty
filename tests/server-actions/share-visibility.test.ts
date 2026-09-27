@@ -143,7 +143,10 @@ describe("Share visibility on disk", () => {
       [LIST_READ]: READ_ONLY,
     });
     expect(categories.data?.[0]).toEqual(
-      expect.objectContaining({ isLoose: true, permissions: READ_ONLY }),
+      expect.objectContaining({
+        isLoose: true,
+        permissions: { ...READ_ONLY, canCreate: false },
+      }),
     );
   });
 

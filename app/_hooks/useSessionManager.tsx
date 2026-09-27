@@ -126,7 +126,7 @@ export const useSessionManager = () => {
     terminating,
     handleTerminateSession,
     handleTerminateAllOtherSessions,
-    TerminateSessionModal: () => (
+    terminateSessionModal: (
       <ConfirmModal
         isOpen={showTerminateModal}
         onClose={() => {
@@ -140,7 +140,7 @@ export const useSessionManager = () => {
         variant="destructive"
       />
     ),
-    TerminateAllSessionsModal: () => (
+    terminateAllSessionsModal: (
       <ConfirmModal
         isOpen={showTerminateAllModal}
         onClose={() => setShowTerminateAllModal(false)}

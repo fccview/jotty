@@ -6,8 +6,8 @@ import fsp from "fs/promises";
 import path from "path";
 import { ExportResult, ExportProgress } from "@/app/_types";
 import { DATA_DIR, USERS_FILE, EXPORT_TEMP_DIR } from "@/app/_consts/files";
-import { getAllLists } from "@/app/_server/actions/checklist";
-import { getAllNotes } from "@/app/_server/actions/note";
+import { getAllLists } from "@/app/_server/actions/checklist/queries";
+import { getAllNotes } from "@/app/_server/actions/note/queries";
 import { readJsonFile, ensureDir } from "@/app/_server/actions/file";
 import {
   getCurrentUser,

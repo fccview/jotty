@@ -27,6 +27,7 @@ import { VisualEditor } from "@/app/_components/FeatureComponents/Notes/Parts/Ti
 import { BubbleMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/FloatingMenu/BubbleMenu";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { useTranslations } from "next-intl";
+import { menuCeilingProps } from "@/app/_utils/menu-placement-utils";
 
 type TiptapEditorProps = {
   content: string;
@@ -352,6 +353,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       <div className="flex flex-col h-full pb-0">
         <div
           className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 py-2`}
+          {...menuCeilingProps}
         >
           <TiptapToolbar
             editor={editor}

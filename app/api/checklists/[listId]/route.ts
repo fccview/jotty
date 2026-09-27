@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById, updateList, deleteList } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
+import { dropList, editList } from "@/app/_server/actions/checklist/editor";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +22,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ listI
       formData.append("uuid", list.uuid!);
       formData.append("title", title ?? list.title);
       formData.append("category", category ?? list.category ?? "Uncategorized");
-      formData.append("apiUser", JSON.stringify(user));
-
-      const result = await updateList(formData);
+      const result = await editList(user, formData);
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }
@@ -60,9 +59,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ li
 
       const formData = new FormData();
       formData.append("uuid", list.uuid!);
-      formData.append("apiUser", JSON.stringify(user));
-
-      const result = await deleteList(formData);
+      const result = await dropList(user, formData);
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }

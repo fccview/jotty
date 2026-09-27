@@ -12,7 +12,7 @@ Global shortcuts work anywhere in the app. Editor and table shortcuts only work 
 | <kbd>⌘ Cmd</kbd> + <kbd>K</kbd>                                          | Open the search palette                                        |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>N</kbd> | Create a new note or checklist, depending on the current mode  |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>C</kbd> | Create a new category                                          |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>                       | Open the How to guides                                         |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>                       | Open the How to guides (outside the editor, where it highlights) |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>S</kbd> | Open settings                                                 |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>Left</kbd> | Switch to checklists mode                                   |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>Right</kbd> | Switch to notes mode                                       |
@@ -33,6 +33,7 @@ These work when the note editor has focus.
 | <kbd>⌘ Cmd</kbd> + <kbd>I</kbd>                                          | Toggle _Italic_                |
 | <kbd>⌘ Cmd</kbd> + <kbd>U</kbd>                                          | Toggle <u>Underline</u>        |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd>                       | Toggle ~~Strikethrough~~       |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>                       | Toggle highlight               |
 | <kbd>⌘ Cmd</kbd> + <kbd>E</kbd>                                          | Toggle `inline code`           |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>K</kbd>                       | Add or edit a link             |
 | <kbd>⌘ Cmd</kbd> + <kbd>⌥ Option</kbd> + <kbd>1</kbd>                    | Apply Heading 1 style          |

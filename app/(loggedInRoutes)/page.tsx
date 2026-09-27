@@ -1,9 +1,7 @@
 import { getCategories } from "@/app/_server/actions/category";
-import { getUserChecklists } from "@/app/_server/actions/checklist";
-import {
-  getUserNotes,
-  CheckForNeedsMigration,
-} from "@/app/_server/actions/note";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
+import { CheckForNeedsMigration } from "@/app/_server/actions/note";
+import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { HomeClient } from "@/app/_components/FeatureComponents/Home/HomeClient";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";

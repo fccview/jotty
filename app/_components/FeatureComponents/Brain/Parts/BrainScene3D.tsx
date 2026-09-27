@@ -310,6 +310,15 @@ export default function BrainScene3D({
   }, []);
 
   useEffect(() => {
+    const ids = new Set(graphData.nodes.map((node) => node.id));
+    partsRef.current.forEach((parts, id) => {
+      if (ids.has(id)) return;
+      disposeParts(parts);
+      partsRef.current.delete(id);
+    });
+  }, [graphData.nodes]);
+
+  useEffect(() => {
     graphData.nodes.forEach((node) => {
       const parts = partsRef.current.get(node.id);
       if (parts) recolourParts(parts, node, coloursFor(node));

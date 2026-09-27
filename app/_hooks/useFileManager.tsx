@@ -133,7 +133,7 @@ export const useFileManager = () => {
     handleUpload,
     handleDeleteFile,
     filteredFiles,
-    DeleteModal: () => (
+    deleteModal: (
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => {

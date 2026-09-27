@@ -1,10 +1,5 @@
 export { readListsRecursively } from "./readers";
-export {
-  getUserChecklists,
-  getListById,
-  getAllLists,
-  getChecklistsForDisplay,
-} from "./queries";
+export { viewList, getChecklistsForDisplay } from "./viewer";
 export { createList, updateList, deleteList, cloneChecklist } from "./crud";
 export {
   convertChecklistType,

@@ -5,8 +5,8 @@ import {
   mockGetUserChecklists,
   mockCreateList,
   mockMakeList,
-  mockUpdateList,
-  mockDeleteList,
+  mockEditList,
+  mockDropList,
   mockGetListById,
   resetApiMocks,
   createMockRequest,
@@ -282,7 +282,7 @@ describe("Checklists API", () => {
       };
 
       mockGetListById.mockResolvedValue(existingList);
-      mockUpdateList.mockResolvedValue({ success: true, data: updatedList });
+      mockEditList.mockResolvedValue({ success: true, data: updatedList });
 
       const request = createMockRequest(
         "PUT",
@@ -354,7 +354,7 @@ describe("Checklists API", () => {
       };
 
       mockGetListById.mockResolvedValue(existingList);
-      mockDeleteList.mockResolvedValue({ success: true });
+      mockDropList.mockResolvedValue({ success: true });
 
       const request = createMockRequest(
         "DELETE",

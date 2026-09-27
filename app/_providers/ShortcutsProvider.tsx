@@ -7,6 +7,8 @@ import {
   ReactNode,
   useCallback,
   useMemo,
+  useRef,
+  useTransition,
 } from "react";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { CreateNoteModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/CreateNoteModal";
@@ -21,6 +23,8 @@ import { useAppMode } from "./AppModeProvider";
 import { useNavigationGuard } from "./NavigationGuardProvider";
 import { createNote } from "@/app/_server/actions/note";
 import { generateDateTimeTitle } from "../_utils/date-utils";
+import { useTranslations } from "next-intl";
+import { useToast } from "./ToastProvider";
 
 interface ShortcutContextType {
   openCreateNoteModal: (initialCategory?: string) => void;
@@ -53,6 +57,10 @@ export const ShortcutProvider = ({
   const router = useRouter();
   const { mode, setMode } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
+  const { showToast } = useToast();
+  const t = useTranslations();
+  const quickLock = useRef(false);
+  const [isOpeningNote, startOpeningNote] = useTransition();
 
   const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
@@ -65,30 +73,62 @@ export const ShortcutProvider = ({
   const [initialParentCategory, setInitialParentCategory] =
     useState<string>("");
 
-  const openCreateNoteModal = useCallback(
+  const quickCreate = useCallback(
     async (category?: string) => {
-      if (user?.quickCreateNotes === "enable") {
-        const title = generateDateTimeTitle();
-        const defaultCategory =
-          category || user?.quickCreateNotesCategory || "";
+      if (quickLock.current || isOpeningNote) return;
+      quickLock.current = true;
 
+      try {
         const formData = new FormData();
-        formData.append("title", title);
-        formData.append("category", defaultCategory);
-        formData.append("content", "");
+        formData.append("title", generateDateTimeTitle());
+        formData.append(
+          "category",
+          category || user?.quickCreateNotesCategory || ""
+        );
+        formData.append("rawContent", "");
 
         const result = await createNote(formData);
 
-        if (result.success && result.data?.uuid) {
-          router.push(`${itemHref(ItemTypes.NOTE, result.data.uuid)}?editor=true`);
-          router.refresh();
+        if (!result.success || !result.data?.uuid) {
+          console.warn("Quick create refused:", result.error);
+          showToast({
+            type: "error",
+            title: t("common.error"),
+            message: result.error || t("notes.createNoteFailed"),
+          });
+          return;
         }
-      } else {
-        setInitialCategory(category || "");
-        setShowCreateNoteModal(true);
+
+        const href = itemHref(ItemTypes.NOTE, result.data.uuid);
+        startOpeningNote(() => {
+          router.push(`${href}?editor=true`);
+          router.refresh();
+        });
+      } catch (error) {
+        console.error("Quick create failed:", error);
+        showToast({
+          type: "error",
+          title: t("common.error"),
+          message: t("notes.createNoteFailed"),
+        });
+      } finally {
+        quickLock.current = false;
       }
     },
-    [user?.quickCreateNotes, user?.quickCreateNotesCategory, router]
+    [user?.quickCreateNotesCategory, isOpeningNote, router, showToast, t]
+  );
+
+  const openCreateNoteModal = useCallback(
+    (category?: string) => {
+      if (user?.quickCreateNotes === "enable") {
+        checkNavigation(() => quickCreate(category));
+        return;
+      }
+
+      setInitialCategory(category || "");
+      setShowCreateNoteModal(true);
+    },
+    [user?.quickCreateNotes, checkNavigation, quickCreate]
   );
 
   const openCreateChecklistModal = useCallback((category?: string) => {
@@ -112,14 +152,14 @@ export const ShortcutProvider = ({
   const shortcuts = useMemo(
     () => [
       {
-        code: "ArrowLeft01Icon",
+        code: "ArrowLeft",
         modKey: true,
         altKey: true,
         shiftKey: true,
         handler: () =>
           checkNavigation(() => {
             setMode(Modes.CHECKLISTS);
-            router.push("/");
+            router.push(`/?mode=${Modes.CHECKLISTS}`);
           }),
       },
       {
@@ -130,7 +170,7 @@ export const ShortcutProvider = ({
         handler: () =>
           checkNavigation(() => {
             setMode(Modes.NOTES);
-            router.push("/");
+            router.push(`/?mode=${Modes.NOTES}`);
           }),
       },
       {

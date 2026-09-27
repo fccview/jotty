@@ -12,6 +12,7 @@ import { randomUUID } from "crypto";
 import { Modes } from "@/app/_types/enums";
 import { atomicWrite, withCreatedAt } from "@/app/_server/actions/file/atomic";
 import { isItemFile } from "@/app/_server/actions/relations/paths";
+import { isReadOnlyError } from "@/app/_server/actions/lib/read-only";
 
 export interface OrderData {
   categories?: string[];
@@ -168,6 +169,8 @@ export const serverDeleteFile = async (filePath: string) => {
     await fs.unlink(filePath);
     await (await _tracking()).trackItemDelete(filePath);
   } catch (error) {
+    if (isReadOnlyError(error)) throw error;
+
     const { logAudit } = await import("@/app/_server/actions/log");
     await logAudit({
       level: "DEBUG",
@@ -215,6 +218,8 @@ export const serverDeleteDir = async (dirPath: string) => {
     await fs.rm(dirPath, { recursive: true });
     await (await _tracking()).trackTreeDelete(dirPath);
   } catch (error) {
+    if (isReadOnlyError(error)) throw error;
+
     const { logAudit } = await import("@/app/_server/actions/log");
     await logAudit({
       level: "DEBUG",

@@ -1,8 +1,6 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import {
-  CheckForNeedsMigration,
-  getNoteById,
-} from "@/app/_server/actions/note";
+import { CheckForNeedsMigration } from "@/app/_server/actions/note";
+import { getNoteById } from "@/app/_server/actions/note/queries";
 import {
   getCurrentUser,
   canAccessAllContent,

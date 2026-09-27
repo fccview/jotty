@@ -9,6 +9,8 @@ import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
 import { DEFAULT_BORDER_RADIUS, clampRadius } from "@/app/_consts/styling";
 import { runQueued } from "@/app/_server/actions/lib/concurrency";
+import { getTranslations } from "next-intl/server";
+import { checkEditor } from "./validators";
 
 const DATA_SETTINGS_PATH = path.join(process.cwd(), "data", "settings.json");
 const SETTINGS_LANE = "app-settings";
@@ -227,20 +229,39 @@ export const updateAppSettings = async (
       (formData.get("defaultTimeFormat") as "12-hours" | "24-hours") ||
       "12-hours";
 
-    let editorSettings = {
-      enableSlashCommands: true,
-      enableBubbleMenu: true,
-      enableTableToolbar: true,
-      enableBilateralLinks: true,
-    };
+    const existing = await getSettings();
+    let editorSettings: AppSettings["editor"] = existing.editor;
 
-    const editorData = formData.get("editor") as string;
-    if (editorData) {
+    const editorData = formData.get("editor");
+    let editorInput: unknown;
+    if (typeof editorData === "string" && editorData) {
       try {
-        editorSettings = JSON.parse(editorData);
+        editorInput = JSON.parse(editorData);
       } catch (error) {
-        console.warn("Failed to parse editor settings, using defaults");
+        console.warn("Unparseable editor settings, keeping current ones:", error);
       }
+    }
+
+    if (editorInput !== undefined) {
+      const verdict = checkEditor(editorInput);
+
+      if ("badField" in verdict) {
+        const t = await getTranslations("errors");
+        const error = verdict.badField
+          ? t("invalidEditorSetting", { field: verdict.badField })
+          : t("invalidEditorSettings");
+
+        await logAudit({
+          level: "WARNING",
+          action: "app_settings_updated",
+          category: "settings",
+          success: false,
+          errorMessage: `Invalid editor settings: ${verdict.badField || "not an object"}`,
+        });
+        return { success: false, error };
+      }
+
+      editorSettings = { ...existing.editor, ...verdict.patch };
     }
 
     await _persist({

@@ -4,10 +4,10 @@ import path from "path";
 import fs from "fs/promises";
 import { Result } from "@/app/_types";
 import { getCurrentUser } from "../users";
-import { getListById } from "../checklist";
+import { getListById } from "../checklist/queries";
 import { Metadata } from "next";
 import { Modes } from "@/app/_types/enums";
-import { getNoteById } from "../note";
+import { getNoteById } from "../note/queries";
 import { getSettings } from "./settings";
 
 export const getMedatadaTitle = async (

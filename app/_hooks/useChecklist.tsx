@@ -13,7 +13,7 @@ import {
 import { Checklist, ChecklistType, Item, RecurrenceRule } from "@/app/_types";
 import {
   convertChecklistType,
-  getListById,
+  viewList,
 } from "@/app/_server/actions/checklist";
 import { runListDelete } from "@/app/_hooks/lib/delete-list";
 import {
@@ -667,10 +667,7 @@ export const useChecklist = ({
     }
     const result = await createItem(localList, formData, username);
 
-    const updatedList = await getListById(
-      localList.uuid || "",
-      localList.owner || username,
-    );
+    const updatedList = await viewList(localList.uuid || "");
 
     if (updatedList) {
       setLocalList(updatedList);
@@ -807,7 +804,7 @@ export const useChecklist = ({
     deletingItemsCount: itemsToDelete.length,
     pendingTogglesCount: pendingToggles.size,
     sensors,
-    DeleteModal: () => (
+    deleteModal: (
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

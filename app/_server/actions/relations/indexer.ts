@@ -7,6 +7,7 @@ import { isUuid } from "@/app/_consts/identity";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
 import { singleFlight } from "@/app/_server/actions/lib/concurrency";
+import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { getAllFileStats } from "@/app/_server/actions/file";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { readLinks, titleKey } from "./parser";
@@ -131,7 +132,8 @@ export const indexItemFile = (
 
   const absPath = path.resolve(filePath);
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
-  const uuid = typeof metadata.uuid === "string" ? metadata.uuid.toLowerCase() : "";
+  const uuid =
+    typeof metadata.uuid === "string" ? metadata.uuid.toLowerCase() : pathUuid(absPath);
   if (!isUuid(uuid)) return null;
 
   const title =

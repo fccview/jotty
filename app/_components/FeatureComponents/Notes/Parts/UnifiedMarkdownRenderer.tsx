@@ -31,6 +31,9 @@ import { remarkWikilinks, WIKILINK_TAG } from "@/app/_utils/wikilink-utils";
 import { WikiLink } from "./WikiLink";
 import { matchCallout } from "@/app/_utils/callout-utils";
 import { CalloutType } from "@/app/_consts/callouts";
+import { base64ToSvg, base64ToText } from "@/app/_utils/base64-utils";
+import { noteUrlTransform } from "@/app/_utils/url-transform-utils";
+import { tagOutsideCode } from "@/app/_utils/markdown-utils";
 
 type WikiLinkComponents = Record<
   typeof WIKILINK_TAG,
@@ -44,6 +47,8 @@ import {
   Tick02Icon,
   AlertCircleIcon,
 } from "hugeicons-react";
+
+const TRAILING_NEWLINE = /\n$/;
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -87,14 +92,14 @@ export const UnifiedMarkdownRenderer = ({
     /<!--\s*drawio-diagram\s+data:\s*([^\n]+)\s+svg:\s*([^\n]+)(?:\s+theme:\s*([^\n]+))?\s*-->/g,
     (match, dataBase64, svgBase64, theme) => {
       try {
-        const diagramData = atob(dataBase64.trim());
-        const svgData = atob(svgBase64.trim());
+        const diagramData = base64ToText(dataBase64.trim());
         const themeMode = theme ? theme.trim() : "light";
         return `<div data-drawio="" data-drawio-data="${diagramData.replace(
           /"/g,
           "&quot;",
         )}" data-drawio-svg="${svgBase64.trim()}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
       } catch (e) {
+        console.error("Failed to decode drawio diagram:", e);
         return match;
       }
     },
@@ -104,8 +109,8 @@ export const UnifiedMarkdownRenderer = ({
     /<!--\s*excalidraw-diagram\s+data:\s*([^\n]+)(?:\s+svg:\s*([^\n]+))?(?:\s+theme:\s*([^\n]+))?\s*-->/g,
     (match, dataBase64, svgBase64, theme) => {
       try {
-        const diagramData = atob(dataBase64.trim());
-        const svgData = svgBase64 ? atob(svgBase64.trim()) : "";
+        const diagramData = base64ToText(dataBase64.trim());
+        const svgData = svgBase64 ? base64ToText(svgBase64.trim()) : "";
         const themeMode = theme ? theme.trim() : "light";
         return `<div data-excalidraw="" data-excalidraw-data="${diagramData.replace(
           /"/g,
@@ -115,24 +120,13 @@ export const UnifiedMarkdownRenderer = ({
           "&quot;",
         )}" data-excalidraw-theme="${themeMode}">[Excalidraw Diagram]</div>`;
       } catch (e) {
+        console.error("Failed to decode excalidraw diagram:", e);
         return match;
       }
     },
   );
 
-  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
-  const codeBlocks: string[] = [];
-  processedContent = processedContent.replace(codeBlockRegex, (match) => {
-    codeBlocks.push(match);
-    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
-  });
-  processedContent = processedContent.replace(
-    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
-    '<span data-tag="$1">$1</span>',
-  );
-  codeBlocks.forEach((block, i) => {
-    processedContent = processedContent.replace(`__CODE_BLOCK_${i}__`, block);
-  });
+  processedContent = tagOutsideCode(processedContent);
 
   useEffect(() => {
     setIsClient(true);
@@ -180,7 +174,9 @@ export const UnifiedMarkdownRenderer = ({
         const codeElement = child as ReactElement<any>;
         const language =
           codeElement.props.className?.replace("language-", "") || "plaintext";
-        const rawCode = getRawTextFromChildren(codeElement.props.children);
+        const rawCode = getRawTextFromChildren(
+          codeElement.props.children,
+        ).replace(TRAILING_NEWLINE, "");
 
         if (language === "mermaid") {
           return (
@@ -452,9 +448,11 @@ export const UnifiedMarkdownRenderer = ({
         let decodedSvgData = rawSvgData;
         try {
           if (rawSvgData && !rawSvgData.trim().startsWith("<")) {
-            decodedSvgData = atob(rawSvgData);
+            decodedSvgData = base64ToSvg(rawSvgData);
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error("Failed to decode drawio preview:", e);
+        }
         const themeMode = forceLightMode
           ? "light"
           : props["data-drawio-theme"] ||
@@ -570,6 +568,7 @@ export const UnifiedMarkdownRenderer = ({
           remarkPlugins={[remarkGfm, remarkWikilinks]}
           rehypePlugins={[rehypeSlug, rehypeRaw]}
           components={components}
+          urlTransform={noteUrlTransform}
         >
           {processedContent}
         </ReactMarkdown>

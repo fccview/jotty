@@ -8,7 +8,11 @@ import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/Re
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
+import {
+  QuickBarPortal,
+  QuickBarSlots,
+  quickBarButton,
+} from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteQuickBar";
 import { useNotesStore } from "@/app/_utils/notes-store";
 import { VisualGuideRuler } from "./VisualGuideRuler";
 import { EditorSettingsDropdown } from "./Toolbar/EditorSettingsDropdown";
@@ -31,7 +35,6 @@ export const MinimalModeEditor = ({
   compactMode,
 }: MinimalModeEditorProps) => {
   const t = useTranslations();
-  const { user } = useAppMode();
   const { showLineNumbers, showRuler, showVisualGuides, visualGuideColumns } =
     useNotesStore();
   const { contentWithoutMetadata } = extractYamlMetadata(noteContent);
@@ -103,8 +106,9 @@ export const MinimalModeEditor = ({
         </div>
       </div>
 
-      <div
-        className={`fixed bottom-[130px] ${user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"} lg:hidden z-40 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}
+      <QuickBarPortal
+        slot={QuickBarSlots.MODES}
+        fallbackClassName="flex lg:hidden justify-end gap-1 p-1"
       >
         <Button
           variant={showPreview ? "default" : "ghost"}
@@ -112,7 +116,9 @@ export const MinimalModeEditor = ({
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => setShowPreview(true)}
           title={t("editor.previewMode")}
-          className="h-10 w-10"
+          aria-label={t("editor.previewMode")}
+          aria-pressed={showPreview}
+          className={quickBarButton}
         >
           <ViewIcon className="h-5 w-5" />
         </Button>
@@ -123,11 +129,13 @@ export const MinimalModeEditor = ({
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => setShowPreview(false)}
           title={t("editor.markdownEditor")}
-          className="h-10 w-10"
+          aria-label={t("editor.markdownEditor")}
+          aria-pressed={!showPreview}
+          className={quickBarButton}
         >
           <File02Icon className="h-5 w-5" />
         </Button>
-      </div>
+      </QuickBarPortal>
       {!showPreview && showRuler && (
         <VisualGuideRuler
           charWidth={charWidth}

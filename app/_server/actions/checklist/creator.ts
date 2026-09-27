@@ -10,6 +10,7 @@ import { generateUuid } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getFormData } from "@/app/_utils/global-utils";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 
 /**
  * Server-only checklist creation. The acting principal is passed in already
@@ -90,6 +91,6 @@ export const makeList = async (
       false,
     );
     console.error("Error creating list:", error);
-    return { error: "Failed to create list" };
+    return { error: await failedWith(error, "Failed to create list") };
   }
 };

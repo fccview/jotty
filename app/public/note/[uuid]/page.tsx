@@ -1,5 +1,5 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { getNoteById } from "@/app/_server/actions/note";
+import { getNoteById } from "@/app/_server/actions/note/queries";
 import { isUuid } from "@/app/_consts/identity";
 import { PublicNoteView } from "@/app/_components/FeatureComponents/PublicView/PublicNoteView";
 import { getCurrentUser } from "@/app/_server/actions/users";

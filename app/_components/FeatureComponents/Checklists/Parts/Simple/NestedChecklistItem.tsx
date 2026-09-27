@@ -35,6 +35,12 @@ import { useTranslations } from "next-intl";
 import { Droppable } from "./Droppable";
 import { DropIndicator } from "./DropIndicator";
 import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
+import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
+import {
+  MenuAlign,
+  MenuSide,
+  menuPlacementClasses,
+} from "@/app/_utils/menu-placement-utils";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -46,6 +52,7 @@ interface NestedChecklistItemProps {
   onAddSubItem?: (parentId: string, text: string) => void;
   completed?: boolean;
   isPublicView?: boolean;
+  ownerShowsEmojis?: boolean;
   isDeletingItem: boolean;
   isDragDisabled?: boolean;
   isSubtask?: boolean;
@@ -67,6 +74,7 @@ const NestedChecklistItemComponent = ({
   onAddSubItem,
   completed = false,
   isPublicView = false,
+  ownerShowsEmojis,
   isDeletingItem,
   isDragDisabled = false,
   isSubtask = false,
@@ -99,7 +107,7 @@ const NestedChecklistItemComponent = ({
       },
     });
 
-  const showEmojis = useShowEmojis();
+  const showEmojis = useShowEmojis(ownerShowsEmojis);
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
@@ -107,12 +115,18 @@ const NestedChecklistItemComponent = ({
   const [showAddSubItem, setShowAddSubItem] = useState(false);
   const [newSubItemText, setNewSubItemText] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [dropdownOpenUpward, setDropdownOpenUpward] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const addSubItemInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const dropdownButtonRef = useRef<HTMLButtonElement>(null);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+  const dropdownPlacement = useMenuPlacement(
+    isDropdownOpen,
+    dropdownRef,
+    dropdownMenuRef,
+    MenuSide.Down,
+    MenuAlign.End,
+  );
 
   const editorActivity = useEditorActivityStore();
 
@@ -217,37 +231,7 @@ const NestedChecklistItemComponent = ({
     }
   };
 
-  const handleDropdownToggle = () => {
-    if (!isDropdownOpen && dropdownButtonRef.current) {
-      const rect = dropdownButtonRef.current.getBoundingClientRect();
-
-      let scrollParent: HTMLElement | null =
-        dropdownButtonRef.current.parentElement;
-      while (scrollParent) {
-        if (scrollParent.classList.contains("checklist-todo-container")) {
-          break;
-        }
-        scrollParent = scrollParent.parentElement;
-      }
-
-      let shouldOpenUpward = false;
-
-      if (scrollParent) {
-        const containerRect = scrollParent.getBoundingClientRect();
-        const containerStyle = window.getComputedStyle(scrollParent);
-        const paddingBottom = parseInt(containerStyle.paddingBottom) || 0;
-
-        const actualSpaceBelow =
-          containerRect.bottom - rect.bottom - paddingBottom;
-        const threshold = 200;
-
-        shouldOpenUpward = actualSpaceBelow < threshold;
-      }
-
-      setDropdownOpenUpward(shouldOpenUpward);
-    }
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  const handleDropdownToggle = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleDropdownAction = (actionId: string) => {
     setIsDropdownOpen(false);
@@ -546,7 +530,6 @@ const NestedChecklistItemComponent = ({
                 {!isPublicView && (
                   <div className="lg:hidden relative" ref={dropdownRef}>
                     <Button
-                      ref={dropdownButtonRef}
                       variant="ghost"
                       size="sm"
                       onClick={handleDropdownToggle}
@@ -558,11 +541,10 @@ const NestedChecklistItemComponent = ({
 
                     {isDropdownOpen && (
                       <div
+                        ref={dropdownMenuRef}
                         className={cn(
-                          "absolute right-0 z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
-                          dropdownOpenUpward
-                            ? "bottom-full mb-1 top-auto"
-                            : "top-full mt-1",
+                          "absolute z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
+                          menuPlacementClasses(dropdownPlacement),
                         )}
                       >
                         <div className="py-1">
@@ -704,6 +686,7 @@ const NestedChecklistItemComponent = ({
                     isDeletingItem={isDeletingItem}
                     isDragDisabled={isDragDisabled || draggedItemId === item.id}
                     isPublicView={isPublicView}
+                    ownerShowsEmojis={ownerShowsEmojis}
                     checklist={checklist}
                     isOver={overItem?.id === child.id}
                     overPosition={

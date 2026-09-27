@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getUserNotes } from "@/app/_server/actions/note";
+import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { makeNote } from "@/app/_server/actions/note/creator";
 
 export const dynamic = "force-dynamic";

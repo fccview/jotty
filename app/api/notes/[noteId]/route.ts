@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { updateNote, deleteNote } from "@/app/_server/actions/note";
+import { dropNote, editNote } from "@/app/_server/actions/note/editor";
 import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
 import { Modes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, props: { params: Promise<{ noteI
     return withApiAuth(request, async (user) => {
         try {
             const uuid = await _noteUuid(request, params.noteId, user.username);
-            const { getNoteById } = await import("@/app/_server/actions/note");
+            const { getNoteById } = await import("@/app/_server/actions/note/queries");
             const note = uuid ? await getNoteById(uuid, user.username) : undefined;
 
             if (!note) {
@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ noteI
             const { title, content, category } = body;
 
             const uuid = await _noteUuid(request, params.noteId, user.username);
-            const { getUserNotes } = await import("@/app/_server/actions/note");
+            const { getUserNotes } = await import("@/app/_server/actions/note/queries");
             const notes = await getUserNotes({ username: user.username });
 
             if (!notes.success || !notes.data) {
@@ -87,9 +87,7 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ noteI
             formData.append("title", title ?? note.title);
             formData.append("content", content ?? note.content ?? "");
             formData.append("category", category ?? note.category ?? UNCATEGORIZED);
-            formData.append("user", user.username);
-
-            const result = await updateNote(formData);
+            const result = await editNote(user, formData);
             if (result.error) {
                 return NextResponse.json({ error: result.error }, { status: 400 });
             }
@@ -120,7 +118,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ no
     return withApiAuth(request, async (user) => {
         try {
             const uuid = await _noteUuid(request, params.noteId, user.username);
-            const { getUserNotes } = await import("@/app/_server/actions/note");
+            const { getUserNotes } = await import("@/app/_server/actions/note/queries");
             const notes = await getUserNotes({ username: user.username });
 
             if (!notes.success || !notes.data) {
@@ -138,7 +136,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ no
             const formData = new FormData();
             formData.append("uuid", note.uuid!);
 
-            const result = await deleteNote(formData, user.username);
+            const result = await dropNote(user, formData);
             if (result.error) {
                 return NextResponse.json({ error: result.error }, { status: 400 });
             }

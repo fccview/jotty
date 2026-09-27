@@ -7,8 +7,8 @@ import { File02Icon, CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-re
 import { useRouter } from "next/navigation";
 import { capitalize } from "lodash";
 import { useTranslations } from "next-intl";
-import { getNoteById } from "@/app/_server/actions/note";
-import { getListById } from "@/app/_server/actions/checklist";
+import { viewNote } from "@/app/_server/actions/note";
+import { viewList } from "@/app/_server/actions/checklist";
 import { itemHref } from "@/app/_utils/global-utils";
 import { parseItemHref } from "@/app/_utils/item-href-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -39,11 +39,11 @@ const isChecklist = (item?: LinkedItem | null): item is Partial<Checklist> =>
 
 const _fetchItem = async (uuid: string, type?: ItemTypes): Promise<Note | Checklist | null> => {
   if (type !== ItemTypes.CHECKLIST) {
-    const note = await getNoteById(uuid);
+    const note = await viewNote(uuid);
     if (note) return note;
   }
   if (type !== ItemTypes.NOTE) {
-    const list = await getListById(uuid);
+    const list = await viewList(uuid);
     if (list) return list;
   }
   return null;

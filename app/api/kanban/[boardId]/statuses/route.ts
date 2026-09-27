@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import {
-  getListById,
-  updateChecklistStatuses,
-} from "@/app/_server/actions/checklist";
+import { restatus } from "@/app/_server/actions/checklist/restatus";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { isKanbanType } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
@@ -38,12 +36,7 @@ export async function PUT(
         );
       }
 
-      const formData = new FormData();
-      formData.append("uuid", board.uuid!);
-      formData.append("statusesStr", JSON.stringify(statuses));
-      formData.append("apiUser", JSON.stringify(user));
-
-      const result = await updateChecklistStatuses(formData);
+      const result = await restatus(user, board.uuid!, () => statuses);
 
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });

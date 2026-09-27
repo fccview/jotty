@@ -21,6 +21,7 @@ import {
 } from "@/app/_server/actions/share/target";
 import { catUuid } from "@/app/_server/actions/share/category-info";
 import { PermissionTypes } from "@/app/_types/enums";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 
 const _mountTarget = async (mode: Modes, category: string) => {
   const username = await getUsername();
@@ -146,7 +147,7 @@ export const createCategory = async (formData: FormData) => {
       errorMessage: "Failed to create category",
       metadata: { categoryName: name },
     });
-    return { error: "Failed to create category" };
+    return { error: await failedWith(error, "Failed to create category") };
   }
 };
 
@@ -224,7 +225,7 @@ export const deleteCategory = async (formData: FormData) => {
       errorMessage: "Failed to delete category",
       metadata: { categoryPath },
     });
-    return { error: "Failed to delete category" };
+    return { error: await failedWith(error, "Failed to delete category") };
   }
 };
 
@@ -374,6 +375,6 @@ export const renameCategory = async (formData: FormData) => {
       errorMessage: "Failed to rename category",
       metadata: { oldPath },
     });
-    return { error: "Failed to rename category" };
+    return { error: await failedWith(error, "Failed to rename category") };
   }
 };
