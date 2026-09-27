@@ -1,6 +1,6 @@
 {
   "name": "jotty.page",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "private": true,
   "engines": {
     "node": ">=22.15.0 <23 || >=23.11.0"
