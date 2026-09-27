@@ -947,6 +947,11 @@
     "checklistItemClickActionDescription": "Bir görevin metnini tıklattığınızda ne olacağını seçin. \n\"Tamamlandı olarak işaretle\" onay kutusunu değiştirir (varsayılan); \n\"Görev adını düzenle\", görevi satır içi düzenleme için açar; bunu tamamlamak için yine de onay kutusunu tıklamanız gerekir.",
     "checklistItemClickActionToggle": "Tamamlandı/tamamlanmadı olarak işaretle",
     "checklistItemClickActionEdit": "Liste öğesini düzenle",
+    "newItemInsertion": "Yeni öğe ekleme konumu",
+    "selectNewItemInsertion": "Yeni öğelerin nereye ekleneceğini seçin",
+    "newItemInsertionDescription": "Yeni öğelerin kontrol listesinin üstüne (varsayılan) mı yoksa altına mı ekleneceğini seçin.",
+    "newItemInsertionTop": "Listenin başı",
+    "newItemInsertionBottom": "Listenin sonu",
     "useSystemDefault": "Sistem varsayılanını kullan",
     "selectShowChecklistEmojis": "Emoji görünürlüğünü seçin",
     "showChecklistEmojisDescription": "Metnine göre liste öğelerinin yanında otomatik emoji gösterir."

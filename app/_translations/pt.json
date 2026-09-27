@@ -948,6 +948,11 @@
     "checklistItemClickActionDescription": "Escolha o que acontece quando clica no texto de uma tarefa. \"Marcar como concluída\" alterna a caixa de verificação (predefinido); \"Editar nome da tarefa\" abre a tarefa para edição inline — ainda precisará de clicar na própria caixa de verificação para a concluir.",
     "checklistItemClickActionToggle": "Marcar como concluída/incompleta",
     "checklistItemClickActionEdit": "Editar item da lista",
+    "newItemInsertion": "Inserção de novos itens",
+    "selectNewItemInsertion": "Selecione onde os novos itens são adicionados",
+    "newItemInsertionDescription": "Escolha se os novos itens são adicionados no topo (padrão) ou no final de uma lista de verificação.",
+    "newItemInsertionTop": "Topo da lista",
+    "newItemInsertionBottom": "Final da lista",
     "selectShowChecklistEmojis": "Selecionar visibilidade dos emojis",
     "showChecklistEmojisDescription": "Mostra um emoji automático junto dos itens da lista com base no texto."
   },

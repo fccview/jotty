@@ -922,6 +922,11 @@
     "checklistItemClickActionDescription": "Choisissez ce qui se passe lorsque vous cliquez sur le texte d'une tâche. \n« Marquer comme terminé » coche la case (par défaut) ; \n« Modifier le nom de la tâche » ouvre la tâche pour une modification en ligne ; vous devrez toujours cliquer sur la case à cocher elle-même pour la terminer.",
     "checklistItemClickActionToggle": "Marquer comme complet/incomplet",
     "checklistItemClickActionEdit": "Modifier un élément de liste",
+    "newItemInsertion": "Insertion des nouveaux éléments",
+    "selectNewItemInsertion": "Sélectionnez l'emplacement d'ajout des nouveaux éléments",
+    "newItemInsertionDescription": "Choisissez si les nouveaux éléments sont ajoutés en haut (par défaut) ou en bas d'une liste de contrôle.",
+    "newItemInsertionTop": "Haut de la liste",
+    "newItemInsertionBottom": "Bas de la liste",
     "useSystemDefault": "Utiliser les valeurs par défaut du système",
     "selectShowChecklistEmojis": "Choisir la visibilité des émojis",
     "showChecklistEmojisDescription": "Affiche un émoji automatique à côté des éléments de liste selon leur texte."

@@ -922,6 +922,11 @@
     "checklistItemClickActionDescription": "Scegli cosa succede quando fai clic sul testo di un'attività. \n\"Segna come completato\" attiva/disattiva la casella di controllo (impostazione predefinita); \n\"Modifica nome attività\" apre l'attività per la modifica in linea: dovrai comunque fare clic sulla casella di controllo stessa per completarla.",
     "checklistItemClickActionToggle": "Contrassegna come completo/incompleto",
     "checklistItemClickActionEdit": "Modifica elemento elenco",
+    "newItemInsertion": "Inserimento nuovi elementi",
+    "selectNewItemInsertion": "Seleziona dove vengono aggiunti i nuovi elementi",
+    "newItemInsertionDescription": "Scegli se i nuovi elementi vengono aggiunti in cima (predefinito) o in fondo a una checklist.",
+    "newItemInsertionTop": "Inizio della lista",
+    "newItemInsertionBottom": "Fine della lista",
     "useSystemDefault": "Utilizza l'impostazione predefinita del sistema",
     "selectShowChecklistEmojis": "Seleziona visibilità emoji",
     "showChecklistEmojisDescription": "Mostra un'emoji automatica accanto agli elementi della checklist in base al testo."

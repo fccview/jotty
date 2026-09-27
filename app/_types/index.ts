@@ -46,6 +46,7 @@ export type {
   HideTimeTrackingOnCards,
   CodeBlockStyle,
   ChecklistItemClickAction,
+  NewItemInsertion,
 } from "./user";
 
 export type {

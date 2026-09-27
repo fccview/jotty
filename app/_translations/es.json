@@ -922,6 +922,11 @@
     "checklistItemClickActionDescription": "Elija qué sucede cuando hace clic en el texto de una tarea. \n\"Marcar como completo\" activa la casilla de verificación (predeterminada); \n\"Editar nombre de la tarea\" abre la tarea para su edición en línea; aún deberá hacer clic en la casilla de verificación para completarla.",
     "checklistItemClickActionToggle": "Marcar como completo/incompleto",
     "checklistItemClickActionEdit": "Editar elemento de la lista",
+    "newItemInsertion": "Inserción de nuevos elementos",
+    "selectNewItemInsertion": "Selecciona dónde se añaden los nuevos elementos",
+    "newItemInsertionDescription": "Elige si los nuevos elementos se añaden al principio (predeterminado) o al final de una lista de verificación.",
+    "newItemInsertionTop": "Principio de la lista",
+    "newItemInsertionBottom": "Final de la lista",
     "useSystemDefault": "Usar el sistema predeterminado",
     "selectShowChecklistEmojis": "Seleccionar visibilidad de emojis",
     "showChecklistEmojisDescription": "Muestra un emoji automático junto a los elementos de la lista según su texto."

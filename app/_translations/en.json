@@ -948,6 +948,11 @@
     "checklistItemClickActionDescription": "Choose what happens when you click a task's text. \"Mark as complete\" toggles the checkbox  (default); \"Edit task name\" opens the task for inline editing — you'll still need to click the checkbox itself to complete it.",
     "checklistItemClickActionToggle": "Mark as complete/incomplete",
     "checklistItemClickActionEdit": "Edit list item",
+    "newItemInsertion": "New item insertion",
+    "selectNewItemInsertion": "Select where new items are added",
+    "newItemInsertionDescription": "Choose whether new items are added to the top (default) or the bottom of a checklist.",
+    "newItemInsertionTop": "Top of the list",
+    "newItemInsertionBottom": "Bottom of the list",
     "selectShowChecklistEmojis": "Select emoji visibility",
     "showChecklistEmojisDescription": "Show an automatic emoji next to checklist items based on their text."
   },

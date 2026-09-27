@@ -947,6 +947,11 @@
     "checklistItemClickActionDescription": "Choose what happens when you click a task's text. \"Mark as complete\" toggles the checkbox  (default); \"Edit task name\" opens the task for inline editing — you'll still need to click the checkbox itself to complete it.",
     "checklistItemClickActionToggle": "Mark as complete/incomplete",
     "checklistItemClickActionEdit": "Edit list item",
+    "newItemInsertion": "Stow new cargo",
+    "selectNewItemInsertion": "Choose where new loot be stowed",
+    "newItemInsertionDescription": "Choose whether new cargo be stowed at the top (default) or the bottom o' the manifest.",
+    "newItemInsertionTop": "Top o' the manifest",
+    "newItemInsertionBottom": "Bottom o' the manifest",
     "useSystemDefault": "Use system default",
     "selectShowChecklistEmojis": "Choose yer rune showin'",
     "showChecklistEmojisDescription": "Marks each manifest entry with a rune drawn from its words."

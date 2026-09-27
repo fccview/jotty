@@ -922,6 +922,11 @@
     "checklistItemClickActionDescription": "Wybierz, co się stanie, gdy klikniesz tekst zadania. \n„Oznacz jako ukończone” przełącza pole wyboru (domyślnie); \n„Edytuj nazwę zadania” otwiera zadanie do edycji bezpośredniej — nadal będziesz musiał kliknąć samo pole wyboru, aby je ukończyć.",
     "checklistItemClickActionToggle": "Oznacz jako ukończone/niekompletne",
     "checklistItemClickActionEdit": "Edytuj element listy",
+    "newItemInsertion": "Wstawianie nowych elementów",
+    "selectNewItemInsertion": "Wybierz, gdzie dodawane są nowe elementy",
+    "newItemInsertionDescription": "Wybierz, czy nowe elementy są dodawane na górze (domyślnie) czy na dole listy kontrolnej.",
+    "newItemInsertionTop": "Góra listy",
+    "newItemInsertionBottom": "Dół listy",
     "useSystemDefault": "Użyj ustawień domyślnych systemu",
     "selectShowChecklistEmojis": "Wybierz widoczność emotikonów",
     "showChecklistEmojisDescription": "Pokazuje automatyczne emoji obok pozycji listy na podstawie ich tekstu."

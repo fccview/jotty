@@ -922,6 +922,11 @@
     "checklistItemClickActionDescription": "Kies wat er gebeurt als u op de tekst van een taak klikt. \n\"Markeren als voltooid\" schakelt het selectievakje in (standaard); \nMet 'Taaknaam bewerken' wordt de taak geopend voor inline bewerken. U moet nog steeds op het selectievakje zelf klikken om deze te voltooien.",
     "checklistItemClickActionToggle": "Markeer als compleet/onvolledig",
     "checklistItemClickActionEdit": "Lijstitem bewerken",
+    "newItemInsertion": "Positie van nieuwe items",
+    "selectNewItemInsertion": "Selecteer waar nieuwe items worden toegevoegd",
+    "newItemInsertionDescription": "Kies of nieuwe items bovenaan (standaard) of onderaan een checklist worden toegevoegd.",
+    "newItemInsertionTop": "Bovenaan de lijst",
+    "newItemInsertionBottom": "Onderaan de lijst",
     "useSystemDefault": "Gebruik systeemstandaard",
     "selectShowChecklistEmojis": "Emoji-zichtbaarheid kiezen",
     "showChecklistEmojisDescription": "Toont automatisch een emoji naast checklistitems op basis van de tekst."

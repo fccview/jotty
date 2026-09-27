@@ -33,6 +33,7 @@ import {
   HideMobileStatusDropdown,
   HideTimeTrackingOnCards,
   CodeBlockStyle,
+  NewItemInsertion,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { DEFAULT_WEEK_START, WeekDay } from "@/app/_consts/calendar";
@@ -75,6 +76,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   markdownTheme: user?.markdownTheme || "prism",
   defaultChecklistFilter: user?.defaultChecklistFilter || "all",
   checklistItemClickAction: user?.checklistItemClickAction || "toggle",
+  newItemInsertion: user?.newItemInsertion || "top",
   defaultNoteFilter: user?.defaultNoteFilter || "all",
   quickCreateNotes: user?.quickCreateNotes || "disable",
   quickCreateNotesCategory: user?.quickCreateNotesCategory || "",
@@ -176,6 +178,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     "showChecklistEmojis",
     "defaultChecklistFilter",
     "checklistItemClickAction",
+    "newItemInsertion",
   ]);
   const hasKanbanChanges = hasChanges([
     "hideStatusOnCards",
@@ -343,6 +346,11 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
   const checklistItemClickActionOptions = [
     { id: "toggle", name: t('settings.checklistItemClickActionToggle') },
     { id: "edit", name: t('settings.checklistItemClickActionEdit') },
+  ];
+
+  const newItemInsertionOptions = [
+    { id: "top", name: t('settings.newItemInsertionTop') },
+    { id: "bottom", name: t('settings.newItemInsertionBottom') },
   ];
 
   const defaultChecklistFilterOptions = [
@@ -893,6 +901,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                   "showChecklistEmojis",
                   "defaultChecklistFilter",
                   "checklistItemClickAction",
+                  "newItemInsertion",
                 ],
                 checklistSettingsSchema,
                 "Checklists"
@@ -1007,6 +1016,27 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
           />
           <p className="text-md lg:text-sm text-muted-foreground">
             {t('settings.checklistItemClickActionDescription')}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="new-item-insertion">
+            {t('settings.newItemInsertion')}
+          </Label>
+          <Dropdown
+            value={currentSettings.newItemInsertion || "top"}
+            onChange={(value) =>
+              handleSettingChange(
+                "newItemInsertion",
+                value as NewItemInsertion
+              )
+            }
+            options={newItemInsertionOptions}
+            placeholder={t('settings.selectNewItemInsertion')}
+            className="w-full"
+          />
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.newItemInsertionDescription')}
           </p>
         </div>
       </FormWrapper>
