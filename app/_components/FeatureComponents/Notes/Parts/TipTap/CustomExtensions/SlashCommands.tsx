@@ -29,6 +29,8 @@ import { itemHref } from "@/app/_utils/global-utils";
 
 const WIKILINK_OPEN = "[[";
 
+const WIKILINK_CLOSE_CHAR = "]";
+
 const mentionable = <T extends { uuid?: string }>(items?: T[]): T[] =>
   items?.filter((item) => Boolean(item.uuid)) || [];
 
@@ -621,6 +623,9 @@ export const SlashCommands = Extension.create({
           ...this.options.atSuggestion,
           char: WIKILINK_OPEN,
           allowSpaces: true,
+          allow: ({ editor, state, range }: { editor: any; state: any; range: { from: number; to: number } }) =>
+            !editor.isActive("codeBlock") &&
+            !state.doc.textBetween(range.from, range.to).includes(WIKILINK_CLOSE_CHAR),
           pluginKey: new PluginKey("wikiSuggestion"),
         })
       );

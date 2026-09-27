@@ -1743,6 +1743,7 @@
     "howTo": "How to",
     "shortcuts": "Shortcuts",
     "markdownGuide": "Markdown Guide",
+    "brain": "Links & Brain",
     "customisations": "Customisations",
     "docker": "Docker",
     "envVariables": "Env Variables",
@@ -1750,6 +1751,7 @@
     "pwa": "PWA",
     "encryption": "Encryption",
     "sso": "SSO",
+    "ldap": "LDAP",
     "translations": "Translations",
     "unraid": "Unraid",
     "patches": "Patches"

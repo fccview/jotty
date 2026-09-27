@@ -94,7 +94,7 @@ Jotty keeps the links in `data/.relations.db`, next to your notes. Your Markdown
 - Jotty never reads encrypted notes, so their links don't appear anywhere.
 - If the file is missing or damaged, Jotty rebuilds it from your notes on start. While that runs, Referenced By and the brain show "Indexing relationships...".
 - Files changed outside Jotty are picked up within about a minute.
-- Admins can rebuild it from **Admin > Content**, or with the [rebuild API](API.md#15-rebuild-link-index).
+- Anyone can rebuild their own index with the [rebuild API](API.md#15-rebuild-link-index). Admins can also rebuild another user's, or everyone's from **Admin > Content**.
 
 > [!NOTE]
 > A rebuild remembers which note each wikilink first matched. Deleting the file forgets that. Wikilinks whose target you renamed in Jotty, sitting in notes you haven't saved since, go back to matching by title.

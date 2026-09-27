@@ -25,6 +25,13 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "help.markdownGuide",
   },
   {
+    id: "brain",
+    name: t("help.brain"),
+    filename: "BRAIN.md",
+    icon: "brain",
+    translationKey: "help.brain",
+  },
+  {
     id: "api",
     name: t("common.api"),
     filename: "API.md",
@@ -86,6 +93,13 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     filename: "SSO.md",
     icon: "squarelock",
     translationKey: "help.sso",
+  },
+  {
+    id: "ldap",
+    name: t("help.ldap"),
+    filename: "LDAP.md",
+    icon: "users",
+    translationKey: "help.ldap",
   },
   {
     id: "translations",
