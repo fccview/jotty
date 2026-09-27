@@ -14,6 +14,7 @@ import { getListById } from "@/app/_server/actions/checklist/queries";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { findItem, updateItem } from "@/app/_utils/item-tree-utils";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 
 const _tweakItem = async (
   actor: SanitisedUser,
@@ -32,34 +33,39 @@ const _tweakItem = async (
   const list = await getListById(uuid, username);
   if (!list) return { success: false, error: "List not found" };
 
-  const now = new Date().toISOString();
-  const updatedList: Checklist = {
-    ...list,
-    items: updateItem(list.items, itemId, (item) => ({
-      ...item,
-      ...patch,
-      lastModifiedBy: username,
-      lastModifiedAt: now,
-    })),
-    updatedAt: now,
-  };
-
-  await serverWriteFile(filePath, listToMarkdown(updatedList));
-
-  await broadcast({
-    type: "checklist",
-    action: "updated",
-    entityId: updatedList.uuid,
-    username,
-  });
-
   try {
-    revalidatePath("/");
-  } catch (error) {
-    console.warn("Cache revalidation failed, but data was saved successfully:", error);
-  }
+    const now = new Date().toISOString();
+    const updatedList: Checklist = {
+      ...list,
+      items: updateItem(list.items, itemId, (item) => ({
+        ...item,
+        ...patch,
+        lastModifiedBy: username,
+        lastModifiedAt: now,
+      })),
+      updatedAt: now,
+    };
 
-  return { success: true, data: updatedList };
+    await serverWriteFile(filePath, listToMarkdown(updatedList));
+
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: updatedList.uuid,
+      username,
+    });
+
+    try {
+      revalidatePath("/");
+    } catch (error) {
+      console.warn("Cache revalidation failed, but data was saved successfully:", error);
+    }
+
+    return { success: true, data: updatedList };
+  } catch (error) {
+    console.error("Error updating item:", error);
+    return { success: false, error: await failedWith(error, "Failed to update item") };
+  }
 };
 
 export const tweakItem = async (

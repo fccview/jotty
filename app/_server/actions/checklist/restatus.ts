@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { Checklist, Item, Result, KanbanStatus, SanitisedUser } from "@/app/_types";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
@@ -106,7 +107,10 @@ const _restatus = async (
     return { success: true, data: updatedList };
   } catch (error) {
     console.error("Error updating checklist statuses:", error);
-    return { success: false, error: "Failed to update checklist statuses" };
+    return {
+      success: false,
+      error: await failedWith(error, "Failed to update checklist statuses"),
+    };
   }
 };
 

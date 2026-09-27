@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import path from "path";
 import {
   serverWriteFile,
@@ -141,7 +142,7 @@ const _graftItem = async (
     return { success: true, data: updatedList };
   } catch (error) {
     console.error("Error creating sub-item:", error);
-    return { success: false, error: "Failed to create sub-item" };
+    return { success: false, error: await failedWith(error, "Failed to create sub-item") };
   }
 };
 
