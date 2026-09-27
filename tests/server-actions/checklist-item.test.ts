@@ -6,7 +6,7 @@ const mockEnsureDir = vi.fn();
 const mockServerWriteFile = vi.fn();
 const mockGetUsername = vi.fn();
 const mockGetCurrentUser = vi.fn();
-const mockGetUserByUsername = vi.fn();
+const mockFindUserRecord = vi.fn();
 const mockIsAdmin = vi.fn();
 const mockCanReach = vi.fn();
 const mockUsersWithAccess = vi.fn();
@@ -26,8 +26,11 @@ vi.mock("@/app/_server/actions/file", () => ({
 vi.mock("@/app/_server/actions/users", () => ({
   getUsername: (...args: any[]) => mockGetUsername(...args),
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
-  getUserByUsername: (...args: any[]) => mockGetUserByUsername(...args),
   isAdmin: (...args: any[]) => mockIsAdmin(...args),
+}));
+
+vi.mock("@/app/_server/actions/users/records", () => ({
+  findUserRecord: (...args: any[]) => mockFindUserRecord(...args),
 }));
 
 vi.mock("@/app/_server/actions/share/queries", () => ({
@@ -121,7 +124,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     mockServerWriteFile.mockResolvedValue(undefined);
     mockGetUsername.mockResolvedValue("testuser");
     mockGetCurrentUser.mockResolvedValue({ username: "testuser" });
-    mockGetUserByUsername.mockResolvedValue(null);
+    mockFindUserRecord.mockResolvedValue(null);
     mockIsAdmin.mockResolvedValue(false);
     mockCanReach.mockResolvedValue(true);
     mockUsersWithAccess.mockResolvedValue([]);
@@ -350,7 +353,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should prepend new item (order 0) by default", async () => {
-      mockGetUserByUsername.mockResolvedValue(null);
+      mockFindUserRecord.mockResolvedValue(null);
 
       const formData = createFormData({
         uuid: "test-uuid-123",
@@ -371,7 +374,7 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
     });
 
     it("should append new item at the end when newItemInsertion is 'bottom'", async () => {
-      mockGetUserByUsername.mockResolvedValue({
+      mockFindUserRecord.mockResolvedValue({
         username: "testuser",
         newItemInsertion: "bottom",
       });

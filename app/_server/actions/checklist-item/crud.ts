@@ -15,7 +15,8 @@ import {
   extractHashtagsFromContent,
   normalizeTag,
 } from "@/app/_utils/tag-utils";
-import { isAdmin, getUsername, getUserByUsername } from "@/app/_server/actions/users";
+import { isAdmin, getUsername } from "@/app/_server/actions/users";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 import { Checklist, Item, KanbanPriority, Result } from "@/app/_types";
 import {
   ItemTypes,
@@ -282,7 +283,7 @@ export const createItem = async (
       order: item.order + 1,
     }));
 
-    const userRecord = await getUserByUsername(currentUser);
+    const userRecord = await findUserRecord(currentUser);
     const insertAtBottom = userRecord?.newItemInsertion === "bottom";
 
     const newItem = {
