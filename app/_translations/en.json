@@ -1054,9 +1054,7 @@
     "enableBubbleMenuDescription": "Enable the floating toolbar that appears when text is selected",
     "enableTableToolbarDescription": "Enable the toolbar that appears when editing tables",
     "bilateralLinks": "Bilateral Links",
-    "experimental": "(Experimental)",
     "bilateralLinksDescription": "Enable the ability to link to notes and checklists in the same document.",
-    "bilateralLinksWarning": "This feature is experimental and may not work as expected. It may also end up being removed/deprecated in the future.",
     "historyEnabled": "Note History",
     "historyDescription": "Track version history for notes. Allows restoring previous versions. Only manual saves create history points (not autosave).",
     "disableHistory": "Disable History",
@@ -1745,6 +1743,7 @@
     "howTo": "How to",
     "shortcuts": "Shortcuts",
     "markdownGuide": "Markdown Guide",
+    "brain": "Links & Brain",
     "customisations": "Customisations",
     "docker": "Docker",
     "envVariables": "Env Variables",
@@ -1752,6 +1751,7 @@
     "pwa": "PWA",
     "encryption": "Encryption",
     "sso": "SSO",
+    "ldap": "LDAP",
     "translations": "Translations",
     "unraid": "Unraid",
     "patches": "Patches"
@@ -1779,5 +1779,71 @@
     "sharingFolderMessage": "Open to view “{folder}”",
     "mentionTitle": "{user} mentioned you in a comment",
     "mentionMessage": "“{board}”"
+  },
+  "relations": {
+    "indexing": "Indexing relationships...",
+    "unreachable": "not reachable",
+    "createFromWikilink": "Create a note called \"{title}\"",
+    "mentionedIn": "Mentioned in",
+    "mentionedInHint": "These notes use this title as plain text. Link one to connect it.",
+    "linkMention": "Link",
+    "linked": "Linked the mention in {title}",
+    "linkFailed": "Couldn't link that mention",
+    "kind": {
+      "mention": "Link",
+      "wiki": "Wikilink"
+    }
+  },
+  "brain": {
+    "title": "Brain",
+    "openBrain": "Open in brain",
+    "search": "Find something in your brain...",
+    "dimension": "View",
+    "dimensions": {
+      "3d": "3D",
+      "2d": "2D"
+    },
+    "local": "Around this item",
+    "global": "Everything",
+    "depth": "Depth {depth}",
+    "colourBy": "Colour by",
+    "colourModes": {
+      "type": "Type",
+      "category": "Category"
+    },
+    "filters": {
+      "notes": "Notes",
+      "checklists": "Checklists",
+      "tags": "Tags",
+      "ghosts": "Not written yet",
+      "suggestions": "Suggestions",
+      "orphans": "Loners"
+    },
+    "kind": {
+      "note": "Note",
+      "checklist": "Checklist",
+      "ghost": "Not written yet",
+      "tag": "Tag"
+    },
+    "edges": {
+      "mention": "Link",
+      "wiki": "Wikilink",
+      "suggested": "Suggested",
+      "tag": "Tag"
+    },
+    "linksTo": "Links to",
+    "linkedFrom": "Linked from",
+    "suggested": "Might be related",
+    "promote": "Link to {title}",
+    "lonely": "Nothing connects here yet. Mention it with @ or [[ from another note.",
+    "open": "Open",
+    "createGhost": "Write this note",
+    "openTag": "Show everything tagged",
+    "createFailed": "Could not create that note",
+    "connectFailed": "Could not link those two",
+    "connected": "Linked {source} to {target}",
+    "empty": "Your brain is quiet. Link notes and checklists with @ or [[ and they will show up here.",
+    "viewingOwner": "Viewing {owner}'s brain",
+    "summary": "{items} items, {links} links, {shown} shown"
   }
 }

@@ -90,6 +90,8 @@ My recommended way to run `jotty·page` is with Docker. You can also use:
 - The [Proxmox community script](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/jotty.sh) for Proxmox VE
 - The [Unraid template](howto/UNRAID.md) for Unraid Community Applications
 
+Running it without Docker, from source or from the prebuilt tarball, needs Node.js 22.15 or later.
+
 <a id="docker-compose"></a>
 
 ### Docker Compose (Recommended)
@@ -185,6 +187,8 @@ I will always detail these migrations in the release notes. I _highly recommend_
 `jotty·page` supports GitHub Flavored Markdown (GFM) and some custom syntax for complex functionality.
 
 📖 **For the complete MARKDOWN documentation, see [howto/MARKDOWN.md](howto/MARKDOWN.md)**
+
+📖 **For links, wikilinks and the brain view, see [howto/BRAIN.md](howto/BRAIN.md)**
 
 <a id="encryption"></a>
 

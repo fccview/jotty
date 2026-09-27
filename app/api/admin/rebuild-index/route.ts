@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { rebuildLinkIndex } from "@/app/_server/actions/link";
+import { getUserIndex } from "@/app/_server/actions/users/helpers";
+import { rebuildOwnerRelations } from "@/app/_server/actions/relations/indexer";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   return withApiAuth(request, async (user) => {
     try {
-      const { username } = await request.json();
+      const body = await request.json().catch(() => ({}));
+      const requested = typeof body?.username === "string" ? body.username.trim() : "";
+      const username = requested || user.username;
 
-      if (!username) {
-        return NextResponse.json(
-          { error: "Username is required" },
-          { status: 400 }
-        );
+      if (username !== user.username && !user.isAdmin) {
+        return NextResponse.json({ error: "Admin access required" }, { status: 403 });
       }
 
-      await rebuildLinkIndex(username);
+      if ((await getUserIndex(username)) === -1) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      await rebuildOwnerRelations(username);
 
       return NextResponse.json({
         success: true,

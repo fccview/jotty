@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { plainItemText } from "@/app/_utils/item-href-utils";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
+import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Item, Checklist, KanbanPriority } from "@/app/_types";
@@ -94,6 +97,8 @@ export const KanbanCardDetail = ({
   const [item, setItem] = useState(initialItem);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(initialItem.text);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const titleLinks = useItemLinkSuggestions(editText, setEditText, titleInputRef);
   const [editDescription, setEditDescription] = useState(_unsanitizeDescription(initialItem.description || ""));
   const [scoreInput, setScoreInput] = useState(initialItem.score?.toString() || "");
   const [reminderInput, setReminderInput] = useState(initialItem.reminder?.datetime || "");
@@ -423,7 +428,7 @@ export const KanbanCardDetail = ({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={item.text || t("checklists.untitledTask")}
+        title={plainItemText(item.text) || t("checklists.untitledTask")}
         size="fullscreen"
         allowEnlarge
         defaultEnlarged
@@ -439,16 +444,19 @@ export const KanbanCardDetail = ({
                   {t("kanban.itemTitle")}
                 </label>
                 <input
+                  ref={titleInputRef}
                   type="text"
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
                   className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all text-base"
                   placeholder={t("checklists.enterTaskTitle")}
                   onKeyDown={(e) => {
+                    if (titleLinks.handleKeyDown(e)) return;
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSave(); }
                     else if (e.key === "Escape") { e.preventDefault(); setEditText(item.text); setEditDescription(_unsanitizeDescription(item.description || "")); setIsEditing(false); }
                   }}
                 />
+                <ItemLinkPopup suggestions={titleLinks} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">

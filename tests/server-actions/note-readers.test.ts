@@ -10,6 +10,7 @@ const mockGrepExcerpt = vi.fn();
 vi.mock("@/app/_server/actions/file", () => ({
   serverReadDir: (...args: any[]) => mockServerReadDir(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverWriteFile: (...args: any[]) => mockFs.writeFile(...args),
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
 }));
 
@@ -53,6 +54,11 @@ describe("readNotesRecursively uuid contract", () => {
       mtime: new Date("2024-01-02T00:00:00.000Z"),
     });
     mockFs.writeFile.mockResolvedValue(undefined);
+    mockFs.readFile.mockImplementation(async (filePath: string) => {
+      const content = await mockServerReadFile(filePath);
+      if (content == null) throw new Error("ENOENT");
+      return content;
+    });
   });
 
   it("should stamp and return a uuid when the note has none", async () => {

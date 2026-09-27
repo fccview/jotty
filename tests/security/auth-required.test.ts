@@ -54,16 +54,6 @@ vi.mock('@/app/_server/actions/log', () => ({
   logUserEvent: vi.fn(),
 }))
 
-vi.mock('@/app/_server/actions/link', async (importOriginal) => {
-  const actual = await importOriginal() as any
-  return {
-    ...actual,
-    parseInternalLinks: vi.fn().mockResolvedValue([]),
-    updateIndexForItem: vi.fn(),
-    removeItemFromIndex: vi.fn(),
-  }
-})
-
 vi.mock('@/app/_server/actions/ws/broadcast', () => ({
   broadcast: vi.fn().mockResolvedValue(undefined),
 }))
@@ -298,10 +288,29 @@ describe('Security: Authentication Required', () => {
       expect(result).toEqual({ success: true })
     })
 
-    it('rebuildLinkIndex should reject unauthenticated requests', async () => {
-      const { rebuildLinkIndex } = await import('@/app/_server/actions/link')
+    it('reindexRelations should reject unauthenticated requests', async () => {
+      const { reindexRelations } = await import('@/app/_server/actions/relations')
 
-      await expect(rebuildLinkIndex('anyuser')).rejects.toThrow('Not authenticated')
+      await expect(reindexRelations('anyuser')).resolves.toEqual({
+        success: false,
+        error: 'Not authenticated',
+      })
+    })
+
+    it('getBrain should reject unauthenticated requests', async () => {
+      const { getBrain } = await import('@/app/_server/actions/relations')
+
+      await expect(getBrain('anyuser')).resolves.toEqual({
+        success: false,
+        error: 'Not authenticated',
+      })
+    })
+
+    it('getItemRelations should return nothing to unauthenticated requests', async () => {
+      const { getItemRelations } = await import('@/app/_server/actions/relations')
+
+      const result = await getItemRelations('3f2a1b4c-1111-4222-8333-944455556666')
+      expect(result.backlinks).toEqual([])
     })
   })
 

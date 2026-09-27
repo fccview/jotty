@@ -1,5 +1,6 @@
 "use client";
 
+import { plainItemText } from "@/app/_utils/item-href-utils";
 import { useState, useMemo } from "react";
 import { Archive02Icon } from "hugeicons-react";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
@@ -105,7 +106,7 @@ export const ArchivedItemsModal = ({
                 }}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-md lg:text-sm font-medium truncate">{item.text}</p>
+                  <p className="text-md lg:text-sm font-medium truncate">{plainItemText(item.text)}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {item.archivedAt && (
                       <p className="text-md lg:text-xs text-muted-foreground">

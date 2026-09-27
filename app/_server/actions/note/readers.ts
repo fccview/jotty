@@ -9,10 +9,10 @@ import {
   readOrderFile,
 } from "@/app/_server/actions/file";
 import {
+  createdAtOf,
   extractYamlMetadata,
   generateUuid,
   toIso,
-  updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import {
   grepExtractFrontmatter,
@@ -25,33 +25,10 @@ import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
 import { promisify } from "util";
 import { exec } from "child_process";
-import { singleFlight } from "@/app/_server/actions/lib/concurrency";
+import { stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
 const execAsync = promisify(exec);
-
-const _stampUuid = async (filePath: string): Promise<string | undefined> =>
-  singleFlight(`stamp:${filePath}`, async () => {
-    try {
-      const content = await serverReadFile(filePath);
-      if (!content) return undefined;
-
-      const { metadata } = extractYamlMetadata(content);
-      if (typeof metadata.uuid === "string" && metadata.uuid) {
-        return metadata.uuid;
-      }
-
-      const uuid = generateUuid();
-      await fs.writeFile(
-        filePath,
-        updateYamlMetadata(content, { uuid }),
-        "utf-8",
-      );
-      return uuid;
-    } catch (error) {
-      console.warn("Failed to stamp UUID on note:", filePath, error);
-      return undefined;
-    }
-  });
 
 export const readNotesRecursively = async (
   dir: string,
@@ -73,7 +50,7 @@ export const readNotesRecursively = async (
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
       const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|encrypted):|^[[:space:]]+- |^---$" "${dir}"`;
+      const metaCmd = `grep -rE "^(title|uuid|tags|encrypted|createdAt|${SHARED_WITH_KEY}):|^[[:space:]]+- |^---$" "${dir}"`;
       const [statsOut, metaOut] = await Promise.all([
         execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
           stdout: "",
@@ -94,7 +71,8 @@ export const readNotesRecursively = async (
 
       const inFrontmatter = new Map<string, boolean>();
 
-      let inTagsFile = "";
+      let listFile = "";
+      let listKey = "";
       for (const line of metaOut.stdout.split("\n")) {
         if (!line) continue;
         const colonIdx = line.indexOf(":");
@@ -107,19 +85,19 @@ export const readNotesRecursively = async (
         }
         if (!inFrontmatter.get(filePath)) continue;
         if (/^\s+-\s/.test(rest)) {
-          if (inTagsFile === filePath) {
+          if (listFile === filePath) {
             const tag = rest.replace(/^\s+-\s+/, "").trim();
             if (tag) {
               if (!metadataCache!.has(filePath))
                 metadataCache!.set(filePath, {});
               const entry = metadataCache!.get(filePath)!;
-              if (!Array.isArray(entry.tags)) entry.tags = [];
-              (entry.tags as string[]).push(tag);
+              if (!Array.isArray(entry[listKey])) entry[listKey] = [];
+              (entry[listKey] as string[]).push(tag);
             }
           }
           continue;
         }
-        inTagsFile = "";
+        listFile = "";
         const innerColon = rest.indexOf(":");
         if (innerColon === -1) continue;
         const key = rest.slice(0, innerColon);
@@ -130,7 +108,8 @@ export const readNotesRecursively = async (
           const trimmed = val.trim();
           if (trimmed === "") {
             entry.tags = [];
-            inTagsFile = filePath;
+            listFile = filePath;
+            listKey = key;
           } else {
             entry.tags = trimmed
               .replace(/^\[|\]$/g, "")
@@ -140,6 +119,10 @@ export const readNotesRecursively = async (
           }
         } else if (key === "encrypted") {
           entry.encrypted = val.trim() === "true";
+        } else if (key === SHARED_WITH_KEY && val.trim() === "") {
+          entry[key] = [];
+          listFile = filePath;
+          listKey = key;
         } else {
           entry[key] = val.trim().replace(/^["']|["']$/g, "");
         }
@@ -216,7 +199,7 @@ export const readNotesRecursively = async (
         const uuid =
           typeof metadata?.uuid === "string"
             ? metadata.uuid
-            : await _stampUuid(filePath);
+            : await stampUuid(filePath);
 
         if (!uuid) {
           console.warn("Skipping note without a resolvable uuid:", filePath);
@@ -228,7 +211,7 @@ export const readNotesRecursively = async (
           uuid,
           title: typeof metadata?.title === "string" ? metadata.title : id,
           category: categoryPath,
-          createdAt: toIso(stats.birthtime),
+          createdAt: createdAtOf(metadata, stats.birthtime),
           updatedAt: toIso(stats.mtime),
           owner,
           isShared: false,
@@ -248,7 +231,7 @@ export const readNotesRecursively = async (
         const uuid =
           typeof metadata?.uuid === "string"
             ? metadata.uuid
-            : await _stampUuid(filePath);
+            : await stampUuid(filePath);
 
         if (!uuid) {
           console.warn("Skipping note without a resolvable uuid:", filePath);
@@ -261,7 +244,7 @@ export const readNotesRecursively = async (
           title: typeof metadata?.title === "string" ? metadata.title : id,
           content: excerpt,
           category: categoryPath,
-          createdAt: toIso(stats.birthtime),
+          createdAt: createdAtOf(metadata, stats.birthtime),
           updatedAt: toIso(stats.mtime),
           owner,
           isShared: false,
@@ -273,26 +256,15 @@ export const readNotesRecursively = async (
         const content = await serverReadFile(filePath);
         if (isRaw) {
           const { metadata } = extractYamlMetadata(content);
-          let uuid = metadata.uuid;
-          if (!uuid) {
-            uuid = generateUuid();
-            try {
-              await fs.writeFile(
-                filePath,
-                updateYamlMetadata(content, { uuid }),
-                "utf-8",
-              );
-            } catch (error) {
-              console.warn("Failed to save UUID to note file:", error);
-            }
-          }
+          const uuid =
+            metadata.uuid || (await stampUuid(filePath)) || generateUuid();
           return {
             id,
             uuid,
             title: id,
             content: "",
             category: categoryPath,
-            createdAt: toIso(stats.birthtime),
+            createdAt: createdAtOf(metadata, stats.birthtime),
             updatedAt: toIso(stats.mtime),
             owner,
             isShared: false,

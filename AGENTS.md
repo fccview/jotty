@@ -1,6 +1,6 @@
 # Jotty
 
-Jotty is a self-hosted app for notes, checklists and Kanban boards. There is no database. Every note, checklist, user and share is a file on a disk that the person running it owns.
+Jotty is a self-hosted app for notes, checklists and Kanban boards. Every note, checklist, user and share is a file on a disk that the person running it owns. The one database, `data/.relations.db`, is a derived index of links. Deleting it loses nothing anybody wrote: it is rebuilt from those files. Never make it the only home of user data.
 
 If we corrupt one of those files there is no restore button and nobody to email. There is a person and whatever backup they happened to take.
 
@@ -12,7 +12,7 @@ Read, change, write back on a shared file without a lock loses data. It has happ
 
 A write that fails halfway leaves a truncated note where a note used to be. Use the existing file helpers, they write atomically.
 
-Indexes do not rebuild themselves. Add a write path, miss the rebuild, and search goes stale with nothing in the logs to say so.
+Indexes go stale quietly. The file helpers keep the caches and the relations index in step, so write through them. A raw `fs` write on an item file leaves search, backlinks and the brain wrong with nothing in the logs to say so.
 
 Loops are expensive. One helper reading one item is fine. That same helper running once per item for a user with 800 notes is a stat storm. Caches and indexes already exist for this, look for them before you walk a directory yourself.
 

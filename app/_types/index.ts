@@ -63,7 +63,6 @@ export type {
 
 export type { Category } from "./category";
 
-export type { ItemLinks, LinkIndex } from "./links";
 
 export type { TagInfo, TagsIndex } from "./tags";
 

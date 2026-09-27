@@ -13,7 +13,6 @@ import { useKanbanBoard } from "@/app/_hooks/kanban/useKanban";
 import { useKanbanDnd } from "@/app/_hooks/kanban/useKanbanDnd";
 import { ItemTypes, TaskStatus, TaskStatusLabels } from "@/app/_types/enums";
 import { ReferencedBySection } from "../Notes/Parts/ReferencedBySection";
-import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import {
@@ -64,8 +63,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
   const [calendarSelectedItem, setCalendarSelectedItem] = useState<
     import("@/app/_types").Item | null
   >(null);
-  const { linkIndex, notes, checklists, appSettings, allSharedItems } =
-    useAppMode();
+  const { allSharedItems } = useAppMode();
   const isShared =
     allSharedItems?.checklists.some(
       (sharedChecklist) => sharedChecklist.uuid === checklist.uuid,
@@ -260,7 +258,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       <div
         className={
           columns.length <= 6
-            ? "h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
+            ? "min-h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
             : "min-h-0 min-w-0 flex gap-4 p-2 sm:p-4"
         }
         style={
@@ -327,16 +325,6 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       customColumnWidth,
     ],
   );
-
-  const referencingItems = useMemo(() => {
-    return getReferences(
-      linkIndex,
-      localChecklist.uuid,
-      ItemTypes.CHECKLIST,
-      notes,
-      checklists,
-    );
-  }, [linkIndex, localChecklist.uuid, checklists, notes]);
 
   return (
     <div className="h-full flex flex-col bg-background overflow-y-auto overflow-x-hidden min-w-0 max-w-full jotty-scrollable-content">
@@ -477,10 +465,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
         )}
 
         <div className="px-4 pt-4 pb-[100px] lg:pb-4">
-          {referencingItems.length > 0 &&
-            appSettings?.editor?.enableBilateralLinks && (
-              <ReferencedBySection referencingItems={referencingItems} />
-            )}
+          <ReferencedBySection />
         </div>
       </div>
 

@@ -22,9 +22,11 @@ import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
 import { Checklist, Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTagSuggestions } from "@/app/_hooks/useTagSuggestions";
+import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
+import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
+import { ChecklistItemText } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistItemText";
 import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
 import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
@@ -124,6 +126,12 @@ const NestedChecklistItemComponent = ({
     addSubItemInputRef,
     { tagsIndex, tagsEnabled: !!tagsEnabled }
   );
+  const editLinkSuggestions = useItemLinkSuggestions(editText, setEditText, inputRef);
+  const subItemLinkSuggestions = useItemLinkSuggestions(
+    newSubItemText,
+    setNewSubItemText,
+    addSubItemInputRef,
+  );
 
   useEffect(() => {
     const editorId = `checklist-item-${item.id}`;
@@ -179,6 +187,7 @@ const NestedChecklistItemComponent = ({
   };
 
   const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (editLinkSuggestions.handleKeyDown(e)) return;
     if (
       editTagSuggestions.showTagSuggestions &&
       editTagSuggestions.tagMentionsRef.current
@@ -259,27 +268,6 @@ const NestedChecklistItemComponent = ({
   const displayText = showEmojis ? `${emoji}  ${cleanText}` : cleanText;
   const hasChildren = item.children && item.children.length > 0;
 
-  const renderTextWithHashtags = (text: string): React.ReactNode[] => {
-    const hashtagPattern = /#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    let match;
-    while ((match = hashtagPattern.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(text.slice(lastIndex, match.index));
-      }
-      parts.push(
-        <span key={match.index} onMouseDown={(e) => e.stopPropagation()}>
-          <TagLinkViewComponent tag={match[1]} />
-        </span>
-      );
-      lastIndex = match.index + match[0].length;
-    }
-    if (lastIndex < text.length) {
-      parts.push(text.slice(lastIndex));
-    }
-    return parts;
-  };
   const isChild = level > 0;
 
   const dropdownOptions = [
@@ -412,6 +400,7 @@ const NestedChecklistItemComponent = ({
                           />
                         </div>
                       )}
+                    <ItemLinkPopup suggestions={editLinkSuggestions} />
                     <Button
                       variant="ghost"
                       size="sm"
@@ -466,7 +455,7 @@ const NestedChecklistItemComponent = ({
                       !isPublicView
                     ) && (
                       <span className="break-words min-w-0">
-                        {tagsEnabled ? renderTextWithHashtags(displayText) : displayText}
+                        <ChecklistItemText text={displayText} tagsEnabled={!!tagsEnabled} />
                       </span>
                     )}
                   </label>
@@ -497,7 +486,7 @@ const NestedChecklistItemComponent = ({
                             : "text-foreground",
                         )}
                       >
-                        {tagsEnabled ? renderTextWithHashtags(displayText) : displayText}
+                        <ChecklistItemText text={displayText} tagsEnabled={!!tagsEnabled} />
                       </span>
                     )}
                 </div>
@@ -642,6 +631,7 @@ const NestedChecklistItemComponent = ({
                     />
                   </div>
                 )}
+              <ItemLinkPopup suggestions={subItemLinkSuggestions} />
               <form
                 onSubmit={handleAddSubItem}
                 className="flex gap-2 items-center pr-4"
@@ -652,7 +642,10 @@ const NestedChecklistItemComponent = ({
                   type="text"
                   value={newSubItemText}
                   onChange={subItemTagSuggestions.handleChange}
-                  onKeyDown={subItemTagSuggestions.handleKeyDown}
+                  onKeyDown={(e) => {
+                    if (subItemLinkSuggestions.handleKeyDown(e)) return;
+                    subItemTagSuggestions.handleKeyDown(e);
+                  }}
                   placeholder={t("checklists.addSubItemPlaceholder")}
                   autoFocus
                 />

@@ -2,6 +2,7 @@
 
 import { join } from "path";
 import fs from "fs/promises";
+import { serverWriteFile } from "@/app/_server/actions/file";
 import { Result } from "@/app/_types";
 import { exportWholeDataFolder } from "../export";
 import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
@@ -75,7 +76,7 @@ const processDirectory = async (
           { tags: mergedTags },
           true,
         );
-        await fs.writeFile(filePath, updatedContent, "utf-8");
+        await serverWriteFile(filePath, updatedContent);
         updated++;
       }
 

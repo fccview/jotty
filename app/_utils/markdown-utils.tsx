@@ -10,9 +10,14 @@ import { Element } from "hast";
 import { addCustomHtmlTurndownRules } from "@/app/_utils/custom-html-utils";
 import { html as beautifyHtml } from "js-beautify";
 import { TableSyntax } from "@/app/_types";
-import { decodeCategoryPath, decodeSegment } from "./global-utils";
-import { isUuid } from "@/app/_consts/identity";
+import {
+  canonicalItemHref,
+  escapeLinkText,
+  isItemHref,
+  parseItemHref,
+} from "./item-href-utils";
 import { getContrastColor } from "./color-utils";
+import { matchCallout } from "./callout-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
 
@@ -63,6 +68,8 @@ const hasComplexTableContent = (table: HTMLElement): boolean => {
   return false;
 };
 
+const WIKILINK_SPAN = /(!?\[\[[^\[\]\n]+\]\])/;
+
 export const createTurndownService = (tableSyntax?: TableSyntax) => {
   const service = new TurndownService({
     headingStyle: "atx",
@@ -80,6 +87,13 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
       return content;
     },
   });
+
+  const escapeMarkdown = service.escape.bind(service);
+  service.escape = (text: string) =>
+    text
+      .split(WIKILINK_SPAN)
+      .map((part, index) => (index % 2 === 1 ? part : escapeMarkdown(part)))
+      .join("");
 
   service.addRule("taskItem", {
     filter: (node) =>
@@ -262,11 +276,15 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     },
     replacement: function (content, node) {
       const element = node as HTMLElement;
-      const href = element.getAttribute("data-href");
       const title = element.getAttribute("data-title");
+      const href = canonicalItemHref(
+        element.getAttribute("data-href"),
+        element.getAttribute("data-uuid"),
+        element.getAttribute("data-type"),
+      );
 
       if (href && title) {
-        return `[${title}](${href})`;
+        return `[${escapeLinkText(title)}](${href})`;
       }
 
       return content;
@@ -644,36 +662,17 @@ const markdownProcessor = unified()
 
         if (node.tagName === "a" && node.properties?.href) {
           const href = String(node.properties.href);
-          if (
-            href.startsWith("/jotty/") ||
-            href.startsWith("/note/") ||
-            href.startsWith("/checklist/")
-          ) {
+          if (isItemHref(href)) {
             const textContent =
               node.children?.[0]?.type === "text"
                 ? String(node.children[0].value)
                 : "";
 
-            let uuid = "";
-            let type = "note";
-            let category = "";
-            let itemId = "";
-
-            if (href.startsWith("/jotty/")) {
-              uuid = href.replace("/jotty/", "");
-            } else if (href.startsWith("/note/")) {
-              type = "note";
-              const pathParts = href.replace("/note/", "").split("/");
-              itemId = decodeSegment(pathParts.pop() || "");
-              uuid = isUuid(itemId) ? itemId : "";
-              category = decodeCategoryPath(pathParts.join("/"));
-            } else if (href.startsWith("/checklist/")) {
-              type = "checklist";
-              const pathParts = href.replace("/checklist/", "").split("/");
-              itemId = decodeSegment(pathParts.pop() || "");
-              uuid = isUuid(itemId) ? itemId : "";
-              category = decodeCategoryPath(pathParts.join("/"));
-            }
+            const target = parseItemHref(href);
+            const uuid = target?.uuid || "";
+            const type = target?.type || "";
+            const category = target?.legacy?.category || "";
+            const itemId = target?.legacy?.id || uuid;
 
             const newChildren: any[] = [];
 
@@ -693,7 +692,6 @@ const markdownProcessor = unified()
               "data-type": type,
               "data-category": category,
               "data-item-id": itemId,
-              "data-convert-to-bidirectional": "false",
             };
 
             node.children = newChildren;
@@ -709,10 +707,10 @@ const markdownProcessor = unified()
           if (firstChild && firstChild.children?.length > 0) {
             const textNode = firstChild.children[0];
             if (textNode?.type === "text") {
-              const match = String(textNode.value).match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i);
-              if (match) {
-                const calloutType = match[1].toLowerCase();
-                textNode.value = String(textNode.value).replace(match[0], "");
+              const callout = matchCallout(String(textNode.value));
+              if (callout) {
+                const calloutType = callout.type;
+                textNode.value = String(textNode.value).replace(callout.marker, "");
                 if (!textNode.value && firstChild.children.length === 1) {
                   node.children = node.children.filter((c: any) => c !== firstChild);
                 }

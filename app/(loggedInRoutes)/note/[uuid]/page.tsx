@@ -16,6 +16,8 @@ import { isUuid } from "@/app/_consts/identity";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { RelationsProvider } from "@/app/_providers/RelationsProvider";
+import { getItemRelations } from "@/app/_server/actions/relations";
 import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface NotePageProps {
@@ -90,10 +92,14 @@ export default async function NotePage(props: NotePageProps) {
     type: "note" as const,
   };
 
+  const relations = await getItemRelations(note.uuid || "");
+
   return (
     <MetadataProvider metadata={metadata}>
       <PermissionsProvider item={note}>
-        <NoteClient note={note} categories={docsCategories} />
+        <RelationsProvider relations={relations}>
+          <NoteClient note={note} categories={docsCategories} />
+        </RelationsProvider>
       </PermissionsProvider>
     </MetadataProvider>
   );

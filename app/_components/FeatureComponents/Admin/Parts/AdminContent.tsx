@@ -13,7 +13,7 @@ import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
 import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
-import { rebuildLinkIndex } from "@/app/_server/actions/link";
+import { reindexRelations } from "@/app/_server/actions/relations";
 import { updateTagsFromContent } from "@/app/_server/actions/tags";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
@@ -106,7 +106,8 @@ export const AdminContent = ({
   const handleRebuildIndex = async (username: string) => {
     setRebuildingIndex(username);
     try {
-      await rebuildLinkIndex(username);
+      const result = await reindexRelations(username);
+      if (!result.success) throw new Error(result.error);
       showToast({
         type: "success",
         title: t('common.success'),

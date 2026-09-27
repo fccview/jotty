@@ -44,3 +44,6 @@ export const useMetadata = (): ItemMetadata => {
   }
   return context.metadata;
 };
+
+export const useOptionalMetadata = (): ItemMetadata | null =>
+  useContext(MetadataContext)?.metadata ?? null;

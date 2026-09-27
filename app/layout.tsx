@@ -19,7 +19,6 @@ import { getCategories } from "@/app/_server/actions/category";
 import { Modes } from "./_types/enums";
 import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
-import { readLinkIndex } from "@/app/_server/actions/link";
 import { headers } from "next/headers";
 import {
   themeInitScript,
@@ -170,9 +169,6 @@ export default async function RootLayout({
   const checklistCategories = user
     ? await getCategories(Modes.CHECKLISTS)
     : { success: false, data: [] };
-  const linkIndex = user?.username
-    ? await readLinkIndex(user.username)
-    : null;
   const messages = await getMessages();
 
   const [
@@ -264,7 +260,6 @@ export default async function RootLayout({
             pathname={pathname || ""}
             initialSettings={settings}
             usersPublicData={users}
-            linkIndex={linkIndex}
             notes={notes}
             checklists={checklists}
             allSharedItems={allSharedItems}

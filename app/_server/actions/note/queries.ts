@@ -10,7 +10,11 @@ import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
-import { toIso } from "@/app/_utils/yaml-metadata-utils";
+import {
+  createdAtOf,
+  extractYamlMetadata,
+  toIso,
+} from "@/app/_utils/yaml-metadata-utils";
 import { readNotesRecursively } from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
@@ -123,7 +127,7 @@ export const getNoteById = async (
     title: parsedData.title,
     content: parsedData.content,
     category: noteCategory,
-    createdAt: toIso(stats.birthtime),
+    createdAt: createdAtOf(extractYamlMetadata(rawContent).metadata, stats.birthtime),
     updatedAt: toIso(stats.mtime),
     owner: ownerUsername,
     isShared,

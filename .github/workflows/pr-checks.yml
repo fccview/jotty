@@ -38,7 +38,7 @@ jobs:
       - name: Setup the best engine ever
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "yarn"
 
       - name: Install all dependencies

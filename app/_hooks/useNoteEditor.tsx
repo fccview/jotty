@@ -270,6 +270,14 @@ export const useNoteEditor = ({
 
       const result = await updateNote(formData, useAutosave);
 
+      if (!result.success) {
+        showToast({
+          type: "error",
+          title: t("common.error"),
+          message: result.error || t("common.error"),
+        });
+      }
+
       if (useAutosave && result.success && result.data) {
         return;
       } else {
@@ -295,6 +303,8 @@ export const useNoteEditor = ({
       onUpdate,
       router,
       isEditingEncrypted,
+      showToast,
+      t,
     ]
   );
 

@@ -21,6 +21,10 @@ vi.mock("@/app/_server/actions/lib/migration-check", () => ({
 vi.mock("@/app/_server/actions/share/category-info", () => ({
   readCatInfo: (...args: any[]) => mockReadCatInfo(...args),
   writeCatInfo: (...args: any[]) => mockWriteCatInfo(...args),
+  mutateCatInfo: async (dir: string, mutate: (info: unknown) => unknown) => {
+    const next = mutate(await mockReadCatInfo(dir));
+    return next ? mockWriteCatInfo(dir, next) : false;
+  },
   catUuid: (...args: any[]) => mockCatUuid(...args),
   dirUuids: (...args: any[]) => mockDirUuids(...args),
 }));

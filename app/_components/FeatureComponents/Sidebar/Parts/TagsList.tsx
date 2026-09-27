@@ -42,6 +42,7 @@ const TagRenderer = ({
     tag.noteUuids.length > 0 ||
     tag.checklistUuids.length > 0 ||
     children.length > 0;
+  const hasSubtags = children.length > 0;
   const isCollapsed = collapsedTags.has(tag.name);
 
   return (
@@ -54,16 +55,18 @@ const TagRenderer = ({
           )}
         >
           <button
+            type="button"
+            disabled={!hasSubtags}
             onClick={(e) => {
               e.stopPropagation();
-              if (hasContent) toggleTag(tag.name);
+              if (hasSubtags) toggleTag(tag.name);
             }}
             className={cn(
               "flex items-center shrink-0",
-              hasContent ? "cursor-pointer" : "cursor-default",
+              hasSubtags ? "cursor-pointer" : "cursor-default",
             )}
           >
-            {hasContent ? (
+            {hasSubtags ? (
               isCollapsed ? (
                 <ArrowRight01Icon className="h-5 w-5 lg:h-4 lg:w-4" />
               ) : (
@@ -94,7 +97,7 @@ const TagRenderer = ({
         </div>
       </div>
 
-      {!isCollapsed && children.length > 0 && (
+      {!isCollapsed && hasSubtags && (
         <div className="ml-2 border-l border-border/30 pl-2">
           {children.map((childTag) => (
             <TagRenderer

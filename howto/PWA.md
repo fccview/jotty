@@ -1,43 +1,43 @@
-# PWA Guide
+# PWA
 
-jotty·page is a fully functional Progressive Web App (PWA) that can be installed on your device for a native app-like experience. This guide covers how to install and customize your PWA experience.
+jotty·page is a Progressive Web App (PWA). Install it and it opens in its own window with its own icon, like any other app on your device.
 
 ## Installing the PWA
 
-### Automatic Installation Prompt
+### Install prompt
 
-When you visit jotty·page in a supported browser and from https, you'll automatically see an install prompt that appears as a banner or button. 
+Open jotty·page over https in a browser that supports PWAs and you'll get an install prompt, as a banner or a button.
 
-### Manual Installation (if no prompt appears)
+### Installing by hand
 
-If the automatic prompt doesn't appear, you can manually install jotty·page:
+No prompt? You can install it yourself.
 
-#### On Mobile (iOS Safari/Chrome)
+#### On mobile (iOS Safari/Chrome)
 
-1. Open jotty·page in your browser
-2. Tap the **Share** button (iOS) or **Menu** button (Android)
-3. Select **"Add to Home Screen"** (iOS) or **"Add to Home screen"** (Android)
-4. Confirm the installation
+1. Open jotty·page in your browser.
+2. Tap the **Share** button (iOS) or the **Menu** button (Android).
+3. Pick **"Add to Home Screen"** (iOS) or **"Add to Home screen"** (Android).
+4. Confirm.
 
-#### On Desktop (Chrome/Edge)
+#### On desktop (Chrome/Edge)
 
-1. Click the **Install** button in the address bar (looks like a computer with a down arrow)
-2. Or click the **Menu** (⋮) > **More tools** > **Create shortcut**
-3. Check **"Open as window"** and click **Create**
+1. Click the **Install** button in the address bar, the one that looks like a computer with a down arrow.
+2. Or open **Menu** (⋮) > **More tools** > **Create shortcut**.
+3. Tick **"Open as window"** and click **Create**.
 
-#### On Desktop (Firefox)
+#### On desktop (Firefox)
 
-1. Click the **Menu** (☰) > **More tools** > **Add to desktop**
-2. Confirm the installation
+1. Open **Menu** (☰) > **More tools** > **Add to desktop**.
+2. Confirm.
 
-## Customizing Your PWA
+## Customizing the PWA
 
-### Replacing the Manifest
+### Replacing the manifest
 
-You can completely customize your PWA by creating an override manifest file. This allows you to change the app name, description, icons, colors, and more.
+You can override the whole manifest with your own file, which lets you change the app name, description, icons, colors and anything else the manifest holds.
 
-1. Create a file called `site.webmanifest` in your `config/` directory
-2. Add your custom manifest configuration:
+1. Create a file called `site.webmanifest` in your `config/` directory.
+2. Put your manifest in it:
 
 ```json
 {
@@ -79,30 +79,26 @@ You can completely customize your PWA by creating an override manifest file. Thi
 }
 ```
 
-3. Save the file and refresh your PWA
-4. The changes will take effect immediately
+3. Save the file and refresh the PWA.
+4. jotty serves the new manifest straight away, no restart needed.
 
-**Note**: The override manifest takes precedence over any settings configured through the admin UI. Use this for complete customization control.
+Once `config/site.webmanifest` exists, jotty ignores the app name, description and icons set in the admin UI and serves your file as it is.
 
-## Important Notes About PWA Customization
+## Things to know before you customize
 
-### Theme and Splash Screen Behavior
+### The splash screen keeps its install-time colors
 
-**Theme colors are "baked in" at install time**
+When you install the PWA, it saves the current theme colors and uses them for the splash screen. So:
 
-When you install the PWA, the current theme colors are captured and used for the splash screen. This means:
+- the splash screen background matches whatever theme you had when you installed it
+- **changing your theme later does NOT update the splash screen**
+- to get a new splash screen color, uninstall the PWA and install it again
 
-- The splash screen background color matches your current theme at the time of installation
-- **Changing your theme after installation will NOT update the splash screen**
-- To change the splash screen theme, you must uninstall and reinstall the PWA
+### New icons need a reinstall
 
-### Icon Changes Require Reinstallation
+Icons work the same way. The PWA caches them when you install it.
 
-**Icon changes require app reinstallation**
-
-Similar to themes, PWA icons are cached during installation:
-
-- Custom icons set through the admin UI are used when installing
-- **Changing icons after installation will NOT update the installed app**
-- To see new icons, you must uninstall and reinstall the PWA
-- This applies to all icon sizes (16x16, 32x32, 180x180, 192x192, 512x512)
+- It uses the custom icons set in the admin UI at install time.
+- **Changing the icons later does NOT update the installed app.**
+- To see new icons, uninstall the PWA and install it again.
+- That goes for every icon size (16x16, 32x32, 180x180, 192x192, 512x512).

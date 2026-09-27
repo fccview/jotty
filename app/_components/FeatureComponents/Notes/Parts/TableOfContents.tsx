@@ -6,6 +6,14 @@ import { cn } from "@/app/_utils/global-utils";
 import { extractHeadings as extractHeadingsFromMarkdown } from "@/app/_utils/markdown-utils";
 import { useTranslations } from "next-intl";
 
+const HEADINGS = "h1, h2, h3, h4, h5, h6";
+const LINK_PREVIEW = "[data-link-preview]";
+
+const ownHeadings = (root: ParentNode): HTMLElement[] =>
+  Array.from(root.querySelectorAll<HTMLElement>(HEADINGS)).filter(
+    (heading) => !heading.closest(LINK_PREVIEW),
+  );
+
 interface Heading {
   id: string;
   text: string;
@@ -20,13 +28,8 @@ interface TableOfContentsProps {
 
 const findHeadingEl = (id: string, text: string): HTMLElement | null => {
   const byId = document.getElementById(id);
-  if (byId) return byId;
-  const allHeadings = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-  return (
-    (Array.from(allHeadings).find(
-      (h) => h.textContent?.trim() === text
-    ) as HTMLElement) ?? null
-  );
+  if (byId && !byId.closest(LINK_PREVIEW)) return byId;
+  return ownHeadings(document).find((h) => h.textContent?.trim() === text) ?? null;
 };
 
 const useTableOfContents = (content?: string, isEditing?: boolean) => {
@@ -49,7 +52,7 @@ const useTableOfContents = (content?: string, isEditing?: boolean) => {
     const extractHeadingsFromDOM = (): Heading[] => {
       const contentArea = document.querySelector(".prose, [class*='prose']");
       const searchRoot = contentArea || document.body;
-      const headingElements = searchRoot.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      const headingElements = ownHeadings(searchRoot);
       const extracted: Heading[] = [];
 
       headingElements.forEach((element) => {

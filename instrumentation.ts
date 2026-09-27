@@ -109,6 +109,15 @@ export async function register() {
       console.log(`> WebSocket dev server running on ws://0.0.0.0:${WS_PORT}`);
     }
 
+    if (!(globalThis as any).__jottyRelationsStarted) {
+      (globalThis as any).__jottyRelationsStarted = true;
+      import("./app/_server/actions/relations/indexer")
+        .then(({ reconcileRelations }) => reconcileRelations())
+        .then(() => import("./app/_server/actions/relations/watcher"))
+        .then(({ watchRelations }) => watchRelations())
+        .catch((err) => console.error("[relations] startup reconcile failed:", err));
+    }
+
     if ((globalThis as any).__jottyReminderScanStarted) return;
     (globalThis as any).__jottyReminderScanStarted = true;
 

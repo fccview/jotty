@@ -1,46 +1,46 @@
-# Checklist API Documentation
+# Jotty API
 
-This API provides programmatic access to your checklists and notes. All endpoints require authentication via API key.
+The REST API reads and writes your notes and checklists. Everything except the health check needs an API key.
 
 ## Authentication
 
-### Getting an API Key
+### Getting an API key
 
-1. Log into your checklist application
-2. Navigate to your **Profile** (click on your username in the sidebar)
+1. Log into Jotty
+2. Open your **Profile** by clicking your username in the sidebar
 3. Go to the **Settings** tab
-4. In the **API Key** section, click **Generate** to create a new API key
-5. Copy the generated API key (format: `ck_` followed by random characters)
-6. **Important**: Store this key securely - it provides full access to your account
+4. In the **API Key** section, click **Generate**
+5. Copy the key. It starts with `ck_` followed by random characters
+6. Keep it somewhere safe. Anyone holding it has full access to your account
 
-### Using Your API Key
+### Using your API key
 
-Include your API key in the request header:
+Send it in the `x-api-key` header:
 
 ```
 x-api-key: ck_your_api_key_here
 ```
 
-**Note**: Replace `ck_your_api_key_here` with your actual API key.
+Every example in this file uses `ck_your_api_key_here`. Swap in your own key.
 
-## API Documentation Access
+## Interactive API docs
 
-The jotty API includes interactive documentation that allows you to explore and test all endpoints directly in your browser. The documentation is powered by ReDoc and provides a complete reference with request/response examples.
+Jotty can serve an OpenAPI spec that ReDoc renders as a browsable reference, with request and response examples for every endpoint.
 
-### Running the API Documentation
+### Running the API docs
 
-The API documentation runs as a separate Docker service and requires the main jotty application to be running.
+ReDoc runs as its own Docker service and reads the spec from your running Jotty instance, so Jotty has to be up first.
 
-#### Method 1: Using Docker Compose
+#### Using Docker Compose
 
-1. **Enable API Documentation**: Set the `ENABLE_API_DOCS` environment variable to `true` in your `docker-compose.yml`:
+1. Set `ENABLE_API_DOCS` to `true` in the Jotty service of your `docker-compose.yml`:
 
    ```yaml
    environment:
      - ENABLE_API_DOCS=true
    ```
 
-   **Add the configuration** for the frontend in your docker compose file underneath your jotty settings
+   Then add the ReDoc service underneath your Jotty service:
 
    ```yaml
     api-docs:
@@ -59,89 +59,73 @@ The API documentation runs as a separate Docker service and requires the main jo
     ```
 
 
-    **Important Notes**:
-    - The `SPEC_URL` must point to the `/api/docs` endpoint of your running jotty instance
-    - The documentation will only work if `ENABLE_API_DOCS=true` is set in the jotty environment variables
+    `SPEC_URL` has to point at the `/api/docs` endpoint of your Jotty instance, and that endpoint only answers when `ENABLE_API_DOCS=true` is set on Jotty.
 
-2. **Start the API Docs Service**: Run docker-compose with the `api-docs` profile:
+2. Start it with the `api-docs` profile:
 
    ```bash
    docker-compose --profile api-docs up -d
    ```
 
-3. **Access the Documentation**: Open your browser and navigate to:
-   - **Local**: `http://localhost:40126` (or your custom port)
-   - **Remote**: `http://your-domain.com`
+3. Open `http://localhost:40126`, or whichever host and port you mapped it to.
 
-
-### Features of the API Documentation
-
-- **Request/Response Examples**: See formatted JSON examples for all endpoints
-- **Schema Validation**: View detailed request/response schemas
-- **Real-time Updates**: Documentation updates automatically when the API changes
+The spec comes from the running instance, so the docs always match the version of Jotty you have deployed.
 
 ### Troubleshooting
 
-**Documentation shows "Failed to load"**:
-- Ensure `ENABLE_API_DOCS=true` is set in jotty's environment variables
-- Check that the jotty service is running and accessible
-- Verify the `SPEC_URL` is correct for your environment
+**The docs page says "Failed to load"**
+- Check that `ENABLE_API_DOCS=true` is set on the Jotty service
+- Check that Jotty is running and ReDoc can reach it
+- Check that `SPEC_URL` points at your instance's `/api/docs`
 
-**Cannot access on expected port**:
-- Check if the port is already in use: `netstat -tlnp | grep :8080`
-- Verify the port mapping in your docker-compose.yml
-- Ensure the api-docs service is running: `docker ps | grep api-docs`
+**Nothing answers on the port you expected**
+- See whether something else already has the port: `netstat -tlnp | grep :8080`
+- Check the port mapping in your docker-compose.yml
+- Check the api-docs container is running: `docker ps | grep api-docs`
 
-**Authentication fails in interactive docs**:
-- Make sure you're using a valid API key
-- Check that the API key has the required permissions
-- Verify the API key header format: `x-api-key: ck_your_key_here`
+**Requests fail with an auth error in the docs**
+- Check the API key is valid and belongs to a user allowed to do what you're trying
+- Check the header is spelled `x-api-key: ck_your_key_here`
 
 ## Identification
 
-All checklists and notes are identified using UUIDs (Universally Unique Identifiers). UUIDs are 36-character strings that uniquely identify each item in the system, for example: `f47ac10b-58cc-4372-a567-0e02b2c3d479`.
+Every note and checklist has a UUID, a 36-character string such as `f47ac10b-58cc-4372-a567-0e02b2c3d479`. Endpoints take the UUID, not the title.
 
-When referencing checklists or notes in API endpoints, you must use their UUID rather than titles or other identifiers.
+> **Deprecated: slug/category lookups.** A legacy filename slug still works as the item id, optionally with a `?category=` query parameter that defaults to "Uncategorized". Every such request logs a deprecation warning, and this fallback **will be removed in a future release**. All `id` fields in API responses are UUIDs, so switch any stored slugs to those now.
 
-> **Deprecated: slug/category lookups.** Passing a legacy filename slug as the item id (optionally with a `?category=` query parameter, defaulting to "Uncategorized") still resolves to the right item, but every such request logs a deprecation warning and this fallback **will be removed in a future release**. All `id` fields in API responses are UUIDs. Switch any stored slug/category references to UUIDs now.
-
-## Organization Features
+## Organization
 
 ### Categories
 
-All checklists and notes support categorization for better organization:
+Every note and checklist sits in a category, such as "Work", "Personal" or "Shopping". Categories can nest.
 
-- **Default Category**: Items without a specified category are automatically assigned to "Uncategorized"
-- **Category Filtering**: You can organize your content by categories like "Work", "Personal", "Shopping", etc.
-- **Category Breakdown**: The API provides category statistics in summary endpoints
+- Items created without a category go into "Uncategorized"
+- The list endpoints take a `category` filter
+- The summary endpoint breaks counts down per category
 
-### Checklist Types
+### Checklist types
 
-The API supports two types of checklists:
+There are two kinds of checklist.
 
-### Regular Checklists
+### Regular checklists
 
-- Simple checklists with basic items
-- Items have only `text` and `completed` status
-- Used for simple to-do lists and shopping lists
+Plain to-do and shopping lists. Items only have `text` and `completed`.
 
-### Task Checklists
+### Task checklists
 
-- Advanced checklists with task management features
-- Items include additional metadata:
-  - `status`: Task status (`in_progress`, `paused`, `completed`)
-  - `time`: Time tracking data (either `0` or JSON array of time entries)
-- Used for project management and time tracking
+Checklists for projects and time tracking. Items also carry:
+- `status`: `in_progress`, `paused` or `completed`
+- `time`: either `0` or a JSON array of time entries
 
-## Public Endpoints
+## Public endpoints
 
-These endpoints are publicly accessible and do not require authentication.
+These need no API key.
 
-### 1. Health Check
+### 1. Health check
 
 **GET** `/api/health`
 
-Returns the application health status and version information. This endpoint is useful for monitoring and load balancers.
+Returns whether the app is up and which version it is running. Point your uptime monitor or load balancer at it.
 
 **Response:**
 
@@ -153,30 +137,30 @@ Returns the application health status and version information. This endpoint is 
 }
 ```
 
-**Response Fields:**
+**Response fields:**
 
-- `status`: Either "healthy" or "unhealthy"
-- `version`: Application version from package.json (null if unable to read)
-- `timestamp`: Current server timestamp in ISO 8601 format
-- `error`: Error message (only present when status is "unhealthy")
+- `status`: "healthy" or "unhealthy"
+- `version`: the version from package.json, or null if it couldn't be read
+- `timestamp`: current server time in ISO 8601
+- `error`: the error message, only present when status is "unhealthy"
 
-**Note**: This endpoint does not require authentication and is accessible to anyone.
+Anyone can call it, logged in or not.
 
-## Authenticated Endpoints
+## Authenticated endpoints
 
-The following endpoints require authentication via API key.
+Everything from here on needs an API key.
 
-### 2. Get All Checklists
+### 2. Get all checklists
 
 **GET** `/api/checklists`
 
-Retrieves all checklists for the authenticated user.
+Returns every checklist you own.
 
-**Query Parameters:**
+**Query parameters:**
 
-- `category` (optional): Filter checklists by category name
-- `type` (optional): Filter checklists by type (`simple` or `task`)
-- `q` (optional): Search checklists by title or item text
+- `category` (optional): only checklists in this category
+- `type` (optional): `simple` or `task`
+- `q` (optional): search titles and item text
 
 **Response:**
 
@@ -238,15 +222,15 @@ Retrieves all checklists for the authenticated user.
 }
 ```
 
-**Note**: All checklists include a `category` field for organization. If no category is specified when creating a checklist, it defaults to "Uncategorized".
+Every checklist has a `category`. Checklists created without one are in "Uncategorized".
 
-### 3. Create Checklist
+### 3. Create checklist
 
 **POST** `/api/checklists`
 
-Creates a new checklist for the authenticated user.
+Creates a checklist owned by you.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -258,9 +242,9 @@ Creates a new checklist for the authenticated user.
 
 **Parameters:**
 
-- `title` (required): The title of the checklist
-- `category` (optional): Category for the checklist (defaults to "Uncategorized")
-- `type` (optional): Type of checklist - `simple` or `task` (defaults to "simple")
+- `title` (required): the checklist title
+- `category` (optional): defaults to "Uncategorized"
+- `type` (optional): `simple` or `task`, defaults to "simple"
 
 **Response:**
 
@@ -279,13 +263,13 @@ Creates a new checklist for the authenticated user.
 }
 ```
 
-### 4. Update Checklist
+### 4. Update checklist
 
 **PUT** `/api/checklists/{listId}`
 
-Updates an existing checklist's title and/or category.
+Changes a checklist's title, category or both.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -296,8 +280,8 @@ Updates an existing checklist's title and/or category.
 
 **Parameters:**
 
-- `title` (optional): The updated title of the checklist
-- `category` (optional): The updated category for the checklist
+- `title` (optional): the new title
+- `category` (optional): the new category
 
 **Response:**
 
@@ -315,11 +299,11 @@ Updates an existing checklist's title and/or category.
 }
 ```
 
-### 5. Delete Checklist
+### 5. Delete checklist
 
 **DELETE** `/api/checklists/{listId}`
 
-Deletes an existing checklist for the authenticated user.
+Deletes a checklist.
 
 **Response:**
 
@@ -329,13 +313,13 @@ Deletes an existing checklist for the authenticated user.
 }
 ```
 
-### 6. Create Checklist Item
+### 6. Create checklist item
 
 **POST** `/api/checklists/{listId}/items`
 
-Adds a new item to the specified checklist.
+Adds an item to a checklist.
 
-**Request Body for Regular Checklists:**
+**Request body for regular checklists:**
 
 ```json
 {
@@ -343,7 +327,7 @@ Adds a new item to the specified checklist.
 }
 ```
 
-**Request Body for Task Checklists:**
+**Request body for task checklists:**
 
 ```json
 {
@@ -353,11 +337,11 @@ Adds a new item to the specified checklist.
 }
 ```
 
-**Task Checklist Parameters:**
+**Task checklist parameters:**
 
-- `text` (required): The task description
-- `status` (optional): Task status - `"in_progress"`, `"paused"`, or `"completed"` (defaults to `"in_progress"`)
-- `time` (optional): Time tracking value - either `0` for no time tracked or a JSON array of time entries (defaults to `0`)
+- `text` (required): what the task is
+- `status` (optional): `"in_progress"`, `"paused"` or `"completed"`, defaults to `"in_progress"`
+- `time` (optional): `0` for no time tracked, or a JSON array of time entries. Defaults to `0`
 
 **Response:**
 
@@ -367,9 +351,9 @@ Adds a new item to the specified checklist.
 }
 ```
 
-**Creating Nested Sub-Items:**
+**Creating nested sub-items:**
 
-To create a nested sub-item (child of an existing item), include the `parentIndex` parameter with the index path of the parent item:
+To put the new item under an existing one, send `parentIndex` with the parent's index path:
 
 ```json
 {
@@ -378,14 +362,14 @@ To create a nested sub-item (child of an existing item), include the `parentInde
 }
 ```
 
-Index paths use dot notation for nested items:
-- `"0"` - Creates a child of the first top-level item
-- `"0.1"` - Creates a child of the second child of the first item
-- `"2.0.1"` - Creates a grandchild of the third top-level item
+Index paths are dot-separated, one number per level:
+- `"0"` puts it under the first top-level item
+- `"0.1"` puts it under the second child of the first item
+- `"2.0.1"` puts it under the second child of the first child of the third top-level item
 
-**Nested Items in Response:**
+**Nested items in responses:**
 
-Items can contain a `children` array with nested sub-items:
+An item with sub-items has a `children` array:
 
 ```json
 {
@@ -440,13 +424,13 @@ Items can contain a `children` array with nested sub-items:
 }
 ```
 
-### Update Checklist Item
+### Update checklist item
 
 **PATCH** `/api/checklists/{listId}/items/{itemIndex}`
 
-Updates one or more writable fields on a checklist item. Omitted fields are left unchanged. Supports nested items using index paths.
+Changes any of the writable fields on an item. Fields you leave out stay as they are. `itemIndex` can be a nested index path.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -460,15 +444,15 @@ Updates one or more writable fields on a checklist item. Omitted fields are left
 }
 ```
 
-**Writable Fields:**
+**Writable fields:**
 
-- `text` (optional): Item title
-- `description` (optional): Item body or notes
-- `priority` (optional): `"critical"`, `"high"`, `"medium"`, `"low"`, or `"none"`
-- `score` (optional): Numeric score
-- `startDate` (optional): Start date as an ISO date string
-- `targetDate` (optional): Target date as an ISO date string
-- `estimatedTime` (optional): Estimated hours
+- `text` (optional): the item title
+- `description` (optional): the item body or notes
+- `priority` (optional): `"critical"`, `"high"`, `"medium"`, `"low"` or `"none"`
+- `score` (optional): a number
+- `startDate` (optional): an ISO date string
+- `targetDate` (optional): an ISO date string
+- `estimatedTime` (optional): estimated hours
 
 **Response:**
 
@@ -478,16 +462,16 @@ Updates one or more writable fields on a checklist item. Omitted fields are left
 }
 ```
 
-### 7. Check Item
+### 7. Check item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/check`
 
-Marks an item as completed. Supports both top-level and nested items using index paths.
+Marks an item as done. `itemIndex` can be a nested index path.
 
 **Examples:**
-- `/api/checklists/{listId}/items/0/check` - Check first top-level item
-- `/api/checklists/{listId}/items/0.1/check` - Check second child of first item
-- `/api/checklists/{listId}/items/2.0.1/check` - Check nested grandchild
+- `/api/checklists/{listId}/items/0/check` checks the first top-level item
+- `/api/checklists/{listId}/items/0.1/check` checks the second child of the first item
+- `/api/checklists/{listId}/items/2.0.1/check` checks a grandchild
 
 **Response:**
 
@@ -497,15 +481,15 @@ Marks an item as completed. Supports both top-level and nested items using index
 }
 ```
 
-### 8. Uncheck Item
+### 8. Uncheck item
 
 **PUT** `/api/checklists/{listId}/items/{itemIndex}/uncheck`
 
-Marks an item as incomplete. Supports both top-level and nested items using index paths.
+Marks an item as not done. `itemIndex` can be a nested index path.
 
 **Examples:**
-- `/api/checklists/{listId}/items/1/uncheck` - Uncheck second top-level item
-- `/api/checklists/{listId}/items/0.0/uncheck` - Uncheck first child of first item
+- `/api/checklists/{listId}/items/1/uncheck` unchecks the second top-level item
+- `/api/checklists/{listId}/items/0.0/uncheck` unchecks the first child of the first item
 
 **Response:**
 
@@ -515,16 +499,16 @@ Marks an item as incomplete. Supports both top-level and nested items using inde
 }
 ```
 
-### 9. Delete Item
+### 9. Delete item
 
 **DELETE** `/api/checklists/{listId}/items/{itemIndex}`
 
-Deletes a checklist item. Supports both top-level and nested items using index paths.
+Deletes a checklist item. `itemIndex` can be a nested index path.
 
 **Examples:**
-- `/api/checklists/{listId}/items/2` - Delete third top-level item
-- `/api/checklists/{listId}/items/0.1` - Delete second child of first item
-- `/api/checklists/{listId}/items/1.0.2` - Delete nested grandchild
+- `/api/checklists/{listId}/items/2` deletes the third top-level item
+- `/api/checklists/{listId}/items/0.1` deletes the second child of the first item
+- `/api/checklists/{listId}/items/1.0.2` deletes a grandchild
 
 **Response:**
 
@@ -534,16 +518,16 @@ Deletes a checklist item. Supports both top-level and nested items using index p
 }
 ```
 
-### 10. Get All Notes
+### 10. Get all notes
 
 **GET** `/api/notes`
 
-Retrieves all notes/documents for the authenticated user.
+Returns every note you own.
 
-**Query Parameters:**
+**Query parameters:**
 
-- `category` (optional): Filter notes by category name
-- `q` (optional): Search notes by title or content
+- `category` (optional): only notes in this category
+- `q` (optional): search titles and content
 
 **Response:**
 
@@ -562,15 +546,15 @@ Retrieves all notes/documents for the authenticated user.
 }
 ```
 
-**Note**: All notes include a `category` field for organization. If no category is specified when creating a note, it defaults to "Uncategorized".
+Every note has a `category`. Notes created without one are in "Uncategorized".
 
-### 10. Create Note
+### 11. Create note
 
 **POST** `/api/notes`
 
-Creates a new note for the authenticated user.
+Creates a note owned by you.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -582,9 +566,9 @@ Creates a new note for the authenticated user.
 
 **Parameters:**
 
-- `title` (required): The title of the note
-- `content` (optional): The content of the note in markdown format (defaults to empty string)
-- `category` (optional): Category for the note (defaults to "Uncategorized")
+- `title` (required): the note title
+- `content` (optional): the body in markdown, defaults to an empty string
+- `category` (optional): defaults to "Uncategorized"
 
 **Response:**
 
@@ -603,13 +587,13 @@ Creates a new note for the authenticated user.
 }
 ```
 
-### 11. Update Note
+### 12. Update note
 
 **PUT** `/api/notes/{noteId}`
 
-Updates an existing note for the authenticated user.
+Updates a note.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -622,10 +606,10 @@ Updates an existing note for the authenticated user.
 
 **Parameters:**
 
-- `title` (required): The updated title of the note
-- `content` (optional): The updated content of the note in markdown format
-- `category` (optional): New category for the note (defaults to "Uncategorized")
-- `originalCategory` (optional): The original category of the note (used to locate the existing note)
+- `title` (required): the new title
+- `content` (optional): the new body in markdown
+- `category` (optional): the category to put it in, defaults to "Uncategorized"
+- `originalCategory` (optional): the category the note is in now, used to find it
 
 **Response:**
 
@@ -644,11 +628,11 @@ Updates an existing note for the authenticated user.
 }
 ```
 
-### 12. Delete Note
+### 13. Delete note
 
 **DELETE** `/api/notes/{noteId}`
 
-Deletes an existing note for the authenticated user.
+Deletes a note.
 
 **Response:**
 
@@ -658,21 +642,21 @@ Deletes an existing note for the authenticated user.
 }
 ```
 
-## Task Management
+## Tasks
 
-The `/tasks` endpoints provide specialized access to task checklists with Kanban board functionality, including status management and column-based organization. Tasks are a specific type of checklist optimized for project management workflows.
+The `/tasks` endpoints work on task checklists as Kanban boards. Each board has its own list of statuses, one per column, and every item sits in one of them.
 
-### 13. Get All Tasks
+### 14. Get all tasks
 
 **GET** `/api/tasks`
 
-Retrieves all task checklists for the authenticated user.
+Returns every task checklist you own.
 
-**Query Parameters:**
+**Query parameters:**
 
-- `category` (optional): Filter tasks by category name
-- `status` (optional): Filter tasks that contain items with this status
-- `q` (optional): Search tasks by title or item text
+- `category` (optional): only tasks in this category
+- `status` (optional): only tasks with at least one item in this status
+- `q` (optional): search titles and item text
 
 **Response:**
 
@@ -704,13 +688,13 @@ Retrieves all task checklists for the authenticated user.
 }
 ```
 
-### 14. Create Task
+### 15. Create task
 
 **POST** `/api/tasks`
 
-Creates a new task checklist for the authenticated user.
+Creates a task checklist owned by you.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -726,9 +710,9 @@ Creates a new task checklist for the authenticated user.
 
 **Parameters:**
 
-- `title` (required): The title of the task checklist
-- `category` (optional): Category for the task (defaults to "Uncategorized")
-- `statuses` (optional): Custom Kanban column statuses (defaults to todo/in_progress/completed)
+- `title` (required): the task checklist title
+- `category` (optional): defaults to "Uncategorized"
+- `statuses` (optional): your own Kanban columns, defaults to todo/in_progress/completed
 
 **Response:**
 
@@ -751,11 +735,11 @@ Creates a new task checklist for the authenticated user.
 }
 ```
 
-### 15. Get Task
+### 16. Get task
 
 **GET** `/api/tasks/{taskId}`
 
-Retrieves a specific task checklist.
+Returns one task checklist.
 
 **Response:**
 
@@ -785,13 +769,13 @@ Retrieves a specific task checklist.
 }
 ```
 
-### 16. Update Task
+### 17. Update task
 
 **PUT** `/api/tasks/{taskId}`
 
-Updates task metadata (title, category). All fields are optional.
+Changes the title, the category or both. Both fields are optional.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -816,7 +800,7 @@ Updates task metadata (title, category). All fields are optional.
 }
 ```
 
-### 17. Delete Task
+### 18. Delete task
 
 **DELETE** `/api/tasks/{taskId}`
 
@@ -830,11 +814,11 @@ Deletes a task checklist.
 }
 ```
 
-### 18. Get Task Statuses
+### 19. Get task statuses
 
 **GET** `/api/tasks/{taskId}/statuses`
 
-Retrieves all Kanban column statuses for a task.
+Returns the Kanban columns of a task.
 
 **Response:**
 
@@ -848,13 +832,13 @@ Retrieves all Kanban column statuses for a task.
 }
 ```
 
-### 19. Create Status
+### 20. Create status
 
 **POST** `/api/tasks/{taskId}/statuses`
 
-Adds a new Kanban column status to a task.
+Adds a Kanban column to a task.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -867,10 +851,10 @@ Adds a new Kanban column status to a task.
 
 **Parameters:**
 
-- `id` (required): Unique identifier for the status
-- `label` (required): Display name for the status
-- `color` (optional): Color code for the status column
-- `order` (optional): Display order (defaults to last position)
+- `id` (required): a unique id for the status
+- `label` (required): the column name people see
+- `color` (optional): the column color
+- `order` (optional): where the column goes, defaults to last
 
 **Response:**
 
@@ -886,13 +870,13 @@ Adds a new Kanban column status to a task.
 }
 ```
 
-### 20. Update Status
+### 21. Update status
 
 **PUT** `/api/tasks/{taskId}/statuses/{statusId}`
 
-Updates a Kanban column status.
+Changes a Kanban column.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -916,11 +900,11 @@ Updates a Kanban column status.
 }
 ```
 
-### 21. Delete Status
+### 22. Delete status
 
 **DELETE** `/api/tasks/{taskId}/statuses/{statusId}`
 
-Deletes a Kanban column status. Items with this status will be automatically moved to the first available status.
+Deletes a Kanban column. Items in it move to the first remaining status.
 
 **Response:**
 
@@ -930,13 +914,13 @@ Deletes a Kanban column status. Items with this status will be automatically mov
 }
 ```
 
-### 22. Create Task Item
+### 23. Create task item
 
 **POST** `/api/tasks/{taskId}/items`
 
-Creates a new item in a task checklist.
+Adds an item to a task checklist.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -945,9 +929,9 @@ Creates a new item in a task checklist.
 }
 ```
 
-**Creating Nested Items:**
+**Creating nested items:**
 
-To create a nested sub-item, include the `parentIndex` parameter with the index path:
+To put the new item under an existing one, send `parentIndex` with the parent's index path:
 
 ```json
 {
@@ -958,15 +942,15 @@ To create a nested sub-item, include the `parentIndex` parameter with the index 
 ```
 
 Index path examples:
-- `"0"` - Creates a child of the first top-level item
-- `"0.1"` - Creates a child of the second child of the first item
-- `"2.0.1"` - Creates a grandchild of the third top-level item
+- `"0"` puts it under the first top-level item
+- `"0.1"` puts it under the second child of the first item
+- `"2.0.1"` puts it under the second child of the first child of the third top-level item
 
 **Parameters:**
 
-- `text` (required): The text content of the item
-- `status` (optional): Initial status (defaults to "todo")
-- `parentIndex` (optional): Index path for creating nested items
+- `text` (required): the item text
+- `status` (optional): the starting status, defaults to "todo"
+- `parentIndex` (optional): index path of the parent item
 
 **Response:**
 
@@ -979,11 +963,11 @@ Index path examples:
 }
 ```
 
-### Get Task Item
+### Get task item
 
 **GET** `/api/tasks/{taskId}/items/{itemIndex}`
 
-Retrieves a single task item, including nested `children` and Kanban item fields. Supports nested index paths.
+Returns one task item with its `children` and Kanban fields. `itemIndex` can be a nested index path.
 
 **Response:**
 
@@ -1018,13 +1002,13 @@ Retrieves a single task item, including nested `children` and Kanban item fields
 }
 ```
 
-### 23. Update Item Status
+### 24. Update item status
 
 **PUT** `/api/tasks/{taskId}/items/{itemIndex}/status`
 
-Changes an item's status (moves it between Kanban columns).
+Moves an item to another Kanban column by changing its status.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -1034,7 +1018,7 @@ Changes an item's status (moves it between Kanban columns).
 
 **Parameters:**
 
-- `status` (required): The new status for the item
+- `status` (required): the new status
 
 **Response:**
 
@@ -1044,7 +1028,7 @@ Changes an item's status (moves it between Kanban columns).
 }
 ```
 
-**Example - Moving nested item:**
+**Example, moving a nested item:**
 
 ```bash
 PUT /api/tasks/550e8400-e29b-41d4-a716-446655440000/items/0.1/status
@@ -1053,7 +1037,7 @@ PUT /api/tasks/550e8400-e29b-41d4-a716-446655440000/items/0.1/status
 }
 ```
 
-### 24. Delete Task Item
+### 25. Delete task item
 
 **DELETE** `/api/tasks/{taskId}/items/{itemIndex}`
 
@@ -1067,7 +1051,7 @@ Deletes an item from a task checklist.
 }
 ```
 
-**Example - Deleting nested item:**
+**Example, deleting a nested item:**
 
 ```bash
 DELETE /api/tasks/550e8400-e29b-41d4-a716-446655440000/items/0.1
@@ -1075,13 +1059,13 @@ DELETE /api/tasks/550e8400-e29b-41d4-a716-446655440000/items/0.1
 
 This deletes the second child of the first top-level item.
 
-### 25. Get User Information
+### 26. Get user information
 
 **GET** `/api/user/{username}`
 
-Retrieves user information. Returns full user data if authenticated as the user or admin, otherwise returns only public information.
+Returns a user's profile. You get the full record for yourself, or for anyone if you are an admin. Everybody else gets the public fields only.
 
-**Response (Own Profile or Admin):**
+**Response (own profile or admin):**
 
 ```json
 {
@@ -1116,13 +1100,13 @@ Retrieves user information. Returns full user data if authenticated as the user 
 }
 ```
 
-**Note**: Sensitive fields like `passwordHash` and `apiKey` are never returned.
+`passwordHash`, `apiKey` and other secrets are never in the response.
 
-### 14. Get All Categories
+### 27. Get all categories
 
 **GET** `/api/categories`
 
-Retrieves all categories for notes and checklists for the authenticated user. Archived categories are excluded.
+Returns your note and checklist categories. Archived categories are left out.
 
 **Response:**
 
@@ -1167,20 +1151,20 @@ Retrieves all categories for notes and checklists for the authenticated user. Ar
 }
 ```
 
-**Response Fields:**
+**Response fields:**
 
-- `name`: The category name
-- `path`: Full path to the category (includes parent categories)
-- `count`: Number of items in this category
-- `level`: Nesting level (0 for root categories)
+- `name`: the category name
+- `path`: the full path, parent categories included
+- `count`: how many items are in it
+- `level`: how deep it is nested, 0 for top-level categories
 
-### 15. Rebuild Link Index
+### 28. Rebuild link index
 
 **POST** `/api/admin/rebuild-index`
 
-Rebuilds the internal link index for a specific user. This is useful when the link relationships between notes and checklists become inconsistent due to bulk operations, data migrations, or other maintenance tasks.
+Rebuilds the relationships index, the list of which notes and checklists link to each other. Jotty keeps it up to date on its own and checks it against your files every minute, so you only need this after editing lots of files outside Jotty, restoring a backup, or if the brain looks wrong.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -1190,7 +1174,7 @@ Rebuilds the internal link index for a specific user. This is useful when the li
 
 **Parameters:**
 
-- `username` (required): Username whose link index should be rebuilt
+- `username` (optional): Whose index to rebuild. Leave it out to rebuild your own. Only admins can name somebody else.
 
 **Response:**
 
@@ -1201,22 +1185,29 @@ Rebuilds the internal link index for a specific user. This is useful when the li
 }
 ```
 
+**Errors:**
+
+- `401`: missing or invalid API key
+- `403`: you named another user and your API key does not belong to an admin
+- `404`: no user with that username
+
 **Notes:**
 
-- Only administrators can use this endpoint
-- The rebuild process scans all notes and checklists for the specified user and recreates the link relationships
-- This operation may take time for users with large amounts of content
-- The link index tracks internal references between notes and checklists (e.g., when one note links to another)
+- Any user can rebuild their own index. Rebuilding everybody at once is in **Admin > Content**
+- Rebuilding reads your notes and checklists and never changes them
+- Encrypted notes are skipped, their content is never read
+- Wikilinks keep pointing at the note they were first matched to, so a rebuild does not move them onto a different note with the same title
+- The index lives in `data/.relations.db`. If it is deleted, Jotty rebuilds it from your files
 
-### 16. Get User Summary Statistics
+### 29. Get user summary statistics
 
 **GET** `/api/summary`
 
-Retrieves comprehensive statistics about the authenticated user's content, including notes, checklists, items, and tasks with category breakdowns.
+Returns counts for your notes, checklists, items and tasks, broken down by category.
 
-**Query Parameters:**
+**Query parameters:**
 
-- `username` (optional): Username to get summary for. If not provided, uses the authenticated user. **Note**: Only administrators can query other users' data.
+- `username` (optional): whose summary to return. Leave it out for your own. Only admins can ask for somebody else's.
 
 **Response:**
 
@@ -1260,35 +1251,35 @@ Retrieves comprehensive statistics about the authenticated user's content, inclu
 }
 ```
 
-**Response Fields:**
+**Response fields:**
 
-- `notes.total`: Total number of notes
-- `notes.categories`: Breakdown of notes by category
-- `checklists.total`: Total number of checklists
-- `checklists.categories`: Breakdown of checklists by category
-- `checklists.types`: Breakdown of checklists by type (simple/task)
-- `items.total`: Total number of checklist items
-- `items.completed`: Number of completed items
-- `items.pending`: Number of pending items
-- `items.completionRate`: Percentage of completed items (0-100)
-- `tasks.total`: Total number of tasks (from task-type checklists)
-- `tasks.completed`: Number of completed tasks
-- `tasks.inProgress`: Number of in-progress tasks
-- `tasks.todo`: Number of todo tasks
-- `tasks.completionRate`: Percentage of completed tasks (0-100)
+- `notes.total`: number of notes
+- `notes.categories`: notes per category
+- `checklists.total`: number of checklists
+- `checklists.categories`: checklists per category
+- `checklists.types`: checklists per type, simple or task
+- `items.total`: number of checklist items
+- `items.completed`: items ticked off
+- `items.pending`: items not ticked off
+- `items.completionRate`: percentage of items completed, 0-100
+- `tasks.total`: number of tasks in task checklists
+- `tasks.completed`: tasks completed
+- `tasks.inProgress`: tasks in progress
+- `tasks.todo`: tasks not started
+- `tasks.completionRate`: percentage of tasks completed, 0-100
 
-## Error Responses
+## Error responses
 
-All endpoints return appropriate HTTP status codes:
+Status codes you can get back:
 
-- `200` - Success
-- `400` - Bad Request (invalid parameters)
-- `401` - Unauthorized (invalid or missing API key)
-- `403` - Forbidden (admin access required for certain operations)
-- `404` - Not Found (checklist/item not found)
-- `500` - Internal Server Error
+- `200`: success
+- `400`: bad request, usually a missing or invalid parameter
+- `401`: missing or invalid API key
+- `403`: you're not allowed to do that, usually because it needs an admin
+- `404`: the checklist, note or item doesn't exist
+- `500`: something broke on the server
 
-Error response format:
+Errors come back as:
 
 ```json
 {
@@ -1296,15 +1287,15 @@ Error response format:
 }
 ```
 
-## Export Endpoints
+## Export endpoints
 
-### 1. Request Data Export
+### 1. Request data export
 
 **POST** `/api/exports`
 
-Initiates an export of user data. The API will return a download URL upon successful initiation.
+Starts an export and returns the URL to download it from.
 
-**Request Body:**
+**Request body:**
 
 ```json
 {
@@ -1313,12 +1304,12 @@ Initiates an export of user data. The API will return a download URL upon succes
 }
 ```
 
-**Export Types:**
+**Export types:**
 
-- `all_checklists_notes`: Exports all checklists and notes across all users.
-- `user_checklists_notes`: Exports all checklists and notes for a specific user. Requires `username` in the request body.
-- `all_users_data`: Exports all user registration data.
-- `whole_data_folder`: Exports the entire data folder, excluding temporary export files.
+- `all_checklists_notes`: every checklist and note, for every user
+- `user_checklists_notes`: every checklist and note for one user. Needs `username` in the body
+- `all_users_data`: the user records
+- `whole_data_folder`: the whole data folder, minus temporary export files
 
 **Response:**
 
@@ -1329,11 +1320,11 @@ Initiates an export of user data. The API will return a download URL upon succes
 }
 ```
 
-### 2. Get Export Progress
+### 2. Get export progress
 
 **GET** `/api/exports`
 
-Retrieves the current progress of an ongoing export operation.
+Returns how far along the running export is.
 
 **Response:**
 
@@ -1344,33 +1335,33 @@ Retrieves the current progress of an ongoing export operation.
 }
 ```
 
-## Audit Logs
+## Audit logs
 
-The audit logs API provides comprehensive tracking and monitoring of all user actions in the system. These endpoints allow you to retrieve, export, analyze, and manage audit logs.
+Jotty writes an audit log entry for logins, edits, shares and other user actions. These endpoints read, export, summarise and clean up those entries.
 
 ### GET /logs
 
-Retrieve audit logs with optional filtering and pagination.
+Returns audit log entries, filtered and paginated.
 
 **Access:**
-- Regular users can only view their own logs
-- Admins can view all users' logs
+- Users see their own logs
+- Admins see everybody's
 
-**Query Parameters:**
+**Query parameters:**
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| username | string | No | Filter by username (admin only, defaults to current user for non-admins) |
-| action | string | No | Filter by action type (e.g., "login", "logout", "checklist_created") |
-| category | string | No | Filter by category (auth, user, checklist, note, sharing, settings, encryption, api, system, file, upload) |
-| level | string | No | Filter by log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
-| startDate | string (ISO 8601) | No | Start date for log range (defaults to 30 days ago) |
-| endDate | string (ISO 8601) | No | End date for log range (defaults to now) |
-| success | boolean | No | Filter by success status |
-| limit | integer | No | Number of logs to return (default: 50) |
-| offset | integer | No | Number of logs to skip (default: 0) |
+| username | string | No | Only this user's entries. Admin only, non-admins always get their own |
+| action | string | No | Action type, such as "login", "logout" or "checklist_created" |
+| category | string | No | One of auth, user, checklist, note, sharing, settings, encryption, api, system, file, upload |
+| level | string | No | DEBUG, INFO, WARNING, ERROR or CRITICAL |
+| startDate | string (ISO 8601) | No | Start of the range (default: 30 days ago) |
+| endDate | string (ISO 8601) | No | End of the range (default: now) |
+| success | boolean | No | Only entries that succeeded, or only ones that failed |
+| limit | integer | No | How many entries to return (default: 50) |
+| offset | integer | No | How many entries to skip (default: 0) |
 
-**Request Example:**
+**Request example:**
 
 ```bash
 curl -X GET "http://localhost:3000/api/logs?category=auth&limit=10&success=true" \
@@ -1408,20 +1399,20 @@ curl -X GET "http://localhost:3000/api/logs?category=auth&limit=10&success=true"
 
 ### POST /logs/export
 
-Export audit logs in JSON or CSV format.
+Downloads audit logs as JSON or CSV.
 
 **Access:**
-- Regular users can only export their own logs
-- Admins can export logs for all users or specific users
+- Users export their own logs
+- Admins can export everybody's, or one user's
 
-**Request Body:**
+**Request body:**
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| format | string | Yes | Export format: "json" or "csv" |
-| filters | object | No | Same filter options as GET /logs |
+| format | string | Yes | "json" or "csv" |
+| filters | object | No | The same filters as GET /logs |
 
-**Request Example (JSON):**
+**Request example (JSON):**
 
 ```bash
 curl -X POST "http://localhost:3000/api/logs/export" \
@@ -1438,7 +1429,7 @@ curl -X POST "http://localhost:3000/api/logs/export" \
   }'
 ```
 
-**Request Example (CSV):**
+**Request example (CSV):**
 
 ```bash
 curl -X POST "http://localhost:3000/api/logs/export" \
@@ -1455,22 +1446,22 @@ curl -X POST "http://localhost:3000/api/logs/export" \
 
 **Response (JSON format):**
 
-Returns a JSON array of log entries with the Content-Disposition header set for file download.
+A JSON array of log entries, sent with a Content-Disposition header so it downloads as a file.
 
 **Response (CSV format):**
 
-Returns a CSV file with headers:
+A CSV file with these columns:
 ```
 Timestamp,Level,Username,Action,Category,Resource Type,Resource ID,Resource Title,Success,IP Address,Error Message
 ```
 
 ### GET /logs/stats
 
-Retrieve aggregated statistics for audit logs (admin only).
+Returns totals across the audit log: entries per level and category, the busiest actions and users, and recent activity.
 
-**Access:** Admin only
+**Access:** admins only.
 
-**Request Example:**
+**Request example:**
 
 ```bash
 curl -X GET "http://localhost:3000/api/logs/stats" \
@@ -1538,11 +1529,11 @@ curl -X GET "http://localhost:3000/api/logs/stats" \
 
 ### POST /logs/cleanup
 
-Delete audit logs older than the configured retention period (admin only).
+Deletes audit logs older than the retention period set on the instance.
 
-**Access:** Admin only
+**Access:** admins only.
 
-**Request Example:**
+**Request example:**
 
 ```bash
 curl -X POST "http://localhost:3000/api/logs/cleanup" \
@@ -1558,35 +1549,35 @@ curl -X POST "http://localhost:3000/api/logs/cleanup" \
 }
 ```
 
-### Audit Log Fields
+### Audit log fields
 
-Each audit log entry contains the following fields:
+Each entry has these fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| id | string | Unix timestamp as string |
-| uuid | string | Generated UUID for the log entry |
-| timestamp | string | ISO 8601 format timestamp |
-| level | string | Log severity level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
-| username | string | Username of the user who performed the action |
-| action | string | Type of action performed |
-| category | string | Category of the log entry |
-| resourceType | string | Type of resource affected (e.g., "checklist", "note") |
-| resourceId | string | UUID of the affected resource |
-| resourceTitle | string | Human-readable name of the affected resource |
-| metadata | object | Custom data object with additional context |
+| id | string | Unix timestamp, as a string |
+| uuid | string | UUID of the entry |
+| timestamp | string | ISO 8601 timestamp |
+| level | string | DEBUG, INFO, WARNING, ERROR or CRITICAL |
+| username | string | Who did it |
+| action | string | What they did |
+| category | string | Which area it belongs to |
+| resourceType | string | What kind of thing it touched, such as "checklist" or "note" |
+| resourceId | string | UUID of the thing it touched |
+| resourceTitle | string | Title of the thing it touched |
+| metadata | object | Extra context, different per action |
 | ipAddress | string | IP address of the request |
-| userAgent | string | User agent string from the request |
-| success | boolean | Whether the action was successful |
-| errorMessage | string | Error message if the action failed |
-| duration | integer | Duration of the action in milliseconds |
+| userAgent | string | User agent of the request |
+| success | boolean | Whether it worked |
+| errorMessage | string | The error, if it didn't |
+| duration | integer | How long it took, in milliseconds |
 
-### Common Audit Actions
+### Common audit actions
 
 **Authentication:**
 - `login`, `logout`, `register`, `session_terminated`
 
-**User Management:**
+**User management:**
 - `user_created`, `user_updated`, `user_deleted`, `profile_updated`, `user_settings_updated`
 
 **Checklists:**
@@ -1604,7 +1595,7 @@ Each audit log entry contains the following fields:
 **API:**
 - `api_key_generated`, `api_request`
 
-## Usage Examples
+## Usage examples
 
 ### Health check (public endpoint)
 
@@ -1793,27 +1784,24 @@ curl -H "x-api-key: ck_your_api_key_here" \
      https://jotty-instance.com/api/exports
 ```
 
-### Rebuild link index for a user (admin only)
+### Rebuild your link index
 
 ```bash
 curl -X POST \
-     -H "x-api-key: ck_admin_api_key_here" \
-     -H "Content-Type: application/json" \
-     -d '{"username": "fccview"}' \
+     -H "x-api-key: ck_your_api_key_here" \
      https://jotty-instance.com/api/admin/rebuild-index
 ```
 
-## Cron Job Automation
+Admins can add `-H "Content-Type: application/json" -d '{"username": "fccview"}'` to rebuild somebody else's.
 
-The link index rebuild API can be automated using cron jobs to ensure link relationships remain consistent over time. This is particularly useful for:
+## Rebuilding the link index on a schedule
 
-- Regular maintenance of large installations
-- Ensuring data integrity after bulk operations
-- Preventing link reference issues in production environments
+> [!TIP]
+> You probably don't need this. Jotty already checks the index against your files every minute. A scheduled rebuild only earns its keep if something outside Jotty writes to the data folder regularly, a sync tool or a script, and you'd rather not wait for the check to notice.
 
-### Example Cron Job Setup
+### Example script
 
-Create a shell script (`rebuild-index.sh`) to rebuild the index for all users:
+This script (`rebuild-index.sh`) rebuilds the index for a list of users. It needs an admin API key:
 
 ```bash
 #!/bin/bash
@@ -1847,15 +1835,15 @@ done
 echo "Index rebuild complete"
 ```
 
-Make the script executable:
+Make it executable:
 
 ```bash
 chmod +x rebuild-index.sh
 ```
 
-### Cron Job Installation
+### Adding it to cron
 
-Add to your crontab to run weekly (every Sunday at 2:00 AM):
+To run it weekly, every Sunday at 2:00 AM:
 
 ```bash
 # Edit crontab
@@ -1865,16 +1853,16 @@ crontab -e
 0 2 * * 0 /path/to/rebuild-index.sh >> /var/log/checklist-index-rebuild.log 2>&1
 ```
 
-For daily rebuilds (not recommended for large installations):
+Daily also works, but on an instance with a lot of items that is a lot of reading for very little:
 
 ```bash
 # Daily at 2:00 AM
 0 2 * * * /path/to/rebuild-index.sh >> /var/log/checklist-index-rebuild.log 2>&1
 ```
 
-### Alternative: Single User Cron Job
+### Just your own index
 
-For rebuilding only your own index (non-admin users can only rebuild their own data):
+Without an admin key you can only rebuild your own index. This version does that:
 
 ```bash
 #!/bin/bash
@@ -1899,39 +1887,19 @@ else
 fi
 ```
 
-### Monitoring and Logging
+### Tips
 
-The scripts above include basic logging. For production environments, consider:
+- Run the script by hand once before you schedule it
+- The log file grows every run, so give it a `logrotate` rule
+- If you back up the data folder on a schedule, run the rebuild after the backup rather than during it
+- Glance at the log now and then. A rebuild that fails every week is telling you something
 
-1. **Log Rotation**: Use `logrotate` to manage log files
-2. **Monitoring**: Integrate with monitoring systems to alert on failures
-3. **Backup**: Run the rebuild after database backups
-4. **Performance**: Schedule during low-traffic periods
+## Things worth knowing
 
-### Best Practices
-
-- **Test First**: Run the script manually before scheduling
-- **Monitor Logs**: Regularly check logs for failures
-- **Resource Usage**: Be aware that rebuilds can be resource-intensive for large datasets
-- **Frequency**: Weekly is usually sufficient; daily may be overkill
-- **Error Handling**: Implement retry logic for transient failures
-
-## Important Notes
-
-- Item indices are 0-based (first item is index 0)
-- All timestamps are in ISO 8601 format
-- API keys are permanent and do not expire
-- Only items owned by the authenticated user are accessible (unless you're an admin)
-- All checklists and notes support categorization for better organization
-- For task checklists, the `status` and `time` parameters are optional when creating items
-- Time tracking data is stored as JSON arrays with `id`, `startTime`, `endTime`, and `duration` fields
-- The summary endpoint provides comprehensive statistics including category breakdowns
-- Admin users can query summary data for any user using the `username` parameter
-- Non-admin users can only query their own summary data
-- The user information endpoint returns different data based on authentication context
-- Categories endpoint excludes archived categories automatically
-- When creating notes, the `content` and `category` fields are optional
-- Admin endpoints require administrator privileges and API key authentication
-- The link index rebuild endpoint can be automated with cron jobs for regular maintenance
-- Link relationships between notes and checklists are maintained automatically, but the rebuild endpoint ensures consistency after bulk operations
-- This is a beta implementation - additional features will be added in future updates
+- Item indexes start at 0
+- Timestamps are ISO 8601
+- API keys don't expire. Regenerate yours from your profile if it leaks
+- You can only reach items you own, unless you're an admin
+- Time entries are JSON arrays with `id`, `startTime`, `endTime` and `duration`
+- The user endpoint returns more fields for yourself and for admins than for anybody else
+- The API is still growing. Expect new endpoints and fields, and existing ones to keep working
