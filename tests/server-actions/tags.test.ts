@@ -6,6 +6,12 @@ const mockExtractYamlMetadata = vi.fn();
 const mockUpdateYamlMetadata = vi.fn();
 const mockExtractHashtagsFromContent = vi.fn();
 
+vi.mock("@/app/_server/actions/file", async (importOriginal) => ({
+  ...((await importOriginal()) as object),
+  serverWriteFile: (filePath: string, content: string) =>
+    mockFs.writeFile(filePath, content, "utf-8"),
+}));
+
 vi.mock("@/app/_server/actions/export", () => ({
   exportWholeDataFolder: (...args: any[]) => mockExportWholeDataFolder(...args),
 }));

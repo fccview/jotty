@@ -5,6 +5,7 @@ import path from "path";
 import {
   ensureDir,
   serverDeleteDir,
+  serverRenamePath,
   getUserModeDir,
 } from "@/app/_server/actions/file";
 import fs from "fs/promises";
@@ -324,7 +325,7 @@ export const renameCategory = async (formData: FormData) => {
       return { error: "Category with new name already exists" };
     }
 
-    await fs.rename(oldCategoryDir, newCategoryDir);
+    await serverRenamePath(oldCategoryDir, newCategoryDir);
 
     const username = await getUsername();
     if (mode === Modes.NOTES && username) {

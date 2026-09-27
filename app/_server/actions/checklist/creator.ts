@@ -5,7 +5,6 @@ import { ensureDir, serverWriteFile } from "@/app/_server/actions/file";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { updateIndexForItem, parseInternalLinks } from "@/app/_server/actions/link";
 import { targetDir, bouncer } from "@/app/_server/actions/share/target";
 import { generateUuid } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
@@ -63,26 +62,6 @@ export const makeList = async (
     };
 
     await serverWriteFile(filePath, listToMarkdown(newList));
-
-    try {
-      const content = newList.items.map((i) => i.text).join("\n");
-      const links = await parseInternalLinks(content);
-      const indexUsername = target.owner;
-      if (indexUsername) {
-        await updateIndexForItem(
-          indexUsername,
-          ItemTypes.CHECKLIST,
-          newList.uuid!,
-          links,
-        );
-      }
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for new checklist:",
-        newList.id,
-        error,
-      );
-    }
 
     await logContentEvent(
       "checklist_created",

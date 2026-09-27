@@ -13,6 +13,7 @@ import {
   generateYamlFrontmatter,
   generateUuid,
   strayMeta,
+  createdAtOf,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
@@ -346,7 +347,7 @@ export const parseMarkdown = (
     category,
     items,
     createdAt: fileStats
-      ? fileStats.birthtime.toISOString()
+      ? createdAtOf(metadata, fileStats.birthtime)
       : new Date().toISOString(),
     updatedAt: fileStats
       ? fileStats.mtime.toISOString()

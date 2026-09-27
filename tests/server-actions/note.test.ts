@@ -12,9 +12,7 @@ const mockGetCurrentUser = vi.fn();
 const mockGetUsername = vi.fn();
 const mockCanReach = vi.fn();
 const mockLogContentEvent = vi.fn();
-const mockParseInternalLinks = vi.fn();
-const mockUpdateIndexForItem = vi.fn();
-const mockRemoveItemFromIndex = vi.fn();
+const mockTidyItemLinks = vi.fn();
 const mockCommitNote = vi.fn();
 const mockGetSettings = vi.fn();
 const mockExtractHashtagsFromContent = vi.fn();
@@ -72,12 +70,9 @@ vi.mock("@/app/_server/actions/log", () => ({
   logContentEvent: (...args: any[]) => mockLogContentEvent(...args),
 }));
 
-vi.mock("@/app/_server/actions/link", () => ({
-  parseInternalLinks: (...args: any[]) => mockParseInternalLinks(...args),
-  updateIndexForItem: (...args: any[]) => mockUpdateIndexForItem(...args),
-  removeItemFromIndex: (...args: any[]) => mockRemoveItemFromIndex(...args),
-  rebuildLinkIndex: vi.fn().mockResolvedValue(undefined),
-  rebuildLinkIndexInternal: vi.fn().mockResolvedValue(undefined),
+vi.mock("@/app/_server/actions/relations/tidy", () => ({
+  tidyItemLinks: (...args: any[]) => mockTidyItemLinks(...args),
+  refreshWikilinks: (markdown: string) => markdown,
 }));
 
 vi.mock("@/app/_server/actions/history", () => ({
@@ -197,9 +192,7 @@ describe("Note Actions", () => {
       },
     );
     mockLogContentEvent.mockResolvedValue(undefined);
-    mockParseInternalLinks.mockResolvedValue([]);
-    mockUpdateIndexForItem.mockResolvedValue(undefined);
-    mockRemoveItemFromIndex.mockResolvedValue(undefined);
+    mockTidyItemLinks.mockImplementation(async (content: string) => content);
     mockCommitNote.mockResolvedValue(undefined);
     mockGetSettings.mockResolvedValue({});
     mockExtractHashtagsFromContent.mockReturnValue([]);
@@ -268,16 +261,22 @@ describe("Note Actions", () => {
       );
     });
 
-    it("should update link index after creation", async () => {
+    it("should canonicalise internal links before saving", async () => {
       const formData = createFormData({
         title: "Linked Note",
         category: "TestCategory",
-        rawContent: "Content with [[link]]",
+      rawContent: "See [Old](/jotty/3f2a1b4c-1111-4222-8333-944455556666)",
       });
+
+      mockTidyItemLinks.mockResolvedValueOnce("tidied body");
 
       await createNote(formData);
 
-      expect(mockUpdateIndexForItem).toHaveBeenCalled();
+      expect(mockTidyItemLinks).toHaveBeenCalledWith(expect.any(String), "testuser");
+      expect(mockServerWriteFile).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining("tidied body"),
+      );
     });
 
     it("should commit note to history", async () => {

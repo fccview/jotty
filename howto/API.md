@@ -1178,7 +1178,7 @@ Retrieves all categories for notes and checklists for the authenticated user. Ar
 
 **POST** `/api/admin/rebuild-index`
 
-Rebuilds the internal link index for a specific user. This is useful when the link relationships between notes and checklists become inconsistent due to bulk operations, data migrations, or other maintenance tasks.
+Rebuilds the relationships index, the list of which notes and checklists link to each other. Jotty keeps it up to date on its own and checks it against your files every minute, so you only need this after editing lots of files outside Jotty, restoring a backup, or if the brain looks wrong.
 
 **Request Body:**
 
@@ -1190,7 +1190,7 @@ Rebuilds the internal link index for a specific user. This is useful when the li
 
 **Parameters:**
 
-- `username` (required): Username whose link index should be rebuilt
+- `username` (optional): Rebuild only this user's items. Leave it out to rebuild every user.
 
 **Response:**
 
@@ -1201,12 +1201,18 @@ Rebuilds the internal link index for a specific user. This is useful when the li
 }
 ```
 
+**Errors:**
+
+- `403`: the API key does not belong to an admin
+- `404`: no user with that username
+
 **Notes:**
 
 - Only administrators can use this endpoint
-- The rebuild process scans all notes and checklists for the specified user and recreates the link relationships
-- This operation may take time for users with large amounts of content
-- The link index tracks internal references between notes and checklists (e.g., when one note links to another)
+- Rebuilding reads your notes and checklists and never changes them
+- Encrypted notes are skipped, their content is never read
+- Wikilinks keep pointing at the note they were first matched to, so a rebuild does not move them onto a different note with the same title
+- The index lives in `data/.relations.db`. If it is deleted, Jotty rebuilds it from your files
 
 ### 16. Get User Summary Statistics
 
@@ -1793,7 +1799,7 @@ curl -H "x-api-key: ck_your_api_key_here" \
      https://jotty-instance.com/api/exports
 ```
 
-### Rebuild link index for a user (admin only)
+### Rebuild the link index (admin only)
 
 ```bash
 curl -X POST \

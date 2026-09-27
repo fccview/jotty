@@ -12,6 +12,8 @@ import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { RelationsProvider } from "@/app/_providers/RelationsProvider";
+import { getItemRelations } from "@/app/_server/actions/relations";
 
 interface AdminNotePageProps {
   params: Promise<{
@@ -69,10 +71,14 @@ export default async function AdminNotePage(props: AdminNotePageProps) {
     type: "note" as const,
   };
 
+  const relations = await getItemRelations(note.uuid || "");
+
   return (
     <MetadataProvider metadata={metadata}>
       <PermissionsProvider item={note}>
-        <NoteClient note={note} categories={docsCategories} />
+        <RelationsProvider relations={relations}>
+          <NoteClient note={note} categories={docsCategories} />
+        </RelationsProvider>
       </PermissionsProvider>
     </MetadataProvider>
   );

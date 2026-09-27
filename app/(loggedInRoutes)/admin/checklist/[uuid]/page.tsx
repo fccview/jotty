@@ -11,6 +11,8 @@ import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { RelationsProvider } from "@/app/_providers/RelationsProvider";
+import { getItemRelations } from "@/app/_server/actions/relations";
 
 interface AdminChecklistPageProps {
   params: Promise<{
@@ -67,14 +69,18 @@ export default async function AdminChecklistPage(props: AdminChecklistPageProps)
     type: "checklist" as const,
   };
 
+  const relations = await getItemRelations(checklist.uuid || "");
+
   return (
     <MetadataProvider metadata={metadata}>
       <PermissionsProvider item={checklist}>
-        <ChecklistClient
-          checklist={checklist}
-          categories={categories}
-          user={user}
-        />
+        <RelationsProvider relations={relations}>
+          <ChecklistClient
+            checklist={checklist}
+            categories={categories}
+            user={user}
+          />
+        </RelationsProvider>
       </PermissionsProvider>
     </MetadataProvider>
   );

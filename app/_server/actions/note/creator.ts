@@ -11,10 +11,7 @@ import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
 import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import {
-  updateIndexForItem,
-  parseInternalLinks,
-} from "@/app/_server/actions/link";
+import { tidyItemLinks } from "@/app/_server/actions/relations/tidy";
 import {
   extractYamlMetadata as stripYaml,
   generateUuid,
@@ -39,11 +36,14 @@ export const makeNote = async (
 
     const sanitizedContent = sanitizeMarkdown(rawContent);
     const { metadata, contentWithoutMetadata } = stripYaml(sanitizedContent);
-    const content = contentWithoutMetadata;
-    const encryptionMethod = detectEncryptionMethod(content) || undefined;
-    const encrypted = isEncrypted(content);
+    const encryptionMethod =
+      detectEncryptionMethod(contentWithoutMetadata) || undefined;
+    const encrypted = isEncrypted(contentWithoutMetadata);
 
     const target = await targetDir(Modes.NOTES, actor.username, category);
+    const content = encrypted
+      ? contentWithoutMetadata
+      : await tidyItemLinks(contentWithoutMetadata, target.owner);
 
     const verdict = await bouncer(
       target,
@@ -94,17 +94,6 @@ export const makeNote = async (
 
     if (!isEncrypted(content)) {
       commitNote(target.owner, relativePath, "create", title).catch(() => {});
-    }
-
-    try {
-      const links = (await parseInternalLinks(newDoc.content)) || [];
-      await updateIndexForItem(target.owner, "note", newDoc.uuid!, links);
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for new note:",
-        newDoc.id,
-        error,
-      );
     }
 
     await logContentEvent(

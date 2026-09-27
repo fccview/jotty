@@ -2,6 +2,7 @@
 
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
+import { BrainButton } from "@/app/_components/FeatureComponents/Brain/Parts/BrainButton";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import {
   Archive02Icon,
@@ -497,6 +498,7 @@ export const NoteEditorHeader = ({
                       )}
                     </Button>
                   )}
+                  <BrainButton uuid={note?.uuid} className="h-10 w-10" />
                   <DropdownMenu
                     align="right"
                     trigger={

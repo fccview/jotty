@@ -10,6 +10,8 @@ import fs from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { Modes } from "@/app/_types/enums";
+import { atomicWrite, withCreatedAt } from "@/app/_server/actions/file/atomic";
+import { isItemFile } from "@/app/_server/actions/relations/paths";
 
 export interface OrderData {
   categories?: string[];
@@ -140,14 +142,31 @@ export const serverReadFile = async (
   }
 };
 
+const _tracking = () => import("@/app/_server/actions/relations/tracking");
+
 export const serverWriteFile = async (filePath: string, content: string) => {
   await ensureDir(path.dirname(filePath));
-  await fs.writeFile(filePath, content, "utf-8");
+
+  if (!isItemFile(filePath)) {
+    await atomicWrite(filePath, content);
+    return;
+  }
+
+  const stamped = await withCreatedAt(filePath, content);
+  await atomicWrite(filePath, stamped);
+  await (await _tracking()).trackItemWrite(filePath, stamped);
+};
+
+export const serverRenamePath = async (from: string, to: string) => {
+  await ensureDir(path.dirname(to));
+  await fs.rename(from, to);
+  await (await _tracking()).trackMove(from, to);
 };
 
 export const serverDeleteFile = async (filePath: string) => {
   try {
     await fs.unlink(filePath);
+    await (await _tracking()).trackItemDelete(filePath);
   } catch (error) {
     const { logAudit } = await import("@/app/_server/actions/log");
     await logAudit({
@@ -194,6 +213,7 @@ export const listMdFilesUnderPath = async (
 export const serverDeleteDir = async (dirPath: string) => {
   try {
     await fs.rm(dirPath, { recursive: true });
+    await (await _tracking()).trackTreeDelete(dirPath);
   } catch (error) {
     const { logAudit } = await import("@/app/_server/actions/log");
     await logAudit({

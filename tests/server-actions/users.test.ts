@@ -7,6 +7,7 @@ const mockGetSessionId = vi.fn()
 const mockReadSessions = vi.fn()
 const mockLogUserEvent = vi.fn()
 const mockLogAudit = vi.fn()
+const mockRevokeGrants = vi.fn()
 
 vi.mock('@/app/_server/actions/file', () => ({
   readJsonFile: (...args: any[]) => mockReadJsonFile(...args),
@@ -17,6 +18,11 @@ vi.mock('@/app/_server/actions/session', () => ({
   getSessionId: (...args: any[]) => mockGetSessionId(...args),
   readSessions: (...args: any[]) => mockReadSessions(...args),
   removeAllSessionsForUser: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('@/app/_server/actions/share/rename', () => ({
+  revokeGrants: (...args: any[]) => mockRevokeGrants(...args),
+  renameGrants: vi.fn(),
 }))
 
 vi.mock('@/app/_server/actions/log', () => ({
@@ -52,6 +58,7 @@ describe('Users Actions', () => {
     mockReadSessions.mockResolvedValue({ 'session-123': 'testuser' })
     mockLogUserEvent.mockResolvedValue(undefined)
     mockLogAudit.mockResolvedValue(undefined)
+    mockRevokeGrants.mockResolvedValue(0)
     mockFs.rm.mockResolvedValue(undefined)
   })
 
@@ -342,6 +349,7 @@ describe('Users Actions', () => {
 
       expect(result.success).toBe(true)
       expect(mockWriteJsonFile).toHaveBeenCalled()
+      expect(mockRevokeGrants).toHaveBeenCalledWith('testuser')
     })
   })
 
@@ -496,6 +504,24 @@ describe('Users Actions', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Cannot delete the super admin (system owner)')
+      expect(mockRevokeGrants).not.toHaveBeenCalled()
+    })
+
+    it('should revoke every share granted to the deleted user and drop their record', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'adminuser', passwordHash: 'hash', isAdmin: true },
+        { username: 'leaver', passwordHash: 'hash', isAdmin: false },
+      ])
+      mockReadSessions.mockResolvedValue({ 'session-123': 'adminuser' })
+
+      const result = await deleteUser(createFormData({ username: 'leaver' }))
+
+      expect(result.success).toBe(true)
+      expect(mockRevokeGrants).toHaveBeenCalledWith('leaver')
+      expect(mockLock).toHaveBeenCalled()
+
+      const [written] = mockWriteJsonFile.mock.calls.at(-1)!
+      expect(written.map((user: { username: string }) => user.username)).toEqual(['adminuser'])
     })
   })
 

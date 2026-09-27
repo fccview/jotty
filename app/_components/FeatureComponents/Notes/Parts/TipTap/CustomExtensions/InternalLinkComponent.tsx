@@ -1,311 +1,173 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { NodeViewWrapper } from "@tiptap/react";
-import {
-  File02Icon,
-  CheckmarkSquare04Icon,
-  TaskDaily01Icon,
-  FileLinkIcon,
-  Attachment01Icon,
-} from "hugeicons-react";
+import { File02Icon, CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
 import { useRouter } from "next/navigation";
+import { capitalize } from "lodash";
+import { useTranslations } from "next-intl";
 import { getNoteById } from "@/app/_server/actions/note";
 import { getListById } from "@/app/_server/actions/checklist";
-import { decodeCategoryPath, itemHref } from "@/app/_utils/global-utils";
-import { capitalize } from "lodash";
+import { itemHref } from "@/app/_utils/global-utils";
+import { parseItemHref } from "@/app/_utils/item-href-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes } from "@/app/_types/enums";
-import { useTranslations } from "next-intl";
 
-interface InternalLinkComponentProps {
-  node: {
-    attrs: {
-      href: string;
-      title: string;
-      type: string;
-      category: string;
-      uuid: string;
-      itemId: string;
-      convertToBidirectional: boolean;
-    };
-  };
-  editor: any;
-  updateAttributes: (attrs: Record<string, any>) => void;
+interface InternalLinkAttrs {
+  href: string;
+  title: string;
+  type?: string;
+  category?: string;
+  uuid?: string;
+  itemId?: string;
 }
 
-const _returnNote = async (
-  uuid: string,
-  router: any,
-  note?: Note,
-): Promise<boolean> => {
-  const finalNote = note || (await getNoteById(uuid));
+interface InternalLinkComponentProps {
+  node: { attrs: InternalLinkAttrs };
+}
 
-  if (finalNote?.uuid) {
-    router.push(itemHref(ItemTypes.NOTE, finalNote.uuid));
-    return true;
+type LinkedItem = Partial<Note> | Partial<Checklist>;
+
+const isChecklist = (item?: LinkedItem | null): item is Partial<Checklist> =>
+  Boolean(item && "type" in item && item.type);
+
+const _fetchItem = async (uuid: string, type?: ItemTypes): Promise<Note | Checklist | null> => {
+  if (type !== ItemTypes.CHECKLIST) {
+    const note = await getNoteById(uuid);
+    if (note) return note;
   }
-
-  return false;
+  if (type !== ItemTypes.NOTE) {
+    const list = await getListById(uuid);
+    if (list) return list;
+  }
+  return null;
 };
 
-const _returnChecklist = async (
-  uuid: string,
-  router: any,
-  checklist?: Checklist,
-): Promise<boolean> => {
-  const finalChecklist = checklist || (await getListById(uuid));
-
-  if (finalChecklist?.uuid) {
-    router.push(itemHref(ItemTypes.CHECKLIST, finalChecklist.uuid));
-    return true;
-  }
-
-  return false;
-};
-
-export const InternalLinkComponent = ({
-  node,
-  editor,
-  updateAttributes,
-}: InternalLinkComponentProps) => {
+export const InternalLinkComponent = ({ node }: InternalLinkComponentProps) => {
   const t = useTranslations();
   const router = useRouter();
-  const { href, title, uuid, itemId, type, category, convertToBidirectional } =
-    node.attrs;
-  const [showPopup, setShowPopup] = useState(false);
-  const [loadedFullItem, setLoadedFullItem] = useState<Note | Checklist | null>(
-    null,
-  );
-  const [isLoadingItem, setIsLoadingItem] = useState(false);
-  const potentialCategory = href
-    ?.replace("/jotty/", "")
-    .replace("/note/", "")
-    .replace("/checklist/", "")
-    .split("/")
-    .slice(1, -1)
-    .join("/");
+  const { href, title, uuid: attrUuid, category } = node.attrs;
   const { appSettings, notes, checklists } = useAppMode();
+  const [showPopup, setShowPopup] = useState(false);
+  const [loadedItem, setLoadedItem] = useState<Note | Checklist | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const isEditable = editor?.isEditable ?? false;
-  const isPathBasedLink =
-    href?.startsWith("/note/") || href?.startsWith("/checklist/");
-  const isJottyLink = href?.startsWith("/jotty/");
+  const target = useMemo(() => parseItemHref(href), [href]);
+  const uuid = (target?.uuid || attrUuid || "").toLowerCase();
 
-  const canToggle = isPathBasedLink || isJottyLink;
+  const knownItem: LinkedItem | undefined = useMemo(
+    () =>
+      notes.find((note) => note.uuid?.toLowerCase() === uuid) ||
+      checklists.find((list) => list.uuid?.toLowerCase() === uuid),
+    [notes, checklists, uuid],
+  );
 
-  const metadataItem =
-    (notes.find((n) => n.uuid === uuid) as Partial<Note> | undefined) ||
-    (checklists.find((c) => c.uuid === uuid) as Partial<Checklist> | undefined);
+  const item: LinkedItem | undefined = loadedItem || knownItem;
+  const type = item
+    ? isChecklist(item)
+      ? ItemTypes.CHECKLIST
+      : ItemTypes.NOTE
+    : target?.type;
 
-  const fullItem = loadedFullItem || metadataItem;
-
-  const loadFullItem = useCallback(async () => {
-    if (loadedFullItem || isLoadingItem || !uuid) return;
-
-    setIsLoadingItem(true);
+  const loadItem = useCallback(async () => {
+    if (loadedItem || isLoading || !uuid) return;
+    setIsLoading(true);
     try {
-      const isChecklist =
-        metadataItem && "type" in metadataItem && metadataItem.type;
-      if (isChecklist) {
-        const checklist = await getListById(uuid);
-        if (checklist) setLoadedFullItem(checklist);
-      } else {
-        const note = await getNoteById(uuid);
-        if (note) setLoadedFullItem(note);
-      }
+      setLoadedItem(await _fetchItem(uuid, type));
     } catch (error) {
-      console.warn("Failed to load item for preview:", error);
+      console.warn("Failed to load linked item:", error);
     } finally {
-      setIsLoadingItem(false);
+      setIsLoading(false);
     }
-  }, [uuid, loadedFullItem, isLoadingItem, metadataItem]);
+  }, [loadedItem, isLoading, uuid, type]);
 
   useEffect(() => {
-    if (showPopup && !loadedFullItem && !isLoadingItem) {
-      loadFullItem();
-    }
-  }, [showPopup, loadedFullItem, isLoadingItem, loadFullItem]);
+    if (showPopup) loadItem();
+  }, [showPopup, loadItem]);
 
-  const handleClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleClick = async (event: React.MouseEvent) => {
+    event.preventDefault();
     if (!href) return;
 
-    if (href.startsWith("/jotty/")) {
-      const uuidFromPath = href.replace("/jotty/", "");
-
-      if (fullItem?.uuid) {
-        router.push(
-          itemHref(
-            "type" in fullItem && fullItem.type
-              ? ItemTypes.CHECKLIST
-              : ItemTypes.NOTE,
-            fullItem.uuid,
-          ),
-        );
-        return;
-      }
-
-      try {
-        if (await _returnNote(uuidFromPath, router)) return;
-      } catch (error) {
-        console.warn("Failed to resolve /jotty/ link:", error);
-      }
-      try {
-        if (await _returnChecklist(uuidFromPath, router)) return;
-      } catch (error) {
-        console.warn("Failed to resolve /jotty/ link:", error);
-      }
-    } else {
-      router.push(href);
+    if (uuid && type) {
+      router.push(itemHref(type, uuid));
       return;
     }
-  };
 
-  const handleToggleConversion = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (isJottyLink) {
-      const isChecklist = fullItem && "type" in fullItem && fullItem.type;
-      const targetUuid = fullItem?.uuid || uuid || href.replace("/jotty/", "");
-
-      if (targetUuid) {
-        updateAttributes({
-          href: itemHref(
-            isChecklist ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
-            targetUuid,
-          ),
-          type: isChecklist ? "checklist" : "note",
-          category: fullItem?.category || category || "Uncategorized",
-          convertToBidirectional: false,
-        });
-      } else {
-        console.warn("Cannot convert jotty to path - missing data");
+    if (uuid) {
+      const found = await _fetchItem(uuid).catch((error) => {
+        console.warn("Failed to resolve linked item:", error);
+        return null;
+      });
+      if (found?.uuid) {
+        router.push(itemHref(isChecklist(found) ? ItemTypes.CHECKLIST : ItemTypes.NOTE, found.uuid));
       }
-    } else if (isPathBasedLink) {
-      const resolvedUuid =
-        uuid ||
-        fullItem?.uuid ||
-        notes.find((n) => n.id === itemId && (n.category || "") === (category || ""))?.uuid ||
-        checklists.find((c) => c.id === itemId && (c.category || "") === (category || ""))?.uuid;
-
-      if (resolvedUuid) {
-        updateAttributes({
-          href: `/jotty/${resolvedUuid}`,
-          uuid: resolvedUuid,
-          convertToBidirectional: false,
-        });
-      } else {
-        console.log("Could not find item to convert");
-      }
+      return;
     }
+
+    router.push(href);
   };
+
+  const label = item?.title || title;
+  const shownCategory = item?.category || target?.legacy?.category || category;
 
   return (
     <NodeViewWrapper
       as="span"
       onClick={handleClick}
-      onMouseEnter={() => {
-        setShowPopup(true);
-      }}
-      onMouseLeave={() => {
-        setShowPopup(false);
-      }}
+      onMouseEnter={() => setShowPopup(true)}
+      onMouseLeave={() => setShowPopup(false)}
       className="inline-flex items-center gap-1.5 mx-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/15 transition-colors cursor-pointer group relative"
     >
-      {showPopup &&
-        href &&
-        (href.startsWith("/jotty/") ||
-          href.startsWith("/note/") ||
-          href.startsWith("/checklist/")) && (
-          <span className="block absolute top-[110%] left-0 min-w-[300px] max-w-[400px] z-10">
-            {isLoadingItem ? (
-              <div className="bg-card border border-border rounded-jotty p-4 text-muted-foreground text-sm">
-                Loading...
-              </div>
-            ) : loadedFullItem &&
-              "type" in loadedFullItem &&
-              loadedFullItem.type ? (
-              <ChecklistCard
-                list={loadedFullItem as Checklist}
-                onSelect={() => {}}
-              />
-            ) : loadedFullItem ? (
-              <NoteCard
-                note={loadedFullItem as Note}
-                onSelect={() => {}}
-                fullScrollableContent
-              />
-            ) : (
-              <div className="bg-card border border-border rounded-jotty p-4 text-muted-foreground text-sm">
-                {metadataItem?.title || title}
-              </div>
-            )}
-          </span>
-        )}
+      {showPopup && (
+        <span
+          data-link-preview=""
+          className="block absolute top-[110%] left-0 min-w-[300px] max-w-[400px] z-10"
+        >
+          {isLoading ? (
+            <span className="block bg-card border border-border rounded-jotty p-4 text-muted-foreground text-sm">
+              {t("common.loading")}
+            </span>
+          ) : loadedItem && isChecklist(loadedItem) ? (
+            <ChecklistCard list={loadedItem as Checklist} onSelect={() => {}} />
+          ) : loadedItem ? (
+            <NoteCard note={loadedItem as Note} onSelect={() => {}} fullScrollableContent />
+          ) : (
+            <span className="block bg-card border border-border rounded-jotty p-4 text-muted-foreground text-sm">
+              {label}
+            </span>
+          )}
+        </span>
+      )}
       <span className="flex-shrink-0">
-        {fullItem && "type" in fullItem && fullItem.type ? (
-          <>
-            {isKanbanType(fullItem.type) ? (
-              <TaskDaily01Icon className="h-5 w-5" />
-            ) : (
-              <CheckmarkSquare04Icon className="h-5 w-5" />
-            )}
-          </>
+        {isChecklist(item) ? (
+          isKanbanType(item.type) ? (
+            <TaskDaily01Icon className="h-5 w-5" />
+          ) : (
+            <CheckmarkSquare04Icon className="h-5 w-5" />
+          )
         ) : (
           <File02Icon className="h-5 w-5" />
         )}
       </span>
       <span className="text-md lg:text-sm font-medium text-foreground">
-        {appSettings?.parseContent === "yes"
-          ? title
-          : capitalize(title.replace(/-/g, " "))}
+        {appSettings?.parseContent === "yes" ? label : capitalize(label.replace(/-/g, " "))}
       </span>
-      ·
-      <span className="text-md lg:text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-jotty">
-        {fullItem?.category ||
-          decodeCategoryPath(potentialCategory) ||
-          "not-found"}
-      </span>
-      {isEditable && (isPathBasedLink || canToggle) && (
-        <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-border">
-          <span className="text-md lg:text-xs text-muted-foreground">
-            {t("editor.linkType")}
+      {shownCategory && (
+        <>
+          ·
+          <span className="text-md lg:text-sm font-medium text-foreground bg-primary/30 px-2 py-0.5 rounded-jotty">
+            {shownCategory}
           </span>
-          <button
-            onClick={handleToggleConversion}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-jotty text-sm lg:text-xs font-medium transition-all ${
-              isJottyLink
-                ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
-                : convertToBidirectional
-                  ? "bg-blue-500/20 text-blue-800 hover:bg-blue-500/30 border border-blue-500/30"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-border"
-            }`}
-            title={
-              isJottyLink
-                ? "Click to convert to path-based link (cross-platform compatible)"
-                : convertToBidirectional
-                  ? "Will convert to bidirectional UUID link on save (enables backlinks)"
-                  : "Click to convert to bidirectional UUID link (enables backlinks)"
-            }
-          >
-            {isJottyLink || convertToBidirectional ? (
-              <>
-                <FileLinkIcon className="h-3.5 w-3.5" />
-                <span>{t("editor.bidirectional")}</span>
-              </>
-            ) : (
-              <>
-                <Attachment01Icon className="h-3.5 w-3.5" />
-                <span>{t("editor.pathBased")}</span>
-              </>
-            )}
-          </button>
-        </div>
+        </>
+      )}
+      {!item && !isLoading && (
+        <span className="text-md lg:text-xs text-muted-foreground">
+          {t("relations.unreachable")}
+        </span>
       )}
     </NodeViewWrapper>
   );

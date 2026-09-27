@@ -92,6 +92,15 @@ export const patchCatInfo = async (
     return next;
   });
 
+export const mutateCatInfo = async (
+  dirPath: string,
+  mutator: (info: CategoryInfo) => CategoryInfo | null,
+): Promise<boolean> =>
+  runQueued(_lane(dirPath), async () => {
+    const next = mutator(await readCatInfo(dirPath));
+    return next ? writeCatInfo(dirPath, next) : false;
+  });
+
 export const catUuid = async (dirPath: string): Promise<string> =>
   runQueued(_lane(dirPath), async () => {
     const info = await readCatInfo(dirPath);

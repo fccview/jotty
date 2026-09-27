@@ -10,6 +10,16 @@ export const toIso = (d: Date | string | number | undefined | null): string => {
     : new Date(0).toISOString();
 };
 
+export const createdAtOf = (
+  metadata: Record<string, unknown> | null | undefined,
+  birthtime: Date,
+): string => {
+  const stamped = metadata?.[OwnedMetaKeys.CREATED_AT];
+  return stamped instanceof Date || typeof stamped === "string"
+    ? toIso(stamped)
+    : toIso(birthtime);
+};
+
 export interface DocumentMetadata {
   uuid?: string;
   title?: string;

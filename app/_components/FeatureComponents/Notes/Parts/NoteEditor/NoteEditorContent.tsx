@@ -9,7 +9,6 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useMemo } from "react";
-import { getReferences } from "@/app/_utils/indexes-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
@@ -50,7 +49,7 @@ export const NoteEditorContent = ({
   isEditingEncrypted,
 }: NoteEditorContentProps) => {
   const t = useTranslations();
-  const { user, linkIndex, notes, checklists, appSettings } = useAppMode();
+  const { user, notes, checklists } = useAppMode();
   const { compactMode } = useSettings();
   const searchParams = useSearchParams();
   const notesDefaultMode = user?.notesDefaultMode || "view";
@@ -58,10 +57,6 @@ export const NoteEditorContent = ({
   const editorRef = useRef<TiptapEditorRef>(null);
   const { permissions } = usePermissions();
   const isMinimalMode = useMinimalMode();
-
-  const referencingItems = useMemo(() => {
-    return getReferences(linkIndex, noteId, ItemTypes.NOTE, notes, checklists);
-  }, [linkIndex, noteId, notes, checklists]);
 
   useEffect(() => {
     if (
@@ -171,10 +166,7 @@ export const NoteEditorContent = ({
             <UnifiedMarkdownRenderer
               content={encrypted ? editorContent : noteContent || ""}
             />
-            {referencingItems.length > 0 &&
-              appSettings?.editor?.enableBilateralLinks && (
-                <ReferencedBySection referencingItems={referencingItems} />
-              )}
+            <ReferencedBySection />
           </div>
         </>
       )}

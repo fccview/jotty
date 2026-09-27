@@ -5,11 +5,15 @@ import {
   NOTES_DIR,
   USERS_FILE,
 } from "@/app/_consts/files";
-import { readJsonFile, writeJsonFile } from "../file";
+import {
+  readJsonFile,
+  serverDeleteDir,
+  serverRenamePath,
+  writeJsonFile,
+} from "../file";
 import { Result, SanitisedUser, User } from "@/app/_types";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { removeAllSessionsForUser } from "../session";
-import fs from "fs/promises";
 import { createHash } from "crypto";
 import { ItemTypes } from "@/app/_types/enums";
 import { DEFAULT_WEEK_START } from "@/app/_consts/calendar";
@@ -17,7 +21,7 @@ import { getFormData } from "@/app/_utils/global-utils";
 import { logUserEvent } from "@/app/_server/actions/log";
 import { getUserIndex } from "./helpers";
 import { getCurrentUser } from "./queries";
-import { findUserRecord } from "./records";
+import { findUserRecord, mutateUsers } from "./records";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -50,10 +54,8 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
   await removeAllSessionsForUser(username);
 
   try {
-    await fs.rm(CHECKLISTS_DIR(username), { recursive: true, force: true });
-
-    const docsDir = NOTES_DIR(username);
-    await fs.rm(docsDir, { recursive: true, force: true });
+    await serverDeleteDir(CHECKLISTS_DIR(username));
+    await serverDeleteDir(NOTES_DIR(username));
   } catch (error) {
     console.warn(
       `Warning: Could not clean up data files for ${username}:`,
@@ -61,8 +63,23 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
     );
   }
 
-  allUsers.splice(userIndex, 1);
-  await writeJsonFile(allUsers, USERS_FILE);
+  try {
+    const { revokeGrants } = await import("@/app/_server/actions/share/rename");
+
+    await revokeGrants(username);
+  } catch (error) {
+    console.error(`Could not revoke shares granted to ${username}:`, error);
+  }
+
+  const removed = await mutateUsers((users) => {
+    const index = users.findIndex((user: User) => user.username === username);
+    if (index === -1) return null;
+
+    users.splice(index, 1);
+    return true;
+  });
+
+  if (!removed) return { success: false, error: "Failed to delete user" };
 
   return { success: true, data: null };
 }
@@ -89,7 +106,7 @@ export async function _updateUserCore(
     try {
       const oldChecklistsPath = CHECKLISTS_DIR(targetUsername);
       const newChecklistsPath = CHECKLISTS_DIR(updates.username);
-      await fs.rename(oldChecklistsPath, newChecklistsPath);
+      await serverRenamePath(oldChecklistsPath, newChecklistsPath);
     } catch (error) {
       console.warn(
         `Could not rename checklists directory for ${targetUsername}:`,
@@ -100,7 +117,7 @@ export async function _updateUserCore(
     try {
       const oldNotesPath = NOTES_DIR(targetUsername);
       const newNotesPath = NOTES_DIR(updates.username);
-      await fs.rename(oldNotesPath, newNotesPath);
+      await serverRenamePath(oldNotesPath, newNotesPath);
     } catch (error) {
       console.warn(
         `Could not rename notes directory for ${targetUsername}:`,

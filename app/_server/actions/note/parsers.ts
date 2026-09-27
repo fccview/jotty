@@ -6,6 +6,7 @@ import {
   generateYamlFrontmatter,
   generateUuid,
   strayMeta,
+  createdAtOf,
 } from "@/app/_utils/yaml-metadata-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
@@ -32,7 +33,7 @@ export const parseMarkdownNote = (
     content: contentWithoutMetadata,
     category,
     createdAt: fileStats
-      ? fileStats.birthtime.toISOString()
+      ? createdAtOf(metadata, fileStats.birthtime)
       : new Date().toISOString(),
     updatedAt: fileStats
       ? fileStats.mtime.toISOString()
@@ -47,130 +48,6 @@ export const parseMarkdownNote = (
     tags: Array.isArray(metadata.tags) ? metadata.tags : [],
     extraMetadata: strayMeta(metadata),
   };
-};
-
-export const convertInternalLinksToNewFormat = async (
-  content: string,
-  username?: string,
-  category?: string
-): Promise<string> => {
-  let convertedContent = content;
-
-  // @ts-ignore
-  const spanRegex = /<span[^>]*data-internal-link[^>]*>.*?<\/span>/gs;
-  const spanMatches = Array.from(content.matchAll(spanRegex));
-
-  for (const match of spanMatches) {
-    const [fullMatch] = match;
-    const hrefMatch = fullMatch.match(/data-href="([^"]*)"/);
-    const convertMatch = fullMatch.match(
-      /data-convert-to-bidirectional="([^"]*)"/
-    );
-
-    const href = hrefMatch?.[1];
-    const shouldConvert = convertMatch?.[1] === "true";
-
-    if (!shouldConvert || !href) {
-      continue;
-    }
-
-    if (href.startsWith("/jotty/")) {
-      continue;
-    }
-
-    if (href.startsWith("/note/")) {
-      const parts = href.split("/");
-      if (parts.length >= 3) {
-        const categoryAndId = parts.slice(2).join("/");
-        const lastSlashIndex = categoryAndId.lastIndexOf("/");
-        const id = categoryAndId.substring(lastSlashIndex + 1);
-
-        try {
-          const { getUserNotes } = await import("./queries");
-          const notes = await getUserNotes({ username, allowArchived: true });
-          if (notes.success && notes.data) {
-            const note = notes.data.find((n) => n.id === id);
-            if (note?.uuid) {
-              let updatedSpan = fullMatch
-                .replace(/data-href="[^"]*"/, `data-href="/jotty/${note.uuid}"`)
-                .replace(
-                  /data-convert-to-bidirectional="true"/,
-                  `data-convert-to-bidirectional="false"`
-                );
-
-              if (fullMatch.includes("data-uuid=")) {
-                updatedSpan = updatedSpan.replace(
-                  /data-uuid="[^"]*"/,
-                  `data-uuid="${note.uuid}"`
-                );
-              } else {
-                updatedSpan = updatedSpan.replace(
-                  "data-internal-link",
-                  `data-internal-link data-uuid="${note.uuid}"`
-                );
-              }
-              convertedContent = convertedContent.replace(
-                fullMatch,
-                updatedSpan
-              );
-            }
-          }
-        } catch (error) {
-          console.warn("Failed to convert note link:", href, error);
-        }
-      }
-    } else if (href.startsWith("/checklist/")) {
-      const parts = href.split("/");
-      if (parts.length >= 3) {
-        const categoryAndId = parts.slice(2).join("/");
-        const lastSlashIndex = categoryAndId.lastIndexOf("/");
-        const id = categoryAndId.substring(lastSlashIndex + 1);
-
-        try {
-          const { getUserChecklists } = await import("../checklist");
-          const checklists = await getUserChecklists({
-            username,
-            isRaw: true,
-            allowArchived: true,
-          });
-          if (checklists.success && checklists.data) {
-            const checklist = checklists.data.find((c) => c.id === id);
-            if (checklist?.uuid) {
-              let updatedSpan = fullMatch
-                .replace(
-                  /data-href="[^"]*"/,
-                  `data-href="/jotty/${checklist.uuid}"`
-                )
-                .replace(
-                  /data-convert-to-bidirectional="true"/,
-                  `data-convert-to-bidirectional="false"`
-                );
-
-              if (fullMatch.includes("data-uuid=")) {
-                updatedSpan = updatedSpan.replace(
-                  /data-uuid="[^"]*"/,
-                  `data-uuid="${checklist.uuid}"`
-                );
-              } else {
-                updatedSpan = updatedSpan.replace(
-                  "data-internal-link",
-                  `data-internal-link data-uuid="${checklist.uuid}"`
-                );
-              }
-              convertedContent = convertedContent.replace(
-                fullMatch,
-                updatedSpan
-              );
-            }
-          }
-        } catch (error) {
-          console.warn("Failed to convert checklist link:", href, error);
-        }
-      }
-    }
-  }
-
-  return convertedContent;
 };
 
 export const noteToMarkdown = (note: Note): string => {

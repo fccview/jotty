@@ -10,6 +10,8 @@ import { isUuid } from "@/app/_consts/identity";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { RelationsProvider } from "@/app/_providers/RelationsProvider";
+import { getItemRelations } from "@/app/_server/actions/relations";
 import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface ChecklistPageProps {
@@ -82,14 +84,18 @@ export default async function ChecklistPage(props: ChecklistPageProps) {
     type: "checklist" as const,
   };
 
+  const relations = await getItemRelations(checklist.uuid || "");
+
   return (
     <MetadataProvider metadata={metadata}>
       <PermissionsProvider item={checklist}>
-        <ChecklistClient
-          checklist={checklist}
-          categories={categories}
-          user={user}
-        />
+        <RelationsProvider relations={relations}>
+          <ChecklistClient
+            checklist={checklist}
+            categories={categories}
+            user={user}
+          />
+        </RelationsProvider>
       </PermissionsProvider>
     </MetadataProvider>
   );

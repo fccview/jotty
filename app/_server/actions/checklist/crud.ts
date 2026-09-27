@@ -15,12 +15,6 @@ import { generateUniqueFilename, sanitizeFilename } from "@/app/_utils/filename-
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import {
-  updateIndexForItem,
-  parseInternalLinks,
-  removeItemFromIndex,
-  rebuildLinkIndexInternal,
-} from "@/app/_server/actions/link";
 import { canReach } from "@/app/_server/actions/share/queries";
 import {
   targetDir,
@@ -187,37 +181,6 @@ export const updateList = async (formData: FormData) => {
 
     await serverWriteFile(filePath, listToMarkdown(updatedList));
 
-    try {
-      const content = updatedList.items.map((i) => i.text).join("\n");
-      const links = await parseInternalLinks(content);
-      const newItemKey = `${updatedList.category || UNCATEGORIZED}/${updatedList.id
-        }`;
-
-      const oldItemKey = `${home.category || UNCATEGORIZED}/${currentId}`;
-      if (oldItemKey !== newItemKey || isMoving) {
-        await rebuildLinkIndexInternal(home.owner);
-
-        if (destination.owner !== home.owner) {
-          await rebuildLinkIndexInternal(destination.owner);
-        }
-
-        revalidatePath("/");
-      }
-
-      await updateIndexForItem(
-        destination.owner,
-        ItemTypes.CHECKLIST,
-        updatedList.uuid!,
-        links
-      );
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for checklist:",
-        updatedList.id,
-        error
-      );
-    }
-
     if (oldFilePath && oldFilePath !== filePath) {
       await serverDeleteFile(oldFilePath);
     }
@@ -330,16 +293,6 @@ export const deleteList = async (formData: FormData) => {
     );
 
     await serverDeleteFile(filePath);
-
-    try {
-      await removeItemFromIndex(list.owner!, ItemTypes.CHECKLIST, list.uuid!);
-    } catch (error) {
-      console.warn(
-        "Failed to remove checklist from link index:",
-        list.id,
-        error
-      );
-    }
 
     try {
       revalidatePath("/");

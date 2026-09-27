@@ -21,11 +21,9 @@ import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import {
-  updateIndexForItem,
-  parseInternalLinks,
-  removeItemFromIndex,
-  rebuildLinkIndexInternal,
-} from "@/app/_server/actions/link";
+  refreshWikilinks,
+  tidyItemLinks,
+} from "@/app/_server/actions/relations/tidy";
 import { canReach } from "@/app/_server/actions/share/queries";
 import {
   extractYamlMetadata as stripYaml,
@@ -37,7 +35,7 @@ import {
 import { getSettings } from "@/app/_server/actions/config";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { commitNote } from "@/app/_server/actions/history";
-import { noteToMarkdown, convertInternalLinksToNewFormat } from "./parsers";
+import { noteToMarkdown } from "./parsers";
 import { getNoteById } from "./queries";
 import {
   targetDir,
@@ -155,15 +153,12 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
     const sanitizedContent = sanitizeMarkdown(content);
     const { metadata: incomingMeta, contentWithoutMetadata } =
       stripYaml(sanitizedContent);
-    const processedContent = settings?.editor?.enableBilateralLinks
-      ? await convertInternalLinksToNewFormat(
-          contentWithoutMetadata,
-          actingUsername,
-          note.category,
-        )
-      : contentWithoutMetadata;
-
-    const convertedContent = processedContent;
+    const convertedContent = isEncrypted(contentWithoutMetadata)
+      ? contentWithoutMetadata
+      : refreshWikilinks(
+          await tidyItemLinks(contentWithoutMetadata, note.owner || actingUsername),
+          note.uuid,
+        );
 
     const encryptionMethod =
       detectEncryptionMethod(convertedContent) || undefined;
@@ -245,40 +240,6 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
         title,
         historyMetadata,
       ).catch(() => {});
-    }
-
-    if (settings?.editor?.enableBilateralLinks) {
-      try {
-        const links = (await parseInternalLinks(updatedDoc.content)) || [];
-        const newItemKey = `${updatedDoc.category || UNCATEGORIZED}/${
-          updatedDoc.id
-        }`;
-
-        const oldItemKey = `${home.category || UNCATEGORIZED}/${currentId}`;
-
-        if (oldItemKey !== newItemKey || isMoving) {
-          await rebuildLinkIndexInternal(home.owner);
-
-          if (destination.owner !== home.owner) {
-            await rebuildLinkIndexInternal(destination.owner);
-          }
-
-          revalidatePath("/");
-        }
-
-        await updateIndexForItem(
-          destination.owner,
-          "note",
-          updatedDoc.uuid!,
-          links,
-        );
-      } catch (error) {
-        console.warn(
-          "Failed to update link index for note:",
-          updatedDoc.id,
-          error,
-        );
-      }
     }
 
     if (oldFilePath && oldFilePath !== filePath) {
@@ -402,12 +363,6 @@ export const deleteNote = async (formData: FormData, username?: string) => {
         "delete",
         note.title || note.id,
       ).catch(() => {});
-    }
-
-    try {
-      await removeItemFromIndex(note.owner!, "note", note.uuid!);
-    } catch (error) {
-      console.warn("Failed to remove note from link index:", note.id, error);
     }
 
     try {

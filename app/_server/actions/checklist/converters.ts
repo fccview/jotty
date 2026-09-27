@@ -16,10 +16,6 @@ import { revalidatePath } from "next/cache";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import {
-  updateIndexForItem,
-  parseInternalLinks,
-} from "@/app/_server/actions/link";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getListById, getUserChecklists } from "./queries";
@@ -330,23 +326,6 @@ export const clearAllChecklistItems = async (formData: FormData) => {
     const filePath = path.join(categoryDir, `${checklist.id}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
-
-    try {
-      const content = updatedChecklist.items.map((i) => i.text).join("\n");
-      const links = await parseInternalLinks(content);
-      await updateIndexForItem(
-        checklist.owner!,
-        ItemTypes.CHECKLIST,
-        updatedChecklist.uuid!,
-        links,
-      );
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for checklist:",
-        updatedChecklist.id,
-        error,
-      );
-    }
 
     try {
       revalidatePath("/");

@@ -186,6 +186,8 @@ I will always detail these migrations in the release notes. I _highly recommend_
 
 📖 **For the complete MARKDOWN documentation, see [howto/MARKDOWN.md](howto/MARKDOWN.md)**
 
+📖 **For links, wikilinks and the brain view, see [howto/BRAIN.md](howto/BRAIN.md)**
+
 <a id="encryption"></a>
 
 ## ENCRYPTION

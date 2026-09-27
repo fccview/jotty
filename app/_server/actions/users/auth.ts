@@ -25,12 +25,13 @@ export const canAccessAllContent = async (): Promise<boolean> => {
     const settingsResult = await getAppSettings();
 
     if (!settingsResult.success || !settingsResult.data) {
-      return true;
+      console.error("Content access settings unreadable, refusing admin peek");
+      return false;
     }
 
     return settingsResult.data.adminContentAccess !== "no";
   } catch (error) {
     console.error("Error checking content access:", error);
-    return true;
+    return false;
   }
 };

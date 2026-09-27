@@ -25,10 +25,15 @@ import { prism } from "@/app/_utils/prism-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
-import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
-import { decodeCategoryPath, decodeSegment } from "@/app/_utils/global-utils";
-import { isUuid } from "@/app/_consts/identity";
+import { currentOrigins, parseItemHref } from "@/app/_utils/item-href-utils";
+import { remarkWikilinks, WIKILINK_TAG } from "@/app/_utils/wikilink-utils";
+import { WikiLink } from "./WikiLink";
+
+type WikiLinkComponents = Record<
+  typeof WIKILINK_TAG,
+  (props: { target?: string; label?: string }) => React.ReactElement
+>;
 import { NoteFooterStats } from "@/app/_components/GlobalComponents/Statistics/NoteFooterStats";
 import { useTranslations } from "next-intl";
 import {
@@ -157,7 +162,10 @@ export const UnifiedMarkdownRenderer = ({
     );
   }
 
-  const components: Partial<Components> = {
+  const components: Partial<Components> & WikiLinkComponents = {
+    [WIKILINK_TAG]: ({ target, label }: { target?: string; label?: string }) => (
+      <WikiLink target={target} label={label} />
+    ),
     table: ({ node, children, ...props }) => (
       <div className="jotty-x-scroll">
         <table {...props}>{children}</table>
@@ -214,51 +222,21 @@ export const UnifiedMarkdownRenderer = ({
       const childText = String(children);
       const isFileAttachment = childText.startsWith("📎 ") && href;
       const isVideoAttachment = childText.startsWith("🎥 ") && href;
-      const isInternalLink =
-        href &&
-        (href?.includes("/note/") ||
-          href?.includes("/checklist/") ||
-          href?.startsWith("/jotty/"));
+      const itemTarget = parseItemHref(href, currentOrigins());
 
-      if (isInternalLink) {
-        let linkType: ItemTypes;
-        let linkCategory: string | null = null;
-        let linkUuid: string | null = null;
-        let linkItemId: string = "";
-
-        if (href?.startsWith("/jotty/")) {
-          linkUuid = href.replace("/jotty/", "");
-          linkType = ItemTypes.NOTE;
-        } else {
-          linkType = href?.includes("/note/")
-            ? ItemTypes.NOTE
-            : ItemTypes.CHECKLIST;
-          const pathParts = href
-            ?.replace("/checklist/", "")
-            .replace("/note/", "")
-            .split("/");
-          linkItemId = decodeSegment(pathParts?.[pathParts.length - 1] || "");
-          linkUuid = isUuid(linkItemId) ? linkItemId : null;
-          linkCategory = decodeCategoryPath(
-            pathParts?.slice(0, -1).join("/") || "",
-          );
-        }
-
+      if (href && itemTarget) {
         return (
           <InternalLinkComponent
             node={{
               attrs: {
-                href: href || "",
+                href,
                 title: childText,
-                type: linkType,
-                category: linkCategory || "Uncategorized",
-                uuid: linkUuid || "",
-                itemId: linkItemId,
-                convertToBidirectional: false,
+                type: itemTarget.type,
+                category: itemTarget.legacy?.category,
+                uuid: itemTarget.uuid,
+                itemId: itemTarget.legacy?.id,
               },
             }}
-            editor={undefined as any}
-            updateAttributes={() => {}}
           />
         );
       }
@@ -595,7 +573,7 @@ export const UnifiedMarkdownRenderer = ({
         className={`prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 ${className}`}
       >
         <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
+          remarkPlugins={[remarkGfm, remarkWikilinks]}
           rehypePlugins={[rehypeSlug, rehypeRaw]}
           components={components}
         >
