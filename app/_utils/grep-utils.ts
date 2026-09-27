@@ -11,16 +11,21 @@
  * Enjoy it <3
  */
 
-import { exec, execFile } from "child_process";
+import { execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
 import fs from "fs/promises";
 import yaml from "js-yaml";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isPathUuid, pathUuid } from "@/app/_server/actions/lib/read-only";
+import { boxedShell } from "@/app/_utils/shell-utils";
 
-const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
+
+const LINE_BREAK = /[\r\n]/;
+
+const _fieldLine = (field: string, value: string): string | null =>
+  LINE_BREAK.test(value) ? null : `${field}: ${value}`;
 
 const _isNoMatch = (error: unknown): boolean =>
   typeof error === "object" &&
@@ -45,10 +50,13 @@ export const grepFindFileByField = async (
   field: string,
   value: string,
 ): Promise<GrepFileResult | null> => {
+  const line = _fieldLine(field, value);
+  if (!line) return null;
+
   try {
-    const escapedValue = value.replace(/['"\\]/g, "\\$&");
-    const { stdout } = await execAsync(
-      `grep -rl "^${field}: ${escapedValue}$" "${dir}" --include="*.md" 2>/dev/null | head -1 || true`,
+    const stdout = await boxedShell(
+      'grep -rlxF --include="*.md" -e "$1" -- "$2" 2>/dev/null | head -1 || true',
+      [line, dir],
     );
 
     const filePath = stdout.trim();
@@ -63,7 +71,8 @@ export const grepFindFileByField = async (
     const category = parts.join("/");
 
     return { filePath, id, category };
-  } catch {
+  } catch (error) {
+    console.error("grepFindFileByField failed:", error);
     return null;
   }
 };
@@ -105,10 +114,13 @@ export const grepFindFilesByField = async (
   field: string,
   value: string,
 ): Promise<GrepFileResult[]> => {
+  const line = _fieldLine(field, value);
+  if (!line) return [];
+
   try {
-    const escapedValue = value.replace(/['"\\]/g, "\\$&");
-    const { stdout } = await execAsync(
-      `grep -rl "^${field}: ${escapedValue}$" "${dir}" --include="*.md" 2>/dev/null || true`,
+    const stdout = await boxedShell(
+      'grep -rlxF --include="*.md" -e "$1" -- "$2" 2>/dev/null || true',
+      [line, dir],
     );
 
     const files = stdout.trim().split("\n").filter(Boolean);
@@ -120,7 +132,8 @@ export const grepFindFilesByField = async (
       const category = parts.join("/");
       return { filePath, id, category };
     });
-  } catch {
+  } catch (error) {
+    console.error("grepFindFilesByField failed:", error);
     return [];
   }
 };
@@ -150,10 +163,11 @@ export const grepExtractAllFrontmatters = async (
   dir: string,
 ): Promise<Map<string, Record<string, unknown>>> => {
   try {
-    const { stdout } = await execAsync(
-      `find "${dir}" -name "*.md" -type f -print0 | sort -z | xargs -0 awk '` +
+    const stdout = await boxedShell(
+      `find "$1" -name "*.md" -type f -print0 | sort -z | xargs -0 awk '` +
         `FNR==1{if(NR>1)print "ENDFILE";print "FILE:"FILENAME;in_fm=($0=="---");next}` +
         `in_fm&&/^---$/{in_fm=0;next}in_fm{print}END{print "ENDFILE"}' 2>/dev/null || true`,
+      [dir],
       { maxBuffer: 50 * 1024 * 1024 },
     );
 
@@ -182,7 +196,8 @@ export const grepExtractAllFrontmatters = async (
     }
 
     return result;
-  } catch {
+  } catch (error) {
+    console.error("grepExtractAllFrontmatters failed:", error);
     return new Map();
   }
 };
@@ -191,8 +206,9 @@ export const grepExtractFrontmatter = async (
   filePath: string,
 ): Promise<Record<string, unknown> | null> => {
   try {
-    const { stdout } = await execAsync(
-      `sed -n '1{/^---$/!q;}; 2,/^---$/{/^---$/q;p;}' "${filePath}" 2>/dev/null || true`,
+    const stdout = await boxedShell(
+      `sed -n '1{/^---$/!q;}; 2,/^---$/{/^---$/q;p;}' "$1" 2>/dev/null || true`,
+      [filePath],
     );
 
     const yamlContent = stdout.trim();
@@ -205,7 +221,8 @@ export const grepExtractFrontmatter = async (
       return parsed as Record<string, unknown>;
     }
     return null;
-  } catch {
+  } catch (error) {
+    console.error("grepExtractFrontmatter failed:", filePath, error);
     return null;
   }
 };
@@ -214,8 +231,9 @@ export const grepListAllFiles = async (
   dir: string,
 ): Promise<GrepFileResult[]> => {
   try {
-    const { stdout } = await execAsync(
-      `find "${dir}" -name "*.md" -type f 2>/dev/null || true`,
+    const stdout = await boxedShell(
+      'find "$1" -name "*.md" -type f 2>/dev/null || true',
+      [dir],
     );
 
     const files = stdout.trim().split("\n").filter(Boolean);
@@ -227,7 +245,8 @@ export const grepListAllFiles = async (
       const category = parts.join("/");
       return { filePath, id, category };
     });
-  } catch {
+  } catch (error) {
+    console.error("grepListAllFiles failed:", error);
     return [];
   }
 };
@@ -258,11 +277,12 @@ export const grepExtractField = async (
   field: string,
 ): Promise<string | null> => {
   try {
-    const { stdout } = await execAsync(
-      `grep -m1 "^${field}:" "${filePath}" 2>/dev/null | sed 's/^${field}: *//' || true`,
+    const stdout = await boxedShell(
+      'grep -m1 -e "^$2:" -- "$1" 2>/dev/null || true',
+      [filePath, field],
     );
 
-    const value = stdout.trim();
+    const value = stdout.trim().slice(field.length + 1).trim();
     if (!value) {
       return null;
     }
@@ -275,7 +295,8 @@ export const grepExtractField = async (
     }
 
     return value;
-  } catch {
+  } catch (error) {
+    console.error("grepExtractField failed:", filePath, error);
     return null;
   }
 };
@@ -359,11 +380,13 @@ export const grepExtractExcerpt = async (
 ): Promise<string> => {
   try {
     const cap = length + EXCERPT_BUFFER;
-    const { stdout } = await execAsync(
-      `sed '1{/^---$/!{p;d;};}; /^---$/,/^---$/d' "${filePath}" 2>/dev/null | head -c ${cap} || true`,
+    const stdout = await boxedShell(
+      `sed '1{/^---$/!{p;d;};}; /^---$/,/^---$/d' "$1" 2>/dev/null | head -c "$2" || true`,
+      [filePath, String(cap)],
     );
     return fullCodeBlock(stdout, length);
-  } catch {
+  } catch (error) {
+    console.error("grepExtractExcerpt failed:", filePath, error);
     return "";
   }
 };

@@ -2,6 +2,7 @@
 
 import { Checklist } from "@/app/_types";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
+import { isUuid } from "@/app/_consts/identity";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { getListById, getUserChecklists } from "./queries";
@@ -9,7 +10,7 @@ import { getListById, getUserChecklists } from "./queries";
 export const viewList = async (
   uuid: string,
 ): Promise<Checklist | undefined> => {
-  if (!uuid) return undefined;
+  if (!isUuid(uuid)) return undefined;
 
   const actor = await sessionActor();
   if ("error" in actor) return undefined;

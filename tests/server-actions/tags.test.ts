@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mockFs, resetAllMocks } from "../setup";
 
 const mockExportWholeDataFolder = vi.fn();
+const mockCanAccessAllContent = vi.fn();
 const mockExtractYamlMetadata = vi.fn();
 const mockUpdateYamlMetadata = vi.fn();
 const mockExtractHashtagsFromContent = vi.fn();
@@ -10,6 +11,10 @@ vi.mock("@/app/_server/actions/file", async (importOriginal) => ({
   ...((await importOriginal()) as object),
   serverWriteFile: (filePath: string, content: string) =>
     mockFs.writeFile(filePath, content, "utf-8"),
+}));
+
+vi.mock("@/app/_server/actions/users", () => ({
+  canAccessAllContent: (...args: any[]) => mockCanAccessAllContent(...args),
 }));
 
 vi.mock("@/app/_server/actions/export", () => ({
@@ -31,6 +36,7 @@ import { updateTagsFromContent } from "@/app/_server/actions/tags";
 describe("Tags Server Actions", () => {
   beforeEach(() => {
     resetAllMocks();
+    mockCanAccessAllContent.mockResolvedValue(true);
     mockExportWholeDataFolder.mockResolvedValue({ success: true });
     mockExtractYamlMetadata.mockReturnValue({
       metadata: { uuid: "test-uuid", tags: [] },
@@ -43,6 +49,17 @@ describe("Tags Server Actions", () => {
   });
 
   describe("updateTagsFromContent", () => {
+    it("refuses anybody without admin content access and touches nothing", async () => {
+      mockCanAccessAllContent.mockResolvedValue(false);
+
+      const result = await updateTagsFromContent();
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Forbidden");
+      expect(mockExportWholeDataFolder).not.toHaveBeenCalled();
+      expect(mockFs.writeFile).not.toHaveBeenCalled();
+    });
+
     it("should backup data before processing", async () => {
       mockFs.access.mockResolvedValue(undefined);
       mockFs.readdir.mockResolvedValue([]);

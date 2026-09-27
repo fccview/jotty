@@ -39,7 +39,11 @@ import {
   refusalMessage,
 } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
-import { failedWith } from "@/app/_server/actions/lib/read-only-message";
+import {
+  failedWith,
+  readOnlyNotice,
+} from "@/app/_server/actions/lib/read-only-message";
+import { isWritable } from "@/app/_server/actions/lib/read-only";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const _noteDirFor = (owner: string, category?: string): string =>
@@ -179,6 +183,11 @@ const _editNote = async (
       isMoving || newId !== currentId
         ? path.join(sourceDir, `${currentId}.md`)
         : null;
+
+    const leavesSource = oldFilePath !== null && oldFilePath !== filePath;
+    if (leavesSource && !(await isWritable(sourceDir))) {
+      return { error: await readOnlyNotice() };
+    }
 
     await serverWriteFile(filePath, noteToMarkdown(updatedDoc));
 

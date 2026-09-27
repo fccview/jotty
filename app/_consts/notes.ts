@@ -90,3 +90,17 @@ export const QUOTES = [
   "There's nobody here but us chickens!",
   "Gee Brain, what are we gonna do tonight?",
 ];
+
+export const BOUNCED_ELEMENTS = [
+  "iframe",
+  "frame",
+  "frameset",
+  "object",
+  "embed",
+  "script",
+  "base",
+  "meta",
+  "link",
+];
+
+export const SVG_FRAME_ATTR = "data-svg-frame";

@@ -223,7 +223,7 @@ export const forgetItemFile = (filePath: string) =>
 
 export const forgetItemTree = (dir: string) => {
   const prefix = _prefixOf(dir);
-  _forgetWhere("substr(path, 1, length(?1)) = ?1", prefix);
+  _forgetWhere("instr(path, ?) = 1", prefix);
 };
 
 const _indexFromDisk = async (filePath: string, mtime?: number) => {

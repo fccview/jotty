@@ -6,7 +6,7 @@ import { PermissionTypes } from '@/app/_types/enums'
 const VICTIM = 'victim'
 const READER = 'reader'
 const MALLORY = 'mallory'
-const LIST_UUID = 'board-uuid'
+const LIST_UUID = '8b3e4d6a-ac5f-4e70-9b32-4d5e6f708192'
 const LIST_PATH = '/data/checklists/victim/Work/board.md'
 
 const GRANTS: Record<string, PermissionTypes[]> = {

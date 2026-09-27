@@ -27,10 +27,9 @@ vi.mock("@/app/_server/actions/note/parsers", () => ({
   parseMarkdownNote: vi.fn(),
 }));
 
-vi.mock("child_process", () => ({
-  exec: vi.fn((_cmd: string, _opts: unknown, callback: any) => {
-    const done = callback || _opts;
-    done(new Error("exec unavailable in tests"));
+vi.mock("@/app/_utils/shell-utils", () => ({
+  boxedShell: vi.fn(async () => {
+    throw new Error("shell unavailable in tests");
   }),
 }));
 

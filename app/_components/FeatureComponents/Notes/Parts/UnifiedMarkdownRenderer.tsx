@@ -33,6 +33,7 @@ import { matchCallout } from "@/app/_utils/callout-utils";
 import { CalloutType } from "@/app/_consts/callouts";
 import { base64ToSvg, base64ToText } from "@/app/_utils/base64-utils";
 import { noteUrlTransform } from "@/app/_utils/url-transform-utils";
+import { BOUNCED_ELEMENTS } from "@/app/_consts/notes";
 import { tagOutsideCode } from "@/app/_utils/markdown-utils";
 
 type WikiLinkComponents = Record<
@@ -569,6 +570,7 @@ export const UnifiedMarkdownRenderer = ({
           rehypePlugins={[rehypeSlug, rehypeRaw]}
           components={components}
           urlTransform={noteUrlTransform}
+          disallowedElements={BOUNCED_ELEMENTS}
         >
           {processedContent}
         </ReactMarkdown>

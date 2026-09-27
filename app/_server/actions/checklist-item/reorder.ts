@@ -161,8 +161,6 @@ const _reorderItems = async (formData: FormData) => {
 
     await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
     return { success: true };
   } catch (error) {
     console.error("Error reordering items:", error);

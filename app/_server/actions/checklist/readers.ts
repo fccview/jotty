@@ -2,8 +2,7 @@
 
 import path from "path";
 import fs from "fs/promises";
-import { promisify } from "util";
-import { exec } from "child_process";
+import { boxedShell } from "@/app/_utils/shell-utils";
 import { Checklist } from "@/app/_types";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 import {
@@ -29,8 +28,6 @@ import { isKanbanType } from "@/app/_types/enums";
 import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
-const execAsync = promisify(exec);
-
 const debugCrud = isDebugFlag("crud");
 
 export type ChecklistReadResult =
@@ -55,17 +52,17 @@ export const readListsRecursively = async (
       const excludeStr = allowArchived
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
-      const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType|createdAt|${SHARED_WITH_KEY}):|^[[:space:]]+- |^---$" "${dir}"`;
+      const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
+      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType|createdAt|${SHARED_WITH_KEY}):|^[[:space:]]+- |^---$" "$1"`;
       const [statsOut, metaOut] = await Promise.all([
-        execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
-          stdout: "",
-        })),
-        execAsync(metaCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
-          stdout: "",
-        })),
+        boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
+          () => "",
+        ),
+        boxedShell(metaCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
+          () => "",
+        ),
       ]);
-      statsOut.stdout.split("\n").forEach((line) => {
+      statsOut.split("\n").forEach((line) => {
         const [p, b, m] = line.split("|");
         if (p && b && m)
           statsCache!.set(p, {
@@ -73,7 +70,7 @@ export const readListsRecursively = async (
             mtime: new Date(parseFloat(m) * 1000),
           });
       });
-      const metaLines = metaOut.stdout.split("\n").filter(Boolean);
+      const metaLines = metaOut.split("\n").filter(Boolean);
       if (debugCrud && metaLines.length) {
         console.warn(
           "[tags grep] sample (first 40 lines):",

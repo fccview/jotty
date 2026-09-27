@@ -33,6 +33,7 @@ export const mockDeleteItem = vi.fn();
 export const mockUpdateItemStatus = vi.fn();
 export const mockGetCategories = vi.fn();
 export const mockIsAdmin = vi.fn();
+export const mockGetCurrentUser = vi.fn();
 export const mockServerWriteFile = vi.fn();
 export const mockFindUserRecord = vi.fn();
 export const mockExportAllChecklistsNotes = vi.fn();
@@ -136,6 +137,7 @@ vi.mock("@/app/_server/actions/category", () => ({
 
 vi.mock("@/app/_server/actions/users", () => ({
   isAdmin: (...args: any[]) => mockIsAdmin(...args),
+  getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
 }));
 
 vi.mock("@/app/_server/actions/users/records", () => ({
@@ -168,6 +170,7 @@ vi.mock("@/app/_server/actions/lib/legacy-lookup", () => ({
 export function resetApiMocks() {
   vi.clearAllMocks();
   mockAuthenticateApiKey.mockReset();
+  mockGetCurrentUser.mockReset();
   mockEditNote.mockReset();
   mockDropNote.mockReset();
   mockEditList.mockReset();

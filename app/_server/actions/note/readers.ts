@@ -23,12 +23,9 @@ import { dirUuids } from "@/app/_server/actions/share/category-info";
 import { orderByUuids } from "@/app/_utils/order-utils";
 import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
-import { promisify } from "util";
-import { exec } from "child_process";
+import { boxedShell } from "@/app/_utils/shell-utils";
 import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
-
-const execAsync = promisify(exec);
 
 export const readNotesRecursively = async (
   dir: string,
@@ -49,18 +46,18 @@ export const readNotesRecursively = async (
       const excludeStr = allowArchived
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
-      const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|encrypted|createdAt|${SHARED_WITH_KEY}):|^[[:space:]]+- |^---$" "${dir}"`;
+      const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
+      const metaCmd = `grep -rE "^(title|uuid|tags|encrypted|createdAt|${SHARED_WITH_KEY}):|^[[:space:]]+- |^---$" "$1"`;
       const [statsOut, metaOut] = await Promise.all([
-        execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
-          stdout: "",
-        })),
-        execAsync(metaCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
-          stdout: "",
-        })),
+        boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
+          () => "",
+        ),
+        boxedShell(metaCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
+          () => "",
+        ),
       ]);
 
-      statsOut.stdout.split("\n").forEach((line) => {
+      statsOut.split("\n").forEach((line) => {
         const [p, b, m] = line.split("|");
         if (p && b && m)
           statsCache!.set(p, {
@@ -73,7 +70,7 @@ export const readNotesRecursively = async (
 
       let listFile = "";
       let listKey = "";
-      for (const line of metaOut.stdout.split("\n")) {
+      for (const line of metaOut.split("\n")) {
         if (!line) continue;
         const colonIdx = line.indexOf(":");
         if (colonIdx === -1) continue;

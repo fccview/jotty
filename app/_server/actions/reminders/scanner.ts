@@ -2,8 +2,6 @@
 
 import path from "path";
 import fs from "fs/promises";
-import { exec } from "child_process";
-import { promisify } from "util";
 import { Item } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { ChecklistsTypes, Modes, NotificationTargets } from "@/app/_types/enums";
@@ -16,18 +14,19 @@ import { usersWithAccess } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { grepExtractField } from "@/app/_utils/grep-utils";
-
-const _execAsync = promisify(exec);
+import { boxedShell } from "@/app/_utils/shell-utils";
 
 let _isRunning = false;
 
 const _findFilesWithReminders = async (rootDir: string): Promise<string[]> => {
   try {
-    const { stdout } = await _execAsync(
-      `grep -rl "reminder:" "${rootDir}" --include="*.md" 2>/dev/null || true`,
+    const stdout = await boxedShell(
+      'grep -rl --include="*.md" -e "reminder:" -- "$1" 2>/dev/null || true',
+      [rootDir],
     );
     return stdout.trim().split("\n").filter(Boolean);
-  } catch {
+  } catch (error) {
+    console.error("Failed to scan for reminders:", error);
     return [];
   }
 };

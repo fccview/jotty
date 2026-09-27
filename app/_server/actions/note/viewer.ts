@@ -2,12 +2,13 @@
 
 import { Note } from "@/app/_types";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
+import { isUuid } from "@/app/_consts/identity";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { getNoteById, getUserNotes } from "./queries";
 
 export const viewNote = async (uuid: string): Promise<Note | undefined> => {
-  if (!uuid) return undefined;
+  if (!isUuid(uuid)) return undefined;
 
   const actor = await sessionActor();
   if ("error" in actor) return undefined;

@@ -11,6 +11,7 @@ import {
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { Modes } from "@/app/_types/enums";
+import { canAccessAllContent } from "@/app/_server/actions/users";
 
 const findMarkdownFiles = async (dirPath: string): Promise<string[]> => {
   const markdownFiles: string[] = [];
@@ -96,6 +97,13 @@ export const updateTagsFromContent = async (): Promise<
     changes: string[];
   }>
 > => {
+  if (!(await canAccessAllContent())) {
+    return {
+      success: false,
+      error: "Forbidden: Admin access with content permissions required",
+    };
+  }
+
   try {
     const changes: string[] = [];
 

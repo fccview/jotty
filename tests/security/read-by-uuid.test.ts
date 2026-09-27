@@ -6,8 +6,8 @@ import { Modes } from '@/app/_types/enums'
 const VICTIM = 'victim'
 const MALLORY = 'mallory'
 const READER = 'reader'
-const NOTE_UUID = 'note-uuid'
-const LIST_UUID = 'list-uuid'
+const NOTE_UUID = '6f1c2b4e-8a3d-4c5e-9f10-2b3c4d5e6f70'
+const LIST_UUID = '7a2d3c5f-9b4e-4d6f-8a21-3c4d5e6f7081'
 
 const homeOf = (mode: Modes, username: string) =>
   path.join(process.cwd(), 'data', mode, username)
@@ -104,6 +104,19 @@ describe('Security: client reads by uuid are gated by the session', () => {
       const { viewList } = await import('@/app/_server/actions/checklist')
 
       expect(await viewList(LIST_UUID)).toBeUndefined()
+      expect(mockGrepFind).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('a signed-in user sending something that is not a uuid', () => {
+    beforeEach(() => signIn(MALLORY))
+
+    it('is refused before any lookup runs', async () => {
+      const { viewNote } = await import('@/app/_server/actions/note')
+      const { viewList } = await import('@/app/_server/actions/checklist')
+
+      expect(await viewNote('x$(touch /tmp/pwn)')).toBeUndefined()
+      expect(await viewList('x`touch /tmp/pwn`')).toBeUndefined()
       expect(mockGrepFind).not.toHaveBeenCalled()
     })
   })
