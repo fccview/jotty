@@ -281,6 +281,7 @@ export const updateNote = async (formData: FormData, autosaveNotes = false) => {
       data: { ...updatedDoc, category: shownCategory },
     };
   } catch (error) {
+    console.error("Error updating note:", error);
     const { title, uuid } = getFormData(formData, ["title", "uuid"]);
     await logContentEvent(
       "note_updated",

@@ -7,6 +7,7 @@ import {
   generateUuid,
   strayMeta,
   createdAtOf,
+  OwnedMetaKeys,
 } from "@/app/_utils/yaml-metadata-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
@@ -32,9 +33,7 @@ export const parseMarkdownNote = (
     title,
     content: contentWithoutMetadata,
     category,
-    createdAt: fileStats
-      ? createdAtOf(metadata, fileStats.birthtime)
-      : new Date().toISOString(),
+    createdAt: createdAtOf(metadata, fileStats?.birthtime ?? new Date()),
     updatedAt: fileStats
       ? fileStats.mtime.toISOString()
       : new Date().toISOString(),
@@ -51,7 +50,10 @@ export const parseMarkdownNote = (
 };
 
 export const noteToMarkdown = (note: Note): string => {
-  const metadata: Record<string, unknown> = { ...(note.extraMetadata || {}) };
+  const metadata: Record<string, unknown> = {
+    ...(note.createdAt && { [OwnedMetaKeys.CREATED_AT]: note.createdAt }),
+    ...(note.extraMetadata || {}),
+  };
   metadata.uuid = note.uuid || generateUuid();
 
   let content = note.content || "";

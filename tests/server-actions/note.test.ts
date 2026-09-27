@@ -89,6 +89,7 @@ vi.mock("@/app/_utils/filename-utils", () => ({
 }));
 
 vi.mock("@/app/_utils/yaml-metadata-utils", () => ({
+  OwnedMetaKeys: { CREATED_AT: "createdAt" },
   generateUuid: vi.fn().mockReturnValue("test-uuid-123"),
   generateYamlFrontmatter: (...args: any[]) =>
     mockGenerateYamlFrontmatter(...args),

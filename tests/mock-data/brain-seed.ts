@@ -203,17 +203,13 @@ const _itemsFor = (list: Seeded, all: Seeded[]): Item[] => {
   });
 };
 
-const _write = async (
-  root: string,
-  category: string,
-  title: string,
-  content: string,
-  createdAt = new Date().toISOString(),
-) => {
+const _write = async (root: string, category: string, title: string, content: string) => {
   const dir = path.join(root, ...category.split("/"));
   await fs.mkdir(dir, { recursive: true });
-  const stamped = content.replace(/^---\n/, `---\ncreatedAt: "${createdAt}"\n`);
-  await fs.writeFile(path.join(dir, `${_slug(title)}.md`), stamped, "utf-8");
+  const file = path.join(dir, `${_slug(title)}.md`);
+  const tmp = `${file}.${process.pid}.tmp`;
+  await fs.writeFile(tmp, content, "utf-8");
+  await fs.rename(tmp, file);
 };
 
 const _withUsers = async (change: (users: Record<string, unknown>[]) => Record<string, unknown>[]) => {
@@ -353,7 +349,7 @@ const _seed = async () => {
     owner: USERNAME,
   }));
   for (const twin of twins) {
-    await _write(NOTES_ROOT, "Ideas", twin.id, noteToMarkdown(twin as Note), twin.createdAt);
+    await _write(NOTES_ROOT, "Ideas", twin.id, noteToMarkdown(twin as Note));
   }
 
   const renamer: Note = {

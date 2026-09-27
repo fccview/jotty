@@ -118,7 +118,7 @@ const _editLinking = async (
     const formData = new FormData();
     formData.append("uuid", note.uuid || sourceUuid);
     formData.append("title", note.title);
-    formData.append("category", note.category || "");
+    formData.append("category", "");
     formData.append("content", content);
 
     const result = await updateNote(formData);

@@ -80,7 +80,7 @@ volumes:
 Host folders mounted into the container, so your data survives the container being replaced.
 
 - `- ./data:/app/data:rw` is your local `data` folder, mounted read-write at `/app/data`. Your checklists, notes, users and settings live here. Back it up.
-- `- ./config:/app/config:ro` is your local `config` folder, mounted read-only at `/app/config`. Custom themes and config files go here.
+- `- ./config:/app/config:rw` is your local `config` folder, mounted read-write at `/app/config`. Custom themes and config files go here, and the admin panel saves to it.
 - `- ./cache:/app/.next/cache:rw` is optional. It keeps the Next.js build cache between container restarts, so the app is faster after a restart.
 
 ## Restart policy

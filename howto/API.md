@@ -548,7 +548,7 @@ Returns every note you own.
 
 Every note has a `category`. Notes created without one are in "Uncategorized".
 
-### 10. Create note
+### 11. Create note
 
 **POST** `/api/notes`
 
@@ -587,7 +587,7 @@ Creates a note owned by you.
 }
 ```
 
-### 11. Update note
+### 12. Update note
 
 **PUT** `/api/notes/{noteId}`
 
@@ -628,7 +628,7 @@ Updates a note.
 }
 ```
 
-### 12. Delete note
+### 13. Delete note
 
 **DELETE** `/api/notes/{noteId}`
 
@@ -646,7 +646,7 @@ Deletes a note.
 
 The `/tasks` endpoints work on task checklists as Kanban boards. Each board has its own list of statuses, one per column, and every item sits in one of them.
 
-### 13. Get all tasks
+### 14. Get all tasks
 
 **GET** `/api/tasks`
 
@@ -688,7 +688,7 @@ Returns every task checklist you own.
 }
 ```
 
-### 14. Create task
+### 15. Create task
 
 **POST** `/api/tasks`
 
@@ -735,7 +735,7 @@ Creates a task checklist owned by you.
 }
 ```
 
-### 15. Get task
+### 16. Get task
 
 **GET** `/api/tasks/{taskId}`
 
@@ -769,7 +769,7 @@ Returns one task checklist.
 }
 ```
 
-### 16. Update task
+### 17. Update task
 
 **PUT** `/api/tasks/{taskId}`
 
@@ -800,7 +800,7 @@ Changes the title, the category or both. Both fields are optional.
 }
 ```
 
-### 17. Delete task
+### 18. Delete task
 
 **DELETE** `/api/tasks/{taskId}`
 
@@ -814,7 +814,7 @@ Deletes a task checklist.
 }
 ```
 
-### 18. Get task statuses
+### 19. Get task statuses
 
 **GET** `/api/tasks/{taskId}/statuses`
 
@@ -832,7 +832,7 @@ Returns the Kanban columns of a task.
 }
 ```
 
-### 19. Create status
+### 20. Create status
 
 **POST** `/api/tasks/{taskId}/statuses`
 
@@ -870,7 +870,7 @@ Adds a Kanban column to a task.
 }
 ```
 
-### 20. Update status
+### 21. Update status
 
 **PUT** `/api/tasks/{taskId}/statuses/{statusId}`
 
@@ -900,7 +900,7 @@ Changes a Kanban column.
 }
 ```
 
-### 21. Delete status
+### 22. Delete status
 
 **DELETE** `/api/tasks/{taskId}/statuses/{statusId}`
 
@@ -914,7 +914,7 @@ Deletes a Kanban column. Items in it move to the first remaining status.
 }
 ```
 
-### 22. Create task item
+### 23. Create task item
 
 **POST** `/api/tasks/{taskId}/items`
 
@@ -1002,7 +1002,7 @@ Returns one task item with its `children` and Kanban fields. `itemIndex` can be 
 }
 ```
 
-### 23. Update item status
+### 24. Update item status
 
 **PUT** `/api/tasks/{taskId}/items/{itemIndex}/status`
 
@@ -1037,7 +1037,7 @@ PUT /api/tasks/550e8400-e29b-41d4-a716-446655440000/items/0.1/status
 }
 ```
 
-### 24. Delete task item
+### 25. Delete task item
 
 **DELETE** `/api/tasks/{taskId}/items/{itemIndex}`
 
@@ -1059,7 +1059,7 @@ DELETE /api/tasks/550e8400-e29b-41d4-a716-446655440000/items/0.1
 
 This deletes the second child of the first top-level item.
 
-### 25. Get user information
+### 26. Get user information
 
 **GET** `/api/user/{username}`
 
@@ -1102,7 +1102,7 @@ Returns a user's profile. You get the full record for yourself, or for anyone if
 
 `passwordHash`, `apiKey` and other secrets are never in the response.
 
-### 14. Get all categories
+### 27. Get all categories
 
 **GET** `/api/categories`
 
@@ -1158,7 +1158,7 @@ Returns your note and checklist categories. Archived categories are left out.
 - `count`: how many items are in it
 - `level`: how deep it is nested, 0 for top-level categories
 
-### 15. Rebuild link index
+### 28. Rebuild link index
 
 **POST** `/api/admin/rebuild-index`
 
@@ -1199,7 +1199,7 @@ Rebuilds the relationships index, the list of which notes and checklists link to
 - Wikilinks keep pointing at the note they were first matched to, so a rebuild does not move them onto a different note with the same title
 - The index lives in `data/.relations.db`. If it is deleted, Jotty rebuilds it from your files
 
-### 16. Get user summary statistics
+### 29. Get user summary statistics
 
 **GET** `/api/summary`
 

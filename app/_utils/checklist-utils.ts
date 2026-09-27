@@ -14,6 +14,7 @@ import {
   generateUuid,
   strayMeta,
   createdAtOf,
+  OwnedMetaKeys,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
@@ -346,9 +347,7 @@ export const parseMarkdown = (
     type: checklistType,
     category,
     items,
-    createdAt: fileStats
-      ? createdAtOf(metadata, fileStats.birthtime)
-      : new Date().toISOString(),
+    createdAt: createdAtOf(metadata, fileStats?.birthtime ?? new Date()),
     updatedAt: fileStats
       ? fileStats.mtime.toISOString()
       : new Date().toISOString(),
@@ -533,7 +532,10 @@ const generateItemMarkdown = (
 };
 
 export const listToMarkdown = (list: Checklist): string => {
-  const metadata: Record<string, unknown> = { ...(list.extraMetadata || {}) };
+  const metadata: Record<string, unknown> = {
+    ...(list.createdAt && { [OwnedMetaKeys.CREATED_AT]: list.createdAt }),
+    ...(list.extraMetadata || {}),
+  };
   metadata.uuid = list.uuid || generateUuid();
   metadata.title = list.title || "Untitled Checklist";
   if (list.type === ChecklistsTypes.KANBAN) metadata.checklistType = "kanban";
