@@ -171,6 +171,7 @@
     "dismiss": "忽略",
     "cleaning": "清理中...",
     "noResultsFound": "未找到结果",
+    "searching": "搜索中...",
     "noResults": "无结果",
     "by": "作者 {owner}",
     "unsavedChanges": "未保存的更改",
@@ -809,6 +810,12 @@
     "handedness": "惯用手",
     "selectHandedness": "选择惯用手",
     "chooseHandedness": "选择您是右撇子还是左撇子。",
+    "searchMode": "搜索",
+    "selectSearchMode": "选择搜索方式",
+    "searchModeSmart": "最佳匹配优先，然后是精确文本",
+    "searchModeRanked": "仅最佳匹配",
+    "searchModeSubstring": "仅精确文本",
+    "searchModeDescription": "最佳匹配会按任意顺序查找这些词，并把最相关的项目排在前面。精确文本会在文件中的任何位置查找与您输入完全相同的字符。",
     "rightHanded": "右撇子",
     "leftHanded": "左撇子",
     "notesPreferences": "笔记偏好",
@@ -1628,7 +1635,7 @@
     "whatWasChanged": "变更内容：",
     "migrationPartial": "迁移完成，但有遗留文件",
     "leftoversTitle": "部分旧文件被保留",
-    "leftoversBody": "迁移无法转换全部内容，因此下列旧文件原样保留在磁盘上。没有删除任何东西。您可以修复原因后重新运行迁移，也可以现在进入应用，以后再处理。",
+    "leftoversBody": "迁移无法转换全部内容，因此下列旧文件原样保留在磁盘上。您可以修复原因后重新运行迁移，也可以现在进入应用，以后再处理。",
     "overrideConfirmLabel": "仍然继续，并不再显示此页面。",
     "overrideConfirmHint": "遗留文件会保留在磁盘上，但应用会把您的数据视为已迁移。上面列出的共享或排序在重新迁移前不会生效，您随时可以在 /migration?force=1 重新迁移。",
     "continueAnyway": "仍然继续",
@@ -1787,6 +1794,7 @@
   },
   "relations": {
     "indexing": "正在索引关联...",
+    "indexingSearch": "正在为您的笔记建立索引，搜索马上就好...",
     "unreachable": "无法访问",
     "createFromWikilink": "创建名为 \"{title}\" 的笔记",
     "mentionedIn": "被提及于",
@@ -1870,7 +1878,7 @@
     "keyRequired": "请先添加 API 密钥。",
     "noKeyNeeded": "无需 API 密钥",
     "deprecated": "已弃用",
-    "requestFailed": "请求没有到达服务器。请检查网络连接。",
+    "requestFailed": "没有收到响应。请检查网络连接，并在重试之前确认更改是否已生效。",
     "responseMeta": "{status}，耗时 {ms} ms"
   }
 }

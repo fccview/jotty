@@ -248,6 +248,18 @@ describe('Security: kanban API routes hold every share grant', () => {
     })
   })
 
+  describe('assigning without EDIT', () => {
+    it.each(['ghost', STRANGER, EDITOR])('refuses %s the same way, before looking up the assignee', async (assignee) => {
+      const { assignItem } = await import('@/app/_server/actions/kanban/tweaker')
+      const reader = { username: READER, isAdmin: false } as Parameters<typeof assignItem>[0]
+
+      const result = await assignItem(reader, BOARD_UUID, 'card', assignee)
+
+      expect(result).toEqual({ success: false, error: 'Permission denied' })
+      expect(mockWrite).not.toHaveBeenCalled()
+    })
+  })
+
   describe('assigning through a card update', () => {
     beforeEach(() => keyFor(OWNER))
 

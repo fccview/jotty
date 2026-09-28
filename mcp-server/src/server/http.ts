@@ -8,6 +8,7 @@ import { createSessionPool, type SessionPool } from "./sessions.ts";
 
 const LOG_NS = "http";
 const BUN_MAX_IDLE_SECONDS = 255;
+const MAX_BODY_BYTES = 10 * 1024 * 1024;
 
 export enum HttpPath {
   Mcp = "/mcp",
@@ -55,6 +56,7 @@ export const startHttp = (sidecar: Sidecar, config: McpConfig) => {
     port: config.server.port,
     hostname: config.server.host || undefined,
     idleTimeout: BUN_MAX_IDLE_SECONDS,
+    maxRequestBodySize: MAX_BODY_BYTES,
     fetch: sidecar.fetch,
   });
   logger.info(LOG_NS, `listening on ${config.server.host || "0.0.0.0"}:${server.port}${HttpPath.Mcp}`);

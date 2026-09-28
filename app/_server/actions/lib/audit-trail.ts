@@ -32,8 +32,8 @@ const _readDay = async (username: string, date: Date): Promise<AuditLogEntry[]> 
 };
 
 export const everyUsername = async (): Promise<string[]> => {
-  const users: User[] = await readJsonFile(USERS_FILE);
-  return users.map((user) => user.username);
+  const users: User[] | null = await readJsonFile(USERS_FILE);
+  return (users ?? []).map((user) => user.username);
 };
 
 export const digUpLogs = async (

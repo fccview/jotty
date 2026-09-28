@@ -171,6 +171,7 @@
     "dismiss": "Descartar",
     "cleaning": "Limpiando...",
     "noResultsFound": "No se encontraron resultados",
+    "searching": "Buscando...",
     "noResults": "Sin resultados",
     "by": "por {owner}",
     "unsavedChanges": "Cambios no guardados",
@@ -242,7 +243,7 @@
     "history": "Historial",
     "disable": "Desactivar",
     "restoring": "Restaurando...",
-    "retry": "Rever",
+    "retry": "Reintentar",
     "copiedToClipboard": "Copiado al portapapeles",
     "offline": "Desconectado",
     "connected": "Conectado",
@@ -809,6 +810,12 @@
     "handedness": "Lateralidad",
     "selectHandedness": "Seleccionar lateralidad",
     "chooseHandedness": "Elija si es diestro o zurdo.",
+    "searchMode": "Búsqueda",
+    "selectSearchMode": "Seleccione cómo funciona la búsqueda",
+    "searchModeSmart": "Mejores coincidencias primero, luego texto exacto",
+    "searchModeRanked": "Solo mejores coincidencias",
+    "searchModeSubstring": "Solo texto exacto",
+    "searchModeDescription": "Mejores coincidencias encuentra las palabras en cualquier orden y muestra primero los elementos más relevantes. Texto exacto busca los caracteres tal como los escribió, en cualquier parte del archivo.",
     "rightHanded": "Diestro",
     "leftHanded": "Zurdo",
     "notesPreferences": "Preferencias de notas",
@@ -1359,7 +1366,7 @@
     "calloutWarning": "Advertencia",
     "calloutSuccess": "Éxito",
     "calloutDanger": "Peligro",
-    "ruler": "Gobernante",
+    "ruler": "Regla",
     "lineNumbers": "Números de línea"
   },
   "sharing": {
@@ -1628,7 +1635,7 @@
     "whatWasChanged": "Qué se cambió:",
     "migrationPartial": "Migración terminada con restos",
     "leftoversTitle": "Se conservaron algunos archivos antiguos",
-    "leftoversBody": "La migración no pudo trasladarlo todo, así que los archivos antiguos de abajo se quedaron en el disco sin tocar. No se ha eliminado nada. Puede corregir la causa y volver a ejecutar la migración, o entrar ya en la aplicación y ocuparse de ello más tarde.",
+    "leftoversBody": "La migración no pudo trasladarlo todo, así que los archivos antiguos de abajo se quedaron en el disco sin tocar. Puede corregir la causa y volver a ejecutar la migración, o entrar ya en la aplicación y ocuparse de ello más tarde.",
     "overrideConfirmLabel": "Continuar de todos modos y dejar de mostrar esta página.",
     "overrideConfirmHint": "Los archivos restantes se quedan en el disco, pero la aplicación tratará sus datos como migrados. La compartición u orden indicados arriba no se aplicarán hasta que vuelva a migrar, algo que puede hacer en cualquier momento desde /migration?force=1.",
     "continueAnyway": "Continuar de todos modos",
@@ -1787,6 +1794,7 @@
   },
   "relations": {
     "indexing": "Indexando relaciones...",
+    "indexingSearch": "Indexando sus notas, la búsqueda estará lista en un momento...",
     "unreachable": "no accesible",
     "createFromWikilink": "Crear una nota llamada \"{title}\"",
     "mentionedIn": "Mencionado en",
@@ -1870,7 +1878,7 @@
     "keyRequired": "Añada primero una clave API.",
     "noKeyNeeded": "no necesita clave API",
     "deprecated": "obsoleto",
-    "requestFailed": "La petición no llegó al servidor. Revise su conexión.",
+    "requestFailed": "No llegó ninguna respuesta. Compruebe su conexión y si el cambio se aplicó antes de volver a intentarlo.",
     "responseMeta": "{status} en {ms} ms"
   }
 }

@@ -305,11 +305,11 @@ export interface GrepSearchResult extends GrepFileResult {
   matchLine: string;
 }
 
-const _bodyMatch = async (filePath: string, pattern: string): Promise<string> => {
+const _bodyMatch = async (filePath: string, text: string): Promise<string> => {
   try {
-    const matcher = new RegExp(pattern, "i");
+    const needle = text.toLowerCase();
     const { contentWithoutMetadata } = extractYamlMetadata(await fs.readFile(filePath, "utf-8"));
-    return contentWithoutMetadata.split(LINE_BREAK).find((line) => matcher.test(line))?.trim() ?? "";
+    return contentWithoutMetadata.split(LINE_BREAK).find((line) => line.toLowerCase().includes(needle))?.trim() ?? "";
   } catch (error) {
     console.error("Search match-line failed:", filePath, error);
     return "";
@@ -318,14 +318,14 @@ const _bodyMatch = async (filePath: string, pattern: string): Promise<string> =>
 
 export const grepSearchContent = async (
   dir: string,
-  pattern: string,
+  text: string,
 ): Promise<GrepSearchResult[]> => {
   try {
     const { stdout } = await execFileAsync("grep", [
-      "-rli",
+      "-rliF",
       "--include=*.md",
       "--",
-      pattern,
+      text,
       dir,
     ]);
 
@@ -339,7 +339,7 @@ export const grepSearchContent = async (
         const id = path.basename(filename, ".md");
         const category = parts.join("/");
 
-        const matchLine = await _bodyMatch(filePath, pattern);
+        const matchLine = await _bodyMatch(filePath, text);
         return { filePath, id, category, matchLine };
       }),
     );

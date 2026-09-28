@@ -171,6 +171,7 @@
     "dismiss": "Dismiss",
     "cleaning": "Cleaning...",
     "noResultsFound": "No results found",
+    "searching": "Searching...",
     "noResults": "No results",
     "by": "by {owner}",
     "unsavedChanges": "Unsaved Changes",
@@ -1083,8 +1084,8 @@
     "excalidrawProxyEnabledDescription": "Routes Excalidraw traffic through Jotty's server. Needed for internal Docker network URLs (e.g., http://excalidraw:3000) that users' browsers can't reach.",
     "saving": "Saving...",
     "editorSettingsSaved": "Editor settings saved.",
-    "customEmojis": "Emoji Personalizzate",
-    "noEmojisYet": "No custom emojis yet. Click &quot;Add Emoji&quot; to add one.",
+    "customEmojis": "Custom Emojis",
+    "noEmojisYet": "No custom emojis yet. Click \"Add Emoji\" to add one.",
     "enterAnyEmoji": "Enter any emoji or use the emoji picker (Win: Win+.; Mac: Ctrl+Cmd+Space)",
     "sharingOverview": "Sharing Activity Overview",
     "detailedSharingBreakdown": "What gets shared, and who shares it",
@@ -1636,7 +1637,7 @@
     "whatWasChanged": "What was changed:",
     "migrationPartial": "Migration Finished With Leftovers",
     "leftoversTitle": "Some legacy files were kept",
-    "leftoversBody": "The migration could not translate everything, so the legacy files below were left on disk untouched. Nothing has been deleted. You can fix the cause and run the migration again, or continue into the app now and deal with it later.",
+    "leftoversBody": "The migration could not translate everything, so the legacy files below were left on disk untouched. You can fix the cause and run the migration again, or continue into the app now and deal with it later.",
     "overrideConfirmLabel": "Continue anyway and stop showing this page.",
     "overrideConfirmHint": "The leftover files stay on disk, but the app will treat your data as migrated. Any sharing or ordering listed above will not be applied until you migrate again, which you can do at any time from /migration?force=1.",
     "continueAnyway": "Continue Anyway",
@@ -1880,7 +1881,7 @@
     "keyRequired": "Add an API key first.",
     "noKeyNeeded": "no API key needed",
     "deprecated": "deprecated",
-    "requestFailed": "The request never reached the server. Check your connection.",
+    "requestFailed": "No response came back. Check your connection, and check whether the change went through before you try again.",
     "responseMeta": "{status} in {ms} ms"
   }
 }

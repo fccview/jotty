@@ -40,8 +40,6 @@ const _cleanMatch = (line: string) =>
     .replace(/^#+\s*/, "")
     .trim();
 
-const _escape = (query: string) => query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 const _grepHits = async (
   username: string,
   query: string,
@@ -51,7 +49,7 @@ const _grepHits = async (
 ): Promise<SearchHit[]> => {
   let found: Awaited<ReturnType<typeof grepSearchContent>> = [];
   try {
-    found = await grepSearchContent(DIRS[type](username), _escape(query));
+    found = await grepSearchContent(DIRS[type](username), query);
   } catch (error) {
     console.error(`Search grep failed for ${type}:`, error);
   }

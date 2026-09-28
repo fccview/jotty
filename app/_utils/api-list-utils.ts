@@ -15,8 +15,8 @@ export const isRefusal = <T extends object>(found: Found<T>): found is { refusal
   "refusal" in found;
 
 export const indexPath = (raw: string): number[] | null => {
-  const path = raw.split(".").map((part) => parseInt(part));
-  return path.every((idx) => idx >= 0) ? path : null;
+  const parts = raw.split(".");
+  return parts.every((part) => /^\d+$/.test(part)) ? parts.map(Number) : null;
 };
 
 export const itemAt = (items: Item[], [head, ...rest]: number[]): Item | undefined => {

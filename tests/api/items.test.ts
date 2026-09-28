@@ -358,6 +358,16 @@ describe("Checklist Items API", () => {
       expect(data.success).toBe(true)
     })
 
+    it.each(["1abc", "1e2", "1.5x", "-1", ""])("refuses %j instead of deleting item 1", async (itemIndex) => {
+      mockGetListById.mockResolvedValue(mockList)
+
+      const request = createMockRequest("DELETE", `http://localhost:3000/api/checklists/uuid-1/items/${itemIndex}`)
+      const response = await DELETE(request, { params: Promise.resolve({ listId: "uuid-1", itemIndex }) })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe("Invalid item index")
+    })
+
     it("should delete a nested item", async () => {
       mockGetListById.mockResolvedValue(mockList)
 

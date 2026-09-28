@@ -8,7 +8,7 @@ import {
 } from "@/app/_types/enums";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { reachableFile } from "@/app/_server/actions/share/queries";
+import { canReach, reachableFile } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getListById } from "@/app/_server/actions/checklist/queries";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
@@ -86,6 +86,12 @@ export const assignItem = async (
   assignee: string,
 ): Promise<Result<Checklist>> => {
   try {
+    const username = actor?.username;
+    if (!username) return { success: false, error: "Not authenticated" };
+    if (!(await canReach(uuid, ItemTypes.CHECKLIST, username, PermissionTypes.EDIT))) {
+      return { success: false, error: "Permission denied" };
+    }
+
     const refusal = assignee ? await assigneeRefusal(assignee, uuid) : null;
     if (refusal) return { success: false, error: refusal };
 

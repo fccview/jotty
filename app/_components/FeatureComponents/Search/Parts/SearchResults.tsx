@@ -24,6 +24,7 @@ interface SearchResultsProps {
   onSelectResult: (result: SearchResult) => void;
   query: string;
   indexing?: boolean;
+  searching?: boolean;
 }
 
 export const SearchResults = ({
@@ -32,6 +33,7 @@ export const SearchResults = ({
   onSelectResult,
   query,
   indexing = false,
+  searching = false,
 }: SearchResultsProps) => {
   const t = useTranslations();
 
@@ -69,6 +71,10 @@ export const SearchResults = ({
 
   if (results.length === 0 && indexing) {
     return <IndexingRelations compact label={t("relations.indexingSearch")} />;
+  }
+
+  if (results.length === 0 && searching) {
+    return <IndexingRelations compact label={t("common.searching")} />;
   }
 
   if (results.length === 0) {

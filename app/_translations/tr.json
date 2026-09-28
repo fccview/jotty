@@ -171,6 +171,7 @@
     "dismiss": "Kapat",
     "cleaning": "Temizleniyor...",
     "noResultsFound": "Sonuç bulunamadı",
+    "searching": "Aranıyor...",
     "noResults": "Sonuç yok",
     "by": "{owner} tarafından",
     "unsavedChanges": "Kaydedilmemiş Değişiklikler",
@@ -809,6 +810,12 @@
     "handedness": "El Kullanımı",
     "selectHandedness": "Kullanım yönünü seçin",
     "chooseHandedness": "Sağlak mı yoksa solak mı olduğunuzu seçin.",
+    "searchMode": "Arama",
+    "selectSearchMode": "Aramanın nasıl çalışacağını seçin",
+    "searchModeSmart": "Önce en iyi eşleşmeler, sonra tam metin",
+    "searchModeRanked": "Yalnızca en iyi eşleşmeler",
+    "searchModeSubstring": "Yalnızca tam metin",
+    "searchModeDescription": "En iyi eşleşmeler kelimeleri herhangi bir sırada bulur ve en ilgili öğeleri önce gösterir. Tam metin, karakterleri dosyanın herhangi bir yerinde tam olarak yazdığınız gibi arar.",
     "rightHanded": "Sağlak",
     "leftHanded": "Solak",
     "notesPreferences": "Not Tercihleri",
@@ -1628,7 +1635,7 @@
     "whatWasChanged": "Neler değişti:",
     "migrationPartial": "Taşıma Artıklarla Tamamlandı",
     "leftoversTitle": "Bazı eski dosyalar bırakıldı",
-    "leftoversBody": "Taşıma her şeyi aktaramadı, bu yüzden aşağıdaki eski dosyalar diskte olduğu gibi bırakıldı. Hiçbir şey silinmedi. Sorunu düzeltip taşımayı tekrar çalıştırabilir ya da şimdi uygulamaya geçip bununla sonra ilgilenebilirsiniz.",
+    "leftoversBody": "Taşıma her şeyi aktaramadı, bu yüzden aşağıdaki eski dosyalar diskte olduğu gibi bırakıldı. Sorunu düzeltip taşımayı tekrar çalıştırabilir ya da şimdi uygulamaya geçip bununla sonra ilgilenebilirsiniz.",
     "overrideConfirmLabel": "Yine de devam et ve bu sayfayı bir daha gösterme.",
     "overrideConfirmHint": "Artık dosyalar diskte kalır ama uygulama verilerinizi taşınmış sayar. Yukarıda listelenen paylaşım veya sıralama, taşımayı tekrar çalıştırana kadar uygulanmaz. Bunu istediğiniz zaman /migration?force=1 adresinden yapabilirsiniz.",
     "continueAnyway": "Yine de Devam Et",
@@ -1787,6 +1794,7 @@
   },
   "relations": {
     "indexing": "İlişkiler indeksleniyor...",
+    "indexingSearch": "Notlarınız dizinleniyor, arama birazdan hazır olacak...",
     "unreachable": "erişilemiyor",
     "createFromWikilink": "\"{title}\" adında bir not oluştur",
     "mentionedIn": "Şurada geçiyor",
@@ -1870,7 +1878,7 @@
     "keyRequired": "Önce bir API anahtarı ekleyin.",
     "noKeyNeeded": "API anahtarı gerekmez",
     "deprecated": "kullanımdan kalktı",
-    "requestFailed": "İstek sunucuya hiç ulaşmadı. Bağlantınızı kontrol edin.",
+    "requestFailed": "Yanıt alınamadı. Bağlantınızı kontrol edin ve tekrar denemeden önce değişikliğin uygulanıp uygulanmadığına bakın.",
     "responseMeta": "{status}, {ms} ms"
   }
 }

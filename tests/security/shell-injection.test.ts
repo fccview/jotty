@@ -9,6 +9,7 @@ import {
   grepFindFileByUuid,
   grepFindFilesByField,
   grepListAllFiles,
+  grepSearchContent,
 } from "@/app/_utils/grep-utils";
 
 const ROOT = mkdtempSync(path.join(os.tmpdir(), "jotty-shell-"));
@@ -61,5 +62,21 @@ describe("Security: shell injection in grep utils", () => {
     expect((await grepExtractFrontmatter(EVIL_NOTE))?.title).toBe("Evil");
     expect(await grepExtractField(EVIL_NOTE, "uuid")).toBe(UUID);
     expect(await grepExtractExcerpt(EVIL_NOTE)).toBe("body");
+  });
+});
+
+describe("Search matches the text literally", () => {
+  const SEARCH_DIR = path.join(ROOT, "search");
+
+  beforeEach(() => {
+    mkdirSync(SEARCH_DIR, { recursive: true });
+    writeFileSync(path.join(SEARCH_DIR, "plain.md"), "---\ntitle: Plain\n---\nnothing special here\n");
+    writeFileSync(path.join(SEARCH_DIR, "maths.md"), "---\ntitle: Maths\n---\nremember a+b? equals c\n");
+  });
+
+  it.each(["a?", "a+b?", ".*", "[a-z]"])("only finds files that contain %j", async (text) => {
+    const hits = await grepSearchContent(SEARCH_DIR, text);
+    const expected = text === "a+b?" ? ["maths"] : [];
+    expect(hits.map((hit) => hit.id)).toEqual(expected);
   });
 });

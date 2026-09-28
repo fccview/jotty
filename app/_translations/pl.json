@@ -171,6 +171,7 @@
     "dismiss": "Odrzuć",
     "cleaning": "Czyszczenie…",
     "noResultsFound": "Nie znaleziono wyników",
+    "searching": "Szukam...",
     "noResults": "Brak wyników",
     "by": "przez {owner}",
     "unsavedChanges": "Niezapisane zmiany",
@@ -809,6 +810,12 @@
     "handedness": "Ręczność",
     "selectHandedness": "Wybierz ręczność",
     "chooseHandedness": "Wybierz, czy jesteś praworęczny czy leworęczny.",
+    "searchMode": "Wyszukiwanie",
+    "selectSearchMode": "Wybierz, jak działa wyszukiwanie",
+    "searchModeSmart": "Najlepsze trafienia najpierw, potem dokładny tekst",
+    "searchModeRanked": "Tylko najlepsze trafienia",
+    "searchModeSubstring": "Tylko dokładny tekst",
+    "searchModeDescription": "Najlepsze trafienia znajdują słowa w dowolnej kolejności i pokazują najpierw najtrafniejsze elementy. Dokładny tekst szuka znaków dokładnie tak, jak je wpisano, w dowolnym miejscu pliku.",
     "rightHanded": "Praworęczny",
     "leftHanded": "Leworęczny",
     "notesPreferences": "Ustawienia notatek",
@@ -1628,7 +1635,7 @@
     "whatWasChanged": "Co się zmieniło:",
     "migrationPartial": "Migracja zakończona z pozostałościami",
     "leftoversTitle": "Część starych plików została zachowana",
-    "leftoversBody": "Migracja nie przeniosła wszystkiego, więc poniższe stare pliki zostały na dysku nietknięte. Nic nie zostało usunięte. Możesz naprawić przyczynę i uruchomić migrację ponownie albo przejść teraz do aplikacji i zająć się tym później.",
+    "leftoversBody": "Migracja nie przeniosła wszystkiego, więc poniższe stare pliki zostały na dysku nietknięte. Możesz naprawić przyczynę i uruchomić migrację ponownie albo przejść teraz do aplikacji i zająć się tym później.",
     "overrideConfirmLabel": "Kontynuuj mimo to i nie pokazuj więcej tej strony.",
     "overrideConfirmHint": "Pozostałe pliki zostaną na dysku, ale aplikacja uzna Twoje dane za zmigrowane. Udostępnianie i kolejność wymienione powyżej nie zostaną zastosowane, dopóki nie uruchomisz migracji ponownie, co możesz zrobić w dowolnej chwili pod /migration?force=1.",
     "continueAnyway": "Kontynuuj mimo to",
@@ -1787,6 +1794,7 @@
   },
   "relations": {
     "indexing": "Indeksowanie powiązań...",
+    "indexingSearch": "Indeksuję Twoje notatki, wyszukiwanie będzie gotowe za chwilę...",
     "unreachable": "niedostępne",
     "createFromWikilink": "Utwórz notatkę o nazwie \"{title}\"",
     "mentionedIn": "Wspomniane w",
@@ -1870,7 +1878,7 @@
     "keyRequired": "Najpierw dodaj klucz API.",
     "noKeyNeeded": "klucz API niepotrzebny",
     "deprecated": "przestarzałe",
-    "requestFailed": "Żądanie nie dotarło do serwera. Sprawdź połączenie.",
+    "requestFailed": "Nie przyszła żadna odpowiedź. Sprawdź połączenie i to, czy zmiana została zapisana, zanim spróbujesz ponownie.",
     "responseMeta": "{status} w {ms} ms"
   }
 }
