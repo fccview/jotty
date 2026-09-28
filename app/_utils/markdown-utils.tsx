@@ -830,6 +830,19 @@ export const getMarkdownPreviewContent = (
   }
 };
 
+const RISKY_HTML = [
+  /<iframe[\s\S]*?<\/iframe>/gi,
+  /<embed[\s\S]*?>/gi,
+  /<object[\s\S]*?<\/object>/gi,
+  /<script[\s\S]*?<\/script>/gi,
+];
+
+const _escapeTags = (match: string): string =>
+  match.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+export const defangHtml = (text: string): string =>
+  RISKY_HTML.reduce((result, pattern) => result.replace(pattern, _escapeTags), text);
+
 export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
@@ -843,23 +856,7 @@ export const sanitizeMarkdown = (markdown: string): string => {
   );
   result = result.replace(/\\+\[([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g, "[$1]($2)");
 
-  result = result.replace(/<iframe[\s\S]*?<\/iframe>/gi, (match) =>
-    match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  );
-
-  result = result.replace(/<embed[\s\S]*?>/gi, (match) =>
-    match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  );
-
-  result = result.replace(/<object[\s\S]*?<\/object>/gi, (match) =>
-    match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  );
-
-  result = result.replace(/<script[\s\S]*?<\/script>/gi, (match) =>
-    match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  );
-
-  return result;
+  return defangHtml(result);
 };
 
 export interface Heading {

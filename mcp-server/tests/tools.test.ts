@@ -1,8 +1,8 @@
 import { afterAll, describe, expect, it } from "bun:test";
 import { toSpec } from "../src/jotty/spec.ts";
-import { runBuiltin } from "../src/tools/builtins.ts";
+import { builtinTools, runBuiltin } from "../src/tools/builtins.ts";
 import { BuiltinTool } from "../src/tools/context.ts";
-import { runOperation } from "../src/tools/operation.ts";
+import { operationTool, runOperation } from "../src/tools/operation.ts";
 import { FAKE_SPEC, makeCtx, serveJotty, structured, text } from "./helpers.ts";
 
 const jotty = serveJotty();
@@ -94,6 +94,28 @@ describe("runOperation", () => {
     expect(result.structuredContent).toBeUndefined();
   });
 
+  it("lets the caller raise maxChars for one call without sending it to Jotty", async () => {
+    const ctx = makeCtx(jotty.url);
+    ctx.config.output.maxTextChars = 20;
+    const result = await runOperation(ctx, spec, op("getNote"), { noteId: "n-1", maxChars: 5_000 });
+    expect(text(result)).not.toContain("cut at");
+    expect(structured(result)).toMatchObject({ data: { title: "Milk" } });
+    expect(jotty.hits.at(-1)?.path).toBe("/api/notes/n-1");
+  });
+
+  it("lets the caller lower maxChars and says how to get the rest", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("getNote"), { noteId: "n-1", maxChars: 30 });
+    expect(text(result)).toContain("cut at 30");
+    expect(text(result)).toContain("maxChars");
+  });
+
+  it("offers maxChars on every tool, defaulting to the server setting", () => {
+    const tool = operationTool(spec, op("getNote"), 12_000);
+    expect(tool.inputSchema.properties?.maxChars).toMatchObject({ type: "integer", minimum: 1 });
+    expect(JSON.stringify(tool.inputSchema.properties?.maxChars)).toContain("12000");
+    expect(builtinTools(12_000).find((entry) => entry.name === "call_operation")?.inputSchema.properties?.maxChars).toBeDefined();
+  });
+
   it("applies the catalog defaults to curated tools only", async () => {
     await runOperation(makeCtx(jotty.url), spec, op("listNotes"), {}, { curated: true });
     expect(jotty.hits.at(-1)?.path).toBe("/api/notes?view=summary&limit=25");
@@ -132,7 +154,7 @@ describe("builtins", () => {
     const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Discover, {});
     const data = structured(result);
     expect(data.version).toBe("9.9.9");
-    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item", "connect_items"]);
+    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item", "connect_items", "list_duplicate_uuids"]);
     expect(data.unavailableTools).toContain("list_boards");
   });
 
@@ -168,6 +190,19 @@ describe("builtins", () => {
   it("call_operation refuses unknown operation ids", async () => {
     const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.CallOperation, { operationId: "dropDatabase" });
     expect(structured(result).error).toMatchObject({ kind: "not_found" });
+  });
+
+  it("call_operation honours maxChars", async () => {
+    const ctx = makeCtx(jotty.url);
+    ctx.config.output.maxTextChars = 20;
+    const result = await runBuiltin(ctx, BuiltinTool.CallOperation, { operationId: "getNote", arguments: { noteId: "n-1" }, maxChars: 5_000 });
+    expect(text(result)).not.toContain("cut at");
+  });
+
+  it("health counts uuids shared by more than one file", async () => {
+    const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Health, {});
+    expect(structured(result)).toMatchObject({ apiKey: "accepted", duplicateUuids: 1 });
+    expect(text(result)).toContain("list_duplicate_uuids");
   });
 
   it("health reports a rejected key without failing", async () => {

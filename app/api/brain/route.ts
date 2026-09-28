@@ -15,7 +15,7 @@ export const GET = defineRoute(
     tag: ApiTag.RELATIONS,
     summary: "A slice of the link map",
     description:
-      "With focus, the items up to depth links away from it, nearest first. Without it, the most linked items. Tags are listed on each node rather than drawn as nodes.",
+      "With focus, the items up to depth links away from it, nearest first. Without it, the most linked items. Tags are the #hashtags in an item's content, listed on each node rather than drawn as nodes.",
     query: brainQuery,
     responses: {
       200: { description: "Nodes and the links between them", schema: brainSchema },

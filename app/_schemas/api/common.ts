@@ -44,6 +44,16 @@ export const pageFields = {
   offset: z.coerce.number().int().min(0).default(0).describe("How many results to skip"),
 };
 
+export const sliceQuery = z.object({
+  offset: z.coerce.number().int().min(0).default(0).describe("First character of content to return"),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Most characters of content to return, all when left out"),
+});
+
 export const page = <T>(rows: T[], { limit, offset }: { limit?: number; offset: number }): T[] =>
   rows.slice(offset, limit === undefined ? undefined : offset + limit);
 

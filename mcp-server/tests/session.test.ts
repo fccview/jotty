@@ -55,6 +55,7 @@ describe("http transport", () => {
       "check_checklist_item",
       "update_board_item",
       "connect_items",
+      "list_duplicate_uuids",
       "discover",
       "call_operation",
       "health",

@@ -25,6 +25,7 @@ import {
   indexItemFile,
   reconcileRelations,
   refreshItemPaths,
+  refreshItems,
 } from "@/app/_server/actions/relations/indexer";
 import { throttledBatch } from "@/app/_server/actions/relations/watcher";
 import { backlinksFor, graphFor, VisibleItem } from "@/app/_server/actions/relations/queries";
@@ -428,6 +429,43 @@ describe("relations", () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+
+    it("lets a read flush pending changes without waiting out the minute", async () => {
+      vi.useFakeTimers();
+      try {
+        const flush = vi.fn().mockResolvedValue(0);
+        const batch = throttledBatch(flush, 60_000, 1_000);
+
+        batch.add("/a.md");
+        await vi.advanceTimersByTimeAsync(1_000);
+        batch.add("/b.md");
+        await batch.flush();
+
+        expect(flush).toHaveBeenCalledTimes(2);
+        expect(flush).toHaveBeenLastCalledWith(["/b.md"]);
+        await vi.advanceTimersByTimeAsync(120_000);
+        expect(flush).toHaveBeenCalledTimes(2);
+
+        await batch.flush();
+        expect(flush).toHaveBeenCalledTimes(2);
+        batch.stop();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("refreshes a named item that changed on disk behind the index", async () => {
+      const aPath = itemPath("notes", "alice", "a.md");
+      write(aPath, note(A, "Alpha", `[Beta](/note/${B})`));
+      nodeFs.writeFileSync(aPath, note(A, "Alpha", "edited by a script"));
+      nodeFs.utimesSync(aPath, new Date(), new Date(Date.now() + 5_000));
+
+      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Beta" }]);
+      expect(backlinksFor(B, visible).backlinks).toHaveLength(1);
+
+      expect(await refreshItems([A.toUpperCase()])).toBe(1);
+      expect(backlinksFor(B, visible).backlinks).toEqual([]);
     });
 
     it("re-reads only paths whose file actually changed", async () => {

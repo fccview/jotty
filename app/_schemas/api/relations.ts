@@ -32,7 +32,11 @@ export const linkedItemSchema = z
   .register(apiNames, { id: "LinkedItem" });
 
 const relatedItemSchema = linkedItemSchema.extend({
-  kind: z.enum(LinkKinds).describe("mention for a [Title](/note/uuid) link, wiki for a [[Title]] link"),
+  kind: z
+    .enum(LinkKinds)
+    .describe(
+      "mention for any [Title](/note/uuid) markdown link, inline or on its own line, including the ones connect_items adds. wiki for a [[Title]] link",
+    ),
 });
 
 export const relatedParams = uuidParam("itemId", "Note or checklist");
@@ -48,8 +52,17 @@ export const relatedSchema = linkedItemSchema
       .array(linkedItemSchema.extend({ snippet: z.string() }))
       .describe("Notes that name this item in plain text without linking it"),
     suggestions: z
-      .array(linkedItemSchema.extend({ score: z.number().describe("0 to 1, higher shares more neighbours") }))
-      .describe("Items that share a lot of neighbours with this one but aren't linked to it"),
+      .array(
+        linkedItemSchema.extend({
+          score: z.number().describe("0 to 1, higher shares more neighbours, relative to the strongest pair"),
+          via: z
+            .array(z.string())
+            .describe("Titles of the items and #tags both share. One broad shared neighbour is weak evidence"),
+        }),
+      )
+      .describe(
+        "Items that share neighbours with this one but aren't linked to it. Jotty picks these from the link graph alone, so check via and read both items before linking",
+      ),
   })
   .register(apiNames, { id: "Relations" });
 
@@ -117,6 +130,23 @@ export const orphansSchema = z.object({
   status: statusField,
   orphans: z.array(linkedItemSchema),
   total: z.number(),
+});
+
+export const unlinkBody = z.object({
+  source: required("source").describe("Uuid of the note that holds the link"),
+  target: required("target").describe("Uuid of the item it links to"),
+});
+
+export const unlinkedSchema = z.object({
+  success: z.literal(true),
+  removed: z.number().describe("Links taken out of the source note"),
+  wikiLinks: z.number().describe("[[wikilinks]] from the source to the target, which this leaves alone"),
+  warning: z.string().optional().describe("Set when a script manages the source note and may overwrite the change"),
+});
+
+export const linkedSchema = z.object({
+  success: z.literal(true),
+  warning: z.string().optional().describe("Set when a script manages the source note and may overwrite the change"),
 });
 
 export const linkBody = z.object({

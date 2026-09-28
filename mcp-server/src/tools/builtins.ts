@@ -8,13 +8,15 @@ import { ToolErrorKind, errorResult, fromError } from "./errors.ts";
 import { runOperation } from "./operation.ts";
 import { respond, toolResult, type ToolResult } from "./result.ts";
 import { toolInput } from "./schema.ts";
+import { budgetOf, withBudget } from "./budget.ts";
+import type { JsonSchema } from "../jotty/openapi.ts";
 
 const LOG_NS = "tool-builtin";
 const HEALTH_PATH = "/health";
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 const PLUMBING_TAG = "System";
 
-export const BUILTIN_TOOLS: Tool[] = [
+const BUILTIN_TOOLS: Tool[] = [
   {
     name: BuiltinTool.Discover,
     description:
@@ -50,6 +52,15 @@ export const BUILTIN_TOOLS: Tool[] = [
   },
 ];
 
+const BUDGETED = new Set<string>([BuiltinTool.Discover, BuiltinTool.CallOperation]);
+
+export const builtinTools = (maxChars: number): Tool[] =>
+  BUILTIN_TOOLS.map((tool) =>
+    BUDGETED.has(tool.name)
+      ? { ...tool, inputSchema: withBudget(tool.inputSchema as JsonSchema, maxChars) as Tool["inputSchema"] }
+      : tool,
+  );
+
 const _summaryOf = (spec: Spec) =>
   [...spec.operations.values()]
     .filter((op) => op.tags?.[0] !== PLUMBING_TAG && !CURATED_OPERATIONS.includes(op.operationId))
@@ -63,7 +74,7 @@ const _summaryOf = (spec: Spec) =>
     }));
 
 const _discover = (ctx: ToolContext, spec: Spec, args: Record<string, unknown>): ToolResult => {
-  const limit = ctx.config.output.maxTextChars;
+  const limit = budgetOf(args, ctx.config.output.maxTextChars);
   if (typeof args.operationId === "string") {
     const op = spec.operations.get(args.operationId);
     if (!op) {
@@ -88,7 +99,8 @@ const _call = (ctx: ToolContext, spec: Spec, args: Record<string, unknown>, sign
     );
   }
   const inner = args.arguments && typeof args.arguments === "object" ? (args.arguments as Record<string, unknown>) : {};
-  return runOperation(ctx, spec, op, inner, { signal });
+  const maxChars = budgetOf({ ...args, ...inner }, ctx.config.output.maxTextChars);
+  return runOperation(ctx, spec, op, inner, { signal, maxChars });
 };
 
 const REJECTED = new Set([401, 403]);
@@ -97,6 +109,22 @@ const _keyStatus = (ctx: ToolContext, spec: Spec | null, problem: unknown): stri
   if (!ctx.client.hasApiKey) return "missing";
   if (spec) return "accepted";
   return problem instanceof JottyError && REJECTED.has(problem.status) ? "rejected" : "unchecked";
+};
+
+const DUPLICATES_OP = "listDuplicateUuids";
+const DUPLICATES_TOOL = toolNameOf(DUPLICATES_OP);
+
+const _duplicates = async (ctx: ToolContext, spec: Spec, signal?: AbortSignal): Promise<number | undefined> => {
+  const op = spec.operations.get(DUPLICATES_OP);
+  if (!op) return undefined;
+  try {
+    const response = await ctx.client.send({ method: op.method, path: op.path, signal });
+    const total = (response.data as { total?: unknown } | null)?.total;
+    return typeof total === "number" ? total : undefined;
+  } catch (err) {
+    logger.warn(LOG_NS, "duplicate uuid check failed during health check", err);
+    return undefined;
+  }
 };
 
 const _health = async (ctx: ToolContext, signal?: AbortSignal): Promise<ToolResult> => {
@@ -110,16 +138,22 @@ const _health = async (ctx: ToolContext, signal?: AbortSignal): Promise<ToolResu
       logger.warn(LOG_NS, "spec unavailable during health check", err);
       problem = err;
     }
+    const duplicateUuids = spec ? await _duplicates(ctx, spec, signal) : undefined;
     const report = {
       jotty: ctx.client.baseUrl,
       upstream: health.data,
       apiKey: _keyStatus(ctx, spec, problem),
       operations: spec?.operations.size ?? 0,
       uptimeSec: Math.round((Date.now() - ctx.startedAt) / 1000),
+      ...(duplicateUuids !== undefined && { duplicateUuids }),
       ...(problem instanceof SpecMissingError && { problem: problem.message }),
     };
-    const summary = `Jotty at ${report.jotty} is up, API key ${report.apiKey}.`;
-    return toolResult(report.problem ? `${summary} ${report.problem}` : summary, report);
+    const summary = [
+      `Jotty at ${report.jotty} is up, API key ${report.apiKey}.`,
+      duplicateUuids ? `${duplicateUuids} uuid(s) belong to more than one file. Run ${DUPLICATES_TOOL} to see them.` : "",
+      report.problem ?? "",
+    ];
+    return toolResult(summary.filter(Boolean).join(" "), report);
   } catch (err) {
     return fromError(err);
   }

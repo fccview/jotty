@@ -21,6 +21,7 @@ import { canReachFile } from "@/app/_server/actions/share/access";
 import { checkAndRefreshRecurringItems } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
+import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
 
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
   const {
@@ -87,7 +88,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         undefined,
       );
 
-    let lists: ChecklistReadResult[] = [...cached];
+    let lists: ChecklistReadResult[] = dropClashes(cached, absUserDir);
 
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(

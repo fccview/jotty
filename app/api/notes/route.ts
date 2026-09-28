@@ -6,10 +6,16 @@ import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS, envelope, page, totalField } from "@/app/_schemas/api/common";
 import { toApiNote } from "@/app/_utils/api-note";
+import { tagMatchesFilter } from "@/app/_utils/tag-utils";
 import { noteCreateBody, noteListQuery, noteSchema } from "@/app/_schemas/api/notes";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 
 export const dynamic = "force-dynamic";
+
+const _idSet = (ids?: string): Set<string> | null => {
+  const list = (ids || "").split(",").map((id) => id.trim().toLowerCase()).filter(Boolean);
+  return list.length ? new Set(list) : null;
+};
 
 export const GET = defineRoute(
   {
@@ -18,7 +24,7 @@ export const GET = defineRoute(
     path: "/notes",
     tag: ApiTag.NOTES,
     summary: "List notes",
-    description: "Every note the API key owner can read, including shared ones. Use view=summary with limit and offset to page through titles and excerpts without loading every note's content.",
+    description: "Every note the API key owner can read, including shared ones. Use view=summary with limit and offset to page through titles and excerpts without loading every note's content. Pass ids to read several known notes in one call, and tag to list the notes carrying a tag.",
     query: noteListQuery,
     responses: {
       200: { description: "Notes", schema: z.object({ notes: z.array(noteSchema), total: totalField }) },
@@ -33,9 +39,12 @@ export const GET = defineRoute(
     }
 
     const needle = query.q?.toLowerCase();
+    const wanted = _idSet(query.ids);
     const matches = notes.data.filter(
       (note) =>
         (!query.category || note.category === query.category) &&
+        (!wanted || wanted.has((note.uuid || "").toLowerCase())) &&
+        (!query.tag || (note.tags || []).some((tag) => tagMatchesFilter(tag, query.tag!))) &&
         (!needle ||
           note.title?.toLowerCase().includes(needle) ||
           note.content?.toLowerCase().includes(needle)),

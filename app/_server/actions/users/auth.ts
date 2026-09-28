@@ -1,6 +1,7 @@
 "use server";
 
 import { getCurrentUser } from "./queries";
+import { adminPeek } from "@/app/_server/actions/lib/admin-peek";
 
 export const isAuthenticated = async (): Promise<boolean> => {
   const user = await getCurrentUser();
@@ -14,22 +15,7 @@ export const isAdmin = async (): Promise<boolean> => {
 
 export const canAccessAllContent = async (): Promise<boolean> => {
   try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) return false;
-
-    if (currentUser.isSuperAdmin) return true;
-
-    if (!currentUser.isAdmin) return false;
-
-    const { getAppSettings } = await import("@/app/_server/actions/config");
-    const settingsResult = await getAppSettings();
-
-    if (!settingsResult.success || !settingsResult.data) {
-      console.error("Content access settings unreadable, refusing admin peek");
-      return false;
-    }
-
-    return settingsResult.data.adminContentAccess !== "no";
+    return await adminPeek(await getCurrentUser());
   } catch (error) {
     console.error("Error checking content access:", error);
     return false;

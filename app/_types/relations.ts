@@ -62,6 +62,7 @@ export interface LinkedItem {
 
 export interface SuggestedItem extends LinkedItem {
   score: number;
+  via: string[];
 }
 
 export interface RelationsView extends LinkedItem {

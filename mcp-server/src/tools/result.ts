@@ -12,7 +12,7 @@ export interface Trimmed {
   hint: string;
 }
 
-const CUT_TEXT = "Narrow the request with a filter, limit and offset, or view=summary.";
+const CUT_TEXT = "Pass a bigger maxChars to get it whole, or narrow the request with a filter, limit and offset, or view=summary.";
 
 export type MoreRows = (shown: number) => string;
 

@@ -19,7 +19,7 @@ export const GET = defineRoute(
     path: "/kanban",
     tag: ApiTag.KANBAN,
     summary: "List Kanban boards",
-    description: "Boards the API key owner owns. Boards shared with them are left out, but GET /kanban/{boardId} returns them. Use view=summary with limit and offset to page through them with card counts per status instead of cards.",
+    description: "Boards the API key owner owns. They also appear in listChecklists as type kanban, but these board routes are the ones that understand cards and statuses. Boards shared with them are left out, but GET /kanban/{boardId} returns them. Use view=summary with limit and offset to page through them with card counts per status instead of cards.",
     query: boardListQuery,
     responses: {
       200: { description: "Boards", schema: z.object({ boards: z.array(boardSchema), total: totalField }) },

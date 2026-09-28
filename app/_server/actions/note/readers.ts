@@ -25,6 +25,7 @@ import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
 import { boxedShell } from "@/app/_utils/shell-utils";
 import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
 export const readNotesRecursively = async (
@@ -206,7 +207,7 @@ export const readNotesRecursively = async (
         return {
           id,
           uuid,
-          title: typeof metadata?.title === "string" ? metadata.title : id,
+          title: await titleFromFile(metadata, filePath, id),
           category: categoryPath,
           createdAt: createdAtOf(metadata, stats.birthtime),
           updatedAt: toIso(stats.mtime),
@@ -238,7 +239,7 @@ export const readNotesRecursively = async (
         return {
           id,
           uuid,
-          title: typeof metadata?.title === "string" ? metadata.title : id,
+          title: await titleFromFile(metadata, filePath, id),
           content: excerpt,
           category: categoryPath,
           createdAt: createdAtOf(metadata, stats.birthtime),

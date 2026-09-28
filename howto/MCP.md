@@ -89,9 +89,29 @@ The assistant can also follow your [links](BRAIN.md) and see what's shared:
 |---|---|
 | `get_related` | What links to an item and what it links to, as titles. The assistant reads only the ones that matter instead of opening everything |
 | `get_brain` | The items around one item, or your most linked items |
-| `list_orphans` | Items with no links |
-| `connect_items` | Links a note to another item, so notes the assistant writes join the map |
+| `list_orphans` | Items with no links. That's normal, it isn't a to-do list |
+| `connect_items` | Links a note to another item it relates to |
+| `disconnect_items` | Takes a note's links to an item back out, and closes the gap they leave |
 | `list_shares` | What other people shared with you and what you shared, with who can do what. Read only |
+
+These tools change part of a note without resending the rest. Everything else in the file stays byte for byte, line endings included.
+
+| Tool | What it does |
+|---|---|
+| `patch_note` | Swaps one exact piece of text for another. It refuses when the text isn't there or appears more than once |
+| `tag_note` | Adds or removes tags. Tags are the `#hashtags` in a note, and `#parent/child` nests |
+| `list_tags` | Every tag you use and how many notes and checklists carry it. `list_notes` takes `tag` to list the notes with one |
+
+If a script rewrites one of your notes, add `managed: true` to its frontmatter. The [API guide](API.md#note-files) has an example file. Tools then flag the note as managed, and any tool that writes into it warns that the script will overwrite the change.
+
+Two tools deal with duplicate UUIDs. They usually show up when a script copies a note file. The file with the oldest `createdAt` keeps the UUID, and the copies stay hidden until you repair them. `health` tells you when you have any.
+
+| Tool | What it does |
+|---|---|
+| `list_duplicate_uuids` | Which UUIDs more than one file uses, and which file keeps each one |
+| `repair_duplicate_uuid` | Gives the newer file, or the one you pick, a new UUID. Links whose text names that file move with it. Links that could mean either file stay put, and the tool lists them |
+
+The assistant can read these guides too. `list_docs` lists them and `read_doc` returns one as markdown, so it can check how Jotty works instead of guessing.
 
 Three more tools reach everything else:
 
@@ -111,6 +131,8 @@ An assistant reads every character a tool sends back, and a long answer pushes t
 
 - `list_notes`, `list_checklists` and `list_boards` return 25 results at a time in a summary view. Notes come with a short excerpt instead of their content, checklists with item counts, and boards with card counts per column. `total` says how many matched, `offset` reads the next page, and `view=full` gets everything.
 - An answer longer than `JOTTY_MCP_MAX_TEXT_CHARS` keeps the rows that fit and adds a `trimmed` field with the `offset` for the next ones. A single record that's still too long gets cut.
+- That limit is only the default. Every tool takes `maxChars`, so the assistant can ask for more when it needs a whole answer, or less to save room.
+- `get_note` gives the note's length in `contentLength` and takes `offset` and `limit`, so the assistant can read a very long note in slices. `list_notes` takes `ids` to read several notes in one call.
 - Updating or moving a card returns that card, not the whole board.
 - Search puts the best matches first and gives you the `uuid` the other tools take and the file name as `slug`.
 - `get_brain` returns 60 items at most by default, nearest and most linked first, and says when it left some out.
@@ -130,6 +152,6 @@ An assistant reads every character a tool sends back, and a long answer pushes t
 | `JOTTY_MCP_BIND_HOST` | all interfaces | Address the HTTP server binds to |
 | `JOTTY_MCP_AUTH_TOKEN` | | Bearer token every `/mcp` request must send |
 | `JOTTY_MCP_TIMEOUT_MS` | `30000` | How long to wait for Jotty before giving up |
-| `JOTTY_MCP_MAX_TEXT_CHARS` | `12000` | Longest answer a tool sends back, in characters |
+| `JOTTY_MCP_MAX_TEXT_CHARS` | `12000` | Longest answer a tool sends back by default, in characters. A tool call can ask for a different size with `maxChars` |
 | `JOTTY_MCP_SPEC_TTL_MS` | `300000` | How long to cache the API description |
 | `JOTTY_MCP_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` or `silent`. Logs go to stderr |

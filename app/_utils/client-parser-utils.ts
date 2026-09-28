@@ -12,6 +12,7 @@ import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { parseRecurrenceFromMarkdown } from "@/app/_utils/recurrence-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { extractYamlMetadata, strayMeta } from "./yaml-metadata-utils";
+import { titleOf } from "./title-utils";
 
 export const parseChecklistContent = (
   rawContent: string,
@@ -28,12 +29,7 @@ export const parseChecklistContent = (
 } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
 
-  let title: string;
-  if (metadata.title) {
-    title = metadata.title;
-  } else {
-    title = id.replace(/-/g, " ");
-  }
+  const title = titleOf(metadata, contentWithoutMetadata, id);
 
   const checklistType =
     metadata?.checklistType ||
@@ -314,7 +310,7 @@ export const parseNoteContent = (
   const tags = Array.isArray(metadata.tags) ? metadata.tags : undefined;
 
   return {
-    title: metadata.title || id.replace(/-/g, " "),
+    title: titleOf(metadata, contentWithoutMetadata, id),
     content: contentWithoutMetadata,
     uuid: metadata.uuid,
     encrypted: metadata.encrypted || false,

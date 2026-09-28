@@ -1,16 +1,19 @@
 import fs from "fs/promises";
+import nodeFs from "fs";
 import path from "path";
 import type { DatabaseSync } from "node:sqlite";
 import { LinkKinds, RelationsStatus } from "@/app/_consts/relations";
 import { isUuid } from "@/app/_consts/identity";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { titleOf } from "@/app/_utils/title-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
 import { singleFlight } from "@/app/_server/actions/lib/concurrency";
 import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { getAllFileStats } from "@/app/_server/actions/file";
+import { rankClaims, warnClash } from "@/app/_server/actions/lib/uuid-keeper";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { readLinks, titleKey } from "./parser";
-import { itemFileInfo, itemTreeRoots } from "./paths";
+import { appOrigins, itemFileInfo, itemTreeRoots } from "./paths";
 import { searchableOf } from "./searchable";
 import {
   inTransaction,
@@ -21,14 +24,6 @@ import {
 
 const RELATIONS_ACTOR = "system";
 const RECONCILE_EVERY_MS = 60_000;
-
-const _origins = (): string[] => {
-  try {
-    return process.env.APP_URL ? [new URL(process.env.APP_URL).origin] : [];
-  } catch {
-    return [];
-  }
-};
 
 const _tally = (keys: string[]): Map<string, number> => {
   const counts = new Map<string, number>();
@@ -122,6 +117,32 @@ const _releaseTargets = (db: DatabaseSync, uuids: string[]) => {
   });
 };
 
+const _rivalOf = (uuid: string, absPath: string): { path: string; mtime: number } | null => {
+  const row = relationsDb()
+    .prepare("SELECT path, mtime FROM items WHERE uuid = ? AND path <> ?")
+    .get(uuid, absPath) as { path: string; mtime: number } | undefined;
+  return row && nodeFs.existsSync(row.path) ? row : null;
+};
+
+const _noteClash = (db: DatabaseSync, filePath: string, uuid: string, mtime: number) =>
+  db.prepare("INSERT OR REPLACE INTO clashes (path, uuid, mtime) VALUES (?, ?, ?)").run(filePath, uuid, mtime);
+
+const _promoteClaims = (uuids: string[]) => {
+  if (!uuids.length) return;
+  const claims = relationsDb()
+    .prepare("SELECT path FROM clashes WHERE uuid IN (SELECT value FROM json_each(?))")
+    .all(JSON.stringify(uuids)) as { path: string }[];
+  claims.forEach(({ path: claim }) => {
+    relationsDb().prepare("DELETE FROM clashes WHERE path = ?").run(claim);
+    try {
+      const mtime = Math.floor(nodeFs.statSync(claim).mtimeMs);
+      indexItemFile(claim, nodeFs.readFileSync(claim, "utf-8"), mtime);
+    } catch (error) {
+      console.error(`Relations could not promote ${claim} after its rival went away:`, error);
+    }
+  });
+};
+
 export const indexItemFile = (
   filePath: string,
   content: string,
@@ -136,13 +157,10 @@ export const indexItemFile = (
     typeof metadata.uuid === "string" ? metadata.uuid.toLowerCase() : pathUuid(absPath);
   if (!isUuid(uuid)) return null;
 
-  const title =
-    typeof metadata.title === "string" && metadata.title.trim()
-      ? metadata.title.trim()
-      : path.basename(absPath, ".md");
+  const title = titleOf(metadata, contentWithoutMetadata, path.basename(absPath, ".md"));
   const key = titleKey(title);
   const encrypted = metadata.encrypted === true || isEncrypted(contentWithoutMetadata);
-  const origins = _origins();
+  const origins = appOrigins();
   const parsed = encrypted
     ? { targets: [], wikis: [], text: "", readable: "" }
     : readLinks(contentWithoutMetadata, origins);
@@ -157,12 +175,23 @@ export const indexItemFile = (
   );
   const wikiLabels = _wikiLabels(parsed.wikis);
   const wikis = _tally(parsed.wikis.map(titleKey).filter(Boolean));
+  const rival = _rivalOf(uuid, absPath);
+  const ranked = rival ? rankClaims([rival.path, absPath]) : [absPath];
+  if (rival) warnClash(uuid, ranked);
+  const loses = ranked[0] !== absPath;
 
-  inTransaction((db) => {
-    const displaced = db
+  const displaced = inTransaction((db) => {
+    const gone = db
       .prepare("SELECT uuid FROM items WHERE path = ? AND uuid <> ?")
       .all(absPath, uuid) as { uuid: string }[];
-    displaced.forEach((row) => _forgetUuid(db, row.uuid));
+    gone.forEach((row) => _forgetUuid(db, row.uuid));
+
+    if (loses) {
+      _noteClash(db, absPath, uuid, mtime);
+      return gone;
+    }
+    if (rival) _noteClash(db, rival.path, uuid, rival.mtime);
+    db.prepare("DELETE FROM clashes WHERE path = ?").run(absPath);
 
     db.prepare(
       `INSERT INTO items (uuid, path, owner, type, title, title_key, encrypted, created, mtime)
@@ -206,9 +235,11 @@ export const indexItemFile = (
         searchable.extra,
       );
     }
+    return gone;
   });
 
-  return uuid;
+  _promoteClaims(displaced.map((row) => row.uuid));
+  return loses ? null : uuid;
 };
 
 const _forgetUuid = (db: DatabaseSync, uuid: string) => {
@@ -220,12 +251,15 @@ const _forgetUuid = (db: DatabaseSync, uuid: string) => {
 };
 
 const _forgetWhere = (where: string, value: string) => {
-  inTransaction((db) => {
+  const forgotten = inTransaction((db) => {
+    db.prepare(`DELETE FROM clashes WHERE ${where}`).run(value);
     const rows = db.prepare(`SELECT uuid FROM items WHERE ${where}`).all(value) as {
       uuid: string;
     }[];
     rows.forEach((row) => _forgetUuid(db, row.uuid));
+    return rows.map((row) => row.uuid);
   });
+  _promoteClaims(forgotten);
 };
 
 export const forgetItemFile = (filePath: string) =>
@@ -263,7 +297,9 @@ export const indexItemTree = async (dir: string) => {
 };
 
 const _indexedMtimes = (): Map<string, number> => {
-  const rows = relationsDb().prepare("SELECT path, mtime FROM items").all() as {
+  const rows = relationsDb()
+    .prepare("SELECT path, mtime FROM items UNION ALL SELECT path, mtime FROM clashes")
+    .all() as {
     path: string;
     mtime: number;
   }[];
@@ -402,4 +438,20 @@ export const ensureRelations = (): RelationsStatus => {
     void reconcileRelations();
   }
   return status;
+};
+
+export const settleRelations = async (): Promise<void> => {
+  if (relationsStatus() === RelationsStatus.BUILDING) return;
+  if (globalThis.__jottyRelationsWatch?.healthy) return;
+  if (Date.now() - (globalThis.__jottyRelationsCheckedAt || 0) <= RECONCILE_EVERY_MS) return;
+  globalThis.__jottyRelationsCheckedAt = Date.now();
+  await reconcileRelations();
+};
+
+export const refreshItems = async (uuids: string[]): Promise<number> => {
+  if (!uuids.length) return 0;
+  const rows = relationsDb()
+    .prepare("SELECT path FROM items WHERE uuid IN (SELECT value FROM json_each(?))")
+    .all(JSON.stringify(uuids.map((uuid) => uuid.toLowerCase()))) as { path: string }[];
+  return refreshItemPaths(rows.map((row) => row.path));
 };

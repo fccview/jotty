@@ -112,6 +112,13 @@ export const FAKE_SPEC: OpenApiDocument = {
         },
       },
     },
+    "/admin/duplicate-uuids": {
+      get: {
+        operationId: "listDuplicateUuids",
+        summary: "Find items that share a uuid",
+        tags: ["Admin"],
+      },
+    },
     "/exports/{filename}": {
       get: {
         operationId: "downloadExport",
@@ -173,6 +180,7 @@ export const serveJotty = (spec: OpenApiDocument | null = FAKE_SPEC): FakeJotty 
       if (url.pathname === "/api/search") {
         return _json({ results: [{ uuid: "u-1", slug: "milk", id: "milk", title: "Milk" }], total: 1 });
       }
+      if (url.pathname === "/api/admin/duplicate-uuids") return _json({ duplicates: [{ uuid: "d-1" }], total: 1 });
       if (url.pathname === "/api/tasks") return _json({ tasks: MANY_NOTES });
       if (url.pathname === "/api/tasks/bad/statuses") return _json({ error: "Status id is required" }, 400);
       if (url.pathname.endsWith("/check")) return _json({ error: "Item index out of range" }, 400);

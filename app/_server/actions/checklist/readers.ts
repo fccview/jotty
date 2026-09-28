@@ -26,6 +26,7 @@ import { getChecklistType } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { isKanbanType } from "@/app/_types/enums";
 import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 
 const debugCrud = isDebugFlag("crud");
@@ -207,7 +208,7 @@ export const readListsRecursively = async (
                 typeof metadata?.uuid === "string"
                   ? metadata.uuid
                   : await stampUuid(filePath),
-              title: typeof metadata?.title === "string" ? metadata.title : id,
+              title: await titleFromFile(metadata, filePath, id),
               type: isKanbanType(metadata?.checklistType as string)
                 ? "kanban"
                 : "simple",

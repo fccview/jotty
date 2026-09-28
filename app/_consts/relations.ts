@@ -1,5 +1,5 @@
 export const RELATIONS_DB_NAME = ".relations.db";
-export const RELATIONS_SCHEMA_VERSION = 4;
+export const RELATIONS_SCHEMA_VERSION = 5;
 export const LEGACY_LINK_PREFIX = "/jotty/";
 export const WIKILINK_REGEX =
   /\[\[([^\[\]|#^\n]+)(?:[#^][^\[\]|\n]*)?(?:\|([^\[\]\n]*))?\]\]/g;

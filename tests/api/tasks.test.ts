@@ -359,6 +359,21 @@ describe("Tasks API", () => {
       expect(data.data.id).toBe("review")
     })
 
+    it("accepts a null color as no color", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/statuses", {
+        id: "review",
+        label: "In Review",
+        color: null,
+      })
+      const response = await POST_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.data.color).toBeUndefined()
+    })
+
     it("should return 400 when id or label is missing", async () => {
       mockGetListById.mockResolvedValue(mockTask)
 
@@ -838,6 +853,22 @@ describe("Tasks API", () => {
       expect(mockMakeList).not.toHaveBeenCalled()
     })
 
+    it("treats a null column color as no color", async () => {
+      mockMakeList.mockImplementation(async (_user: unknown, _form: FormData, statuses?: unknown[]) => ({
+        success: true,
+        data: { ...created, statuses },
+      }))
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks", {
+        title: "Sprint",
+        statuses: [{ id: "todo", label: "To Do", color: null }],
+      })
+      const response = await POST_TASKS(request)
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.data.statuses).toEqual([{ id: "todo", label: "To Do", order: 0 }])
+    })
   })
 
   describe("input validation", () => {

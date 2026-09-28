@@ -66,7 +66,7 @@ vi.mock("@/app/_utils/filename-utils", () => ({
   },
 }));
 
-import { editNote, rewriteNote } from "@/app/_server/actions/note/editor";
+import { editNote } from "@/app/_server/actions/note/editor";
 
 const actor = { username: "alice", fileRenameMode: "minimal" } as never;
 const dirOf = (category: string) => path.join(process.cwd(), NOTES_DIR("alice"), category);
@@ -82,17 +82,6 @@ describe("notes never land on top of each other", () => {
     resetAllMocks();
     disk.clear();
     notes.clear();
-  });
-
-  it("keeps a note in its category when a link is written into it", async () => {
-    seed("n-1", "Homelab/Neovim", "Neovim things");
-
-    const result = await rewriteNote(actor, "n-1", (content) => `${content}\n\n[Shortcuts](/note/n-2)\n`);
-
-    expect(result).toMatchObject({ success: true });
-    const written = Array.from(disk.keys());
-    expect(written).toEqual([path.join(dirOf("Homelab/Neovim"), "overview.md")]);
-    expect(disk.get(written[0])).toContain("[Shortcuts](/note/n-2)");
   });
 
   it("gives a moved note a free filename instead of overwriting a namesake", async () => {

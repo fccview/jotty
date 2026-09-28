@@ -10,6 +10,9 @@ export const mockUser = {
 
 export const mockAuthenticateApiKey = vi.fn();
 export const mockEditNote = vi.fn();
+export const mockGetNoteById = vi.fn();
+export const mockReadFile = vi.fn();
+export const mockSpliceNote = vi.fn();
 export const mockDropNote = vi.fn();
 export const mockEditList = vi.fn();
 export const mockDropList = vi.fn();
@@ -58,6 +61,12 @@ vi.mock("@/app/_server/actions/api", () => ({
 
 vi.mock("@/app/_server/actions/note/queries", () => ({
   getUserNotes: (...args: any[]) => mockGetUserNotes(...args),
+  getNoteById: (...args: any[]) => mockGetNoteById(...args),
+}));
+
+vi.mock("@/app/_server/actions/note/splice", async (original) => ({
+  ...(await original<typeof import("@/app/_server/actions/note/splice")>()),
+  spliceNote: (...args: any[]) => mockSpliceNote(...args),
 }));
 
 vi.mock("@/app/_server/actions/note", () => ({
@@ -148,6 +157,7 @@ vi.mock("@/app/_server/actions/users/records", () => ({
 
 vi.mock("@/app/_server/actions/file", () => ({
   serverWriteFile: (...args: any[]) => mockServerWriteFile(...args),
+  readFile: (...args: any[]) => mockReadFile(...args),
 }));
 
 vi.mock("@/app/_server/actions/export", () => ({
@@ -183,6 +193,9 @@ export function resetApiMocks() {
   mockAuthenticateApiKey.mockReset();
   mockGetCurrentUser.mockReset();
   mockEditNote.mockReset();
+  mockGetNoteById.mockReset();
+  mockReadFile.mockReset();
+  mockSpliceNote.mockReset();
   mockDropNote.mockReset();
   mockEditList.mockReset();
   mockDropList.mockReset();
@@ -253,7 +266,7 @@ export function createMockRequest(
     headers: requestHeaders,
   };
 
-  if (body && (method === "POST" || method === "PUT" || method === "PATCH")) {
+  if (body && method !== "GET" && method !== "HEAD") {
     requestInit.body = JSON.stringify(body);
   }
 

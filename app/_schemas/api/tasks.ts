@@ -38,12 +38,18 @@ export const taskListQuery = z.object({
   ...pageFields,
 });
 
+const noColor = z
+  .string()
+  .nullish()
+  .transform((color) => color ?? undefined)
+  .describe("Left out or null for no color");
+
 const newColumn = z
   .object({
     id: required("Status id"),
     label: z.string().optional(),
     name: z.string().optional().describe("Deprecated alias for label"),
-    color: z.string().optional(),
+    color: noColor,
     order: z.number().optional().describe("Defaults to the column's position in the array"),
     autoComplete: z.boolean().optional().describe("Items moved here are marked completed"),
   })
@@ -79,7 +85,7 @@ export const taskStatusParams = taskParams.extend({
 export const statusCreateBody = z.object({
   id: statusField.describe("Status id, unique within the task"),
   label: statusField.describe("Column name shown on the board"),
-  color: z.string().optional(),
+  color: noColor,
   order: z.number().optional().describe("Defaults to last"),
   autoComplete: z.boolean().optional().describe("Items moved here are marked completed, defaults to false"),
 });

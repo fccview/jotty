@@ -1,5 +1,7 @@
 import { getSettings } from "@/app/_server/actions/config";
-import { NOTE_UNCHANGED, rewriteNote } from "@/app/_server/actions/note/editor";
+import { spliceNote, type SpliceEdit } from "@/app/_server/actions/note/splice";
+import { unlinkItem } from "@/app/_utils/item-links";
+import { isUuid } from "@/app/_consts/identity";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { itemHref } from "@/app/_utils/global-utils";
 import { escapeLinkText } from "@/app/_utils/item-href-utils";
@@ -26,6 +28,8 @@ import type {
   SuggestedItem,
 } from "@/app/_types/relations";
 import { backlinksFor, graphFor, visibleItems, type VisibleItem } from "./queries";
+import { freshRelations } from "./freshen";
+import { appOrigins } from "./paths";
 import { relationsDb } from "./store";
 import { wrapMention } from "./tidy";
 
@@ -73,17 +77,34 @@ const _outgoing = (uuid: string, visible: Map<string, VisibleItem>) => {
   };
 };
 
+const VIA_MAX = 5;
+
+const _sharedVia = (graph: BrainGraph) => {
+  const around = _adjacency(graph.edges.filter((edge) => edge.kind !== BrainEdgeKinds.SUGGESTED));
+  const titles = new Map(graph.nodes.map((node) => [node.id, node.title]));
+  return (a: string, b: string): string[] => {
+    const theirs = around.get(b) || new Set<string>();
+    return Array.from(around.get(a) || [])
+      .filter((id) => theirs.has(id))
+      .map((id) => titles.get(id) || id)
+      .sort((x, y) => x.localeCompare(y))
+      .slice(0, VIA_MAX);
+  };
+};
+
 const _suggestionsFor = (
   uuid: string,
   graph: BrainGraph,
   visible: Map<string, VisibleItem>,
-): SuggestedItem[] =>
-  graph.edges
+): SuggestedItem[] => {
+  const via = _sharedVia(graph);
+  return graph.edges
     .filter((edge) => edge.kind === BrainEdgeKinds.SUGGESTED && (edge.source === uuid || edge.target === uuid))
     .map((edge) => ({ other: visible.get(edge.source === uuid ? edge.target : edge.source), score: edge.weight }))
     .filter((entry): entry is { other: VisibleItem; score: number } => Boolean(entry.other))
-    .map(({ other, score }) => ({ ..._linked(other), score }))
-    .sort((a, b) => b.score - a.score);
+    .map(({ other, score }) => ({ ..._linked(other), score, via: via(uuid, other.uuid) }))
+    .sort((a, b) => b.score - a.score || b.via.length - a.via.length);
+};
 
 export const relatedFor = async (
   actor: SanitisedUser,
@@ -92,6 +113,7 @@ export const relatedFor = async (
   if (!(await linksEnabled())) return { success: false, error: LINKS_OFF };
 
   const target = uuid.toLowerCase();
+  await freshRelations([target]);
   const visible = await visibleItems(actor.username);
   const item = visible.get(target);
   if (!item) return { success: false, error: NOT_VISIBLE };
@@ -172,8 +194,9 @@ export const neighbourhoodFor = async (
 ): Promise<Result<Neighbourhood>> => {
   if (!(await linksEnabled())) return { success: false, error: LINKS_OFF };
 
-  const visible = await visibleItems(actor.username);
   const centre = focus?.toLowerCase();
+  await freshRelations(centre ? [centre] : []);
+  const visible = await visibleItems(actor.username);
   if (centre && !visible.has(centre)) return { success: false, error: NOT_VISIBLE };
 
   const graph = graphFor(actor.username, visible);
@@ -235,6 +258,7 @@ export const orphansFor = async (
   { type, limit, offset }: OrphanOptions,
 ): Promise<Result<{ status: RelationsStatus; orphans: LinkedItem[]; total: number }>> => {
   if (!(await linksEnabled())) return { success: false, error: LINKS_OFF };
+  await freshRelations();
 
   const visible = await visibleItems(actor.username);
   const graph = graphFor(actor.username, visible);
@@ -261,43 +285,93 @@ export const orphansFor = async (
   };
 };
 
-const _appendLink = (title: string, href: string) => (content: string) =>
-  `${content.trimEnd()}\n\n[${escapeLinkText(title)}](${href})\n`;
-
-const _wrapFirst = (title: string, href: string) => (content: string) =>
-  wrapMention(content, title, href);
-
 export const MENTION_MISSING = "Mention not found";
+export const LINK_MISSING = "The source note has no link to that item";
+
+const _eolOf = (body: string): string => (body.includes("\r\n") ? "\r\n" : "\n");
+
+const _appendLink = (title: string, href: string) => (body: string): SpliceEdit => {
+  const eol = _eolOf(body);
+  const kept = body.trimEnd();
+  const gap = kept ? `${eol}${eol}` : "";
+  return { body: `${kept}${gap}[${escapeLinkText(title)}](${href})${body.slice(kept.length) || eol}` };
+};
+
+const _wrapFirst = (title: string, href: string) => (body: string): SpliceEdit => {
+  const wrapped = wrapMention(body, title, href);
+  return wrapped === null || wrapped === body ? { error: MENTION_MISSING } : { body: wrapped };
+};
+
+export interface LinkWrite {
+  managed: boolean;
+}
+
+export interface UnlinkWrite extends LinkWrite {
+  removed: number;
+  wikiLinks: number;
+}
+
+const _noteSource = async (actor: SanitisedUser, sourceUuid: string) => {
+  const visible = await visibleItems(actor.username);
+  const from = visible.get(sourceUuid.toLowerCase());
+  return { visible, from: from?.type === ItemTypes.NOTE ? from : undefined };
+};
 
 export const linkItems = async (
   actor: SanitisedUser,
   sourceUuid: string,
   targetUuid: string,
   style: LinkStyles,
-): Promise<Result<null>> => {
+): Promise<Result<LinkWrite>> => {
   if (!(await linksEnabled())) return { success: false, error: LINKS_OFF };
 
-  const source = sourceUuid.toLowerCase();
-  const visible = await visibleItems(actor.username);
+  const { visible, from } = await _noteSource(actor, sourceUuid);
   const target = visible.get(targetUuid.toLowerCase());
-  const from = visible.get(source);
-  if (!target || !from || from.type !== ItemTypes.NOTE) return { success: false, error: NOT_VISIBLE };
-  if (source === target.uuid) return { success: false, error: "An item can't link to itself" };
+  if (!target || !from) return { success: false, error: NOT_VISIBLE };
+  if (from.uuid === target.uuid) return { success: false, error: "An item can't link to itself" };
 
-  const allowed = await canReach(source, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
+  const allowed = await canReach(from.uuid, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
   if (!allowed) return { success: false, error: DENIED };
 
   const href = itemHref(target.type, target.uuid);
-  const rewrite =
+  const edit =
     style === LinkStyles.MENTION ? _wrapFirst(target.title, href) : _appendLink(target.title, href);
 
-  try {
-    const result = await rewriteNote(actor, source, rewrite);
-    if (result.error === NOTE_UNCHANGED) return { success: false, error: MENTION_MISSING };
-    if (result.error) return { success: false, error: result.error };
-    return { success: true, data: null };
-  } catch (error) {
-    console.error("linkItems failed:", error);
-    return { success: false, error: "Failed to connect items" };
-  }
+  const result = await spliceNote(actor, from.uuid, edit);
+  if (!result.success || !result.data) return { success: false, error: result.error };
+  return { success: true, data: { managed: result.data.managed } };
+};
+
+const _wikiLinksLeft = (source: string, target: string): number => {
+  const row = relationsDb()
+    .prepare("SELECT COUNT(*) AS n FROM links WHERE src = ? AND dst = ? AND kind = ?")
+    .get(source, target, LinkKinds.WIKI) as { n: number };
+  return row.n;
+};
+
+export const unlinkItems = async (
+  actor: SanitisedUser,
+  sourceUuid: string,
+  targetUuid: string,
+): Promise<Result<UnlinkWrite>> => {
+  if (!(await linksEnabled())) return { success: false, error: LINKS_OFF };
+  if (!isUuid(targetUuid)) return { success: false, error: NOT_VISIBLE };
+
+  const { from } = await _noteSource(actor, sourceUuid);
+  if (!from) return { success: false, error: NOT_VISIBLE };
+
+  const target = targetUuid.toLowerCase();
+  const origins = appOrigins();
+  let removed = 0;
+  const result = await spliceNote(actor, from.uuid, (body) => {
+    const unlinked = unlinkItem(body, target, origins);
+    removed = unlinked.removed;
+    return removed ? { body: unlinked.text } : { error: LINK_MISSING };
+  });
+  if (!result.success || !result.data) return { success: false, error: result.error };
+
+  return {
+    success: true,
+    data: { removed, managed: result.data.managed, wikiLinks: _wikiLinksLeft(from.uuid, target) },
+  };
 };

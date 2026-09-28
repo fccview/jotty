@@ -14,7 +14,7 @@ export const GET = defineRoute(
     path: "/relations/orphans",
     tag: ApiTag.RELATIONS,
     summary: "Items with no links",
-    description: "Notes and checklists that link to nothing and that nothing links to. Tags don't count as links.",
+    description: "Notes and checklists that link to nothing and that nothing links to. Tags don't count as links. Having no links is normal. This isn't a to-do list, so only link an item to another one it relates to.",
     query: orphansQuery,
     responses: {
       200: { description: "Unlinked items, by title", schema: orphansSchema },

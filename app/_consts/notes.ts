@@ -4,6 +4,14 @@ export const NOTES_FOLDER = Modes.NOTES;
 export const DEPRECATED_DOCS_FOLDER = Modes.DEPRECATED_DOCS;
 export const UNCATEGORIZED = "Uncategorized";
 
+export const MANAGED_KEY = "managed";
+
+export const MANAGED_WARNING =
+  "This note is marked managed: true, so a script rewrites it and may drop this change";
+
+export const isManaged = (metadata?: Record<string, unknown> | null): boolean =>
+  metadata?.[MANAGED_KEY] === true;
+
 export const QUOTES = [
   "Nothing... a whole lot of nothing.",
   "What's in the box?!",

@@ -1,5 +1,5 @@
 import { Note } from "@/app/_types";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { UNCATEGORIZED, isManaged } from "@/app/_consts/notes";
 import { ListView } from "@/app/_schemas/api/common";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
 
@@ -14,6 +14,8 @@ export interface ApiNote {
   content?: string;
   excerpt?: string;
   encrypted?: boolean;
+  tags?: string[];
+  managed?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -50,6 +52,8 @@ export const toApiNote = (note: ListedNote, view: ListView = ListView.FULL): Api
       ? { excerpt: locked ? undefined : noteExcerpt(note.content ?? "") }
       : { content: note.content }),
     ...(locked && { encrypted: true }),
+    tags: note.tags ?? [],
+    ...(isManaged(note.extraMetadata) && { managed: true }),
     createdAt: note.createdAt,
     updatedAt: note.updatedAt,
   };

@@ -9,6 +9,7 @@ const ARCHIVE_DIR = ".archive";
 
 interface Batcher {
   add: (target: string) => void;
+  flush: () => Promise<void>;
   stop: () => void;
 }
 
@@ -31,15 +32,9 @@ export const throttledBatch = (
   const dirty = new Set<string>();
   let lastFlush = -Infinity;
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let running = false;
+  let running: Promise<void> | null = null;
 
-  const run = async () => {
-    timer = null;
-    if (running) {
-      schedule();
-      return;
-    }
-    running = true;
+  const _drain = async () => {
     lastFlush = now();
     const targets = Array.from(dirty);
     dirty.clear();
@@ -48,9 +43,19 @@ export const throttledBatch = (
     } catch (error) {
       console.error("Relations watch flush failed:", error);
     } finally {
-      running = false;
+      running = null;
       if (dirty.size > 0) schedule();
     }
+  };
+
+  const run = async () => {
+    timer = null;
+    if (running) {
+      schedule();
+      return;
+    }
+    running = _drain();
+    await running;
   };
 
   const schedule = () => {
@@ -64,6 +69,13 @@ export const throttledBatch = (
     add: (target) => {
       dirty.add(target);
       schedule();
+    },
+    flush: async () => {
+      if (running) await running;
+      if (!dirty.size) return;
+      if (timer) clearTimeout(timer);
+      timer = null;
+      await run();
     },
     stop: () => {
       if (timer) clearTimeout(timer);
@@ -119,4 +131,9 @@ export const watchRelations = (): boolean => {
   }
 
   return state.healthy;
+};
+
+export const flushRelationsWatch = async (): Promise<void> => {
+  const state = globalThis.__jottyRelationsWatch;
+  if (state?.healthy) await state.batcher.flush();
 };

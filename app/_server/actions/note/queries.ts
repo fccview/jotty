@@ -18,6 +18,7 @@ import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
+import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
@@ -211,7 +212,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
         undefined,
       );
 
-    const notes: Note[] = [...cached];
+    const notes: Note[] = dropClashes(cached, resolvedDir);
 
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(

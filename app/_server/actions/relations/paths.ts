@@ -39,3 +39,12 @@ export const itemFileInfo = (filePath: string): ItemFileInfo | null => {
 
 export const isItemFile = (filePath: string): boolean =>
   itemFileInfo(filePath) !== null;
+
+export const appOrigins = (): string[] => {
+  try {
+    return process.env.APP_URL ? [new URL(process.env.APP_URL).origin] : [];
+  } catch (error) {
+    console.warn("APP_URL is not a valid URL, same-origin links are skipped:", error);
+    return [];
+  }
+};

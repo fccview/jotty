@@ -19,6 +19,9 @@ export const CATALOG: CatalogEntry[] = [
   { id: "getNote" },
   { id: "createNote" },
   { id: "updateNote" },
+  { id: "patchNote" },
+  { id: "tagNote" },
+  { id: "listTags" },
   { id: "deleteNote" },
   { id: "listChecklists", defaults: SUMMARY_PAGE },
   { id: "getChecklist" },
@@ -46,7 +49,17 @@ export const CATALOG: CatalogEntry[] = [
         "style=mention only works when the source note already has the target's title as plain text. style=append always works and adds the link at the end.",
     },
   },
+  {
+    id: "disconnectItems",
+    hints: {
+      [ToolErrorKind.NotFound]: "get_related on the source lists what it links to. This tool doesn't remove [[wikilinks]].",
+    },
+  },
   { id: "listShares", defaults: { limit: 25 } },
+  { id: "listDocs" },
+  { id: "readDoc" },
+  { id: "listDuplicateUuids" },
+  { id: "repairDuplicateUuid" },
 ];
 
 export const CURATED_OPERATIONS = CATALOG.map((entry) => entry.id);

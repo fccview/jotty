@@ -19,10 +19,12 @@ import yaml from "js-yaml";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isPathUuid, pathUuid } from "@/app/_server/actions/lib/read-only";
 import { boxedShell } from "@/app/_utils/shell-utils";
+import { rankClaims, warnClash } from "@/app/_server/actions/lib/uuid-keeper";
 
 const execFileAsync = promisify(execFile);
 
 const LINE_BREAK = /[\r\n]/;
+const CR = "\r";
 
 const _fieldLine = (field: string, value: string): string | null =>
   LINE_BREAK.test(value) ? null : `${field}: ${value}`;
@@ -55,8 +57,8 @@ export const grepFindFileByField = async (
 
   try {
     const stdout = await boxedShell(
-      'grep -rlxF --include="*.md" -e "$1" -- "$2" 2>/dev/null | head -1 || true',
-      [line, dir],
+      'grep -rlxF --include="*.md" -e "$1" -e "$3" -- "$2" 2>/dev/null | head -1 || true',
+      [line, dir, `${line}${CR}`],
     );
 
     const filePath = stdout.trim();
@@ -102,11 +104,24 @@ const _findUnstamped = async (
   return match;
 };
 
+const _claimsUuid = async (uuid: string, file: GrepFileResult): Promise<boolean> =>
+  (await _storedUuid(file.filePath))?.toLowerCase() === uuid.toLowerCase();
+
+const _keeperOf = async (uuid: string, found: GrepFileResult[]): Promise<GrepFileResult | null> => {
+  if (found.length < 2) return found[0] || null;
+  const verdicts = await Promise.all(found.map((file) => _claimsUuid(uuid, file)));
+  const claimants = found.filter((_, index) => verdicts[index]);
+  if (claimants.length < 2) return claimants[0] || found[0];
+  const ranked = rankClaims(claimants.map((file) => file.filePath));
+  warnClash(uuid, ranked);
+  return claimants.find((file) => path.resolve(file.filePath) === ranked[0]) || claimants[0];
+};
+
 export const grepFindFileByUuid = async (
   dir: string,
   uuid: string,
 ): Promise<GrepFileResult | null> =>
-  (await grepFindFileByField(dir, "uuid", uuid)) ||
+  (await _keeperOf(uuid, await grepFindFilesByField(dir, "uuid", uuid))) ||
   (await _findUnstamped(dir, uuid));
 
 export const grepFindFilesByField = async (
@@ -119,8 +134,8 @@ export const grepFindFilesByField = async (
 
   try {
     const stdout = await boxedShell(
-      'grep -rlxF --include="*.md" -e "$1" -- "$2" 2>/dev/null || true',
-      [line, dir],
+      'grep -rlxF --include="*.md" -e "$1" -e "$3" -- "$2" 2>/dev/null || true',
+      [line, dir, `${line}${CR}`],
     );
 
     const files = stdout.trim().split("\n").filter(Boolean);

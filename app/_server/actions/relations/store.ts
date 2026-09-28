@@ -44,6 +44,12 @@ const SCHEMA = `
     PRIMARY KEY (src, text)
   );
   CREATE INDEX IF NOT EXISTS bindings_dst ON bindings(dst);
+  CREATE TABLE IF NOT EXISTS clashes (
+    path TEXT PRIMARY KEY,
+    uuid TEXT NOT NULL,
+    mtime REAL NOT NULL DEFAULT 0
+  );
+  CREATE INDEX IF NOT EXISTS clashes_uuid ON clashes(uuid);
   CREATE VIRTUAL TABLE IF NOT EXISTS texts USING fts5(
     uuid UNINDEXED,
     title,

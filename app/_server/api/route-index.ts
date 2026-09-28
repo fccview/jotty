@@ -1,3 +1,4 @@
+import * as adminDuplicateUuids from "@/app/api/admin/duplicate-uuids/route";
 import * as adminRebuildIndex from "@/app/api/admin/rebuild-index/route";
 import * as brain from "@/app/api/brain/route";
 import * as categories from "@/app/api/categories/route";
@@ -12,6 +13,8 @@ import * as docs from "@/app/api/docs/route";
 import * as exports from "@/app/api/exports/route";
 import * as exportsFilename from "@/app/api/exports/[filename]/route";
 import * as health from "@/app/api/health/route";
+import * as howto from "@/app/api/howto/route";
+import * as howtoDocId from "@/app/api/howto/[docId]/route";
 import * as kanban from "@/app/api/kanban/route";
 import * as kanbanBoardId from "@/app/api/kanban/[boardId]/route";
 import * as kanbanBoardIdCalendar from "@/app/api/kanban/[boardId]/calendar/route";
@@ -27,6 +30,7 @@ import * as logsExport from "@/app/api/logs/export/route";
 import * as logsStats from "@/app/api/logs/stats/route";
 import * as notes from "@/app/api/notes/route";
 import * as notesNoteId from "@/app/api/notes/[noteId]/route";
+import * as notesNoteIdTags from "@/app/api/notes/[noteId]/tags/route";
 import * as openapiJson from "@/app/api/openapi.json/route";
 import * as relationsItemId from "@/app/api/relations/[itemId]/route";
 import * as relationsLinks from "@/app/api/relations/links/route";
@@ -34,6 +38,7 @@ import * as relationsOrphans from "@/app/api/relations/orphans/route";
 import * as search from "@/app/api/search/route";
 import * as shares from "@/app/api/shares/route";
 import * as summary from "@/app/api/summary/route";
+import * as tags from "@/app/api/tags/route";
 import * as tasks from "@/app/api/tasks/route";
 import * as tasksTaskId from "@/app/api/tasks/[taskId]/route";
 import * as tasksTaskIdItems from "@/app/api/tasks/[taskId]/items/route";
@@ -45,6 +50,7 @@ import * as user from "@/app/api/user/route";
 import * as userUsername from "@/app/api/user/[username]/route";
 
 export const ROUTE_MODULES: object[] = [
+  adminDuplicateUuids,
   adminRebuildIndex,
   brain,
   categories,
@@ -59,6 +65,8 @@ export const ROUTE_MODULES: object[] = [
   exports,
   exportsFilename,
   health,
+  howto,
+  howtoDocId,
   kanban,
   kanbanBoardId,
   kanbanBoardIdCalendar,
@@ -74,6 +82,7 @@ export const ROUTE_MODULES: object[] = [
   logsStats,
   notes,
   notesNoteId,
+  notesNoteIdTags,
   openapiJson,
   relationsItemId,
   relationsLinks,
@@ -81,6 +90,7 @@ export const ROUTE_MODULES: object[] = [
   search,
   shares,
   summary,
+  tags,
   tasks,
   tasksTaskId,
   tasksTaskIdItems,

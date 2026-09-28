@@ -2,7 +2,7 @@ import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, type Tool } from "@modelcontextprotocol/sdk/types.js";
 import type { Spec } from "../jotty/spec.ts";
 import { logger } from "../utils/logger.ts";
-import { BUILTIN_TOOLS, runBuiltin } from "./builtins.ts";
+import { builtinTools, runBuiltin } from "./builtins.ts";
 import { CURATED_OPERATIONS, toolNameOf } from "./catalog.ts";
 import { BuiltinTool, type ToolContext } from "./context.ts";
 import { ToolErrorKind, errorResult } from "./errors.ts";
@@ -28,8 +28,9 @@ const _loadSpec = (ctx: ToolContext, signal?: AbortSignal): Promise<Spec | null>
 export const registerTools = (server: Server, ctx: ToolContext): void => {
   server.setRequestHandler(ListToolsRequestSchema, async (_request, extra) => {
     const spec = await _loadSpec(ctx, extra.signal);
-    const tools: Tool[] = spec ? _curated(spec).map((op) => operationTool(spec, op)) : [];
-    return { tools: [...tools, ...BUILTIN_TOOLS] };
+    const maxChars = ctx.config.output.maxTextChars;
+    const tools: Tool[] = spec ? _curated(spec).map((op) => operationTool(spec, op, maxChars)) : [];
+    return { tools: [...tools, ...builtinTools(maxChars)] };
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {

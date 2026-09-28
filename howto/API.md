@@ -32,6 +32,32 @@ Checklist and task items are addressed by their tree index inside the list: `0` 
 
 > **Deprecated: slug lookups.** A legacy filename slug still works as the item id, optionally with `?category=` (default "Uncategorized"). Every such request logs a warning, and this fallback **will be removed in a future release**. Switch any stored slugs to UUIDs now.
 
+## Note files
+
+Every note is a markdown file in your data folder, with some YAML frontmatter at the top. If a script writes notes straight to disk, this is the shape Jotty expects:
+
+```markdown
+---
+uuid: 9f1c2a7e-4b3d-4c8e-9a61-2f5d7e0b8c14
+title: Weekly digest
+createdAt: 2026-09-28T09:00:00.000Z
+tags:
+  - home/garden
+  - work
+managed: true
+---
+# Weekly digest
+
+What changed this week. #work #home/garden
+```
+
+- `uuid` is the note's id, the one the API and every link use. Leave it out and Jotty adds one the first time it reads the file. Don't copy a file with its `uuid` in it. Two files with the same one collide, and only the older one opens until you run `repairDuplicateUuid`.
+- `title` is optional. Without it, Jotty uses a `# heading` on the first line, then the filename.
+- `createdAt` is optional. Jotty fills it in on the first save. When two files share a `uuid`, the one with the older `createdAt` keeps it.
+- `tags` is a copy of the `#hashtags` in the body. Put the hashtags in the body. A tag that only sits in the frontmatter is gone the next time someone saves the note in Jotty. `GET /api/tags` lists your tags, `GET /api/notes?tag=work` filters by one, and `POST /api/notes/{noteId}/tags` adds or removes them without resending the note.
+- `managed: true` marks a note your script rewrites. The API returns `"managed": true` on it, and any call that writes into it comes back with a `warning`, because your script will overwrite the change.
+- Jotty keeps any other keys you add, untouched.
+
 ## Errors
 
 Errors come back as JSON with the status code telling you what went wrong:

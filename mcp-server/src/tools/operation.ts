@@ -8,6 +8,7 @@ import type { ToolContext } from "./context.ts";
 import { fillPath, splitArgs, toolInput, type ArgLayout } from "./schema.ts";
 import { catalogEntry, toolNameOf } from "./catalog.ts";
 import { logger } from "../utils/logger.ts";
+import { budgetOf, withBudget, withoutBudget } from "./budget.ts";
 
 const LOG_NS = "tool-operation";
 const SERVER_ERROR = 500;
@@ -47,10 +48,13 @@ const _withDefaults = (schema: JsonSchema, defaults: Record<string, unknown> = {
   ),
 });
 
-export const operationTool = (spec: Spec, op: Operation): Tool => ({
+export const operationTool = (spec: Spec, op: Operation, maxChars: number): Tool => ({
   name: toolNameOf(op.operationId),
   description: describe(op),
-  inputSchema: _withDefaults(toolInput(spec, op).schema, catalogEntry(op.operationId)?.defaults) as Tool["inputSchema"],
+  inputSchema: withBudget(
+    _withDefaults(toolInput(spec, op).schema, catalogEntry(op.operationId)?.defaults),
+    maxChars,
+  ) as Tool["inputSchema"],
   annotations: annotationsOf(op),
 });
 
@@ -101,15 +105,18 @@ const _download = (ctx: ToolContext, path: string, contentType: string): ToolRes
 export interface RunOptions {
   signal?: AbortSignal;
   curated?: boolean;
+  maxChars?: number;
 }
 
 export const runOperation = async (
   ctx: ToolContext,
   spec: Spec,
   op: Operation,
-  args: Record<string, unknown>,
-  { signal, curated = false }: RunOptions = {},
+  given: Record<string, unknown>,
+  { signal, curated = false, maxChars }: RunOptions = {},
 ): Promise<ToolResult> => {
+  const budget = maxChars ?? budgetOf(given, ctx.config.output.maxTextChars);
+  const args = withoutBudget(given);
   const { schema, layout } = toolInput(spec, op);
   const entry = curated ? catalogEntry(op.operationId) : undefined;
   const known = Object.keys(schema.properties ?? {});
@@ -136,7 +143,7 @@ export const runOperation = async (
   try {
     const response = await ctx.client.send({ method: op.method, path, query: parts.query, body: parts.body, signal });
     const data = _omitted(_picked(response.data, entry?.pick), entry?.omit);
-    return respond(data, ctx.config.output.maxTextChars, _moreRows(layout, merged[OFFSET]));
+    return respond(data, budget, _moreRows(layout, merged[OFFSET]));
   } catch (err) {
     const refused = err instanceof JottyError && err.status < SERVER_ERROR;
     (refused ? logger.debug : logger.warn)(LOG_NS, `${op.operationId} failed`, err);

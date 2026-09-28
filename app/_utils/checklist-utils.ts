@@ -95,7 +95,7 @@ export const parseMarkdown = (
 ): Checklist => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
-  let title = extractTitle(
+  const title = extractTitle(
     content,
     fileName ? path.basename(fileName, ".md") : undefined,
   );

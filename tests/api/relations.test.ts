@@ -13,6 +13,7 @@ import { ItemTypes } from "@/app/_types/enums";
 const mockVisible = vi.fn();
 const mockLink = vi.fn();
 const mockRelated = vi.fn();
+const mockUnlink = vi.fn();
 
 vi.mock("@/app/_server/actions/relations/queries", () => ({
   visibleItems: (...args: unknown[]) => mockVisible(...args),
@@ -21,12 +22,15 @@ vi.mock("@/app/_server/actions/relations/explore", () => ({
   LINKS_OFF: "Links are turned off on this instance",
   NOT_VISIBLE: "Not found",
   DENIED: "Permission denied",
+  LINK_MISSING: "The source note has no link to that item",
   linkItems: (...args: unknown[]) => mockLink(...args),
+  unlinkItems: (...args: unknown[]) => mockUnlink(...args),
   relatedFor: (...args: unknown[]) => mockRelated(...args),
 }));
 
 import { GET as SHARES } from "@/app/api/shares/route";
-import { POST as CONNECT } from "@/app/api/relations/links/route";
+import { POST as CONNECT, DELETE as DISCONNECT } from "@/app/api/relations/links/route";
+import { MANAGED_WARNING } from "@/app/_consts/notes";
 import { GET as RELATED } from "@/app/api/relations/[itemId]/route";
 
 const READ = { canRead: true, canEdit: false, canDelete: false };
@@ -42,6 +46,9 @@ const shares = (query = "") =>
 
 const connect = (body: object) =>
   CONNECT(createMockRequest("POST", "http://localhost:3000/api/relations/links", body));
+
+const disconnect = (body: object) =>
+  DISCONNECT(createMockRequest("DELETE", "http://localhost:3000/api/relations/links", body));
 
 describe("Relations and shares contracts", () => {
   beforeEach(() => {
@@ -92,10 +99,17 @@ describe("Relations and shares contracts", () => {
 
   describe("POST /api/relations/links", () => {
     it("links as the key owner, appending by default", async () => {
-      mockLink.mockResolvedValue({ success: true, data: null });
+      mockLink.mockResolvedValue({ success: true, data: { managed: false } });
       const response = await connect({ source: "n-1", target: "c-1" });
       expect(response.status).toBe(200);
+      expect(await getResponseJson(response)).toEqual({ success: true });
       expect(mockLink).toHaveBeenCalledWith(mockUser, "n-1", "c-1", "append");
+    });
+
+    it("warns when the source note is managed by a script", async () => {
+      mockLink.mockResolvedValue({ success: true, data: { managed: true } });
+      const body = await getResponseJson(await connect({ source: "n-1", target: "c-1" }));
+      expect(body).toEqual({ success: true, warning: MANAGED_WARNING });
     });
 
     it.each([
@@ -114,6 +128,25 @@ describe("Relations and shares contracts", () => {
       const response = await connect({ source: "n-1" });
       expect(response.status).toBe(400);
       expect(mockLink).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("DELETE /api/relations/links", () => {
+    it("reports how many links it removed and the wikilinks it left", async () => {
+      mockUnlink.mockResolvedValue({ success: true, data: { removed: 2, wikiLinks: 1, managed: false } });
+      const response = await disconnect({ source: "n-1", target: "c-1" });
+      expect(response.status).toBe(200);
+      expect(await getResponseJson(response)).toEqual({ success: true, removed: 2, wikiLinks: 1 });
+      expect(mockUnlink).toHaveBeenCalledWith(mockUser, "n-1", "c-1");
+    });
+
+    it.each([
+      ["The source note has no link to that item", 404],
+      ["Permission denied", 403],
+      ["Encrypted notes stay closed", 400],
+    ])("turns %s into a %i", async (error, status) => {
+      mockUnlink.mockResolvedValue({ success: false, error });
+      expect((await disconnect({ source: "n-1", target: "c-1" })).status).toBe(status);
     });
   });
 

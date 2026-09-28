@@ -186,6 +186,7 @@ vi.mock("unist-util-visit", () => ({
 
 vi.mock("@/app/_utils/markdown-utils", () => ({
   sanitizeMarkdown: vi.fn().mockImplementation((content: string) => content),
+  defangHtml: vi.fn().mockImplementation((content: string) => content),
   convertMarkdownToHtml: vi
     .fn()
     .mockImplementation((content: string) => content),

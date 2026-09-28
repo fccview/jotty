@@ -28,9 +28,8 @@ vi.mock("@/app/_server/actions/config", () => ({ getSettings: () => mockSettings
 vi.mock("@/app/_server/actions/share/queries", () => ({
   canReach: (...args: unknown[]) => mockCanReach(...args),
 }));
-vi.mock("@/app/_server/actions/note/editor", () => ({
-  NOTE_UNCHANGED: "Nothing to change",
-  rewriteNote: (...args: unknown[]) => mockRewrite(...args),
+vi.mock("@/app/_server/actions/note/splice", () => ({
+  spliceNote: (...args: unknown[]) => mockRewrite(...args),
 }));
 vi.mock("@/app/_utils/grep-utils", () => ({
   grepSearchContent: (...args: unknown[]) => mockGrep(...args),
@@ -41,6 +40,7 @@ import { indexItemFile } from "@/app/_server/actions/relations/indexer";
 import { closeRelationsDb, setRelationsStatus } from "@/app/_server/actions/relations/store";
 import { backlinksFor } from "@/app/_server/actions/relations/queries";
 import {
+  LINK_MISSING,
   LINKS_OFF,
   MENTION_MISSING,
   NOT_VISIBLE,
@@ -48,6 +48,7 @@ import {
   neighbourhoodFor,
   orphansFor,
   relatedFor,
+  unlinkItems,
 } from "@/app/_server/actions/relations/explore";
 import { searchItems } from "@/app/_server/actions/search/engine";
 
@@ -248,19 +249,39 @@ describe("relations explore", () => {
     expect(result.data?.total).toBe(2);
   });
 
+  describe("suggestions", () => {
+    it("says which shared neighbours a suggestion comes from", async () => {
+      const result = await relatedFor(alice, A);
+      expect(result.data?.suggestions).toEqual([
+        expect.objectContaining({ uuid: L, title: "Shopping", via: ["Meal plan"] }),
+      ]);
+    });
+  });
+
   describe("linkItems", () => {
+    const spliced = { success: true, data: { uuid: A, title: "Alpha", category: "Home", tags: [], managed: false } };
+
     it("appends a link inside the source note's lane", async () => {
-      mockRewrite.mockImplementation(async (_actor, _uuid, rewrite) => {
-        expect(rewrite("Some text")).toBe(`Some text\n\n[Stray thought](/note/${C})\n`);
-        return { success: true };
+      mockRewrite.mockImplementation(async (_actor, _uuid, edit) => {
+        expect(edit("Some text")).toEqual({ body: `Some text\n\n[Stray thought](/note/${C})\n` });
+        expect(edit("Crlf text\r\n")).toEqual({ body: `Crlf text\r\n\r\n[Stray thought](/note/${C})\r\n` });
+        return spliced;
       });
-      expect(await linkItems(alice, A, C, LinkStyles.APPEND)).toEqual({ success: true, data: null });
+      expect(await linkItems(alice, A, C, LinkStyles.APPEND)).toEqual({ success: true, data: { managed: false } });
       expect(mockRewrite).toHaveBeenCalledWith(alice, A, expect.any(Function));
     });
 
-    it("reports a missing mention", async () => {
-      mockRewrite.mockResolvedValue({ error: "Nothing to change" });
+    it("reports a missing mention without writing", async () => {
+      mockRewrite.mockImplementation(async (_actor, _uuid, edit) => {
+        const result = edit("Nothing relevant here");
+        return { success: false, error: result.error };
+      });
       expect(await linkItems(alice, A, C, LinkStyles.MENTION)).toEqual({ success: false, error: MENTION_MISSING });
+    });
+
+    it("passes on a managed source so the caller can warn", async () => {
+      mockRewrite.mockResolvedValue({ ...spliced, data: { ...spliced.data, managed: true } });
+      expect(await linkItems(alice, A, C, LinkStyles.APPEND)).toEqual({ success: true, data: { managed: true } });
     });
 
     it("refuses hidden targets, checklist sources and missing edit rights", async () => {
@@ -268,6 +289,31 @@ describe("relations explore", () => {
       expect((await linkItems(alice, L, A, LinkStyles.APPEND)).error).toBe(NOT_VISIBLE);
       mockCanReach.mockResolvedValue(false);
       expect((await linkItems(alice, A, C, LinkStyles.APPEND)).error).toBe("Permission denied");
+      expect(mockRewrite).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("unlinkItems", () => {
+    it("removes the links and counts the wikilinks it leaves", async () => {
+      write(itemPath("notes", "alice", "a.md"), doc(A, "Alpha", "see [[Stray thought]]"));
+      mockRewrite.mockImplementation(async (_actor, _uuid, edit) => {
+        expect(edit(`Intro\n\n[Stray thought](/note/${C})\n`)).toEqual({ body: "Intro\n" });
+        return { success: true, data: { uuid: A, title: "Alpha", category: "Home", tags: [], managed: false } };
+      });
+
+      const result = await unlinkItems(alice, A, C);
+      expect(result.success).toBe(true);
+      expect(result.data?.removed).toBe(1);
+    });
+
+    it("says so when the source has no link to the target", async () => {
+      mockRewrite.mockImplementation(async (_actor, _uuid, edit) => ({ success: false, error: edit("plain").error }));
+      expect(await unlinkItems(alice, A, C)).toEqual({ success: false, error: LINK_MISSING });
+    });
+
+    it("refuses sources the caller can't see and targets that aren't uuids", async () => {
+      expect((await unlinkItems(alice, BOB, C)).error).toBe(NOT_VISIBLE);
+      expect((await unlinkItems(alice, A, "not-a-uuid")).error).toBe(NOT_VISIBLE);
       expect(mockRewrite).not.toHaveBeenCalled();
     });
   });
