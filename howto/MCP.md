@@ -24,10 +24,12 @@ Use this when several people share one MCP server, or when you want it next to J
 
 ```bash
 mkdir -p ./data ./config ./cache && sudo chown -R 1000:1000 ./data ./config ./cache
-docker compose -f docker-compose.mcp.yml up -d --build
+docker compose -f docker-compose.mcp.yml up -d
 ```
 
 The MCP endpoint is `http://<host>:1133/mcp`, with a health check at `/healthz`.
+
+The `ghcr.io/fccview/jotty-mcp` image carries the same version tags as Jotty. If you pin Jotty to a version, pin the MCP server to the same one.
 
 > [!IMPORTANT]
 > Change `JOTTY_MCP_AUTH_TOKEN` from `changeme` before you start it. Every `/mcp` request has to send `Authorization: Bearer <token>`. Leaving the token empty opens the endpoint to anyone who can reach the port, which is fine on a private network and a bad idea anywhere else.

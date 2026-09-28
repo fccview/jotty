@@ -142,7 +142,7 @@ environment:
 `docker-compose.mcp.yml` in the repo root runs jotty and the [MCP server](../mcp-server/README.md) on one network, so assistants such as Claude or Cursor can work with your notes and lists:
 
 ```bash
-docker compose -f docker-compose.mcp.yml up -d --build
+docker compose -f docker-compose.mcp.yml up -d
 ```
 
 ## API docs service

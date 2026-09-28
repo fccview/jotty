@@ -1,9 +1,10 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { registerTools } from "../tools/register.ts";
 import type { ToolContext } from "../tools/context.ts";
+import manifest from "../../package.json" with { type: "json" };
 
 export const SERVER_NAME = "jotty-mcp";
-export const SERVER_VERSION = "0.1.0";
+export const SERVER_VERSION = manifest.version;
 
 export const SERVER_INSTRUCTIONS = [
   "Tools for a Jotty instance: notes, checklists and Kanban boards, acting as the user who owns the API key.",

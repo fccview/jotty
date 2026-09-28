@@ -5,6 +5,7 @@
     "module": "Preserve",
     "moduleResolution": "bundler",
     "moduleDetection": "force",
+    "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
